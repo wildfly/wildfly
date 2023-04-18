@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener.Observation;
@@ -66,6 +66,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.ClusteringServerLogger;
+import org.wildfly.clustering.server.infinispan.group.InfinispanAddressResolver;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -77,7 +78,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <T> the service identifier type
  */
 @org.infinispan.notifications.Listener(observation = Observation.POST)
-public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, AutoCloseable {
+public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProviderRegistry<T>, AutoCloseable {
 
     private final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
@@ -144,7 +145,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         }
         this.invoker.invoke(new RegisterLocalServiceTask(service));
         return new SimpleServiceProviderRegistration<>(service, this, () -> {
-            Address localAddress = this.group.getAddress(this.group.getLocalMember());
+            Address localAddress = InfinispanAddressResolver.INSTANCE.apply(this.group.getLocalMember());
             try (Batch batch = this.batcher.createBatch()) {
                 this.cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(service, this.properties.isTransactional() ? new CopyOnWriteAddressSetRemoveFunction(localAddress) : new ConcurrentAddressSetRemoveFunction(localAddress));
             } finally {
@@ -161,7 +162,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
 
     void registerLocal(T service) {
         try (Batch batch = this.batcher.createBatch()) {
-            this.register(this.group.getAddress(this.group.getLocalMember()), service);
+            this.register(InfinispanAddressResolver.INSTANCE.apply(this.group.getLocalMember()), service);
         }
     }
 
@@ -175,7 +176,10 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
         if (addresses == null) return Collections.emptySet();
         Set<Node> members = new TreeSet<>();
         for (Address address : addresses) {
-            members.add(this.group.createNode(address));
+            Node member = this.group.createNode(address);
+            if (member != null) {
+                members.add(member);
+            }
         }
         return Collections.unmodifiableSet(members);
     }
@@ -239,7 +243,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryCreated
@@ -254,7 +258,10 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                         entry.getValue().submit(() -> {
                             Set<Node> members = new TreeSet<>();
                             for (Address address : event.getValue()) {
-                                members.add(this.group.createNode(address));
+                                Node member = this.group.createNode(address);
+                                if (member != null) {
+                                    members.add(member);
+                                }
                             }
                             try {
                                 listener.providersChanged(members);
@@ -268,7 +275,7 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     private class RegisterLocalServiceTask implements ExceptionRunnable<CacheException> {

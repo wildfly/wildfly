@@ -1,6 +1,14 @@
 [[EE_Concurrency_Utilities]]
 = EE Concurrency Utilities
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 EE Concurrency Utilities (JSR 236) is a technology introduced with Java

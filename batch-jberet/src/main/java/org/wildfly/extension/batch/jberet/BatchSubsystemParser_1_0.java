@@ -75,7 +75,7 @@ public class BatchSubsystemParser_1_0 implements XMLStreamConstants, XMLElementR
         // Find the required elements
         final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL);
         attributeElements.forEach((element, attribute) -> {
-            if (!attribute.isAllowNull() && attribute.getDefaultValue() == null) {
+            if (!attribute.isNillable() && attribute.getDefaultValue() == null) {
                 requiredElements.add(element);
             }
         });

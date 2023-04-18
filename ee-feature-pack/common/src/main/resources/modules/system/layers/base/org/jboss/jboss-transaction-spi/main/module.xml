@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss:jboss-transaction-spi@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss:jboss-transaction-spi}"/>
     </resources>
 
     <dependencies>

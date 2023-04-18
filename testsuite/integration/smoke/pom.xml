@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -48,6 +48,12 @@
         <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-runtime</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -324,31 +330,31 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <artifactId>ironjacamar-common-api</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-common-impl</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -377,7 +383,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
             <scope>test</scope>
         </dependency>
@@ -532,11 +538,8 @@
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                     <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                     <version>${testsuite.ee.galleon.pack.version}</version>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
                                     <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
                                     <included-configs>
                                         <config>
                                             <model>standalone</model>
@@ -556,6 +559,7 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
                             </plugin-options>
                         </configuration>
                     </execution>

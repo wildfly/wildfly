@@ -1,6 +1,14 @@
 [[filesystem-security-realm]]
 = Filesystem Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The filesystem security realm is a security realm developed to support storing of identities in a filesystem with the option of associating multiple credentials and multiple attributes with each identity. Both credentials and attributes can contain multiple values.
 
 == Create and Populate Filesystem Security Realm
@@ -51,10 +59,12 @@ To delete existing identity from filesystem realm:
 /subsystem=elytron/filesystem-realm=fsRealm:remove-identity(identity=alex)
 ----
 
-It's possible to update the ``key-store`` or ``key-store-alias`` to use for integrity checking using the ``update-key-pair`` command as shown below. This command will also update the signature in any existing identity files.
+It's possible to update the ``key-store`` or ``key-store-alias`` to use for integrity checking using the ``update-key-pair`` command as shown below. These commands will also update the signature in any existing identity files.
 [source, options="nowrap"]
 ----
-/subsystem=elytron/filesystem-realm=fsRealm:update-key-pair(key-store=newKeyStore, key-store-alias=newKeyStoreAlias)
+/subsystem=elytron/filesystem-realm=fsRealm:write-attribute(name=key-store, value=newKeystore)
+/subsystem=elytron/filesystem-realm=fsRealm:write-attribute(name=key-store-alias, value=newKeystoreAlias)
+/subsystem=elytron/filesystem-realm=fsRealm:update-key-pair()
 ----
 
 === Programmatic approach

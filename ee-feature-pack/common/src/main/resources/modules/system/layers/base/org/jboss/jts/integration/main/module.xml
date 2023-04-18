@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.narayana.jts:narayana-jts-integration@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.narayana.jts:narayana-jts-integration}"/>
     </resources>
 
     <dependencies>

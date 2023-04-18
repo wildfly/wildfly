@@ -22,15 +22,14 @@
 package org.wildfly.extension.datasources.agroal;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 
 import java.util.Collection;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -40,13 +39,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
  * @author <a href="lbarreiro@redhat.com">Luis Barreiro</a>
  */
 class AgroalSubsystemDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH = pathElement(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME);
 
-    static final AgroalSubsystemDefinition INSTANCE = new AgroalSubsystemDefinition();
-
-    private static final List<PersistentResourceDefinition> CHILDREN = unmodifiableList(asList(DataSourceDefinition.INSTANCE, XADataSourceDefinition.INSTANCE, DriverDefinition.INSTANCE));
-
-    private AgroalSubsystemDefinition() {
-        super(pathElement(SUBSYSTEM, AgroalExtension.SUBSYSTEM_NAME), AgroalExtension.getResolver(), AgroalSubsystemOperations.ADD_OPERATION, ReloadRequiredRemoveStepHandler.INSTANCE);
+    AgroalSubsystemDefinition() {
+        super(PATH, AgroalExtension.SUBSYSTEM_RESOLVER, AgroalSubsystemOperations.ADD_OPERATION, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -56,6 +52,6 @@ class AgroalSubsystemDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(new DataSourceDefinition(), new XADataSourceDefinition(), new DriverDefinition());
     }
 }

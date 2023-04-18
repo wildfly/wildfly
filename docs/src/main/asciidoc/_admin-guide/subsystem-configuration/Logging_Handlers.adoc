@@ -2,6 +2,14 @@
 :author:            James R. Perkins
 :email:             jperkins@redhat.com
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Overview
 
 Handlers define how log messages are recorded. If a message is said to be
@@ -112,7 +120,7 @@ A server booted in `--admin-only` mode will discard messages rather than send th
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=log-server:add(host=localhost, port=4560)
 
 # Add the Elytron key store
-/subsystem=elytron/key-store=log-server-ks:add(path=/path/to/keystore.jks, type=JKS, credential-reference={clear-text=mypassword})
+/subsystem=elytron/key-store=log-server-ks:add(path=/path/to/keystore.pkcs12, type=PKCS12, credential-reference={clear-text=mypassword})
 # Add the Elytron trust manager
 /subsystem=elytron/trust-manager=log-server-tm:add(key-store=log-server-ks)
 # Add the client SSL context

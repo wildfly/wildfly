@@ -23,7 +23,7 @@ package org.jboss.as.weld.services;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld.ServiceNames;

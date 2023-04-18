@@ -28,9 +28,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.metadata.property.CompositePropertyResolver;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyReplacers;
 
 /**
  * @author John Bailey
@@ -39,8 +37,7 @@ public class PropertyResolverProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        final CompositePropertyResolver propertyResolver = new CompositePropertyResolver(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS));
-        final PropertyReplacer propertyReplacer = PropertyReplacers.resolvingExpressionReplacer(propertyResolver);
+        final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(Attachments.FINAL_PROPERTY_REPLACER);
         //We pass a function basically to be used by wildfly-core which does not the dependencies used to instantiate a PropertyReplacer
         final Function<String, String> functionExpand = (value) -> propertyReplacer.replaceProperties(value);
 
@@ -54,15 +51,10 @@ public class PropertyResolverProcessor implements DeploymentUnitProcessor {
         if (jbossDescriptorPropReplacement == null || jbossDescriptorPropReplacement) {
             deploymentUnit.putAttachment(org.jboss.as.server.deployment.Attachments.WFLY_DESCRIPTOR_EXPR_EXPAND_FUNCTION, functionExpand);
         }
-
-        deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_RESOLVER, propertyResolver);
-        deploymentUnit.putAttachment(Attachments.FINAL_PROPERTY_REPLACER, propertyReplacer);
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.FINAL_PROPERTY_REPLACER);
-        deploymentUnit.removeAttachment(Attachments.FINAL_PROPERTY_RESOLVER);
-        deploymentUnit.removeAttachment(Attachments.DEPLOYMENT_PROPERTY_RESOLVERS);
 
         deploymentUnit.removeAttachment(org.jboss.as.server.deployment.Attachments.SPEC_DESCRIPTOR_EXPR_EXPAND_FUNCTION);
         deploymentUnit.removeAttachment(org.jboss.as.server.deployment.Attachments.WFLY_DESCRIPTOR_EXPR_EXPAND_FUNCTION);

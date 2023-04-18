@@ -70,7 +70,7 @@ public class ConstantRoleMapper extends AbstractConfigurableElement implements R
     /**
      * Builder for this class.
      */
-    public static final class Builder extends AbstractConfigurableElement.Builder<ConstantRoleMapper.Builder> {
+    public static final class Builder extends AbstractConfigurableElement.Builder<Builder> {
 
         private String[] roles;
 

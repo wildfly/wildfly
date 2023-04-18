@@ -25,8 +25,8 @@ package org.jboss.as.weld.ejb;
 import java.io.Serializable;
 import java.security.AccessController;
 
-import javax.enterprise.inject.spi.BeanManager;
-import javax.interceptor.InvocationContext;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.invocation.Interceptor;

@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.InterceptionType;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentConfiguration;

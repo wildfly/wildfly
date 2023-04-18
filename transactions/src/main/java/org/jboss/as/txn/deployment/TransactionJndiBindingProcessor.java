@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -53,7 +53,7 @@ import org.jboss.msc.service.ServiceTarget;
  * Processor responsible for binding transaction related resources to JNDI.
  * </p>
  * Unlike other resource injections this binding happens for all eligible components,
- * regardless of the presence of the {@link javax.annotation.Resource} annotation.
+ * regardless of the presence of the {@link jakarta.annotation.Resource} annotation.
  *
  * @author Stuart Douglas
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

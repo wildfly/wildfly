@@ -3,9 +3,9 @@ package org.jboss.as.weld.injection;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.InjectionTarget;
 
 import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.bean.ManagedBean;

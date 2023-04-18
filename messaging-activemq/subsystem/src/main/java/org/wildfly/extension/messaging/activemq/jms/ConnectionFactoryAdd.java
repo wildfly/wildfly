@@ -161,10 +161,10 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         config.setFactoryType(jmsFactoryType);
 
-        config.setInitialMessagePacketSize(ConnectionFactoryAttributes.Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setInitialMessagePacketSize(Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
         config.setEnableSharedClientID(true);
         config.setEnable1xPrefixes(true);
-        config.setUseTopologyForLoadBalancing(ConnectionFactoryAttributes.Common.USE_TOPOLOGY.resolveModelAttribute(context, model).asBoolean());
+        config.setUseTopologyForLoadBalancing(Common.USE_TOPOLOGY.resolveModelAttribute(context, model).asBoolean());
         return config;
     }
 

@@ -29,10 +29,10 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-common-impl@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-core-impl@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-deployers-common@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-validator@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-impl}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-core-impl}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-deployers-common}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-validator}"/>
     </resources>
 
     <dependencies>

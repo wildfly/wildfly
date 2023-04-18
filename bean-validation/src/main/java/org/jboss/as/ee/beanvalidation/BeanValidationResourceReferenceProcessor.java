@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.beanvalidation;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;

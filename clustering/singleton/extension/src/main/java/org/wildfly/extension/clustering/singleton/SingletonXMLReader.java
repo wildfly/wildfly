@@ -44,9 +44,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 public class SingletonXMLReader implements XMLElementReader<List<ModelNode>> {
 
     @SuppressWarnings("unused")
-    private final SingletonSchema schema;
+    private final SingletonSubsystemSchema schema;
 
-    public SingletonXMLReader(SingletonSchema schema) {
+    public SingletonXMLReader(SingletonSubsystemSchema schema) {
         this.schema = schema;
     }
 

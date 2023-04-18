@@ -1,6 +1,14 @@
 [[Messaging_Backward_and_Forward_Compatibility]]
 = Backward & Forward Compatibility
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly supports both backwards and forwards compatibility with
 legacy versions that were using HornetQ as their messaging brokers (such
 as JBoss AS7 or WildFly 8 and 9). +
@@ -25,10 +33,10 @@ HornetQ-based ConnectionFactory.
 
 [source,xml,options="nowrap"]
 ----
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0"> 
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:1.0">
     <server name="default">
         ...
-        <legacy-connection-factory name="legacyConnectionFactory-discovery" 
+        <legacy-connection-factory name="legacyConnectionFactory-discovery"
                                    entries="java:jboss/exported/jms/RemoteConnectionFactory"
                                    ... />
     </server>

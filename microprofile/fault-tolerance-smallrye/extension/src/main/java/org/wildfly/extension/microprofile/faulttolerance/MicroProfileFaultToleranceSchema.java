@@ -21,41 +21,38 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import java.util.Locale;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.clustering.controller.Schema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.staxmapper.IntVersion;
 
 /**
  * Enumeration of supported subsystem schemas.
  *
  * @author Radoslav Husar
  */
-public enum MicroProfileFaultToleranceSchema implements Schema<MicroProfileFaultToleranceSchema> {
+public enum MicroProfileFaultToleranceSchema implements PersistentSubsystemSchema<MicroProfileFaultToleranceSchema> {
 
     VERSION_1_0(1, 0), // WildFly 19-present
     ;
     public static final MicroProfileFaultToleranceSchema CURRENT = VERSION_1_0;
 
-    private final int major;
-    private final int minor;
+    private final VersionedNamespace<IntVersion, MicroProfileFaultToleranceSchema> namespace;
 
     MicroProfileFaultToleranceSchema(int major, int minor) {
-        this.major = major;
-        this.minor = minor;
+        this.namespace = new SubsystemURN<>(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
-    public int major() {
-        return this.major;
+    public VersionedNamespace<IntVersion, MicroProfileFaultToleranceSchema> getNamespace() {
+        return this.namespace;
     }
 
     @Override
-    public int minor() {
-        return this.minor;
-    }
-
-    @Override
-    public String getNamespaceUri() {
-        return String.format(Locale.ROOT, "urn:wildfly:microprofile-fault-tolerance-smallrye:%d.%d", this.major, this.minor);
+    public PersistentResourceXMLDescription getXMLDescription() {
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, this.namespace).build();
     }
 }

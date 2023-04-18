@@ -25,7 +25,7 @@ import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;

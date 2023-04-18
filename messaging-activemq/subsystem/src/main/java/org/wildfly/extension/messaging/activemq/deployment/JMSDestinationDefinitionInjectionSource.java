@@ -40,14 +40,13 @@ import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.R
 
 import java.util.Map;
 
-import javax.jms.Destination;
-import javax.jms.Queue;
-import javax.jms.Topic;
+import jakarta.jms.Destination;
+import jakarta.jms.Queue;
+import jakarta.jms.Topic;
 
 import org.jboss.as.connector.deployers.ra.AdministeredObjectDefinitionInjectionSource;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -117,7 +116,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
         this.destinationName = destinationName;
     }
 
-    protected String uniqueName(InjectionSource.ResolutionContext context) {
+    protected String uniqueName(ResolutionContext context) {
         if (destinationName != null && !destinationName.isEmpty()) {
             return destinationName;
         }
@@ -126,7 +125,7 @@ public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionI
     }
 
     @Override
-    public void getResourceValue(final InjectionSource.ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
+    public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         if(resourceAdapter == null || resourceAdapter.isEmpty()) {
             resourceAdapter = getDefaulResourceAdapter(phaseContext.getDeploymentUnit());
         }

@@ -33,7 +33,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.common.function.ThreadLocalStack;
 
 import javax.naming.Context;
@@ -119,7 +118,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
                 final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
                 duBindingReferences.add(binderService);
             }
-            binderService.getManagedObjectInjector().setValue(new ImmediateValue(new ImmediateManagedReferenceFactory(object)));
+            binderService.getManagedObjectInjector().setValue(() -> new ImmediateManagedReferenceFactory(object));
         }
     }
 

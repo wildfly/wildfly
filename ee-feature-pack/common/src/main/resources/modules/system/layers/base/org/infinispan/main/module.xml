@@ -23,7 +23,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan">
 
     <resources>
-        <artifact name="\${org.infinispan:infinispan-core@module.jakarta.suffix@}"/>
+        <artifact name="${org.infinispan:infinispan-core-jakarta}"/>
     </resources>
 
     <dependencies>

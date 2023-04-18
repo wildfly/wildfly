@@ -27,11 +27,13 @@ import java.util.function.Function;
 import org.jboss.as.clustering.msc.InjectedValueDependency;
 import org.jboss.as.clustering.msc.ValueDependency;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
@@ -40,7 +42,7 @@ import org.wildfly.clustering.service.SimpleServiceNameProvider;
  * @author Paul Ferraro
  */
 @Deprecated
-public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator {
+public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Service<T> {
 
     private final Function<CapabilityServiceSupport, ServiceName> requirementNameFactory;
     private final Class<T> targetClass;
@@ -88,7 +90,22 @@ public class IdentityLegacyCapabilityServiceConfigurator<T> extends SimpleServic
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName(), new ValueService<>(this.requirement));
-        return this.requirement.register(builder).setInitialMode(ServiceController.Mode.PASSIVE);
+        ServiceBuilder<?> builder = target.addService(this.getServiceName());
+        return this.requirement.register(builder).setInstance(this).setInitialMode(ServiceController.Mode.PASSIVE);
+    }
+
+    @Override
+    public T getValue() {
+        return this.requirement.get();
+    }
+
+    @Override
+    public void start(StartContext context) {
+        // Do nothing
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Do nothing
     }
 }

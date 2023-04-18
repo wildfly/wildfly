@@ -58,7 +58,7 @@ public class DistributableImmutableSession implements Session {
         ImmutableSessionMetaData metaData = session.getMetaData();
         this.creationTime = metaData.getCreationTime().toEpochMilli();
         this.lastAccessedTime = metaData.getLastAccessStartTime().toEpochMilli();
-        this.maxInactiveInterval = (int) metaData.getMaxInactiveInterval().getSeconds();
+        this.maxInactiveInterval = (int) metaData.getTimeout().getSeconds();
     }
 
     @Override

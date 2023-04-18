@@ -65,7 +65,7 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
         this.name = name;
         this.registrar = registrar;
         this.marshallerFactory = new ByteBufferMarshallerFactory(container.getConfiguration().marshaller().mediaType(), loader);
-        this.factory = new OperationsFactory(container.getChannelFactory(), container.getCodec(), null, container.getConfiguration());
+        this.factory = new OperationsFactory(container.getChannelFactory(), null, container.getConfiguration());
     }
 
     @Override

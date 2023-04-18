@@ -25,13 +25,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
-
-import javax.ejb.EJBAccessException;
-import javax.ejb.EJBException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import jakarta.ejb.EJBAccessException;
+import jakarta.ejb.EJBException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.evidence.PasswordGuessEvidence;

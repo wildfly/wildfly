@@ -23,7 +23,7 @@
   -->
 <module xmlns="urn:jboss:module:1.5" name="javax.orb.api">
     <resources>
-        <artifact name="\${org.jboss.openjdk-orb:openjdk-orb@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
     </resources>
 
     <dependencies>

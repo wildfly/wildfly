@@ -38,7 +38,6 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.util.AttachmentKey;
 
 import org.wildfly.clustering.ee.Batch;
@@ -65,7 +64,9 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     private final SessionManager<Map<String, Object>, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
-    private final boolean allowOrphanSession;
+
+    // Matches io.undertow.server.session.InMemorySessionManager
+    private volatile int defaultSessionTimeout = 30 * 60;
 
     // Guarded by this
     private OptionalLong lifecycleStamp = OptionalLong.empty();
@@ -75,7 +76,6 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         this.manager = config.getSessionManager();
         this.listeners = config.getSessionListeners();
         this.statistics = config.getStatistics();
-        this.allowOrphanSession = config.isOrphanSessionAllowed();
     }
 
     @Override
@@ -150,16 +150,11 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
-        // Workaround for UNDERTOW-1902
         if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
-            // The servlet specification mandates that an ISE be thrown here
-            if (this.allowOrphanSession) {
-                // Return a single use session to be garbage collected at the end of the request
-                io.undertow.server.session.Session session = new OrphanSession(this, this.manager.getIdentifierFactory().get());
-                session.setMaxInactiveInterval((int) this.manager.getDefaultMaxInactiveInterval().getSeconds());
-                return session;
-            }
-            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
+            // Return single-use session to be garbage collected at the end of the request
+            io.undertow.server.session.Session session = new OrphanSession(this, this.manager.getIdentifierFactory().get());
+            session.setMaxInactiveInterval(this.defaultSessionTimeout);
+            return session;
         }
 
         String requestedId = config.findSessionId(exchange);
@@ -272,7 +267,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
 
     @Override
     public void setDefaultSessionTimeout(int timeout) {
-        this.manager.setDefaultMaxInactiveInterval(Duration.ofSeconds(timeout));
+        this.defaultSessionTimeout = timeout;
     }
 
     @Override

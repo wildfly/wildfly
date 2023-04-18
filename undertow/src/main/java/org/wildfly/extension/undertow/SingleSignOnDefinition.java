@@ -26,8 +26,10 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -36,7 +38,7 @@ import org.jboss.dmr.ModelType;
  * @author Paul Ferraro
  */
 class SingleSignOnDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.SINGLE_SIGN_ON);
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         DOMAIN(Constants.DOMAIN, ModelType.STRING, null),
         PATH("path", ModelType.STRING, new ModelNode("/")),
@@ -62,7 +64,7 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
     }
 
     SingleSignOnDefinition() {
-        super(new Parameters(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON)));
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue())));
     }
 
     @Override

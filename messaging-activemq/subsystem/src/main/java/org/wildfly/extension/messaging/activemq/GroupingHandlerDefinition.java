@@ -95,9 +95,7 @@ public class GroupingHandlerDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT, GROUP_TIMEOUT, REAPER_PERIOD };
 
-    static final GroupingHandlerDefinition INSTANCE = new GroupingHandlerDefinition();
-
-    private GroupingHandlerDefinition() {
+    GroupingHandlerDefinition() {
         super(MessagingExtension.GROUPING_HANDLER_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER),
                 GroupingHandlerAdd.INSTANCE,

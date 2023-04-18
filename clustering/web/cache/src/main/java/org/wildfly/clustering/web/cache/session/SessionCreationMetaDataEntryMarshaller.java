@@ -38,30 +38,30 @@ public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarsha
 
     private static final Instant DEFAULT_CREATION_TIME = Instant.EPOCH;
     // Optimize for specification default
-    private static final Duration DEFAULT_MAX_INACTIVE_INTERVAL = Duration.ofMinutes(30L);
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(30L);
 
     private static final int CREATION_TIME_INDEX = 1;
-    private static final int MAX_INACTIVE_INTERVAL_INDEX = 2;
+    private static final int TIMEOUT_INDEX = 2;
 
     @Override
     public SessionCreationMetaDataEntry<Object> readFrom(ProtoStreamReader reader) throws IOException {
         Instant creationTime = DEFAULT_CREATION_TIME;
-        Duration maxInactiveInterval = DEFAULT_MAX_INACTIVE_INTERVAL;
+        Duration timeout = DEFAULT_TIMEOUT;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case CREATION_TIME_INDEX:
                     creationTime = reader.readObject(Instant.class);
                     break;
-                case MAX_INACTIVE_INTERVAL_INDEX:
-                    maxInactiveInterval = reader.readObject(Duration.class);
+                case TIMEOUT_INDEX:
+                    timeout = reader.readObject(Duration.class);
                     break;
                 default:
                     reader.skipField(tag);
             }
         }
         SessionCreationMetaData metaData = new SimpleSessionCreationMetaData(creationTime);
-        metaData.setMaxInactiveInterval(maxInactiveInterval);
+        metaData.setTimeout(timeout);
         return new SessionCreationMetaDataEntry<>(metaData);
     }
 
@@ -74,9 +74,9 @@ public class SessionCreationMetaDataEntryMarshaller implements ProtoStreamMarsha
             writer.writeObject(CREATION_TIME_INDEX, creationTime);
         }
 
-        Duration maxInactiveInterval = metaData.getMaxInactiveInterval();
-        if (!maxInactiveInterval.equals(DEFAULT_MAX_INACTIVE_INTERVAL)) {
-            writer.writeObject(MAX_INACTIVE_INTERVAL_INDEX, maxInactiveInterval);
+        Duration timeout = metaData.getTimeout();
+        if (!timeout.equals(DEFAULT_TIMEOUT)) {
+            writer.writeObject(TIMEOUT_INDEX, timeout);
         }
     }
 

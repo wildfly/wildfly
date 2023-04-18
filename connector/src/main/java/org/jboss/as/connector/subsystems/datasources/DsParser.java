@@ -62,7 +62,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DAT
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
@@ -669,12 +668,11 @@ public class DsParser extends AbstractParser {
         operation.get(OP).set(ADD);
 
         String driverName = null;
-        for (org.jboss.jca.common.api.metadata.ds.Driver.Attribute attribute : Driver.Attribute.values()) {
+        for (Driver.Attribute attribute : Driver.Attribute.values()) {
             switch (attribute) {
 
                 case NAME: {
-                    driverName = rawAttributeText(reader, DRIVER_NAME.getXmlName());
-                    DRIVER_NAME.parseAndSetParameter(driverName, operation, reader);
+                    driverName = rawAttributeText(reader, attribute.getLocalName());
                     break;
                 }
                 case MAJOR_VERSION: {

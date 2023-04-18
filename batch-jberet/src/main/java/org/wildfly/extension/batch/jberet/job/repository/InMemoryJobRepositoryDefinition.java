@@ -54,7 +54,7 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
         super(
                 new Parameters(PATH, BatchResourceDescriptionResolver.getResourceDescriptionResolver(NAME))
                         .setAddHandler(new InMemoryAddHandler())
-                        .setRemoveHandler(new ReloadRequiredRemoveStepHandler(Capabilities.JOB_REPOSITORY_CAPABILITY))
+                        .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                         .setCapabilities(Capabilities.JOB_REPOSITORY_CAPABILITY)
         );
     }
@@ -68,7 +68,7 @@ public class InMemoryJobRepositoryDefinition extends SimpleResourceDefinition {
 
     private static class InMemoryAddHandler extends AbstractAddStepHandler {
         InMemoryAddHandler() {
-            super(Capabilities.JOB_REPOSITORY_CAPABILITY, CommonAttributes.EXECUTION_RECORDS_LIMIT);
+            super(CommonAttributes.EXECUTION_RECORDS_LIMIT);
         }
 
         @Override

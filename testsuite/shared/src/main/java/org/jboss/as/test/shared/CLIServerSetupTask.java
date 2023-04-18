@@ -34,9 +34,9 @@ import java.util.stream.Stream;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.shared.ManagementServerSetupTask.ContainerConfigurationBuilder;
 import org.jboss.as.test.shared.ManagementServerSetupTask.CommandSet;
 import org.jboss.as.test.shared.ManagementServerSetupTask.ContainerConfiguration;
+import org.jboss.as.test.shared.ManagementServerSetupTask.ContainerConfigurationBuilder;
 import org.jboss.as.test.shared.ManagementServerSetupTask.ScriptBuilder;
 
 /**
@@ -95,7 +95,7 @@ public class CLIServerSetupTask implements ServerSetupTask {
 
         /**
          * Configure commands to be run for a group of nodes. Cannot be called multiple times on nodes that already have some configuration
-         * defined. Use {@link Builder#node(java.lang.String)} for node-specific overrides.
+         * defined. Use {@link Builder#node(String)} for node-specific overrides.
          *
          * @param nodes nodes to run setup and teardown commands on
          */

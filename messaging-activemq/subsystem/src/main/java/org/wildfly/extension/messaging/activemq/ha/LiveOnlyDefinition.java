@@ -61,9 +61,7 @@ public class LiveOnlyDefinition extends PersistentResourceDefinition {
 
     private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
 
-    public static final LiveOnlyDefinition INSTANCE = new LiveOnlyDefinition();
-
-    private LiveOnlyDefinition() {
+    public LiveOnlyDefinition() {
         super(MessagingExtension.LIVE_ONLY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 ADD,

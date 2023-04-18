@@ -27,7 +27,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DS_DEPLOYER_LOGGER;
 
 import javax.naming.Reference;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.net.MalformedURLException;
@@ -74,7 +74,6 @@ import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
-import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -94,7 +93,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -124,7 +122,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
-    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
@@ -165,7 +162,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 throw ConnectorLogger.ROOT_LOGGER.cannotStartDSTooManyConnectionFactories(jndiName.getAbsoluteJndiName(),
                         cfs.length);
             }
-            sqlDataSource = new WildFlyDataSource((javax.sql.DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
+            sqlDataSource = new WildFlyDataSource((DataSource) deploymentMD.getCfs()[0], jndiName.getAbsoluteJndiName());
             DS_DEPLOYER_LOGGER.debugf("Adding datasource: %s", deploymentMD.getCfJndiNames()[0]);
             CommonDeploymentService cdService = new CommonDeploymentService(deploymentMD);
             final ServiceName cdServiceName = CommonDeploymentService.getServiceName(jndiName);
@@ -203,7 +200,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     }
 
     /**
-     * Performs the actual work of stopping the service. Should be called by {@link #stop(org.jboss.msc.service.StopContext)}
+     * Performs the actual work of stopping the service. Should be called by {@link #stop(StopContext)}
      * asynchronously from the MSC thread that invoked stop.
      */
     protected synchronized void stopService() {
@@ -264,10 +261,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<DriverRegistry> getDriverRegistryInjector() {
         return driverRegistry;
-    }
-
-    public Injector<SubjectFactory> getSubjectFactoryInjector() {
-        return subjectFactory;
     }
 
     public Injector<CachedConnectionManager> getCcmInjector() {
@@ -439,8 +432,8 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         @Override
         protected String[] bindConnectionFactory(String deployment, final String jndi, Object cf) throws Throwable {
             // AS7-2222: Just hack it
-            if (cf instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)cf).setReference(new Reference(jndi));
+            if (cf instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)cf).setReference(new Reference(jndi));
             }
 
             // don't register because it's one during add operation
@@ -487,17 +480,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 return null;
             // safe assertion because all parsers create Credential
             assert credential instanceof Credential;
-            final String securityDomain = credential.getSecurityDomain();
-            if (((Credential) credential).isElytronEnabled()) {
-                try {
-                    return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
-                } catch (URISyntaxException e) {
-                    throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
-                }
-            } else if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
-                return null;
-            } else {
-                return new PicketBoxSubjectFactory(subjectFactory.getValue());
+            try {
+                return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
+            } catch (URISyntaxException e) {
+                throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
             }
         }
 
@@ -723,18 +709,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         @Override
-        protected javax.resource.spi.ResourceAdapter createRa(String uniqueId, ClassLoader cl) throws NotFoundException, DeployException {
+        protected jakarta.resource.spi.ResourceAdapter createRa(String uniqueId, ClassLoader cl) throws NotFoundException, DeployException {
 
             List<? extends ConfigProperty> l = new ArrayList<ConfigProperty>();
 
-            javax.resource.spi.ResourceAdapter rar =
-                    (javax.resource.spi.ResourceAdapter) initAndInject(JDBCResourceAdapter.class.getName(), l, cl);
+            jakarta.resource.spi.ResourceAdapter rar =
+                    (jakarta.resource.spi.ResourceAdapter) initAndInject(JDBCResourceAdapter.class.getName(), l, cl);
 
             return rar;
         }
 
         @Override
-        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+        protected String registerResourceAdapterToResourceAdapterRepository(jakarta.resource.spi.ResourceAdapter instance) {
             return raRepository.getValue().registerResourceAdapter(instance);
         }
 

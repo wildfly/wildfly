@@ -22,23 +22,27 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.UserTransaction;
 
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -87,7 +91,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Endpoint;
@@ -96,6 +99,7 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
+import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.service.CorbaNamingService;
 
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
@@ -272,9 +276,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmBuilder = context.getServiceTarget().addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmBinderService);
         tmBuilder.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmBinderService.getNamingStoreInjector());
-        tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
-            public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+            public void inject(final jakarta.transaction.TransactionManager value) throws InjectionException {
                 tmBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
@@ -288,9 +292,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final BinderService tmLegacyBinderService = new BinderService("TransactionManager");
         final ServiceBuilder<ManagedReferenceFactory> tmLegacyBuilder = context.getServiceTarget().addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append("TransactionManager"), tmLegacyBinderService);
         tmLegacyBuilder.addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, ServiceBasedNamingStore.class, tmLegacyBinderService.getNamingStoreInjector());
-        tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, javax.transaction.TransactionManager.class, new Injector<javax.transaction.TransactionManager>() {
+        tmLegacyBuilder.addDependency(TransactionManagerService.INTERNAL_SERVICE_NAME, jakarta.transaction.TransactionManager.class, new Injector<jakarta.transaction.TransactionManager>() {
             @Override
-            public void inject(final javax.transaction.TransactionManager value) throws InjectionException {
+            public void inject(final jakarta.transaction.TransactionManager value) throws InjectionException {
                 tmLegacyBinderService.getManagedObjectInjector().inject(new ValueManagedReferenceFactory(value));
             }
 
@@ -365,12 +369,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
             builder.requires(bindInfo.getBinderServiceName());
         }
-        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        builder.setInitialMode(Mode.ACTIVE).install();
 
         TransactionManagerService.addService(target);
         UserTransactionService.addService(target);
         target.addService(TxnServices.JBOSS_TXN_USER_TRANSACTION_REGISTRY, new UserTransactionRegistryService())
-                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                .setInitialMode(Mode.ACTIVE).install();
         TransactionSynchronizationRegistryService.addService(target);
 
     }
@@ -380,9 +384,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // Configure the core configuration.
         final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, coreEnvModel).asString();
         TransactionLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", nodeIdentifier);
-        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier);
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(TRANSACTION_CAPABILITY);
+        Supplier<SocketBinding> socketBindingSupplier =  Functions.constantSupplier(null);
 
         String socketBindingName = null;
+        if (!TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
+            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.resolveModelAttribute(context, coreEnvModel).asString();
+            socketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
+        }
+
+        final CoreEnvironmentService coreEnvironmentService = new CoreEnvironmentService(nodeIdentifier, socketBindingSupplier);
+
         if (TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.resolveModelAttribute(context, coreEnvModel).asBoolean(false)) {
             // Use the UUID based id
             UuidProcessId id = new UuidProcessId();
@@ -390,18 +402,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         } else {
             // Use the socket process id
             coreEnvironmentService.setProcessImplementationClassName(ProcessIdType.SOCKET.getClazz());
-            socketBindingName = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.resolveModelAttribute(context, coreEnvModel).asString();
             int ports = TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.resolveModelAttribute(context, coreEnvModel).asInt();
             coreEnvironmentService.setSocketProcessIdMaxPorts(ports);
         }
 
-        final ServiceBuilder<?> coreEnvBuilder = context.getServiceTarget().addService(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, coreEnvironmentService);
-        if (socketBindingName != null) {
-            // Add a dependency on the socket id binding
-            ServiceName bindingName = SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName);
-            coreEnvBuilder.addDependency(bindingName, SocketBinding.class, coreEnvironmentService.getSocketProcessBindingInjector());
-        }
-        coreEnvBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        builder.setInstance(coreEnvironmentService).addAliases(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT).setInitialMode(Mode.ACTIVE).install();
     }
 
     private void performRecoveryEnvBoottime(OperationContext context, ModelNode model, final boolean jts, List<ServiceName> deps) throws OperationFailedException {
@@ -424,7 +429,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);
-        recoveryManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        recoveryManagerServiceServiceBuilder.setInitialMode(Mode.ACTIVE);
 
 
         // add dependency on Jakarta Transactions environment bean
@@ -443,7 +448,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(Mode.ACTIVE)
                 .install();
 
-        if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(),null)) {
+        if (context.hasOptionalCapability(REMOTING_ENDPOINT_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(),null)) {
             final RemotingTransactionServiceService remoteTransactionServiceService = new RemotingTransactionServiceService();
             serviceTarget.addCapability(REMOTE_TRANSACTION_SERVICE_CAPABILITY)
                 .setInstance(remoteTransactionServiceService)
@@ -453,7 +458,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .install();
         }
 
-        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY.getName(), null)) {
+        if(context.hasOptionalCapability(UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME, TRANSACTION_CAPABILITY.getName(), null)) {
             final TransactionRemoteHTTPService remoteHTTPService = new TransactionRemoteHTTPService();
             serviceTarget.addService(TxnServices.JBOSS_TXN_HTTP_REMOTE_TRANSACTION_SERVICE, remoteHTTPService)
                 .addDependency(TxnServices.JBOSS_TXN_LOCAL_TRANSACTION_CONTEXT, LocalTransactionContext.class, remoteHTTPService.getLocalTransactionContextInjectedValue())
@@ -534,7 +539,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         transactionManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         transactionManagerServiceServiceBuilder.requires(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY.getCapabilityServiceName());
-        transactionManagerServiceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        transactionManagerServiceServiceBuilder.setInitialMode(Mode.ACTIVE);
         transactionManagerServiceServiceBuilder.install();
     }
 

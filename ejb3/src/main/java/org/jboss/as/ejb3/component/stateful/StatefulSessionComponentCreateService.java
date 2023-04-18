@@ -30,11 +30,11 @@ import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheFactory;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
@@ -60,7 +60,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InjectedValue<AtomicLong> defaultStatefulSessionTimeoutValue = new InjectedValue<>();
     private final InterceptorFactory ejb2XRemoveMethod;
-    private final Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
+    private final Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory;
     private final Set<Object> serializableInterceptorContextKeys;
     private final StatefulComponentDescription componentDescription;
     final boolean passivationCapable;
@@ -70,7 +70,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
      *
      * @param componentConfiguration the component configuration
      */
-    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory) {
+    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> cacheFactory) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
@@ -165,7 +165,7 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return serializableInterceptorContextKeys;
     }
 
-    Supplier<CacheFactory<SessionID, StatefulSessionComponentInstance>> getCacheFactory() {
+    Supplier<StatefulSessionBeanCacheFactory<SessionID, StatefulSessionComponentInstance>> getCacheFactory() {
         return this.cacheFactory;
     }
 }

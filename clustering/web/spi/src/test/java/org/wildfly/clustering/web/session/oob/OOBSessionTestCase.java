@@ -261,7 +261,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.readSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessEndTime);
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessTime);
 
         verify(batch).close();
         reset(batch);
@@ -272,9 +272,9 @@ public class OOBSessionTestCase {
 
         when(this.manager.readSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.getLastAccessEndTime()).thenReturn(expected);
+        when(metaData.getLastAccessTime()).thenReturn(expected);
 
-        Instant result = this.session.getMetaData().getLastAccessEndTime();
+        Instant result = this.session.getMetaData().getLastAccessTime();
 
         Assert.assertSame(expected, result);
 
@@ -290,7 +290,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.readSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getMaxInactiveInterval);
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getTimeout);
 
         verify(batch).close();
         reset(batch);
@@ -301,9 +301,9 @@ public class OOBSessionTestCase {
 
         when(this.manager.readSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.getMaxInactiveInterval()).thenReturn(expected);
+        when(metaData.getTimeout()).thenReturn(expected);
 
-        Duration result = this.session.getMetaData().getMaxInactiveInterval();
+        Duration result = this.session.getMetaData().getTimeout();
 
         Assert.assertSame(expected, result);
 

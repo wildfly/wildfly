@@ -24,8 +24,8 @@ package org.jboss.as.ee.component.deployers;
 
 import java.util.List;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;

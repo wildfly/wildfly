@@ -31,7 +31,7 @@
              <config-property-value>JEFF</config-property-value>
           </config-property>
 
-            <connectionfactory-interface>javax.resource.spi.ManagedConnection</connectionfactory-interface>
+            <connectionfactory-interface>jakarta.resource.spi.ManagedConnection</connectionfactory-interface>
             <connectionfactory-impl-class>org.jboss.jca.test.deployers.spec.rars.ra16annoconndefs.TestManagedConnection</connectionfactory-impl-class>
             <connection-interface>org.jboss.jca.test.deployers.spec.rars.TestConnectionInterface</connection-interface>
             <connection-impl-class>org.jboss.jca.test.deployers.spec.rars.TestConnection</connection-impl-class>

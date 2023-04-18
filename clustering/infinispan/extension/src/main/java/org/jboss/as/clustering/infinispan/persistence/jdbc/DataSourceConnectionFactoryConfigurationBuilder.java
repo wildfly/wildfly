@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
+import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationChildBuilder;
@@ -68,5 +69,10 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
     public DataSourceConnectionFactoryConfigurationBuilder<S> read(DataSourceConnectionFactoryConfiguration template) {
         this.dependency = new SimpleSupplierDependency<>(template.getDataSource());
         return this;
+    }
+
+    @Override
+    public AttributeSet attributes() {
+        return AttributeSet.EMPTY;
     }
 }

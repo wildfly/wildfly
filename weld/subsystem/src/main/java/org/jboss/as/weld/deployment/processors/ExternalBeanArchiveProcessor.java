@@ -52,6 +52,7 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadata;
 import org.jboss.as.weld.deployment.ExplicitBeanArchiveMetadataContainer;
+import org.jboss.as.weld.deployment.PropertyReplacingBeansXmlParser;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.processors.UrlScanner.ClassFile;
 import org.jboss.as.weld.discovery.AnnotationType;
@@ -130,7 +131,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
             loaders.add(unit.getAttachment(Attachments.MODULE).getClassLoader());
         }
 
-        BeansXmlParser parser = BeansXmlParserFactory.getPropertyReplacingParser(deploymentUnit,
+        BeansXmlParser parser = new PropertyReplacingBeansXmlParser(deploymentUnit,
                 Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY)
                         .isLegacyEmptyBeansXmlTreatment());
 

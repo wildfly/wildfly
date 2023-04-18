@@ -97,10 +97,10 @@ public class CorbaUtils {
 
         // javax.rmi.CORBA.Stub stub = PortableRemoteObject.toStub(remoteObj);
 
-        java.lang.Object stub;
+        Object stub;
 
         try {
-            stub = toStubMethod.invoke(null, new java.lang.Object[]{remoteObj});
+            stub = toStubMethod.invoke(null, new Object[]{remoteObj});
 
         } catch (InvocationTargetException e) {
             Throwable realException = e.getTargetException();
@@ -123,7 +123,7 @@ public class CorbaUtils {
 // Next, make sure that the stub is connected
         // Invoke stub.connect(orb)
         try {
-            connectMethod.invoke(stub, new java.lang.Object[]{orb});
+            connectMethod.invoke(stub, new Object[]{orb});
 
         } catch (InvocationTargetException e) {
             Throwable realException = e.getTargetException();
@@ -254,7 +254,7 @@ public class CorbaUtils {
         // Get javax.rmi.CORBA.Stub.connect(org.omg.CORBA.ORB) method
 
         try {
-            connectMethod = corbaStubClass.getMethod("connect", new Class[]{org.omg.CORBA.ORB.class});
+            connectMethod = corbaStubClass.getMethod("connect", new Class[]{ORB.class});
         } catch (NoSuchMethodException e) {
             throw IIOPLogger.ROOT_LOGGER.noMethodDefForStubConnect();
         }
@@ -264,7 +264,7 @@ public class CorbaUtils {
 
         // Get javax.rmi.PortableRemoteObject(java.rmi.Remote) method
         try {
-            toStubMethod = proClass.getMethod("toStub", new Class[]{java.rmi.Remote.class});
+            toStubMethod = proClass.getMethod("toStub", new Class[]{Remote.class});
 
         } catch (NoSuchMethodException e) {
             throw IIOPLogger.ROOT_LOGGER.noMethodDefForPortableRemoteObjectToStub();

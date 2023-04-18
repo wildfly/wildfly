@@ -80,7 +80,7 @@ public class SecurityRoleResource implements Resource {
 
     @Override
     public Resource navigate(PathAddress address) {
-        return Resource.Tools.navigate(this, address);
+        return Tools.navigate(this, address);
     }
 
     @Override

@@ -40,8 +40,6 @@ import org.jboss.dmr.ModelType;
  */
 public class MessageDrivenBeanResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final MessageDrivenBeanResourceDefinition INSTANCE = new MessageDrivenBeanResourceDefinition();
-
     static final AttributeDefinition DELIVERY_ACTIVE = new SimpleAttributeDefinitionBuilder("delivery-active", ModelType.BOOLEAN, true)
             .setDefaultValue(ModelNode.TRUE)
             .setStorageRuntime()
@@ -66,7 +64,7 @@ public class MessageDrivenBeanResourceDefinition extends AbstractEJBComponentRes
     static final String START_DELIVERY = "start-delivery";
     static final String STOP_DELIVERY = "stop-delivery";
 
-    private MessageDrivenBeanResourceDefinition() {
+    public MessageDrivenBeanResourceDefinition() {
         super(EJBComponentType.MESSAGE_DRIVEN);
     }
 

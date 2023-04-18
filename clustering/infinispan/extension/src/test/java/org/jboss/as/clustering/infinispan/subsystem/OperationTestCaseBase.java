@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = String.format("subsystem-infinispan-%d_%d.xml", InfinispanSchema.CURRENT.major(), InfinispanSchema.CURRENT.minor());
+    static final String SUBSYSTEM_XML_FILE = String.format("subsystem-infinispan-%d_%d.xml", InfinispanSubsystemSchema.CURRENT.getVersion().major(), InfinispanSubsystemSchema.CURRENT.getVersion().minor());
 
     public OperationTestCaseBase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());

@@ -158,7 +158,7 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
             VirtualFile file = entry.getKey();
             Format format = entry.getValue();
             try (OpenApiStaticFile staticFile = new OpenApiStaticFile(file.openStream(), format)) {
-                builder.staticFileModel(OpenApiProcessor.modelFromStaticFile(staticFile));
+                builder.staticFileModel(OpenApiProcessor.modelFromStaticFile(config, staticFile));
             } catch (IOException e) {
                 throw MicroProfileOpenAPILogger.LOGGER.failedToLoadStaticFile(e, file.getPathNameRelativeTo(this.root), this.deploymentName);
             }

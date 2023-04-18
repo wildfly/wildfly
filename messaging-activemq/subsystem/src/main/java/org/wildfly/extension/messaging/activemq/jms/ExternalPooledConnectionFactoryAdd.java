@@ -139,8 +139,9 @@ public class ExternalPooledConnectionFactoryAdd extends AbstractAddStepHandler {
             discoveryGroupConfiguration = ExternalConnectionFactoryAdd.getDiscoveryGroup(context, discoveryGroupName);
         }
         Set<String> connectorsSocketBindings = new HashSet<>();
-        TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings);
-        ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings,
+        final Set<String> sslContextNames = new HashSet<>();
+        TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectors, connectorsSocketBindings, sslContextNames);
+        ExternalPooledConnectionFactoryService.installService(context, name, transportConfigurations, discoveryGroupConfiguration, connectorsSocketBindings, sslContextNames,
                 jgroupClusterName, jgroupsChannelName, adapterParams, bindInfo, jndiAliases, txSupport, minPoolSize, maxPoolSize, managedConnectionPoolClassName, enlistmentTrace, model);
         boolean statsEnabled = ConnectionFactoryAttributes.Pooled.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 

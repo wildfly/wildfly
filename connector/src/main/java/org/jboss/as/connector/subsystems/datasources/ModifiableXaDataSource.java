@@ -102,7 +102,7 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
     public void validate() throws ValidateException {
         if ((this.xaDataSourceClass == null || this.xaDataSourceClass.trim().length() == 0) &&
                 (this.driver == null || this.driver.trim().length() == 0))
-            throw new ValidateException(bundle.requiredElementMissing(XaDataSource.Tag.XA_DATASOURCE_CLASS.getLocalName(),
+            throw new ValidateException(bundle.requiredElementMissing(Tag.XA_DATASOURCE_CLASS.getLocalName(),
                     this.getClass().getCanonicalName()));
     }
 

@@ -44,7 +44,7 @@ public class StoreResourceTransformer implements Consumer<ModelVersion> {
 
     @Override
     public void accept(ModelVersion version) {
-        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                 .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, StoreResourceDefinition.Attribute.SEGMENTED.getDefinition())
                 .addRejectCheck(RejectAttributeChecker.DEFINED, StoreResourceDefinition.Attribute.SEGMENTED.getDefinition())

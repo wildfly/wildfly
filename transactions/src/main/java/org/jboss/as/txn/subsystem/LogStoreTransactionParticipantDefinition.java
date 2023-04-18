@@ -36,9 +36,7 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
             LogStoreConstants.PARTICIPANT_STATUS, LogStoreConstants.RECORD_TYPE,
             LogStoreConstants.EIS_NAME, LogStoreConstants.EIS_VERSION};
 
-    static final LogStoreTransactionParticipantDefinition INSTANCE = new LogStoreTransactionParticipantDefinition();
-
-    private LogStoreTransactionParticipantDefinition() {
+    LogStoreTransactionParticipantDefinition() {
         super(new Parameters(TransactionExtension.PARTICIPANT_PATH,
                 TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE, CommonAttributes.TRANSACTION, CommonAttributes.PARTICIPANT))
                 .setRuntime()

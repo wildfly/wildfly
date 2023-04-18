@@ -26,11 +26,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -47,16 +43,15 @@ public final class EjbValidationsUtil {
     }
 
     /**
-     * Returns true if the passed <code>mdbClass</code> meets the requirements set by the Enterprise Beans 3 spec about bean implementation
+     * Verifies that the passed <code>mdbClass</code> meets the requirements set by the Enterprise Beans 3 spec about bean implementation
      * classes. The passed <code>mdbClass</code> must not be an interface and must be public and not final and not abstract. If
-     * it passes these requirements then this method returns true. Else it returns false.
+     * it fails any of these requirements then one of the {@code MdbValidityStatus} value is added to the returned collection.
+     * An empty collection is returned if no violation is found.
      *
      * @param mdbClass The MDB class
-     * @return
-     * @throws DeploymentUnitProcessingException
+     * @return a collection of violations represented by {@code MdbValidityStatus}
      */
-    public static Collection<MdbValidityStatus> assertEjbClassValidity(final ClassInfo mdbClass)
-            throws DeploymentUnitProcessingException {
+    public static Collection<MdbValidityStatus> assertEjbClassValidity(final ClassInfo mdbClass) {
         Collection<MdbValidityStatus> mdbComplianceIssueList = new ArrayList<>(MdbValidityStatus.values().length);
         final String className = mdbClass.name().toString();
         verifyModifiers(className, mdbClass.flags(), mdbComplianceIssueList);
@@ -124,7 +119,7 @@ public final class EjbValidationsUtil {
     public static boolean verifyEjbPublicMethodAreNotFinalNorStatic(Method[] methods, String classname) {
         boolean isEjbCompliant = true;
         for (Method method : methods) {
-            if (Modifier.isPublic(method.getModifiers()) && !EjbValidationsUtil.verifyMethodIsNotFinalNorStatic(method, classname))
+            if (Object.class != method.getDeclaringClass() && !EjbValidationsUtil.verifyMethodIsNotFinalNorStatic(method, classname))
                 isEjbCompliant = false;
         }
         return isEjbCompliant;
@@ -137,54 +132,5 @@ public final class EjbValidationsUtil {
             isMethodCompliant = false;
         }
         return isMethodCompliant;
-    }
-
-    public static List<Method> getBusinessMethods(Class<?> componentClass) {
-        Method[] componentDeclaredMethods = componentClass.getDeclaredMethods();
-        List<Method> businessMethodList = new ArrayList<>(componentDeclaredMethods.length);
-        if (componentDeclaredMethods.length > 0) {
-            Map<String, List<Method>> interfacesMethodIndexedByName = indexAllMethodsFromInterfaces(componentClass
-                    .getInterfaces());
-            if (!interfacesMethodIndexedByName.isEmpty()) {
-                for (Method method : componentClass.getDeclaredMethods()) {
-                    if (interfacesMethodIndexedByName.containsKey(method.getName())) {
-                        addMethodIfMatchesAnInterfaceMethod(interfacesMethodIndexedByName.get(method.getName()), businessMethodList, method);
-                    }
-                }
-            }
-        }
-        return businessMethodList;
-    }
-
-    private static void addMethodIfMatchesAnInterfaceMethod(List<Method> businessMethods, List<Method> businessMethodList,
-            Method method) {
-        for (Method biznessMethod : businessMethods) {
-            if ( hasSameSignature(biznessMethod, method) )
-                businessMethodList.add(method);
-        }
-    }
-
-    private static boolean hasSameSignature(Method left, Method right) {
-        return (left.getName().equals(right.getName()) && left.getReturnType().equals(right.getReturnType())
-                && left.getParameterCount() == right.getParameterCount() && Arrays.equals(left.getParameters(), right.getParameters()));
-    }
-
-    private static Map<String, List<Method>> indexAllMethodsFromInterfaces(Class<?>[] classes) {
-        Map<String, List<Method>> businessMethods = new HashMap<>();
-        for (@SuppressWarnings("rawtypes")
-        Class clazz : classes)
-            for (Method m : clazz.getDeclaredMethods())
-                addMethodToListIfMatchesInterfacesMethod(m, businessMethods);
-        return businessMethods;
-    }
-
-    private static void addMethodToListIfMatchesInterfacesMethod(Method m, Map<String, List<Method>> map) {
-        if (map.containsKey(m.getName()))
-            map.get(m.getName()).add(m);
-        else {
-            List<Method> methods = new ArrayList<>(1);
-            methods.add(m);
-            map.put(m.getName(), methods);
-        }
     }
 }

@@ -83,15 +83,15 @@ public class Util {
         }
 
         // special classes
-        if (cls == java.lang.String.class)
+        if (cls == String.class)
             return "::CORBA::WStringValue";
-        if (cls == java.lang.Object.class)
+        if (cls == Object.class)
             return "::java::lang::_Object";
-        if (cls == java.lang.Class.class)
+        if (cls == Class.class)
             return "::javax::rmi::CORBA::ClassDesc";
-        if (cls == java.io.Serializable.class)
+        if (cls == Serializable.class)
             return "::java::io::Serializable";
-        if (cls == java.io.Externalizable.class)
+        if (cls == Externalizable.class)
             return "::java::io::Externalizable";
         if (cls == java.rmi.Remote.class)
             return "::java::rmi::Remote";

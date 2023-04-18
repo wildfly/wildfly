@@ -47,6 +47,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -62,7 +63,10 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  */
 public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
+    private static final String[] ALLOWED_RUNTIME_JOURNAL_TYPE = {"ASYNCIO", "NIO", "DATABASE", "NONE"};
+
     static final ActiveMQServerControlHandler INSTANCE = new ActiveMQServerControlHandler();
+
 
     public static final AttributeDefinition ACTIVE = create("active", BOOLEAN)
             .setStorageRuntime()
@@ -73,7 +77,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
     public static final AttributeDefinition RUNTIME_JOURNAL_TYPE = create("runtime-journal-type", STRING)
             .setStorageRuntime()
-            .setAllowedValues("ASYNCIO", "NIO", "DATABASE", "NONE")
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_RUNTIME_JOURNAL_TYPE))
             .build();
 
     public static final AttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(CommonAttributes.VERSION, ModelType.STRING,
@@ -341,7 +345,10 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                         SecurityRoleDefinition.DELETE_DURABLE_QUEUE,
                         SecurityRoleDefinition.CREATE_NON_DURABLE_QUEUE,
                         SecurityRoleDefinition.DELETE_NON_DURABLE_QUEUE,
-                        SecurityRoleDefinition.MANAGE)
+                        SecurityRoleDefinition.MANAGE,
+                        SecurityRoleDefinition.BROWSE,
+                        SecurityRoleDefinition.CREATE_ADDRESS,
+                        SecurityRoleDefinition.DELETE_ADDRESS)
                 .build(),
                 this);
     }

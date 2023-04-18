@@ -137,10 +137,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * parse a single connection-definition tag
      *
      * @param reader the reader
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *                         XMLStreamException
      * @throws ParserException ParserException
-     * @throws org.jboss.jca.common.api.validator.ValidateException
+     * @throws ValidateException
      *                         ValidateException
      */
     protected void parseConnectionDefinitions_3_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
@@ -302,10 +302,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * parse a single connection-definition tag
      *
      * @param reader the reader
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *                         XMLStreamException
      * @throws ParserException ParserException
-     * @throws org.jboss.jca.common.api.validator.ValidateException
+     * @throws ValidateException
      *                         ValidateException
      */
     protected void parseConnectionDefinitions_4_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
@@ -565,10 +565,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * parse a single connection-definition tag
      *
      * @param reader the reader
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *                         XMLStreamException
      * @throws ParserException ParserException
-     * @throws org.jboss.jca.common.api.validator.ValidateException
+     * @throws ValidateException
      *                         ValidateException
      */
     protected void parseConnectionDefinitions_5_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
@@ -658,10 +658,10 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
          * parse a single connection-definition tag
          *
          * @param reader the reader
-         * @throws javax.xml.stream.XMLStreamException
+         * @throws XMLStreamException
          *                         XMLStreamException
          * @throws ParserException ParserException
-         * @throws org.jboss.jca.common.api.validator.ValidateException
+         * @throws ValidateException
          *                         ValidateException
          */
         protected void parseConnectionDefinitions_1_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,

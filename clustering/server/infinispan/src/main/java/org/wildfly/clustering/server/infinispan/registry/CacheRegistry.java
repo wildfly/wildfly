@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -40,7 +41,6 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.KeyPartitioner;
@@ -63,14 +63,15 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.infinispan.retry.RetryingInvoker;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.infinispan.distribution.ConsistentHashLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.infinispan.listener.KeyFilter;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryListener;
-import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.ClusteringServerLogger;
+import org.wildfly.clustering.server.infinispan.group.InfinispanAddressResolver;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -86,7 +87,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
     private final Map<RegistryListener<K, V>, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<Address, Map.Entry<K, V>> cache;
     private final Batcher<? extends Batch> batcher;
-    private final Group<Address> group;
+    private final Group group;
     private final Runnable closeTask;
     private final Map.Entry<K, V> entry;
     private final Invoker invoker;
@@ -110,7 +111,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
     @Override
     public void run() {
         try (Batch batch = this.batcher.createBatch()) {
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(this.group.getAddress(this.group.getLocalMember()), this.entry);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(InfinispanAddressResolver.INSTANCE.apply(this.group.getLocalMember()), this.entry);
         }
     }
 
@@ -119,7 +120,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
         this.cache.removeListener(this);
         try (Batch batch = this.batcher.createBatch()) {
             // If this remove fails, the entry will be auto-removed on topology change by the new primary owner
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(this.group.getAddress(this.group.getLocalMember()));
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).remove(InfinispanAddressResolver.INSTANCE.apply(this.group.getLocalMember()));
         } catch (CacheException e) {
             ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
         } finally {
@@ -151,7 +152,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
     }
 
     @Override
-    public org.wildfly.clustering.group.Group getGroup() {
+    public Group getGroup() {
         return this.group;
     }
 
@@ -159,7 +160,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
     public Map<K, V> getEntries() {
         Set<Address> addresses = new TreeSet<>();
         for (Node member : this.group.getMembership().getMembers()) {
-            addresses.add(this.group.getAddress(member));
+            addresses.add(InfinispanAddressResolver.INSTANCE.apply(member));
         }
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, V> entry : this.cache.getAdvancedCache().getAll(addresses).values()) {
@@ -172,7 +173,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
 
     @Override
     public Map.Entry<K, V> getEntry(Node node) {
-        Address address = this.group.getAddress(node);
+        Address address = InfinispanAddressResolver.INSTANCE.apply(node);
         return this.cache.get(address);
     }
 
@@ -238,7 +239,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 });
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryCreated
@@ -250,7 +251,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheEntryRemoved
@@ -262,7 +263,7 @@ public class CacheRegistry<K, V> implements Registry<K, V>, ExceptionRunnable<Ca
                 this.executor.execute(() -> this.notifyListeners(event.getType(), entry));
             }
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     private void notifyListeners(Event.Type type, Map.Entry<K, V> entry) {

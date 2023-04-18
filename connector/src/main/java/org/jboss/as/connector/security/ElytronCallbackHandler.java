@@ -26,13 +26,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.resource.spi.security.PasswordCredential;
+import jakarta.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.message.callback.CallerPrincipalCallback;
-import javax.security.auth.message.callback.GroupPrincipalCallback;
-import javax.security.auth.message.callback.PasswordValidationCallback;
+import jakarta.security.auth.message.callback.CallerPrincipalCallback;
+import jakarta.security.auth.message.callback.GroupPrincipalCallback;
+import jakarta.security.auth.message.callback.PasswordValidationCallback;
 
 import org.jboss.jca.core.spi.security.Callback;
 import org.wildfly.security.auth.principal.NamePrincipal;

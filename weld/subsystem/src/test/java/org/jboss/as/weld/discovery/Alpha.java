@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.discovery;
 
-import javax.enterprise.inject.Vetoed;
+import jakarta.enterprise.inject.Vetoed;
 
 @Vetoed
 public interface Alpha {

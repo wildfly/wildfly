@@ -1,6 +1,14 @@
 [[WildFly_Testsuite_Harness_Developer_Guide]]
 = WildFly Testsuite Harness Developer Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 *Audience:* Whoever wants to change the testsuite harness
 
 *JIRA*: https://issues.redhat.com/browse/WFLY-576[WFLY-576]
@@ -14,8 +22,7 @@ merged here later.
 [[adding-a-new-maven-plugin]]
 == Adding a new maven plugin
 
-The plugin version needs to be specified in jboss-parent. See
-https://github.com/jboss/jboss-parent-pom/blob/master/pom.xml#L65 .
+The plugin version needs to be specified in jboss-parent at the `<properties>` section of the jboss-parent https://github.com/jboss/jboss-parent-pom/blob/main/pom.xml[pom.xml] file.
 
 [[shortened-maven-run-overview]]
 == Shortened Maven run overview

@@ -1,6 +1,13 @@
 [[Developing_Jakarta_Server_Faces_Project_Using,_Maven_and_IntelliJ]]
 = Developing Jakarta Server Faces Project Using JBoss AS7, Maven and IntelliJ
+
 ifdef::env-github[:imagesdir: ../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 JBoss AS7 is a very 'modern' application server that has very fast
 startup speed. So it's an excellent container to test your Jakarta Server Faces project.

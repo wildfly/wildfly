@@ -31,7 +31,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
@@ -56,7 +56,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     @Deprecated
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
-            .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
+            .setDefaultValue(new ModelNode(LegacyBeanManagementConfiguration.DEFAULT_CONTAINER_NAME))
             // Capability references should not allow expressions
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
@@ -101,10 +101,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
     private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
     private static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
 
-    @Deprecated
-    static final ClusterPassivationStoreResourceDefinition INSTANCE = new ClusterPassivationStoreResourceDefinition();
-
-    private ClusterPassivationStoreResourceDefinition() {
+    ClusterPassivationStoreResourceDefinition() {
         super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, CLUSTER_PASSIVATION_STORE_CAPABILITY, ATTRIBUTES);
     }
 }

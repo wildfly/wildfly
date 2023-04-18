@@ -25,16 +25,18 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
 
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.CredentialReference;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -43,26 +45,8 @@ import org.jboss.msc.service.ServiceName;
  */
 class MailServerAdd extends RestartParentResourceAddHandler {
 
-    private final AttributeDefinition[] attributes;
-
     MailServerAdd(AttributeDefinition[] attributes) {
-        super(MailSubsystemModel.MAIL_SESSION);
-        this.attributes = attributes;
-    }
-
-    /**
-     * Populate the given node in the persistent configuration model based on the values in the given operation.
-     *
-     * @param operation the operation
-     * @param model     persistent configuration model node that corresponds to the address of {@code operation}
-     * @throws org.jboss.as.controller.OperationFailedException
-     *          if {@code operation} is invalid or populating the model otherwise fails
-     */
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : attributes) {
-            def.validateAndSet(operation, model);
-        }
+        super(MailSubsystemModel.MAIL_SESSION, Set.of(), List.of(attributes));
     }
 
     @Override
@@ -74,48 +58,38 @@ class MailServerAdd extends RestartParentResourceAddHandler {
     }
 
     @Override
+    protected boolean isResourceServiceRestartAllowed(OperationContext context, ServiceController<?> service) {
+        // Perform runtime operations here, as distinct from rollbackRuntime(...)
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        try {
+            ModelNode resolvedValue = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
+            if (resolvedValue.isDefined()) {
+                // This call will force the creation of the new alias in the credential-store if it is needed
+                CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, model, null);
+            }
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
+        }
+        return super.isResourceServiceRestartAllowed(context, service);
+    }
+
+    @Override
     protected void rollbackRuntime(OperationContext context, final ModelNode operation, final Resource resource) {
         rollbackCredentialStoreUpdate(MailServerDefinition.CREDENTIAL_REFERENCE, context, resource);
     }
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
+        MailSessionAdd.installSessionProviderService(context, parentAddress, parentModel);
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
+        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress).append("provider");
     }
 
     @Override
     protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
-        super.removeServices(context,parentService,parentModel);
-        String jndiName = MailSessionAdd.getJndiName(parentModel, context);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        context.removeService(bindInfo.getBinderServiceName());
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.isDefaultRequiresRuntime() && !context.isBooting()) {
-            context.addStep(new OperationStepHandler() {
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ModelNode model = context.readResourceFromRoot(context.getCurrentAddress(), false).getModel();
-                    if (model.hasDefined(MailServerDefinition.CREDENTIAL_REFERENCE.getName())) {
-                        final ModelNode resolvedValue = MailServerDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model);
-                        // This call will force the creation of the new alias in the credential-store if it is needed
-                        CredentialReference.getCredentialSourceSupplier(context, MailServerDefinition.CREDENTIAL_REFERENCE, model, null);
-                        context.completeStep(new OperationContext.RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                rollbackCredentialStoreUpdate(MailServerDefinition.CREDENTIAL_REFERENCE, context, resolvedValue);
-                            }
-                        });
-                    }
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-        super.execute(context, operation);
+        MailSessionRemove.removeSessionProviderService(context, context.getCurrentAddress().getParent(), parentModel);
     }
 }

@@ -1087,8 +1087,8 @@ public interface EeLogger extends BasicLogger {
     DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 
     @LogMessage(level = ERROR)
-    @Message(id = 110, value = "Failed to run scheduled task")
-    void failedToRunTask(@Cause Exception e);
+    @Message(id = 110, value = "Failed to run scheduled task: %s")
+    void failedToRunTask(Object delegate, @Cause Exception e);
 
     @Message(id = 111, value = "Cannot run scheduled task %s as container is suspended")
     IllegalStateException cannotRunScheduledTask(Object delegate);
@@ -1219,4 +1219,15 @@ public interface EeLogger extends BasicLogger {
             "specifications. The conflicting class is %s. Solutions include providing an alternate name for the component " +
             "or renaming the class.")
     void duplicateJndiBindingFound(String componentName, String jndiName, Class clazz);
+
+    @Message(id = 134, value = "Multiple uses of ContextServiceDefinition.ALL_REMAINING")
+    IllegalStateException multipleUsesOfAllRemaining();
+
+    @LogMessage(level = WARN)
+    @Message(id = 135, value = "Failed to resume transaction.")
+    void failedToResumeTransaction(@Cause Throwable cause);
+
+    @Message(id = 136, value = "Failed to run scheduled task: %s")
+    RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
+
 }

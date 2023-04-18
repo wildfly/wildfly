@@ -40,12 +40,10 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
  */
 public class ConnectionPropertyDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_CONNECTION_PROPERTY = PathElement.pathElement(CONNECTION_PROPERTIES.getName());
-    static final ConnectionPropertyDefinition INSTANCE = new ConnectionPropertyDefinition(false);
-    static final ConnectionPropertyDefinition DEPLOYED_INSTANCE = new ConnectionPropertyDefinition(true);
 
     private final boolean deployed;
 
-    private ConnectionPropertyDefinition(final boolean deployed) {
+    ConnectionPropertyDefinition(final boolean deployed) {
         super(PATH_CONNECTION_PROPERTY,
                 DataSourcesExtension.getResourceDescriptionResolver("data-source", "connection-properties"),
                 deployed ? null : ConnectionPropertyAdd.INSTANCE,

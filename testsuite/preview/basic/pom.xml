@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -32,23 +32,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-            <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,6 +84,16 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -176,7 +186,7 @@
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
 
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
+                                    <reportNameSuffix>basic-preview-default-full.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -207,6 +217,7 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
+                                    <reportNameSuffix>basic-preview-default-web.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -366,6 +377,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>cloud-server.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -392,6 +404,7 @@
                                     <includes>
                                         <include>org/wildfly/test/preview/hibernate/search/**/*TestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>hibernate-search.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -567,6 +580,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>cloud.server.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -592,6 +606,7 @@
                                         <!-- Dummy test used to validate this pom -->
                                         <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
                                     </includes>
+                                    <reportNameSuffix>jpa-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>

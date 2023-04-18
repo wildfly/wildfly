@@ -32,13 +32,15 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.Expiration;
+import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
+import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.common.function.Functions;
 
@@ -51,31 +53,32 @@ import org.wildfly.common.function.Functions;
  * @author Paul Ferraro
  */
 public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, TransactionBatch> {
-    private final Registrar<SessionExpirationListener> registrar;
-    private final SessionExpirationListener expirationListener;
+    private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
+    private final Consumer<ImmutableSession> expirationListener;
     private final SessionFactory<SC, MV, AV, LC> factory;
     private final Supplier<String> identifierFactory;
     private final SC context;
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
     private final Consumer<ImmutableSession> closeTask = Functions.discardingConsumer();
+    private final Expiration expiration;
 
-    private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationListenerRegistration;
 
     public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
         this.factory = factory;
-        this.registrar = configuration.getExpirationListenerRegistrar();
+        this.expirationListenerRegistrar = configuration.getExpirationListenerRegistrar();
         this.expirationListener = configuration.getExpirationListener();
         this.context = configuration.getServletContext();
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.stopTimeout = configuration.getStopTimeout();
+        this.expiration = configuration;
     }
 
     @Override
     public void start() {
-        this.expirationListenerRegistration = this.registrar.register(this.expirationListener);
+        this.expirationListenerRegistration = this.expirationListenerRegistrar.register(this.expirationListener);
     }
 
     @Override
@@ -96,16 +99,6 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     }
 
     @Override
-    public Duration getDefaultMaxInactiveInterval() {
-        return this.defaultMaxInactiveInterval;
-    }
-
-    @Override
-    public void setDefaultMaxInactiveInterval(Duration duration) {
-        this.defaultMaxInactiveInterval = duration;
-    }
-
-    @Override
     public Supplier<String> getIdentifierFactory() {
         return this.identifierFactory;
     }
@@ -120,7 +113,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         ImmutableSession session = this.factory.createImmutableSession(id, entry);
         if (session.getMetaData().isExpired()) {
             Logger.ROOT_LOGGER.tracef("Session %s was found, but has expired", id);
-            this.expirationListener.sessionExpired(session);
+            this.expirationListener.accept(session);
             this.factory.remove(id);
             return null;
         }
@@ -129,10 +122,11 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
 
     @Override
     public Session<LC> createSession(String id) {
-        Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
+        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData();
+        creationMetaData.setTimeout(this.expiration.getTimeout());
+        Map.Entry<MV, AV> entry = this.factory.createValue(id, creationMetaData);
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
-        session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new ValidSession<>(session, this.closeTask);
     }
 

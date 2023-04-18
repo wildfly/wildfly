@@ -25,12 +25,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import javax.xml.namespace.QName;
+
 import jakarta.xml.ws.Service;
 import jakarta.xml.ws.WebServiceException;
 
-import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -69,7 +71,6 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
         QName serviceName = new QName("http://jbossws.org/authenticationForWSDL", "EJB3ServiceForWSDL");
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
 
-
         try {
             Service service = Service.create(wsdlURL, serviceName);
             EJBEndpointIface proxy = service.getPort(EJBEndpointIface.class);
@@ -81,65 +82,70 @@ public class EJBEndpointSecuredWSDLAccessTestCase {
 
 
     @Test
-    public void accessWSDLWithValidUsernameAndPassord() throws Exception {
+    public void accessWSDLWithValidUsernameAndPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = base64Encode("user1:password1");
 
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpGet httpget = new HttpGet(wsdlURL.toString());
-        httpget.setHeader("Authorization", "Basic " + encoding);
-        HttpResponse response = httpclient.execute(httpget);
-
-        String text = Utils.getContent(response);
-        Assert.assertTrue("Response doesn't contain wsdl file", text.contains("wsdl:binding"));
-
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpget = new HttpGet(wsdlURL.toString());
+            httpget.setHeader("Authorization", "Basic " + encoding);
+            try (CloseableHttpResponse response = httpClient.execute(httpget)) {
+                String text = Utils.getContent(response);
+                Assert.assertTrue("Response doesn't contain wsdl file", text.contains("wsdl:binding"));
+            }
+        }
     }
 
     @Test
-    public void accessWSDLWithValidUsernameAndPassordButInvalidRole() throws Exception {
+    public void accessWSDLWithValidUsernameAndPasswordButInvalidRole() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = base64Encode("user2:password2");
 
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpGet httpget = new HttpGet(wsdlURL.toString());
-        httpget.setHeader("Authorization", "Basic " + encoding);
-        HttpResponse response = httpclient.execute(httpget);
-        Assert.assertEquals(403, response.getStatusLine().getStatusCode());
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpget = new HttpGet(wsdlURL.toString());
+            httpget.setHeader("Authorization", "Basic " + encoding);
+            try (CloseableHttpResponse response = httpClient.execute(httpget)) {
+                Assert.assertEquals(403, response.getStatusLine().getStatusCode());
 
-        Utils.getContent(response);
-        //Assert.assertTrue("Response doesn't contain access denied message", text.contains("Access to the requested resource has been denied"));
-
+                Utils.getContent(response);
+                //Assert.assertTrue("Response doesn't contain access denied message", text.contains("Access to the requested resource has been denied"));
+            }
+        }
     }
 
     @Test
-    public void accessWSDLWithInvalidUsernameAndPassord() throws Exception {
+    public void accessWSDLWithInvalidUsernameAndPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
         String encoding = base64Encode("user1:password-XZY");
 
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpGet httpget = new HttpGet(wsdlURL.toString());
-        httpget.setHeader("Authorization", "Basic " + encoding);
-        HttpResponse response = httpclient.execute(httpget);
-        Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpget = new HttpGet(wsdlURL.toString());
+            httpget.setHeader("Authorization", "Basic " + encoding);
+            try (CloseableHttpResponse response = httpClient.execute(httpget)) {
+                Assert.assertEquals(401, response.getStatusLine().getStatusCode());
 
-        Utils.getContent(response);
-        //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+                Utils.getContent(response);
+                //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+            }
+        }
     }
 
     @Test
-    public void accessWSDLWithoutUsernameAndPassord() throws Exception {
+    public void accessWSDLWithoutUsernameAndPassword() throws Exception {
         URL wsdlURL = new URL(baseUrl, "/jaxws-authentication-ejb3-for-wsdl/EJB3ServiceForWSDL?wsdl");
 
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        HttpGet httpget = new HttpGet(wsdlURL.toString());
-        HttpResponse response = httpclient.execute(httpget);
-        Assert.assertEquals(401, response.getStatusLine().getStatusCode());
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet httpget = new HttpGet(wsdlURL.toString());
+            try (CloseableHttpResponse response = httpClient.execute(httpget)) {
+                Assert.assertEquals(401, response.getStatusLine().getStatusCode());
 
-        Utils.getContent(response);
-        //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+                Utils.getContent(response);
+                //Assert.assertTrue("Response doesn't contain expected message.", text.contains("This request requires HTTP authentication"));
+            }
+        }
     }
 
-    private static final String base64Encode(final String original) {
+    private static String base64Encode(final String original) {
         return ByteIterator.ofBytes(original.getBytes(StandardCharsets.UTF_8)).base64Encode().drainToString();
     }
 

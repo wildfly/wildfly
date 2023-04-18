@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.function.Consumer;
+
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
@@ -33,12 +35,11 @@ import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * @author Paul Ferraro
  */
-public class UndertowSessionExpirationListener implements SessionExpirationListener {
+public class UndertowSessionExpirationListener implements Consumer<ImmutableSession> {
 
     private final Deployment deployment;
     private final SessionListeners listeners;
@@ -51,7 +52,7 @@ public class UndertowSessionExpirationListener implements SessionExpirationListe
     }
 
     @Override
-    public void sessionExpired(ImmutableSession session) {
+    public void accept(ImmutableSession session) {
         if (this.recorder != null) {
             this.recorder.record(session.getMetaData());
         }

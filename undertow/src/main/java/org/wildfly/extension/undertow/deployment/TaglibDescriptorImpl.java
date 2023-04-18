@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow.deployment;
 
 import org.apache.jasper.deploy.TagLibraryInfo;
 
-import javax.servlet.descriptor.TaglibDescriptor;
+import jakarta.servlet.descriptor.TaglibDescriptor;
 
 /**
  * @author Stuart Douglas

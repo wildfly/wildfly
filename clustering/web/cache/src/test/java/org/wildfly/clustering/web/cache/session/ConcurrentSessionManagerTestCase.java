@@ -225,30 +225,6 @@ public class ConcurrentSessionManagerTestCase {
     }
 
     @Test
-    public void getDefaultMaxInactiveInterval() {
-        SessionManager<Void, Batch> manager = mock(SessionManager.class);
-        SessionManager<Void, Batch> subject = new ConcurrentSessionManager<>(manager, SimpleManager::new);
-        Duration expected = Duration.ofMinutes(60);
-
-        when(manager.getDefaultMaxInactiveInterval()).thenReturn(expected);
-
-        Duration result = subject.getDefaultMaxInactiveInterval();
-
-        assertSame(expected, result);
-    }
-
-    @Test
-    public void setDefaultMaxInactiveInterval() {
-        SessionManager<Void, Batch> manager = mock(SessionManager.class);
-        SessionManager<Void, Batch> subject = new ConcurrentSessionManager<>(manager, SimpleManager::new);
-        Duration value = Duration.ofMinutes(60);
-
-        subject.setDefaultMaxInactiveInterval(value);
-
-        verify(manager).setDefaultMaxInactiveInterval(value);
-    }
-
-    @Test
     public void getBatcher() {
         SessionManager<Void, Batch> manager = mock(SessionManager.class);
         SessionManager<Void, Batch> subject = new ConcurrentSessionManager<>(manager, SimpleManager::new);

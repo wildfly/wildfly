@@ -23,11 +23,11 @@ package org.wildfly.extension.messaging.activemq;
 
 
 import java.security.AccessController;
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
-import javax.resource.spi.work.WorkListener;
-import javax.resource.spi.work.WorkManager;
+import jakarta.resource.spi.work.ExecutionContext;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.WorkListener;
+import jakarta.resource.spi.work.WorkManager;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
 import org.apache.activemq.artemis.ra.ConnectionFactoryProperties;

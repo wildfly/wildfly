@@ -17,9 +17,9 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 
 import java.util.Collection;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSException;
-import javax.jms.Queue;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
 import javax.naming.NamingException;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
@@ -46,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * Service responsible for creating and destroying a client {@code javax.jms.Queue}.
+ * Service responsible for creating and destroying a client {@code jakarta.jms.Queue}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */

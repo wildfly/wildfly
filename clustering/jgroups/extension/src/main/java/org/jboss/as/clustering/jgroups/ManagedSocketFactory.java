@@ -21,22 +21,27 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.channels.NetworkChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jgroups.util.SocketFactory;
+import org.jgroups.util.Util;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Manages registration of all JGroups sockets with a {@link SocketBindingManager}.
@@ -44,147 +49,86 @@ import org.jgroups.util.SocketFactory;
  */
 public class ManagedSocketFactory implements SocketFactory {
 
+    private final SelectorProvider provider;
     private final SocketBindingManager manager;
     // Maps a JGroups service name its associated SocketBinding
-    private final Map<String, SocketBinding> socketBindings;
+    private final Map<String, SocketBinding> bindings;
+    // Store references to managed socket-binding registrations
+    private final Map<NetworkChannel, Closeable> channels = Collections.synchronizedMap(new IdentityHashMap<>());
 
-    public ManagedSocketFactory(SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
+    public ManagedSocketFactory(SelectorProvider provider, SocketBindingManager manager, Map<String, SocketBinding> socketBindings) {
+        this.provider = provider;
         this.manager = manager;
-        this.socketBindings = socketBindings;
-    }
-
-    private String getSocketBindingName(String name) {
-        SocketBinding socketBinding = this.socketBindings.get(name);
-        return (socketBinding != null) ? socketBinding.getName() : name;
+        this.bindings = socketBindings;
     }
 
     @Override
     public Socket createSocket(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName);
-    }
-
-    @Override
-    public Socket createSocket(String name, String host, int port) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName, host, port);
-    }
-
-    @Override
-    public Socket createSocket(String name, InetAddress address, int port) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName, address, port);
-    }
-
-    @Override
-    public Socket createSocket(String name, String host, int port, InetAddress localHost, int localPort) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName, host, port, localHost, localPort);
-    }
-
-    @Override
-    public Socket createSocket(String name, InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getSocketFactory().createSocket(socketBindingName, address, port, localAddress, localPort);
+        SocketBinding binding = this.bindings.get(name);
+        org.jboss.as.network.ManagedSocketFactory factory = this.manager.getSocketFactory();
+        return (binding != null) ? factory.createSocket(binding.getName()) : factory.createSocket();
     }
 
     @Override
     public ServerSocket createServerSocket(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName);
+        SocketBinding binding = this.bindings.get(name);
+        org.jboss.as.network.ManagedServerSocketFactory factory = this.manager.getServerSocketFactory();
+        return (binding != null) ? factory.createServerSocket(binding.getName()) : factory.createServerSocket();
     }
 
     @Override
-    public ServerSocket createServerSocket(String name, int port) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName, port);
+    public DatagramSocket createDatagramSocket(String name, SocketAddress bindAddress) throws SocketException {
+        SocketBinding binding = this.bindings.get(name);
+        if (bindAddress == null) {
+            // Creates unbound socket
+            return (binding != null) ? this.manager.createDatagramSocket(binding.getName()) : this.manager.createDatagramSocket();
+        }
+        return (binding != null) ? this.manager.createDatagramSocket(binding.getName(), bindAddress) : this.manager.createDatagramSocket(bindAddress);
     }
 
     @Override
-    public ServerSocket createServerSocket(String name, int port, int backlog) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName, port, backlog);
-    }
-
-    @Override
-    public ServerSocket createServerSocket(String name, int port, int backlog, InetAddress ifAddress) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.getServerSocketFactory().createServerSocket(socketBindingName, port, backlog, ifAddress);
-    }
-
-    @Override
-    public DatagramSocket createDatagramSocket(String name) throws SocketException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.createDatagramSocket(socketBindingName);
-    }
-
-    @Override
-    public DatagramSocket createDatagramSocket(String name, SocketAddress address) throws SocketException {
-        if (address == null) return this.createDatagramSocket(name);
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.createDatagramSocket(socketBindingName, address);
-    }
-
-    @Override
-    public DatagramSocket createDatagramSocket(String name, int port) throws SocketException {
-        return this.createDatagramSocket(name, new InetSocketAddress(port));
-    }
-
-    @Override
-    public DatagramSocket createDatagramSocket(String name, int port, InetAddress address) throws SocketException {
-        return this.createDatagramSocket(name, new InetSocketAddress(address, port));
-    }
-
-    @Override
-    public MulticastSocket createMulticastSocket(String name) throws IOException {
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.createMulticastSocket(socketBindingName);
-    }
-
-    @Override
-    public MulticastSocket createMulticastSocket(String name, int port) throws IOException {
-        return this.createMulticastSocket(name, new InetSocketAddress(port));
-    }
-
-    @Override
-    public MulticastSocket createMulticastSocket(String name, SocketAddress address) throws IOException {
-        if (address == null) return this.createMulticastSocket(name);
-        String socketBindingName = this.getSocketBindingName(name);
-        return this.manager.createMulticastSocket(socketBindingName, address);
+    public MulticastSocket createMulticastSocket(String name, SocketAddress bindAddress) throws IOException {
+        SocketBinding binding = this.bindings.get(name);
+        if (bindAddress == null) {
+            // Creates unbound socket
+            return (binding != null) ? this.manager.createMulticastSocket(binding.getName()) : this.manager.createMulticastSocket();
+        }
+        return (binding != null) ? this.manager.createMulticastSocket(binding.getName(), bindAddress) : this.manager.createMulticastSocket(bindAddress);
     }
 
     @Override
     public SocketChannel createSocketChannel(String name) throws IOException {
-        SocketChannel channel = SocketChannel.open();
-        this.manager.getNamedRegistry().registerChannel(name, channel);
-        return channel;
+        return this.createNetworkChannel(name, SelectorProvider::openSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
     }
 
     @Override
     public ServerSocketChannel createServerSocketChannel(String name) throws IOException {
-        ServerSocketChannel channel = ServerSocketChannel.open();
-        this.manager.getNamedRegistry().registerChannel(name, channel);
+        return this.createNetworkChannel(name, SelectorProvider::openServerSocketChannel, SocketBindingManager.NamedManagedBindingRegistry::registerChannel, SocketBindingManager.UnnamedBindingRegistry::registerChannel);
+    }
+
+    @Override
+    public void close(SocketChannel channel) {
+        this.closeNetworkChannel(channel);
+    }
+
+    @Override
+    public void close(ServerSocketChannel channel) {
+        this.closeNetworkChannel(channel);
+    }
+
+    private <C extends NetworkChannel> C createNetworkChannel(String name, ExceptionFunction<SelectorProvider, C, IOException> factory, TriFunction<SocketBindingManager.NamedManagedBindingRegistry, String, C, Closeable> namedRegistration, BiFunction<SocketBindingManager.UnnamedBindingRegistry, C, Closeable> unnamedRegistration) throws IOException {
+        SocketBinding binding = this.bindings.get(name);
+        C channel = factory.apply(this.provider);
+        this.channels.put(channel, (binding != null) ? namedRegistration.apply(this.manager.getNamedRegistry(), binding.getName(), channel) : unnamedRegistration.apply(this.manager.getUnnamedRegistry(), channel));
         return channel;
     }
 
-    @Override
-    public void close(Socket socket) throws IOException {
-        if (socket != null) {
-            socket.close();
-        }
+    private void closeNetworkChannel(NetworkChannel channel) {
+        Util.close(this.channels.remove(channel));
+        Util.close(channel);
     }
 
-    @Override
-    public void close(ServerSocket socket) throws IOException {
-        if (socket != null) {
-            socket.close();
-        }
-    }
-
-    @Override
-    public void close(DatagramSocket socket) {
-        if (socket != null) {
-            socket.close();
-        }
+    private static interface TriFunction<T, U, V, R> {
+        R apply(T t, U u, V v);
     }
 }

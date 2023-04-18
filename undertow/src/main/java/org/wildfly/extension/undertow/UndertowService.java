@@ -48,10 +48,19 @@ import io.undertow.Version;
 @SuppressWarnings("ALL")
 public class UndertowService implements Service<UndertowService> {
 
+    /**
+     * @deprecated Replaced by capability reference {@link UndertowRootDefinition#UNDERTOW_CAPABILITY}.
+     */
     @Deprecated
     public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
+    /**
+     * @deprecated Replaced by capability reference {@link ServletContainerDefinition#SERVLET_CONTAINER_CAPABILITY}.
+     */
     @Deprecated
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
+    /**
+     * @deprecated Replaced by capability reference {@link HostDefinition.HOST_CAPABILITY}.
+     */
     @Deprecated
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
@@ -127,10 +136,6 @@ public class UndertowService implements Service<UndertowService> {
 
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
-    }
-
-    public static ServiceName ssoServiceName(final String server, final String virtualHost) {
-        return virtualHostName(server, virtualHost).append("single-sign-on");
     }
 
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {

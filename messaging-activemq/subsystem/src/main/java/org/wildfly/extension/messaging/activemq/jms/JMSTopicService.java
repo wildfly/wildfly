@@ -24,7 +24,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.jms.Topic;
+import jakarta.jms.Topic;
 
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.server.JMSServerManager;
@@ -41,7 +41,7 @@ import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
 import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
- * Service responsible for creating and destroying a {@code javax.jms.Topic}.
+ * Service responsible for creating and destroying a {@code jakarta.jms.Topic}.
  *
  * @author Emanuel Muckenhuber
  */

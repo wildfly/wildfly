@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,22 +41,10 @@ import org.wildfly.extension.undertow.UndertowExtension;
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class FilterDefinitions extends PersistentResourceDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.CONFIGURATION, Constants.FILTER);
 
-    public static final FilterDefinitions INSTANCE = new FilterDefinitions();
-    private static List<? extends PersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
-            RequestLimitHandler.INSTANCE,
-            ResponseHeaderFilter.INSTANCE,
-            GzipFilter.INSTANCE,
-            ErrorPageDefinition.INSTANCE,
-            CustomFilterDefinition.INSTANCE,
-            ModClusterDefinition.INSTANCE,
-            ExpressionFilterDefinition.INSTANCE,
-            RewriteFilterDefinition.INSTANCE
-    ));
-
-    private FilterDefinitions() {
-        super(UndertowExtension.PATH_FILTERS,
-                UndertowExtension.getResolver(Constants.FILTER),
+    public FilterDefinitions() {
+        super(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()),
                 new AbstractAddStepHandler(),
                 ReloadRequiredRemoveStepHandler.INSTANCE
         );
@@ -70,14 +57,22 @@ public class FilterDefinitions extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return FILTERS;
+        return List.of(
+                new RequestLimitHandlerDefinition(),
+                new ResponseHeaderFilterDefinition(),
+                new GzipFilterDefinition(),
+                new ErrorPageDefinition(),
+                new CustomFilterDefinition(),
+                new ModClusterDefinition(),
+                new ExpressionFilterDefinition(),
+                new RewriteFilterDefinition());
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        PathElement targetPe = RequestLimitHandler.INSTANCE.getPathElement();
+        PathElement targetPe = RequestLimitHandlerDefinition.PATH_ELEMENT;
         AliasEntry aliasEntry = new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(targetPe))) {
             @Override
             public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {

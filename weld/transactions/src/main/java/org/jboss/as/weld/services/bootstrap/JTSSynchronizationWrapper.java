@@ -22,7 +22,7 @@
 
 package org.jboss.as.weld.services.bootstrap;
 
-import javax.transaction.Synchronization;
+import jakarta.transaction.Synchronization;
 
 /**
  *

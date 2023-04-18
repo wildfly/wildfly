@@ -42,6 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import jakarta.transaction.Status;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
@@ -63,10 +65,9 @@ import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -79,7 +80,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  *
  * @author Stuart Douglas
  */
-public class FileTimerPersistence implements TimerPersistence, Service<FileTimerPersistence> {
+public class FileTimerPersistence implements TimerPersistence, Service {
 
     private static final FilePermission FILE_PERMISSION = new FilePermission("<<ALL FILES>>", "read,write,delete");
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
@@ -87,9 +88,10 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final boolean createIfNotExists;
     private MarshallerFactory factory;
     private MarshallingConfiguration configuration;
-    private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
-    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
-    private final InjectedValue<PathManager> pathManager = new InjectedValue<PathManager>();
+    private final Consumer<FileTimerPersistence> consumer;
+    private final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier;
+    private final Supplier<ModuleLoader> moduleLoaderSupplier;
+    private final Supplier<PathManager> pathManagerSupplier;
     private final String path;
     private final String pathRelativeTo;
     private File baseDir;
@@ -98,7 +100,15 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
     private final ConcurrentMap<String, String> directories = new ConcurrentHashMap<String, String>();
 
-    public FileTimerPersistence(final boolean createIfNotExists, final String path, final String pathRelativeTo) {
+    public FileTimerPersistence(final Consumer<FileTimerPersistence> consumer,
+                                final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier,
+                                final Supplier<ModuleLoader> moduleLoaderSupplier,
+                                final Supplier<PathManager> pathManagerSupplier,
+                                final boolean createIfNotExists, final String path, final String pathRelativeTo) {
+        this.consumer = consumer;
+        this.txnRegistrySupplier = txnRegistrySupplier;
+        this.moduleLoaderSupplier = moduleLoaderSupplier;
+        this.pathManagerSupplier = pathManagerSupplier;
         final SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(FILE_PERMISSION);
@@ -110,6 +120,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     @Override
     public void start(final StartContext context) {
+        consumer.accept(this);
         if (WildFlySecurityManager.isChecking()) {
             WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
                 public Void run() {
@@ -125,15 +136,15 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
     private void doStart() {
         final RiverMarshallerFactory factory = new RiverMarshallerFactory();
         final MarshallingConfiguration configuration = new MarshallingConfiguration();
-        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.getValue()));
+        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoaderSupplier.get()));
         configuration.setVersion(3);
 
         this.configuration = configuration;
         this.factory = factory;
         if (pathRelativeTo != null) {
-            callbackHandle = pathManager.getValue().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
+            callbackHandle = pathManagerSupplier.get().registerCallback(pathRelativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
         }
-        baseDir = new File(pathManager.getValue().resolveRelativePathEntry(path, pathRelativeTo));
+        baseDir = new File(pathManagerSupplier.get().resolveRelativePathEntry(path, pathRelativeTo));
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
@@ -150,6 +161,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
 
     @Override
     public void stop(final StopContext context) {
+        consumer.accept(null);
         locks.clear();
         directories.clear();
         if (callbackHandle != null) {
@@ -157,11 +169,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         }
         factory = null;
         configuration = null;
-    }
-
-    @Override
-    public FileTimerPersistence getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
     }
 
     @Override
@@ -227,13 +234,13 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
             } else {
 
                 final String key = timerTransactionKey(timer);
-                Object existing = transactionSynchronizationRegistry.getValue().getResource(key);
+                Object existing = txnRegistrySupplier.get().getResource(key);
                 //check is there is already a persist sync for this timer
                 if (existing == null) {
-                    transactionSynchronizationRegistry.getValue().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key, newTimer));
+                    txnRegistrySupplier.get().registerInterposedSynchronization(new PersistTransactionSynchronization(lock, key, newTimer));
                 }
                 //update the most recent version of the timer to be persisted
-                transactionSynchronizationRegistry.getValue().putResource(key, timer);
+                txnRegistrySupplier.get().putResource(key, timer);
             }
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -305,7 +312,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
                 return timerImpl;
             }
             final String key = timerTransactionKey(timerImpl);
-            TimerImpl existing = (TimerImpl) transactionSynchronizationRegistry.getValue().getResource(key);
+            TimerImpl existing = (TimerImpl) txnRegistrySupplier.get().getResource(key);
             return existing != null ? existing : timerImpl;
         } catch (SystemException e) {
             throw new RuntimeException(e);
@@ -442,7 +449,7 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         @Override
         public void beforeCompletion() {
             //get the latest version of the entity
-            timer = (TimerImpl) transactionSynchronizationRegistry.getValue().getResource(transactionKey);
+            timer = (TimerImpl) txnRegistrySupplier.get().getResource(transactionKey);
             if (timer == null) {
                 return;
             }
@@ -507,18 +514,6 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistry() {
-        return transactionSynchronizationRegistry;
-    }
-
-    public InjectedValue<ModuleLoader> getModuleLoader() {
-        return moduleLoader;
-    }
-
-    public InjectedValue<PathManager> getPathManager() {
-        return pathManager;
     }
 
     private void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {

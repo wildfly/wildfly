@@ -59,7 +59,7 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
 
     @Override
     protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
-        if (this.schema.getNamespaceUri().equals(reader.getNamespaceURI())) {
+        if (this.schema.getNamespace().getUri().equals(reader.getNamespaceURI())) {
             switch (reader.getLocalName()) {
                 case "clustered": {
                     if (this.schema.since(ClusteringSchema.VERSION_1_1)) {

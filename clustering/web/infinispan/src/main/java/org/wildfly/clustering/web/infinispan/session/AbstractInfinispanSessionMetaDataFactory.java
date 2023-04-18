@@ -51,7 +51,6 @@ import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;
-import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -96,9 +95,9 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
     }
 
     @Override
-    public CompositeSessionMetaDataEntry<L> createValue(String id, Void context) {
+    public CompositeSessionMetaDataEntry<L> createValue(String id, SessionCreationMetaData creationMetaData) {
         Map<Key<String>, Object> entries = new HashMap<>(3);
-        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(new SimpleSessionCreationMetaData());
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(creationMetaData);
         entries.put(new SessionCreationMetaDataKey(id), creationMetaDataEntry);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
         entries.put(new SessionAccessMetaDataKey(id), accessMetaData);

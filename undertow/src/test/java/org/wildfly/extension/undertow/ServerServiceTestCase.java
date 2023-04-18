@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -30,11 +29,9 @@ import java.util.Set;
 
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,36 +50,25 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String DEFAULT_VIRTUAL_HOST = "default-host";
     private static final String UNDERTOW_SERVER = "undertow-server";
 
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-13.0.xml");
+    public ServerServiceTestCase() {
+        super(UndertowSubsystemSchema.VERSION_12_0);
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_13_0.xsd";
-    }
-
-    @Before
     public void setUp() {
-        setProperty();
+        super.setUp();
         System.setProperty("jboss.node.name", NODE_NAME);
     }
 
     private Server load(String xmlFile, String serverName) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME).setSubsystemXml(readResource(xmlFile));
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(readResource(xmlFile));
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
         final ServiceName undertowServerName = ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(serverName);
-        ServiceController<Server> serverService = (ServiceController<Server>) mainServices.getContainer().getService(undertowServerName);
-
-        assertNotNull(serverService);
-        serverService.setMode(ServiceController.Mode.ACTIVE);
-        final Server server = serverService.awaitValue();
+        Server server = (Server) this.values.get(undertowServerName).get();
         assertNotNull(server);
         return server;
     }

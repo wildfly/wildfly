@@ -21,11 +21,11 @@
  */
 package org.jboss.as.ee.beanvalidation.testprovider;
 
-import javax.validation.Configuration;
-import javax.validation.ValidatorFactory;
-import javax.validation.spi.BootstrapState;
-import javax.validation.spi.ConfigurationState;
-import javax.validation.spi.ValidationProvider;
+import jakarta.validation.Configuration;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.spi.BootstrapState;
+import jakarta.validation.spi.ConfigurationState;
+import jakarta.validation.spi.ValidationProvider;
 
 /**
  * A {@link ValidationProvider} implementation for testing purposes.

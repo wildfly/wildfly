@@ -26,7 +26,13 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
@@ -55,9 +61,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
-import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
-import org.jboss.as.ejb3.deployment.processors.merging.MissingMethodPermissionsDenyAccessMergingProcessor;
 import org.jboss.as.ejb3.logging.EjbLogger;
+import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.threads.EnhancedQueueExecutorResourceDefinition;
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
@@ -67,7 +72,7 @@ import org.jboss.dmr.ModelType;
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -93,11 +98,15 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME, ModelType.STRING, true)
                     .setDefaultValue(new ModelNode("activemq-ra"))
                     .setAllowExpression(true).build();
+    @Deprecated
     static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL, ModelType.STRING, true)
+                    .setDeprecated(EJB3Model.VERSION_10_0_0.getVersion())
                     .setAllowExpression(true).build();
+    @Deprecated
     static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING, ModelType.BOOLEAN, true)
+                    .setDeprecated(EJB3Model.VERSION_10_0_0.getVersion())
                     .setAllowExpression(true).build();
 
     static final SimpleAttributeDefinition DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT =
@@ -264,18 +273,20 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             RuntimeCapability.Builder.of(DEFAULT_ENTITY_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class)
                     .build();
 
-    private static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
-    private static final IdentityResourceDefinition IDENTITY = IdentityResourceDefinition.INSTANCE;
-    private static final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor = new EJBDefaultSecurityDomainProcessor(null,
-            APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainFunction(), IDENTITY.getOutflowSecurityDomainsConfiguredSupplier());
-    private static final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor = new MissingMethodPermissionsDenyAccessMergingProcessor();
-
     private final boolean registerRuntimeOnly;
     private final PathManager pathManager;
+    private final AtomicReference<String> defaultSecurityDomainName;
+    private final Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
+    private final List<String> outflowSecurityDomains;
+    private final AtomicBoolean denyAccessByDefault;
 
     EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager) {
+        this(registerRuntimeOnly, pathManager, new AtomicReference<>(), new CopyOnWriteArraySet<>(), new CopyOnWriteArrayList<>(), new AtomicBoolean(false));
+    }
+
+    private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainDeploymentProcessor, missingMethodPermissionsDenyAccessMergingProcessor, ATTRIBUTES))
+                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault, ATTRIBUTES))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -283,6 +294,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;
+        this.defaultSecurityDomainName = defaultSecurityDomainName;
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
+        this.outflowSecurityDomains = outflowSecurityDomains;
+        this.denyAccessByDefault = denyAccessByDefault;
     }
 
     static final AttributeDefinition[] ATTRIBUTES = {
@@ -338,10 +353,10 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         resourceRegistration.registerReadWriteAttribute(LOG_EJB_EXCEPTIONS, null, ExceptionLoggingWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(ALLOW_EJB_NAME_REGEX, null, EJBNameRegexWriteHandler.INSTANCE);
 
-        final EJBDefaultSecurityDomainWriteHandler defaultSecurityDomainWriteHandler = new EJBDefaultSecurityDomainWriteHandler(DEFAULT_SECURITY_DOMAIN, defaultSecurityDomainDeploymentProcessor);
+        final EJBDefaultSecurityDomainWriteHandler defaultSecurityDomainWriteHandler = new EJBDefaultSecurityDomainWriteHandler(DEFAULT_SECURITY_DOMAIN, this.defaultSecurityDomainName);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SECURITY_DOMAIN, null, defaultSecurityDomainWriteHandler);
 
-        final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, missingMethodPermissionsDenyAccessMergingProcessor);
+        final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, this.denyAccessByDefault);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
 
         resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>(DISABLE_DEFAULT_EJB_PERMISSIONS) {
@@ -385,22 +400,22 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
 
         // subsystem=ejb3/service=remote
-        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new EJB3RemoteResourceDefinition());
 
         // subsystem=ejb3/service=async
-        subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new EJB3AsyncResourceDefinition());
 
         // subsystem=ejb3/strict-max-bean-instance-pool=*
-        subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new StrictMaxPoolResourceDefinition());
 
         // subsystem=ejb3/{cache=*, simple-cache=*, distributable-cache=*}
-        subsystemRegistration.registerSubModel(LegacyCacheFactoryResourceDefinition.INSTANCE);
-        new SimpleCacheFactoryResourceDefinition().register(subsystemRegistration);
-        new DistributableCacheFactoryResourceDefinition().register(subsystemRegistration);
+        subsystemRegistration.registerSubModel(new LegacyCacheFactoryResourceDefinition());
+        new SimpleStatefulSessionBeanCacheProviderResourceDefinition().register(subsystemRegistration);
+        new DistributableStatefulSessionBeanCacheProviderResourceDefinition().register(subsystemRegistration);
 
-        subsystemRegistration.registerSubModel(PassivationStoreResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new PassivationStoreResourceDefinition());
+        subsystemRegistration.registerSubModel(new FilePassivationStoreResourceDefinition());
+        subsystemRegistration.registerSubModel(new ClusterPassivationStoreResourceDefinition());
 
         // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(new TimerServiceResourceDefinition(pathManager));
@@ -415,17 +430,17 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 false));
 
         // subsystem=ejb3/service=iiop
-        subsystemRegistration.registerSubModel(EJB3IIOPResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new EJB3IIOPResourceDefinition());
 
-        subsystemRegistration.registerSubModel(RemotingProfileResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new RemotingProfileResourceDefinition());
 
         // subsystem=ejb3/mdb-delivery-group=*
-        subsystemRegistration.registerSubModel(MdbDeliveryGroupResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(new MdbDeliveryGroupResourceDefinition());
 
         // subsystem=ejb3/application-security-domain=*
-        subsystemRegistration.registerSubModel(APPLICATION_SECURITY_DOMAIN);
+        subsystemRegistration.registerSubModel(new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
 
-        subsystemRegistration.registerSubModel(IDENTITY);
+        subsystemRegistration.registerSubModel(new IdentityResourceDefinition(this.outflowSecurityDomains));
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

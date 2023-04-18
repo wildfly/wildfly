@@ -94,10 +94,9 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE, LEGACY_EMPTY_BEANS_XML_TREATMENT_ATTRIBUTE, NON_PORTABLE_MODE_ATTRIBUTE, DEVELOPMENT_MODE_ATTRIBUTE, THREAD_POOL_SIZE_ATTRIBUTE };
-    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
-    private WeldResourceDefinition() {
-        super( new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
+    WeldResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(WeldExtension.PATH_SUBSYSTEM, WeldExtension.getResourceDescriptionResolver())
                 .setAddHandler(new WeldSubsystemAdd(ATTRIBUTES))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(WELD_CAPABILITY)
@@ -116,8 +115,8 @@ class WeldResourceDefinition extends PersistentResourceDefinition {
                     RuntimePackageDependency.passive("org.jboss.as.weld.beanvalidation"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.webservices"),
                     RuntimePackageDependency.passive("org.jboss.as.weld.transactions"),
-                    RuntimePackageDependency.required("javax.inject.api"),
-                    RuntimePackageDependency.required("javax.persistence.api"),
+                    RuntimePackageDependency.required("jakarta.inject.api"),
+                    RuntimePackageDependency.required("jakarta.persistence.api"),
                     RuntimePackageDependency.required("org.hibernate.validator.cdi"));
     }
 }

@@ -1,6 +1,14 @@
 [[Elytron_and_Java_Authentication_SPI_for_Containers-JASPI]]
 = Elytron and Java Authentication SPI for Containers (JASPI)
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 Starting from WildFly 15 an implementation of the Servlet profile from the Java Authentication SPI for Containers (JSR-196 / JASPI) is also provided by the WildFly Elytron subsystem allowing tighter integration with the security features provided by WildFly Elytron.  This JASPI implementation is available out of the box with minimal steps required to use it for deployments, this section of the documentation describes how to make use of it and the features it provides.

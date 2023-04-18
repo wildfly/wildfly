@@ -23,7 +23,7 @@ package org.wildfly.extension.messaging.activemq.deployment;
 
 import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;

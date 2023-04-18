@@ -50,10 +50,6 @@
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
     </plugins>
 
-    <resources>
-        <copy artifact="org.wildfly.galleon-plugins:wildfly-config-gen" to="wildfly/wildfly-config-gen.jar"/>
-    </resources>
-
     <system-paths>
         <system-path path="modules/system/layers/base/"/>
     </system-paths>
@@ -99,7 +95,6 @@
                 <extension>org.wildfly.extension.messaging-activemq</extension>
                 <extension>org.wildfly.extension.metrics</extension>
                 <extension>org.wildfly.extension.elytron-oidc-client</extension>
-                <extension>org.wildfly.extension.opentelemetry</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>
                 <extension>org.wildfly.extension.security.manager</extension>
@@ -141,7 +136,6 @@
                 <extension>org.wildfly.extension.elytron</extension>
                 <extension>org.wildfly.extension.io</extension>
                 <extension>org.wildfly.extension.messaging-activemq</extension>
-                <extension>org.wildfly.extension.opentelemetry</extension>
                 <extension>org.wildfly.extension.picketlink</extension>
                 <extension>org.wildfly.extension.request-controller</extension>
                 <extension>org.wildfly.extension.rts</extension>

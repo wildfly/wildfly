@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -238,13 +238,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- TODO externalize this -->
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee</artifactId>
@@ -369,30 +362,6 @@
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
                 <version>${project.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry-api</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-opentelemetry</artifactId>
-                <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -2137,7 +2106,7 @@
 
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-v60</artifactId>
+                <artifactId>infinispan-hibernate-cache-v62</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
@@ -2171,34 +2140,9 @@
                 </exclusions>
             </dependency>
 
-            <!-- This is not provided with the server dist or provisioned using 
-		         our feature packs, but we do want it included in maven repositories
-			     produced to support WildFly clients, and it is referenced in one
-			     of the WildFly Boms project boms. So control it here. -->
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-ejb-client-legacy</artifactId>
-                <version>${version.org.jboss.ejb-client-legacy}</version>
-				<!-- TODO See if a global exclude can work -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-iiop-client-jakarta</artifactId>
+                <artifactId>jboss-iiop-client</artifactId>
                 <version>${version.org.jboss.iiop-client}</version>
                 <exclusions>
                     <exclusion>
@@ -2210,7 +2154,7 @@
 
             <dependency>
                 <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi-jakarta</artifactId>
+                <artifactId>jboss-transaction-spi</artifactId>
                 <version>${version.org.jboss.jboss-transaction-spi}</version>
                 <exclusions>
                     <exclusion>
@@ -2222,7 +2166,7 @@
 
             <dependency>
                 <groupId>org.jboss.activemq.artemis.integration</groupId>
-                <artifactId>artemis-wildfly-jakarta-integration</artifactId>
+                <artifactId>artemis-wildfly-integration</artifactId>
                 <version>${version.org.jboss.activemq.artemis.integration}</version>
                 <exclusions>
                     <exclusion>
@@ -2234,25 +2178,13 @@
 
             <dependency>
                 <groupId>org.jboss.genericjms</groupId>
-                <artifactId>generic-jakarta-messaging-ra-jar</artifactId>
+                <artifactId>generic-jms-ra-jar</artifactId>
                 <version>${version.org.jboss.genericjms}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.invocation</groupId>
-                <artifactId>jboss-invocation</artifactId>
-                <version>${version.org.jboss.invocation}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-common-api-jakarta</artifactId>
+                <artifactId>ironjacamar-common-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2264,7 +2196,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+                <artifactId>ironjacamar-common-impl</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2276,7 +2208,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-common-spi-jakarta</artifactId>
+                <artifactId>ironjacamar-common-spi</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2288,7 +2220,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-core-api-jakarta</artifactId>
+                <artifactId>ironjacamar-core-api</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2300,7 +2232,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+                <artifactId>ironjacamar-core-impl</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2312,7 +2244,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+                <artifactId>ironjacamar-deployers-common</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2324,7 +2256,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+                <artifactId>ironjacamar-jdbc</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2336,7 +2268,7 @@
 
             <dependency>
                 <groupId>org.jboss.ironjacamar</groupId>
-                <artifactId>ironjacamar-validator-jakarta</artifactId>
+                <artifactId>ironjacamar-validator</artifactId>
                 <version>${version.org.jboss.ironjacamar}</version>
                 <exclusions>
                     <exclusion>
@@ -2348,7 +2280,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-common-jakarta</artifactId>
+                <artifactId>jboss-metadata-common</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
@@ -2360,7 +2292,7 @@
 
             <dependency>
                 <groupId>org.jboss.metadata</groupId>
-                <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+                <artifactId>jboss-metadata-ejb</artifactId>
                 <version>${version.org.jboss.metadata}</version>
                 <exclusions>
                     <exclusion>
@@ -2376,7 +2308,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana</groupId>
-                <artifactId>jbosstxbridge-jakarta</artifactId>
+                <artifactId>jbosstxbridge</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2388,7 +2320,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.compensations</groupId>
-                <artifactId>compensations-jakarta</artifactId>
+                <artifactId>compensations</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2400,7 +2332,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj-jakarta</artifactId>
+                <artifactId>narayana-jts-idlj</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2412,7 +2344,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-integration-jakarta</artifactId>
+                <artifactId>narayana-jts-integration</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2424,7 +2356,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-api-jakarta</artifactId>
+                <artifactId>restat-api</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2436,7 +2368,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-bridge-jakarta</artifactId>
+                <artifactId>restat-bridge</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2448,7 +2380,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-integration-jakarta</artifactId>
+                <artifactId>restat-integration</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2460,19 +2392,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.rts</groupId>
-                <artifactId>restat-util-jakarta</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.narayana.txframework</groupId>
-                <artifactId>txframework-jakarta</artifactId>
+                <artifactId>restat-util</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2484,7 +2404,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>jbossxts-jakarta</artifactId>
+                <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
@@ -2496,7 +2416,7 @@
 
             <dependency>
                 <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>jbossxts-jakarta</artifactId>
+                <artifactId>jbossxts</artifactId>
                 <version>${version.org.jboss.narayana}</version>
                 <classifier>api</classifier>
                 <exclusions>
@@ -2509,7 +2429,7 @@
 
             <dependency>
                 <groupId>org.jboss.openjdk-orb</groupId>
-                <artifactId>openjdk-orb-jakarta</artifactId>
+                <artifactId>openjdk-orb</artifactId>
                 <version>${version.org.jboss.openjdk-orb}</version>
                 <exclusions>
                     <exclusion>
@@ -2634,9 +2554,33 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.resteasy.spring</groupId>
+                <artifactId>resteasy-spring</artifactId>
+                <version>${version.org.jboss.resteasy.spring}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-validator-provider</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-tracing-api</artifactId>
+                <version>${version.org.jboss.resteasy.extensions}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2834,7 +2778,6 @@
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
                 <version>${version.org.jboss.ws.cxf}</version>
-                <classifier>wildfly2700</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -3000,12 +2943,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.wildfly.security.mp</groupId>
-                <artifactId>wildfly-elytron-jwt</artifactId>
-                <version>${version.org.wildfly.security.elytron-mp}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
@@ -3023,8 +2960,8 @@
                 <version>${version.org.wildfly.naming-client}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.remoting3</groupId>
-                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

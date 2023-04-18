@@ -28,9 +28,9 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-common-api@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-common-spi@module.jakarta.suffix@}"/>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-core-api@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-api}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-spi}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-core-api}"/>
     </resources>
 
     <dependencies>

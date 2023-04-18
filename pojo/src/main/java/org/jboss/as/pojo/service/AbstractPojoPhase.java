@@ -46,7 +46,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -183,7 +182,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
         ValueConfig[] parameters = config.getParameters();
         String[] types = Configurator.getTypes(parameters);
         String dependency = config.getDependency();
-        Value<Object> target = (dependency != null) ? config.getBean() : new ImmediateValue<Object>(getBean());
+        Value<Object> target = (dependency != null) ? config.getBean() : () -> getBean();
         BeanInfo beanInfo = (dependency != null) ? config.getBeanInfo().getValue() : getBeanInfo();
         Method method = beanInfo.findMethod(methodName, types);
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);

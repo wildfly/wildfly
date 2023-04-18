@@ -121,6 +121,7 @@ import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
 import org.jboss.jca.common.api.metadata.common.Capacity;
@@ -156,6 +157,8 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.vfs.VisitorAttributes;
+import org.jboss.vfs.util.SuffixMatchFilter;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.server.SecurityDomain;
@@ -329,7 +332,7 @@ public class RaOperationUtil {
             ServiceController raServiceController = registry.getService(raDeploymentServiceName);
 
             if (raServiceController != null) {
-                final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
+                final ServiceController.Mode originalMode = raServiceController.getMode();
                 final UninterruptibleCountDownLatch latch = new UninterruptibleCountDownLatch(1);
                 raServiceController.addListener(new LifecycleListener() {
                     @Override
@@ -487,7 +490,7 @@ public class RaOperationUtil {
         } catch (ModuleNotFoundException e) {
             throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.raModuleNotFound(moduleName, e.getMessage()), e);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName, e.getMessage()), e);
         }
         URL path = module.getExportedResource("META-INF/ra.xml");
         Closeable closable = null;
@@ -517,6 +520,16 @@ public class RaOperationUtil {
                 if (index != null) {
                     annotationIndexes.put(resourceRoot, index);
                 }
+                final List<VirtualFile> jarChildren = deploymentRoot.getChildren(new SuffixMatchFilter(".jar", VisitorAttributes.LEAVES_ONLY));
+                for (VirtualFile subJarRoot: jarChildren) {
+                    Closeable subClosable = VFS.mountZip(subJarRoot, subJarRoot, TempFileProviderService.provider());
+                    ResourceRoot subResRoot = new ResourceRoot(subJarRoot, MountHandle.create(subClosable));
+                    ResourceRootIndexer.indexResourceRoot(subResRoot);
+                    Index subIndex = subResRoot.getAttachment(Attachments.ANNOTATION_INDEX);
+                    if (subIndex != null) {
+                        annotationIndexes.put(subResRoot, subIndex);
+                    }
+                }
                 if (ironJacamarXmlDescriptor != null) {
                     ConnectorLogger.SUBSYSTEM_RA_LOGGER.forceIJToNull();
                     ironJacamarXmlDescriptor = null;
@@ -543,7 +556,7 @@ public class RaOperationUtil {
                 }
 
             } catch (Exception e) {
-                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
+                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName, e.getMessage()), e);
             } finally {
                 if (closable != null) {
                     try {

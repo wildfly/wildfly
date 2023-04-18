@@ -1,6 +1,14 @@
 [[Client_Authentication_with_Elytron_Client]]
 = Client Authentication with Elytron Client
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron uses the Elytron Client project to enable remote clients
 to authenticate using Elytron. Elytron Client has the following
 components:
@@ -154,7 +162,7 @@ files even if the _wildfly.config.url_ system property is set.
 When creating rules, you can look for matches on various parameters such
 as hostname, port, protocol, or username. A full list of options for
 _MatchRule_ are available in the
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/auth/client/MatchRule.html[Javadocs].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/auth/client/MatchRule.html[Javadocs].
 Rules are evaluated in the order in which they are configured.
 
 *Common Rules*

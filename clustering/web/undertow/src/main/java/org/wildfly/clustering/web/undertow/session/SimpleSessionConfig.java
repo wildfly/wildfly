@@ -39,12 +39,12 @@ public class SimpleSessionConfig implements SessionConfig {
 
     @Override
     public void setSessionId(HttpServerExchange exchange, String sessionId) {
-        throw new IllegalStateException();
+        // No-op
     }
 
     @Override
     public void clearSession(HttpServerExchange exchange, String sessionId) {
-        throw new IllegalStateException();
+        // No-op
     }
 
     @Override
@@ -54,11 +54,11 @@ public class SimpleSessionConfig implements SessionConfig {
 
     @Override
     public SessionCookieSource sessionCookieSource(HttpServerExchange exchange) {
-        throw new IllegalStateException();
+        return SessionCookieSource.NONE;
     }
 
     @Override
     public String rewriteUrl(String originalUrl, String sessionId) {
-        throw new IllegalStateException();
+        return originalUrl;
     }
 }

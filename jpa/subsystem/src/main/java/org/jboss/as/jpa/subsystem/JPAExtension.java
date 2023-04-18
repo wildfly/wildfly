@@ -75,7 +75,7 @@ public class JPAExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(JPADefinition.INSTANCE);
+        final ManagementResourceRegistration nodeRegistration = registration.registerSubsystemModel(new JPADefinition(true));
         nodeRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registration.registerXMLElementWriter(new JPASubsystemElementParser1_1());
 
@@ -88,7 +88,7 @@ public class JPAExtension implements Extension {
         }
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            registration.registerDeploymentModel(JPADefinition.DEPLOYMENT_INSTANCE);
+            registration.registerDeploymentModel(new JPADefinition(false));
         }
     }
 

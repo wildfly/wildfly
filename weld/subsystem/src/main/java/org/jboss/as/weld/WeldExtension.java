@@ -67,7 +67,7 @@ public class WeldExtension implements Extension {
     public void initialize(final ExtensionContext context) {
         WeldLogger.ROOT_LOGGER.debug("Activating Weld Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new WeldResourceDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(WeldSubsystem50Parser.INSTANCE);
 

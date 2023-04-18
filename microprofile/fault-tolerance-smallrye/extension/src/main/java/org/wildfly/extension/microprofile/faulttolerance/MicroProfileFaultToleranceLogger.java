@@ -42,4 +42,8 @@ public interface MicroProfileFaultToleranceLogger extends BasicLogger {
     @Message(id = 1, value = "Activating MicroProfile Fault Tolerance subsystem.")
     void activatingSubsystem();
 
+    @LogMessage(level = INFO)
+    @Message(id = 2, value = "MicroProfile Fault Tolerance subsystem with use '%s' metrics provider.")
+    void metricsProvider(String metricsProvider);
+
 }

@@ -123,12 +123,7 @@ public class PathDefinition extends PersistentResourceDefinition {
         return new AttributeDefinition[] { PATHS.get(path), RELATIVE_TO };
     }
 
-    static final PathDefinition BINDINGS_INSTANCE = new PathDefinition(MessagingExtension.BINDINGS_DIRECTORY_PATH);
-    static final PathDefinition LARGE_MESSAGES_INSTANCE = new PathDefinition(MessagingExtension.LARGE_MESSAGES_DIRECTORY_PATH);
-    static final PathDefinition PAGING_INSTANCE = new PathDefinition(MessagingExtension.PAGING_DIRECTORY_PATH);
-    static final PathDefinition JOURNAL_INSTANCE = new PathDefinition(MessagingExtension.JOURNAL_DIRECTORY_PATH);
-
-    public PathDefinition(PathElement path) {
+    PathDefinition(PathElement path) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(ModelDescriptionConstants.PATH),
                 PATH_ADD,

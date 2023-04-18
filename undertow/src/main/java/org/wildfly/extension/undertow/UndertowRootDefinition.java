@@ -22,17 +22,20 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_HTTP_INVOKER;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -54,6 +57,7 @@ import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
  */
 class UndertowRootDefinition extends PersistentResourceDefinition {
 
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME);
     static final RuntimeCapability<Void> UNDERTOW_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_UNDERTOW, false, UndertowService.class)
                         .build();
 
@@ -108,36 +112,39 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                     .build();
 
 
-    static final ApplicationSecurityDomainDefinition APPLICATION_SECURITY_DOMAIN = ApplicationSecurityDomainDefinition.INSTANCE;
-    static final AttributeDefinition[] ATTRIBUTES = { DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
-            OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN };
-    static final PersistentResourceDefinition[] CHILDREN = {
-            ByteBufferPoolDefinition.INSTANCE,
-            BufferCacheDefinition.INSTANCE,
-            ServerDefinition.INSTANCE,
-            ServletContainerDefinition.INSTANCE,
-            HandlerDefinitions.INSTANCE,
-            FilterDefinitions.INSTANCE,
-            APPLICATION_SECURITY_DOMAIN
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
+            OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN);
 
-    public static final UndertowRootDefinition INSTANCE = new UndertowRootDefinition();
+    private final Set<String> knownApplicationSecurityDomains;
 
-    private UndertowRootDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.SUBSYSTEM_PATH, UndertowExtension.getResolver())
-                .setAddHandler(new UndertowSubsystemAdd(APPLICATION_SECURITY_DOMAIN.getKnownSecurityDomainPredicate()))
+    UndertowRootDefinition() {
+        this(new CopyOnWriteArraySet<>());
+    }
+
+    private UndertowRootDefinition(Set<String> knownApplicationSecurityDomains) {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver())
+                .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY));
+                .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY)
+        );
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return Arrays.asList(CHILDREN);
+        return List.of(
+                new ByteBufferPoolDefinition(),
+                new BufferCacheDefinition(),
+                new ServerDefinition(),
+                new ServletContainerDefinition(),
+                new HandlerDefinitions(),
+                new FilterDefinitions(),
+                new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
     }
 
     @Override

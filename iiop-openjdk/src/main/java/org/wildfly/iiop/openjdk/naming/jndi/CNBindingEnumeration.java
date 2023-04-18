@@ -102,7 +102,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
      * @throws NamingException any naming exception.
      */
 
-    public java.lang.Object next() throws NamingException {
+    public Object next() throws NamingException {
         if (more && counter >= _bindingList.value.length) {
             getMore();
         }
@@ -151,7 +151,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
      *                                list is reached.
      */
 
-    public java.lang.Object nextElement() {
+    public Object nextElement() {
         try {
             return next();
         } catch (NamingException ne) {
@@ -213,9 +213,9 @@ final class CNBindingEnumeration implements NamingEnumeration {
 
     private javax.naming.Binding mapBinding(org.omg.CosNaming.Binding bndg)
             throws NamingException {
-        java.lang.Object obj = _ctx.callResolve(bndg.binding_name);
+        Object obj = _ctx.callResolve(bndg.binding_name);
 
-        Name cname = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToName(bndg.binding_name);
+        Name cname = CNNameParser.cosNameToName(bndg.binding_name);
 
         try {
             obj = NamingManager.getObjectInstance(obj, cname, _ctx, _env);
@@ -233,7 +233,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         javax.naming.Binding jbndg = new javax.naming.Binding(cnameStr, obj);
 
         NameComponent[] comps = _ctx.makeFullName(bndg.binding_name);
-        String fullName = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToInsString(comps);
+        String fullName = CNNameParser.cosNameToInsString(comps);
         jbndg.setNameInNamespace(fullName);
         return jbndg;
     }

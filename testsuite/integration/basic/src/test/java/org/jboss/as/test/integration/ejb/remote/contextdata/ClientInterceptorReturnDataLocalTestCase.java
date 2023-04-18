@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
  * for an in-vm invocation.
  *
  * @author Stuart Douglas
+ * @author Brad Maxwell
  */
 @RunWith(Arquillian.class)
 public class ClientInterceptorReturnDataLocalTestCase {
@@ -54,8 +55,12 @@ public class ClientInterceptorReturnDataLocalTestCase {
     TestRemote testSingleton;
 
     @Test
-    public void testInvokeWithClientInterceptorData() throws Exception {
-        String result = testSingleton.invoke();
-        Assert.assertEquals("DATA:client interceptor data(client data):bean context data", result);
+    public void testInvokeWithClientInterceptorData() {
+        try {
+            UseCaseValidator useCaseValidator = new UseCaseValidator(UseCaseValidator.Interface.LOCAL);
+            testSingleton.invoke(useCaseValidator);
+        } catch(TestException te) {
+            Assert.fail(te.getMessage());
+        }
     }
 }

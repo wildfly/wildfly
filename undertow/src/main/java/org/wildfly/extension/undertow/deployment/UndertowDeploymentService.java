@@ -32,7 +32,7 @@ import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.jboss.as.web.common.StartupContext;
 import org.jboss.as.web.common.WebInjectionContainer;
@@ -106,6 +106,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 HttpHandler handler = deploymentManager.start();
                 Deployment deployment = deploymentManager.getDeployment();
                 host.get().registerDeployment(deployment, handler);
+            } catch (Throwable e ) {
+                deploymentManager.undeploy();
+                container.get().getServletContainer().removeDeployment(deploymentInfo);
+                throw e;
             } finally {
                 StartupContext.setInjectionContainer(null);
             }

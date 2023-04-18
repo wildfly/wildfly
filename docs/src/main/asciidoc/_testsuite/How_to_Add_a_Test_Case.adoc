@@ -1,6 +1,14 @@
 [[How_to_Add_a_Test_Case]]
 = How to Add a Test Case
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 _(Please don't (re)move - this is a landing page from a Jira link.)_
 
 *Thank you for finding time to contribute to WildFly {wildflyVersion} quality.* +
@@ -16,7 +24,7 @@ It's quite easy - a simple use case may even consist of one short .java
 file.
 
 Check WildFly {wildflyVersion}
-https://github.com/wildfly/wildfly/tree/master/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
+https://github.com/wildfly/wildfly/tree/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration[test
 suite test cases] for examples.
 
 For more information, see <<WildFly_Testsuite_Test_Developer_Guide,WildFly Testsuite Test

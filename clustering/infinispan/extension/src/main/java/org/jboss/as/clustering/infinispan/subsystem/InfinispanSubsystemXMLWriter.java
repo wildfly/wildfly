@@ -53,7 +53,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     @SuppressWarnings("deprecation")
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(InfinispanSchema.CURRENT.getNamespaceUri(), false);
+        context.startSubsystemElement(InfinispanSubsystemSchema.CURRENT.getNamespace().getUri(), false);
         ModelNode model = context.getModelNode();
         if (model.isDefined()) {
             if (model.hasDefined(CacheContainerResourceDefinition.WILDCARD_PATH.getKey())) {

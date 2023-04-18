@@ -22,18 +22,17 @@
 
 package org.jboss.as.ee.concurrent;
 
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
-import static org.wildfly.common.Assert.checkArrayBounds;
-import static org.wildfly.common.Assert.checkNotNullParam;
+import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
-import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+import static org.wildfly.common.Assert.checkArrayBounds;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 /**
  * An extension of Jakarta EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
@@ -41,14 +40,16 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl {
 
+    private final ContextServiceTypesConfiguration contextServiceTypesConfiguration;
+
     /**
      *
      * @param name
      * @param contextSetupProvider
-     * @param transactionSetupProvider
      */
-    public ContextServiceImpl(String name, ContextSetupProvider contextSetupProvider, TransactionSetupProvider transactionSetupProvider) {
-        super(name, contextSetupProvider, transactionSetupProvider);
+    public ContextServiceImpl(String name, ContextSetupProvider contextSetupProvider, ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
+        super(name, contextSetupProvider, null);
+        this.contextServiceTypesConfiguration = contextServiceTypesConfiguration;
     }
 
     private <T> T internalCreateContextualProxy(T instance, Map<String, String> executionProperties, Class<T> intf) {
@@ -104,4 +105,9 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
         }
     }
 
+    public ContextServiceTypesConfiguration getContextServiceTypesConfiguration() {
+        return contextServiceTypesConfiguration;
+    }
+
+    // TODO *FOLLOW UP* revisit RI impl of the async methods, which quality seems to have issues (e.g. each method uses a new Managed Executor instance...)
 }

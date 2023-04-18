@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.sso.remote;
 
+import org.jboss.as.test.clustering.InfinispanServerUtil;
 import org.jboss.as.test.clustering.cluster.sso.AbstractSingleSignOnTestCase;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
@@ -32,6 +33,6 @@ import org.junit.rules.TestRule;
 public abstract class AbstractRemoteSingleSignOnTestCase extends AbstractSingleSignOnTestCase {
 
     @ClassRule
-    public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
+    public static final TestRule INFINISPAN_SERVER_RULE = InfinispanServerUtil.infinispanServerTestRule();
 
 }

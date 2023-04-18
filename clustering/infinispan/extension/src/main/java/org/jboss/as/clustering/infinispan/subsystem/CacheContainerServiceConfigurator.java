@@ -26,6 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -33,7 +34,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
@@ -164,7 +164,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         @SuppressWarnings("deprecation")
         BlockingManager blocking = container.getGlobalComponentRegistry().getComponent(BlockingManager.class);
         blocking.asExecutor(event.getCacheName()).execute(() -> captor.accept(container.getCache(cacheName)));
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 
     @CacheStopped
@@ -177,6 +177,6 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         try (Registration registration = this.registrations.remove(cacheName)) {
             InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
         }
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 }

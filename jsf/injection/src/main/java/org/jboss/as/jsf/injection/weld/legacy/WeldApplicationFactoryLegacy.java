@@ -21,10 +21,9 @@
  */
 package org.jboss.as.jsf.injection.weld.legacy;
 
+import jakarta.faces.application.Application;
+import jakarta.faces.application.ApplicationFactory;
 import org.jboss.as.jsf.injection.weld.ForwardingApplicationFactory;
-
-import javax.faces.application.Application;
-import javax.faces.application.ApplicationFactory;
 
 /**
  * @author <a href="ingo@redhat.com">Ingo Weiss</a>

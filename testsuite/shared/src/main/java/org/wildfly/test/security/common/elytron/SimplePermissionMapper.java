@@ -79,7 +79,7 @@ public class SimplePermissionMapper extends AbstractConfigurableElement implemen
      * Builder to build {@link UndertowSslContext}. The name attribute refers to ssl-context capability name.
      */
     public static final class Builder
-            extends AbstractConfigurableElement.Builder<SimplePermissionMapper.Builder> {
+            extends AbstractConfigurableElement.Builder<Builder> {
 
         private MappingMode mappingMode;
         private List<PermissionMapping> mappings;

@@ -158,7 +158,7 @@ public class TimerEJBRuntimeNameTestCase extends AbstractRuntimeTestCase {
     private static InitialContext getInitialContext() throws NamingException {
         final Hashtable env = new Hashtable();
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + 8080);
         return new InitialContext(env);
     }

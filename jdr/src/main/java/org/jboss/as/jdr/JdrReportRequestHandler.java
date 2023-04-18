@@ -43,7 +43,7 @@ public class JdrReportRequestHandler implements OperationStepHandler {
 
     static final JdrReportRequestHandler INSTANCE = new JdrReportRequestHandler();
 
-    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.getResourceDescriptionResolver())
+    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.SUBSYSTEM_RESOLVER)
             .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION)
             .setReadOnly()
             .setRuntimeOnly()

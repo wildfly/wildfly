@@ -36,7 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import org.jboss.as.clustering.function.Predicates;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.OperationStepHandler;
@@ -264,15 +263,15 @@ public class ResourceDescriptor implements AddStepHandlerDescriptor {
     }
 
     public <E extends Enum<E> & Capability> ResourceDescriptor addCapabilities(Class<E> enumClass) {
-        return this.addCapabilities(Predicates.always(), enumClass);
+        return this.addCapabilities(ModelNode::isDefined, enumClass);
     }
 
     public ResourceDescriptor addCapabilities(Capability... capabilities) {
-        return this.addCapabilities(Predicates.always(), capabilities);
+        return this.addCapabilities(ModelNode::isDefined, capabilities);
     }
 
     public ResourceDescriptor addCapabilities(Iterable<? extends Capability> capabilities) {
-        return this.addCapabilities(Predicates.always(), capabilities);
+        return this.addCapabilities(ModelNode::isDefined, capabilities);
     }
 
     public <E extends Enum<E> & Capability> ResourceDescriptor addCapabilities(Predicate<ModelNode> predicate, Class<E> enumClass) {

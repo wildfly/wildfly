@@ -44,4 +44,9 @@ public class ContainsCommand<I, M> implements Command<Boolean, CacheEntrySchedul
     I getId() {
         return this.id;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getClass().getSimpleName(), this.id);
+    }
 }

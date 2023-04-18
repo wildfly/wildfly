@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.rts.logging;
 
-import javax.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseContext;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -44,7 +44,7 @@ public interface RTSLogger extends BasicLogger {
     RTSLogger ROOT_LOGGER = Logger.getMessageLogger(RTSLogger.class, "org.wildfly.extension.rts");
 
     @Message(id = 1, value = "Can't import global transaction to wildfly transaction client.")
-    IllegalStateException failueOnImportingGlobalTransactionFromWildflyClient(@Cause javax.transaction.SystemException se);
+    IllegalStateException failueOnImportingGlobalTransactionFromWildflyClient(@Cause jakarta.transaction.SystemException se);
 
     @LogMessage(level = ERROR)
     @Message(id = 2, value = "Cannot get transaction status on handling response context %s")

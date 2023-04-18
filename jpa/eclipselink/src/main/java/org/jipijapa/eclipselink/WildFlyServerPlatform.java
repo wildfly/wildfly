@@ -31,11 +31,12 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.TransactionManager;
+import jakarta.transaction.TransactionManager;
 
 import org.eclipse.persistence.internal.security.PrivilegedAccessHelper;
 import org.eclipse.persistence.platform.server.jboss.JBossPlatform;
 import org.eclipse.persistence.sessions.DatabaseSession;
+import org.eclipse.persistence.sessions.ExternalTransactionController;
 import org.eclipse.persistence.transaction.jboss.JBossTransactionController;
 import org.jipijapa.JipiLogger;
 
@@ -55,7 +56,7 @@ public class WildFlyServerPlatform extends JBossPlatform {
     }
 
     @Override
-    public Class<?> getExternalTransactionControllerClass() {
+    public Class<? extends ExternalTransactionController> getExternalTransactionControllerClass() {
         return JBossAS7TransactionController.class;
     }
 

@@ -79,8 +79,6 @@ public class DivertDefinition extends PersistentResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    static final DivertDefinition INSTANCE = new DivertDefinition(false);
-
     public DivertDefinition(boolean registerRuntimeOnly) {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DIVERT),

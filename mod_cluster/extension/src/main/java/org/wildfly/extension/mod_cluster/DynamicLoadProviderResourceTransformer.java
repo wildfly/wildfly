@@ -45,7 +45,7 @@ public class DynamicLoadProviderResourceTransformer implements Consumer<ModelVer
 
     @Override
     public void accept(ModelVersion version) {
-        if (ModClusterModel.VERSION_7_0_0.requiresTransformation(version)) {
+        if (ModClusterSubsystemModel.VERSION_7_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(-1)), DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.getDefinition())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD.getDefinition())

@@ -19,7 +19,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.BeanManagerFactoryServiceConfiguratorConfiguration;
+import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
@@ -52,7 +52,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
             .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
-            .setDefaultValue(new ModelNode(BeanManagerFactoryServiceConfiguratorConfiguration.DEFAULT_CONTAINER_NAME))
+            .setDefaultValue(new ModelNode(LegacyBeanManagementConfiguration.DEFAULT_CONTAINER_NAME))
             // Capability references should not allow expressions
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -73,12 +73,10 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
 
-    static final PassivationStoreResourceDefinition INSTANCE = new PassivationStoreResourceDefinition(EJB3SubsystemModel.PASSIVATION_STORE);
-
-    private PassivationStoreResourceDefinition(String element, AttributeDefinition... attributes) {
-        super(new Parameters(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element))
+    PassivationStoreResourceDefinition() {
+        super(new Parameters(PathElement.pathElement(EJB3SubsystemModel.PASSIVATION_STORE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.PASSIVATION_STORE))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER, PASSIVATION_STORE_CAPABILITY))
+                .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER))
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(PASSIVATION_STORE_CAPABILITY));
         this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());

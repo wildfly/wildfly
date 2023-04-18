@@ -38,6 +38,8 @@ public class LayersTestCase {
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
     private static final String[] NOT_USED_COMMON = {
+            // not used
+            "ibm.jdk",
             // test-all-layers installation is non-ha and does not include layers that provide jgroups
             "org.jboss.as.clustering.jgroups",
             // TODO we need to add an agroal layer
@@ -54,8 +56,6 @@ public class LayersTestCase {
             // end legacy subsystems ^^^
             // TODO nothing references this
             "org.wildfly.security.http.sfbasic",
-            // TODO Legacy Seam integration. Does it even work with EE 10?
-            "org.jboss.integration.ext-content",
             // TODO move eclipse link support to an external feature pack
             "org.eclipse.persistence",
             // RA not associated with any layer
@@ -68,6 +68,7 @@ public class LayersTestCase {
             // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
             // for now we should keep this module.
             "org.jboss.resteasy.resteasy-rxjava2",
+            "org.jboss.resteasy.resteasy-tracing-api",
             // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
             // as there is no ref to them in any module.xml nor any in WF java code.
             // Perhaps via deployment descriptor? In any case, no layer provides them
@@ -76,10 +77,6 @@ public class LayersTestCase {
             // This is added in the jaxrs subsystem to deployments if the MP config capability is met. The package is
             // added in the microprofile-rest-client as well.
             "org.jboss.resteasy.microprofile.config",
-            // Temporarily provided to not break the wildfly-extras gRPC feature pack
-            // until it provides it itself.
-            "io.grpc",
-            "com.google.protobuf",
             // Alternative messaging protocols besides the std Artemis core protocol
             // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
@@ -105,7 +102,26 @@ public class LayersTestCase {
             // TODO test-all-layers uses microprofile-opentracing instead of opentelemetry
             "org.wildfly.extension.opentelemetry",
             "org.wildfly.extension.opentelemetry-api",
+            "io.opentelemetry.exporter",
+            "io.opentelemetry.sdk",
+            "io.opentelemetry.proto",
+            "io.opentelemetry.otlp",
             "io.opentelemetry.trace",
+            // Micrometer is not included in standard configs
+            "io.micrometer",
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "com.squareup.okhttp3",
+            "org.jetbrains.kotlin.kotlin-stdlib",
+            "com.google.protobuf",
+            // Unreferenced Infinispan modules
+            "org.infinispan.cdi.common",
+            "org.infinispan.cdi.embedded",
+            "org.infinispan.cdi.remote",
+            "org.infinispan.counter",
+            "org.infinispan.lock",
+            "org.infinispan.query",
+            "org.infinispan.query.core",
             // JGroups external protocols - AWS
             "com.amazon.aws.core",
             "com.amazon.aws.jmespath",
@@ -114,14 +130,14 @@ public class LayersTestCase {
             "com.amazon.ion",
             "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED_COMMON = {
-            // May be needed by deployments if running on IBM JDK.
-            "ibm.jdk",
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
@@ -159,12 +175,20 @@ public class LayersTestCase {
             "org.eclipse.microprofile.health.api",
             "io.smallrye.health",
             // Extension not included in the default config
+            "org.wildfly.extension.microprofile.lra-coordinator",
+            "org.wildfly.extension.microprofile.lra-participant",
+            "org.jboss.narayana.rts.lra-coordinator",
+            "org.jboss.narayana.rts.lra-participant",
+            "org.eclipse.microprofile.lra.api",
+            // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
             "org.eclipse.microprofile.openapi.api",
             "io.smallrye.openapi",
             "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.telemetry",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
@@ -197,14 +221,12 @@ public class LayersTestCase {
             NOT_USED = ArrayUtils.addAll(
                     NOT_USED_COMMON,
                     // WFP standard config uses Micrometer instead of WF Metrics
-                    "io.smallrye.metrics",
                     "org.wildfly.extension.metrics",
-                    "org.wildfly.extension.microprofile.metrics-smallrye",
                     // MP Fault Tolerance has a dependency on MP Metrics
                     "io.smallrye.fault-tolerance",
                     "org.eclipse.microprofile.fault-tolerance.api",
                     "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "org.wildfly.microprofile.fault-tolerance-smallrye.executor",
+                    "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
                     // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
                     "org.hibernate.search.mapper.orm.coordination.outboxpolling"
             );
@@ -238,7 +260,6 @@ public class LayersTestCase {
                     NOT_REFERENCED_COMMON,
                     // Standard configs don't include various MP subsystems
                     "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "org.wildfly.extension.microprofile.metrics-smallrye",
                     "io.jaegertracing",
                     "io.netty.netty-codec-dns",
                     "io.netty.netty-codec-http2",
@@ -287,10 +308,12 @@ public class LayersTestCase {
     }
 
     public static String root;
+    public static String defaultConfigsRoot;
 
     @BeforeClass
     public static void setUp() {
         root = System.getProperty("layers.install.root");
+        defaultConfigsRoot = System.getProperty("std.default.install.root");
     }
 
     @AfterClass
@@ -298,6 +321,10 @@ public class LayersTestCase {
         Boolean delete = Boolean.getBoolean("layers.delete.installations");
         if(delete) {
             File[] installations = new File(root).listFiles(File::isDirectory);
+            for(File f : installations) {
+                LayersTest.recursiveDelete(f.toPath());
+            }
+            installations = new File(defaultConfigsRoot).listFiles(File::isDirectory);
             for(File f : installations) {
                 LayersTest.recursiveDelete(f.toPath());
             }
@@ -314,5 +341,10 @@ public class LayersTestCase {
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
+    }
+
+    @Test
+    public void testDefaultConfigs() throws Exception {
+        LayersTest.testExecution(defaultConfigsRoot);
     }
 }

@@ -26,9 +26,9 @@ import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
-import javax.enterprise.concurrent.ManagedTask;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.enterprise.concurrent.ManagedTask;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 
 /**
  * The transaction setup provider handles transaction suspend/resume.

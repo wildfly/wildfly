@@ -22,8 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.RequestScoped;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.RequestScoped;
 
 /**
  * Injection of JMSContext in the @RequestScoped scope.

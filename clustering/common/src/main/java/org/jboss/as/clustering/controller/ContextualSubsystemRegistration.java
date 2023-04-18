@@ -32,13 +32,13 @@ import org.jboss.as.controller.services.path.PathManager;
  */
 public class ContextualSubsystemRegistration extends DecoratingSubsystemRegistration<ManagementResourceRegistration> implements SubsystemRegistration {
 
-    private final RegistrationContext context;
+    private final ManagementRegistrationContext context;
 
     public ContextualSubsystemRegistration(org.jboss.as.controller.SubsystemRegistration registration, ExtensionContext context) {
         this(registration, new ExtensionRegistrationContext(context));
     }
 
-    public ContextualSubsystemRegistration(org.jboss.as.controller.SubsystemRegistration registration, RegistrationContext context) {
+    public ContextualSubsystemRegistration(org.jboss.as.controller.SubsystemRegistration registration, ManagementRegistrationContext context) {
         super(registration, r -> new ContextualResourceRegistration(r, context));
         this.context = context;
     }

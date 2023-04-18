@@ -28,6 +28,7 @@ import org.jboss.modules.Module;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
+ * Encapsulates the configuration of a {@link TimerManagementProvider}.
  * @author Paul Ferraro
  */
 public interface TimerManagementConfiguration {

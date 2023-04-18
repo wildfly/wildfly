@@ -40,9 +40,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JcaBeanValidationDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_BEAN_VALIDATION = PathElement.pathElement(BEAN_VALIDATION, BEAN_VALIDATION);
-    static final JcaBeanValidationDefinition INSTANCE = new JcaBeanValidationDefinition();
 
-    private JcaBeanValidationDefinition() {
+    JcaBeanValidationDefinition() {
         super(PATH_BEAN_VALIDATION,
                 JcaExtension.getResourceDescriptionResolver(PATH_BEAN_VALIDATION.getKey()),
                 BeanValidationAdd.INSTANCE,

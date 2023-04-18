@@ -40,6 +40,10 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.naming.Context;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import jakarta.ejb.ConcurrentAccessTimeoutException;
 import jakarta.ejb.EJBAccessException;
 import jakarta.ejb.EJBException;
@@ -54,16 +58,12 @@ import jakarta.ejb.RemoveException;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.interceptor.InvocationContext;
-import javax.naming.Context;
 import jakarta.resource.ResourceException;
 import jakarta.resource.spi.UnavailableException;
 import jakarta.resource.spi.endpoint.MessageEndpoint;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transaction;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -1566,13 +1566,13 @@ public interface EjbLogger extends BasicLogger {
 //    IllegalStateException callMethodNotAllowWhenDependencyInjectionInProgress(String method);
 
 
-    /**
-     * Creates an exception indicating the method is deprecated
-     *
-     * @return a {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 246, value = "%s is deprecated")
-    UnsupportedOperationException isDeprecated(String getEnvironment);
+//    /**
+//     * Creates an exception indicating the method is deprecated
+//     *
+//     * @return a {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 246, value = "%s is deprecated")
+//    UnsupportedOperationException isDeprecated(String getEnvironment);
 
 //    /**
 //     * Creates an exception indicating getting parameters is not allowed on lifecycle callbacks
@@ -2631,13 +2631,13 @@ public interface EjbLogger extends BasicLogger {
     EJBException acquireSemaphoreInterrupted();
 
 
-    /**
-     * Creates an exception indicating the method is deprecated
-     *
-     * @return a {@link IllegalStateException} for the error.
-     */
-    @Message(id = 380, value = "%s is deprecated")
-    IllegalStateException isDeprecatedIllegalState(String getEnvironment);
+//    /**
+//     * Creates an exception indicating the method is deprecated
+//     *
+//     * @return a {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 380, value = "%s is deprecated")
+//    IllegalStateException isDeprecatedIllegalState(String getEnvironment);
 
 //    @Message(id = 381, value = "Could not find method %s on entity bean")
 //    RuntimeException couldNotFindEntityBeanMethod(String method);

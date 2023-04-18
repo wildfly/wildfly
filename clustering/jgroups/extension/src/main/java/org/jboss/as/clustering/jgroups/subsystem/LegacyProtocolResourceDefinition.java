@@ -78,7 +78,7 @@ public class LegacyProtocolResourceDefinition extends ProtocolResourceDefinition
         }
     }
 
-    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsSubsystemModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null, parentServiceConfiguratorFactory);
         this.setDeprecated(deprecation.getVersion());
     }

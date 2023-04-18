@@ -73,10 +73,10 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
         for (int i = 0; i < specific.length; i++) {
             ConnectionFactoryAttribute attr = specific[i];
             AttributeDefinition definition = attr.getDefinition();
-            if (definition == ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS) {
+            if (definition == Pooled.INITIAL_CONNECT_ATTEMPTS) {
                 result[i] = ConnectionFactoryAttribute.create(
                         SimpleAttributeDefinitionBuilder
-                                .create(ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS)
+                                .create(Pooled.INITIAL_CONNECT_ATTEMPTS)
                                 .setDefaultValue(new ModelNode(-1))
                                 .build(),
                         attr.getPropertyName(),
@@ -139,10 +139,6 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
     }
 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
-
-    public static final ExternalPooledConnectionFactoryDefinition INSTANCE = new ExternalPooledConnectionFactoryDefinition(false);
-
-    public static final ExternalPooledConnectionFactoryDefinition DEPLOYMENT_INSTANCE = new ExternalPooledConnectionFactoryDefinition(true);
 
     public ExternalPooledConnectionFactoryDefinition(final boolean deployed) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY))

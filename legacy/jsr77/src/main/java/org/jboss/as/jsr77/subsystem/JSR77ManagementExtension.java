@@ -83,7 +83,7 @@ public class JSR77ManagementExtension extends AbstractLegacyExtension {
 
         private static PersistentResourceXMLDescription xmlDescription;
         static {
-            xmlDescription = PersistentResourceXMLDescription.builder(new JSR77ManagementRootResource(), JSR77ManagementExtension.NAMESPACE)
+            xmlDescription = PersistentResourceXMLDescription.builder(new JSR77ManagementRootResource().getPathElement(), JSR77ManagementExtension.NAMESPACE)
                     .build();
         }
         @Override

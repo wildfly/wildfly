@@ -24,7 +24,7 @@
 
 package org.wildfly.extension.messaging.activemq.deployment;
 
-import javax.jms.Destination;
+import jakarta.jms.Destination;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;

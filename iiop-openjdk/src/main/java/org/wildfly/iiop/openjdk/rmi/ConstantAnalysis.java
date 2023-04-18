@@ -48,7 +48,7 @@ public class ConstantAnalysis
         super(javaName);
 
         if (type == Void.TYPE ||
-                !type.isPrimitive() && type != java.lang.String.class)
+                !type.isPrimitive() && type != String.class)
             throw IIOPLogger.ROOT_LOGGER.badConstantType(type.getName());
 
         this.type = type;

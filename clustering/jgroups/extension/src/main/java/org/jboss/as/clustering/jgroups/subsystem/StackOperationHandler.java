@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.Operation;
-import org.jboss.as.clustering.controller.Registration;
+import org.jboss.as.clustering.controller.ManagementRegistrar;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
@@ -52,7 +52,7 @@ import org.wildfly.clustering.service.FunctionalService;
  * Operation handler for protocol stack diagnostic runtime operations.
  * @author Paul Ferraro
  */
-public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
+public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final Map<String, Operation<ChannelFactory>> operations = new HashMap<>();
 

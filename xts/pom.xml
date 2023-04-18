@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-xts</artifactId>
@@ -141,28 +141,24 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts-jakarta</artifactId>
+            <artifactId>jbossxts</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
-            <artifactId>jbossxts-jakarta</artifactId>
+            <artifactId>jbossxts</artifactId>
             <classifier>api</classifier>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana</groupId>
-            <artifactId>jbosstxbridge-jakarta</artifactId>
+            <artifactId>jbosstxbridge</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.compensations</groupId>
-            <artifactId>compensations-jakarta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.narayana.txframework</groupId>
-            <artifactId>txframework-jakarta</artifactId>
+            <artifactId>compensations</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.ws</groupId>

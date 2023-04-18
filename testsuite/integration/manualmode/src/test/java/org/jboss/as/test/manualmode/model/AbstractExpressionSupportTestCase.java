@@ -110,7 +110,7 @@ public abstract class AbstractExpressionSupportTestCase {
     }
 
     /**
-     * Launch a master HC in --admin-only. Iterate through all resources, converting any writable attribute that
+     * Launch a primary HC in --admin-only. Iterate through all resources, converting any writable attribute that
      * support expressions and has a value or a default value to an expression (if it isn't already one), using the
      * value/default value as the expression default (so setting a system property isn't required). Then reload out of
      * --admin-only and confirm that the server start correctly. Finally, read the resources from the host

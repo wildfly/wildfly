@@ -1,6 +1,14 @@
 [[Migration_PicketBox_Vault]]
 = PicketBox Vault
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron has made available a new credential store which replaces the PicketBox vault.  The
 credential store can be used for credentials to be directly looked up for use by resources or it
 can be used to store a `SecretKey` which can be used by an expression resolver to decrypt

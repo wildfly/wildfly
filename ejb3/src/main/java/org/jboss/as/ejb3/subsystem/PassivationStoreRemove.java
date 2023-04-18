@@ -32,12 +32,10 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderServiceNameProvider;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -51,21 +49,13 @@ import java.util.Set;
 @Deprecated
 public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
-    private final Set<RuntimeCapability> unavailableCapabilities;
-
     public PassivationStoreRemove(final AbstractAddStepHandler addOperation) {
         super(addOperation);
-        this.unavailableCapabilities = new LinkedHashSet<>();
-    }
-
-    public PassivationStoreRemove(final AbstractAddStepHandler addOperation, RuntimeCapability ...  unavailableCapabilities) {
-        super(addOperation, unavailableCapabilities);
-        this.unavailableCapabilities = new LinkedHashSet<>(Arrays.asList(unavailableCapabilities));
     }
 
     @Override
     protected ServiceName serviceName(final String name) {
-        return new DistributableCacheFactoryBuilderServiceNameProvider(name).getServiceName();
+        return new StatefulSessionBeanCacheProviderServiceNameProvider(name).getServiceName();
     }
 
     /**
@@ -78,13 +68,13 @@ public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
         if (removeInCurrentStep(resource)) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
-            Set<RuntimeCapability> capabilitySet = unavailableCapabilities.isEmpty() ? context.getResourceRegistration().getCapabilities() : unavailableCapabilities;
+            Set<RuntimeCapability> capabilitySet = context.getResourceRegistration().getCapabilities();
             PathAddress address = context.getCurrentAddress();
 
             // deregister capabilities which will no longer be available after remove
             for (RuntimeCapability capability : capabilitySet) {
                 if (capability.isDynamicallyNamed()) {
-                    context.deregisterCapability(capability.getDynamicName(context.getCurrentAddress()));
+                    context.deregisterCapability(capability.getDynamicName(address));
                 } else {
                     context.deregisterCapability(capability.getName());
                 }

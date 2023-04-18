@@ -38,7 +38,9 @@ import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 
 /**
+ * Factory for creating {@link Synchronization} instances for a distributed timer service.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public class DistributableTimerSynchronizationFactory<I> implements TimerSynchronizationFactory<I> {
 

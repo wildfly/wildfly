@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;

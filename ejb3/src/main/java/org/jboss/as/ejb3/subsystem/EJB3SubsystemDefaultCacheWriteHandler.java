@@ -27,7 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.cache.CacheFactoryBuilderServiceNameProvider;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -39,11 +39,11 @@ import org.wildfly.clustering.service.IdentityServiceConfigurator;
 public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME,
+            new EJB3SubsystemDefaultCacheWriteHandler(StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE);
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_PASSIVATION_DISABLED_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
+            new EJB3SubsystemDefaultCacheWriteHandler(StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
 
     private final ServiceName serviceName;
@@ -81,7 +81,7 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
             context.removeService(this.serviceName);
         }
         if (cacheName.isDefined()) {
-            new IdentityServiceConfigurator<>(this.serviceName, new CacheFactoryBuilderServiceNameProvider(cacheName.asString()).getServiceName()).build(context.getServiceTarget()).install();
+            new IdentityServiceConfigurator<>(this.serviceName, new StatefulSessionBeanCacheProviderServiceNameProvider(cacheName.asString()).getServiceName()).build(context.getServiceTarget()).install();
         }
     }
 }

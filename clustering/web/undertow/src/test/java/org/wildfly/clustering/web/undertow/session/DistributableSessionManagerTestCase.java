@@ -59,6 +59,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.common.function.Functions;
 import org.xnio.OptionMap;
 import org.xnio.StreamConnection;
 import org.xnio.channels.Configurable;
@@ -84,7 +85,6 @@ public class DistributableSessionManagerTestCase {
         when(config.getSessionListeners()).thenReturn(this.listeners);
         when(config.getSessionManager()).thenReturn(this.manager);
         when(config.getStatistics()).thenReturn(this.statistics);
-        when(config.isOrphanSessionAllowed()).thenReturn(false);
 
         this.adapter = new DistributableSessionManager(config);
         this.adapter.registerSessionListener(this.listener);
@@ -113,13 +113,6 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
-    public void setDefaultSessionTimeout() {
-        this.adapter.setDefaultSessionTimeout(10);
-
-        verify(this.manager).setDefaultMaxInactiveInterval(Duration.ofSeconds(10L));
-    }
-
-    @Test
     public void createSessionResponseCommitted() {
         // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
         Configurable configurable = mock(Configurable.class);
@@ -128,7 +121,13 @@ public class DistributableSessionManagerTestCase {
         StreamSinkConduit sinkConduit = mock(StreamSinkConduit.class);
         ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
         StreamConnection stream = mock(StreamConnection.class);
+        String id = "foo";
+        Supplier<String> identifierFactory = Functions.constantSupplier(id);
+        int expectedTimeout = 10;
 
+        this.adapter.setDefaultSessionTimeout(expectedTimeout);
+
+        when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
         when(stream.getSourceChannel()).thenReturn(sourceChannel);
         when(stream.getSinkChannel()).thenReturn(sinkChannel);
 
@@ -141,7 +140,13 @@ public class DistributableSessionManagerTestCase {
 
         SessionConfig config = mock(SessionConfig.class);
 
-        Assert.assertThrows(IllegalStateException.class, () -> this.adapter.createSession(exchange, config));
+        io.undertow.server.session.Session session = this.adapter.createSession(exchange, config);
+
+        // Verify that a nonce session was created
+        verify(this.manager, never()).createSession(id);
+
+        Assert.assertEquals(id, session.getId());
+        Assert.assertEquals(expectedTimeout, session.getMaxInactiveInterval());
     }
 
     @Test

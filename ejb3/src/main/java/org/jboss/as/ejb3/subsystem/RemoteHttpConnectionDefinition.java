@@ -41,9 +41,7 @@ public class RemoteHttpConnectionDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{URI};
 
-    public static final RemoteHttpConnectionDefinition INSTANCE = new RemoteHttpConnectionDefinition();
-
-    private RemoteHttpConnectionDefinition() {
+    RemoteHttpConnectionDefinition() {
         super(PathElement.pathElement(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION), EJB3Extension
                 .getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE_HTTP_CONNECTION), new RemotingProfileChildResourceAddHandler(
                 ATTRIBUTES), new RemotingProfileChildResourceRemoveHandler());

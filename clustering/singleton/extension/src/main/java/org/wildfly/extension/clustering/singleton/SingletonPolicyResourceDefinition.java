@@ -31,7 +31,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
@@ -132,7 +132,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 ;
         ServiceValueExecutorRegistry<Singleton> executors = new ServiceValueExecutorRegistry<>();
         ResourceServiceHandler handler = new SingletonPolicyServiceHandler(executors);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new RandomElectionPolicyResourceDefinition().register(registration);
         new SimpleElectionPolicyResourceDefinition().register(registration);

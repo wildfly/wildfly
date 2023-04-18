@@ -27,13 +27,13 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.AuthProtocol;
-import org.jboss.as.clustering.jgroups.subsystem.ProtocolRegistration.EncryptProtocol;
+import org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceRegistrar.AuthProtocol;
+import org.jboss.as.clustering.jgroups.subsystem.ProtocolResourceRegistrar.EncryptProtocol;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
- * Transforms standard and override protocol resources registered via {@link ProtocolRegistration}.
+ * Transforms standard and override protocol resources registered via {@link ProtocolResourceRegistrar}.
  * @author Paul Ferraro
  */
 public class ProtocolTransformer implements Consumer<ModelVersion> {

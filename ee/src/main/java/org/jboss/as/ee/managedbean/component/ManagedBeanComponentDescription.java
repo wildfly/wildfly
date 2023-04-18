@@ -5,7 +5,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * Component descriptor for {@link javax.annotation.ManagedBean} managed beans.
+ * Component descriptor for {@link jakarta.annotation.ManagedBean} managed beans.
  *
  * This is only here so that other interested processors can tell if a given component is a managed bean,
  * it does not add anything to the component description.

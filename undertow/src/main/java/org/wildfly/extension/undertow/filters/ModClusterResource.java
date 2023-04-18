@@ -23,204 +23,80 @@
 package org.wildfly.extension.undertow.filters;
 
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
-import io.undertow.server.handlers.proxy.mod_cluster.ModClusterController;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import io.undertow.util.CopyOnWriteMap;
+
+import org.jboss.as.clustering.controller.ChildResourceProvider;
+import org.jboss.as.clustering.controller.ComplexResource;
+import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.undertow.UndertowService;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import static org.wildfly.extension.undertow.Constants.BALANCER;
+/**
+ * Runtime resource implementation for {@link ModCluster}.
+ * @author Paul Ferraro
+ */
+public class ModClusterResource extends ComplexResource implements Consumer<ModCluster> {
+    private final Map<String, ChildResourceProvider> providers;
 
+    public ModClusterResource(Resource resource) {
+        this(resource, new CopyOnWriteMap<>());
+    }
 
-public class ModClusterResource implements Resource {
-
-    private final Resource delegate;
-    private final String name;
-
-    public ModClusterResource(Resource delegate, String name) {
-        this.delegate = delegate;
-        this.name = name;
+    private ModClusterResource(Resource resource, Map<String, ChildResourceProvider> providers) {
+        super(resource, providers, ModClusterResource::new);
+        this.providers = providers;
     }
 
     @Override
-    public ModelNode getModel() {
-        return delegate.getModel();
+    public void accept(ModCluster service) {
+        this.providers.put(ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), new ModClusterBalancerResourceProvider(service));
     }
 
-    @Override
-    public void writeModel(final ModelNode newModel) {
-        delegate.writeModel(newModel);
-    }
+    static class ModClusterBalancerResourceProvider implements ChildResourceProvider {
+        private final ModCluster service;
 
-    @Override
-    public boolean isModelDefined() {
-        return delegate.isModelDefined();
-    }
-
-    @Override
-    public boolean hasChild(final PathElement element) {
-        if (BALANCER.equals(element.getKey())) {
-            return getChildrenNames(BALANCER).contains(element.getValue());
+        ModClusterBalancerResourceProvider(ModCluster service) {
+            this.service = service;
         }
-        return delegate.hasChild(element);
-    }
 
-    @Override
-    public Resource getChild(final PathElement element) {
-        if (BALANCER.equals(element.getKey())) {
-            if (getChildrenNames(BALANCER).contains(element.getValue())) {
-                return new ModClusterBalancerResource(element.getValue(), name);
-            }
-            return null;
+        @Override
+        public Resource getChild(String name) {
+            ModClusterStatus status = this.service.getController().getStatus();
+            ModClusterStatus.LoadBalancer balancer = status.getLoadBalancer(name);
+            return (balancer != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterNodeDefinition.PATH_ELEMENT.getKey(), new ModClusterNodeResourceProvider(balancer), ModClusterLoadBalancingGroupDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(balancer.getNodes().stream().map(ModClusterStatus.Node::getDomain).filter(Predicate.not(Objects::isNull)).distinct().collect(Collectors.toSet())))) : null;
         }
-        return delegate.getChild(element);
-    }
 
-    @Override
-    public Resource requireChild(final PathElement element) {
-        if (BALANCER.equals(element.getKey())) {
-            if (getChildrenNames(BALANCER).contains(element.getValue())) {
-                return new ModClusterBalancerResource(element.getValue(), name);
-            }
-            throw new NoSuchResourceException(element);
+        @Override
+        public Set<String> getChildren() {
+            ModClusterStatus status = this.service.getController().getStatus();
+            return status.getLoadBalancers().stream().map(ModClusterStatus.LoadBalancer::getName).collect(Collectors.toSet());
         }
-        return delegate.requireChild(element);
     }
 
-    @Override
-    public boolean hasChildren(final String childType) {
-        if (BALANCER.equals(childType)) {
-            return !getChildrenNames(BALANCER).isEmpty();
+    static class ModClusterNodeResourceProvider implements ChildResourceProvider {
+        private final ModClusterStatus.LoadBalancer balancer;
+
+        ModClusterNodeResourceProvider(ModClusterStatus.LoadBalancer balancer) {
+            this.balancer = balancer;
         }
-        return delegate.hasChildren(childType);
-    }
 
-    @Override
-    public Resource navigate(final PathAddress address) {
-        if (address.size() > 0 && BALANCER.equals(address.getElement(0).getKey())) {
-            final Resource modClusterBalancerResource = requireChild(address.getElement(0));
-            if(address.size() == 1) {
-                return modClusterBalancerResource;
-            } else {
-                return modClusterBalancerResource.navigate(address.subAddress(1));
-            }
+        @Override
+        public Resource getChild(String name) {
+            ModClusterStatus.Node node = this.balancer.getNode(name);
+            return (node != null) ? new ComplexResource(PlaceholderResource.INSTANCE, Map.of(ModClusterContextDefinition.PATH_ELEMENT.getKey(), new SimpleChildResourceProvider(node.getContexts().stream().map(ModClusterStatus.Context::getName).collect(Collectors.toSet())))) : null;
         }
-        return delegate.navigate(address);
-    }
 
-    @Override
-    public Set<String> getChildTypes() {
-        final Set<String> result = new LinkedHashSet<>(delegate.getChildTypes());
-        result.add(BALANCER);
-        return result;
-    }
-
-    @Override
-    public Set<String> getChildrenNames(final String childType) {
-        if (BALANCER.equals(childType)) {
-
-            ModClusterService service = service(name);
-            if(service == null) {
-                return Collections.emptySet();
-            }
-            ModCluster modCluster = service.getModCluster();
-            if(modCluster == null) {
-                return Collections.emptySet();
-            }
-            ModClusterController controller = modCluster.getController();
-            if(controller == null) {
-                return Collections.emptySet();
-            }
-            ModClusterStatus status = controller.getStatus();
-            final Set<String> result = new LinkedHashSet<>();
-            for (ModClusterStatus.LoadBalancer balancer : status.getLoadBalancers()) {
-                result.add(balancer.getName());
-            }
-            return result;
+        @Override
+        public Set<String> getChildren() {
+            return this.balancer.getNodes().stream().map(ModClusterStatus.Node::getName).collect(Collectors.toSet());
         }
-        return delegate.getChildrenNames(childType);
-    }
-
-    @Override
-    public Set<ResourceEntry> getChildren(final String childType) {
-        if (BALANCER.equals(childType)) {
-            final Set<String> names = getChildrenNames(childType);
-            final Set<ResourceEntry> result = new LinkedHashSet<>(names.size());
-            for (String name : names) {
-                result.add(new ModClusterBalancerResource(name, this.name));
-            }
-            return result;
-        }
-        return delegate.getChildren(childType);
-    }
-
-    @Override
-    public void registerChild(final PathElement address, final Resource resource) {
-        final String type = address.getKey();
-        if (BALANCER.equals(type)) {
-            throw UndertowLogger.ROOT_LOGGER.cannotRegisterResourceOfType(type);
-        }
-        delegate.registerChild(address, resource);
-    }
-
-    @Override
-    public void registerChild(PathElement address, int index, Resource resource) {
-        final String type = address.getKey();
-        if (BALANCER.equals(type)) {
-            throw UndertowLogger.ROOT_LOGGER.cannotRegisterResourceOfType(type);
-        }
-        delegate.registerChild(address, index, resource);
-    }
-
-    @Override
-    public Resource removeChild(final PathElement address) {
-        final String type = address.getKey();
-        if (BALANCER.equals(type)) {
-            throw UndertowLogger.ROOT_LOGGER.cannotRemoveResourceOfType(type);
-        }
-        return delegate.removeChild(address);
-    }
-
-    @Override
-    public boolean isRuntime() {
-        return delegate.isRuntime();
-    }
-
-    @Override
-    public boolean isProxy() {
-        return delegate.isProxy();
-    }
-
-    @Override
-    public Set<String> getOrderedChildTypes() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Resource clone() {
-        return new ModClusterResource(delegate.clone(), name);
-    }
-
-    static ModClusterService service(String name) {
-        final ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
-        if(serviceContainer == null) {
-            //for tests
-            return null;
-        }
-        ServiceController<?> cluster = serviceContainer.getService(UndertowService.FILTER.append(name));
-        if(cluster == null) {
-            return null;
-        }
-        return (ModClusterService) cluster.getService();
     }
 }

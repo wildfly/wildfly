@@ -21,9 +21,9 @@
  */
 package org.jboss.as.connector.deployers.spec.rars.ra16inoutmultianno;
 
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.ConnectionDefinition;
-import javax.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ConfigProperty;
+import jakarta.resource.spi.ConnectionDefinition;
+import jakarta.resource.spi.ManagedConnection;
 
 import org.jboss.as.connector.deployers.spec.rars.BaseManagedConnectionFactory;
 import org.jboss.as.connector.deployers.spec.rars.TestConnection;

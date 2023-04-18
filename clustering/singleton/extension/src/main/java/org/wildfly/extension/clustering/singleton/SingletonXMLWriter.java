@@ -41,7 +41,7 @@ public class SingletonXMLWriter implements XMLElementWriter<SubsystemMarshalling
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(SingletonSchema.CURRENT.getNamespaceUri(), false);
+        context.startSubsystemElement(SingletonSubsystemSchema.CURRENT.getNamespace().getUri(), false);
         writeSingletonPolicies(writer, context.getModelNode());
         writer.writeEndElement();
     }

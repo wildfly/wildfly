@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -71,13 +71,13 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -89,7 +89,7 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -101,7 +101,7 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -113,7 +113,55 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-streams-operators</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-telemetry</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-telemetry-cdi-provider</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-opentelemetry</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-opentelemetry-api</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -123,23 +171,71 @@
             </dependency>
 
             <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-core</artifactId>
-                <version>${version.io.jaegertracing}</version>
+                <groupId>com.fasterxml.jackson.jr</groupId>
+                <artifactId>jackson-jr-objects</artifactId>
+                <version>${version.com.fasterxml.jackson.jr.jackson-jr-objects}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-thrift</artifactId>
-                <version>${version.io.jaegertracing}</version>
+                <groupId>com.google.api.grpc</groupId>
+                <artifactId>proto-google-common-protos</artifactId>
+                <version>${version.com.google.api.grpc}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>com.squareup.okhttp3</groupId>
-                        <artifactId>okhttp</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${version.com.google.protobuf}</version>
+                <exclusions>
                     <exclusion>
-                        <groupId>org.apache.thrift</groupId>
-                        <artifactId>libthrift</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>${version.com.google.protobuf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${version.com.squareup.okhttp}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.squareup.okio</groupId>
+                <artifactId>okio-jvm</artifactId>
+                <version>${version.com.squareup.okio-jvm}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -179,45 +275,259 @@
             </dependency>
 
             <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>${version.io.opentracing}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-noop</artifactId>
-                <version>${version.io.opentracing}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-util</artifactId>
-                <version>${version.io.opentracing}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-concurrent</artifactId>
-                <version>${version.io.opentracing.concurrent}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-interceptors</artifactId>
-                <version>${version.io.opentracing.interceptors}</version>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>javax</groupId>
-                        <artifactId>javaee-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-jaxrs2</artifactId>
-                <version>${version.io.opentracing.jaxrs2}</version>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api-logs</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-web-servlet-filter</artifactId>
-                <version>${version.io.opentracing.servlet}</version>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-context</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-jaeger</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api-semconv</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-logs</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-metrics</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-trace</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.perfmark</groupId>
+                <artifactId>perfmark-api</artifactId>
+                <version>${version.io.perfmark}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-api</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-cdi</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-rest</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -268,6 +578,28 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-mutiny-vertx-runtime</artifactId>
                 <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-zero</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny-zero}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-zero-flow-adapters</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny-zero}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -371,6 +703,54 @@
                 <groupId>org.apache.thrift</groupId>
                 <artifactId>libthrift</artifactId>
                 <version>${version.org.apache.thrift}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-common</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk7</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>

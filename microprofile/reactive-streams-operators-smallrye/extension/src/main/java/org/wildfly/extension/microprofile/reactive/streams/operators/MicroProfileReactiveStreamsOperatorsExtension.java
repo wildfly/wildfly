@@ -24,16 +24,24 @@ package org.wildfly.extension.microprofile.reactive.streams.operators;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
+import java.util.List;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionReader;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -49,41 +57,26 @@ public class MicroProfileReactiveStreamsOperatorsExtension implements Extension 
 
     static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
 
-    private static final String RESOURCE_NAME = MicroProfileReactiveStreamsOperatorsExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileReactiveStreamsOperatorsExtension.class);
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
 
-    private static final MicroProfileReactiveStreamsOperatorsParser_1_0 CURRENT_PARSER = new MicroProfileReactiveStreamsOperatorsParser_1_0();
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        return getResourceDescriptionResolver(true, keyPrefix);
-
-    }
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder();
-        for (String kp : keyPrefix) {
-            if (prefix.length() > 0){
-                prefix.append('.');
-            }
-            prefix.append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MicroProfileReactiveStreamsOperatorsExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
-    }
-
+    private final PersistentResourceXMLDescription currentDescription = MicroProfileReactiveStreamsOperatorsSubsystemSchema.CURRENT.getXMLDescription();
 
     @Override
     public void initialize(ExtensionContext extensionContext) {
         final SubsystemRegistration sr =  extensionContext.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        sr.registerXMLElementWriter(CURRENT_PARSER);
+        sr.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
         final ManagementResourceRegistration root = sr.registerSubsystemModel(new MicroProfileReactiveStreamsOperatorsSubsystemDefinition());
         root.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext extensionParsingContext) {
-        extensionParsingContext.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileReactiveStreamsOperatorsParser_1_0.NAMESPACE, CURRENT_PARSER);
+    public void initializeParsers(ExtensionParsingContext context) {
+        for (MicroProfileReactiveStreamsOperatorsSubsystemSchema schema : EnumSet.allOf(MicroProfileReactiveStreamsOperatorsSubsystemSchema.class)) {
+            XMLElementReader<List<ModelNode>> reader = (schema == MicroProfileReactiveStreamsOperatorsSubsystemSchema.CURRENT) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespace().getUri(), reader);
+        }
     }
-
 }

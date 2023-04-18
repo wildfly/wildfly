@@ -22,13 +22,6 @@
 
 package org.jboss.as.test.integration.common.jms;
 
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
-import java.util.Map;
-
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -39,7 +32,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
 
+import java.util.Map;
+
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 
 /**

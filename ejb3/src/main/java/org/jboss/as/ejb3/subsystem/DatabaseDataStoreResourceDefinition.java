@@ -79,9 +79,8 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATASOURCE_JNDI_NAME, DATABASE, PARTITION, REFRESH_INTERVAL, ALLOW_EXECUTION };
     private static final DatabaseDataStoreAdd ADD_HANDLER = new DatabaseDataStoreAdd(ATTRIBUTES);
-    public static final DatabaseDataStoreResourceDefinition INSTANCE = new DatabaseDataStoreResourceDefinition();
 
-    private DatabaseDataStoreResourceDefinition() {
+    DatabaseDataStoreResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.DATABASE_DATA_STORE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.DATABASE_DATA_STORE))
                 .setAddHandler(ADD_HANDLER)
                 .setRemoveHandler(new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, ADD_HANDLER))

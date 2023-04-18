@@ -53,9 +53,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
             .setDefaultValue(ModelNode.TRUE)
             .build();
 
-    public static final MdbDeliveryGroupResourceDefinition INSTANCE = new MdbDeliveryGroupResourceDefinition();
-
-    private MdbDeliveryGroupResourceDefinition() {
+    MdbDeliveryGroupResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.MDB_DELIVERY_GROUP_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.MDB_DELIVERY_GROUP))
                 .setAddHandler(MdbDeliveryGroupAdd.INSTANCE)
                 .setRemoveHandler(new ReloadRequiredRemoveStepHandler())

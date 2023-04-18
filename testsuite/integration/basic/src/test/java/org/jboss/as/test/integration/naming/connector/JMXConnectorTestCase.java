@@ -23,6 +23,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -88,6 +89,7 @@ public class JMXConnectorTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
+        archive.addAsManifestResource(new StringAsset("Dependencies: jdk.naming.rmi\n"), "MANIFEST.MF");
         archive.addAsManifestResource(createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi"),
             new SocketPermission("*:*", "connect,resolve")
@@ -98,7 +100,7 @@ public class JMXConnectorTestCase {
     @Test
     public void testMBeanCount() throws Exception {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");

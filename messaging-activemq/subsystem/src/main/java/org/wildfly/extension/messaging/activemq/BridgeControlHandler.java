@@ -28,7 +28,7 @@ import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * Handler for runtime operations that interact with a ActiveMQ {@link org.apache.activemq.artemis.api.core.management.BridgeControl}.
+ * Handler for runtime operations that interact with a ActiveMQ {@link BridgeControl}.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

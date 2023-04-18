@@ -8,9 +8,9 @@
             <property name="javaVmArguments">-server -Xms64m -Xmx512m ${jbossas.server.locale} ${modular.jdk.args}</property>
             <property name="containerNameMap">
                 main-server-group=main-server-group,
-                master:server-one=jboss-domain,
-                master:server-two=backend-2,
-                master:server-three=frontend-1
+                primary:server-one=jboss-domain,
+                primary:server-two=backend-2,
+                primary:server-three=frontend-1
             </property>
             <property name="containerModeMap">
                 other.*=manual

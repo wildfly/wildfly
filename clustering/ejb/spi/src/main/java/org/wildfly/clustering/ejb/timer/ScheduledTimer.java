@@ -23,6 +23,7 @@
 package org.wildfly.clustering.ejb.timer;
 
 /**
+ * A {@link Timer} that executes according to a configured schedule.
  * @author Paul Ferraro
  */
 public interface ScheduledTimer<I> extends Timer<I> {

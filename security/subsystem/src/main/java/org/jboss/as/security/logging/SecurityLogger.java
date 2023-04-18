@@ -549,4 +549,24 @@ public interface SecurityLogger extends BasicLogger {
 
     @Message(id=105, value = "Unable to initialize legacy JACC support while elytron JACC support is enabled.")
     IllegalStateException unableToEnableJaccSupport();
+
+//    /**
+//     * A message indicating an unsupported resource in the model during Model Stage.
+//     *
+//     * @param name                  the name of the resource.
+//     * @param minUnsupportedVersion the minimal JVM major version where this resource is no longer supported.
+//     * @return The exception for the error.
+//     */
+//    @Message(id = 106, value = "The resource '%s' is unsupported since Java %d")
+//    OperationFailedException unsupportedResourceSinceJavaVersion(String name, int minUnsupportedVersion);
+
+    /**
+     * A message indicating the validation failed.
+     *
+     * @param name the parameter name the validation failed on.
+     *
+     * @return the message.
+     */
+    @Message(id = 107, value = "Validation failed for %s")
+    String validationFailed(String name);
 }

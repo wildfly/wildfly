@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.metadata.property.PropertyReplacers;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,12 +71,12 @@ public class DistributableWebDeploymentXMLReaderTestCase {
 
     @Test
     public void test() throws IOException, XMLStreamException {
-        URL url = this.getClass().getResource(String.format("distributable-web-%d.%d.xml", this.schema.major(), this.schema.minor()));
+        URL url = this.getClass().getResource(String.format("distributable-web-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(this.schema.getRoot(), new DistributableWebDeploymentXMLReader(this.schema));
+        mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableDeploymentConfiguration config = new MutableDistributableDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagement());
@@ -84,18 +85,18 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             Assert.assertNotNull(config.getImmutableClasses());
             Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
         } finally {
-            mapper.unregisterRootAttribute(this.schema.getRoot());
+            mapper.unregisterRootAttribute(this.schema.getQualifiedName());
         }
     }
 
     @Test
     public void testInfinispan() throws IOException, XMLStreamException {
-        URL url = this.getClass().getResource(String.format("distributable-web-infinispan-%d.%d.xml", this.schema.major(), this.schema.minor()));
+        URL url = this.getClass().getResource(String.format("distributable-web-infinispan-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(this.schema.getRoot(), new DistributableWebDeploymentXMLReader(this.schema));
+        mapper.registerRootElement(this.schema.getQualifiedName(), this.schema);
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableDeploymentConfiguration config = new MutableDistributableDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
@@ -121,18 +122,18 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             Assert.assertNotNull(config.getImmutableClasses());
             Assert.assertEquals(Arrays.asList(Locale.class.getName(), UUID.class.getName()), config.getImmutableClasses());
         } finally {
-            mapper.unregisterRootAttribute(this.schema.getRoot());
+            mapper.unregisterRootAttribute(this.schema.getQualifiedName());
         }
     }
 
     @Test
     public void testHotRod() throws IOException, XMLStreamException {
-        URL url = this.getClass().getResource(String.format("distributable-web-hotrod-%d.%d.xml", this.schema.major(), this.schema.minor()));
+        URL url = this.getClass().getResource(String.format("distributable-web-hotrod-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(this.schema.getRoot(), new DistributableWebDeploymentXMLReader(this.schema));
+        mapper.registerRootElement(this.schema.getQualifiedName(), new DistributableWebDeploymentXMLReader(this.schema));
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
-            MutableDistributableDeploymentConfiguration config = new MutableDistributableDeploymentConfiguration();
+            MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(PropertyReplacers.noop());
             mapper.parseDocument(config, reader);
 
             Assert.assertNull(config.getSessionManagementName());
@@ -143,7 +144,7 @@ public class DistributableWebDeploymentXMLReaderTestCase {
             Assert.assertEquals("foo", configuration.getContainerName());
             Assert.assertSame(SessionAttributePersistenceStrategy.FINE, configuration.getAttributePersistenceStrategy());
         } finally {
-            mapper.unregisterRootAttribute(this.schema.getRoot());
+            mapper.unregisterRootAttribute(this.schema.getQualifiedName());
         }
     }
 }

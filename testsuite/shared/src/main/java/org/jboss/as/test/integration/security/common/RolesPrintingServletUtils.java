@@ -21,18 +21,20 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import static org.junit.Assert.fail;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
-import static org.junit.Assert.fail;
 
 /**
  * Utils class for related methods to printing roles by

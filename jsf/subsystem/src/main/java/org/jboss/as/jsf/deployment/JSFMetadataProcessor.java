@@ -19,7 +19,7 @@ import org.jboss.metadata.web.spec.MultipartConfigMetaData;
  */
 public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
-    public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "javax.faces.webapp.FacesServlet";
+    public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
     private static final String DISALLOW_DOCTYPE_DECL = "com.sun.faces.disallowDoctypeDecl";
     private static final String LAZY_BEAN_VALIDATION_PARAM = "com.sun.faces.enableLazyBeanValidation";
 

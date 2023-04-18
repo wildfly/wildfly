@@ -26,6 +26,7 @@ import java.util.Collections;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 
@@ -44,10 +45,8 @@ public class EESecuritySubsystemDefinition extends PersistentResourceDefinition 
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 
-    public static final EESecuritySubsystemDefinition INSTANCE = new EESecuritySubsystemDefinition();
-
-    private EESecuritySubsystemDefinition() {
-        super(new Parameters(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.getResolver())
+    EESecuritySubsystemDefinition() {
+        super(new SimpleResourceDefinition.Parameters(EESecurityExtension.SUBSYSTEM_PATH, EESecurityExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(EESecuritySubsystemAdd.INSTANCE)
                 .addCapabilities(EE_SECURITY_CAPABILITY)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)

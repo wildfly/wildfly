@@ -22,12 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.ejb3.deployment.processors.EJBDefaultSecurityDomainProcessor;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -38,12 +39,12 @@ import org.jboss.dmr.ModelNode;
 class EJBDefaultSecurityDomainWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
     private final AttributeDefinition attributeDefinition;
-    private final EJBDefaultSecurityDomainProcessor ejbDefaultSecurityDomainProcessor;
+    private final AtomicReference<String> defaultSecurityDomainName;
 
-    EJBDefaultSecurityDomainWriteHandler(final AttributeDefinition attributeDefinition, final EJBDefaultSecurityDomainProcessor ejbDefaultSecurityDomainProcessor) {
+    EJBDefaultSecurityDomainWriteHandler(final AttributeDefinition attributeDefinition, final AtomicReference<String> defaultSecurityDomainName) {
         super(attributeDefinition);
         this.attributeDefinition = attributeDefinition;
-        this.ejbDefaultSecurityDomainProcessor = ejbDefaultSecurityDomainProcessor;
+        this.defaultSecurityDomainName = defaultSecurityDomainName;
     }
 
     @Override
@@ -65,12 +66,9 @@ class EJBDefaultSecurityDomainWriteHandler extends AbstractWriteAttributeHandler
 
     private void updateDefaultSecurityDomainDeploymentProcessor(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
-        if (this.ejbDefaultSecurityDomainProcessor == null) {
-            return;
-        }
         final ModelNode defaultSecurityDomainModelNode = this.attributeDefinition.resolveModelAttribute(context, model);
         final String defaultSecurityDomainName = defaultSecurityDomainModelNode.isDefined() ? defaultSecurityDomainModelNode.asString() : null;
-        this.ejbDefaultSecurityDomainProcessor.setDefaultSecurityDomainName(defaultSecurityDomainName);
+        this.defaultSecurityDomainName.set(defaultSecurityDomainName);
     }
 
 }

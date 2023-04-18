@@ -22,16 +22,12 @@
 
 package org.wildfly.extension.mod_cluster;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -42,31 +38,18 @@ import org.kohsuke.MetaInfServices;
  * @author Radoslav Husar
  */
 @MetaInfServices(Extension.class)
-public class ModClusterExtension implements Extension {
+public class ModClusterExtension extends SubsystemExtension<ModClusterSubsystemSchema> {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
 
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, ModClusterExtension.class);
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, ModClusterExtension.class);
 
     public static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-security", false, true, true));
     public static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false));
 
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, ModClusterModel.CURRENT.getVersion());
-
-        new ModClusterSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-
-        registration.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
+    public ModClusterExtension() {
+        super(SUBSYSTEM_NAME, ModClusterSubsystemModel.CURRENT, ModClusterSubsystemResourceDefinition::new, ModClusterSubsystemSchema.CURRENT, new ModClusterSubsystemXMLWriter());
     }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (ModClusterSchema schema : EnumSet.allOf(ModClusterSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new ModClusterSubsystemXMLReader(schema));
-        }
-    }
-
 }

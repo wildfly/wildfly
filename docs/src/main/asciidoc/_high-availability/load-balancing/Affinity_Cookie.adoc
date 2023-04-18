@@ -1,0 +1,54 @@
+[[load-balancer-affinity-cookie]]
+= Support for load-balancers relying on affinity cookie
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+While the Apache family of load-balancers relies on attaching session affinity (routing) information by default to a `JSESSIONID` cookie or a `jsessionid` path parameter,
+there are other load-balancers that rely on a cookie to drive session affinity.
+
+In order to configure the cookie name and other properties use the following CLI script:
+
+[source,options="nowrap"]
+----
+/subsystem=undertow/servlet-container=default/setting=affinity-cookie:add(name=SRV)
+----
+
+The affinity can be specified either in the `instance-id` or by providing `jboss.node.name` property to the server.
+
+[source,options="nowrap"]
+----
+./bin/standalone.sh -c standalone-ha.xml -Djboss.node.name=ribera1
+----
+
+For complete documentation on configuring the servlet container refer to link:Admin_Guide{outfilesuffix}#servlet-container-configuration[Undertow documentation section].
+
+== HAProxy
+
+The following is a minimum HAProxy configuration to enable affinity provided by application server to be respected by the given load-balancer.
+
+[source,options="nowrap"]
+----
+defaults
+timeout connect 5s
+timeout client 50s
+timeout server 50s
+
+frontend myfrontend
+bind 127.0.0.1:8888
+default_backend myservers
+
+backend myservers
+mode http
+cookie SRV indirect preserve
+option redispatch
+server server1 127.0.0.1:8080 cookie ribera1
+server server2 127.0.0.1:8180 cookie ribera2
+----
+
+Notice that the proxy server defined cookie names need to correspond with the application server's `instance-id`.

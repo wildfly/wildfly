@@ -28,7 +28,7 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
         <!-- Maintain separation between the artifact id and the version to help prevent merge conflicts between commits changing the GA and those changing the V. -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -44,6 +44,13 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -137,7 +144,7 @@
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

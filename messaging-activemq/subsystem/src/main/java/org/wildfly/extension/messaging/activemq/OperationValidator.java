@@ -36,7 +36,7 @@ interface OperationValidator {
      * Validate.
      *
      * @param operation the operation to validate
-     * @throws org.jboss.as.controller.OperationFailedException
+     * @throws OperationFailedException
      */
     void validate(ModelNode operation) throws OperationFailedException;
 

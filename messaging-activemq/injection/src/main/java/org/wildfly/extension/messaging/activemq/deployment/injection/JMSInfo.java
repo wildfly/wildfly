@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
+import static jakarta.jms.JMSContext.AUTO_ACKNOWLEDGE;
 import static org.wildfly.extension.messaging.activemq.deployment.DefaultJMSConnectionFactoryBinding.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
 
-import javax.jms.JMSConnectionFactory;
-import javax.jms.JMSPasswordCredential;
-import javax.jms.JMSSessionMode;
+import jakarta.jms.JMSConnectionFactory;
+import jakarta.jms.JMSPasswordCredential;
+import jakarta.jms.JMSSessionMode;
 
 import org.jboss.metadata.property.PropertyReplacer;
 

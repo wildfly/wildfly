@@ -43,7 +43,6 @@ public interface DistributableSessionManagementProvider<C extends DistributableS
      * @param <S> the HttpSession specification type
      * @param <SC> the ServletContext specification type
      * @param <AL> the HttpSessionAttributeListener specification type
-     * @param <MC> the marshalling context type
      * @param <LC> the local context type
      * @param configuration the configuration of the session manager factory
      * @return a service configurator

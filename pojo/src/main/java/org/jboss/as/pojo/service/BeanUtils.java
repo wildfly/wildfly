@@ -32,7 +32,6 @@ import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.ImmediateValue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -78,13 +77,13 @@ public final class BeanUtils {
                     Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
                     Method method = Configurator.findMethod(index, factoryClazz, factoryMethod, types, true, true, true);
                     MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                    mj.setTarget(() -> null); // null, since this is static call
                     mj.setParameters(parameters);
                     instantiateJoinpoint = mj;
                 } else if (factory != null) {
                     ReflectionJoinpoint rj = new ReflectionJoinpoint(factory.getBeanInfo(), factoryMethod, types);
                     // null type is ok, as this should be plain injection
-                    rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
+                    rj.setTarget(() -> factory.getValue(null));
                     rj.setParameters(parameters);
                     instantiateJoinpoint = rj;
                 }
@@ -176,7 +175,7 @@ public final class BeanUtils {
             params = parameters;
         }
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(() -> bean);
         joinpoint.setParameters(params);
         return joinpoint;
     }
@@ -194,7 +193,7 @@ public final class BeanUtils {
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
         ValueConfig param = (nullify == false) ? value : null;
         joinpoint.setParameters(new ValueConfig[]{param});
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(() -> bean);
         joinpoint.dispatch();
     }
 

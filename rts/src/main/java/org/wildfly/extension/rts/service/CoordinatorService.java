@@ -25,13 +25,16 @@ import io.undertow.servlet.api.DeploymentInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
+import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.rts.jaxrs.CoordinatorApplication;
 import org.wildfly.extension.rts.logging.RTSLogger;
+import org.wildfly.extension.undertow.Host;
 
 /**
  *
@@ -43,6 +46,10 @@ public final class CoordinatorService extends AbstractRTSService implements Serv
     public static final String CONTEXT_PATH = "/rest-at-coordinator";
 
     private static final String DEPLOYMENT_NAME = "REST-AT Coordinator";
+
+    public CoordinatorService(Supplier<Host> hostSupplier, Supplier<SocketBinding> socketBindingSupplier) {
+        super(hostSupplier, socketBindingSupplier);
+    }
 
     @Override
     public CoordinatorService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -69,7 +76,7 @@ public final class CoordinatorService extends AbstractRTSService implements Serv
         undeployServlet();
 
         final Map<String, String> initialParameters = new HashMap<String, String>();
-        initialParameters.put("javax.ws.rs.Application", CoordinatorApplication.class.getName());
+        initialParameters.put("jakarta.ws.rs.Application", CoordinatorApplication.class.getName());
 
         final DeploymentInfo coordinatorDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 

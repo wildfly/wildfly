@@ -26,7 +26,6 @@
     <dependencies>
         <layer name="cdi"/>
         <layer name="microprofile-config"/>
-        <layer name="microprofile-metrics"/>
     </dependencies>
     <feature spec="subsystem.microprofile-fault-tolerance-smallrye"/>
 </layer-spec>

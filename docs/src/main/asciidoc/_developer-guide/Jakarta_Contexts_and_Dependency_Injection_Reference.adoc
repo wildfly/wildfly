@@ -1,6 +1,14 @@
 [[CDI_Reference]]
 = CDI Reference
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly uses http://weld.cdi-spec.org/[Weld], the CDI reference
 implementation as its CDI provider. To activate CDI for a deployment
 simply add a `beans.xml` file in any archive in the deployment.

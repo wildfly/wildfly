@@ -34,7 +34,7 @@ public class RemoteNamingRemove extends ServiceRemoveStepHandler {
     public static final RemoteNamingRemove INSTANCE = new RemoteNamingRemove();
 
     private RemoteNamingRemove() {
-        super(RemoteNamingAdd.INSTANCE, RemoteNamingResourceDefinition.REMOTE_NAMING_CAPABILITY);
+        super(RemoteNamingAdd.INSTANCE);
     }
 
     @Override

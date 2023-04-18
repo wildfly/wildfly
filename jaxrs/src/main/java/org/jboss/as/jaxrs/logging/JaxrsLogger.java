@@ -205,4 +205,15 @@ public interface JaxrsLogger extends BasicLogger {
     @Message(id = 23, value = "Illegal value for parameter %s: %s")
     String illegalArgument(String name, String value);
 
+    @LogMessage(level = WARN)
+    @Message(id = 29, value = "The RESTEasy tracing API has been enabled for deployment \"%s\" and is not meant for production.")
+    void tracingEnabled(String deploymentName);
+
+    @Message(id = 30, value = "Invalid ConfigurationFactory found %s")
+    IllegalStateException invalidConfigurationFactory(Class<?> factory);
+
+    @LogMessage(level = WARN)
+    @Message(id = 31, value = "Failed to load RESTEasy MicroProfile Configuration: %s")
+    void failedToLoadConfigurationFactory(String msg);
+
 }

@@ -23,11 +23,8 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
-import org.jboss.msc.inject.ConcurrentMapInjector;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -35,39 +32,32 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class DataSourceConfigService implements Service<ModifiableDataSource> {
 
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("data-source-config");
-
-    private final ConcurrentMap<String, String> connectionProperties = new ConcurrentHashMap<String, String>(0);
-
-
     private final ModifiableDataSource dataSourceConfig;
+    private final Map<String, Supplier<String>> connectionProperties;
 
-    public DataSourceConfigService(ModifiableDataSource dataSourceConfig) {
-        super();
+    public DataSourceConfigService(final ModifiableDataSource dataSourceConfig, final Map<String, Supplier<String>> connectionProperties) {
         this.dataSourceConfig = dataSourceConfig;
+        this.connectionProperties = connectionProperties;
     }
 
-    public synchronized void start(StartContext startContext) throws StartException {
-        for (Map.Entry<String, String> connectionProperty : connectionProperties.entrySet()) {
-            dataSourceConfig.addConnectionProperty(connectionProperty.getKey(), connectionProperty.getValue());
+    public void start(final StartContext startContext) throws StartException {
+        for (Map.Entry<String, Supplier<String>> connectionProperty : connectionProperties.entrySet()) {
+            dataSourceConfig.addConnectionProperty(connectionProperty.getKey(), connectionProperty.getValue().get());
         }
     }
 
-    public synchronized void stop(StopContext stopContext) {
+    public void stop(final StopContext stopContext) {
     }
 
     @Override
-    public ModifiableDataSource getValue() throws IllegalStateException, IllegalArgumentException {
+    public ModifiableDataSource getValue() {
         return dataSourceConfig;
-    }
-
-    public Injector<String> getConnectionPropertyInjector(String key) {
-        return new ConcurrentMapInjector(connectionProperties, key);
     }
 
 }

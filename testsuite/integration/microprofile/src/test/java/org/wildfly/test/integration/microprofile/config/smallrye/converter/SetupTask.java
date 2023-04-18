@@ -23,6 +23,7 @@
 package org.wildfly.test.integration.microprofile.config.smallrye.converter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -67,7 +68,9 @@ public class SetupTask implements ServerSetupTask {
                 }
             }
         } else {
-            configSourceServiceLoad.as(ZipExporter.class).exportTo(moduleFile);
+            try (FileOutputStream target = new FileOutputStream(moduleFile)) {
+                configSourceServiceLoad.as(ZipExporter.class).exportTo(target);
+            }
         }
         testModule = new TestModule(TEST_MODULE_NAME, moduleXmlFile);
         testModule.addJavaArchive(moduleFile);

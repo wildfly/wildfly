@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import org.jgroups.blocks.RequestCorrelator.Header;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
+import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
@@ -110,7 +112,8 @@ public class JChannelFactory implements ChannelFactory {
         protocols.add(fork);
 
         // Override the SocketFactory of the transport
-        protocols.get(0).setSocketFactory(new ManagedSocketFactory(this.configuration.getSocketBindingManager(), bindings));
+        TP transport = (TP) protocols.get(0);
+        transport.setSocketFactory(new ManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings));
 
         JChannel channel = new JChannel(protocols);
 

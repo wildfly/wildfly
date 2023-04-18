@@ -60,7 +60,7 @@ final class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE, HostDefinition.DEFAULT_RESPONSE_CODE, HostDefinition.DISABLE_CONSOLE_REDIRECT, HostDefinition.QUEUE_REQUESTS_ON_START);
+        super(HostDefinition.ATTRIBUTES);
     }
 
     @Override

@@ -117,7 +117,7 @@ public class EJB3Subsystem100Parser extends EJB3Subsystem90Parser {
                     break;
                 }
                 case BEAN_MANAGEMENT: {
-                    AttributeDefinition definition = DistributableCacheFactoryResourceDefinition.Attribute.BEAN_MANAGEMENT.getDefinition();
+                    AttributeDefinition definition = DistributableStatefulSessionBeanCacheProviderResourceDefinition.Attribute.BEAN_MANAGEMENT.getDefinition();
                     definition.getParser().parseAndSetParameter(definition, value, operation, reader);
                     break;
                 }

@@ -32,6 +32,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
@@ -70,7 +71,7 @@ public class TestServlet extends HttpServlet {
 
                 } else if (mode.equals("read")) {
 
-                    Flight f = em.find(Flight.class, new Long(1));
+                    Flight f = em.find(Flight.class, Long.valueOf(1));
                     resp.setContentType("text/plain");
                     PrintWriter out = resp.getWriter();
                     out.print(f.getName());
@@ -82,7 +83,11 @@ public class TestServlet extends HttpServlet {
                 tx.setRollbackOnly();
                 throw e;
             } finally {
-                tx.commit();
+                if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                    tx.rollback();
+                } else {
+                    tx.commit();
+                }
             }
 
         } catch (Exception e) {

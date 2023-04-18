@@ -25,7 +25,7 @@ package org.jboss.as.jpa.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -136,7 +136,7 @@ public class Configuration {
     public static final String JPA_DEFAULT_PERSISTENCE_UNIT = "wildfly.jpa.default-unit";
 
     /**
-     * defaults to true, if false, persistence unit will not support javax.persistence.spi.ClassTransformer Interface
+     * defaults to true, if false, persistence unit will not support jakarta.persistence.spi.ClassTransformer Interface
      * which means no application class rewriting
      */
     public static final String JPA_CONTAINER_CLASS_TRANSFORMER = "jboss.as.jpa.classtransformer";

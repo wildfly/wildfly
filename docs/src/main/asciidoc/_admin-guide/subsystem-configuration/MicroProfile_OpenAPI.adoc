@@ -1,7 +1,15 @@
 [[MicroProfile_OpenAPI_SmallRye]]
 = MicroProfile OpenAPI Subsystem Configuration
 
-The https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md[OpenAPI specification] defines a contract for JAX-RS applications in the same way that WSDL defined a contract for legacy web services.
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+The https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md[OpenAPI specification] defines a contract for JAX-RS applications in the same way that WSDL defined a contract for legacy web services.
 The https://download.eclipse.org/microprofile/microprofile-open-api-1.1.2/microprofile-openapi-spec.html[MicroProfile OpenAPI specification] defines a mechanism for generating an OpenAPI v3 document from a JAX-RS application as well as an API for customizing production of the document.
 
 == Subsystem
@@ -91,4 +99,4 @@ The MicroProfile OpenAPI implementation is provided by the SmallRye OpenAPI proj
 
 ****
 
-NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
+NOTE: References in this document to Java API for RESTful Web Services (JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

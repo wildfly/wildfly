@@ -48,9 +48,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
             CommonAttributes.FACTORY_CLASS,
             CommonAttributes.PARAMS };
 
-    static final ConnectorServiceDefinition INSTANCE = new ConnectorServiceDefinition();
-
-    private ConnectorServiceDefinition() {
+    ConnectorServiceDefinition() {
         super(MessagingExtension.CONNECTOR_SERVICE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 new ConnectorServiceAddHandler(ATTRIBUTES),
@@ -87,7 +85,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                 ModelNode resolvedValue, ModelNode currentValue,
-                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> voidHandback)
+                HandbackHolder<Void> voidHandback)
                 throws OperationFailedException {
             if (CommonAttributes.FACTORY_CLASS.getName().equals(attributeName)) {
                 checkFactoryClass(resolvedValue.asString());

@@ -32,8 +32,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DAT
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PROFILE;
@@ -78,7 +78,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                     ModelNode result = context.getResult();
                     for (InstalledDriver driver : driverRegistry.getInstalledDrivers()) {
                         ModelNode driverNode = new ModelNode();
-                        driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
+                        driverNode.get(INSTALLED_DRIVER_NAME.getName()).set(driver.getDriverName());
                         if (driver.isFromDeployment()) {
                             driverNode.get(DEPLOYMENT_NAME.getName()).set(driver.getDriverName());
                             driverNode.get(DRIVER_MODULE_NAME.getName());

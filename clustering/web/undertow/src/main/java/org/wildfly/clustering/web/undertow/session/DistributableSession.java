@@ -25,7 +25,6 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
-import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
@@ -162,7 +161,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public int getMaxInactiveInterval() {
         Session<Map<String, Object>> session = this.getSessionEntry().getKey();
         try (BatchContext context = this.resumeBatch()) {
-            return (int) session.getMetaData().getMaxInactiveInterval().getSeconds();
+            return (int) session.getMetaData().getTimeout().getSeconds();
         } catch (IllegalStateException e) {
             this.closeIfInvalid(null, session);
             throw e;
@@ -299,10 +298,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-        // Workaround for UNDERTOW-1902
-        if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
-            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
-        }
         Session<Map<String, Object>> oldSession = this.getSessionEntry().getKey();
         SessionManager<Map<String, Object>, Batch> manager = this.manager.getSessionManager();
         String id = manager.getIdentifierFactory().get();
@@ -312,8 +307,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 for (String name: oldSession.getAttributes().getAttributeNames()) {
                     newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
                 }
-                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
-                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
+                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getTimeout());
+                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
                 newSession.getLocalContext().putAll(oldSession.getLocalContext());
                 oldSession.invalidate();
                 config.setSessionId(exchange, id);

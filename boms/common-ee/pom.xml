@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -142,6 +142,17 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-ee-spi</artifactId>
+                <version>${ee.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-clustering-ejb-cache</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
@@ -614,12 +625,8 @@
                 <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.picketlink</groupId>
-                        <artifactId>picketlink-idm-simple-schema</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.picketlink.distribution</groupId>
-                        <artifactId>picketlink-wildfly8</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -638,11 +645,9 @@
                 <artifactId>wildfly-security</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -666,6 +671,12 @@
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
                 <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -770,12 +781,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml.jackson.jr</groupId>
-                <artifactId>jackson-jr-objects</artifactId>
-                <version>${version.com.fasterxml.jackson.jr.jackson-jr-objects}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
                 <version>${version.org.codehaus.woodstox.woodstox-core}</version>
@@ -830,12 +835,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.google.api.grpc</groupId>
-                <artifactId>proto-google-common-protos</artifactId>
-                <version>${version.com.google.api.grpc}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${version.com.google.code.gson}</version>
@@ -879,17 +878,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>${version.com.google.protobuf}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java-util</artifactId>
-                <version>${version.com.google.protobuf}</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.h2database</groupId>
@@ -916,15 +904,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${version.com.squareup.okhttp}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.squareup.okio</groupId>
-                <artifactId>okio-jvm</artifactId>
-                <version>${version.com.squareup.okio-jvm}</version>
+                <groupId>com.squareup</groupId>
+                <artifactId>protoparser</artifactId>
+                <version>${version.com.squareup.protoparser}</version>
             </dependency>
 
             <dependency>
@@ -977,42 +959,6 @@
                 <groupId>gnu.getopt</groupId>
                 <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-api</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-context</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-core</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-okhttp</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-protobuf</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-protobuf-lite</artifactId>
-                <version>${version.io.grpc}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-stub</artifactId>
-                <version>${version.io.grpc}</version>
             </dependency>
 
             <dependency>
@@ -1239,134 +1185,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-api</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-context</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-jaeger</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp-trace</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-sdk</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-sdk-common</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-sdk-logs</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-sdk-metrics</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-sdk-trace</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-semconv</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.perfmark</groupId>
-                <artifactId>perfmark-api</artifactId>
-                <version>${version.io.perfmark}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>io.reactivex.rxjava2</groupId>
                 <artifactId>rxjava</artifactId>
                 <version>${version.io.reactivex.rxjava2}</version>
@@ -1375,39 +1193,6 @@
                 <groupId>io.reactivex.rxjava3</groupId>
                 <artifactId>rxjava</artifactId>
                 <version>${version.io.reactivex.rxjava3}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jaxen</groupId>
-                <artifactId>jaxen</artifactId>
-                <version>${version.jaxen}</version>
-                <exclusions>
-                    <!-- I kid you not -->
-                    <exclusion>
-                        <groupId>jaxen</groupId>
-                        <artifactId>jaxen</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jdom</groupId>
-                        <artifactId>jdom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-cobertura-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-findbugs-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xom</groupId>
-                        <artifactId>xom</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -1560,8 +1345,6 @@
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-osgi</artifactId>
                     </exclusion>
-                    <!-- TODO remove this exclusion once this supports Jakarta Activation -->
-                    <!-- Superceded by com.sun.activation:jakarta.activation -->
                     <exclusion>
                         <groupId>javax.activation</groupId>
                         <artifactId>activation</artifactId>
@@ -1851,6 +1634,12 @@
                 <groupId>org.bitbucket.b_c</groupId>
                 <artifactId>jose4j</artifactId>
                 <version>${version.org.bitbucket.jose4j}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -1873,18 +1662,6 @@
                     <exclusion>
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcprov-jdk18on</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.dom4j</groupId>
-                <artifactId>dom4j</artifactId>
-                <version>${version.dom4j}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1976,6 +1753,39 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-cdi-common-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-client-hotrod</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
@@ -1987,7 +1797,18 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-commons</artifactId>
+                <artifactId>infinispan-clustered-counter</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-clustered-lock</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
@@ -2010,17 +1831,6 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-component-processor</artifactId>
-                <version>${version.org.infinispan}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
@@ -2054,7 +1864,40 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-hibernate-cache-v60</artifactId>
+                <artifactId>infinispan-hibernate-cache-v62</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-objectfilter</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-query</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-query-core</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
@@ -2066,6 +1909,17 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-query-dsl</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-remote-query-client</artifactId>
                 <version>${version.org.infinispan}</version>
                 <exclusions>
                     <exclusion>
@@ -2127,8 +1981,8 @@
                 <version>${version.org.jboss.ejb3.ext-api}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-ejb-api</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -2218,63 +2072,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- TODO WFLY-16659 remove this -->
-            <dependency>
-                <groupId>org.jboss.seam.integration</groupId>
-                <artifactId>jboss-seam-int-jbossas</artifactId>
-                <version>${version.org.jboss.seam.int}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam.integration</groupId>
-                        <artifactId>jboss-seam-int-microcontainer</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.cl</groupId>
-                        <artifactId>jboss-classloader</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.deployers</groupId>
-                        <artifactId>jboss-deployers-vfs-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-dependency</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.kernel</groupId>
-                        <artifactId>jboss-kernel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jbossxb</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.man</groupId>
-                        <artifactId>jboss-managed</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.seam</groupId>
-                        <artifactId>jboss-seam</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.ws</groupId>
                 <artifactId>jbossws-common-tools</artifactId>
@@ -2311,54 +2108,6 @@
                 <groupId>org.jctools</groupId>
                 <artifactId>jctools-core</artifactId>
                 <version>${version.org.jctools.jctools-core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-common</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk8</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk7</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -2414,6 +2163,12 @@
                 <artifactId>keycloak-saml-wildfly-subsystem</artifactId>
                 <version>${version.org.keycloak.keycloak-saml-wildfly-subsystem}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2493,23 +2248,6 @@
                 <artifactId>xml-resolver</artifactId>
                 <version>${version.xml-resolver}</version>
             </dependency>
-
-            <dependency>
-                <groupId>xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>${version.xom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
 
         </dependencies>
     </dependencyManagement>

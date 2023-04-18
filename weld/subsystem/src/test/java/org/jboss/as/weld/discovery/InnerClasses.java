@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.discovery;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 public class InnerClasses {
 

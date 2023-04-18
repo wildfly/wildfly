@@ -24,11 +24,11 @@ package org.jboss.as.ee.concurrent.handle;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
-import javax.enterprise.concurrent.ContextService;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
+import jakarta.enterprise.concurrent.ContextService;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

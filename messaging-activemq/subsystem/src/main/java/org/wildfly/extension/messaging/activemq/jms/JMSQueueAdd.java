@@ -27,7 +27,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SELECTOR
 
 import java.util.List;
 
-import javax.jms.Queue;
+import jakarta.jms.Queue;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.jboss.as.controller.AbstractAddStepHandler;

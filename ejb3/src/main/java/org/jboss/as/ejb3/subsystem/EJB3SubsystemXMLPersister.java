@@ -571,7 +571,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 writer.writeStartElement(EJB3SubsystemXMLElement.DISTRIBUTABLE_CACHE.getLocalName());
                 ModelNode distributableCache = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-                for (Attribute attribute : EnumSet.allOf(DistributableCacheFactoryResourceDefinition.Attribute.class)) {
+                for (Attribute attribute : EnumSet.allOf(DistributableStatefulSessionBeanCacheProviderResourceDefinition.Attribute.class)) {
                     attribute.getDefinition().getMarshaller().marshallAsAttribute(attribute.getDefinition(), distributableCache, false, writer);
                 }
                 writer.writeEndElement();

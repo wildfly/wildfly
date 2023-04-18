@@ -32,12 +32,9 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  * @created 7.2.12 14:41
  */
 public class PojoResource extends SimpleResourceDefinition {
-    public static final PojoResource INSTANCE = new PojoResource();
+    static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, PojoExtension.SUBSYSTEM_NAME);
 
-    private PojoResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, PojoExtension.SUBSYSTEM_NAME),
-                PojoExtension.getResourceDescriptionResolver(PojoExtension.SUBSYSTEM_NAME),
-                PojoSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+    PojoResource() {
+        super(PATH, PojoExtension.SUBSYSTEM_RESOLVER, PojoSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 }

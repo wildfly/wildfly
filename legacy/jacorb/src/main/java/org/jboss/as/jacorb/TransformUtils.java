@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -82,7 +83,8 @@ public class TransformUtils {
                         if (legacyValue.asString().equals(JacORBSubsystemConstants.OFF)) {
                             value = new ModelNode(Constants.NONE);
                         } else {
-                            value = legacyValue;
+                            value = new ModelNode(JacORBSubsystemConstants.ELYTRON);
+                            JacORBLogger.ROOT_LOGGER.migratedToElytronSecurityWarning();
                         }
                         break;
                     case JacORBSubsystemConstants.SECURITY_SUPPORT_SSL:

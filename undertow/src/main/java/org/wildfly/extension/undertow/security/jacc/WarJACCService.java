@@ -33,11 +33,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyContextException;
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
-import javax.security.jacc.WebUserDataPermission;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyContextException;
+import jakarta.security.jacc.WebResourcePermission;
+import jakarta.security.jacc.WebRoleRefPermission;
+import jakarta.security.jacc.WebUserDataPermission;
 
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.web.common.WarMetaData;

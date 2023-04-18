@@ -22,9 +22,6 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import org.jboss.logging.Logger;
-
-import javax.transaction.xa.Xid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +32,9 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.transaction.xa.Xid;
+
+import org.jboss.logging.Logger;
 
 /**
  * An utility class which is capable to persist {@link TestXAResource} {@link Xid} records

@@ -25,8 +25,8 @@ package org.wildfly.extension.messaging.activemq.deployment;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE;
 
-import javax.jms.JMSConnectionFactoryDefinition;
-import javax.jms.JMSConnectionFactoryDefinitions;
+import jakarta.jms.JMSConnectionFactoryDefinition;
+import jakarta.jms.JMSConnectionFactoryDefinitions;
 
 import org.jboss.as.ee.resource.definition.ResourceDefinitionAnnotationProcessor;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
@@ -36,7 +36,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
- * {@link javax.jms.JMSConnectionFactoryDefinition}(s) resource config annotation processor.
+ * {@link jakarta.jms.JMSConnectionFactoryDefinition}(s) resource config annotation processor.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
  * @author Eduardo Martins
@@ -66,7 +66,7 @@ public class JMSConnectionFactoryDefinitionAnnotationProcessor extends ResourceD
     protected ResourceDefinitionInjectionSource processAnnotation(AnnotationInstance annotationInstance, PropertyReplacer propertyReplacer) throws DeploymentUnitProcessingException {
         final JMSConnectionFactoryDefinitionInjectionSource directJMSConnectionFactoryInjectionSource = new JMSConnectionFactoryDefinitionInjectionSource(AnnotationElement.asRequiredString(annotationInstance, AnnotationElement.NAME));
         directJMSConnectionFactoryInjectionSource.setResourceAdapter(AnnotationElement.asOptionalString(annotationInstance, "resourceAdapter"));
-        directJMSConnectionFactoryInjectionSource.setInterfaceName(AnnotationElement.asOptionalString(annotationInstance, "interfaceName", "javax.jms.ConnectionFactory", propertyReplacer));
+        directJMSConnectionFactoryInjectionSource.setInterfaceName(AnnotationElement.asOptionalString(annotationInstance, "interfaceName", "jakarta.jms.ConnectionFactory", propertyReplacer));
         directJMSConnectionFactoryInjectionSource.setUser(AnnotationElement.asOptionalString(annotationInstance, "user", propertyReplacer));
         directJMSConnectionFactoryInjectionSource.setPassword(AnnotationElement.asOptionalString(annotationInstance, "password", propertyReplacer));
         directJMSConnectionFactoryInjectionSource.setClientId(AnnotationElement.asOptionalString(annotationInstance, "clientId", propertyReplacer));

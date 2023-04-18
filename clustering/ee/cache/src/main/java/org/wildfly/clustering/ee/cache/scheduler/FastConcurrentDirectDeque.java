@@ -83,7 +83,7 @@ import java.util.function.Predicate;
  * Java Collections Framework</a>.
  *
  * Based on revision 1.88 of ConcurrentLinkedDeque
- * (see http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/main/java/util/concurrent/ConcurrentLinkedDeque.java?revision=1.88&view=markup)
+ * (see http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/main/java/util/concurrent/ConcurrentLinkedDeque.java?revision=1.88&amp;view=markup)
  * This is the version used in JDK 9 b156.
  *
  * @since 1.7

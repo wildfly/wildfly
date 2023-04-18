@@ -23,11 +23,11 @@ package org.wildfly.extension.undertow.deployment;
 
 import java.util.List;
 
-import javax.el.ELContextListener;
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.servlet.ServletContext;
-import javax.servlet.jsp.JspContext;
+import jakarta.el.ELContextListener;
+import jakarta.el.ELResolver;
+import jakarta.el.ExpressionFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.jsp.JspContext;
 
 import org.apache.jasper.el.ELContextImpl;
 import org.apache.jasper.runtime.JspApplicationContextImpl;

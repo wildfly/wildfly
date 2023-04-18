@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelType;
 public class JSFImplListHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "list-active-jsf-impls";
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JSFExtension.getResourceDescriptionResolver())
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JSFExtension.SUBSYSTEM_RESOLVER)
             .setRuntimeOnly()
             .setReadOnly()
             .setReplyType(ModelType.LIST)

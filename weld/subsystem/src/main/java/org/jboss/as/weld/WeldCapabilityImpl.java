@@ -18,9 +18,9 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.InterceptionType;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld._private.WeldDeploymentMarker;

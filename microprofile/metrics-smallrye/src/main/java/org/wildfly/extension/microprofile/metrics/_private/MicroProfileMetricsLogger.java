@@ -22,14 +22,9 @@
 
 package org.wildfly.extension.microprofile.metrics._private;
 
-import static org.jboss.logging.Logger.Level.INFO;
-
-import java.io.IOException;
-
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -43,18 +38,18 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    MicroProfileMetricsLogger LOGGER = Logger.getMessageLogger(MicroProfileMetricsLogger.class, "org.wildfly.extension.microprofile.metrics.smallrye");
+    MicroProfileMetricsLogger ROOT_LOGGER = Logger.getMessageLogger(MicroProfileMetricsLogger.class,
+            "org.wildfly.extension.microprofile.metrics.smallrye");
 
-    /**
-     * Logs an informational message indicating the subsystem is being activated.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 1, value = "Activating MicroProfile Metrics Subsystem")
-    void activatingSubsystem();
+    // no longer used
+    // @LogMessage(level = INFO)
+    // @Message(id = 1, value = "Activating MicroProfile Metrics Subsystem")
+    // void activatingSubsystem();
 
 
-    @Message(id = 2, value = "Failed to initialize metrics from JMX MBeans")
-    IllegalArgumentException failedInitializeJMXRegistrar(@Cause IOException e);
+    // no longer used
+    // @Message(id = 2, value = "Failed to initialize metrics from JMX MBeans")
+    // IllegalArgumentException failedInitializeJMXRegistrar(@Cause IOException e);
 
     // no longer used
     // @Message(id = 3, value = "Unable to read attribute %s on %s: %s.")
@@ -68,8 +63,9 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     // @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
     // IllegalStateException undefinedMetric(String attributeName, PathAddress address);
 
-    @Message(id = 6, value = "The metric was unavailable")
-    IllegalStateException metricUnavailable();
+    // no longer used
+    // @Message(id = 6, value = "The metric was unavailable")
+    // IllegalStateException metricUnavailable();
 
     //7, 8 and 9 are taken downstream
     /*
@@ -83,4 +79,9 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     OperationFailedException seeDownstream();
     */
 
+    @Message(id = 10, value = "The migrate operation cannot be performed. The server must be in admin-only mode.")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @Message(id = 11, value = "Migration failed. See results for more details.")
+    String migrationFailed();
 }

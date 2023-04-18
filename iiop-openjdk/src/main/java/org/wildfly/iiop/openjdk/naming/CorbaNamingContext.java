@@ -114,7 +114,7 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
      * @param orb     a reference to the running {@code ORB} instance.
      * @param rootPoa a reference to the root {@code POA}.
      */
-    public static void init(org.omg.CORBA.ORB orb, org.omg.PortableServer.POA rootPoa) {
+    public static void init(ORB orb, POA rootPoa) {
         CorbaNamingContext.orb = orb;
         CorbaNamingContext.rootPoa = rootPoa;
 

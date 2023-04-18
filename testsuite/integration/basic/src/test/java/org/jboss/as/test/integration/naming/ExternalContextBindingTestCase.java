@@ -69,11 +69,13 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.naming.subsystem.NamingExtension;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.java.permission.JndiPermission;
@@ -87,6 +89,11 @@ import org.wildfly.naming.java.permission.JndiPermission;
 @ServerSetup({ExternalContextBindingTestCase.ObjectFactoryWithEnvironmentBindingTestCaseServerSetup.class,
         ExternalContextBindingTestCase.PrepareExternalLDAPServerSetup.class})
 public class ExternalContextBindingTestCase {
+    @BeforeClass
+    public static void beforeClass() {
+        // https://issues.redhat.com/browse/WFLY-17383
+        AssumeTestGroupUtil.assumeJDKVersionBefore(20);
+    }
 
     private static Logger LOGGER = Logger.getLogger(ExternalContextBindingTestCase.class);
 

@@ -23,7 +23,7 @@ package org.jboss.as.xts;
 
 import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.jbossts.txbridge.inbound.InboundBridgeRecoveryManager;
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.StartException;
@@ -34,7 +34,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:jonathan.halliday@redhat.com">Jonathan Halliday</a>
  */
-public class TxBridgeInboundRecoveryService extends AbstractService<InboundBridgeRecoveryManager> {
+public class TxBridgeInboundRecoveryService implements Service<InboundBridgeRecoveryManager> {
 
     private volatile InboundBridgeRecoveryManager inboundBridgeRecoveryManager;
 

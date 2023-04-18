@@ -78,7 +78,10 @@ public class CacheMembership implements Membership {
     public List<Node> getMembers() {
         List<Node> members = new ArrayList<>(this.addresses.size());
         for (Address address : this.addresses) {
-            members.add(this.factory.createNode(address));
+            Node member = this.factory.createNode(address);
+            if (member != null) {
+                members.add(member);
+            }
         }
         return members;
     }

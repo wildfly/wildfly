@@ -31,7 +31,7 @@
     <resources>
         <artifact name="${org.hornetq:hornetq-commons}"/>
         <artifact name="${org.hornetq:hornetq-core-client}"/>
-        <artifact name="\${org.hornetq:hornetq-@module.jms.suffix@-client}"/>
+        <artifact name="${org.hornetq:hornetq-jakarta-client}"/>
     </resources>
 
     <dependencies>

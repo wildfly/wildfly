@@ -26,10 +26,10 @@ import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkCompletedException;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkCompletedException;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -83,7 +83,7 @@ public interface TransactionLogger extends BasicLogger {
      *
      * @param cause the reason the creation failed.
      *
-     * @return a {@link org.jboss.msc.service.StartException} initialized with the cause.
+     * @return a {@link StartException} initialized with the cause.
      */
     @Message(id = 4, value = "Create failed")
     StartException createFailed(@Cause Throwable cause);
@@ -94,7 +94,7 @@ public interface TransactionLogger extends BasicLogger {
      * @param cause       the reason the start failed.
      * @param managerName the name of the manager that didn't start.
      *
-     * @return a {@link org.jboss.msc.service.StartException} initialized with the cause and error message.
+     * @return a {@link StartException} initialized with the cause and error message.
      */
     @Message(id = 5, value = "%s manager create failed")
     StartException managerStartFailure(@Cause Throwable cause, String managerName);
@@ -104,7 +104,7 @@ public interface TransactionLogger extends BasicLogger {
      *
      * @param cause the reason the start failed.
      *
-     * @return a {@link org.jboss.msc.service.StartException} initialized with the cause and error message.
+     * @return a {@link StartException} initialized with the cause and error message.
      */
     @Message(id = 6, value = "Failed to configure object store browser bean")
     StartException objectStoreStartFailure(@Cause Throwable cause);
@@ -123,7 +123,7 @@ public interface TransactionLogger extends BasicLogger {
      *
      * @param cause the reason the start failed.
      *
-     * @return a {@link org.jboss.msc.service.StartException} initialized with the cause.
+     * @return a {@link StartException} initialized with the cause.
      */
     @Message(id = 8, value = "Start failed")
     StartException startFailure(@Cause Throwable cause);

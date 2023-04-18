@@ -22,10 +22,10 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import java.util.Map;
+
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Map;
 
 /**
  * Utility to administrate Jakarta Messaging related resources on the server. An separate implementation should be created for

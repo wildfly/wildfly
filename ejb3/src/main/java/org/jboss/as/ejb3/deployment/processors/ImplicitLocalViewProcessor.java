@@ -22,20 +22,20 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.modules.Module;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Processes a {@link SessionBeanComponentDescription}'s bean class and checks whether it exposes:
@@ -115,7 +115,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
         }
 
         // As per section 4.9.8 (bullet 1.3) of Enterprise Beans 3.1 spec
-        // java.io.Serializable; java.io.Externalizable; any of the interfaces defined by the javax.ejb
+        // java.io.Serializable; java.io.Externalizable; any of the interfaces defined by the jakarta.ejb
         // are excluded from interface check
 
         List<Class<?>> implementedInterfaces = new ArrayList<Class<?>>(Arrays.asList(interfaces));
@@ -150,7 +150,7 @@ public class ImplicitLocalViewProcessor extends AbstractComponentConfigProcessor
 
     /**
      * Returns a filtered list for the passed <code>interfaces</code> list, excluding the
-     * {@link java.io.Serializable}, {@link java.io.Externalizable} and any interfaces belonging to <code>javax.ejb</code>
+     * {@link java.io.Serializable}, {@link java.io.Externalizable} and any interfaces belonging to <code>jakarta.ejb</code>
      * package.
      *
      * @param interfaces The list of interfaces

@@ -27,18 +27,20 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METR
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -47,9 +49,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -79,18 +84,19 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     // only used by the subclasses Http(s)ListenerResourceDefinition
-    protected static final RuntimeCapability<Void> HTTP_UPGRADE_REGISTRY_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HTTP_UPGRADE_REGISTRY, true, ChannelUpgradeHandler.class)
+    static final RuntimeCapability<Void> HTTP_UPGRADE_REGISTRY_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HTTP_UPGRADE_REGISTRY, true, ChannelUpgradeHandler.class)
             .setAllowMultipleRegistrations(true)
             .build();
 
-    protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
+    static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setRequired(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
-    protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
+
+    static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
@@ -98,7 +104,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setCapabilityReference(REF_IO_WORKER, LISTENER_CAPABILITY)
             .build();
 
-    protected static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
+    static final SimpleAttributeDefinition BUFFER_POOL = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_POOL, ModelType.STRING)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
@@ -106,7 +112,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setCapabilityReference(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, LISTENER_CAPABILITY)
             .build();
 
-    protected static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
+    static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
             .setRequired(false)
             .setDeprecated(ModelVersion.create(3, 2))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -114,7 +120,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    protected static final SimpleAttributeDefinition REDIRECT_SOCKET = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_SOCKET, ModelType.STRING)
+    static final SimpleAttributeDefinition REDIRECT_SOCKET = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_SOCKET, ModelType.STRING)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(false)
@@ -122,14 +128,14 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
             .build();
 
-    protected static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
+    static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(ModelNode.FALSE)
             .setAllowExpression(true)
             .build();
 
-    protected static final StringListAttributeDefinition DISALLOWED_METHODS = new StringListAttributeDefinition.Builder(Constants.DISALLOWED_METHODS)
+    static final StringListAttributeDefinition DISALLOWED_METHODS = new StringListAttributeDefinition.Builder(Constants.DISALLOWED_METHODS)
             .setDefaultValue(new ModelNode().add("TRACE"))
             .setRequired(false)
             .setValidator(new StringLengthValidator(0))
@@ -137,39 +143,38 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    protected static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN)
+    static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN)
             .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(true)
             .build();
 
-    public static final OptionAttributeDefinition BACKLOG = OptionAttributeDefinition.builder("tcp-backlog", Options.BACKLOG).setDefaultValue(new ModelNode(10000)).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
-    public static final OptionAttributeDefinition RECEIVE_BUFFER = OptionAttributeDefinition.builder("receive-buffer", Options.RECEIVE_BUFFER).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
-    public static final OptionAttributeDefinition SEND_BUFFER = OptionAttributeDefinition.builder("send-buffer", Options.SEND_BUFFER).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
-    public static final OptionAttributeDefinition KEEP_ALIVE = OptionAttributeDefinition.builder("tcp-keep-alive", Options.KEEP_ALIVE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition READ_TIMEOUT = OptionAttributeDefinition.builder("read-timeout", Options.READ_TIMEOUT).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).build();
-    public static final OptionAttributeDefinition WRITE_TIMEOUT = OptionAttributeDefinition.builder("write-timeout", Options.WRITE_TIMEOUT).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).build();
-    public static final OptionAttributeDefinition MAX_CONNECTIONS = OptionAttributeDefinition.builder(Constants.MAX_CONNECTIONS, Options.CONNECTION_HIGH_WATER).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
+    static final OptionAttributeDefinition BACKLOG = OptionAttributeDefinition.builder("tcp-backlog", Options.BACKLOG).setDefaultValue(new ModelNode(10000)).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
+    static final OptionAttributeDefinition RECEIVE_BUFFER = OptionAttributeDefinition.builder("receive-buffer", Options.RECEIVE_BUFFER).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
+    static final OptionAttributeDefinition SEND_BUFFER = OptionAttributeDefinition.builder("send-buffer", Options.SEND_BUFFER).setAllowExpression(true).setValidator(new IntRangeValidator(1)).build();
+    static final OptionAttributeDefinition KEEP_ALIVE = OptionAttributeDefinition.builder("tcp-keep-alive", Options.KEEP_ALIVE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition READ_TIMEOUT = OptionAttributeDefinition.builder("read-timeout", Options.READ_TIMEOUT).setDefaultValue(new ModelNode(90000)).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).build();
+    static final OptionAttributeDefinition WRITE_TIMEOUT = OptionAttributeDefinition.builder("write-timeout", Options.WRITE_TIMEOUT).setDefaultValue(new ModelNode(90000)).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.MILLISECONDS).build();
+    static final OptionAttributeDefinition MAX_CONNECTIONS = OptionAttributeDefinition.builder(Constants.MAX_CONNECTIONS, Options.CONNECTION_HIGH_WATER).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
 
-
-    public static final OptionAttributeDefinition MAX_HEADER_SIZE = OptionAttributeDefinition.builder("max-header-size", UndertowOptions.MAX_HEADER_SIZE).setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE)).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.BYTES).setValidator(new IntRangeValidator(1)).build();
-    public static final OptionAttributeDefinition MAX_ENTITY_SIZE = OptionAttributeDefinition.builder(Constants.MAX_POST_SIZE, UndertowOptions.MAX_ENTITY_SIZE).setDefaultValue(new ModelNode(10485760L)).setValidator(new LongRangeValidator(0)).setMeasurementUnit(MeasurementUnit.BYTES).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition BUFFER_PIPELINED_DATA = OptionAttributeDefinition.builder("buffer-pipelined-data", UndertowOptions.BUFFER_PIPELINED_DATA).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition MAX_PARAMETERS = OptionAttributeDefinition.builder("max-parameters", UndertowOptions.MAX_PARAMETERS).setDefaultValue(new ModelNode(1000)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition MAX_HEADERS = OptionAttributeDefinition.builder("max-headers", UndertowOptions.MAX_HEADERS).setDefaultValue(new ModelNode(200)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition MAX_COOKIES = OptionAttributeDefinition.builder("max-cookies", UndertowOptions.MAX_COOKIES).setDefaultValue(new ModelNode(200)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition ALLOW_ENCODED_SLASH = OptionAttributeDefinition.builder("allow-encoded-slash", UndertowOptions.ALLOW_ENCODED_SLASH).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition DECODE_URL = OptionAttributeDefinition.builder("decode-url", UndertowOptions.DECODE_URL).setDefaultValue(ModelNode.TRUE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition URL_CHARSET = OptionAttributeDefinition.builder("url-charset", UndertowOptions.URL_CHARSET).setDefaultValue(new ModelNode("UTF-8")).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition ALWAYS_SET_KEEP_ALIVE = OptionAttributeDefinition.builder("always-set-keep-alive", UndertowOptions.ALWAYS_SET_KEEP_ALIVE).setDefaultValue(ModelNode.TRUE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder(Constants.MAX_BUFFERED_REQUEST_SIZE, UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setValidator(new IntRangeValidator(1)).setMeasurementUnit(MeasurementUnit.BYTES).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition NO_REQUEST_TIMEOUT = OptionAttributeDefinition.builder("no-request-timeout", UndertowOptions.NO_REQUEST_TIMEOUT).setDefaultValue(new ModelNode(60000)).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition RFC6265_COOKIE_VALIDATION = OptionAttributeDefinition.builder("rfc6265-cookie-validation", UndertowOptions.ENABLE_RFC6265_COOKIE_VALIDATION).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
-    public static final OptionAttributeDefinition ALLOW_UNESCAPED_CHARACTERS_IN_URL = OptionAttributeDefinition.builder("allow-unescaped-characters-in-url", UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MAX_HEADER_SIZE = OptionAttributeDefinition.builder("max-header-size", UndertowOptions.MAX_HEADER_SIZE).setDefaultValue(new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE)).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.BYTES).setValidator(new IntRangeValidator(1)).build();
+    static final OptionAttributeDefinition MAX_ENTITY_SIZE = OptionAttributeDefinition.builder(Constants.MAX_POST_SIZE, UndertowOptions.MAX_ENTITY_SIZE).setDefaultValue(new ModelNode(10485760L)).setValidator(new LongRangeValidator(0)).setMeasurementUnit(MeasurementUnit.BYTES).setAllowExpression(true).build();
+    static final OptionAttributeDefinition BUFFER_PIPELINED_DATA = OptionAttributeDefinition.builder("buffer-pipelined-data", UndertowOptions.BUFFER_PIPELINED_DATA).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MAX_PARAMETERS = OptionAttributeDefinition.builder("max-parameters", UndertowOptions.MAX_PARAMETERS).setDefaultValue(new ModelNode(1000)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MAX_HEADERS = OptionAttributeDefinition.builder("max-headers", UndertowOptions.MAX_HEADERS).setDefaultValue(new ModelNode(200)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MAX_COOKIES = OptionAttributeDefinition.builder("max-cookies", UndertowOptions.MAX_COOKIES).setDefaultValue(new ModelNode(200)).setValidator(new IntRangeValidator(1)).setAllowExpression(true).build();
+    static final OptionAttributeDefinition ALLOW_ENCODED_SLASH = OptionAttributeDefinition.builder("allow-encoded-slash", UndertowOptions.ALLOW_ENCODED_SLASH).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition DECODE_URL = OptionAttributeDefinition.builder("decode-url", UndertowOptions.DECODE_URL).setDefaultValue(ModelNode.TRUE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition URL_CHARSET = OptionAttributeDefinition.builder("url-charset", UndertowOptions.URL_CHARSET).setDefaultValue(new ModelNode("UTF-8")).setAllowExpression(true).build();
+    static final OptionAttributeDefinition ALWAYS_SET_KEEP_ALIVE = OptionAttributeDefinition.builder("always-set-keep-alive", UndertowOptions.ALWAYS_SET_KEEP_ALIVE).setDefaultValue(ModelNode.TRUE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition MAX_BUFFERED_REQUEST_SIZE = OptionAttributeDefinition.builder(Constants.MAX_BUFFERED_REQUEST_SIZE, UndertowOptions.MAX_BUFFERED_REQUEST_SIZE).setDefaultValue(new ModelNode(16384)).setValidator(new IntRangeValidator(1)).setMeasurementUnit(MeasurementUnit.BYTES).setAllowExpression(true).build();
+    static final OptionAttributeDefinition RECORD_REQUEST_START_TIME = OptionAttributeDefinition.builder("record-request-start-time", UndertowOptions.RECORD_REQUEST_START_TIME).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition ALLOW_EQUALS_IN_COOKIE_VALUE = OptionAttributeDefinition.builder("allow-equals-in-cookie-value", UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE).setDefaultValue(ModelNode.FALSE).setAllowExpression(true).build();
+    static final OptionAttributeDefinition NO_REQUEST_TIMEOUT = OptionAttributeDefinition.builder("no-request-timeout", UndertowOptions.NO_REQUEST_TIMEOUT).setDefaultValue(new ModelNode(60000)).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition REQUEST_PARSE_TIMEOUT = OptionAttributeDefinition.builder("request-parse-timeout", UndertowOptions.REQUEST_PARSE_TIMEOUT).setMeasurementUnit(MeasurementUnit.MILLISECONDS).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition RFC6265_COOKIE_VALIDATION = OptionAttributeDefinition.builder("rfc6265-cookie-validation", UndertowOptions.ENABLE_RFC6265_COOKIE_VALIDATION).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
+    static final OptionAttributeDefinition ALLOW_UNESCAPED_CHARACTERS_IN_URL = OptionAttributeDefinition.builder("allow-unescaped-characters-in-url", UndertowOptions.ALLOW_UNESCAPED_CHARACTERS_IN_URL).setDefaultValue(ModelNode.FALSE).setRequired(false).setAllowExpression(true).build();
 
     public enum ConnectorStat {
         REQUEST_COUNT(new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG)
@@ -227,50 +232,52 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         }
     }
 
-    protected static final Collection<AttributeDefinition> ATTRIBUTES;
-    private static final List<AccessConstraintDefinition> CONSTRAINTS = Collections.singletonList(UndertowExtension.LISTENER_CONSTRAINT);
-
-    static final List<OptionAttributeDefinition> LISTENER_OPTIONS = Arrays.asList(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
+    static final Collection<OptionAttributeDefinition> LISTENER_OPTIONS = List.of(MAX_HEADER_SIZE, MAX_ENTITY_SIZE,
             BUFFER_PIPELINED_DATA, MAX_PARAMETERS, MAX_HEADERS, MAX_COOKIES, ALLOW_ENCODED_SLASH, DECODE_URL,
             URL_CHARSET, ALWAYS_SET_KEEP_ALIVE, MAX_BUFFERED_REQUEST_SIZE, RECORD_REQUEST_START_TIME,
             ALLOW_EQUALS_IN_COOKIE_VALUE, NO_REQUEST_TIMEOUT, REQUEST_PARSE_TIMEOUT, RFC6265_COOKIE_VALIDATION,
             ALLOW_UNESCAPED_CHARACTERS_IN_URL);
 
-    static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
+    static final Collection<OptionAttributeDefinition> SOCKET_OPTIONS = List.of(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT, MAX_CONNECTIONS);
+    private static final Collection<AttributeDefinition> SIMPLE_ATTRIBUTES = List.of(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE);
 
-    static {
-        ATTRIBUTES = new LinkedHashSet<>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, RESOLVE_PEER_ADDRESS, DISALLOWED_METHODS, SECURE));
-        ATTRIBUTES.addAll(LISTENER_OPTIONS);
-        ATTRIBUTES.addAll(SOCKET_OPTIONS);
+    static final Collection<AttributeDefinition> ATTRIBUTES = collectAttributes();
+
+    private static Collection<AttributeDefinition> collectAttributes() {
+        Collection<AttributeDefinition> attributes = new ArrayList<>(SIMPLE_ATTRIBUTES.size() + LISTENER_OPTIONS.size() + SOCKET_OPTIONS.size());
+        attributes.addAll(SIMPLE_ATTRIBUTES);
+        attributes.addAll(LISTENER_OPTIONS);
+        attributes.addAll(SOCKET_OPTIONS);
+        return Collections.unmodifiableCollection(attributes);
     }
 
-    public ListenerResourceDefinition(Parameters parameters) {
+    private final Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory;
+    private final Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers;
+
+    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
         // this Persistent Parameters will be cast to Parameters
         super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
-    }
-
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+        this.addHandlerFactory = addHandlerFactory;
+        this.writeAttributeHandlers = new HashMap<>();
+        this.writeAttributeHandlers.putAll(writeAttributeHandlers);
+        this.writeAttributeHandlers.put(ENABLED, new EnabledAttributeHandler());
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-        super.registerAddOperation(resourceRegistration, getAddHandler(), OperationEntry.Flag.RESTART_NONE);
-        super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(getAddHandler()), OperationEntry.Flag.RESTART_NONE);
+        AbstractAddStepHandler addHandler = this.addHandlerFactory.apply(this.getAttributes());
+        super.registerAddOperation(resourceRegistration, addHandler, OperationEntry.Flag.RESTART_NONE);
+        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(addHandler), OperationEntry.Flag.RESTART_NONE);
         resourceRegistration.registerOperationHandler(ResetConnectorStatisticsHandler.DEFINITION, ResetConnectorStatisticsHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // DO NOT call super, as we need non-standard handling for enabled
-
-        Collection<AttributeDefinition> ads = getAttributes();
-        OperationStepHandler rrh = new ReloadRequiredWriteAttributeHandler(ads); // we include ENABLED in this set, but it doesn't matter we don't register rrh for it
-        OperationStepHandler enh = new EnabledAttributeHandler();
-        for (AttributeDefinition ad : ads) {
-            OperationStepHandler osh = ad == ENABLED ? enh : rrh;
-            resourceRegistration.registerReadWriteAttribute(ad, null, osh);
+        Collection<AttributeDefinition> attributes = this.getAttributes();
+        OperationStepHandler defaultWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
+        for (AttributeDefinition attribute : attributes) {
+            OperationStepHandler writeAttributeHandler = this.writeAttributeHandlers.getOrDefault(attribute, defaultWriteAttributeHandler);
+            resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
         }
 
         for(ConnectorStat attr : ConnectorStat.values()) {
@@ -280,11 +287,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return CONSTRAINTS;
+        return List.of(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-connector", false, false, false)));
     }
-
-    protected abstract ListenerAdd getAddHandler();
-
 
     private static class ReadStatisticHandler implements OperationStepHandler {
 

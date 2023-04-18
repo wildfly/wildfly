@@ -132,22 +132,22 @@ public enum XMLElement {
                 return model.hasDefined(SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
             }
         };
-        for (ProtocolRegistration.SocketProtocol protocol : EnumSet.allOf(ProtocolRegistration.SocketProtocol.class)) {
+        for (ProtocolResourceRegistrar.SocketProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.SocketProtocol.class)) {
             protocols.put(protocol.name(), function);
         }
-        for (ProtocolRegistration.MulticastProtocol protocol : EnumSet.allOf(ProtocolRegistration.MulticastProtocol.class)) {
+        for (ProtocolResourceRegistrar.MulticastProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.MulticastProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.SOCKET_PROTOCOL);
         }
-        for (ProtocolRegistration.JdbcProtocol protocol : EnumSet.allOf(ProtocolRegistration.JdbcProtocol.class)) {
+        for (ProtocolResourceRegistrar.JdbcProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.JdbcProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.JDBC_PROTOCOL);
         }
-        for (ProtocolRegistration.EncryptProtocol protocol : EnumSet.allOf(ProtocolRegistration.EncryptProtocol.class)) {
+        for (ProtocolResourceRegistrar.EncryptProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.EncryptProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.ENCRYPT_PROTOCOL);
         }
-        for (ProtocolRegistration.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolRegistration.InitialHostsProtocol.class)) {
+        for (ProtocolResourceRegistrar.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.InitialHostsProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.SOCKET_DISCOVERY_PROTOCOL);
         }
-        for (ProtocolRegistration.AuthProtocol protocol : EnumSet.allOf(ProtocolRegistration.AuthProtocol.class)) {
+        for (ProtocolResourceRegistrar.AuthProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.AuthProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.AUTH_PROTOCOL);
         }
 

@@ -50,7 +50,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<ParseResult<KernelDeploymentXmlDescriptor>>, XMLStreamConstants {
-    public static final String NAMESPACE = "urn:jboss:pojo:7.0";
 
     private enum Element {
         BEAN("bean"),
@@ -144,6 +143,12 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             final Attribute attribute = QNAME_MAP.get(localPart);
             return attribute == null ? UNKNOWN : attribute;
         }
+    }
+
+    private final BeanDeploymentSchema schema;
+
+    public KernelDeploymentXmlDescriptorParser(BeanDeploymentSchema schema) {
+        this.schema = schema;
     }
 
     @Override

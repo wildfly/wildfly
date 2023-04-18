@@ -33,7 +33,7 @@ import io.undertow.server.session.SessionManager;
 
 /**
  * A session implementation for sessions created after the response is committed.
- * This is a workaround for those applications that trigger creation of a new session after calling {@link javax.servlet.http.HttpServletResponse#sendRedirect(String)}.
+ * This is a workaround for those applications that trigger creation of a new session after calling {@link jakarta.servlet.http.HttpServletResponse#sendRedirect(String)}.
  * @author Paul Ferraro
  */
 public class OrphanSession implements Session {

@@ -31,7 +31,7 @@ import org.jboss.as.web.common.WebInjectionContainer;
  */
 public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
-    public static final String JAVAX_FACES = "javax.faces.";
+    public static final String JAVAX_FACES = "jakarta.faces.";
     public static final String COM_SUN_FACES = "com.sun.faces.";
     public static final String COM_SUN_FACES_TEST = "com.sun.faces.test.";
     private final WebInjectionContainer instanceManager;

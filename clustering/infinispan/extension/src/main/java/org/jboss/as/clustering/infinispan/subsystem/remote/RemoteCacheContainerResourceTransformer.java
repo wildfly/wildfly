@@ -24,7 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.clustering.infinispan.subsystem.InfinispanModel;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemModel;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -46,12 +46,12 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
 
     @Override
     public void accept(ModelVersion version) {
-        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getDefinition())
                     .end();
         }
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())

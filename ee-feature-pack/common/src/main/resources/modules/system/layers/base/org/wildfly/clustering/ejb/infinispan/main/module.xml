@@ -48,20 +48,19 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.ejb-client"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.context"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.infinispan" services="import"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.ejb.cache"/>
         <module name="org.wildfly.clustering.ejb.client"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
-        <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>

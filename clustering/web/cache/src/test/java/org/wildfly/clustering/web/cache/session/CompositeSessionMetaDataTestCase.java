@@ -56,18 +56,18 @@ public class CompositeSessionMetaDataTestCase {
     @Test
     public void isExpired() {
         when(this.creationMetaData.getCreationTime()).thenReturn(Instant.now().minus(Duration.ofMinutes(10L)));
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(10L));
+        when(this.creationMetaData.getTimeout()).thenReturn(Duration.ofMinutes(10L));
         when(this.accessMetaData.getSinceCreationDuration()).thenReturn(Duration.ofMinutes(5L));
         when(this.accessMetaData.getLastAccessDuration()).thenReturn(Duration.ofSeconds(1));
 
         assertFalse(this.metaData.isExpired());
 
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
+        when(this.creationMetaData.getTimeout()).thenReturn(Duration.ofMinutes(5L).minus(Duration.ofSeconds(1, 1)));
 
         assertTrue(this.metaData.isExpired());
 
-        // Max inactive interval of 0 means never expire
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
+        // Timeout of 0 means never expire
+        when(this.creationMetaData.getTimeout()).thenReturn(Duration.ZERO);
 
         assertFalse(this.metaData.isExpired());
     }
@@ -97,7 +97,7 @@ public class CompositeSessionMetaDataTestCase {
     }
 
     @Test
-    public void getLastAccessEndTime() {
+    public void getLastAccessTime() {
         Instant now = Instant.now();
         Duration sinceCreation = Duration.ofSeconds(10L);
         Duration lastAccess = Duration.ofSeconds(1L);
@@ -106,7 +106,7 @@ public class CompositeSessionMetaDataTestCase {
         when(this.accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
         when(this.accessMetaData.getLastAccessDuration()).thenReturn(lastAccess);
 
-        Instant result = this.metaData.getLastAccessEndTime();
+        Instant result = this.metaData.getLastAccessTime();
 
         assertEquals(now, result);
     }
@@ -115,9 +115,9 @@ public class CompositeSessionMetaDataTestCase {
     public void getMaxInactiveInterval() {
         Duration expected = Duration.ofMinutes(30L);
 
-        when(this.creationMetaData.getMaxInactiveInterval()).thenReturn(expected);
+        when(this.creationMetaData.getTimeout()).thenReturn(expected);
 
-        Duration result = this.metaData.getMaxInactiveInterval();
+        Duration result = this.metaData.getTimeout();
 
         assertSame(expected, result);
     }
@@ -153,6 +153,6 @@ public class CompositeSessionMetaDataTestCase {
 
         this.metaData.setMaxInactiveInterval(duration);
 
-        verify(this.creationMetaData).setMaxInactiveInterval(duration);
+        verify(this.creationMetaData).setTimeout(duration);
     }
 }

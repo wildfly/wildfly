@@ -50,10 +50,10 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
-    private static JGroupsModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+    private static JGroupsSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
             case EAP_7_4_0:
-                return JGroupsModel.VERSION_8_0_0;
+                return JGroupsSubsystemModel.VERSION_8_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -154,7 +154,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
         PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
 
-        if (JGroupsModel.VERSION_8_0_0.requiresTransformation(version)) {
+        if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(subsystemAddress.append(StackResourceDefinition.pathElement("credentialReference1")).append(ProtocolResourceDefinition.pathElement("SYM_ENCRYPT")),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE);
         }

@@ -25,12 +25,14 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS_INFO;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -42,12 +44,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class JdbcDriverDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DRIVER = PathElement.pathElement(JDBC_DRIVER_NAME);
-    static final JdbcDriverDefinition INSTANCE = new JdbcDriverDefinition();
-
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    private JdbcDriverDefinition() {
+    JdbcDriverDefinition() {
         super(PATH_DRIVER,
                 DataSourcesExtension.getResourceDescriptionResolver(JDBC_DRIVER_NAME),
                 JdbcDriverAdd.INSTANCE,
@@ -61,6 +61,7 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
+        resourceRegistration.registerReadOnlyAttribute(DRIVER_NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         if (resourceRegistration.getProcessType().isServer()) {
             resourceRegistration.registerReadOnlyAttribute(DATASOURCE_CLASS_INFO, GetDataSourceClassInfoOperationHandler.INSTANCE);
         }

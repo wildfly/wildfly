@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<infinispan>
+    <cache-container name="embedded-container">
+        <transport cluster="${infinispan.cluster.name:cluster}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
+        <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
+            <allow-list>
+                <class>org.infinispan.test.integration.data.Person</class>
+            </allow-list>
+        </serialization>
+        <replicated-cache name="test1" mode="SYNC" segments="400" remote-timeout="320000" statistics="true">
+            <locking acquire-timeout="15000"/>
+            <transaction mode="BATCH" complete-timeout="310000"/>
+            <state-transfer await-initial-transfer="false" enabled="true" timeout="7200000" chunk-size="100000"/>
+        </replicated-cache>
+    </cache-container>
+</infinispan>

@@ -75,7 +75,7 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
 
     /**
      * Default constructure.
-     * It set {@link org.jboss.as.txn.subsystem.CMResourceAdd} as add handler
+     * It set {@link CMResourceAdd} as add handler
      * and {@link org.jboss.as.controller.ReloadRequiredRemoveStepHandler} as remove handler
      */
     public CMResourceResourceDefinition() {

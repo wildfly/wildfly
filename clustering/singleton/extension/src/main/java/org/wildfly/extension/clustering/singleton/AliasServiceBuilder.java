@@ -22,11 +22,13 @@
 
 package org.wildfly.extension.clustering.singleton;
 
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
@@ -38,7 +40,7 @@ import org.wildfly.clustering.service.IdentityServiceConfigurator;
  * @deprecated Replaced by {@link IdentityServiceConfigurator}.
  */
 @Deprecated
-public class AliasServiceBuilder<T> implements Builder<T> {
+public class AliasServiceBuilder<T> implements Builder<T>, Service<T> {
 
     private final InjectedValue<T> value = new InjectedValue<>();
     private final ServiceName name;
@@ -64,8 +66,23 @@ public class AliasServiceBuilder<T> implements Builder<T> {
 
     @Override
     public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, new ValueService<>(this.value))
+        return target.addService(this.name, this)
                 .addDependency(this.targetName, this.targetClass, this.value)
                 .setInitialMode(ServiceController.Mode.PASSIVE);
+    }
+
+    @Override
+    public T getValue() {
+        return this.value.getValue();
+    }
+
+    @Override
+    public void start(StartContext context) {
+        // Do nothing
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Do nothing
     }
 }

@@ -41,7 +41,6 @@ public class SarSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final SarSubsystemAdd INSTANCE = new SarSubsystemAdd();
 
     private SarSubsystemAdd() {
-        super(SarExtension.SAR_CAPABILITY);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {

@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-elytron-oidc-client</artifactId>
@@ -52,6 +52,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>test</scope>
@@ -59,6 +69,11 @@
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -103,6 +118,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-cli</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -116,6 +136,11 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -179,6 +204,7 @@
                             <layers>
                                 <layer>cloud-server</layer>
                                 <layer>elytron-oidc-client</layer>
+                                <layer>ejb</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -219,6 +245,7 @@
                             <systemPropertyVariables>
                                 <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                             </systemPropertyVariables>
+                            <reportNameSuffix>standalone-enabled-elytron-oidc-client-test</reportNameSuffix>
                         </configuration>
                     </execution>
                 </executions>
@@ -303,6 +330,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>elytron-oidc-client</layer>
+                                                <layer>ejb</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -318,6 +346,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>
@@ -417,6 +448,7 @@
                                             <layers>
                                                 <layer>cloud-server</layer>
                                                 <layer>elytron-oidc-client</layer>
+                                                <layer>ejb</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -432,6 +464,9 @@
                             <execution>
                                 <id>layers-test</id>
                                 <phase>test</phase>
+                                <configuration>
+                                    <reportNameSuffix>layers-test</reportNameSuffix>
+                                </configuration>
                             </execution>
                             <execution>
                                 <id>default-test</id>

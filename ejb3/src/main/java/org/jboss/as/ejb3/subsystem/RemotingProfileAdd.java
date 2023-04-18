@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -46,9 +48,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBTransportProvider;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.discovery.AttributeValue;
 import org.wildfly.discovery.ServiceURL;
@@ -111,11 +111,10 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             }
             final Map<String, RemotingProfileService.RemotingConnectionSpec> map = new HashMap<>();
             final List<RemotingProfileService.HttpConnectionSpec> httpConnectionSpecs = new ArrayList<>();
-            final RemotingProfileService profileService = new RemotingProfileService(urls, map, httpConnectionSpecs);
             // populating the map after the fact is cheating, but it works thanks to the MSC start service "fence"
 
             final CapabilityServiceBuilder capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY);
-            capabilityServiceBuilder.setInstance(profileService);
+            final Consumer<RemotingProfileService> consumer = capabilityServiceBuilder.provides(RemotingProfileResourceDefinition.REMOTING_PROFILE_CAPABILITY);
             if (profileNode.hasDefined(EJB3SubsystemModel.REMOTING_EJB_RECEIVER)) {
                 for (final Property receiverProperty : profileNode.get(EJB3SubsystemModel.REMOTING_EJB_RECEIVER).asPropertyList()) {
 
@@ -123,15 +122,14 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
                     final String connectionRef = RemotingEjbReceiverDefinition.OUTBOUND_CONNECTION_REF.resolveModelAttribute(context, receiverNode).asString();
                     final long timeout = RemotingEjbReceiverDefinition.CONNECT_TIMEOUT.resolveModelAttribute(context, receiverNode).asLong();
 
-                    final InjectedValue<OutboundConnection> connectionInjector = new InjectedValue<>();
-                    capabilityServiceBuilder.addCapabilityRequirement(OUTBOUND_CONNECTION_CAPABILITY_NAME, OutboundConnection.class, connectionInjector, connectionRef);
+                    final Supplier<OutboundConnection> connectionSupplier = capabilityServiceBuilder.requiresCapability(OUTBOUND_CONNECTION_CAPABILITY_NAME, OutboundConnection.class, connectionRef);
 
                     final ModelNode channelCreationOptionsNode = receiverNode.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
                     OptionMap channelCreationOptions = createChannelOptionMap(context, channelCreationOptionsNode);
 
                     map.put(connectionRef, new RemotingProfileService.RemotingConnectionSpec(
                         connectionRef,
-                        connectionInjector,
+                        connectionSupplier,
                         channelCreationOptions,
                         timeout
                     ));
@@ -151,19 +149,22 @@ public class RemotingProfileAdd extends AbstractAddStepHandler {
             }
 
             // if the local receiver is enabled for this context, then add a dependency on the appropriate LocalEjbReceive service
+            Supplier<EJBTransportProvider> localTransportProviderSupplier = null;
             if (!isLocalReceiverExcluded) {
                 final ModelNode passByValueNode = RemotingProfileResourceDefinition.LOCAL_RECEIVER_PASS_BY_VALUE.resolveModelAttribute(context, profileNode);
 
                 if (passByValueNode.isDefined()) {
                     final ServiceName localTransportProviderServiceName = passByValueNode.asBoolean() == true ? LocalTransportProvider.BY_VALUE_SERVICE_NAME
                             : LocalTransportProvider.BY_REFERENCE_SERVICE_NAME;
-                    capabilityServiceBuilder.addDependency(localTransportProviderServiceName, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                    localTransportProviderSupplier = capabilityServiceBuilder.requires(localTransportProviderServiceName);
                 } else {
                     // setup a dependency on the default local Jakarta Enterprise Beans receiver service configured at the subsystem level
-                    capabilityServiceBuilder.addDependency(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, EJBTransportProvider.class, profileService.getLocalTransportProviderInjector());
+                    localTransportProviderSupplier = capabilityServiceBuilder.requires(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME);
                 }
             }
-            capabilityServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            final RemotingProfileService profileService = new RemotingProfileService(consumer, localTransportProviderSupplier, urls, map, httpConnectionSpecs);
+            capabilityServiceBuilder.setInstance(profileService);
+            capabilityServiceBuilder.install();
 
         } catch (IllegalArgumentException | URISyntaxException e) {
             throw new OperationFailedException(e.getLocalizedMessage());

@@ -26,7 +26,7 @@ import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.jbossts.XTSService;
 import org.jboss.jbossts.xts.environment.WSCEnvironmentBean;
 import org.jboss.jbossts.xts.environment.XTSPropertyManager;
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -39,7 +39,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:adinn@redhat.com">Andrew Dinn</a>
  */
-public class XTSManagerService extends AbstractService<XTSService> {
+public class XTSManagerService implements Service<XTSService> {
     private final String coordinatorURL;
     private volatile org.jboss.jbossts.XTSService xtsService;
     private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<ServerConfig>();

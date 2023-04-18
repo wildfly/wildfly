@@ -28,7 +28,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DAT
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.JdbcDriverAdd.startDriverServices;
 
@@ -59,7 +58,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
     static final JdbcDriverRemove INSTANCE = new JdbcDriverRemove();
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String driverName = model.get(DRIVER_NAME.getName()).asString();
+        final String driverName = context.getCurrentAddressValue();
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceName  jdbcServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
@@ -69,7 +68,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
-        final String driverName = model.require(DRIVER_NAME.getName()).asString();
+        final String driverName = context.getCurrentAddressValue();
         final String moduleName = model.require(DRIVER_MODULE_NAME.getName()).asString();
         final Integer majorVersion = model.hasDefined(DRIVER_MAJOR_VERSION.getName()) ? model.get(DRIVER_MAJOR_VERSION.getName()).asInt() : null;
         final Integer minorVersion = model.hasDefined(DRIVER_MINOR_VERSION.getName()) ? model.get(DRIVER_MINOR_VERSION.getName()).asInt() : null;

@@ -151,7 +151,7 @@ public abstract class AbstractMessagingHATestCase {
 
     protected static InitialContext createJNDIContextFromServer1() throws NamingException {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         String ipAdddress = TestSuiteEnvironment.getServerAddress("node0");
         env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":" + TestSuiteEnvironment.getHttpPort()));
         env.put(Context.SECURITY_PRINCIPAL, "guest");
@@ -161,7 +161,7 @@ public abstract class AbstractMessagingHATestCase {
 
     protected static InitialContext createJNDIContextFromServer2() throws NamingException {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
         String ipAdddress = TestSuiteEnvironment.getServerAddressNode1();
         env.put(Context.PROVIDER_URL, System.getProperty(Context.PROVIDER_URL, "remote+http://" + ipAdddress + ":" + (TestSuiteEnvironment.getHttpPort() + OFFSET)));
         env.put(Context.SECURITY_PRINCIPAL, "guest");

@@ -1,6 +1,14 @@
 [[MicroProfile-Fault-Tolerance-SmallRye]]
 = MicroProfile Fault Tolerance Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 == Specification
 
 WildFly's MicroProfile Fault Tolerance subsystem implements MicroProfile Fault Tolerance 4.0.
@@ -28,8 +36,9 @@ The MicroProfile Fault Tolerance implementation is provided by the https://githu
 This extension is automatically included in the `standalone-microprofile` server profiles,
 however, it is not included by default in the default configuration of WildFly.
 
-NOTE: The MicroProfile Metrics extension and subsystem are required by this extension,
+NOTE: The MicroProfile Metrics extension and subsystem are required by this extension to provide Metrics integration,
 please follow the instructions in the <<required-extension-microprofile-metrics-smallrye,MicroProfile Metrics Subsystem Configuration section>>.
+If the Metrics subsystem is not available, no metrics data will be collected.
 
 You can add the extension to a configuration without it either by using the following CLI operations:
 

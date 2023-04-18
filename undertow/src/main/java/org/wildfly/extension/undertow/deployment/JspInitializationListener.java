@@ -25,17 +25,17 @@ import org.apache.jasper.runtime.JspApplicationContextImpl;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.wildfly.extension.undertow.ImportedClassELResolver;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.jsp.JspApplicationContext;
-import javax.servlet.jsp.JspFactory;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.jsp.JspApplicationContext;
+import jakarta.servlet.jsp.JspFactory;
 import java.util.List;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Listener that sets up the {@link JspApplicationContext} with any wrapped EL expression factories and also
- * setting up any relevant {@link javax.el.ELResolver}s
+ * setting up any relevant {@link jakarta.el.ELResolver}s
  *
  * @author Stuart Douglas
  */

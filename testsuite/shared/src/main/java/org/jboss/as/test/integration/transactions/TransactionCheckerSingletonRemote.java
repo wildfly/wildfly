@@ -22,8 +22,9 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import javax.ejb.Remote;
 import java.util.Collection;
+
+import jakarta.ejb.Remote;
 
 /**
  * Interface used as remote point to {@link TransactionCheckerSingleton} class

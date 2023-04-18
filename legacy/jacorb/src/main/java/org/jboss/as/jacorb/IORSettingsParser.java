@@ -48,9 +48,9 @@ class IORSettingsParser implements XMLStreamConstants, XMLElementReader<List<Mod
 
     static final IORSettingsParser INSTANCE = new IORSettingsParser();
 
-    static final PersistentResourceXMLDescription xmlDescription = builder(IORSettingsDefinition.INSTANCE)
+    static final PersistentResourceXMLDescription xmlDescription = builder(IORSettingsDefinition.INSTANCE.getPathElement())
             .setXmlElementName(JacORBSubsystemConstants.IOR_SETTINGS)
-            .addChild(builder(IORTransportConfigDefinition.INSTANCE)
+            .addChild(builder(IORTransportConfigDefinition.INSTANCE.getPathElement())
                             .addAttribute(IORTransportConfigDefinition.INTEGRITY)
                             .addAttribute(IORTransportConfigDefinition.CONFIDENTIALITY)
                             .addAttribute(IORTransportConfigDefinition.TRUST_IN_CLIENT)
@@ -58,12 +58,12 @@ class IORSettingsParser implements XMLStreamConstants, XMLElementReader<List<Mod
                             .addAttribute(IORTransportConfigDefinition.DETECT_REPLAY)
                             .addAttribute(IORTransportConfigDefinition.DETECT_MISORDERING)
             )
-            .addChild(builder(IORASContextDefinition.INSTANCE)
+            .addChild(builder(IORASContextDefinition.INSTANCE.getPathElement())
                             .addAttribute(IORASContextDefinition.AUTH_METHOD)
                             .addAttribute(IORASContextDefinition.REALM)
                             .addAttribute(IORASContextDefinition.REQUIRED)
             )
-            .addChild(builder(IORSASContextDefinition.INSTANCE)
+            .addChild(builder(IORSASContextDefinition.INSTANCE.getPathElement())
                             .addAttribute(IORSASContextDefinition.CALLER_PROPAGATION)
             )
             .build();

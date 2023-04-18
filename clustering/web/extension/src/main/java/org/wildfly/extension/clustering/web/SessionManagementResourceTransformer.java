@@ -36,7 +36,7 @@ public class SessionManagementResourceTransformer implements BiConsumer<ModelVer
 
     @Override
     public void accept(ModelVersion version, ResourceTransformationDescriptionBuilder builder) {
-        if (DistributableWebModel.VERSION_3_0_0.requiresTransformation(version)) {
+        if (DistributableWebSubsystemModel.VERSION_3_0_0.requiresTransformation(version)) {
             builder.getAttributeBuilder()
                     .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())
                     .addRejectCheck(RejectAttributeChecker.DEFINED, SessionManagementResourceDefinition.Attribute.MARSHALLER.getName())

@@ -644,7 +644,7 @@ public final class CSIv2Util {
      * @param encodedToken the encoded token.
      * @param codec        the {@code Codec} used to decode the token.
      * @return the decoded {@code InitialContextToken} instance.
-     * @see #encodeInitialContextToken(org.omg.GSSUP.InitialContextToken, org.omg.IOP.Codec)
+     * @see #encodeInitialContextToken(InitialContextToken, Codec)
      */
     public static InitialContextToken decodeInitialContextToken(byte[] encodedToken, Codec codec) {
         if (encodedToken[0] != 0x60)
@@ -759,7 +759,7 @@ public final class CSIv2Util {
                                                           short clientRequires) {
         CompoundSecMechList csmList;
         try {
-            TaggedComponent tc = ri.get_effective_component(org.omg.IOP.TAG_CSI_SEC_MECH_LIST.value);
+            TaggedComponent tc = ri.get_effective_component(TAG_CSI_SEC_MECH_LIST.value);
 
             Any any = codec.decode_value(tc.component_data, CompoundSecMechListHelper.type());
             csmList = CompoundSecMechListHelper.extract(any);

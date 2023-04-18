@@ -21,9 +21,9 @@
  */
 package org.jboss.as.txn.service.internal.tsr;
 
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.wildfly.transaction.client.AbstractTransaction;
@@ -43,7 +43,7 @@ import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
  * synchronizations are called last as that allows Jakarta Connectors to detect connection leaks from frameworks that have not closed the Jakarta Connectors
  * managed resources. This is described in (for example)
  * http://docs.oracle.com/javaee/5/api/javax/transaction/TransactionSynchronizationRegistry
- * .html#registerInterposedSynchronization(javax.transaction.Synchronization) where it says that during afterCompletion
+ * .html#registerInterposedSynchronization(jakarta.transaction.Synchronization) where it says that during afterCompletion
  * "Resources can be closed but no transactional work can be performed with them".
  *
  * One implication of this approach is that if the underlying transactions implementation has special handling for various types

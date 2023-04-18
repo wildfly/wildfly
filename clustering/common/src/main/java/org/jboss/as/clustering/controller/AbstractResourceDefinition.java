@@ -28,7 +28,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
- * Resource definition for resources that performs all registration via {@link Registration#register(Object)}.
+ * Resource definition for resources that performs all registration via {@link ManagementRegistrar#register(Object)}.
  * All other registerXXX(...) methods have been made final - to prevent misuse.
  * @author Paul Ferraro
  */

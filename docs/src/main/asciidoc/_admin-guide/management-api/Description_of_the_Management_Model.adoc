@@ -1,6 +1,15 @@
 [[Description_of_the_Management_Model]]
 = Description of the Management Model
-ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+ifdef::env-github[:outfilesuffix: .adoc]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+ifdef::env-browser[:outfilesuffix: .adoc]
 
 A detailed description of the resources, attributes and operations that
 make up the management model provided by an individual WildFly instance

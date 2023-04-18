@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 
-import javax.enterprise.inject.Vetoed;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.inject.Vetoed;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.jboss.as.weld.discovery.InnerClasses.InnerInterface;
 import org.jboss.as.weld.discovery.vetoed.Bravo;

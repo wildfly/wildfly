@@ -42,7 +42,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
@@ -76,7 +75,6 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         boolean resolveProperties = Util.shouldResolveJBoss(deploymentUnit);
-        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
         final PropertyReplacer propertyReplacer = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_REPLACER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
@@ -85,7 +83,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
             InputStream xmlStream = null;
             try {
                 xmlStream = new FileInputStream(f.getPhysicalFile());
-                DsXmlParser parser = new DsXmlParser(propertyResolver, propertyReplacer);
+                DsXmlParser parser = new DsXmlParser(propertyReplacer);
                 parser.setSystemPropertiesResolved(resolveProperties);
                 DataSources dataSources = parser.parse(xmlStream);
 

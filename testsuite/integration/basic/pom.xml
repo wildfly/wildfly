@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -47,6 +47,11 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -171,6 +176,11 @@
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -363,16 +373,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jberet</groupId>
             <artifactId>jberet-core</artifactId>
             <scope>test</scope>
@@ -384,7 +384,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-transaction-spi-jakarta</artifactId>
+            <artifactId>jboss-transaction-spi</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -404,42 +404,42 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <artifactId>ironjacamar-common-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-common-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+            <artifactId>ironjacamar-jdbc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <artifactId>narayana-jts-integration</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb-jakarta</artifactId>
+            <artifactId>openjdk-orb</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -473,57 +473,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-tracing-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.shrinkwrap.descriptors</groupId>
             <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>org.jboss.spec.javax.annotation</groupId>
-            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.batch</groupId>
-            <artifactId>jboss-batch-api_1.0_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.faces</groupId>
-            <artifactId>jboss-jsf-api_2.3_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.management.j2ee</groupId>
-            <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-            <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.websocket</groupId>
-            <artifactId>jboss-websocket-api_1.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.spec.javax.xml.ws</groupId>
-            <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
-            <scope>test</scope>
-        </dependency>
-        -->
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-api</artifactId>
@@ -749,17 +707,6 @@
             <artifactId>netty-transport-classes-kqueue</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- This contains classes moved from WildFly Core -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-context</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -798,7 +745,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.jakarta.xml.soap</groupId>
@@ -1393,11 +1340,6 @@
                                 <exclude>org/jboss/as/test/integration/weld/services/WeldResourceInjectionServicesTestCase.java</exclude>
                                 <!-- microprofile exclusions -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/SimpleRestClientTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
-                                <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -1581,6 +1523,7 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
+                                    <reportNameSuffix>basic-integration-default-web</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1814,6 +1757,25 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ee-concurrency.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ee-concurrency/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
                             </execution>
                             <!-- Copy users and roles config from shared resources. -->
                             <execution>
@@ -2203,7 +2165,47 @@
                                     </configurations>
                                 </configuration>
                             </execution>
-
+                            <!-- Provision a server with ee-concurrency -->
+                            <execution>
+                                <id>ee-concurrency-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <install-dir>${project.build.directory}/wildfly-ee-concurrency</install-dir>
+                                    <record-state>false</record-state>
+                                    <log-time>${galleon.log.time}</log-time>
+                                    <offline>${galleon.offline}</offline>
+                                    <plugin-options>
+                                        <jboss-maven-dist/>
+                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                        <optional-packages>passive+</optional-packages>
+                                    </plugin-options>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>core-server</layer>
+                                                <layer>ejb-lite</layer>
+                                                <layer>ee-concurrency</layer>
+                                                <!-- TODO stop using unnecessarily using wars for test apps and drop this -->
+                                                <layer>servlet</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
                             <!-- Provision a cloud-profile server with ejb-lite -->
                             <execution>
                                 <id>ejb-lite-provisioning</id>
@@ -2908,10 +2910,6 @@
                                         <!-- Requires EJB -->
                                         <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase</exclude>
                                         <!-- Requires extra modules -->
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/MultiTracerTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/TraceErrorTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/WildCardTestCase</exclude>
-                                        <exclude>org/wildfly/test/integration/microprofile/opentracing/jaxrs/ResteasyProvidersTestCase</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -2958,6 +2956,36 @@
                                         <!-- SarResourceInjectionTestCase needs mail -->
                                         <include>org/jboss/as/test/integration/sar/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/deployment/classloading/sar/*TestCase.java</include>
+                                    </includes>
+                                </configuration>
+                            </execution>
+
+                            <!-- Tests against the install with ejb-lite -->
+                            <execution>
+                                <id>ee-concurrency-layers.surefire</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <jboss.install.dir>${basedir}/target/wildfly-ee-concurrency</jboss.install.dir>
+                                        <jboss.inst>${basedir}/target/wildfly-ee-concurrency</jboss.inst>
+                                        <jboss.home>${project.build.directory}/wildfly-ee-concurrency</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-ee-concurrency</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-ee-concurrency</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-ee-concurrency</jboss.dist>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly-ee-concurrency/modules${path.separator}${basedir}/target/modules</module.path>
+                                    </systemPropertyVariables>
+                                    <environmentVariables>
+                                        <JBOSS_HOME>${project.build.directory}/wildfly-ee-concurrency</JBOSS_HOME>
+                                    </environmentVariables>
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
@@ -3715,7 +3743,7 @@
             </build>
         </profile>
 
-        <!-- Test against ee-9 -->
+        <!-- Test against WildFly Preview -->
         <profile>
             <id>ee9.test.profile</id>
             <activation>
@@ -3787,7 +3815,6 @@
                                         <exclude>org/jboss/as/test/integration/jmx/full/**/*TestCase*.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/api/security/SecurityDomainDotNameTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase*.java</exclude>
-                                        <include>org/jboss/as/test/integration/microprofile/opentracing/**/*TestCase*.java</include>
                                         <exclude>org/jboss/as/test/integration/management/cli/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/naming/remote/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>

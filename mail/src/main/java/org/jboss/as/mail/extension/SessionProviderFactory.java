@@ -37,13 +37,14 @@ import org.jboss.msc.service.StartException;
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class SessionProviderFactory {
-    static SessionProvider create(MailSessionConfig config, final Map<String, OutboundSocketBinding> socketBindings) throws StartException {
-        return new ManagedSession(config, socketBindings);
+    static ConfigurableSessionProvider create(MailSessionConfig config) throws StartException {
+        return new ManagedSession(config);
     }
 
     static SessionProvider create(MailSessionMetaData mailSessionMetaData) {
@@ -62,15 +63,18 @@ class SessionProviderFactory {
         return new StringBuilder("mail.").append(protocol).append(".").append(name).toString();
     }
 
-    private static class ManagedSession implements SessionProvider {
-        private final Map<String, OutboundSocketBinding> socketBindings;
+    private static class ManagedSession implements ConfigurableSessionProvider {
         private final MailSessionConfig sessionConfig;
         private final Properties properties = new Properties();
 
-        private ManagedSession(MailSessionConfig sessionConfig, Map<String, OutboundSocketBinding> socketBindings) throws StartException {
-            this.socketBindings = socketBindings;
+        private ManagedSession(MailSessionConfig sessionConfig) throws StartException {
             this.sessionConfig = sessionConfig;
             configure();
+        }
+
+        @Override
+        public MailSessionConfig getConfig() {
+            return this.sessionConfig;
         }
 
         /**
@@ -158,23 +162,23 @@ class SessionProviderFactory {
         }
 
         private InetSocketAddress getServerSocketAddress(ServerConfig server) throws StartException {
-            final String ref = server.getOutgoingSocketBinding();
-            final OutboundSocketBinding binding = socketBindings.get(ref);
-            if (binding == null) {
-                throw MailLogger.ROOT_LOGGER.outboundSocketBindingNotAvailable(ref);
-            }
+            OutboundSocketBinding binding = server.getOutgoingSocketBinding();
             return new InetSocketAddress(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
         }
 
         @Override
         public Session getSession() {
             final Session session;
-            final ClassLoader current = Thread.currentThread().getContextClassLoader();
-            try {
-                Thread.currentThread().setContextClassLoader(Session.class.getClassLoader());
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            if (current == null) {
+                try {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(Session.class.getClassLoader());
+                    session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
+                } finally {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+                }
+            } else {
                 session = Session.getInstance(properties, new ManagedPasswordAuthenticator(sessionConfig));
-            } finally {
-                Thread.currentThread().setContextClassLoader(current);
             }
             return session;
         }

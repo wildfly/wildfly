@@ -84,7 +84,7 @@ public class RemoteNamingEjbTestCase {
 
     public InitialContext getRemoteContext() throws Exception {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");

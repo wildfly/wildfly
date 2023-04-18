@@ -72,12 +72,12 @@ public class JcaSubsystemRootDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(JcaArchiveValidationDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(JcaBeanValidationDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(TracerDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(JcaCachedConnectionManagerDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new JcaArchiveValidationDefinition());
+        resourceRegistration.registerSubModel(new JcaBeanValidationDefinition());
+        resourceRegistration.registerSubModel(new TracerDefinition());
+        resourceRegistration.registerSubModel(new JcaCachedConnectionManagerDefinition());
         resourceRegistration.registerSubModel(JcaWorkManagerDefinition.createInstance(registerRuntimeOnly));
         resourceRegistration.registerSubModel(JcaDistributedWorkManagerDefinition.createInstance(registerRuntimeOnly));
-        resourceRegistration.registerSubModel(JcaBootstrapContextDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new JcaBootstrapContextDefinition());
     }
 }

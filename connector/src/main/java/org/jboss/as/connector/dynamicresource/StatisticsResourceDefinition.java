@@ -55,7 +55,7 @@ public class StatisticsResourceDefinition extends SimpleResourceDefinition {
     /**
      * Constructor for the {@link org.jboss.as.controller.descriptions.OverrideDescriptionProvider} case. Internationalization support is not provided.
      *
-     * @param bundleName name to pass to {@link java.util.ResourceBundle#getBundle(String)}
+     * @param bundleName name to pass to {@link ResourceBundle#getBundle(String)}
      * @param plugin     the statistics plugins
      */
     public StatisticsResourceDefinition(final PathElement path, final String bundleName, final StatisticsPlugin plugin) {

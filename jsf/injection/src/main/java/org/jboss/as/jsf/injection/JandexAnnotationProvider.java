@@ -25,7 +25,7 @@ package org.jboss.as.jsf.injection;
 import com.sun.faces.spi.AnnotationProvider;
 import java.lang.annotation.Annotation;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Map;
 import java.util.Set;
 

@@ -46,7 +46,7 @@ final class BufferCacheAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : BufferCacheDefinition.INSTANCE.getAttributes()) {
+        for (AttributeDefinition def : BufferCacheDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
     }

@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.modules.Module;
@@ -58,7 +58,7 @@ public class PersistenceProviderLoader {
      * @throws ModuleLoadException
      * @return list of persistence providers in specified module
      *
-     * Note: side effect of saving loaded persistence providers to static api in javax.persistence.spi.PersistenceProvider.
+     * Note: side effect of saving loaded persistence providers to static api in jakarta.persistence.spi.PersistenceProvider.
      */
     public static List<PersistenceProvider> loadProviderModuleByName(String moduleName) throws ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();

@@ -1,6 +1,14 @@
 [[Working_with_WildFly_Capabilities]]
 = Working with WildFly Capabilities
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 An extension to WildFly will likely want to make use of services
 provided by the WildFly kernel, may want to make use of services
 provided by other subsystems, and may wish to make functionality
@@ -708,11 +716,11 @@ handle the exception.
 
 The WildFly Core kernel's API for using capabilities is covered in
 detail in the javadoc for the
-https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/capability/RuntimeCapability.java[RuntimeCapability
+https://github.com/wildfly/wildfly-core/blob/main/controller/src/main/java/org/jboss/as/controller/capability/RuntimeCapability.java[RuntimeCapability
 and RuntimeCapability.Builder] classes and the
-https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/OperationContext.java[OperationContext]
+https://github.com/wildfly/wildfly-core/blob/main/controller/src/main/java/org/jboss/as/controller/OperationContext.java[OperationContext]
 and
-https://github.com/wildfly/wildfly-core/blob/master/controller/src/main/java/org/jboss/as/controller/capability/CapabilityServiceSupport.java[CapabilityServiceSupport]
+https://github.com/wildfly/wildfly-core/blob/main/controller/src/main/java/org/jboss/as/controller/capability/CapabilityServiceSupport.java[CapabilityServiceSupport]
 interfaces.
 
 Many of the methods in `OperationContext` related to capabilities have

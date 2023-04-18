@@ -38,12 +38,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class XaDataSourcePropertyDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_PROPERTIES = PathElement.pathElement(XADATASOURCE_PROPERTIES.getName());
-    static final XaDataSourcePropertyDefinition INSTANCE = new XaDataSourcePropertyDefinition(false);
-    static final XaDataSourcePropertyDefinition DEPLOYED_INSTANCE = new XaDataSourcePropertyDefinition(true);
 
     private final boolean deployed;
 
-    private XaDataSourcePropertyDefinition(final boolean deployed) {
+    XaDataSourcePropertyDefinition(final boolean deployed) {
         super(PATH_PROPERTIES,
                 DataSourcesExtension.getResourceDescriptionResolver("xa-data-source", "xa-datasource-properties"),
                 deployed ? null : XaDataSourcePropertyAdd.INSTANCE,

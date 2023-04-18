@@ -44,7 +44,7 @@ public class ModClusterExtensionTransformerRegistration implements ExtensionTran
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         // Register transformers for all but the current model
-        for (ModClusterModel model : EnumSet.complementOf(EnumSet.of(ModClusterModel.CURRENT))) {
+        for (ModClusterSubsystemModel model : EnumSet.complementOf(EnumSet.of(ModClusterSubsystemModel.CURRENT))) {
             ModelVersion version = model.getVersion();
             TransformationDescription.Tools.register(new ModClusterSubsystemResourceTransformer().apply(version), registration, version);
         }

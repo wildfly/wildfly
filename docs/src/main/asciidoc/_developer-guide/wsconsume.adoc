@@ -1,6 +1,14 @@
 [[wsconsume]]
 = wsconsume
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 _wsconsume_ is a command line tool and ant task that "consumes" the
 abstract contract (WSDL file) and produces portable Jakarta XML Web Services and
 client artifacts.

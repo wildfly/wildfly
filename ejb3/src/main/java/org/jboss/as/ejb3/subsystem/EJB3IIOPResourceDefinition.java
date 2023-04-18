@@ -67,10 +67,9 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { ENABLE_BY_DEFAULT, USE_QUALIFIED_NAME };
-    public static final EJB3IIOPResourceDefinition INSTANCE = new EJB3IIOPResourceDefinition();
 
-    private EJB3IIOPResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.IIOP_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP))
+    EJB3IIOPResourceDefinition() {
+        super(new Parameters(EJB3SubsystemModel.IIOP_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP))
                 .setAddHandler(new EJB3IIOPAdd(ATTRIBUTES))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(EJB3_IIOP_SETTINGS_CAPABILITY));

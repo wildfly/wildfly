@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
@@ -42,17 +43,12 @@ import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebMetaData;
@@ -65,12 +61,9 @@ import org.jboss.vfs.VirtualFile;
  * @author Stuart Douglas
  */
 public class JSFComponentProcessor implements DeploymentUnitProcessor {
-
-    public static final DotName MANAGED_BEAN_ANNOTATION = DotName.createSimple("javax.faces.bean.ManagedBean");
-
     private static final String WEB_INF_FACES_CONFIG = "WEB-INF/faces-config.xml";
 
-    private static final String CONFIG_FILES = "javax.faces.CONFIG_FILES";
+    private static final String CONFIG_FILES = "jakarta.faces.CONFIG_FILES";
 
     /**
      * Jakarta Server Faces tags that should be checked in the configuration file. All the
@@ -102,11 +95,9 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         SYSTEM_EVENT_LISTENER,
         SYSTEM_EVENT_LISTENER_CLASS,
         LIFECYCLE,
-        PHASE_LISTENER,
-        MANAGED_BEAN,
-        MANAGED_BEAN_CLASS;
+        PHASE_LISTENER;
 
-        private String tagName;
+        private final String tagName;
 
         JsfTag() {
             tagName = this.name().toLowerCase().replaceAll("_", "-");
@@ -149,7 +140,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     /**
      * Helper class to queue tags read from the Jakarta Server Faces XML configuration file. The
      * idea is saving the element which can be a known tree element or another
-     * one that is not interested for injection.
+     * one that is not interested in injection.
      */
     private static class JsfElement {
         private final JsfTree tree;
@@ -208,17 +199,13 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
                         new JsfTree(JsfTag.SYSTEM_EVENT_LISTENER,
                                 new JsfTree(JsfTag.SYSTEM_EVENT_LISTENER_CLASS))),
                 new JsfTree(JsfTag.LIFECYCLE,
-                        new JsfTree(JsfTag.PHASE_LISTENER)),
-                new JsfTree(JsfTag.MANAGED_BEAN,
-                        new JsfTree(JsfTag.MANAGED_BEAN_CLASS)));
+                        new JsfTree(JsfTag.PHASE_LISTENER)));
     }
 
     @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
             return;
@@ -232,13 +219,8 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             return;
         }
-        final Set<String> managedBeanClasses = new HashSet<String>();
-        handleAnnotations(index, managedBeanClasses);
-        for (String managedBean : managedBeanClasses) {
-            installManagedBeanComponent(managedBean, moduleDescription, module, deploymentUnit, applicationClassesDescription);
-        }
         // process all the other elements eligible for injection in the Jakarta Server Faces spec
-        processJSFArtifactsForInjection(deploymentUnit, managedBeanClasses);
+        processJSFArtifactsForInjection(deploymentUnit);
     }
 
     /**
@@ -250,12 +232,15 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
      * using the facesConfigElement tree it is known when a tag is one of the
      * classes to use for injection.
      */
-    private void processJSFArtifactsForInjection(final DeploymentUnit deploymentUnit, final Set<String> managedBeanClasses) {
-        final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
-        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+    private void processJSFArtifactsForInjection(final DeploymentUnit deploymentUnit) {
+        final EEApplicationClasses applicationClassesDescription =
+                deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+        final EEModuleDescription moduleDescription =
+                deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         JsfElement current = null;
         Deque<JsfElement> queue = new LinkedList<>();
+        final Set<String> addedClasses = new HashSet<>();
+
         for (final VirtualFile facesConfig : getConfigurationFiles(deploymentUnit)) {
             try (InputStream is = facesConfig.openStream()) {
                 final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -283,13 +268,10 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
                                 if (child != null && child.isLeaf()) {
                                     // leaf component => read the class and register the component
                                     String className = parser.getElementText().trim();
-                                    if (!managedBeanClasses.contains(className)) {
-                                        managedBeanClasses.add(className);
-                                        if (child.getTag() == JsfTag.MANAGED_BEAN_CLASS) {
-                                            installManagedBeanComponent(className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
-                                        } else {
-                                            installJsfArtifactComponent(child.getTag().getTagName(), className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
-                                        }
+                                    if (!addedClasses.contains(className)) {
+                                        addedClasses.add(className);
+                                        installJsfArtifactComponent(child.getTag().getTagName(), className,
+                                            moduleDescription, deploymentUnit, applicationClassesDescription);
                                     }
                                 } else if (child != null) {
                                     // non-leaf known element => advance into it
@@ -315,7 +297,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
     }
 
     public Set<VirtualFile> getConfigurationFiles(DeploymentUnit deploymentUnit) {
-        final Set<VirtualFile> ret = new HashSet<VirtualFile>();
+        final Set<VirtualFile> ret = new HashSet<>();
         final List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (final ResourceRoot resourceRoot : resourceRoots) {
             final VirtualFile webInfFacesConfig = resourceRoot.getRoot().getChild(WEB_INF_FACES_CONFIG);
@@ -366,48 +348,18 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         return ret;
     }
 
-    private void handleAnnotations(final CompositeIndex index, final Set<String> managedBeanClasses) throws DeploymentUnitProcessingException {
-        final List<AnnotationInstance> annotations = index.getAnnotations(MANAGED_BEAN_ANNOTATION);
-        if (annotations != null) {
-            for (final AnnotationInstance annotation : annotations) {
-
-                final AnnotationTarget target = annotation.target();
-                if (target instanceof ClassInfo) {
-                    final String className = ((ClassInfo) target).name().toString();
-                    managedBeanClasses.add(className);
-                } else {
-                    throw new DeploymentUnitProcessingException(JSFLogger.ROOT_LOGGER.invalidManagedBeanAnnotation(target));
-                }
-            }
-        }
+    private void installJsfArtifactComponent(final String type,
+                                             final String className,
+                                             final EEModuleDescription moduleDescription,
+                                             final DeploymentUnit deploymentUnit,
+                                             final EEApplicationClasses applicationClassesDescription) {
+        install(type, className, moduleDescription, deploymentUnit, applicationClassesDescription);
     }
 
-    private void installManagedBeanComponent(String className, final EEModuleDescription moduleDescription,
-            final Module module, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
-        //try and load the class, and skip the class if it cannot be loaded
-        //this is not ideal, but we are not allowed to let the deployment
-        //fail due to missing managed beans
-        try {
-            final Class<?> componentClass = module.getClassLoader().loadClass(className);
-            componentClass.getConstructor();
-        } catch (ClassNotFoundException e) {
-            JSFLogger.ROOT_LOGGER.managedBeanLoadFail(className);
-            return;
-        } catch (NoSuchMethodException e) {
-            JSFLogger.ROOT_LOGGER.managedBeanNoDefaultConstructor(className);
-            return;
-        }
-        install(JsfTag.MANAGED_BEAN.getTagName(), className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
-    }
-
-    private void installJsfArtifactComponent(String type, String className, final EEModuleDescription moduleDescription,
-            final Module module, final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
-        install(type, className, moduleDescription, module, deploymentUnit, applicationClassesDescription);
-    }
-
-    private void install(String type, String className, final EEModuleDescription moduleDescription, final Module module,
+    private void install(String type, String className, final EEModuleDescription moduleDescription,
             final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClassesDescription) {
-        final ComponentDescription componentDescription = new WebComponentDescription(type + "." + className, className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
+        final ComponentDescription componentDescription = new WebComponentDescription(type + "." + className,
+                className, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
         moduleDescription.addComponent(componentDescription);
         deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, componentDescription.getStartServiceName());
     }

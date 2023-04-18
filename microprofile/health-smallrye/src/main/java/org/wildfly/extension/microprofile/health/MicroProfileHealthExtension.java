@@ -30,8 +30,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,7 +50,7 @@ public class MicroProfileHealthExtension implements Extension {
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final String RESOURCE_NAME = MicroProfileHealthExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileHealthExtension.class);
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
     protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
@@ -58,22 +58,6 @@ public class MicroProfileHealthExtension implements Extension {
     private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
 
     private static final MicroProfileHealthParser_3_0 CURRENT_PARSER = new MicroProfileHealthParser_3_0();
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        return getResourceDescriptionResolver(true, keyPrefix);
-
-    }
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder();
-        for (String kp : keyPrefix) {
-            if (prefix.length() > 0){
-                prefix.append('.');
-            }
-            prefix.append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MicroProfileHealthExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
-    }
 
     @Override
     public void initialize(ExtensionContext context) {

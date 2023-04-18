@@ -77,7 +77,7 @@ public class CNCtx implements javax.naming.Context {
     private NameComponent[] _name = null;
 
     Hashtable _env; // used by ExceptionMapper
-    static final org.wildfly.iiop.openjdk.naming.jndi.CNNameParser parser = new org.wildfly.iiop.openjdk.naming.jndi.CNNameParser();
+    static final CNNameParser parser = new CNNameParser();
 
     private static final String FED_PROP = "com.sun.jndi.cosnaming.federation";
     boolean federation = false;
@@ -113,7 +113,7 @@ public class CNCtx implements javax.naming.Context {
             env = (Hashtable) env.clone();
         }
         ctx._env = env;
-        String rest = ctx.initUsingUrl(env != null ? (org.omg.CORBA.ORB) env.get("java.naming.corba.orb") : null,
+        String rest = ctx.initUsingUrl(env != null ? (ORB) env.get("java.naming.corba.orb") : null,
                 url, env);
 
         // rest is the INS name
@@ -163,7 +163,7 @@ public class CNCtx implements javax.naming.Context {
         if (_name == null || _name.length == 0) {
             return "";
         }
-        return org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.cosNameToInsString(_name);
+        return CNNameParser.cosNameToInsString(_name);
     }
 
     /**
@@ -204,11 +204,11 @@ public class CNCtx implements javax.naming.Context {
      *                         ORB or the naming context.
      */
     private void initOrbAndRootContext(Hashtable env) throws NamingException {
-        org.omg.CORBA.ORB inOrb = null;
+        ORB inOrb = null;
         String ncIor = null;
 
         if (env != null) {
-            inOrb = (org.omg.CORBA.ORB) env.get("java.naming.corba.orb");
+            inOrb = (ORB) env.get("java.naming.corba.orb");
         }
 
         // Extract PROVIDER_URL from environment
@@ -242,10 +242,10 @@ public class CNCtx implements javax.naming.Context {
                     if (_nc == null) {
                         throw IIOPLogger.ROOT_LOGGER.notANamingContext(insName);
                     }
-                } catch (org.omg.CORBA.BAD_PARAM e) {
+                } catch (BAD_PARAM e) {
                     throw IIOPLogger.ROOT_LOGGER.notANamingContext(insName);
                 } catch (Exception e) {
-                    throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, _name);
+                    throw ExceptionMapper.mapException(e, this, _name);
                 }
             }
         } else {
@@ -323,7 +323,7 @@ public class CNCtx implements javax.naming.Context {
     private String initUsingCorbanameUrl(ORB orb, String url, Hashtable env)
             throws NamingException {
         try {
-            org.wildfly.iiop.openjdk.naming.jndi.CorbanameUrl parsedUrl = new org.wildfly.iiop.openjdk.naming.jndi.CorbanameUrl(url);
+            CorbanameUrl parsedUrl = new CorbanameUrl(url);
 
             String corbaloc = parsedUrl.getLocation();
             String cosName = parsedUrl.getStringName();
@@ -367,7 +367,7 @@ public class CNCtx implements javax.naming.Context {
             NamingException ne = IIOPLogger.ROOT_LOGGER.errorConnectingToORB();
             ne.setRootCause(e);
             throw ne;
-        } catch (org.omg.CORBA.BAD_PARAM e) {
+        } catch (BAD_PARAM e) {
             NamingException ne = IIOPLogger.ROOT_LOGGER.invalidURLOrIOR(ncIor);
             ne.setRootCause(e);
             throw ne;
@@ -469,7 +469,7 @@ public class CNCtx implements javax.naming.Context {
      * @throws org.omg.CosNaming.NamingContextPackage.CannotProceed Unable to obtain a continuation context
      * @throws org.omg.CosNaming.NamingContextPackage.InvalidName   Name not understood.
      */
-    java.lang.Object callResolve(NameComponent[] path)
+    Object callResolve(NameComponent[] path)
             throws NamingException {
         try {
             org.omg.CORBA.Object obj = _nc.resolve(path);
@@ -484,7 +484,7 @@ public class CNCtx implements javax.naming.Context {
                 return obj;
             }
         } catch (Exception e) {
-            throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, path);
+            throw ExceptionMapper.mapException(e, this, path);
         }
     }
 
@@ -498,7 +498,7 @@ public class CNCtx implements javax.naming.Context {
      * @return the resolved object
      * @throws NamingException See callResolve.
      */
-    public java.lang.Object lookup(String name) throws NamingException {
+    public Object lookup(String name) throws NamingException {
         return lookup(new CompositeName(name));
     }
 
@@ -512,16 +512,16 @@ public class CNCtx implements javax.naming.Context {
      * @return the resolved object
      * @throws NamingException See callResolve.
      */
-    public java.lang.Object lookup(Name name)
+    public Object lookup(Name name)
             throws NamingException {
         if (_nc == null)
             throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         if (name.size() == 0)
             return this; // %%% should clone() so that env can be changed
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
 
         try {
-            java.lang.Object answer = callResolve(path);
+            Object answer = callResolve(path);
 
             try {
                 return NamingManager.getObjectInstance(answer, name, this, _env);
@@ -556,7 +556,7 @@ public class CNCtx implements javax.naming.Context {
      * @throws org.omg.CosNaming.NamingContextPackage.AlreadyBound  An object is already bound to this name.
      */
     private void callBindOrRebind(NameComponent[] pth, Name name,
-                                  java.lang.Object obj, boolean rebind) throws NamingException {
+                                  Object obj, boolean rebind) throws NamingException {
         if (_nc == null)
             throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         try {
@@ -568,7 +568,7 @@ public class CNCtx implements javax.naming.Context {
                 obj = ((CNCtx) obj)._nc;
             }
 
-            if (obj instanceof org.omg.CosNaming.NamingContext) {
+            if (obj instanceof NamingContext) {
                 NamingContext nobj = NamingContextHelper.narrow((org.omg.CORBA.Object) obj);
                 if (rebind)
                     _nc.rebind_context(pth, nobj);
@@ -588,7 +588,7 @@ public class CNCtx implements javax.naming.Context {
             ne.setRootCause(e);
             throw ne;
         } catch (Exception e) {
-            throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, pth);
+            throw ExceptionMapper.mapException(e, this, pth);
         }
     }
 
@@ -602,13 +602,13 @@ public class CNCtx implements javax.naming.Context {
      * @param obj  Object to be bound.
      * @throws NamingException See callBindOrRebind
      */
-    public void bind(Name name, java.lang.Object obj)
+    public void bind(Name name, Object obj)
             throws NamingException {
         if (name.size() == 0) {
             throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         }
 
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
 
         try {
             callBindOrRebind(path, name, obj, false);
@@ -622,7 +622,7 @@ public class CNCtx implements javax.naming.Context {
         try {
             return NamingManager.getContinuationContext(cpe);
         } catch (CannotProceedException e) {
-            java.lang.Object resObj = e.getResolvedObj();
+            Object resObj = e.getResolvedObj();
             if (resObj instanceof Reference) {
                 Reference ref = (Reference) resObj;
                 RefAddr addr = ref.get("nns");
@@ -645,7 +645,7 @@ public class CNCtx implements javax.naming.Context {
      * @param obj  Object to be bound.
      * @throws NamingException See callBindOrRebind
      */
-    public void bind(String name, java.lang.Object obj) throws NamingException {
+    public void bind(String name, Object obj) throws NamingException {
         bind(new CompositeName(name), obj);
     }
 
@@ -660,12 +660,12 @@ public class CNCtx implements javax.naming.Context {
      * @param obj  Object to be bound.
      * @throws NamingException See callBindOrRebind
      */
-    public void rebind(Name name, java.lang.Object obj)
+    public void rebind(Name name, Object obj)
             throws NamingException {
         if (name.size() == 0) {
             throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
         }
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
         try {
             callBindOrRebind(path, name, obj, true);
         } catch (CannotProceedException e) {
@@ -683,7 +683,7 @@ public class CNCtx implements javax.naming.Context {
      * @param obj  Object to be bound.
      * @throws NamingException See callBindOrRebind
      */
-    public void rebind(String name, java.lang.Object obj)
+    public void rebind(String name, Object obj)
             throws NamingException {
         rebind(new CompositeName(name), obj);
     }
@@ -710,10 +710,10 @@ public class CNCtx implements javax.naming.Context {
             if (leafNotFound(e, path[path.length - 1])) {
                 // do nothing
             } else {
-                throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, path);
+                throw ExceptionMapper.mapException(e, this, path);
             }
         } catch (Exception e) {
-            throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, path);
+            throw ExceptionMapper.mapException(e, this, path);
         }
     }
 
@@ -758,7 +758,7 @@ public class CNCtx implements javax.naming.Context {
             throws NamingException {
         if (name.size() == 0)
             throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
         try {
             callUnbind(path);
         } catch (CannotProceedException e) {
@@ -796,7 +796,7 @@ public class CNCtx implements javax.naming.Context {
             throw IIOPLogger.ROOT_LOGGER.notANamingContext(oldName.toString());
         if (oldName.size() == 0 || newName.size() == 0)
             throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
-        java.lang.Object obj = lookup(oldName);
+        Object obj = lookup(oldName);
         bind(newName, obj);
         unbind(oldName);
     }
@@ -854,9 +854,9 @@ public class CNCtx implements javax.naming.Context {
             throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         if (name.size() > 0) {
             try {
-                java.lang.Object obj = lookup(name);
+                Object obj = lookup(name);
                 if (obj instanceof CNCtx) {
-                    return new org.wildfly.iiop.openjdk.naming.jndi.CNBindingEnumeration(
+                    return new CNBindingEnumeration(
                             (CNCtx) obj, true, _env);
                 } else {
                     throw new NotContextException(name.toString());
@@ -870,7 +870,7 @@ public class CNCtx implements javax.naming.Context {
                 throw ne;
             }
         }
-        return new org.wildfly.iiop.openjdk.naming.jndi.CNBindingEnumeration(this, false, _env);
+        return new CNBindingEnumeration(this, false, _env);
     }
 
     /**
@@ -886,7 +886,7 @@ public class CNCtx implements javax.naming.Context {
         try {
             nc.destroy();
         } catch (Exception e) {
-            throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, null);
+            throw ExceptionMapper.mapException(e, this, null);
         }
     }
 
@@ -915,7 +915,7 @@ public class CNCtx implements javax.naming.Context {
         if (_nc == null)
             throw IIOPLogger.ROOT_LOGGER.notANamingContext(name.toString());
         NamingContext the_nc = _nc;
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
         if (name.size() > 0) {
             try {
                 javax.naming.Context ctx =
@@ -965,7 +965,7 @@ public class CNCtx implements javax.naming.Context {
             NamingContext nctx = _nc.bind_new_context(path);
             return new CNCtx(_orb, nctx, _env, makeFullName(path));
         } catch (Exception e) {
-            throw org.wildfly.iiop.openjdk.naming.jndi.ExceptionMapper.mapException(e, this, path);
+            throw ExceptionMapper.mapException(e, this, path);
         }
     }
 
@@ -994,7 +994,7 @@ public class CNCtx implements javax.naming.Context {
             throws NamingException {
         if (name.size() == 0)
             throw IIOPLogger.ROOT_LOGGER.invalidEmptyName();
-        NameComponent[] path = org.wildfly.iiop.openjdk.naming.jndi.CNNameParser.nameToCosName(name);
+        NameComponent[] path = CNNameParser.nameToCosName(name);
         try {
             return callBindNewContext(path);
         } catch (CannotProceedException e) {
@@ -1010,7 +1010,7 @@ public class CNCtx implements javax.naming.Context {
      * @return the resolved object.
      * @throws NamingException See lookup.
      */
-    public java.lang.Object lookupLink(String name) throws NamingException {
+    public Object lookupLink(String name) throws NamingException {
         return lookupLink(new CompositeName(name));
     }
 
@@ -1021,7 +1021,7 @@ public class CNCtx implements javax.naming.Context {
      * @return the resolved object.
      * @throws NamingException See lookup.
      */
-    public java.lang.Object lookupLink(Name name) throws NamingException {
+    public Object lookupLink(Name name) throws NamingException {
         return lookup(name);
     }
 
@@ -1080,8 +1080,8 @@ public class CNCtx implements javax.naming.Context {
      * @param propValue  The ORB.
      * @return the previous value of this property if any.
      */
-    public java.lang.Object addToEnvironment(String propName,
-                                             java.lang.Object propValue)
+    public Object addToEnvironment(String propName,
+                                             Object propValue)
             throws NamingException {
         if (_env == null) {
             _env = new Hashtable(7, 0.75f);
@@ -1094,7 +1094,7 @@ public class CNCtx implements javax.naming.Context {
     }
 
     // Record change but do not reinitialize ORB
-    public java.lang.Object removeFromEnvironment(String propName)
+    public Object removeFromEnvironment(String propName)
             throws NamingException {
         if (_env != null && _env.get(propName) != null) {
             // copy-on-write

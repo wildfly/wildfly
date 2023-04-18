@@ -43,6 +43,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jaxrs.JaxrsAttribute;
 import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -109,6 +110,7 @@ public class ResteasyAttributeTestCase {
         @Override
         protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
             setAttributeValues(client.getControllerClient());
+            ServerReload.reloadIfRequired(client);
         }
     }
     /**
@@ -267,6 +269,11 @@ public class ResteasyAttributeTestCase {
     public void testAttributes() throws IOException {
         WebTarget target = jaxrsClient.target(url.toString() + "myjaxrs/attribute");
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
+            // Ignore these attributes as they are not set in the context as the attributes are not public. These are
+            // also tested elsewhere
+            if ("tracing-type".equals(attribute.getName()) || "tracing-threshold".equals(attribute.getName())) {
+                continue;
+            }
             testAttribute(target, attribute);
         }
     }
@@ -279,33 +286,34 @@ public class ResteasyAttributeTestCase {
             resteasyName = changeHyphensToDots(resteasyName);
         }
         Response response = target.path(resteasyName).request().get();
-        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Failed to get value for " + resteasyName,200, response.getStatus());
         Object result = response.readEntity(modelTypeMap.get(attribute.getType()));
 
+        final String msg = "Invalid value found for " + resteasyName;
         switch (attribute.getType()) {
 
             case BOOLEAN:
-                Assert.assertEquals(expectedValues.get(attribute).asBoolean(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asBoolean(), result);
                 return;
 
             case INT:
-                Assert.assertEquals(expectedValues.get(attribute).asInt(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asInt(), result);
                 return;
 
             case STRING:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             case LIST:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             case OBJECT:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             default:
-                Assert.fail("Unexpected ModelNode type");
+                Assert.fail("Unexpected ModelNode type for " + resteasyName);
         }
      }
 
@@ -319,8 +327,8 @@ public class ResteasyAttributeTestCase {
     @Test
     public void testBadSyntax() throws Exception {
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
-            // RESTEasy accepts any string for "resteasy-media-type-param-mapping".
-            if (JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.equals(attribute)) {
+            // Strings need to be ignored
+            if (attribute.getType() == ModelType.STRING) {
                 continue;
             }
             ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, attribute.getName(), mangleAttribute(attribute));

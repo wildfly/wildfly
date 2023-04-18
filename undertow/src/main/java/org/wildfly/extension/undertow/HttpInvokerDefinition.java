@@ -33,14 +33,15 @@ import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -55,7 +56,7 @@ import org.wildfly.security.auth.server.HttpAuthenticationFactory;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class HttpInvokerDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.HTTP_INVOKER);
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
                         .setDynamicNameMapper(DynamicNameMappers.PARENT)
@@ -77,7 +78,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_REALM_REF)
             .setAlternatives(Constants.HTTP_AUTHENTICATION_FACTORY)
-            .setDeprecated(ModelVersion.create(12))
+            .setDeprecated(UndertowSubsystemModel.VERSION_12_0_0.getVersion())
             .build();
 
     protected static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -92,10 +93,9 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             HTTP_AUTHENTICATION_FACTORY,
             SECURITY_REALM
     );
-    static final HttpInvokerDefinition INSTANCE = new HttpInvokerDefinition();
 
-    private HttpInvokerDefinition() {
-        super(new Parameters(UndertowExtension.PATH_HTTP_INVOKER, UndertowExtension.getResolver(Constants.HTTP_INVOKER))
+    HttpInvokerDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(new HttpInvokerAdd())
                 .setRemoveHandler(new HttpInvokerRemove())
                 .setCapabilities(HTTP_INVOKER_HOST_CAPABILITY)

@@ -1,6 +1,14 @@
 [[Undertow]]
 = Undertow subsystem configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 ****
 
 *Web subsystem was replaced in WildFly 8 with Undertow.*
@@ -502,10 +510,25 @@ This allows you to change the attributes of the session cookie.
 |Attribute |Description
 |name |The cookie name
 |domain |The cookie domain
-|comment |The cookie comment
 |http-only |If the cookie is HTTP only
 |secure |If the cookie is marked secure
 |max-age |The max age of the cookie
+|======================================
+
+[[affinity-cookie-configuration]]
+=== Affinity Cookie Configuration
+
+This allows you to change the attributes of the affinity cookie.
+If the affinity cookie is configured, the affinity will not be appended to the session ID, but will be sent via the configured cookie name.
+
+[cols=",",options="header"]
+|======================================
+|Attribute |Description
+|name (required) |The affinity cookie name
+|domain |The affinity cookie domain
+|http-only |If the affinity cookie is HTTP only
+|secure |If the affinity cookie is marked secure
+|max-age |The max age of the affinity cookie
 |======================================
 
 [[persistent-session-configuration]]

@@ -60,6 +60,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import jakarta.ejb.ScheduleExpression;
 import javax.sql.DataSource;
@@ -87,11 +89,10 @@ import org.jboss.marshalling.OutputStreamByteOutput;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.marshalling.river.RiverMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
@@ -104,12 +105,13 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * @author Wolf-Dieter Fink
  * @author Joerg Baesner
  */
-public class DatabaseTimerPersistence implements TimerPersistence, Service<DatabaseTimerPersistence> {
-    private final InjectedValue<ManagedReferenceFactory> dataSourceInjectedValue = new InjectedValue<ManagedReferenceFactory>();
-    private final InjectedValue<ModuleLoader> moduleLoader = new InjectedValue<ModuleLoader>();
+public class DatabaseTimerPersistence implements TimerPersistence, Service {
+    private final Consumer<DatabaseTimerPersistence> dbConsumer;
+    private final Supplier<ManagedReferenceFactory> dataSourceSupplier;
+    private final Supplier<ModuleLoader> moduleLoaderSupplier;
+    private final Supplier<Timer> timerSupplier;
     private final Map<String, TimerChangeListener> changeListeners = Collections.synchronizedMap(new HashMap<String, TimerChangeListener>());
 
-    private final InjectedValue<java.util.Timer> timerInjectedValue = new InjectedValue<java.util.Timer>();
 
     private final Map<String, Set<String>> knownTimerIds = new HashMap<>();
 
@@ -182,7 +184,15 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
     private final long clearTimerInfoCacheBeyond = TimeUnit.MINUTES.toMillis(Long.parseLong(
             WildFlySecurityManager.getPropertyPrivileged("jboss.ejb.timer.database.clearTimerInfoCacheBeyond", "15")));
 
-    public DatabaseTimerPersistence(final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
+    public DatabaseTimerPersistence(final Consumer<DatabaseTimerPersistence> dbConsumer,
+                                    final Supplier<ManagedReferenceFactory> dataSourceSupplier,
+                                    final Supplier<ModuleLoader> moduleLoaderSupplier,
+                                    final Supplier<Timer> timerSupplier,
+                                    final String database, String partition, String nodeName, int refreshInterval, boolean allowExecution) {
+        this.dbConsumer = dbConsumer;
+        this.dataSourceSupplier = dataSourceSupplier;
+        this.moduleLoaderSupplier = moduleLoaderSupplier;
+        this.timerSupplier = timerSupplier;
         this.database = database;
         this.partition = partition;
         this.nodeName = nodeName;
@@ -192,24 +202,25 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
 
     @Override
     public void start(final StartContext context) throws StartException {
-
+        dbConsumer.accept(this);
         factory = new RiverMarshallerFactory();
         configuration = new MarshallingConfiguration();
-        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoader.getValue()));
+        configuration.setClassResolver(ModularClassResolver.getInstance(moduleLoaderSupplier.get()));
 
-        managedReference = dataSourceInjectedValue.getValue().getReference();
+        managedReference = dataSourceSupplier.get().getReference();
         dataSource = (DataSource) managedReference.getInstance();
         investigateDialect();
         loadSqlProperties();
         checkDatabase();
         refreshTask = new RefreshTask();
         if (refreshInterval > 0) {
-            timerInjectedValue.getValue().schedule(refreshTask, refreshInterval, refreshInterval);
+            timerSupplier.get().schedule(refreshTask, refreshInterval, refreshInterval);
         }
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
+        dbConsumer.accept(null);
         refreshTask.cancel();
         knownTimerIds.clear();
         managedReference.release();
@@ -387,14 +398,11 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 try {
                     String createTable = sql.getProperty(CREATE_TABLE);
                     String[] statements = createTable.split(";");
+                    statement = connection.createStatement();
                     for (final String sql : statements) {
-                        try {
-                            statement = connection.createStatement();
-                            statement.executeUpdate(sql);
-                        } finally {
-                            safeClose(statement);
-                        }
+                        statement.addBatch(sql);
                     }
+                    statement.executeBatch();
                 } catch (SQLException e1) {
                     EjbLogger.EJB3_TIMER_LOGGER.couldNotCreateTable(e1);
                 }
@@ -678,11 +686,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 changeListeners.remove(timedObjectId);
             }
         };
-    }
-
-    @Override
-    public DatabaseTimerPersistence getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
     }
 
     public void refreshTimers() {
@@ -1041,19 +1044,6 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
         } else {
             statement.setNull(paramIndex, Types.VARCHAR);
         }
-    }
-
-
-    public InjectedValue<ManagedReferenceFactory> getDataSourceInjectedValue() {
-        return dataSourceInjectedValue;
-    }
-
-    public InjectedValue<ModuleLoader> getModuleLoader() {
-        return moduleLoader;
-    }
-
-    public InjectedValue<Timer> getTimerInjectedValue() {
-        return timerInjectedValue;
     }
 
     private class RefreshTask extends TimerTask {

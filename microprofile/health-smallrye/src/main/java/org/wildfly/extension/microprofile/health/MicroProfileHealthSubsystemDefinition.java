@@ -32,6 +32,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -43,6 +44,7 @@ import org.wildfly.extension.health.HealthSubsystemDefinition;
  */
 public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDefinition {
 
+    private static final String[] ALLOWED_STATUS = {"UP", "DOWN"};
     static final String MICROPROFILE_HEALTH_REPORTER_CAPABILITY = "org.wildfly.extension.microprofile.health.reporter";
     static final String HEALTH_HTTP_CONTEXT_CAPABILITY = "org.wildfly.extension.health.http-context";
     static final String HEALTH_SERVER_PROBE_CAPABILITY = "org.wildfly.extension.health.server-probes";
@@ -74,7 +76,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
-            .setAllowedValues("UP", "DOWN")
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_STATUS))
             .build();
 
     static final AttributeDefinition EMPTY_READINESS_CHECKS_STATUS = SimpleAttributeDefinitionBuilder.create("empty-readiness-checks-status", ModelType.STRING)
@@ -82,16 +84,16 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
             .setRequired(false)
             .setRestartAllServices()
             .setAllowExpression(true)
-            .setAllowedValues("UP", "DOWN")
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_STATUS))
             .build();
 
     static final AttributeDefinition EMPTY_STARTUP_CHECKS_STATUS = SimpleAttributeDefinitionBuilder.create("empty-startup-checks-status", ModelType.STRING)
-        .setDefaultValue(new ModelNode("UP"))
-        .setRequired(false)
-        .setRestartAllServices()
-        .setAllowExpression(true)
-        .setAllowedValues("UP", "DOWN")
-        .build();
+            .setDefaultValue(new ModelNode("UP"))
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_STATUS))
+            .build();
 
 
     static final AttributeDefinition[] ATTRIBUTES = { SECURITY_ENABLED, EMPTY_LIVENESS_CHECKS_STATUS, EMPTY_READINESS_CHECKS_STATUS, EMPTY_STARTUP_CHECKS_STATUS};
@@ -99,7 +101,7 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
 
     protected MicroProfileHealthSubsystemDefinition(boolean registerRuntimeOperations) {
         super(new Parameters(MicroProfileHealthExtension.SUBSYSTEM_PATH,
-                MicroProfileHealthExtension.getResourceDescriptionResolver(MicroProfileHealthExtension.SUBSYSTEM_NAME))
+                MicroProfileHealthExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(MicroProfileHealthSubsystemAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(MicroProfileHealthSubsystemAdd.INSTANCE))
                 .setCapabilities(HEALTH_REPORTER_RUNTIME_CAPABILITY, MICROPROFILE_HEALTH_HTTP_CONTEXT_CAPABILITY, MICROPROFILE_HEALTH_HTTP_SECURITY_CAPABILITY));

@@ -22,14 +22,12 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import io.undertow.servlet.api.ServletStackTraces;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -47,6 +45,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServletContainerDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVLET_CONTAINER);
     static final RuntimeCapability<Void> SERVLET_CONTAINER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVLET_CONTAINER, true, ServletContainerService.class)
                 .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
                 .build();
@@ -197,8 +196,15 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(ModelNode.FALSE)
                     .build();
 
-    private static final List<? extends PersistentResourceDefinition> CHILDREN;
-    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
+    static final AttributeDefinition ORPHAN_SESSION_ALLOWED =
+            new SimpleAttributeDefinitionBuilder("allow-orphan-session", ModelType.BOOLEAN)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(ModelNode.FALSE)
+                    .build();
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             ALLOW_NON_STANDARD_WRAPPERS,
             DEFAULT_BUFFER_CACHE,
             STACK_TRACE_ON_ERROR,
@@ -218,28 +224,15 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
             FILE_CACHE_MAX_FILE_SIZE,
             FILE_CACHE_TIME_TO_LIVE,
             DEFAULT_COOKIE_VERSION,
-            PRESERVE_PATH_ON_FORWARD
-            );
+            PRESERVE_PATH_ON_FORWARD,
+            ORPHAN_SESSION_ALLOWED);
 
-    static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
-
-    static {
-        List<PersistentResourceDefinition>  children = new ArrayList<>();
-        children.add(JspDefinition.INSTANCE);
-        children.add(SessionCookieDefinition.INSTANCE);
-        children.add(PersistentSessionsDefinition.INSTANCE);
-        children.add(WebsocketsDefinition.INSTANCE);
-        children.add(MimeMappingDefinition.INSTANCE);
-        children.add(WelcomeFileDefinition.INSTANCE);
-        children.add(CrawlerSessionManagementDefinition.INSTANCE);
-        CHILDREN = Collections.unmodifiableList(children);
-    }
-
-    private ServletContainerDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.PATH_SERVLET_CONTAINER, UndertowExtension.getResolver(Constants.SERVLET_CONTAINER))
-                .setAddHandler(ServletContainerAdd.INSTANCE)
+    ServletContainerDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setAddHandler(new ServletContainerAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(SERVLET_CONTAINER_CAPABILITY));
+                .addCapabilities(SERVLET_CONTAINER_CAPABILITY)
+        );
     }
 
     @Override
@@ -249,6 +242,14 @@ class ServletContainerDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(
+                new JspDefinition(),
+                new AffinityCookieDefinition(),
+                new SessionCookieDefinition(),
+                new PersistentSessionsDefinition(),
+                new WebsocketsDefinition(),
+                new MimeMappingDefinition(),
+                new WelcomeFileDefinition(),
+                new CrawlerSessionManagementDefinition());
     }
 }

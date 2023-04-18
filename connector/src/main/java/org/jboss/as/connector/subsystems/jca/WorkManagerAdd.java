@@ -61,12 +61,11 @@ public class WorkManagerAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
 
         String name = JcaWorkManagerDefinition.WmParameters.NAME.getAttribute().resolveModelAttribute(context, resource.getModel()).asString();
-        boolean elytronEnabled = JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute().resolveModelAttribute(context, resource.getModel()).asBoolean();
 
         ServiceTarget serviceTarget = context.getServiceTarget();
 
 
-        NamedWorkManager wm = new NamedWorkManager(name, elytronEnabled);
+        NamedWorkManager wm = new NamedWorkManager(name);
         WorkManagerService wmService = new WorkManagerService(wm);
         ServiceBuilder builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);

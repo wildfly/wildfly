@@ -27,31 +27,31 @@ import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
+import org.wildfly.clustering.ejb.bean.DefaultBeanProviderRequirement;
 import org.wildfly.clustering.service.Requirement;
-import org.wildfly.clustering.ejb.EjbDefaultProviderRequirement;
-import org.wildfly.clustering.ejb.EjbProviderRequirement;
 
 /**
  * Definition of the /subsystem=distributable-ejb resource.
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> {
+public class DistributableEjbResourceDefinition extends SubsystemResourceDefinition {
 
     static final PathElement PATH = pathElement(DistributableEjbExtension.SUBSYSTEM_NAME);
 
     enum Capability implements CapabilityProvider {
-        DEFAULT_BEAN_MANAGEMENT_PROVIDER(EjbDefaultProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
+        DEFAULT_BEAN_MANAGEMENT_PROVIDER(DefaultBeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
@@ -66,7 +66,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
     }
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        DEFAULT_BEAN_MANAGEMENT("default-bean-management", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER, EjbProviderRequirement.BEAN_MANAGEMENT_PROVIDER)),
+        DEFAULT_BEAN_MANAGEMENT("default-bean-management", ModelType.STRING, new CapabilityReference(Capability.DEFAULT_BEAN_MANAGEMENT_PROVIDER, BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER)),
         ;
         private final AttributeDefinition definition;
 
@@ -101,7 +101,7 @@ public class DistributableEjbResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalClientMappingsRegistryProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableEjbResourceServiceHandler();
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         // register the child resource infinispan-bean-management
         new InfinispanBeanManagementResourceDefinition().register(registration);

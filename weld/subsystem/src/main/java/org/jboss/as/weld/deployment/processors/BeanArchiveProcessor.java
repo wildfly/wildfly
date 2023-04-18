@@ -36,7 +36,8 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -86,9 +87,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
-    // TODO this variable be removed once WFLY fully depends on CDI 4 and we can reference the class directly!
-    private static final String buildCompatExtensionName = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
-    private static final DotName BUILD_COMPAT_EXTENSION_NAME = DotName.createSimple(buildCompatExtensionName);
+    private static final DotName BUILD_COMPAT_EXTENSION_NAME = DotName.createSimple(BuildCompatibleExtension.class);
     private static final DotName EXTENSION_NAME = DotName.createSimple(Extension.class.getName());
 
     @Override
@@ -102,7 +101,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         WeldLogger.DEPLOYMENT_LOGGER.processingWeldDeployment(deploymentUnit.getName());
 
         final Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
-        final Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap = new HashMap<ResourceRoot, BeanDeploymentArchiveImpl>();
+        final Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap = new HashMap<>();
 
         final Components components = new Components(deploymentUnit, indexes);
 
@@ -121,7 +120,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         if (!bdaMap.containsKey(handler.deploymentResourceRoot)) {
             // there is not root bda, let's create one
-            BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.<String>emptySet(), Collections.<String>emptySet(), BeansXml.EMPTY_BEANS_XML, handler.module, getDeploymentUnitId(deploymentUnit), BeanArchiveType.SYNTHETIC, true);
+            BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(Collections.emptySet(), Collections.emptySet(), BeansXml.EMPTY_BEANS_XML, handler.module, getDeploymentUnitId(deploymentUnit), BeanArchiveType.SYNTHETIC, true);
             WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
             bdaMap.put(handler.deploymentResourceRoot, bda);
         }
@@ -132,7 +131,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
          */
         for (Entry<ResourceRoot, Collection<ComponentDescription>> entry : components.componentDescriptions.entrySet()) {
             BeanDeploymentArchiveImpl bda = bdaMap.get(entry.getKey());
-            String id = null;
+            String id;
             if (bda != null) {
                 id = bda.getId();
             } else {
@@ -159,7 +158,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     private static class Components {
 
         private final Multimap<ResourceRoot, ComponentDescription> componentDescriptions = SetMultimap.newSetMultimap();
-        private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<ComponentDescription>();
+        private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<>();
 
         private final Iterable<ComponentDescriptionProcessor> componentDescriptionProcessors;
 
@@ -235,7 +234,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             this.requireBeanDescriptor = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor();
         }
 
-        private void handleResourceRoot(Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        private void handleResourceRoot(Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, ResourceRoot resourceRoot) {
             BeanDeploymentArchiveImpl bda = processResourceRoot(resourceRoot);
             if (bda != null) {
                 bdaMap.put(resourceRoot, bda);
@@ -248,12 +247,12 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
          *
          * If the resource root does not represent a bean archive, null is returned.
          */
-        private BeanDeploymentArchiveImpl processResourceRoot(ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        private BeanDeploymentArchiveImpl processResourceRoot(ResourceRoot resourceRoot) {
             ExplicitBeanArchiveMetadata metadata = null;
             if (explicitBeanArchives != null) {
                 metadata = explicitBeanArchives.getBeanArchiveMetadata().get(resourceRoot);
             }
-            BeanDeploymentArchiveImpl bda = null;
+            BeanDeploymentArchiveImpl bda;
             if (metadata == null && requireBeanDescriptor) {
                 /*
                  * For compatibility with Contexts and Dependency 1.0, products must contain an option to cause an archive to be ignored by the
@@ -318,7 +317,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
 
         private Set<String> getAllKnownClasses(Index index) {
-            Set<String> allKnownClasses = new HashSet<String>();
+            Set<String> allKnownClasses = new HashSet<>();
             // index may be null if a war has a beans.xml but no WEB-INF/classes
             if (index != null) {
                 for (ClassInfo classInfo : index.getKnownClasses()) {
@@ -329,7 +328,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
 
         private Set<String> getImplicitBeanClasses(Index index, ResourceRoot resourceRoot) {
-            Set<String> implicitBeanClasses = new HashSet<String>();
+            Set<String> implicitBeanClasses = new HashSet<>();
             for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
                 for (ClassInfo classInfo : Indices.getAnnotatedClasses(annotationInstances)) {
@@ -345,7 +344,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             return implicitBeanClasses;
         }
 
-        private BeanDeploymentArchiveImpl createExplicitBeanDeploymentArchive(final Index index, ExplicitBeanArchiveMetadata beanArchiveMetadata, boolean root) throws DeploymentUnitProcessingException {
+        private BeanDeploymentArchiveImpl createExplicitBeanDeploymentArchive(final Index index, ExplicitBeanArchiveMetadata beanArchiveMetadata, boolean root) {
 
             Set<String> classNames = getAllKnownClasses(index);
             return new BeanDeploymentArchiveImpl(classNames, classNames, beanArchiveMetadata.getBeansXml(), module, createBeanArchiveId(beanArchiveMetadata.getResourceRoot()), BeanArchiveType.EXPLICIT, root);

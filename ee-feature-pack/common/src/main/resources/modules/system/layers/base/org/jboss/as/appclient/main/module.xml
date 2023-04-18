@@ -41,8 +41,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="org.apache.xerces" services="import"/>
-        <module name="org.codehaus.woodstox" services="import"/>
+        <module name="java.xml"/>
         <module name="org.jboss.as.server" export="true"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.ejb-client"/>
@@ -74,6 +73,5 @@
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.appclient"/>
         <module name="org.wildfly.common"/>
-        <module name="java.xml"/>
     </dependencies>
 </module>

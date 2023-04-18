@@ -132,7 +132,7 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
         @Override
         public PropertiesAttributeDefinition build() {
             if (this.elementValidator == null) {
-                this.elementValidator = new ModelTypeValidator(ModelType.STRING, this.isAllowNull(), this.isAllowExpression());
+                this.elementValidator = new ModelTypeValidator(ModelType.STRING, this.isNillable(), this.isAllowExpression());
             }
             return new PropertiesAttributeDefinition(this);
         }

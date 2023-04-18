@@ -117,17 +117,10 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
         this.passivationCapable = componentDescription.isPassivationApplicable();
 
         final Map<Class<?>, ServiceName> viewServices = new HashMap<Class<?>, ServiceName>();
-        final Map<String, Class<?>> views = new HashMap<String, Class<?>>();
 
         Map<Class<?>, ServiceName> viewServicesMap = new HashMap<Class<?>, ServiceName>();
         for (ViewDescription view : componentDescription.getViews()) {
             viewServicesMap.put(loader.classForName(view.getViewClassName()), view.getServiceName());
-        }
-        for (BusinessInterfaceDescriptor<?> view : remoteInterfaces) {
-            views.put(view.getInterface().getName(), view.getInterface());
-        }
-        for (BusinessInterfaceDescriptor<?> view : localInterfaces) {
-            views.put(view.getInterface().getName(), view.getInterface());
         }
 
         for (Map.Entry<Class<?>, ServiceName> entry : viewServicesMap.entrySet()) {

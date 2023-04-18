@@ -47,7 +47,7 @@ public interface JipiLogger extends BasicLogger {
 
     /**
      * warn that the entity class could not be loaded with the
-     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
+     * {@link jakarta.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
      *
      * @param cause     the cause of the error.
      * @param className the entity class name.

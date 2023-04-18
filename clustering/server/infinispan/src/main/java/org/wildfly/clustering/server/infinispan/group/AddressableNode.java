@@ -34,7 +34,7 @@ import org.wildfly.clustering.group.Node;
  * and transport socket binding.
  * @author Paul Ferraro
  */
-public class AddressableNode implements Node, Comparable<AddressableNode>, Serializable {
+public class AddressableNode implements Node, Addressable, Comparable<AddressableNode>, Serializable {
     private static final long serialVersionUID = -7707210981640344598L;
 
     private transient Address address;
@@ -51,6 +51,7 @@ public class AddressableNode implements Node, Comparable<AddressableNode>, Seria
         this.socketAddress = socketAddress;
     }
 
+    @Override
     public Address getAddress() {
         return this.address;
     }
@@ -62,7 +63,7 @@ public class AddressableNode implements Node, Comparable<AddressableNode>, Seria
 
     @Override
     public int compareTo(AddressableNode node) {
-        return this.address.compareTo(node.address);
+        return this.address.compareTo(node.getAddress());
     }
 
     @Override

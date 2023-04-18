@@ -24,13 +24,13 @@ package org.jboss.as.connector.deployers.spec.rars.rastandalone;
 import org.jboss.as.connector.deployers.spec.rars.BaseResourceAdapter;
 import org.jboss.as.connector.deployers.spec.rars.ra16inoutmultianno.TestAdminObjectInterface;
 
-import javax.resource.spi.AdministeredObject;
-import javax.resource.spi.AuthenticationMechanism;
-import javax.resource.spi.AuthenticationMechanism.CredentialInterface;
-import javax.resource.spi.ConfigProperty;
-import javax.resource.spi.Connector;
-import javax.resource.spi.SecurityPermission;
-import javax.resource.spi.TransactionSupport;
+import jakarta.resource.spi.AdministeredObject;
+import jakarta.resource.spi.AuthenticationMechanism;
+import jakarta.resource.spi.AuthenticationMechanism.CredentialInterface;
+import jakarta.resource.spi.ConfigProperty;
+import jakarta.resource.spi.Connector;
+import jakarta.resource.spi.SecurityPermission;
+import jakarta.resource.spi.TransactionSupport;
 
 /**
  * Test2ResourceAdapter

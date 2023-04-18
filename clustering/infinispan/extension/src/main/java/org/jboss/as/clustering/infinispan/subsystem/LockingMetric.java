@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.function.UnaryOperator;
+
 import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -34,12 +36,17 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-public enum LockingMetric implements Metric<DefaultLockManager> {
+public enum LockingMetric implements Metric<DefaultLockManager>, UnaryOperator<SimpleAttributeDefinitionBuilder> {
 
     CURRENT_CONCURRENCY_LEVEL("current-concurrency-level", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
         @Override
         public ModelNode execute(DefaultLockManager manager) {
             return new ModelNode(manager.getConcurrencyLevel());
+        }
+
+        @Override
+        public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+            return builder.setDeprecated(InfinispanSubsystemModel.VERSION_17_0_0.getVersion());
         }
     },
     NUMBER_OF_LOCKS_AVAILABLE("number-of-locks-available", ModelType.INT, AttributeAccess.Flag.GAUGE_METRIC) {
@@ -58,14 +65,19 @@ public enum LockingMetric implements Metric<DefaultLockManager> {
     private final AttributeDefinition definition;
 
     LockingMetric(String name, ModelType type, AttributeAccess.Flag metricType) {
-        this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+        this.definition = this.apply(new SimpleAttributeDefinitionBuilder(name, type)
                 .setFlags(metricType)
                 .setStorageRuntime()
-                .build();
+                ).build();
     }
 
     @Override
     public AttributeDefinition getDefinition() {
         return this.definition;
+    }
+
+    @Override
+    public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+        return builder;
     }
 }

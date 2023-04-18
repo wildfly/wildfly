@@ -27,12 +27,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-microprofile-legacy-namespace</artifactId>
+        <artifactId>wildfly-microprofile</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
 
@@ -40,21 +40,7 @@
     <name>WildFly: MicroProfile Reactive Streams Operators Parent</name>
     <packaging>pom</packaging>
     <modules>
+        <module>cdi-provider</module>
         <module>extension</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>ee8.build.profile</id>
-            <activation>
-                <property>
-                    <name>!skip.ee8</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>cdi-provider</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>

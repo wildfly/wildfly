@@ -1,6 +1,14 @@
 [[Scoped_EJB_client_contexts]]
 = Scoped EJB client contexts
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 WildFly {wildflyVersion} introduced the EJB client API for managing remote EJB
@@ -456,4 +464,4 @@ doEJBInvocation() since the EJB client context is no longer available.
 That's the reason why the EJB client API doesn't automatically close the
 EJB client context.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

@@ -473,9 +473,7 @@ public class LegacyConnectionFactoryDefinition extends PersistentResourceDefinit
         CONNECTORS
     };
 
-    public static final LegacyConnectionFactoryDefinition INSTANCE = new LegacyConnectionFactoryDefinition();
-
-    protected LegacyConnectionFactoryDefinition() {
+    public LegacyConnectionFactoryDefinition() {
         super(new SimpleResourceDefinition.Parameters(
                 MessagingExtension.LEGACY_CONNECTION_FACTORY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))

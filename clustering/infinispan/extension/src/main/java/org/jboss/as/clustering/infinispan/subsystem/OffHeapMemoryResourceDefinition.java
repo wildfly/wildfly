@@ -28,11 +28,11 @@ import org.infinispan.configuration.cache.StorageType;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleAliasEntry;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 
 /**
  * @author Paul Ferraro
@@ -46,7 +46,7 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
         SIZE_UNIT(SharedAttribute.SIZE_UNIT) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(MemorySizeUnit.class));
+                return builder.setValidator(EnumValidator.create(MemorySizeUnit.class));
             }
         },
         ;

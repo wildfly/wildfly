@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -51,7 +52,6 @@ final class ServerAdd extends AbstractAddStepHandler {
     ServerAdd() {
         super(new Parameters()
                 .addAttribute(ServerDefinition.ATTRIBUTES)
-                .addRuntimeCapability(SERVER_CAPABILITY)//only have server capability automatically registered
         );
     }
 
@@ -80,9 +80,9 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
-            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, csb, UndertowExtension.AJP_LISTENER_PATH);
-            addCommonHostListenerDeps(context, csb, UndertowExtension.HTTPS_LISTENER_PATH);
+            addCommonHostListenerDeps(context, csb, HttpListenerResourceDefinition.PATH_ELEMENT);
+            addCommonHostListenerDeps(context, csb, AjpListenerResourceDefinition.PATH_ELEMENT);
+            addCommonHostListenerDeps(context, csb, HttpsListenerResourceDefinition.PATH_ELEMENT);
             csb.install();
         }
 
@@ -91,9 +91,35 @@ final class ServerAdd extends AbstractAddStepHandler {
         }
     }
 
+    /**
+     * <strong>TODO</strong> WFCORE-6176 Update AbstractAddHandler and its Parameters class to support a more fit-to-use
+     * API for handling this kind of use case, i.e. to register a per-capability function to override the default
+     * registration logic.
+     * <p>
+     * Replaces the superclass implementation in order to only register {@link CommonWebServer#CAPABILITY} if
+     * the resource's name matches the containing subsystems {@link UndertowRootDefinition#DEFAULT_SERVER} value.
+     * <p>
+     * <strong>IMPORTANT</strong> This implemenation deliberately doesn't call the superclass implementation
+     * as we don't want it to always register {@link CommonWebServer#CAPABILITY}. So we directly handle all
+     * registration here.
+     *
+     * @param context – the context. Will not be null
+     * @param operation – the operation that is executing Will not be null
+     * @param resource – the resource that has been added. Will reflect any updates made by populateModel(OperationContext, ModelNode, Resource). Will not be null
+     */
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        context.registerCapability(SERVER_CAPABILITY.fromBaseCapability(context.getCurrentAddress()));
+
+        // We currently don't have any attributes that reference capabilities, but we have this code in case that changes
+        // since we are not calling the superclass code.
+        ModelNode model = resource.getModel();
+        for (AttributeDefinition ad : getAttributes()) {
+            if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
+                ad.addCapabilityRequirements(context, resource, model.get(ad.getName()));
+            }
+        }
 
         ModelNode parentModel = context.readResourceFromRoot(context.getCurrentAddress().getParent(), false).getModel();
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, parentModel).asString();

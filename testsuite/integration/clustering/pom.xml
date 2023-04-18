@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-clustering</artifactId>
@@ -44,7 +44,6 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
-        <version.org.jboss.byteman>4.0.6</version.org.jboss.byteman>
         <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
         <version.org.infinispan.server.driver>${version.org.infinispan}</version.org.infinispan.server.driver>
         <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
@@ -173,6 +172,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>protoparser</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${legacy.version.com.squareup.okhttp}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
             <scope>test</scope>
@@ -224,6 +239,41 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-lock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-query-dsl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-server-testdriver-junit4</artifactId>
             <version>${version.org.infinispan.server.driver}</version>
             <scope>test</scope>
@@ -236,6 +286,10 @@
                 <exclusion>
                     <groupId>org.jboss.marshalling</groupId>
                     <artifactId>jboss-marshalling-osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-client-hotrod</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -253,6 +307,14 @@
                 <exclusion>
                     <groupId>com.sun</groupId>
                     <artifactId>tools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.arquillian.core</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -346,11 +408,6 @@
             <artifactId>xom</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${legacy.version.com.squareup.okhttp}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -382,7 +439,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-bootable.cli</script>
+                                        <script>clustering-ha-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -397,6 +454,7 @@
                                 <layer>cloud-server</layer>
                                 <layer>web-clustering</layer>
                                 <layer>h2-default-datasource</layer>
+                                <layer>infinispan</layer>
                             </layers>
                         </configuration>
                     </execution>
@@ -421,7 +479,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-bootable.cli</script>
+                                        <script>clustering-ha-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -463,7 +521,7 @@
                             <cli-sessions>
                                 <cli-session>
                                     <script-files>
-                                        <script>clustering-lb-bootable.cli</script>
+                                        <script>clustering-load-balancer-bootable-jar.cli</script>
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
@@ -511,7 +569,9 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
+                                        <!-- Add cache-container=server to the standalone.xml and standalone-full.xml configurations -->
+                                        <script>clustering.cli</script>
                                     </scripts>
                                     <jboss-home>${wildfly.dir}</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
@@ -531,7 +591,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-lb.cli</script>
+                                        <script>clustering-load-balancer.cli</script>
                                     </scripts>
                                     <jboss-home>${wildfly.dir}</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
@@ -961,6 +1021,7 @@
                                         <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
+                                        <exclude>org/jboss/as/test/clustering/single/infinispan/**/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/clustering/single/web/NonHaWebSessionPersistenceTestCase.java</exclude>
                                     </excludes>
                                     <systemPropertyVariables combine.children="append">
@@ -986,6 +1047,51 @@
                                         <wildfly1>wildfly-1</wildfly1>
                                         <arquillian.launch>node-non-ha</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Run single node tests using testable deployments with standalone-ha.xml profile and with Infinispan Server provisioned -->
+        <profile>
+            <id>ts.clustering.single.testable.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noClustering</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <runOrder>alphabetical</runOrder>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/single/infinispan/InfinispanModulesTestSuite.java</include>
+                                    </includes>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExclude>org.jboss.arquillian.extension:arquillian-extension-byteman</classpathDependencyExclude>
+                                    </classpathDependencyExcludes>
+                                    <systemPropertyVariables>
+                                        <node0>${node0}</node0>
+                                        <mcast>${mcast}</mcast>
+                                        <arquillian.xml>arquillian-testable.xml</arquillian.xml>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip} ${jvm.args.other} ${jvm.args.timeouts} ${jvm.args.dirs} ${extra.server.jvm.args} -Dnode0=${node0} -Dnode1=${node1} -Dnode2=${node2} -Dnode3=${node3}</server.jvm.args>
+                                        <infinispan.server.home>${infinispan.server.home.template}</infinispan.server.home>
+                                        <infinispan.server.profile>${infinispan.server.profile.override}</infinispan.server.profile>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -1392,6 +1498,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <layer>infinispan</layer>
                                             </layers>
                                         </config>
                                         <!-- Some tests launch an lb process, and this gets set up
@@ -1415,7 +1522,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1425,6 +1532,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>web-clustering</layer>
                                                 <layer>h2-default-datasource</layer>
+                                                <layer>infinispan</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1467,7 +1575,7 @@
                                         <!-- Also produce a standalone-full-ha.xml file with the same content
                                              as standalone-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1554,7 +1662,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1628,7 +1736,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1698,7 +1806,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1761,7 +1869,7 @@
                                         <!-- Also produce a standalone-ha.xml file with the same content
                                              as standalone-full-ha.xml.
                                              This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-all.cli script wants to modify it
+                                             profile but the clustering-ha.cli script wants to modify it
                                              so to keep it simple create the file so that doesn't fail.
                                         -->
                                         <config>
@@ -1862,6 +1970,20 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
+                                <id>ts.config-as.configure-wildfly</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Only standalone-ha.xml and standalone-full-ha.xml configurations
+                                         have been provisioned, execute only the CLI script that updates the ha configurations -->
+                                    <scripts combine.self="override">
+                                        <script>clustering-ha.cli</script>
+                                    </scripts>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-mod_cluster</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
@@ -1870,7 +1992,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-plugin.log</stdout>
@@ -1890,7 +2012,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-lb.cli</script>
+                                        <script>clustering-load-balancer.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-mod_cluster</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-mod_cluster-lb-plugin.log</stdout>
@@ -1910,7 +2032,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-ejb</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-ejb-xpc-plugin.log</stdout>
@@ -1930,7 +2052,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-jpa-dist</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-jpa-dist-plugin.log</stdout>
@@ -1950,7 +2072,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-jsf</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-jsf-plugin.log</stdout>
@@ -1970,7 +2092,7 @@
                                 <configuration>
                                     <offline>true</offline>
                                     <scripts>
-                                        <script>clustering-all.cli</script>
+                                        <script>clustering-ha.cli</script>
                                     </scripts>
                                     <jboss-home>${project.build.directory}/wildfly-clustering-singleton-ha</jboss-home>
                                     <stdout>${project.build.directory}/wildfly-clustering-singleton-ha-plugin.log</stdout>
@@ -2343,7 +2465,7 @@
                 <plugins>
                     <!-- Update server profile with shared configuration changes.
                          Override the default ts.config-as.configure-wildfly execution
-                         to run the clustering-mp.cli script -->
+                         to run the clustering-microprofile-ha.cli script -->
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
@@ -2353,7 +2475,7 @@
                                 <id>ts.config-as.configure-wildfly</id>
                                 <configuration>
                                     <scripts>
-                                        <script>clustering-mp.cli</script>
+                                        <script>clustering-microprofile-ha.cli</script>
                                     </scripts>
                                 </configuration>
                             </execution>
@@ -2420,6 +2542,10 @@
                             </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
                                 <phase>none</phase>
                             </execution>
                             <!-- Tests against the standalone-microprofile-ha.xml config -->
@@ -2573,6 +2699,10 @@
                             </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
                                 <phase>none</phase>
                             </execution>
                             <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->
@@ -2826,7 +2956,7 @@
                                 <!--<phase>none</phase>-->
                                 <configuration>
                                     <excludes>
-                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for it's setup tasks -->
+                                        <!-- Requires the /subsystem=messaging-activemq/server=default to exist for its setup tasks -->
                                         <exclude>${test-group}/jms/ClusteredMessagingTestCase.java</exclude>
                                     </excludes>
                                 </configuration>

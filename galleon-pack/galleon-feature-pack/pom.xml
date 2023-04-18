@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -44,9 +44,11 @@
     <packaging>pom</packaging>
 
     <properties>
+        <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <feature-pack.license.directory>${basedir}/../../microprofile/galleon-common/src/main/resources/license</feature-pack.license.directory>
+        <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
     </properties>
 
@@ -72,6 +74,28 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>copy-ee-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <escapeString>\</escapeString>
+                            <outputDirectory>${basedir}/target/resources/packages/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <targetPath>${basedir}/target/resources/packages/docs.licenses</targetPath>
+                                    <directory>${ee.galleon.shared.resources.directory}/packages/docs.licenses</directory>
+                                </resource>
+                                <resource>
+                                    <targetPath>${basedir}/target/resources/packages/docs.licenses.merge</targetPath>
+                                    <directory>${ee.galleon.shared.resources.directory}/packages/docs.licenses.merge</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-mp-galleon-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -83,25 +107,29 @@
                             <resources>
                                 <resource>
                                     <directory>${mp.galleon.common.resources.directory}</directory>
-                                    <excludes>
-                                        <exclude>modules/**/module.xml</exclude>
-                                        <exclude>license/*.xml</exclude>
-                                    </excludes>
-                                </resource>
-                                <resource>
-                                    <directory>${mp.galleon.common.resources.directory}</directory>
-                                    <includes>
-                                        <include>modules/**/module.xml</include>
-                                        <include>license/*.xml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-resources</id>
+                        <id>copy-common-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${common.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-content-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -130,10 +158,15 @@
                         </goals>
                         <phase>process-resources</phase>
                         <configuration>
+                            <generateVersionProperty>true</generateVersionProperty>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                            <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
+                            <licensesConfigFiles>
+                                <licensesConfigFile>${common.resources.directory/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${feature-pack.license.directory}/microprofile-feature-pack-licenses.xml</licensesConfigFile>
+                            </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
-                            <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-content</excludedArtifacts>
+                            <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-mp-feature-pack-galleon-common|wildfly-legacy-expansion-bom|wildfly-legacy-ee-bom|wildfly-feature-pack-common|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-common|wildfly-feature-pack-galleon-content</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -188,7 +221,13 @@
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
-            <version>${full.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-feature-pack-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -196,7 +235,6 @@
          <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-feature-pack-galleon-content</artifactId>
-            <version>${full.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -265,6 +303,7 @@
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
+                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-common</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-content</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>

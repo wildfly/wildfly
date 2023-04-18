@@ -131,7 +131,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             name = jndiName.replace('/', '_');
         }
 
-        if(restype.equals("javax.jms.Queue")) {
+        if(restype.equals("jakarta.jms.Queue")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.addNode("subsystem", "messaging-activemq");
@@ -144,7 +144,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
 
             return builder.buildRequest();
 
-        } else if(restype.equals("javax.jms.Topic")) {
+        } else if(restype.equals("jakarta.jms.Topic")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.addNode("subsystem", "messaging-activemq");
@@ -157,9 +157,9 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
 
             return builder.buildRequest();
 
-        } else if(restype.equals("javax.jms.ConnectionFactory") ||
-                restype.equals("javax.jms.TopicConnectionFactory") ||
-                restype.equals("javax.jms.QueueConnectionFactory")) {
+        } else if(restype.equals("jakarta.jms.ConnectionFactory") ||
+                restype.equals("jakarta.jms.TopicConnectionFactory") ||
+                restype.equals("jakarta.jms.QueueConnectionFactory")) {
 
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.addNode("subsystem", "messaging-activemq");

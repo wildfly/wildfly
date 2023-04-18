@@ -21,13 +21,6 @@
  */
 package org.jboss.as.test.integration.common.jms;
 
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-
-import java.util.Map;
-
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.REMOVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -38,18 +31,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.execute;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueRequestor;
-import javax.jms.QueueSession;
-import javax.jms.Session;
+import java.util.Map;
+
+import jakarta.jms.Connection;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
+import jakarta.jms.Queue;
+import jakarta.jms.QueueRequestor;
+import jakarta.jms.QueueSession;
+import jakarta.jms.Session;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * An implementation of JMSOperations for Apache ActiveMQ 6.

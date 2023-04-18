@@ -330,7 +330,10 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             if (dataSource.getValidation().getExceptionSorter() == null) {
                 return;
             }
-            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getExceptionSorter().getClassLoader()).getModule().toString());
+            ClassLoader exceptionSorterClassLoader = dataSource.getValidation().getExceptionSorter().getClassLoader();
+            if (exceptionSorterClassLoader instanceof ModuleClassLoader) {
+                setStringIfNotNull(context, ((ModuleClassLoader) exceptionSorterClassLoader).getModule().toString());
+            }
         } else if (attributeName.equals(Constants.EXCEPTION_SORTER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
@@ -360,7 +363,10 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             if (dataSource.getValidation().getStaleConnectionChecker() == null) {
                 return;
             }
-            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getStaleConnectionChecker().getClassLoader()).getModule().toString());
+            ClassLoader staleConnectionCheckerClassLoader = dataSource.getValidation().getStaleConnectionChecker().getClassLoader();
+            if (staleConnectionCheckerClassLoader instanceof ModuleClassLoader) {
+                setStringIfNotNull(context, ((ModuleClassLoader) staleConnectionCheckerClassLoader).getModule().toString());
+            }
         } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
@@ -390,7 +396,10 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             if (dataSource.getValidation().getValidConnectionChecker() == null) {
                 return;
             }
-            setStringIfNotNull(context, ((ModuleClassLoader)dataSource.getValidation().getValidConnectionChecker().getClassLoader()).getModule().toString());
+            ClassLoader validConnectionCheckerClassLoader = dataSource.getValidation().getValidConnectionChecker().getClassLoader();
+            if (validConnectionCheckerClassLoader instanceof ModuleClassLoader) {
+                setStringIfNotNull(context, ((ModuleClassLoader) validConnectionCheckerClassLoader).getModule().toString());
+            }
         } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;

@@ -27,7 +27,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
-import javax.faces.context.ExternalContext;
+import jakarta.faces.context.ExternalContext;
 import org.apache.myfaces.spi.AnnotationProvider;
 
 /**

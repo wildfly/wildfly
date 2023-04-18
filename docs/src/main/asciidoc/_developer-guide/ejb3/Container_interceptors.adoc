@@ -1,6 +1,14 @@
 [[Container_interceptors]]
 = Container interceptors
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 JBoss AS versions prior to WildFly8 allowed a JBoss specific way to
@@ -185,4 +193,4 @@ This testcase in the WildFly codebase can be used for reference for
 implementing container interceptors in user applications
 https://github.com/wildfly/wildfly/blob/main/testsuite/integration/basic/src/test/java/org/jboss/as/test/integration/ejb/container/interceptor/ContainerInterceptorsTestCase.java
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

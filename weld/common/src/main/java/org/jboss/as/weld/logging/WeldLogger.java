@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Set;
 
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -142,7 +142,7 @@ public interface WeldLogger extends BasicLogger {
     @Message(id = 20, value = "Could not load interceptor class : %s")
     DeploymentUnitProcessingException couldNotLoadInterceptorClass(String interceptorClass, @Cause Throwable cause);
 
-    @Message(id = 21, value = "Service %s didn't implement the javax.enterprise.inject.spi.Extension interface")
+    @Message(id = 21, value = "Service %s didn't implement the jakarta.enterprise.inject.spi.Extension interface")
     DeploymentUnitProcessingException extensionDoesNotImplementExtension(Class<?> clazz);
 
     @Message(id = 22, value = "View of type %s not found on Jakarta Enterprise Beans %s")

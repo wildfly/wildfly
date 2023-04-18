@@ -57,6 +57,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.clustering.ee.cache"/>
+        <module name="org.wildfly.clustering.ee.hotrod"/>
         <module name="org.wildfly.clustering.ee.infinispan"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.el.expressly"/>

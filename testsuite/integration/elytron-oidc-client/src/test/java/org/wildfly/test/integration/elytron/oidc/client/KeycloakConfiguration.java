@@ -42,11 +42,13 @@ import io.restassured.RestAssured;
 public class KeycloakConfiguration {
 
     private static final String USER_ROLE = "user";
-    private static final String JBOSS_ADMIN_ROLE = "JBossAdmin";
+    public static final String JBOSS_ADMIN_ROLE = "JBossAdmin";
     public static final String ALICE = "alice";
     public static final String ALICE_PASSWORD = "alice123+";
     public static final String BOB = "bob";
     public static final String BOB_PASSWORD = "bob123+";
+    public static final String CHARLIE = "charlie";
+    public static final String CHARLIE_PASSWORD = "charlie123+";
     public static final String ALLOWED_ORIGIN = "http://somehost";
 
     public enum ClientAppType {
@@ -136,6 +138,7 @@ public class KeycloakConfiguration {
 
         realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         realm.getUsers().add(createUser(BOB, BOB_PASSWORD, Arrays.asList(USER_ROLE)));
+        realm.getUsers().add(createUser(CHARLIE, CHARLIE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         return realm;
     }
 

@@ -49,8 +49,6 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
             .addRequirements(Capabilities.WELD_CAPABILITY_NAME)
             .build();
 
-    public static final JSFResourceDefinition INSTANCE = new JSFResourceDefinition();
-
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
@@ -65,8 +63,8 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private JSFResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(JSFExtension.PATH_SUBSYSTEM, JSFExtension.getResourceDescriptionResolver())
+    JSFResourceDefinition() {
+        super(new SimpleResourceDefinition.Parameters(JSFExtension.PATH_SUBSYSTEM, JSFExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(JSFSubsystemAdd.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(FACES_CAPABILITY)

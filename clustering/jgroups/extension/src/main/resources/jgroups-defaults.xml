@@ -31,17 +31,20 @@
         ucast_send_buf_size="1m"
         port_range="0"
         bundler_type="transfer-queue"
+        use_virtual_threads="false"
     />
     <TCP
         send_buf_size="640k"
         sock_conn_timeout="300"
         port_range="0"
         bundler_type="transfer-queue"
+        use_virtual_threads="false"
     />
     <TCP_NIO2
         send_buf_size="640k"
         sock_conn_timeout="300"
         bundler_type="transfer-queue"
+        use_virtual_threads="false"
     />
     <TCPPING
         port_range="0"

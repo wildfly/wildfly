@@ -30,9 +30,14 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-messaging-activemq-subsystem}"/>
-        <artifact name="\${org.jboss.activemq.artemis.integration:artemis-wildfly@module.jakarta.suffix@-integration}"/>
-        <resource-root path="META-INF"/>
+        <artifact name="${org.jboss.activemq.artemis.integration:artemis-wildfly-integration}"/>
     </resources>
+
+     <provides>
+        <service name="org.apache.activemq.artemis.spi.core.remoting.ssl.SSLContextFactory">
+          <with-class name="org.jboss.activemq.artemis.wildfly.integration.WildFlySSLContextFactory"/>
+        </service>
+    </provides>
 
     <dependencies>
         <module name="org.wildfly.extension.messaging-activemq.injection"/>

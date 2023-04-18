@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.clustering.web.session.hotrod;
 
-import org.wildfly.clustering.web.hotrod.RemoteCacheConfiguration;
+import org.wildfly.clustering.ee.hotrod.RemoteCacheConfiguration;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**

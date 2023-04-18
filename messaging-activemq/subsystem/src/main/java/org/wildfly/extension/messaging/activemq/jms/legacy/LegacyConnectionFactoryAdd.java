@@ -104,7 +104,7 @@ public class LegacyConnectionFactoryAdd extends AbstractAddStepHandler {
 
         boolean ha = LegacyConnectionFactoryDefinition.HA.resolveModelAttribute(context, model).asBoolean();
         String factoryTypeStr = LegacyConnectionFactoryDefinition.FACTORY_TYPE.resolveModelAttribute(context, model).asString();
-        JMSFactoryType factoryType = getType(LegacyConnectionFactoryDefinition.HornetQConnectionFactoryType.valueOf(factoryTypeStr));
+        JMSFactoryType factoryType = getType(HornetQConnectionFactoryType.valueOf(factoryTypeStr));
 
         final HornetQConnectionFactory incompleteCF;
         if (ha) {

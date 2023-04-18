@@ -21,14 +21,10 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.Schema;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -38,23 +34,12 @@ import org.kohsuke.MetaInfServices;
  * @author Richard Achmatowicz
  */
 @MetaInfServices(Extension.class)
-public class DistributableEjbExtension implements Extension {
+public class DistributableEjbExtension extends PersistentSubsystemExtension<DistributableEjbSubsystemSchema> {
 
     static final String SUBSYSTEM_NAME = "distributable-ejb";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new DistributableEjbResourceDescriptionResolver();
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableEjbExtension.class);
 
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, DistributableEjbModel.CURRENT.getVersion());
-        // register the current subsystem resource distributable-ejb
-        new DistributableEjbResourceDefinition().register(registration);
-        registration.registerXMLElementWriter(new DistributableEjbXMLParser(DistributableEjbSchema.CURRENT));
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (Schema<DistributableEjbSchema> schema : EnumSet.allOf(DistributableEjbSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new DistributableEjbXMLParser(schema));
-        }
+    public DistributableEjbExtension() {
+        super(SUBSYSTEM_NAME, DistributableEjbSubsystemModel.CURRENT, DistributableEjbResourceDefinition::new, DistributableEjbSubsystemSchema.CURRENT);
     }
 }

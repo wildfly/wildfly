@@ -22,10 +22,10 @@
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ee.concurrent.ContextServiceTypesConfiguration;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.dmr.ModelNode;
@@ -45,17 +45,10 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final String name = context.getCurrentAddressValue();
-
         final String jndiName = ContextServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
-        final boolean useTransactionSetupProvider = ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
-
+        // TODO *FOLLOW UP* deprecate USE_TRANSACTION_SETUP_PROVIDER_AD since it's of no use anymore (replaced by spec's context service config of context type Transaction)
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), useTransactionSetupProvider);
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY);
-        if (useTransactionSetupProvider) {
-            serviceBuilder.requires(context.getCapabilityServiceSupport().getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
-        }
-        serviceBuilder.setInstance(contextServiceService);
-        serviceBuilder.install();
+        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), ContextServiceTypesConfiguration.DEFAULT);
+        context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY).setInstance(contextServiceService).install();
     }
 }

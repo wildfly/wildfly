@@ -52,7 +52,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
     // We use . instead of / on this stream as a workaround to get it transformed correctly by Batavia into a Jakarta namespace
-    private static final String JAVAX_FACES_EVENT_NAMEDEVENT_class = "/javax.faces.event.NamedEvent".replaceAll("\\.", "/") + ".class";
+    private static final String JAVAX_FACES_EVENT_NAMEDEVENT_class = "/jakarta.faces.event.NamedEvent".replaceAll("\\.", "/") + ".class";
 
     private JSFModuleIdFactory moduleIdFactory = JSFModuleIdFactory.getInstance();
 
@@ -153,7 +153,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     private boolean isJSF12(ModuleDependency moduleDependency, String identifier) throws ModuleLoadException {
 
-        // The class javax.faces.event.NamedEvent was introduced in JSF 2.0
+        // The class jakarta.faces.event.NamedEvent was introduced in JSF 2.0
         return (moduleDependency.getModuleLoader().loadModule(identifier)
                 .getClassLoader().getResource(JAVAX_FACES_EVENT_NAMEDEVENT_class) == null);
     }

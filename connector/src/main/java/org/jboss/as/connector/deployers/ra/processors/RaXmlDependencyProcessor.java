@@ -40,7 +40,7 @@ public class RaXmlDependencyProcessor implements DeploymentUnitProcessor {
      * Add dependencies for modules required for ra deployments
      *
      * @param phaseContext the deployment unit context
-     * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException
+     * @throws DeploymentUnitProcessingException
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 

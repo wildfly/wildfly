@@ -19,18 +19,18 @@
 package org.jboss.as.txn.service;
 
 import org.jboss.as.network.SocketBinding;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.utils.Process;
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+
+import java.util.function.Supplier;
 
 /**
  * An msc service for setting up the
@@ -40,11 +40,12 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     /** A dependency on a socket binding for the socket process id */
-    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
+    private final Supplier<SocketBinding>  socketBindingSupplier;
     private final String nodeIdentifier;
 
-    public CoreEnvironmentService(String nodeIdentifier) {
+    public CoreEnvironmentService(final String nodeIdentifier, final Supplier<SocketBinding>  socketBindingSupplier) {
         this.nodeIdentifier = nodeIdentifier;
+        this.socketBindingSupplier = socketBindingSupplier;
     }
 
     @Override
@@ -70,7 +71,7 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
         }
 
         // Setup the socket process id if there is a binding
-        SocketBinding binding = socketProcessBindingInjector.getOptionalValue();
+        SocketBinding binding = socketBindingSupplier.get();
         if(binding != null) {
             int port = binding.getPort();
             coreEnvironmentBean.setSocketProcessIdPort(port);
@@ -79,10 +80,6 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     @Override
     public void stop(StopContext context) {
-    }
-
-    public Injector<SocketBinding> getSocketProcessBindingInjector() {
-        return socketProcessBindingInjector;
     }
 
     public int getSocketProcessIdMaxPorts() {

@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.jboss.ironjacamar:ironjacamar-jdbc@module.jakarta.suffix@}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-jdbc}"/>
     </resources>
 
     <dependencies>

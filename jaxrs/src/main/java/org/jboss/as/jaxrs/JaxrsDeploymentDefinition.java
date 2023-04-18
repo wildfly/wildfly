@@ -61,8 +61,6 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
  */
 public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
 
-    public static final JaxrsDeploymentDefinition INSTANCE = new JaxrsDeploymentDefinition();
-
     public static final String SHOW_RESOURCES = "show-resources";
     public static final AttributeDefinition CLASSNAME
             = new SimpleAttributeDefinitionBuilder("resource-class", ModelType.STRING, true).setStorageRuntime().build();
@@ -75,7 +73,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
     public static final ObjectTypeAttributeDefinition JAXRS_RESOURCE
             = new ObjectTypeAttributeDefinition.Builder("jaxrs-resource", CLASSNAME, PATH, METHODS).setStorageRuntime().build();
 
-    private JaxrsDeploymentDefinition() {
+    JaxrsDeploymentDefinition() {
           super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver()).setFeature(false).setRuntime(true));
     }
 

@@ -36,14 +36,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.persistence.SynchronizationType;
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
+import jakarta.persistence.SynchronizationType;
+import jakarta.persistence.ValidationMode;
+import jakarta.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceProviderResolverHolder;
 import javax.sql.DataSource;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.validation.ValidatorFactory;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
+import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -97,7 +97,6 @@ import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -114,7 +113,7 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 /**
  * Handle the installation of the Persistence Unit service
  *
- * NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+ * NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.
  *
  * @author Scott Marlow
  */
@@ -601,7 +600,7 @@ public class PersistenceUnitServiceHandler {
             builder.requires(JPAServiceNames.getJPAServiceName());
 
             // add dependency on first phase
-            builder.addDependency(puServiceName.append(FIRST_PHASE), Object.class, new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));
+            builder.addDependency(puServiceName.append(FIRST_PHASE), PhaseOnePersistenceUnitServiceImpl.class, service.getPhaseOnePersistenceUnitServiceImplInjector());
 
             boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());

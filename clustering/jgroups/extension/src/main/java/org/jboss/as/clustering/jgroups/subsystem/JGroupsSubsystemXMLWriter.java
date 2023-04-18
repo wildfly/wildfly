@@ -46,7 +46,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(JGroupsSchema.CURRENT.getNamespaceUri(), false);
+        context.startSubsystemElement(JGroupsSubsystemSchema.CURRENT.getNamespace().getUri(), false);
         ModelNode model = context.getModelNode();
 
         if (model.isDefined()) {
@@ -107,7 +107,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writeGenericProtocolAttributes(writer, property);
         ModelNode transport = property.getValue();
         writeAttributes(writer, transport, TransportResourceDefinition.Attribute.class);
-        if (containsName(TransportRegistration.SocketTransport.class, property.getName())) {
+        if (containsName(TransportResourceRegistrar.SocketTransport.class, property.getName())) {
             writeAttributes(writer, property.getValue(), SocketTransportResourceDefinition.Attribute.class);
         }
         writeElement(writer, transport, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
@@ -131,17 +131,17 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
         writeGenericProtocolAttributes(writer, property);
 
         String protocol = property.getName();
-        if (containsName(ProtocolRegistration.MulticastProtocol.class, protocol)) {
+        if (containsName(ProtocolResourceRegistrar.MulticastProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), MulticastProtocolResourceDefinition.Attribute.class);
-        } else if (containsName(ProtocolRegistration.SocketProtocol.class, protocol)) {
+        } else if (containsName(ProtocolResourceRegistrar.SocketProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), SocketProtocolResourceDefinition.Attribute.class);
-        } else if (containsName(ProtocolRegistration.JdbcProtocol.class, protocol)) {
+        } else if (containsName(ProtocolResourceRegistrar.JdbcProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), JDBCProtocolResourceDefinition.Attribute.class);
-        } else if (containsName(ProtocolRegistration.EncryptProtocol.class, protocol)) {
+        } else if (containsName(ProtocolResourceRegistrar.EncryptProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), EncryptProtocolResourceDefinition.Attribute.class);
-        } else if (containsName(ProtocolRegistration.InitialHostsProtocol.class, protocol)) {
+        } else if (containsName(ProtocolResourceRegistrar.InitialHostsProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), SocketDiscoveryProtocolResourceDefinition.Attribute.class);
-        } else if (containsName(ProtocolRegistration.AuthProtocol.class, protocol)) {
+        } else if (containsName(ProtocolResourceRegistrar.AuthProtocol.class, protocol)) {
             writeAuthToken(writer, property.getValue().get(AuthTokenResourceDefinition.WILDCARD_PATH.getKey()).asProperty());
         }
     }

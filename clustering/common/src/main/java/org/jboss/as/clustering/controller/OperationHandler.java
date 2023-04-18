@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime operations.
  * @author Paul Ferraro
  */
-public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
+public class OperationHandler<C> extends AbstractRuntimeOnlyHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final Collection<? extends Operation<C>> operations;
     private final Map<String, Operation<C>> executables = new HashMap<>();

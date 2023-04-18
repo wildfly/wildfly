@@ -22,26 +22,10 @@
 
 package org.jboss.as.messaging.test;
 
-import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
-import static org.jboss.as.messaging.test.MessagingDependencies.getHornetQDependencies;
-import static org.jboss.as.messaging.test.MessagingDependencies.getMessagingGAV;
-import static org.jboss.as.messaging.test.ModelFixers.PATH_FIXER;
-import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_4_0;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.junit.Test;
 
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
@@ -58,7 +42,7 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
+    protected String getSubsystemXsdPath() {
         return "schema/jboss-as-messaging_3_0.xsd";
     }
 
@@ -68,64 +52,5 @@ public class MessagingSubsystem30TestCase extends AbstractLegacySubsystemBaseTes
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
-    }
-
-    ////////////////////////////////////////
-    //      Tests for EAP versions        //
-    //                                    //
-    // put most recent version at the top //
-    ////////////////////////////////////////
-
-    @Test
-    public void testTransformersEAP_6_4_0() throws Exception {
-        testTransformers(EAP_6_4_0, VERSION_1_4_0, PATH_FIXER);
-    }
-
-    @Test
-    public void testRejectExpressionsEAP_6_4_0() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(EAP_6_4_0, VERSION_1_4_0, PATH_FIXER, "empty_subsystem_3_0.xml");
-
-        doTestRejectExpressions_1_4_0(builder);
-    }
-
-    private void doTestRejectExpressions_1_4_0(KernelServicesBuilder builder) throws Exception {
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_4_0);
-        assertNotNull(legacyServices);
-        assertTrue(legacyServices.isSuccessfulBoot());
-    }
-
-    private KernelServicesBuilder createKernelServicesBuilder(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, String xmlFileName) throws IOException, XMLStreamException, ClassNotFoundException {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource(xmlFileName);
-        // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addMavenResourceURL(getMessagingGAV(controllerVersion))
-                .configureReverseControllerCheck(createAdditionalInitialization(), fixer)
-                .addMavenResourceURL(getHornetQDependencies(controllerVersion))
-                .dontPersistXml();
-        return builder;
-    }
-
-    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer) throws Exception {
-        testTransformers(controllerVersion, messagingVersion, fixer, null);
-    }
-
-    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, ModelFixer legacyModelFixer) throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_3_0.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                .addMavenResourceURL(getMessagingGAV(controllerVersion))
-                .addMavenResourceURL(getHornetQDependencies(controllerVersion))
-                .configureReverseControllerCheck(createAdditionalInitialization(), fixer)
-                .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, messagingVersion, legacyModelFixer);
     }
 }

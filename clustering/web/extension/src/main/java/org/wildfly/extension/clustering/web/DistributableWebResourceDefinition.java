@@ -28,21 +28,21 @@ import java.util.function.Consumer;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.DefaultSubsystemDescribeHandler;
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SubsystemRegistration;
 import org.jboss.as.clustering.controller.SubsystemResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.Requirement;
 import org.wildfly.clustering.web.service.WebDefaultProviderRequirement;
@@ -51,13 +51,12 @@ import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymen
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentParsingProcessor;
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentProcessor;
 import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentSchema;
-import org.wildfly.extension.clustering.web.deployment.DistributableWebDeploymentXMLReader;
 
 /**
  * Definition of the /subsystem=distributable-web resource.
  * @author Paul Ferraro
  */
-public class DistributableWebResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class DistributableWebResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(DistributableWebExtension.SUBSYSTEM_NAME);
 
@@ -114,7 +113,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
                 .addRequiredSingletonChildren(LocalRoutingProviderResourceDefinition.PATH)
                 ;
         ResourceServiceHandler handler = new DistributableWebResourceServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, this).register(registration);
 
         new LocalRoutingProviderResourceDefinition().register(registration);
         new InfinispanRoutingProviderResourceDefinition().register(registration);
@@ -128,11 +127,7 @@ public class DistributableWebResourceDefinition extends SubsystemResourceDefinit
 
     @Override
     public void accept(DeploymentProcessorTarget target) {
-        JBossAllXmlParserRegisteringProcessor.Builder builder = JBossAllXmlParserRegisteringProcessor.builder();
-        for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            builder.addParser(schema.getRoot(), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY, new DistributableWebDeploymentXMLReader(schema));
-        }
-        target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DISTRIBUTABLE_WEB, builder.build());
+        target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DISTRIBUTABLE_WEB, JBossAllSchema.createDeploymentUnitProcessor(EnumSet.allOf(DistributableWebDeploymentSchema.class), DistributableWebDeploymentDependencyProcessor.CONFIGURATION_KEY));
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DISTRIBUTABLE_WEB, new DistributableWebDeploymentParsingProcessor());
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_DISTRIBUTABLE_WEB, new DistributableWebDeploymentDependencyProcessor());
         target.addDeploymentProcessor(DistributableWebExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_DISTRIBUTABLE_WEB, new DistributableWebDeploymentProcessor());

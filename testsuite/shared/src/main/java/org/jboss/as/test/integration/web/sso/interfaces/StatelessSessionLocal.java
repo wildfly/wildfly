@@ -23,7 +23,7 @@ package org.jboss.as.test.integration.web.sso.interfaces;
 
 import java.rmi.RemoteException;
 
-import javax.ejb.EJBLocalObject;
+import jakarta.ejb.EJBLocalObject;
 
 /**
  * A trivial SessionBean local interface.

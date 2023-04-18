@@ -1,6 +1,14 @@
 [[Domain_Setup]]
 = Domain Setup
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 To run a group of servers as a managed domain you need to configure both
 the domain controller and each host that joins the domain. This sections
 focuses on the network configuration for the domain and host controller

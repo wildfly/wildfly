@@ -23,22 +23,22 @@
 
 package org.jboss.as.test.integration.transactions.spi;
 
+import java.util.Vector;
+import javax.transaction.xa.XAResource;
+
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.arjuna.recovery.RecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import org.jboss.as.test.integration.transactions.PersistentTestXAResource;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.as.test.integration.transactions.TransactionCheckerSingleton;
 import org.jboss.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.EJB;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.transaction.xa.XAResource;
-import java.util.Vector;
 
 /**
  * <p>

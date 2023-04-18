@@ -45,11 +45,12 @@
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.vertx-core"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
+        <module name="io.smallrye.reactive.mutiny.zero"/>
+        <module name="io.smallrye.reactive.mutiny.zero-flow-adapters"/>
         <module name="io.vertx.core"/>
         <module name="javax.annotation.api" />
         <module name="javax.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>
-        <module name="org.eclipse.microprofile.metrics.api"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.core" services="import"/>
@@ -60,6 +61,5 @@
         <module name="org.reactivestreams"/>
         <module name="org.slf4j"/>
         <module name="org.wildfly.reactive.messaging.config" services="import"/>
-        <module name="io.smallrye.metrics" optional="true"/>
     </dependencies>
 </module>

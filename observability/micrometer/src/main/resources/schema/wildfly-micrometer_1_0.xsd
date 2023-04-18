@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2022 Red Hat, Inc.
+  ~ Copyright 2022-2023 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -26,17 +26,31 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
-            <xs:attribute name="security-enabled" type="xs:boolean" default="true">
-                <xs:annotation>
-                    <xs:documentation>
-                        True if authentication is required to access the HTTP endpoint on the HTTP management interface.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
+            <xs:sequence>
+                <xs:element name="otlp-registry" minOccurs="1">
+                    <xs:complexType>
+                        <xs:attribute name="endpoint" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The URL of the OTLP collector to which metrics will be published.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="step" type="xs:int" default="60">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The step size (reporting frequency) to use in seconds.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
             <xs:attribute name="exposed-subsystems" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>
-                        The names of the subsystems (separated by spaces) that exposes their metrics in the vendor scope (or '*' to expose any subsystem metrics).
+                        The names of the WildFly subsystems that exposes their metrics (or '*' to expose any subsystem
+                        metrics).
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>

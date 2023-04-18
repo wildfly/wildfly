@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 
 /**
- * Immutable view of a {@link javax.ejb.ScheduleExpression}.
+ * Immutable view of a {@link jakarta.ejb.ScheduleExpression}.
  * @author Paul Ferraro
  */
 public interface ImmutableScheduleExpression {

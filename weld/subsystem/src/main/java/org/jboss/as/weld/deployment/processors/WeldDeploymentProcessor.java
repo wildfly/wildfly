@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
@@ -251,6 +251,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 WildFlySecurityManager.getClassLoaderPrivileged(WeldDeploymentProcessor.class));
         for (BootstrapDependencyInstaller installer : installers) {
             ServiceName serviceName = installer.install(serviceTarget, deploymentUnit, jtsEnabled);
+            if (serviceName == null) {
+                continue;
+            }
             // Add dependency for recognized services
             if (ServiceNames.WELD_SECURITY_SERVICES_SERVICE_NAME.getSimpleName().equals(serviceName.getSimpleName())) {
                 securityServicesSupplier = weldBootstrapServiceBuilder.requires(serviceName);

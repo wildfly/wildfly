@@ -37,5 +37,12 @@
         <module name="javax.ws.rs.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
+        <!-- If present, import services that are needed for runtime. This includes deployment specific implementations. -->
+        <module name="org.jboss.as.jaxrs" services="import" optional="true"/>
+        <!--
+            If a deployment wants to use this it needs to be exported. However, the way it's loaded in the RESTEasyTracingLogger
+            it also needs to be available for this module. This is the reason we export it here.
+            -->
+        <module name="org.jboss.resteasy.resteasy-tracing-api" export="true" services="import" optional="true"/>
     </dependencies>
 </module>

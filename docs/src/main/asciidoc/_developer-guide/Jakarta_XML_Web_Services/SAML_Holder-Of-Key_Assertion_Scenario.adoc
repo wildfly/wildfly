@@ -1,6 +1,14 @@
 [[SAML_Holder-Of-Key_Assertion_Scenario]]
 = SAML Holder-Of-Key Assertion Scenario
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WS-Trust deals with managing software security tokens. A SAML assertion
 is a type of security token. In the Holder-Of-Key method, the STS
 creates a SAML token containing the client's public key and signs the

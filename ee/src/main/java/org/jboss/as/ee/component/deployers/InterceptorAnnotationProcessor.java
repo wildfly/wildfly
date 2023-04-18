@@ -29,9 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
-import javax.interceptor.Interceptors;
+import jakarta.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeDefaultInterceptors;
+import jakarta.interceptor.Interceptors;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;

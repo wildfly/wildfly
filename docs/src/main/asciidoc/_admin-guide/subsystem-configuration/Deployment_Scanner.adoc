@@ -1,6 +1,14 @@
 [[Deployment_Scanner]]
 = Deployment Scanner configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The deployment scanner is only used in standalone mode. Its job is to
 monitor a directory for new files and to deploy those files. It can be
 found in `standalone.xml`:

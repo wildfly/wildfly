@@ -1,6 +1,14 @@
 [[Target_Audience]]
 = Target Audience
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This document is a guide to the setup of Github, preparing and developing changes and contributing
 to WildFly.
 

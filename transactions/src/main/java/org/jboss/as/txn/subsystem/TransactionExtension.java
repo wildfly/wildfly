@@ -89,6 +89,7 @@ public class TransactionExtension implements Extension {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void initialize(ExtensionContext context) {
         TransactionLogger.ROOT_LOGGER.debug("Initializing Transactions Extension");
         final LogStoreResource resource = new LogStoreResource();
@@ -113,7 +114,7 @@ public class TransactionExtension implements Extension {
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource, registerRuntimeOnly));
         if (registerRuntimeOnly) {
             ManagementResourceRegistration transactionChild = logStoreChild.registerSubModel(new LogStoreTransactionDefinition(resource));
-            transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
+            transactionChild.registerSubModel(new LogStoreTransactionParticipantDefinition());
         }
 
         subsystem.registerXMLElementWriter(TransactionSubsystemXMLPersister.INSTANCE);

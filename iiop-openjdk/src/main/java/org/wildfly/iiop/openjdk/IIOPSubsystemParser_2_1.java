@@ -44,7 +44,7 @@ public class IIOPSubsystemParser_2_1 extends PersistentResourceXMLParser {
 
     @Override
     public PersistentResourceXMLDescription getParserDescription() {
-        return builder(IIOPRootDefinition.INSTANCE.getPathElement(), Namespace.IIOP_OPENJDK_2_1.getUriString())
+        return builder(IIOPExtension.PATH_SUBSYSTEM, Namespace.IIOP_OPENJDK_2_1.getUriString())
                 .setMarshallDefaultValues(true)
                 .addAttributes(IIOPRootDefinition.ALL_ATTRIBUTES.toArray(new AttributeDefinition[0]))
                 .build();

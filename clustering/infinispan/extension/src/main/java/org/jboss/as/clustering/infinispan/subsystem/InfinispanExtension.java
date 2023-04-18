@@ -21,45 +21,31 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumSet;
-
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.JdkLoggerFactory;
-import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+
+import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
- * Defines the Infinispan subsystem and its addressable resources.
+ * Extension that registers the Infinispan subsystem.
  *
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
 @MetaInfServices(Extension.class)
-public class InfinispanExtension implements Extension {
+public class InfinispanExtension extends SubsystemExtension<InfinispanSubsystemSchema> {
 
     public static final String SUBSYSTEM_NAME = "infinispan";
+    public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
 
-    public static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, InfinispanExtension.class);
+    public InfinispanExtension() {
+        super(SUBSYSTEM_NAME, InfinispanSubsystemModel.CURRENT, InfinispanSubsystemResourceDefinition::new, InfinispanSubsystemSchema.CURRENT, new InfinispanSubsystemXMLWriter());
 
-    @Override
-    public void initialize(ExtensionContext context) {
         // Initialize the Netty logger factory
         InternalLoggerFactory.setDefaultFactory(JdkLoggerFactory.INSTANCE);
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, InfinispanModel.CURRENT.getVersion());
-
-        new InfinispanSubsystemResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (InfinispanSchema schema : EnumSet.allOf(InfinispanSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new InfinispanSubsystemXMLReader(schema));
-        }
     }
 }

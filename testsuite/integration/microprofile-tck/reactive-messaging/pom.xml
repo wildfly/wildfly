@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-reactive-messaging</artifactId>
@@ -101,11 +101,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.resteasy.microprofile</groupId>
             <artifactId>microprofile-rest-client</artifactId>
             <scope>test</scope>
@@ -137,6 +132,9 @@
                         <!-- Override the standard module path that points at the shared module set from the dist -->
                         <module.path>${project.build.directory}/wildfly/modules</module.path>
                     </systemPropertyVariables>
+                    <excludes>
+                        <exclude>**/metrics/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

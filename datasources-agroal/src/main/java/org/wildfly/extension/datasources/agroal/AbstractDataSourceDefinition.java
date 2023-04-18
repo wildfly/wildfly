@@ -44,6 +44,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -226,17 +227,17 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- Operations //
 
-    private static final OperationDefinition FLUSH_ALL = new SimpleOperationDefinitionBuilder("flush-all", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_ALL = new SimpleOperationDefinitionBuilder("flush-all", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_GRACEFUL = new SimpleOperationDefinitionBuilder("flush-graceful", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_GRACEFUL = new SimpleOperationDefinitionBuilder("flush-graceful", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_INVALID = new SimpleOperationDefinitionBuilder("flush-invalid", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_INVALID = new SimpleOperationDefinitionBuilder("flush-invalid", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_IDLE = new SimpleOperationDefinitionBuilder("flush-idle", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_IDLE = new SimpleOperationDefinitionBuilder("flush-idle", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition RESET_STATISTICS = new SimpleOperationDefinitionBuilder("reset-statistics", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition RESET_STATISTICS = new SimpleOperationDefinitionBuilder("reset-statistics", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
     // --- Runtime attributes //
 
@@ -321,7 +322,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- //
 
-    AbstractDataSourceDefinition(Parameters parameters) {
+    AbstractDataSourceDefinition(SimpleResourceDefinition.Parameters parameters) {
         super(parameters.setCapabilities(DATA_SOURCE_CAPABILITY));
     }
 

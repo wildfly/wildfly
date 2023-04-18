@@ -33,13 +33,25 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-webservices-server-integration</artifactId>
     <packaging>jar</packaging>
 
     <name>WildFly: Web Services Server Integration Subsystem</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Jakarta-namespace specific deps -->
@@ -75,7 +87,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
@@ -83,7 +95,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+            <artifactId>jboss-metadata-ejb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>

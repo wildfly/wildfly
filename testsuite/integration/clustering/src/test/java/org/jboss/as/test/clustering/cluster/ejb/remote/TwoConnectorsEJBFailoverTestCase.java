@@ -43,6 +43,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -57,6 +58,7 @@ import javax.naming.Context;
 
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
 @RunWith(Arquillian.class)
+@Ignore("WFLY-17605")
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;

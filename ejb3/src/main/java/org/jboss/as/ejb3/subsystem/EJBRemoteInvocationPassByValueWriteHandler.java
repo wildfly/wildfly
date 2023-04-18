@@ -22,6 +22,9 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -29,12 +32,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueInjectionService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 
 /**
  * @author Jaikiran Pai
@@ -87,13 +91,31 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
         if (existingDefaultLocalEJBReceiverServiceController != null) {
             context.removeService(existingDefaultLocalEJBReceiverServiceController);
         }
-        final ServiceTarget serviceTarget = context.getServiceTarget();
         // now install the new default local Jakarta Enterprise Beans receiver service which points to an existing Local Jakarta Enterprise Beans receiver service
-        final ValueInjectionService<LocalTransportProvider> newDefaultLocalTransportProviderService = new ValueInjectionService<LocalTransportProvider>();
-        final ServiceBuilder<LocalTransportProvider> defaultLocalEJBReceiverServiceBuilder = serviceTarget.addService(LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME, newDefaultLocalTransportProviderService);
-        defaultLocalEJBReceiverServiceBuilder.addDependency(localTransportProviderServiceName, LocalTransportProvider.class, newDefaultLocalTransportProviderService.getInjector());
-        // install the service
-        defaultLocalEJBReceiverServiceBuilder.install();
+        final ServiceName sn = LocalTransportProvider.DEFAULT_LOCAL_TRANSPORT_PROVIDER_SERVICE_NAME;
+        final ServiceBuilder<?> sb = context.getServiceTarget().addService(sn);
+        final Consumer<LocalTransportProvider> transportConsumer = sb.provides(sn);
+        final Supplier<LocalTransportProvider> transportSupplier = sb.requires(localTransportProviderServiceName);
+        sb.setInstance(new DefaultLocalTransportProviderService(transportConsumer, transportSupplier));
+        sb.install();
     }
 
+    private static final class DefaultLocalTransportProviderService implements Service {
+        private final Consumer<LocalTransportProvider> transportConsumer;
+        private final Supplier<LocalTransportProvider> transportSupplier;
+        private DefaultLocalTransportProviderService(final Consumer<LocalTransportProvider> transportConsumer, final Supplier<LocalTransportProvider> transportSupplier) {
+            this.transportConsumer = transportConsumer;
+            this.transportSupplier = transportSupplier;
+        }
+
+        @Override
+        public void start(final StartContext startContext) {
+            transportConsumer.accept(transportSupplier.get());
+        }
+
+        @Override
+        public void stop(final StopContext stopContext) {
+            transportConsumer.accept(null);
+        }
+    }
 }

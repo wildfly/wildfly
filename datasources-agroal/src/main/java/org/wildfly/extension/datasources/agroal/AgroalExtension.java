@@ -25,7 +25,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -47,15 +48,7 @@ public class AgroalExtension implements Extension {
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 0, 0);
 
-    private static final String RESOURCE_NAME = AgroalExtension.class.getPackage().getName() + ".LocalDescriptions";
-
-    public static StandardResourceDescriptionResolver getResolver(String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, AgroalExtension.class.getClassLoader(), true, false);
-    }
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, AgroalExtension.class);
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
@@ -66,7 +59,7 @@ public class AgroalExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(AgroalSubsystemDefinition.INSTANCE);
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new AgroalSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(AgroalSubsystemParser_2_0.INSTANCE);

@@ -30,20 +30,20 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.clustering.controller.Schema;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 /**
  * Base class for clustering subsystem tests.
  * @author Paul Ferraro
  */
-public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends AbstractSubsystemBaseTest {
-    private final Schema<S> testSchema;
+public abstract class ClusteringSubsystemTest<S extends SubsystemSchema<S>> extends AbstractSubsystemBaseTest {
+    private final SubsystemSchema<S> testSchema;
     private final String xmlPattern;
     private final String xsdPattern;
 
-    protected ClusteringSubsystemTest(String name, Extension extension, Schema<S> testSchema, String xmlPattern, String xsdPattern) {
+    protected ClusteringSubsystemTest(String name, Extension extension, SubsystemSchema<S> testSchema, String xmlPattern, String xsdPattern) {
         super(name, extension);
         this.testSchema = testSchema;
         this.xmlPattern = xmlPattern;
@@ -52,12 +52,12 @@ public abstract class ClusteringSubsystemTest<S extends Schema<S>> extends Abstr
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, this.xmlPattern, this.testSchema.major(), this.testSchema.minor()));
+        return readResource(String.format(Locale.ROOT, this.xmlPattern, this.testSchema.getVersion().major(), this.testSchema.getVersion().minor()));
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return String.format(Locale.ROOT, this.xsdPattern, this.testSchema.major(), this.testSchema.minor());
+        return String.format(Locale.ROOT, this.xsdPattern, this.testSchema.getVersion().major(), this.testSchema.getVersion().minor());
     }
 
     /**

@@ -21,6 +21,9 @@
  */
 package org.jboss.as.jaxrs;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,6 +52,34 @@ public class JaxrsServerConfig {
     private ModelNode resteasyUseBuiltinProviders;
     private ModelNode resteasyUseContainerFormParams;
     private ModelNode resteasyWiderRequestMatching;
+
+    private final Map<String, String> contextParameters;
+
+    public JaxrsServerConfig() {
+        contextParameters = new LinkedHashMap<>();
+    }
+
+    /**
+     * Adds the value to the context parameters.
+     *
+     * @param name  the name of the context parameter
+     * @param value the value for the context parameter
+     *
+     * @return this configuration
+     */
+    protected JaxrsServerConfig putContextParameter(final String name, final String value) {
+        contextParameters.put(name, value);
+        return this;
+    }
+
+    /**
+     * Returns a copy of the context parameters.
+     *
+     * @return the context parameters
+     */
+    public Map<String, String> getContextParameters() {
+        return Map.copyOf(contextParameters);
+    }
 
     public ModelNode isJaxrs20RequestMatching() {
         return jaxrs20RequestMatching;

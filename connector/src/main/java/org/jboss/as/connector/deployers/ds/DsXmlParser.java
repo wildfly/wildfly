@@ -39,7 +39,6 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ParserException;
 import org.jboss.jca.common.metadata.ds.DsParser;
 import org.jboss.metadata.property.PropertyReplacer;
-import org.jboss.metadata.property.PropertyResolver;
 
 /**
  * Parser for -ds.xml
@@ -48,11 +47,9 @@ import org.jboss.metadata.property.PropertyResolver;
 public class DsXmlParser extends DsParser {
 
 
-    private final PropertyResolver propertyResolver;
     private final PropertyReplacer propertyReplacer;
 
-    public DsXmlParser(PropertyResolver propertyResolver, PropertyReplacer propertyReplacer) {
-        this.propertyResolver = propertyResolver;
+    public DsXmlParser(PropertyReplacer propertyReplacer) {
         this.propertyReplacer = propertyReplacer;
     }
 
@@ -62,11 +59,11 @@ public class DsXmlParser extends DsParser {
      *
      * @param reader The reader
      * @return The result
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException
      *          XMLStreamException
-     * @throws org.jboss.jca.common.metadata.ParserException
+     * @throws ParserException
      *          ParserException
-     * @throws org.jboss.jca.common.api.validator.ValidateException
+     * @throws ValidateException
      *          ValidateException
      */
     @Override
@@ -106,16 +103,6 @@ public class DsXmlParser extends DsParser {
                                 if (resolvedPassword != null) {
                                     password = resolvedPassword;
                                     resolved = true;
-                                }
-                            }
-                            // Previous releases directly passed the text into PropertyResolver, which would not
-                            // deal properly with ${ and }, :defaultValue etc. But it would resolve e.g. "sys.prop.foo"
-                            // to "123" if there was a system property "sys.prop.foo". So, to avoid breaking folks
-                            // who learned to use that behavior, pass any unresolved password in to the PropertyResolver
-                            if (!resolved && propertyResolver != null && password != null && password.trim().length() != 0) {
-                                String resolvedPassword = propertyResolver.resolve(password);
-                                if (resolvedPassword != null) {
-                                    password = resolvedPassword;
                                 }
                             }
                             break;
@@ -189,8 +176,8 @@ public class DsXmlParser extends DsParser {
                     switch (Credential.Tag.forName(reader.getLocalName())) {
                         case PASSWORD: {
                             password = elementAsString(reader);
-                            if (propertyResolver != null && password != null) {
-                                String resolvedPassword = propertyResolver.resolve(password);
+                            if (propertyReplacer != null && password != null) {
+                                String resolvedPassword = propertyReplacer.replaceProperties(password);
                                 if (resolvedPassword != null)
                                     password = resolvedPassword;
                             }

@@ -32,8 +32,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 
 import java.util.List;
 import java.util.Map;
@@ -57,9 +60,10 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             return;
         }
 
-        phaseContext.getServiceTarget().addService(ComponentRegistry.serviceName(deploymentUnit), new ValueService<>(new ImmediateValue<Object>(componentRegistry)))
-                .addDependency(moduleDescription.getDefaultClassIntrospectorServiceName(), EEClassIntrospector.class, componentRegistry.getClassIntrospectorInjectedValue())
-                .install();
+        final ServiceName sn = ComponentRegistry.serviceName(deploymentUnit);
+        final ServiceBuilder<?> sb = phaseContext.getServiceTarget().addService(sn);
+        sb.setInstance(new ValueService(componentRegistry));
+        sb.addDependency(moduleDescription.getDefaultClassIntrospectorServiceName(), EEClassIntrospector.class, componentRegistry.getClassIntrospectorInjectedValue()).install();
 
         deploymentUnit.putAttachment(COMPONENT_REGISTRY, componentRegistry);
 
@@ -116,6 +120,25 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             for (final ComponentDescription componentDescription : deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
                 applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }
+        }
+    }
+
+    private static final class ValueService implements Service<ComponentRegistry> {
+        private final ComponentRegistry value;
+        public ValueService(final ComponentRegistry value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            // noop
+        }
+
+        public void stop(final StopContext context) {
+            // noop
+        }
+
+        public ComponentRegistry getValue() {
+            return value;
         }
     }
 }

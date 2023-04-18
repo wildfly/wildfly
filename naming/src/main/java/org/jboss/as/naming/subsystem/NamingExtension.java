@@ -87,8 +87,8 @@ public class NamingExtension implements Extension {
 
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
-        registration.registerSubModel(NamingBindingResourceDefinition.INSTANCE);
-        registration.registerSubModel(RemoteNamingResourceDefinition.INSTANCE);
+        registration.registerSubModel(new NamingBindingResourceDefinition());
+        registration.registerSubModel(new RemoteNamingResourceDefinition());
 
         if (context.isRuntimeOnlyRegistrationValid()) {
             registration.registerOperationHandler(NamingSubsystemRootResourceDefinition.JNDI_VIEW, JndiViewOperation.INSTANCE, false);

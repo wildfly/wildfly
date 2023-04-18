@@ -59,4 +59,9 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
     public DataContainerConfigurationBuilder read(DataContainerConfiguration template) {
         return this.evictable(template.evictable());
     }
+
+    @Override
+    public AttributeSet attributes() {
+        return this.attributes;
+    }
 }

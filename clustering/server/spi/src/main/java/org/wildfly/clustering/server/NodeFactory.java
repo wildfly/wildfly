@@ -30,6 +30,4 @@ import org.wildfly.clustering.group.Node;
 public interface NodeFactory<A> {
 
     Node createNode(A address);
-
-    A getAddress(Node node);
 }

@@ -1,6 +1,14 @@
 [[Using_the_Elytron_Subsystem]]
 = Using the Elytron Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[set-up-and-configure-authentication-for-applications]]
 == Set Up and Configure Authentication for Applications
 
@@ -160,7 +168,7 @@ When enabling integrity checking on a filesystem realm, you will have to specify
 To create a key-store and a key-pair for the attributes above, you can create a key-store resource using the following commands. This will create a key-store called `keystore` with the alias `localhost`, and the password `secret`.
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=keystore:add(path=keystore, relative-to=jboss.server.config.dir, type=JKS, credential-reference={clear-text=secret})
+/subsystem=elytron/key-store=keystore:add(path=keystore, relative-to=jboss.server.config.dir, type=PKCS12, credential-reference={clear-text=secret})
 /subsystem=elytron/key-store=keystore:generate-key-pair(alias=localhost,algorithm=RSA,key-size=1024,validity=365,distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=keystore:store()
 ----
@@ -572,7 +580,7 @@ Example configuration:
 To make use of a custom `org.wildfly.security.auth.server.EvidenceDecoder` implementation, a
 `custom-evidence-decoder` can be configured. The custom implementation class needs to first be
 packaged in a JAR. A module can then be added to WildFly that contains this JAR. See
-<<Custom_Components#, Custom Components>> for more information on how to add a custom Elytron
+xref:WildFly_Elytron_Security.adoc#Custom_Components[Custom Components] for more information on how to add a custom Elytron
 component to WildFly.
 
 Example configuration:
@@ -1183,7 +1191,7 @@ SSL/TLS for deployed applications. Example of wizard usage:
 ----
 security enable-ssl-http-server --interactive --override-ssl-context
 Please provide required pieces of information to enable SSL:
-Key-store file name (default default-server.keystore): keystore.jks
+Key-store file name (default default-server.keystore): keystore.pkcs12
 Password (blank generated): secret
 What is your first and last name? [Unknown]: localhost
 What is the name of your organizational unit? [Unknown]:
@@ -1197,12 +1205,12 @@ Alias (blank generated): localhost
 Enable SSL Mutual Authentication y/n (blank n): n
 
 SSL options:
-key store file: keystore.jks
+key store file: keystore.pkcs12
 distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
 password: secret
 validity: 365
 alias: localhost
-Server keystore file keystore.jks, certificate file keystore.pem and keystore.csr file
+Server keystore file keystore.pkcs12, certificate file keystore.pem and keystore.csr file
 will be generated in server configuration directory.
 Do you confirm y/n: y
 ----
@@ -1221,7 +1229,7 @@ enable HTTPS for deployed applications.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=httpsKS:add(path=/path/to/keystore.pkcs12,credential-reference={clear-text=secret},type=PKCS12)
 ----
 
 The previous command uses an absolute path to the keystore.
@@ -1232,7 +1240,7 @@ the keystore type will be automatically detected.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=httpsKS:add(path=keystore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 ----
 
 If the keystore file does not exist yet, the following commands can be used to
@@ -1252,54 +1260,77 @@ generate an example key pair:
 /subsystem=elytron/key-store=httpsKS:read-aliases(recursive=true,verbose=true)
 {
     "outcome" => "success",
-    "result" => {
-        "localhost" => {
-            "alias" => "localhost",
-            "entry-type" => "PrivateKeyEntry",
-            "creation-date" => "2019-05-27T08:29:42.093+0200",
-            "certificate-chain" => [{
-                "type" => "X.509",
-                "algorithm" => "DSA",
-                "format" => "X.509",
-                "public-key" => "30:82:03:42:30:82:02:35:06:07:2a:86:48:ce:38:04:01:30:82:02:28:02:82:01:01:00:8f:79:35:d9:b9:aa:e9:bf:ab:ed:88:7a:cf:49:51:b6:f3:2e:c5:9e:3b:af:37:18:e8:ea:c4:96:1f:3e:fd:36:06:e7:43:51:a9:c4:18:33:39:b8:09:e7:c
-2:ae:1c:53:9b:a7:47:5b:85:d0:11:ad:b8:b4:79:87:75:49:84:69:5c:ac:0e:8f:14:b3:36:08:28:a2:2f:fa:27:11:0a:3d:62:a9:93:45:34:09:a0:fe:69:6c:46:58:f8:4b:dd:20:81:9c:37:09:a0:10:57:b1:95:ad:cd:00:23:3d:ba:54:84:b6:29:1f:9d:64:8e:f8:83:44:86:77:97:9c
-:ec:04:b4:34:a6:ac:2e:75:e9:98:5d:e2:3d:b0:29:2f:c1:11:8c:9f:fa:9d:81:81:e7:33:8d:b7:92:b7:30:d7:b9:e3:49:59:2f:68:09:98:72:15:39:15:ea:3d:6b:8b:46:53:c6:33:45:8f:80:3b:32:a4:c2:e0:f2:72:90:25:6e:4e:3f:8a:3b:08:38:a1:c4:50:e4:e1:8c:1a:29:a3:7d:
-df:5e:a1:43:de:4b:66:ff:04:90:3e:d5:cf:16:23:e1:58:d4:87:c6:08:e9:7f:21:1c:d8:1d:ca:23:cb:6e:38:07:65:f8:22:e3:42:be:48:4c:05:76:39:39:60:1c:d6:67:02:1d:00:ba:f6:96:a6:85:78:f7:df:de:e7:fa:67:c9:77:c7:85:ef:32:b2:33:ba:e5:80:c0:bc:d5:69:5d:02:8
-2:01:00:16:a6:5c:58:20:48:50:70:4e:75:02:a3:97:57:04:0d:34:da:3a:34:78:c1:54:d4:e4:a5:c0:2d:24:2e:e0:4f:96:e6:1e:4b:d0:90:4a:bd:ac:8f:37:ee:b1:e0:9f:31:82:d2:3c:90:43:cb:64:2f:88:00:41:60:ed:f9:ca:09:b3:20:76:a7:9c:32:a6:27:f2:47:3e:91:87:9b:a2
-:c4:e7:44:bd:20:81:54:4c:b5:5b:80:2c:36:8d:1f:a8:3e:d4:89:e9:4e:0f:a0:68:8e:32:42:8a:5c:78:c4:78:c6:8d:05:27:b7:1c:9a:3a:bb:0b:0b:e1:2c:44:68:96:39:e7:d3:ce:74:db:10:1a:65:aa:2b:87:f6:4c:68:26:db:3e:c7:2f:4b:55:99:83:4b:b4:ed:b0:2f:7c:90:e9:a4:
-96:d3:a5:5d:53:5b:eb:fc:45:d4:f6:19:f6:3f:3d:ed:bb:87:39:25:c2:f2:24:e0:77:31:29:6d:a8:87:ec:1e:47:48:f8:7e:fb:5f:de:b7:54:84:31:6b:22:32:de:e5:53:dd:af:02:11:2b:0d:1f:02:da:30:97:32:24:fe:27:ae:da:8b:9d:4b:29:22:d9:ba:8b:e3:9e:d9:e1:03:a6:3c:5
-2:81:0b:c6:88:b7:e2:ed:43:16:e1:ef:17:db:de:03:82:01:05:00:02:82:01:00:78:a8:7a:44:d6:fd:07:8e:70:2b:f8:0b:32:2f:69:eb:71:54:8e:f2:29:93:84:11:f9:76:27:6f:e7:17:1e:d1:ff:2b:9a:99:51:3b:b6:ef:72:a1:41:f3:5a:19:91:40:2b:22:73:75:96:7e:75:68:f0:37
-:a9:2e:60:77:85:5a:d0:f7:30:60:e6:fc:ef:16:b6:6c:95:d8:0a:72:10:ab:42:6d:59:6b:89:d6:83:b6:fa:14:82:79:ef:b9:58:95:f7:e7:30:b9:0c:db:1e:db:12:de:8b:b9:67:b4:62:a0:fe:3f:f0:01:15:3f:02:4a:b4:a2:c5:66:12:06:d1:2b:f7:c1:ce:83:31:e5:4c:95:1a:57:a6:
-ec:6e:48:c7:00:84:fa:7e:90:b2:18:4e:35:32:4c:12:60:69:a8:3e:67:8e:9a:a3:6e:57:ca:90:b1:f2:09:43:2b:d2:7a:30:aa:3a:57:0a:58:fb:e8:c5:e6:ef:93:f1:46:5a:17:c4:4b:08:81:b3:f0:36:3e:61:5c:f6:f6:9d:23:93:d3:02:2b:14:96:77:d1:4a:2a:67:69:5e:0b:63:f9:7
-9:62:ba:34:61:b5:89:0c:62:25:f6:2b:58:2c:32:d1:89:a9:0b:d8:22:84:4a:bb:84:d1:87:39:0b:23:f4:b9:0a:dd:fc:a9",
-                "sha-1-digest" => "4d:a9:16:f9:6d:39:da:03:a1:f0:56:bd:58:46:6c:12:16:59:72:f0",
-                "sha-256-digest" => "73:ea:31:e9:9d:de:38:1a:66:06:e7:66:a6:7d:fe:5d:b6:95:02:58:4f:8e:e0:01:19:ee:90:96:e0:18:2d:a1",
-                "encoded" => "30:82:04:34:30:82:03:e2:a0:03:02:01:02:02:09:00:c9:97:3f:38:fe:50:17:2c:30:0b:06:09:60:86:48:01:65:03:04:03:02:30:1a:31:18:30:16:06:03:55:04:03:13:0f:77:77:77:2e:65:78:61:6d:70:6c:65:2e:63:6f:6d:30:22:18:0f:32:30:3
-1:39:30:35:32:37:30:36:32:39:34:32:5a:18:0f:32:30:31:39:30:38:32:35:30:36:32:39:34:32:5a:30:1a:31:18:30:16:06:03:55:04:03:13:0f:77:77:77:2e:65:78:61:6d:70:6c:65:2e:63:6f:6d:30:82:03:42:30:82:02:35:06:07:2a:86:48:ce:38:04:01:30:82:02:28:02:82:01
-:01:00:8f:79:35:d9:b9:aa:e9:bf:ab:ed:88:7a:cf:49:51:b6:f3:2e:c5:9e:3b:af:37:18:e8:ea:c4:96:1f:3e:fd:36:06:e7:43:51:a9:c4:18:33:39:b8:09:e7:c2:ae:1c:53:9b:a7:47:5b:85:d0:11:ad:b8:b4:79:87:75:49:84:69:5c:ac:0e:8f:14:b3:36:08:28:a2:2f:fa:27:11:0a:
-3d:62:a9:93:45:34:09:a0:fe:69:6c:46:58:f8:4b:dd:20:81:9c:37:09:a0:10:57:b1:95:ad:cd:00:23:3d:ba:54:84:b6:29:1f:9d:64:8e:f8:83:44:86:77:97:9c:ec:04:b4:34:a6:ac:2e:75:e9:98:5d:e2:3d:b0:29:2f:c1:11:8c:9f:fa:9d:81:81:e7:33:8d:b7:92:b7:30:d7:b9:e3:4
-9:59:2f:68:09:98:72:15:39:15:ea:3d:6b:8b:46:53:c6:33:45:8f:80:3b:32:a4:c2:e0:f2:72:90:25:6e:4e:3f:8a:3b:08:38:a1:c4:50:e4:e1:8c:1a:29:a3:7d:df:5e:a1:43:de:4b:66:ff:04:90:3e:d5:cf:16:23:e1:58:d4:87:c6:08:e9:7f:21:1c:d8:1d:ca:23:cb:6e:38:07:65:f8
-:22:e3:42:be:48:4c:05:76:39:39:60:1c:d6:67:02:1d:00:ba:f6:96:a6:85:78:f7:df:de:e7:fa:67:c9:77:c7:85:ef:32:b2:33:ba:e5:80:c0:bc:d5:69:5d:02:82:01:00:16:a6:5c:58:20:48:50:70:4e:75:02:a3:97:57:04:0d:34:da:3a:34:78:c1:54:d4:e4:a5:c0:2d:24:2e:e0:4f:
-96:e6:1e:4b:d0:90:4a:bd:ac:8f:37:ee:b1:e0:9f:31:82:d2:3c:90:43:cb:64:2f:88:00:41:60:ed:f9:ca:09:b3:20:76:a7:9c:32:a6:27:f2:47:3e:91:87:9b:a2:c4:e7:44:bd:20:81:54:4c:b5:5b:80:2c:36:8d:1f:a8:3e:d4:89:e9:4e:0f:a0:68:8e:32:42:8a:5c:78:c4:78:c6:8d:0
-5:27:b7:1c:9a:3a:bb:0b:0b:e1:2c:44:68:96:39:e7:d3:ce:74:db:10:1a:65:aa:2b:87:f6:4c:68:26:db:3e:c7:2f:4b:55:99:83:4b:b4:ed:b0:2f:7c:90:e9:a4:96:d3:a5:5d:53:5b:eb:fc:45:d4:f6:19:f6:3f:3d:ed:bb:87:39:25:c2:f2:24:e0:77:31:29:6d:a8:87:ec:1e:47:48:f8
-:7e:fb:5f:de:b7:54:84:31:6b:22:32:de:e5:53:dd:af:02:11:2b:0d:1f:02:da:30:97:32:24:fe:27:ae:da:8b:9d:4b:29:22:d9:ba:8b:e3:9e:d9:e1:03:a6:3c:52:81:0b:c6:88:b7:e2:ed:43:16:e1:ef:17:db:de:03:82:01:05:00:02:82:01:00:78:a8:7a:44:d6:fd:07:8e:70:2b:f8:
-0b:32:2f:69:eb:71:54:8e:f2:29:93:84:11:f9:76:27:6f:e7:17:1e:d1:ff:2b:9a:99:51:3b:b6:ef:72:a1:41:f3:5a:19:91:40:2b:22:73:75:96:7e:75:68:f0:37:a9:2e:60:77:85:5a:d0:f7:30:60:e6:fc:ef:16:b6:6c:95:d8:0a:72:10:ab:42:6d:59:6b:89:d6:83:b6:fa:14:82:79:e
-f:b9:58:95:f7:e7:30:b9:0c:db:1e:db:12:de:8b:b9:67:b4:62:a0:fe:3f:f0:01:15:3f:02:4a:b4:a2:c5:66:12:06:d1:2b:f7:c1:ce:83:31:e5:4c:95:1a:57:a6:ec:6e:48:c7:00:84:fa:7e:90:b2:18:4e:35:32:4c:12:60:69:a8:3e:67:8e:9a:a3:6e:57:ca:90:b1:f2:09:43:2b:d2:7a
-:30:aa:3a:57:0a:58:fb:e8:c5:e6:ef:93:f1:46:5a:17:c4:4b:08:81:b3:f0:36:3e:61:5c:f6:f6:9d:23:93:d3:02:2b:14:96:77:d1:4a:2a:67:69:5e:0b:63:f9:79:62:ba:34:61:b5:89:0c:62:25:f6:2b:58:2c:32:d1:89:a9:0b:d8:22:84:4a:bb:84:d1:87:39:0b:23:f4:b9:0a:dd:fc:
-a9:a3:21:30:1f:30:1d:06:03:55:1d:0e:04:16:04:14:5e:0d:77:0b:55:63:c1:20:8b:a1:a6:2c:eb:f6:dc:61:2b:7f:ec:74:30:0b:06:09:60:86:48:01:65:03:04:03:02:03:3f:00:30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:1
-6:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "subject" => "CN=localhost",
-                "issuer" => "CN=localhost",
-                "not-before" => "2019-05-27T08:29:42.000+0200",
-                "not-after" => "2019-08-25T08:29:42.000+0200",
-                "serial-number" => "c9:97:3f:38:fe:50:17:2c",
-                "signature-algorithm" => "SHA256withDSA",
-                "signature" => "30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:16:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "version" => "v3"
-            }]
-        },
-        "localhost2" => {...}
-    }
+    "result" => {"localhost" => {
+        "alias" => "localhost",
+        "entry-type" => "PrivateKeyEntry",
+        "creation-date" => "2022-12-28T15:58:04.818+0530",
+        "certificate-chain" => [{
+            "type" => "X.509",
+            "algorithm" => "RSA",
+            "format" => "X.509",
+            "public-key" => "30:82:01:22:30:0d:06:09:2a:86:48:86:f7:0d:01:01:01:
+05:00:03:82:01:0f:00:30:82:01:0a:02:82:01:01:00:9e:b2:6f:4e:92:e9:f3:69:eb:9c:0e
+:63:1e:d6:d4:4b:2b:5d:46:e2:68:fd:96:83:a1:3b:83:a2:70:a8:6e:e1:2e:8d:e9:8d:ed:9
+d:d3:f3:56:26:00:29:32:a0:95:61:54:6f:35:95:41:95:76:73:34:46:db:4b:75:3c:f1:64:
+91:4a:a6:61:89:80:8c:6b:87:75:8d:d1:d1:56:bb:5e:1b:ed:97:5a:b4:ac:1e:16:06:07:e5
+:cb:6c:a8:c5:66:16:e2:92:6a:db:a6:b0:09:d2:7d:dc:fa:68:f3:2c:c5:c2:a6:f2:bd:73:f
+5:3b:94:17:16:2f:d0:8a:e6:d0:f3:53:c4:71:c6:31:61:9b:87:9d:5e:63:d8:c3:e3:81:f8:
+6f:f6:35:7b:85:9c:81:c9:94:91:d3:5d:bc:89:3b:dc:7d:c2:ae:d2:ca:b4:61:6f:04:5b:4f
+:8f:c6:ac:e0:49:de:5f:bf:84:f5:38:b1:07:48:1f:17:fb:72:15:ac:31:7a:13:f8:58:aa:6
+7:b0:67:b1:2b:99:c0:7a:a7:f6:42:d3:f9:f5:33:90:2a:9c:7c:78:73:7f:74:54:91:04:c2:
+51:ff:59:11:cd:7d:d7:61:e9:5c:c6:c7:d1:a1:f2:f5:7b:41:94:c4:cd:8d:5e:06:f1:6a:f4
+:72:24:37:be:27:02:03:01:00:01",
+            "sha-1-digest" => "70:46:1d:af:1a:5e:30:34:e9:dd:53:f4:38:b6:3e:89:5
+a:1c:f9:90",
+            "sha-256-digest" => "61:43:2e:6f:c0:ed:91:b1:3a:20:51:fc:2b:e9:33:d2
+:66:d2:a6:f2:32:5c:ca:91:14:67:7b:f2:4e:55:ed:77",
+            "encoded" => "30:82:02:cb:30:82:01:b5:a0:03:02:01:02:02:08:0c:e1:64:
+83:a0:95:28:72:30:0b:06:09:2a:86:48:86:f7:0d:01:01:0b:30:14:31:12:30:10:06:03:55
+:04:03:13:09:6c:6f:63:61:6c:68:6f:73:74:30:22:18:0f:32:30:32:32:31:32:32:38:31:3
+0:32:38:30:34:5a:18:0f:32:30:32:33:31:32:32:38:31:30:32:38:30:34:5a:30:14:31:12:
+30:10:06:03:55:04:03:13:09:6c:6f:63:61:6c:68:6f:73:74:30:82:01:22:30:0d:06:09:2a
+:86:48:86:f7:0d:01:01:01:05:00:03:82:01:0f:00:30:82:01:0a:02:82:01:01:00:9e:b2:6
+f:4e:92:e9:f3:69:eb:9c:0e:63:1e:d6:d4:4b:2b:5d:46:e2:68:fd:96:83:a1:3b:83:a2:70:
+a8:6e:e1:2e:8d:e9:8d:ed:9d:d3:f3:56:26:00:29:32:a0:95:61:54:6f:35:95:41:95:76:73
+:34:46:db:4b:75:3c:f1:64:91:4a:a6:61:89:80:8c:6b:87:75:8d:d1:d1:56:bb:5e:1b:ed:9
+7:5a:b4:ac:1e:16:06:07:e5:cb:6c:a8:c5:66:16:e2:92:6a:db:a6:b0:09:d2:7d:dc:fa:68:
+f3:2c:c5:c2:a6:f2:bd:73:f5:3b:94:17:16:2f:d0:8a:e6:d0:f3:53:c4:71:c6:31:61:9b:87
+:9d:5e:63:d8:c3:e3:81:f8:6f:f6:35:7b:85:9c:81:c9:94:91:d3:5d:bc:89:3b:dc:7d:c2:a
+e:d2:ca:b4:61:6f:04:5b:4f:8f:c6:ac:e0:49:de:5f:bf:84:f5:38:b1:07:48:1f:17:fb:72:
+15:ac:31:7a:13:f8:58:aa:67:b0:67:b1:2b:99:c0:7a:a7:f6:42:d3:f9:f5:33:90:2a:9c:7c
+:78:73:7f:74:54:91:04:c2:51:ff:59:11:cd:7d:d7:61:e9:5c:c6:c7:d1:a1:f2:f5:7b:41:9
+4:c4:cd:8d:5e:06:f1:6a:f4:72:24:37:be:27:02:03:01:00:01:a3:21:30:1f:30:1d:06:03:
+55:1d:0e:04:16:04:14:ac:99:db:c3:82:18:60:51:92:7d:75:51:ba:b4:a9:65:90:0e:7d:13
+:30:0b:06:09:2a:86:48:86:f7:0d:01:01:0b:03:82:01:01:00:97:83:30:22:ed:2e:4e:55:3
+3:73:4c:e2:56:d2:37:0a:47:39:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:
+f1:92:42:64:a5:ee:56:ca:f1:da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0
+:f6:80:c8:05:1b:29:c0:66:14:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:4
+6:50:9c:e3:d5:6b:0b:48:b4:7f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:
+63:3c:a4:8a:c5:f8:d1:6e:ae:eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a
+:30:cc:5b:c0:fc:70:f2:2b:50:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6
+b:04:02:b5:49:0c:7f:a1:a0:ef:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:
+cf:0f:85:3a:c8:18:89:22:68:04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64
+:59:63:50:88:f4:05:9e:e6:fa:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:6
+9:d9:89:0b:51:99:00:35",
+            "subject" => "CN=localhost",
+            "issuer" => "CN=localhost",
+            "not-before" => "2022-12-28T15:58:04.000+0530",
+            "not-after" => "2023-12-28T15:58:04.000+0530",
+            "serial-number" => "0c:e1:64:83:a0:95:28:72",
+            "signature-algorithm" => "SHA256withRSA",
+            "signature" => "97:83:30:22:ed:2e:4e:55:33:73:4c:e2:56:d2:37:0a:47:3
+9:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:f1:92:42:64:a5:ee:56:ca:f1:
+da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0:f6:80:c8:05:1b:29:c0:66:14
+:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:46:50:9c:e3:d5:6b:0b:48:b4:7
+f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:63:3c:a4:8a:c5:f8:d1:6e:ae:
+eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a:30:cc:5b:c0:fc:70:f2:2b:50
+:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6b:04:02:b5:49:0c:7f:a1:a0:e
+f:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:cf:0f:85:3a:c8:18:89:22:68:
+04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64:59:63:50:88:f4:05:9e:e6:fa
+:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:69:d9:89:0b:51:99:00:35",
+            "version" => "v3"
+        }]
+    }}
 }
 ----
 
@@ -1311,29 +1342,37 @@ a9:a3:21:30:1f:30:1d:06:03:55:1d:0e:04:16:04:14:5e:0d:77:0b:55:63:c1:20:8b:a1:a6
 /subsystem=elytron/key-store=httpsKS:read-aliases(recursive=true, verbose=false)
 {
     "outcome" => "success",
-    "result" => {
-        "localhost" => {
-            "alias" => "localhost",
-            "entry-type" => "PrivateKeyEntry",
-            "creation-date" => "2019-05-27T08:29:42.093+0200",
-            "certificate-chain" => [{
-                "type" => "X.509",
-                "algorithm" => "DSA",
-                "format" => "X.509",
-                "sha-1-digest" => "4d:a9:16:f9:6d:39:da:03:a1:f0:56:bd:58:46:6c:12:16:59:72:f0",
-                "sha-256-digest" => "73:ea:31:e9:9d:de:38:1a:66:06:e7:66:a6:7d:fe:5d:b6:95:02:58:4f:8e:e0:01:19:ee:90:96:e0:18:2d:a1",
-                "subject" => "CN=localhost",
-                "issuer" => "CN=localhost",
-                "not-before" => "2019-05-27T08:29:42.000+0200",
-                "not-after" => "2019-08-25T08:29:42.000+0200",
-                "serial-number" => "c9:97:3f:38:fe:50:17:2c",
-                "signature-algorithm" => "SHA256withDSA",
-                "signature" => "30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:16:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "version" => "v3"
-            }]
-        },
-        "localhost2" => {...}
-    }
+    "result" => {"localhost" => {
+        "alias" => "localhost",
+        "entry-type" => "PrivateKeyEntry",
+        "creation-date" => "2022-12-28T15:58:04.818+0530",
+        "certificate-chain" => [{
+            "type" => "X.509",
+            "algorithm" => "RSA",
+            "format" => "X.509",
+            "sha-1-digest" => "70:46:1d:af:1a:5e:30:34:e9:dd:53:f4:38:b6:3e:89:5
+a:1c:f9:90",
+            "sha-256-digest" => "61:43:2e:6f:c0:ed:91:b1:3a:20:51:fc:2b:e9:33:d2
+:66:d2:a6:f2:32:5c:ca:91:14:67:7b:f2:4e:55:ed:77",
+            "subject" => "CN=localhost",
+            "issuer" => "CN=localhost",
+            "not-before" => "2022-12-28T15:58:04.000+0530",
+            "not-after" => "2023-12-28T15:58:04.000+0530",
+            "serial-number" => "0c:e1:64:83:a0:95:28:72",
+            "signature-algorithm" => "SHA256withRSA",
+            "signature" => "97:83:30:22:ed:2e:4e:55:33:73:4c:e2:56:d2:37:0a:47:3
+9:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:f1:92:42:64:a5:ee:56:ca:f1:
+da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0:f6:80:c8:05:1b:29:c0:66:14
+:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:46:50:9c:e3:d5:6b:0b:48:b4:7
+f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:63:3c:a4:8a:c5:f8:d1:6e:ae:
+eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a:30:cc:5b:c0:fc:70:f2:2b:50
+:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6b:04:02:b5:49:0c:7f:a1:a0:e
+f:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:cf:0f:85:3a:c8:18:89:22:68:
+04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64:59:63:50:88:f4:05:9e:e6:fa
+:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:69:d9:89:0b:51:99:00:35",
+            "version" => "v3"
+        }]
+    }}
 }
 ----
 
@@ -1342,52 +1381,78 @@ a9:a3:21:30:1f:30:1d:06:03:55:1d:0e:04:16:04:14:5e:0d:77:0b:55:63:c1:20:8b:a1:a6
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:read-alias(name="localhost")
+/subsystem=elytron/key-store=httpsKS:read-alias(alias="localhost")
 {
     "outcome" => "success",
     "result" => {
-            "alias" => "localhost",
-            "entry-type" => "PrivateKeyEntry",
-            "creation-date" => "2019-05-27T08:29:42.093+0200",
-            "certificate-chain" => [{
-                "type" => "X.509",
-                "algorithm" => "DSA",
-                "format" => "X.509",
-                "public-key" => "30:82:03:42:30:82:02:35:06:07:2a:86:48:ce:38:04:01:30:82:02:28:02:82:01:01:00:8f:79:35:d9:b9:aa:e9:bf:ab:ed:88:7a:cf:49:51:b6:f3:2e:c5:9e:3b:af:37:18:e8:ea:c4:96:1f:3e:fd:36:06:e7:43:51:a9:c4:18:33:39:b8:09:e7:c
-2:ae:1c:53:9b:a7:47:5b:85:d0:11:ad:b8:b4:79:87:75:49:84:69:5c:ac:0e:8f:14:b3:36:08:28:a2:2f:fa:27:11:0a:3d:62:a9:93:45:34:09:a0:fe:69:6c:46:58:f8:4b:dd:20:81:9c:37:09:a0:10:57:b1:95:ad:cd:00:23:3d:ba:54:84:b6:29:1f:9d:64:8e:f8:83:44:86:77:97:9c
-:ec:04:b4:34:a6:ac:2e:75:e9:98:5d:e2:3d:b0:29:2f:c1:11:8c:9f:fa:9d:81:81:e7:33:8d:b7:92:b7:30:d7:b9:e3:49:59:2f:68:09:98:72:15:39:15:ea:3d:6b:8b:46:53:c6:33:45:8f:80:3b:32:a4:c2:e0:f2:72:90:25:6e:4e:3f:8a:3b:08:38:a1:c4:50:e4:e1:8c:1a:29:a3:7d:
-df:5e:a1:43:de:4b:66:ff:04:90:3e:d5:cf:16:23:e1:58:d4:87:c6:08:e9:7f:21:1c:d8:1d:ca:23:cb:6e:38:07:65:f8:22:e3:42:be:48:4c:05:76:39:39:60:1c:d6:67:02:1d:00:ba:f6:96:a6:85:78:f7:df:de:e7:fa:67:c9:77:c7:85:ef:32:b2:33:ba:e5:80:c0:bc:d5:69:5d:02:8
-2:01:00:16:a6:5c:58:20:48:50:70:4e:75:02:a3:97:57:04:0d:34:da:3a:34:78:c1:54:d4:e4:a5:c0:2d:24:2e:e0:4f:96:e6:1e:4b:d0:90:4a:bd:ac:8f:37:ee:b1:e0:9f:31:82:d2:3c:90:43:cb:64:2f:88:00:41:60:ed:f9:ca:09:b3:20:76:a7:9c:32:a6:27:f2:47:3e:91:87:9b:a2
-:c4:e7:44:bd:20:81:54:4c:b5:5b:80:2c:36:8d:1f:a8:3e:d4:89:e9:4e:0f:a0:68:8e:32:42:8a:5c:78:c4:78:c6:8d:05:27:b7:1c:9a:3a:bb:0b:0b:e1:2c:44:68:96:39:e7:d3:ce:74:db:10:1a:65:aa:2b:87:f6:4c:68:26:db:3e:c7:2f:4b:55:99:83:4b:b4:ed:b0:2f:7c:90:e9:a4:
-96:d3:a5:5d:53:5b:eb:fc:45:d4:f6:19:f6:3f:3d:ed:bb:87:39:25:c2:f2:24:e0:77:31:29:6d:a8:87:ec:1e:47:48:f8:7e:fb:5f:de:b7:54:84:31:6b:22:32:de:e5:53:dd:af:02:11:2b:0d:1f:02:da:30:97:32:24:fe:27:ae:da:8b:9d:4b:29:22:d9:ba:8b:e3:9e:d9:e1:03:a6:3c:5
-2:81:0b:c6:88:b7:e2:ed:43:16:e1:ef:17:db:de:03:82:01:05:00:02:82:01:00:78:a8:7a:44:d6:fd:07:8e:70:2b:f8:0b:32:2f:69:eb:71:54:8e:f2:29:93:84:11:f9:76:27:6f:e7:17:1e:d1:ff:2b:9a:99:51:3b:b6:ef:72:a1:41:f3:5a:19:91:40:2b:22:73:75:96:7e:75:68:f0:37
-:a9:2e:60:77:85:5a:d0:f7:30:60:e6:fc:ef:16:b6:6c:95:d8:0a:72:10:ab:42:6d:59:6b:89:d6:83:b6:fa:14:82:79:ef:b9:58:95:f7:e7:30:b9:0c:db:1e:db:12:de:8b:b9:67:b4:62:a0:fe:3f:f0:01:15:3f:02:4a:b4:a2:c5:66:12:06:d1:2b:f7:c1:ce:83:31:e5:4c:95:1a:57:a6:
-ec:6e:48:c7:00:84:fa:7e:90:b2:18:4e:35:32:4c:12:60:69:a8:3e:67:8e:9a:a3:6e:57:ca:90:b1:f2:09:43:2b:d2:7a:30:aa:3a:57:0a:58:fb:e8:c5:e6:ef:93:f1:46:5a:17:c4:4b:08:81:b3:f0:36:3e:61:5c:f6:f6:9d:23:93:d3:02:2b:14:96:77:d1:4a:2a:67:69:5e:0b:63:f9:7
-9:62:ba:34:61:b5:89:0c:62:25:f6:2b:58:2c:32:d1:89:a9:0b:d8:22:84:4a:bb:84:d1:87:39:0b:23:f4:b9:0a:dd:fc:a9",
-                "sha-1-digest" => "4d:a9:16:f9:6d:39:da:03:a1:f0:56:bd:58:46:6c:12:16:59:72:f0",
-                "sha-256-digest" => "73:ea:31:e9:9d:de:38:1a:66:06:e7:66:a6:7d:fe:5d:b6:95:02:58:4f:8e:e0:01:19:ee:90:96:e0:18:2d:a1",
-                "encoded" => "30:82:04:34:30:82:03:e2:a0:03:02:01:02:02:09:00:c9:97:3f:38:fe:50:17:2c:30:0b:06:09:60:86:48:01:65:03:04:03:02:30:1a:31:18:30:16:06:03:55:04:03:13:0f:77:77:77:2e:65:78:61:6d:70:6c:65:2e:63:6f:6d:30:22:18:0f:32:30:3
-1:39:30:35:32:37:30:36:32:39:34:32:5a:18:0f:32:30:31:39:30:38:32:35:30:36:32:39:34:32:5a:30:1a:31:18:30:16:06:03:55:04:03:13:0f:77:77:77:2e:65:78:61:6d:70:6c:65:2e:63:6f:6d:30:82:03:42:30:82:02:35:06:07:2a:86:48:ce:38:04:01:30:82:02:28:02:82:01
-:01:00:8f:79:35:d9:b9:aa:e9:bf:ab:ed:88:7a:cf:49:51:b6:f3:2e:c5:9e:3b:af:37:18:e8:ea:c4:96:1f:3e:fd:36:06:e7:43:51:a9:c4:18:33:39:b8:09:e7:c2:ae:1c:53:9b:a7:47:5b:85:d0:11:ad:b8:b4:79:87:75:49:84:69:5c:ac:0e:8f:14:b3:36:08:28:a2:2f:fa:27:11:0a:
-3d:62:a9:93:45:34:09:a0:fe:69:6c:46:58:f8:4b:dd:20:81:9c:37:09:a0:10:57:b1:95:ad:cd:00:23:3d:ba:54:84:b6:29:1f:9d:64:8e:f8:83:44:86:77:97:9c:ec:04:b4:34:a6:ac:2e:75:e9:98:5d:e2:3d:b0:29:2f:c1:11:8c:9f:fa:9d:81:81:e7:33:8d:b7:92:b7:30:d7:b9:e3:4
-9:59:2f:68:09:98:72:15:39:15:ea:3d:6b:8b:46:53:c6:33:45:8f:80:3b:32:a4:c2:e0:f2:72:90:25:6e:4e:3f:8a:3b:08:38:a1:c4:50:e4:e1:8c:1a:29:a3:7d:df:5e:a1:43:de:4b:66:ff:04:90:3e:d5:cf:16:23:e1:58:d4:87:c6:08:e9:7f:21:1c:d8:1d:ca:23:cb:6e:38:07:65:f8
-:22:e3:42:be:48:4c:05:76:39:39:60:1c:d6:67:02:1d:00:ba:f6:96:a6:85:78:f7:df:de:e7:fa:67:c9:77:c7:85:ef:32:b2:33:ba:e5:80:c0:bc:d5:69:5d:02:82:01:00:16:a6:5c:58:20:48:50:70:4e:75:02:a3:97:57:04:0d:34:da:3a:34:78:c1:54:d4:e4:a5:c0:2d:24:2e:e0:4f:
-96:e6:1e:4b:d0:90:4a:bd:ac:8f:37:ee:b1:e0:9f:31:82:d2:3c:90:43:cb:64:2f:88:00:41:60:ed:f9:ca:09:b3:20:76:a7:9c:32:a6:27:f2:47:3e:91:87:9b:a2:c4:e7:44:bd:20:81:54:4c:b5:5b:80:2c:36:8d:1f:a8:3e:d4:89:e9:4e:0f:a0:68:8e:32:42:8a:5c:78:c4:78:c6:8d:0
-5:27:b7:1c:9a:3a:bb:0b:0b:e1:2c:44:68:96:39:e7:d3:ce:74:db:10:1a:65:aa:2b:87:f6:4c:68:26:db:3e:c7:2f:4b:55:99:83:4b:b4:ed:b0:2f:7c:90:e9:a4:96:d3:a5:5d:53:5b:eb:fc:45:d4:f6:19:f6:3f:3d:ed:bb:87:39:25:c2:f2:24:e0:77:31:29:6d:a8:87:ec:1e:47:48:f8
-:7e:fb:5f:de:b7:54:84:31:6b:22:32:de:e5:53:dd:af:02:11:2b:0d:1f:02:da:30:97:32:24:fe:27:ae:da:8b:9d:4b:29:22:d9:ba:8b:e3:9e:d9:e1:03:a6:3c:52:81:0b:c6:88:b7:e2:ed:43:16:e1:ef:17:db:de:03:82:01:05:00:02:82:01:00:78:a8:7a:44:d6:fd:07:8e:70:2b:f8:
-0b:32:2f:69:eb:71:54:8e:f2:29:93:84:11:f9:76:27:6f:e7:17:1e:d1:ff:2b:9a:99:51:3b:b6:ef:72:a1:41:f3:5a:19:91:40:2b:22:73:75:96:7e:75:68:f0:37:a9:2e:60:77:85:5a:d0:f7:30:60:e6:fc:ef:16:b6:6c:95:d8:0a:72:10:ab:42:6d:59:6b:89:d6:83:b6:fa:14:82:79:e
-f:b9:58:95:f7:e7:30:b9:0c:db:1e:db:12:de:8b:b9:67:b4:62:a0:fe:3f:f0:01:15:3f:02:4a:b4:a2:c5:66:12:06:d1:2b:f7:c1:ce:83:31:e5:4c:95:1a:57:a6:ec:6e:48:c7:00:84:fa:7e:90:b2:18:4e:35:32:4c:12:60:69:a8:3e:67:8e:9a:a3:6e:57:ca:90:b1:f2:09:43:2b:d2:7a
-:30:aa:3a:57:0a:58:fb:e8:c5:e6:ef:93:f1:46:5a:17:c4:4b:08:81:b3:f0:36:3e:61:5c:f6:f6:9d:23:93:d3:02:2b:14:96:77:d1:4a:2a:67:69:5e:0b:63:f9:79:62:ba:34:61:b5:89:0c:62:25:f6:2b:58:2c:32:d1:89:a9:0b:d8:22:84:4a:bb:84:d1:87:39:0b:23:f4:b9:0a:dd:fc:
-a9:a3:21:30:1f:30:1d:06:03:55:1d:0e:04:16:04:14:5e:0d:77:0b:55:63:c1:20:8b:a1:a6:2c:eb:f6:dc:61:2b:7f:ec:74:30:0b:06:09:60:86:48:01:65:03:04:03:02:03:3f:00:30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:1
-6:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "subject" => "CN=localhost",
-                "issuer" => "CN=localhost",
-                "not-before" => "2019-05-27T08:29:42.000+0200",
-                "not-after" => "2019-08-25T08:29:42.000+0200",
-                "serial-number" => "c9:97:3f:38:fe:50:17:2c",
-                "signature-algorithm" => "SHA256withDSA",
-                "signature" => "30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:16:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "version" => "v3"
+        "alias" => "localhost",
+        "entry-type" => "PrivateKeyEntry",
+        "creation-date" => "2022-12-28T15:58:04.818+0530",
+        "certificate-chain" => [{
+            "type" => "X.509",
+            "algorithm" => "RSA",
+            "format" => "X.509",
+            "public-key" => "30:82:01:22:30:0d:06:09:2a:86:48:86:f7:0d:01:01:01:
+05:00:03:82:01:0f:00:30:82:01:0a:02:82:01:01:00:9e:b2:6f:4e:92:e9:f3:69:eb:9c:0e
+:63:1e:d6:d4:4b:2b:5d:46:e2:68:fd:96:83:a1:3b:83:a2:70:a8:6e:e1:2e:8d:e9:8d:ed:9
+d:d3:f3:56:26:00:29:32:a0:95:61:54:6f:35:95:41:95:76:73:34:46:db:4b:75:3c:f1:64:
+91:4a:a6:61:89:80:8c:6b:87:75:8d:d1:d1:56:bb:5e:1b:ed:97:5a:b4:ac:1e:16:06:07:e5
+:cb:6c:a8:c5:66:16:e2:92:6a:db:a6:b0:09:d2:7d:dc:fa:68:f3:2c:c5:c2:a6:f2:bd:73:f
+5:3b:94:17:16:2f:d0:8a:e6:d0:f3:53:c4:71:c6:31:61:9b:87:9d:5e:63:d8:c3:e3:81:f8:
+6f:f6:35:7b:85:9c:81:c9:94:91:d3:5d:bc:89:3b:dc:7d:c2:ae:d2:ca:b4:61:6f:04:5b:4f
+:8f:c6:ac:e0:49:de:5f:bf:84:f5:38:b1:07:48:1f:17:fb:72:15:ac:31:7a:13:f8:58:aa:6
+7:b0:67:b1:2b:99:c0:7a:a7:f6:42:d3:f9:f5:33:90:2a:9c:7c:78:73:7f:74:54:91:04:c2:
+51:ff:59:11:cd:7d:d7:61:e9:5c:c6:c7:d1:a1:f2:f5:7b:41:94:c4:cd:8d:5e:06:f1:6a:f4
+:72:24:37:be:27:02:03:01:00:01",
+            "sha-1-digest" => "70:46:1d:af:1a:5e:30:34:e9:dd:53:f4:38:b6:3e:89:5
+a:1c:f9:90",
+            "sha-256-digest" => "61:43:2e:6f:c0:ed:91:b1:3a:20:51:fc:2b:e9:33:d2
+:66:d2:a6:f2:32:5c:ca:91:14:67:7b:f2:4e:55:ed:77",
+            "encoded" => "30:82:02:cb:30:82:01:b5:a0:03:02:01:02:02:08:0c:e1:64:
+83:a0:95:28:72:30:0b:06:09:2a:86:48:86:f7:0d:01:01:0b:30:14:31:12:30:10:06:03:55
+:04:03:13:09:6c:6f:63:61:6c:68:6f:73:74:30:22:18:0f:32:30:32:32:31:32:32:38:31:3
+0:32:38:30:34:5a:18:0f:32:30:32:33:31:32:32:38:31:30:32:38:30:34:5a:30:14:31:12:
+30:10:06:03:55:04:03:13:09:6c:6f:63:61:6c:68:6f:73:74:30:82:01:22:30:0d:06:09:2a
+:86:48:86:f7:0d:01:01:01:05:00:03:82:01:0f:00:30:82:01:0a:02:82:01:01:00:9e:b2:6
+f:4e:92:e9:f3:69:eb:9c:0e:63:1e:d6:d4:4b:2b:5d:46:e2:68:fd:96:83:a1:3b:83:a2:70:
+a8:6e:e1:2e:8d:e9:8d:ed:9d:d3:f3:56:26:00:29:32:a0:95:61:54:6f:35:95:41:95:76:73
+:34:46:db:4b:75:3c:f1:64:91:4a:a6:61:89:80:8c:6b:87:75:8d:d1:d1:56:bb:5e:1b:ed:9
+7:5a:b4:ac:1e:16:06:07:e5:cb:6c:a8:c5:66:16:e2:92:6a:db:a6:b0:09:d2:7d:dc:fa:68:
+f3:2c:c5:c2:a6:f2:bd:73:f5:3b:94:17:16:2f:d0:8a:e6:d0:f3:53:c4:71:c6:31:61:9b:87
+:9d:5e:63:d8:c3:e3:81:f8:6f:f6:35:7b:85:9c:81:c9:94:91:d3:5d:bc:89:3b:dc:7d:c2:a
+e:d2:ca:b4:61:6f:04:5b:4f:8f:c6:ac:e0:49:de:5f:bf:84:f5:38:b1:07:48:1f:17:fb:72:
+15:ac:31:7a:13:f8:58:aa:67:b0:67:b1:2b:99:c0:7a:a7:f6:42:d3:f9:f5:33:90:2a:9c:7c
+:78:73:7f:74:54:91:04:c2:51:ff:59:11:cd:7d:d7:61:e9:5c:c6:c7:d1:a1:f2:f5:7b:41:9
+4:c4:cd:8d:5e:06:f1:6a:f4:72:24:37:be:27:02:03:01:00:01:a3:21:30:1f:30:1d:06:03:
+55:1d:0e:04:16:04:14:ac:99:db:c3:82:18:60:51:92:7d:75:51:ba:b4:a9:65:90:0e:7d:13
+:30:0b:06:09:2a:86:48:86:f7:0d:01:01:0b:03:82:01:01:00:97:83:30:22:ed:2e:4e:55:3
+3:73:4c:e2:56:d2:37:0a:47:39:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:
+f1:92:42:64:a5:ee:56:ca:f1:da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0
+:f6:80:c8:05:1b:29:c0:66:14:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:4
+6:50:9c:e3:d5:6b:0b:48:b4:7f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:
+63:3c:a4:8a:c5:f8:d1:6e:ae:eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a
+:30:cc:5b:c0:fc:70:f2:2b:50:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6
+b:04:02:b5:49:0c:7f:a1:a0:ef:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:
+cf:0f:85:3a:c8:18:89:22:68:04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64
+:59:63:50:88:f4:05:9e:e6:fa:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:6
+9:d9:89:0b:51:99:00:35",
+            "subject" => "CN=localhost",
+            "issuer" => "CN=localhost",
+            "not-before" => "2022-12-28T15:58:04.000+0530",
+            "not-after" => "2023-12-28T15:58:04.000+0530",
+            "serial-number" => "0c:e1:64:83:a0:95:28:72",
+            "signature-algorithm" => "SHA256withRSA",
+            "signature" => "97:83:30:22:ed:2e:4e:55:33:73:4c:e2:56:d2:37:0a:47:3
+9:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:f1:92:42:64:a5:ee:56:ca:f1:
+da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0:f6:80:c8:05:1b:29:c0:66:14
+:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:46:50:9c:e3:d5:6b:0b:48:b4:7
+f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:63:3c:a4:8a:c5:f8:d1:6e:ae:
+eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a:30:cc:5b:c0:fc:70:f2:2b:50
+:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6b:04:02:b5:49:0c:7f:a1:a0:e
+f:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:cf:0f:85:3a:c8:18:89:22:68:
+04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64:59:63:50:88:f4:05:9e:e6:fa
+:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:69:d9:89:0b:51:99:00:35",
+            "version" => "v3"
         }]
     }
 }
@@ -1398,26 +1463,38 @@ a9:a3:21:30:1f:30:1d:06:03:55:1d:0e:04:16:04:14:5e:0d:77:0b:55:63:c1:20:8b:a1:a6
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:read-alias(name="localhost",verbose=false)
+/subsystem=elytron/key-store=httpsKS:read-alias(alias="localhost",verbose=false)
 {
     "outcome" => "success",
     "result" => {
-            "alias" => "localhost",
-            "entry-type" => "PrivateKeyEntry",
-            "creation-date" => "2019-05-27T08:29:42.093+0200",
-            "certificate-chain" => [{
-                "type" => "X.509",
-                "algorithm" => "DSA",
-                "format" => "X.509",
-                "sha-256-digest" => "73:ea:31:e9:9d:de:38:1a:66:06:e7:66:a6:7d:fe:5d:b6:95:02:58:4f:8e:e0:01:19:ee:90:96:e0:18:2d:a1",
-                "subject" => "CN=localhost",
-                "issuer" => "CN=localhost",
-                "not-before" => "2019-05-27T08:29:42.000+0200",
-                "not-after" => "2019-08-25T08:29:42.000+0200",
-                "serial-number" => "c9:97:3f:38:fe:50:17:2c",
-                "signature-algorithm" => "SHA256withDSA",
-                "signature" => "30:3c:02:1c:4f:1a:e9:ea:c2:0a:23:21:91:e8:aa:58:ce:df:b8:a1:ff:02:90:cb:33:b1:99:b2:ca:16:f6:5a:02:1c:38:2a:19:17:fa:c3:a1:1a:dd:bb:fe:96:e9:3a:6d:fa:e9:a6:63:4c:9f:fb:db:ec:dc:49:1e:35",
-                "version" => "v3"
+        "alias" => "localhost",
+        "entry-type" => "PrivateKeyEntry",
+        "creation-date" => "2022-12-28T15:58:04.818+0530",
+        "certificate-chain" => [{
+            "type" => "X.509",
+            "algorithm" => "RSA",
+            "format" => "X.509",
+            "sha-1-digest" => "70:46:1d:af:1a:5e:30:34:e9:dd:53:f4:38:b6:3e:89:5
+a:1c:f9:90",
+            "sha-256-digest" => "61:43:2e:6f:c0:ed:91:b1:3a:20:51:fc:2b:e9:33:d2
+:66:d2:a6:f2:32:5c:ca:91:14:67:7b:f2:4e:55:ed:77",
+            "subject" => "CN=localhost",
+            "issuer" => "CN=localhost",
+            "not-before" => "2022-12-28T15:58:04.000+0530",
+            "not-after" => "2023-12-28T15:58:04.000+0530",
+            "serial-number" => "0c:e1:64:83:a0:95:28:72",
+            "signature-algorithm" => "SHA256withRSA",
+            "signature" => "97:83:30:22:ed:2e:4e:55:33:73:4c:e2:56:d2:37:0a:47:3
+9:7c:01:f9:97:6c:f6:98:f7:33:5b:b2:57:ba:d9:ff:7d:4c:f1:92:42:64:a5:ee:56:ca:f1:
+da:ae:64:51:a0:90:5a:d7:a0:eb:e8:7b:e0:ef:6d:a1:8f:d0:f6:80:c8:05:1b:29:c0:66:14
+:4d:bb:d9:87:e1:8e:d5:95:3c:c8:0f:fe:49:74:bd:28:a5:46:50:9c:e3:d5:6b:0b:48:b4:7
+f:1b:ad:95:8b:52:ee:5a:e1:03:43:47:6e:6e:ac:c2:5a:da:63:3c:a4:8a:c5:f8:d1:6e:ae:
+eb:09:97:8b:0c:cd:37:92:77:0c:05:6b:a1:99:8f:7b:b8:6a:30:cc:5b:c0:fc:70:f2:2b:50
+:73:22:d2:aa:80:b6:b0:c2:67:37:25:91:10:80:3a:ed:8c:6b:04:02:b5:49:0c:7f:a1:a0:e
+f:3a:66:07:a5:9d:ab:09:be:21:8e:73:f3:91:19:3e:59:75:cf:0f:85:3a:c8:18:89:22:68:
+04:95:81:9a:7d:67:19:28:11:bc:6b:e8:cb:c7:7b:9c:b4:64:59:63:50:88:f4:05:9e:e6:fa
+:01:17:2b:eb:75:da:8b:34:f2:1f:47:2d:c5:79:8f:76:59:69:d9:89:0b:51:99:00:35",
+            "version" => "v3"
         }]
     }
 }
@@ -1487,14 +1564,14 @@ First, obtain or generate your client keystore.
 
 [source,options="nowrap"]
 ----
-$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
+$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.pkcs12 -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export the client certificate:
 
 [source,options="nowrap"]
 ----
-$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
+$ keytool -exportcert  -keystore client.keystore.pkcs12 -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
 
 There are a couple ways to enable two-way SSL/TLS for deployed applications.
@@ -1505,11 +1582,16 @@ There are a couple ways to enable two-way SSL/TLS for deployed applications.
 The _security enable-ssl-http-server_ command can be used to enable two-way
 SSL/TLS for the deployed applications. Example of wizard usage:
 
+[IMPORTANT]
+====
+In the following example, we enter _n_ when propmted with __Validate certificate__ because the example uses a self-signed certificate. If you use Cretificate Authority (CA) signed certificates, enter _y_ when prompted. 
+====
+
 [source,java,options="nowrap"]
 ----
 security enable-ssl-http-server --interactive --override-ssl-context
 Please provide required pieces of information to enable SSL:
-Key-store file name (default default-server.keystore): server.keystore.jks
+Key-store file name (default default-server.keystore): server.keystore.pkcs12
 Password (blank generated): secret
 What is your first and last name? [Unknown]: localhost
 What is the name of your organizational unit? [Unknown]:
@@ -1522,21 +1604,21 @@ Validity (in days, blank default): 365
 Alias (blank generated): localhost
 Enable SSL Mutual Authentication y/n (blank n): y
 Client certificate (path to pem file): /path/to/client.cer
-Validate certificate y/n (blank y):
-Trust-store file name (management.truststore): server.truststore.jks
+Validate certificate y/n (blank y): n
+Trust-store file name (management.truststore): server.truststore.pkcs12
 Password (blank generated): secret
 
 SSL options:
-key store file: server.keystore.jks
+key store file: server.keystore.pkcs12
 distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
 password: secret
 validity: 365
 alias: localhost
 client certificate: /path/to/client.cer
-trust store file: server.trustore.jks
+trust store file: server.trustore.pkcs12
 trust store password: secret
-Server keystore file server.keystore.jks, certificate file server.pem and server.csr file will be generated in server configuration directory.
-Server truststore file server.trustore.jks will be generated in server configuration directory.
+Server keystore file server.keystore.pkcs12, certificate file server.pem and server.csr file will be generated in server configuration directory.
+Server truststore file server.trustore.pkcs12 will be generated in server configuration directory.
 Do you confirm y/n: y
 ----
 NB: Once the command is executed, the CLI will reload the server. To complete
@@ -1563,7 +1645,7 @@ Create a server key-store:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=twoWayKS:add(path=/path/to/server.keystore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayKS:add(path=/path/to/server.keystore.pkcs12,credential-reference={clear-text=secret},type=PKCS12)
 /subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 /subsystem=elytron/key-store=twoWayKS:store()
 ----
@@ -1575,7 +1657,7 @@ base directory variable and _path_ specify a relative path.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 ----
 
 Export the server certificate:
@@ -1589,10 +1671,15 @@ Export the server certificate:
 Create a key-store for the server truststore and import the client certificate
 into the server truststore:
 
+[IMPORTANT]
+====
+In the following example, we enter _validate=false_ in the _import-certificate_ command because the example uses a self-signed certificate. If you use Certificate Authority (CA) signed certificates, omit _validate=false_. 
+====
+
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=twoWayTS:add(path=/path/to/server.truststore.jks,credential-reference={clear-text=secret},type=JKS)
-/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true)
+/subsystem=elytron/key-store=twoWayTS:add(path=/path/to/server.truststore.pkcs12,credential-reference={clear-text=secret},type=PKCS12)
+/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true,validate=false)
 /subsystem=elytron/key-store=twoWayTS:store()
 ----
 
@@ -1645,8 +1732,7 @@ configured either _ssl-context_ or _security-realm_. Thus when changing
 between those, you have to use batch operation:
 
 [[remove-the-reference-to-the-legacy-security-realm-and-update-the-https-listener-to-use-the-ssl-context-from-elytron]]
-===== Remove the reference to the legacy security realm and update the
-https-listener to use the ssl-context from Elytron:
+===== Remove the reference to the legacy security realm and update the https-listener to use the ssl-context from Elytron:
 
 [source,options="nowrap"]
 ----
@@ -1675,7 +1761,7 @@ to present the client certificate.
 
 [source,options="nowrap"]
 ----
-$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
+$ keytool -importcert -keystore client.truststore.pkcs12 -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
 ----
 
 [[configure-your-client-to-use-the-client-certificate-applications]]
@@ -1810,7 +1896,7 @@ SSL/TLS for the management interfaces. Example of wizard usage:
 ----
 security enable-ssl-management --interactive
 Please provide required pieces of information to enable SSL:
-Key-store file name (default management.keystore): keystore.jks
+Key-store file name (default management.keystore): keystore.pkcs12
 Password (blank generated): secret
 What is your first and last name? [Unknown]: localhost
 What is the name of your organizational unit? [Unknown]:
@@ -1824,12 +1910,12 @@ Alias (blank generated): localhost
 Enable SSL Mutual Authentication y/n (blank n): n
 
 SSL options:
-key store file: keystore.jks
+key store file: keystore.pkcs12
 distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
 password: secret
 validity: 365
 alias: localhost
-Server keystore file keystore.jks, certificate file keystore.pem and keystore.csr file
+Server keystore file keystore.pkcs12, certificate file keystore.pem and keystore.csr file
 will be generated in server configuration directory.
 Do you confirm y/n :y
 ----
@@ -1848,7 +1934,7 @@ management interfaces.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=httpsKS:add(path=keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=httpsKS:add(path=keystore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 ----
 
 *NOTE:* The above command uses _relative-to_ to reference the location
@@ -1904,14 +1990,14 @@ First, obtain or generate your client keystore.
 
 [source,options="nowrap"]
 ----
-$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.jks -dname "CN=client" -keypass secret -storepass secret
+$ keytool -genkeypair -alias client -keyalg RSA -keysize 2048 -validity 365 -keystore client.keystore.pkcs12 -dname "CN=client" -keypass secret -storepass secret
 ----
 
 Export your client certificate.
 
 [source,options="nowrap"]
 ----
-$ keytool -exportcert  -keystore client.keystore.jks -alias client -keypass secret -storepass secret -file /path/to/client.cer
+$ keytool -exportcert  -keystore client.keystore.pkcs12 -alias client -keypass secret -storepass secret -file /path/to/client.cer
 ----
 
 There are a couple ways to enable two-way SSL/TLS for the management interfaces.
@@ -1922,11 +2008,16 @@ There are a couple ways to enable two-way SSL/TLS for the management interfaces.
 The _security enable-ssl-management_ command can be used to enable two-way
 SSL/TLS for the management interfaces. Example of wizard usage:
 
+[IMPORTANT]
+====
+In the following example, we enter _n_ when propmted with __Validate certificate__ because the example uses a self-signed certificate. If you use Certificate Authority (CA) signed certificates, enter _y_ when prompted. 
+====
+
 [source,java,options="nowrap"]
 ----
 security enable-ssl-management --interactive
 Please provide required pieces of information to enable SSL:
-Key-store file name (default management.keystore): server.keystore.jks
+Key-store file name (default management.keystore): server.keystore.pkcs12
 Password (blank generated): secret
 What is your first and last name? [Unknown]: localhost
 What is the name of your organizational unit? [Unknown]:
@@ -1934,26 +2025,26 @@ What is the name of your organization? [Unknown]:
 What is the name of your City or Locality? [Unknown]:
 What is the name of your State or Province? [Unknown]:
 What is the two-letter country code for this unit? [Unknown]:
-Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
+Is CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct y/n [y]?
 Validity (in days, blank default): 365
 Alias (blank generated): localhost
 Enable SSL Mutual Authentication y/n (blank n): y
 Client certificate (path to pem file): /path/to/client.cer
-Validate certificate y/n (blank y):
-Trust-store file name (management.truststore): server.truststore.jks
+Validate certificate y/n (blank y): n
+Trust-store file name (management.truststore): server.truststore.pkcs12
 Password (blank generated): secret
 
 SSL options:
-key store file: server.keystore.jks
+key store file: server.keystore.pkcs12
 distinguished name: CN=localhost, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
 password: secret
 validity: 365
 alias: localhost
 client certificate: /path/to/client.cer
-trust store file: server.trustore.jks
+trust store file: server.trustore.pkcs12
 trust store password: secret
-Server keystore file server.keystore.jks, certificate file server.pem and server.csr file will be generated in server configuration directory.
-Server truststore file server.trustore.jks will be generated in server configuration directory.
+Server keystore file server.keystore.pkcs12, certificate file server.pem and server.csr file will be generated in server configuration directory.
+Server truststore file server.trustore.pkcs12 will be generated in server configuration directory.
 Do you confirm y/n: y
 ----
 NB: Once the command is executed, the CLI will reload the server and
@@ -1980,7 +2071,7 @@ Configure a key-store.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayKS:add(path=server.keystore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 
 /subsystem=elytron/key-store=twoWayKS:generate-key-pair(alias=localhost,algorithm=RSA,key-size=2048,validity=365,credential-reference={clear-text=secret},distinguished-name="CN=localhost")
 
@@ -2002,11 +2093,16 @@ Export your server certificate.
 Create a key-store for the server trust store and import the client certificate
 into the server trust store.
 
+[IMPORTANT]
+====
+In the following example, we enter _validate=false_ in the _import-certificate_ command because the example uses a self-signed certificate. If you use Certificate Authority (CA) signed certificates, omit _validate=false_. 
+====
+
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=twoWayTS:add(path=server.truststore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=twoWayTS:add(path=server.truststore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 
-/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true)
+/subsystem=elytron/key-store=twoWayTS:import-certificate(alias=client,path=/path/to/client.cer,credential-reference={clear-text=secret},trust-cacerts=true,validate=false)
 
 /subsystem=elytron/key-store=twoWayTS:store()
 ----
@@ -2055,7 +2151,7 @@ to present the client certificate.
 
 [source,options="nowrap"]
 ----
-$ keytool -importcert -keystore client.truststore.jks -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
+$ keytool -importcert -keystore client.truststore.pkcs12 -storepass secret -alias localhost -trustcacerts -file /path/to/server.cer
 ----
 
 [[configure-your-client-to-use-the-client-certificate-management]]
@@ -2146,7 +2242,7 @@ a Let's Encrypt account using the following commands.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=accountsKS:add(path=accounts.keystore.jks,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=accountsKS:add(path=accounts.keystore.pkcs12,relative-to=jboss.server.config.dir,credential-reference={clear-text=secret},type=PKCS12)
 ----
 
 [[configure-le-account]]
@@ -2322,12 +2418,12 @@ To create a _filtering-key-store_:
 [source,options="nowrap"]
 ----
 /subsystem=elytron/key-store=myKS:add( \
-  path=keystore.jks, \
+  path=keystore.pkcs12, \
   relative-to=jboss.server.config.dir, \
   credential-reference={ \
     clear-text=secret \
   }, \
-  type=JKS \
+  type=PKCS12 \
 )
 ----
 
@@ -2495,7 +2591,7 @@ key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `S
 trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
 cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
 by this SSLContext. The format of this attribute is described in detail in
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString(java.lang.String)[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon
@@ -2547,7 +2643,7 @@ key-manager:: _(Optional)_ A reference to the `KeyManager` to be used by this `S
 trust-manager:: _(Optional)_ A reference to the `TrustManager` to be used by this `SSLContext`.
 cipher-suite-filter:: _(Optional)_ The filter to be applied to the cipher suites for TLSv1.2 and below made available
 by this SSLContext. The format of this attribute is described in detail in
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString(java.lang.String)[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
 The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and
 excludes any cipher suites that have no authentication.
 cipher-suite-names:: _(Optional)_ The enabled cipher suites for TLSv1.3. The format of this attribute is a simple colon

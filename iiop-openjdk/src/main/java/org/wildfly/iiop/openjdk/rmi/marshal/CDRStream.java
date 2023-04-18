@@ -958,7 +958,7 @@ public class CDRStream {
         }
 
         public void write(OutputStream out, Object obj) {
-            out.write_value((java.io.Serializable) obj, clz);
+            out.write_value((Serializable) obj, clz);
         }
     }
 

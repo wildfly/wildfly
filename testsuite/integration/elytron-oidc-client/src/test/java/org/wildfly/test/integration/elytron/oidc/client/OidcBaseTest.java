@@ -344,12 +344,21 @@ public abstract class OidcBaseTest {
     }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
-        loginToApp(appName, username, password, expectedStatusCode, expectedText, true);
+        loginToApp(username, password, expectedStatusCode, expectedText, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI());
+    }
+
+    public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText, URI requestUri) throws Exception {
+        loginToApp(username, password, expectedStatusCode, expectedText, true, requestUri);
     }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak) throws Exception {
-        final URI requestUri = new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
-                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI();
+        loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI());
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri) throws Exception {
         CookieStore store = new BasicCookieStore();
         HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
@@ -368,7 +377,7 @@ public abstract class OidcBaseTest {
                 assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
                 if (expectedText != null) {
                     String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
-                    assertTrue(responseString.contains(expectedText));
+                    assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
                 }
             } else {
                 assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);

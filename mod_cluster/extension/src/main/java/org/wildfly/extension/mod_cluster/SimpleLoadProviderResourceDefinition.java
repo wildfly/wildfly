@@ -23,7 +23,7 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
+import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -77,7 +77,7 @@ public class SimpleLoadProviderResourceDefinition extends ChildResourceDefinitio
                 .addAttributes(Attribute.class)
                 ;
 
-        new ReloadRequiredResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
 
         return registration;
     }

@@ -35,7 +35,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 
-import javax.annotation.ManagedBean;
+import jakarta.annotation.ManagedBean;
 import java.util.List;
 
 /**

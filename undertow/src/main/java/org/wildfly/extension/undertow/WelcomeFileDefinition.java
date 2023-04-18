@@ -23,14 +23,14 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Global welcome file definition
@@ -38,29 +38,17 @@ import java.util.Map;
  * @author Stuart Douglas
  */
 class WelcomeFileDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.WELCOME_FILE);
 
-    static final WelcomeFileDefinition INSTANCE = new WelcomeFileDefinition();
-
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-
-    };
-
-    static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
-
-    static {
-        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
-            ATTRIBUTES_MAP.put(attr.getName(), attr);
-        }
-    }
-
-
-    private WelcomeFileDefinition() {
-        super(UndertowExtension.PATH_WELCOME_FILE,
-                UndertowExtension.getResolver(Constants.WELCOME_FILE), new ReloadRequiredAddStepHandler(), new ReloadRequiredRemoveStepHandler());
+    WelcomeFileDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setAddHandler(new ReloadRequiredAddStepHandler())
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES_MAP.values();
+        return List.of();
     }
 }

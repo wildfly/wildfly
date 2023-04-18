@@ -87,6 +87,6 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
 
     ScatteredCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(ScatteredCacheServiceConfigurator::new), executors);
-        this.setDeprecated(InfinispanModel.VERSION_16_0_0.getVersion());
+        this.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
     }
 }

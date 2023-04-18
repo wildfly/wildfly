@@ -26,19 +26,17 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
 import java.security.PrivilegedAction;
-import java.util.EnumSet;
 
-import javax.persistence.EntityManager;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.tm.TxUtils;
-import org.jboss.tm.listener.EventType;
 import org.wildfly.transaction.client.AbstractTransaction;
 import org.wildfly.transaction.client.AssociationListener;
 import org.wildfly.transaction.client.ContextTransactionManager;
@@ -49,9 +47,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * @author Scott Marlow (forked from code by Gavin King)
  */
 public class TransactionUtil {
-
-    private static final EnumSet<EventType> eventTypes = EnumSet.of(EventType.ASSOCIATED, EventType.DISASSOCIATING);
-
     public static boolean isInTx(TransactionManager transactionManager) {
         Transaction tx = getTransaction(transactionManager);
         if (tx == null || !TxUtils.isActive(tx))

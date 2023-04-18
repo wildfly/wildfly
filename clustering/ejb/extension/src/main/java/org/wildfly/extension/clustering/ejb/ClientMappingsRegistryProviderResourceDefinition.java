@@ -27,12 +27,12 @@ import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.clustering.ejb.EjbRequirement;
+import org.wildfly.clustering.ejb.remote.RemoteEjbRequirement;
 import org.wildfly.clustering.service.Requirement;
 
 import java.util.function.UnaryOperator;
@@ -50,7 +50,7 @@ public class ClientMappingsRegistryProviderResourceDefinition extends ChildResou
     }
 
     enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        CLIENT_MAPPINGS_REGISTRY_PROVIDER(EjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER),
+        CLIENT_MAPPINGS_REGISTRY_PROVIDER(RemoteEjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER),
         ;
         private final org.jboss.as.clustering.controller.Capability capability;
 
@@ -85,7 +85,7 @@ public class ClientMappingsRegistryProviderResourceDefinition extends ChildResou
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.serviceConfiguratorFactory);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
         return registration;
     }
 }

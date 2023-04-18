@@ -1,6 +1,13 @@
 [[WS-Security]]
 = WS-Security
+
 ifdef::env-github[:imagesdir: ../../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 [[ws-security-overview]]
 == WS-Security overview
@@ -454,10 +461,10 @@ file, type and the alias/password to use for accessing it:
 
 ....
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.type=PKCS
 org.apache.ws.security.crypto.merlin.keystore.password=password
 org.apache.ws.security.crypto.merlin.keystore.alias=bob
-org.apache.ws.security.crypto.merlin.keystore.file=bob.jks
+org.apache.ws.security.crypto.merlin.keystore.file=bob.pkcs12
 ....
 
 A callback handler for the letting Apache CXF access the keystore is
@@ -508,7 +515,7 @@ public class KeystorePasswordCallback implements CallbackHandler {
 }
 ----
 
-Assuming the _bob.jks_ keystore has been properly generated and contains
+Assuming the _bob.pkcs12_ keystore has been properly generated and contains
 Bob's (server) full key (private/certificate + public key) as well as
 Alice's (client) public key, we can proceed to packaging the endpoint.
 Here is the expected content (the endpoint is a _POJO_ one in a _war_
@@ -541,7 +548,7 @@ alessio@inuyasha /dati/jbossws/stack/cxf/trunk $ jar -tvf ./modules/testsuite/cx
      0 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/
   4086 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService.wsdl
    653 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/wsdl/SecurityService_schema1.xsd
-  1820 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/classes/bob.jks
+  1820 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/classes/bob.pkcs12
    311 Thu Jun 16 18:50:44 CEST 2011 WEB-INF/classes/bob.properties
 ....
 
@@ -609,16 +616,16 @@ context. Here the `KeystorePasswordCallback` is the same as on server
 side above, you might want/need different implementation in real world
 scenarios, of course. +
 The _alice.properties_ file is the client side equivalent of the server
-side _bob.properties_ and references the _alice.jks_ keystore file,
+side _bob.properties_ and references the _alice.pkcs12_ keystore file,
 which has been populated with Alice's (client) full key
 (private/certificate + public key) as well as Bob's (server) public key.
 
 ....
 org.apache.ws.security.crypto.provider=org.apache.ws.security.components.crypto.Merlin
-org.apache.ws.security.crypto.merlin.keystore.type=jks
+org.apache.ws.security.crypto.merlin.keystore.type=PKCS12
 org.apache.ws.security.crypto.merlin.keystore.password=password
 org.apache.ws.security.crypto.merlin.keystore.alias=alice
-org.apache.ws.security.crypto.merlin.keystore.file=META-INF/alice.jks
+org.apache.ws.security.crypto.merlin.keystore.file=META-INF/alice.pkcs12
 ....
 
 The Apache CXF WS-Policy engine will digest the security requirements in

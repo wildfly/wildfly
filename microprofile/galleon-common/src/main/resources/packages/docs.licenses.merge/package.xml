@@ -1,7 +1,0 @@
-<?xml version="1.0" ?>
-
-<package-spec xmlns="urn:jboss:galleon:package:2.0" name="docs.licenses.merge">
-    <dependencies>
-        <package name="docs.licenses"/>
-    </dependencies>
-</package-spec>

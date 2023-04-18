@@ -1,6 +1,14 @@
 [[Mesaging_AIO_-_NIO_for_messaging_journal]]
 = AIO - NIO for messaging journal
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Apache ActiveMQ Artemis (like HornetQ beforehand) ships with a *high
 performance journal*. Since Apache ActiveMQ Artemis handles its own
 persistence, rather than relying on a database or other 3rd party

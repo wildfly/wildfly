@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import javax.enterprise.concurrent.ContextService;
+import jakarta.enterprise.concurrent.ContextService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -38,7 +38,7 @@ public interface ContextHandleFactory {
      * @param contextService
      * @param contextObjectProperties
      * @return
-     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#saveContext(javax.enterprise.concurrent.ContextService, java.util.Map)
+     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#saveContext(jakarta.enterprise.concurrent.ContextService, java.util.Map)
      */
     SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties);
 

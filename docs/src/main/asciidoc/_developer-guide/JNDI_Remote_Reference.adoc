@@ -1,6 +1,14 @@
 [[JNDI_Remote_Reference]]
 = Remote JNDI Access
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly supports two different types of remote JNDI.
 
 [[http-remoting]]
@@ -29,7 +37,7 @@ can be found in the `bin/client` directory of WildFly's distribution.
 [source,java,options="nowrap"]
 ----
 final Properties env = new Properties();
-env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
 env.put(Context.PROVIDER_URL, "http-remoting://localhost:8080");
 // the property below is required ONLY if there is no ejb client configuration loaded (such as a
 // jboss-ejb-client.properties in the class path) and the context will be used to lookup EJBs
@@ -102,4 +110,4 @@ For more details on how the server connections are configured, including
 the *required* jboss ejb client setup, please see
 <<EJB_invocations_from_a_remote_client_using_JNDI,EJB invocations from a remote client using JNDI>>.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

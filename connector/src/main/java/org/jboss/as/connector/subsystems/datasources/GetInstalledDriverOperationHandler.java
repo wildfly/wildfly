@@ -32,8 +32,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DAT
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INSTALLED_DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.GetDataSourceClassInfoOperationHandler.dsClsInfoNode;
@@ -44,8 +44,6 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.dmr.ModelNode;
@@ -59,18 +57,13 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
 
     public static final GetInstalledDriverOperationHandler INSTANCE = new GetInstalledDriverOperationHandler();
 
-    private final ParametersValidator validator = new ParametersValidator();
-
     private GetInstalledDriverOperationHandler() {
-        validator.registerValidator(DRIVER_NAME.getName(), new StringLengthValidator(1));
     }
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
-
-        final String name = operation.require(DRIVER_NAME.getName()).asString();
+        final String name = INSTALLED_DRIVER_NAME.validateOperation(operation).asString();
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
 
@@ -83,7 +76,7 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                     ModelNode result = new ModelNode();
                     InstalledDriver driver = driverRegistry.getInstalledDriver(name);
                     ModelNode driverNode = new ModelNode();
-                    driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
+                    driverNode.get(INSTALLED_DRIVER_NAME.getName()).set(driver.getDriverName());
                     if (driver.isFromDeployment()) {
                         driverNode.get(DEPLOYMENT_NAME.getName()).set(driver.getDriverName());
                         driverNode.get(DRIVER_MODULE_NAME.getName());

@@ -36,15 +36,22 @@ import org.infinispan.protostream.descriptors.WireType;
 public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperation implements ProtoStreamWriter, WriteContext {
 
     private final TagWriter writer;
+    private final int depth;
 
     protected AbstractProtoStreamWriter(WriteContext context) {
         super(context);
         this.writer = context.getWriter();
+        this.depth = context.depth();
     }
 
     @Override
     public TagWriter getWriter() {
         return this.writer;
+    }
+
+    @Override
+    public int depth() {
+        return this.depth;
     }
 
     @Override

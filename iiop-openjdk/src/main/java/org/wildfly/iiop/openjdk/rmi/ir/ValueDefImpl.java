@@ -123,7 +123,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
 
     public IRObject getReference() {
         if (ref == null) {
-            ref = org.omg.CORBA.ValueDefHelper.narrow(
+            ref = ValueDefHelper.narrow(
                     servantToReference(new ValueDefPOATie(this)));
         }
         return ref;

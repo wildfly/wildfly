@@ -22,10 +22,8 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -60,11 +58,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     CustomStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class));
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new CustomStoreServiceConfigurator(address);
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), CustomStoreServiceConfigurator::new);
     }
 }

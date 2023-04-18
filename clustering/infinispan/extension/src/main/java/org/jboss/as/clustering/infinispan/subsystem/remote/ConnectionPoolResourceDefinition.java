@@ -28,18 +28,15 @@ import java.util.function.UnaryOperator;
 import org.infinispan.client.hotrod.configuration.ExhaustedAction;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.infinispan.subsystem.ComponentResourceDefinition;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -49,7 +46,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Radoslav Husar
  */
-public class ConnectionPoolResourceDefinition extends ComponentResourceDefinition implements ResourceServiceConfiguratorFactory {
+public class ConnectionPoolResourceDefinition extends ComponentResourceDefinition {
 
     public static final PathElement PATH = pathElement("connection-pool");
 
@@ -57,7 +54,7 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         EXHAUSTED_ACTION("exhausted-action", ModelType.STRING, new ModelNode(ExhaustedAction.WAIT.name())) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new EnumValidator<>(ExhaustedAction.class));
+                return builder.setValidator(EnumValidator.create(ExhaustedAction.class));
             }
         },
         MAX_ACTIVE("max-active", ModelType.INT, null),
@@ -100,14 +97,9 @@ public class ConnectionPoolResourceDefinition extends ComponentResourceDefinitio
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(ConnectionPoolServiceConfigurator::new);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
-    }
-
-    @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new ConnectionPoolServiceConfigurator(address);
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="embedded-activemq">
     <dependencies>
-        <layer name="resource-adapters"/>
+        <layer name="messaging-activemq"/>
         <layer name="cdi"/>
         <layer name="ee"/>
         <layer name="naming"/>

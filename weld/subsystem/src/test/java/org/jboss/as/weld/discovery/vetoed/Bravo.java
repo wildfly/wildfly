@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.discovery.vetoed;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.as.weld.discovery.AlphaImpl;
 import org.jboss.as.weld.discovery.InnerClasses.InnerInterface;

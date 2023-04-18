@@ -65,15 +65,15 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.ejb.BeanConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
 import org.wildfly.clustering.service.ChildTargetService;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
  *
- * NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Stuart Douglas
  */
@@ -217,21 +217,27 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
     static void installDistributableTimerServiceFactory(DeploymentPhaseContext context, ServiceName name, String providerName, ManagedTimerServiceFactoryConfiguration factoryConfiguration, ComponentDescription description, TimerFilter filter) {
         DeploymentUnit unit = context.getDeploymentUnit();
-        BeanConfiguration beanConfiguration = new BeanConfiguration() {
+        List<String> parts = new ArrayList<>(3);
+        if (unit.getParent() != null) {
+            parts.add(unit.getParent().getName());
+        }
+        parts.add(unit.getName());
+        parts.add(description.getComponentName());
+        parts.add(filter.name());
+        String timerServiceName = String.join(".", parts);
+        TimerServiceConfiguration configuration = new TimerServiceConfiguration() {
             @Override
             public String getName() {
-                List<String> parts = new ArrayList<>(3);
-                if (unit.getParent() != null) {
-                    parts.add(unit.getParent().getName());
-                }
-                parts.add(unit.getName());
-                parts.add(description.getComponentName());
-                parts.add(filter.name());
-                return String.join(".", parts);
+                return timerServiceName;
             }
 
             @Override
-            public ServiceName getDeploymentUnitServiceName() {
+            public String getDeploymentName() {
+                return unit.getName();
+            }
+
+            @Override
+            public ServiceName getDeploymentServiceName() {
                 return unit.getServiceName();
             }
 
@@ -249,7 +255,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
             @Override
             public void accept(ServiceTarget target) {
                 TimerManagementProvider provider = dependency.get();
-                new DistributableTimerServiceFactoryServiceConfigurator(name, factoryConfiguration, beanConfiguration, provider, filter).configure(support).build(target).install();
+                new DistributableTimerServiceFactoryServiceConfigurator(name, factoryConfiguration, configuration, provider, filter).configure(support).build(target).install();
             }
         })).install();
     }

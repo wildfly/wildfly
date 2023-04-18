@@ -64,9 +64,7 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
             EXCLUDED_CONNECTORS
     ));
 
-    public static final ReplicationColocatedDefinition INSTANCE = new ReplicationColocatedDefinition();
-
-    private ReplicationColocatedDefinition() {
+    public ReplicationColocatedDefinition() {
         super(MessagingExtension.REPLICATION_COLOCATED_PATH,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(HA_POLICY, false, ATTRIBUTES),
@@ -96,7 +94,7 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
     private static AliasEntry createAlias(ManagementResourceRegistration resourceRegistration, PathElement target) {
         return new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(target))) {
             @Override
-            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasEntry.AliasContext aliasContext) {
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
                 return aliasAddress.getParent().append(target);
             }
         };
@@ -105,8 +103,8 @@ public class ReplicationColocatedDefinition extends PersistentResourceDefinition
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.unmodifiableList(Arrays.asList(
-                ReplicationPrimaryDefinition.CONFIGURATION_INSTANCE,
-                ReplicationSecondaryDefinition.CONFIGURATION_INSTANCE));
+        return List.of(
+                new ReplicationPrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true, true),
+                new ReplicationSecondaryDefinition(MessagingExtension.CONFIGURATION_SECONDARY_PATH, true, true));
     }
 }

@@ -41,8 +41,8 @@ import java.util.concurrent.ThreadFactory;
 
 import javax.naming.InitialContext;
 import javax.naming.Reference;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.TransactionManager;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.transaction.TransactionManager;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
@@ -55,7 +55,6 @@ import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
-import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
@@ -460,8 +459,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
             }
             installJNDIAliases(bindInfo, serviceTarget);
             // AS7-2222: Just hack it
-            if (cf instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)cf).setReference(new Reference(jndi));
+            if (cf instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)cf).setReference(new Reference(jndi));
             }
 
             return new String[] { jndi };
@@ -562,8 +561,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }).setInitialMode(ServiceController.Mode.ACTIVE).install();
             }
             // AS7-2222: Just hack it
-            if (ao instanceof javax.resource.Referenceable) {
-                ((javax.resource.Referenceable)ao).setReference(new Reference(jndi));
+            if (ao instanceof jakarta.resource.Referenceable) {
+                ((jakarta.resource.Referenceable)ao).setReference(new Reference(jndi));
             }
 
             return new String[] { jndi };
@@ -687,7 +686,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     String[] defaultGroups = wms.getDefaultGroups() != null ?
                             wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
 
-                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
+                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(),
                             wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
                 } else {
                     return super.createCallback(workManagerSecurity);
@@ -700,8 +699,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
         @Override
         protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
             if (cb instanceof  CallbackImpl) {
-                if (((CallbackImpl) cb).isElytronEnabled() != ((NamedWorkManager) workManager).isElytronEnabled())
-                    throw ConnectorLogger.ROOT_LOGGER.invalidElytronWorkManagerSetting();
                 workManager.setCallbackSecurity(cb);
 
             } else {

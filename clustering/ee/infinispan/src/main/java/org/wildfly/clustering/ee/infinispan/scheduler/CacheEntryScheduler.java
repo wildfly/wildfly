@@ -39,7 +39,7 @@ public interface CacheEntryScheduler<I, M> extends Scheduler<I, M> {
 
     /**
      * Cancels any previous scheduled tasks for entries which are no longer local to the current node
-     * @param location the cache locality
+     * @param locality the cache locality
      */
     void cancel(Locality locality);
 }

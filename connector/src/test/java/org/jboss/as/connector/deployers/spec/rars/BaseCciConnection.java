@@ -21,12 +21,12 @@
  */
 package org.jboss.as.connector.deployers.spec.rars;
 
-import javax.resource.ResourceException;
-import javax.resource.cci.Connection;
-import javax.resource.cci.ConnectionMetaData;
-import javax.resource.cci.Interaction;
-import javax.resource.cci.LocalTransaction;
-import javax.resource.cci.ResultSetInfo;
+import jakarta.resource.ResourceException;
+import jakarta.resource.cci.Connection;
+import jakarta.resource.cci.ConnectionMetaData;
+import jakarta.resource.cci.Interaction;
+import jakarta.resource.cci.LocalTransaction;
+import jakarta.resource.cci.ResultSetInfo;
 
 /**
  * BaseCciConnection
@@ -39,7 +39,7 @@ public class BaseCciConnection implements Connection {
     /*
      * close
      *
-     * @see javax.resource.cci.Connection#close()
+     * @see jakarta.resource.cci.Connection#close()
      */
     @Override
     public void close() throws ResourceException {
@@ -49,7 +49,7 @@ public class BaseCciConnection implements Connection {
     /*
      * createInteraction
      *
-     * @see javax.resource.cci.Connection#createInteraction()
+     * @see jakarta.resource.cci.Connection#createInteraction()
      */
     @Override
     public Interaction createInteraction() throws ResourceException {
@@ -59,7 +59,7 @@ public class BaseCciConnection implements Connection {
     /*
      * getLocalTransaction
      *
-     * @see javax.resource.cci.Connection#getLocalTransaction()
+     * @see jakarta.resource.cci.Connection#getLocalTransaction()
      */
     @Override
     public LocalTransaction getLocalTransaction() throws ResourceException {
@@ -69,7 +69,7 @@ public class BaseCciConnection implements Connection {
     /*
      * getMetaData
      *
-     * @see javax.resource.cci.Connection#getMetaData()
+     * @see jakarta.resource.cci.Connection#getMetaData()
      */
     @Override
     public ConnectionMetaData getMetaData() throws ResourceException {
@@ -79,7 +79,7 @@ public class BaseCciConnection implements Connection {
     /*
      * getResultSetInfo
      *
-     * @see javax.resource.cci.Connection#getResultSetInfo()
+     * @see jakarta.resource.cci.Connection#getResultSetInfo()
      */
     @Override
     public ResultSetInfo getResultSetInfo() throws ResourceException {

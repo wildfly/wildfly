@@ -31,7 +31,7 @@ import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     protected static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -105,11 +105,11 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_16_0_0),
+        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanSubsystemModel.VERSION_16_0_0),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanSubsystemModel deprecation) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
@@ -126,10 +126,12 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
+    private final ResourceServiceConfiguratorFactory factory;
 
-    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
         super(path, resolver);
         this.configurator = configurator;
+        this.factory = factory;
     }
 
     @Override
@@ -142,8 +144,8 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(Capability.class)
                 .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new StoreWriteBehindResourceDefinition().register(registration);
         new StoreWriteThroughResourceDefinition().register(registration);

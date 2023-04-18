@@ -9,7 +9,14 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
+
 ifdef::env-github[:imagesdir: images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 // ifndef::ebook-format[:leveloffset: 1]
 
@@ -114,8 +121,6 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 |MicroProfile Metrics 4.0 (deprecated in WildFly; will be replaced by link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[Micrometer]) |-- |X
 
 |MicroProfile OpenAPI 3.0 |-- |X
-
-|MicroProfile OpenTracing 3.0 (deprecated; use link:Admin_Guide{outfilesuffix}#Observability_Tracing[OpenTelemetry]) |X |X
 
 |MicroProfile Reactive Messaging 3.0 |-- |--
 

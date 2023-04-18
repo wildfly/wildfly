@@ -28,7 +28,7 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
-import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistration;
+import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -91,6 +91,6 @@ public class ApplicationSecurityDomainSingleSignOnDefinition extends SingleSignO
                 .addAttributes(SingleSignOnDefinition.Attribute.class)
                 .addCapabilities(Capability.class)
                 ;
-        new ReloadRequiredResourceRegistration(descriptor).register(registration);
+        new ReloadRequiredResourceRegistrar(descriptor).register(registration);
     }
 }

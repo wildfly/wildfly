@@ -30,12 +30,24 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-opentelemetry-api</artifactId>
 
     <name>WildFly: OpenTelemetry API</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-standard-expansion-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Jakarata-native Deps -->
@@ -61,6 +73,18 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-cdi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.enterprise</groupId>

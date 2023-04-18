@@ -61,7 +61,10 @@ public class ViewMembership implements Membership {
     public List<Node> getMembers() {
         List<Node> members = new ArrayList<>(this.view.size());
         for (Address address : this.view.getMembersRaw()) {
-            members.add(this.factory.createNode(address));
+            Node member = this.factory.createNode(address);
+            if (member != null) {
+                members.add(member);
+            }
         }
         return members;
     }

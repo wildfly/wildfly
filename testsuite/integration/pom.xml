@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -48,9 +48,6 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
-
-        <!-- Artifact id of the wildfly-testsuite-shared variant to use. Override to use the javax variant -->
-        <wildfly-testsuite-shared.artifactId>wildfly-testsuite-shared</wildfly-testsuite-shared.artifactId>
     </properties>
 
     <profiles>
@@ -76,7 +73,6 @@
                 <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
-                <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
             </modules>
@@ -102,7 +98,6 @@
                 <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
-                <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
             </modules>
@@ -234,15 +229,6 @@
             <activation><property><name>ts.legacy</name></property></activation>
             <modules>
                 <module>legacy</module>
-            </modules>
-        </profile>
-
-        <!-- -Dts.legacy.ejb.client -->
-        <profile>
-            <id>ts.integ.group.legacy.ejb.client</id>
-            <activation><property><name>ts.legacy.ejb.client</name></property></activation>
-            <modules>
-                <module>legacy-ejb-client</module>
             </modules>
         </profile>
 
@@ -465,7 +451,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>${wildfly-testsuite-shared.artifactId}</artifactId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
@@ -484,11 +470,6 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
 

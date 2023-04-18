@@ -61,10 +61,7 @@ public class SharedStoreSecondaryDefinition extends PersistentResourceDefinition
 
     private static final AbstractWriteAttributeHandler WRITE_ATTRIBUTE = new ActiveMQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
 
-    public static final SharedStoreSecondaryDefinition INSTANCE = new SharedStoreSecondaryDefinition(MessagingExtension.SHARED_STORE_SECONDARY_PATH, false);
-    public static final SharedStoreSecondaryDefinition CONFIGURATION_INSTANCE = new SharedStoreSecondaryDefinition(MessagingExtension.CONFIGURATION_SECONDARY_PATH, true);
-
-    private SharedStoreSecondaryDefinition(PathElement path, boolean allowSibling) {
+    public SharedStoreSecondaryDefinition(PathElement path, boolean allowSibling) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),

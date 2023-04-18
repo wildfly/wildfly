@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -72,7 +72,30 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-executor</artifactId>
+                <artifactId>wildfly-micrometer</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-micrometer-deployment</artifactId>
+                <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -127,6 +150,29 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-lra-participant</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-lra-coordinator</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -149,7 +195,7 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-opentracing-smallrye</artifactId>
+                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
@@ -158,10 +204,57 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+			
             <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${version.com.google.protobuf}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-otlp</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+			
+            <dependency>
+                <groupId>io.opentelemetry.proto</groupId>
+                <artifactId>opentelemetry-proto</artifactId>
+                <version>${version.io.opentelemetry.proto}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -226,7 +319,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-jwt</artifactId>
@@ -250,29 +342,6 @@
 
             <dependency>
                 <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-metrics</artifactId>
-                <version>${version.io.smallrye.smallrye-metrics}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-metrics-api</artifactId>
-                <version>${version.io.smallrye.smallrye-metrics}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-core</artifactId>
                 <version>${version.io.smallrye.open-api}</version>
             </dependency>
@@ -280,23 +349,6 @@
                 <groupId>io.smallrye</groupId>
                 <artifactId>smallrye-open-api-jaxrs</artifactId>
                 <version>${version.io.smallrye.open-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.smallrye</groupId>
-                <artifactId>smallrye-opentracing-contrib</artifactId>
-                <version>${version.io.smallrye.smallrye-opentracing}</version>
             </dependency>
 
             <dependency>
@@ -409,7 +461,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
@@ -494,10 +545,11 @@
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
+
             <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-api</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-api</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -506,20 +558,13 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-api-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
+                <groupId>org.eclipse.microprofile.lra</groupId>
+                <artifactId>microprofile-lra-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.lra.api}</version>
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.metrics</groupId>
-                <artifactId>microprofile-metrics-rest-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.metrics.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
+            
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>
                 <artifactId>microprofile-openapi-api</artifactId>
@@ -535,30 +580,6 @@
                 <groupId>org.eclipse.microprofile.openapi</groupId>
                 <artifactId>microprofile-openapi-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.openapi}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-tck-rest-client</artifactId>
-                <version>${version.org.eclipse.microprofile.opentracing}</version>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
@@ -637,6 +658,72 @@
                 <scope>test</scope>
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
+                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-service-base</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-client</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-coordinator-jar</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>lra-proxy-api</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.narayana.rts</groupId>
+                <artifactId>narayana-lra</artifactId>
+                <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.resteasy.microprofile</groupId>
@@ -672,6 +759,11 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly.security.mp</groupId>
+                <artifactId>wildfly-elytron-jwt</artifactId>
+                <version>${version.org.wildfly.security.elytron-mp}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

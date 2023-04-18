@@ -27,9 +27,9 @@ import static org.wildfly.common.Assert.checkNotNullParam;
 
 import java.security.Policy;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyConfigurationFactory;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.inject.Injector;

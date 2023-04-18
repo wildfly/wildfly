@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_NONE;
@@ -76,6 +75,27 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
             .setFlags(RESTART_NONE)
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
             .build();
+    static final SimpleAttributeDefinition BROWSE = SimpleAttributeDefinitionBuilder.create("browse", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
+    static final SimpleAttributeDefinition CREATE_ADDRESS = SimpleAttributeDefinitionBuilder.create("create-address", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
+    static final SimpleAttributeDefinition DELETE_ADDRESS = SimpleAttributeDefinitionBuilder.create("delete-address", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
         SEND,
@@ -92,10 +112,6 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
 
     private final boolean runtimeOnly;
 
-    static final SecurityRoleDefinition RUNTIME_INSTANCE = new SecurityRoleDefinition(true);
-
-    static final SecurityRoleDefinition INSTANCE = new SecurityRoleDefinition(false);
-
     static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
         final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
         final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();
@@ -104,10 +120,12 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
         final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
         final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
         final boolean manage = MANAGE.resolveModelAttribute(context, node).asBoolean();
-        return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
+        return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue,
+                deleteNonDurableQueue, manage, consume, createDurableQueue || createNonDurableQueue,
+                deleteDurableQueue || deleteNonDurableQueue);
     }
 
-    private SecurityRoleDefinition(final boolean runtimeOnly) {
+    SecurityRoleDefinition(final boolean runtimeOnly) {
         super(MessagingExtension.ROLE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_ROLE),
                 runtimeOnly ? null : SecurityRoleAdd.INSTANCE,
@@ -132,6 +150,9 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
                         .build();
                 registry.registerReadOnlyAttribute(readOnlyAttr, SecurityRoleReadAttributeHandler.INSTANCE);
             }
+            registry.registerReadOnlyAttribute(BROWSE, SecurityRoleReadAttributeHandler.INSTANCE);
+            registry.registerReadOnlyAttribute(CREATE_ADDRESS, SecurityRoleReadAttributeHandler.INSTANCE);
+            registry.registerReadOnlyAttribute(DELETE_ADDRESS, SecurityRoleReadAttributeHandler.INSTANCE);
         } else {
             for (AttributeDefinition attr : ATTRIBUTES) {
                 if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {

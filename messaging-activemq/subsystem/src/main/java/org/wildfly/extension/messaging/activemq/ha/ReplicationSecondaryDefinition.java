@@ -65,12 +65,8 @@ public class ReplicationSecondaryDefinition extends PersistentResourceDefinition
         ATTRIBUTES = Collections.unmodifiableCollection(attributes);
     }
 
-    public static final ReplicationSecondaryDefinition INSTANCE = new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, true);
-    public static final ReplicationSecondaryDefinition HC_INSTANCE = new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, false);
-    public static final ReplicationSecondaryDefinition CONFIGURATION_INSTANCE = new ReplicationSecondaryDefinition(MessagingExtension.CONFIGURATION_SECONDARY_PATH, true, true);
-
     private final boolean registerRuntime;
-    private ReplicationSecondaryDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
+    public ReplicationSecondaryDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),

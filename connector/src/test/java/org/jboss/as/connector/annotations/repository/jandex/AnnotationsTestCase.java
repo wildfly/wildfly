@@ -135,7 +135,7 @@ public class AnnotationsTestCase {
         final Index index = indexer.complete();
         AnnotationRepository ar = new JandexAnnotationRepositoryImpl(index, Thread.currentThread().getContextClassLoader());
 
-        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        Collection<Annotation> values = ar.getAnnotation(jakarta.resource.spi.Connector.class);
         assertNotNull(values);
         assertEquals(1, values.size());
 
@@ -202,7 +202,7 @@ public class AnnotationsTestCase {
             e.printStackTrace();
             fail("Test preparation error " + e.getMessage());
         }
-        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        Collection<Annotation> values = ar.getAnnotation(jakarta.resource.spi.Connector.class);
         assertNotNull(values);
         assertEquals(2, values.size());
 
@@ -257,7 +257,7 @@ public class AnnotationsTestCase {
             e.printStackTrace();
             fail("Test preparation error " + e.getMessage());
         }
-        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        Collection<Annotation> values = ar.getAnnotation(jakarta.resource.spi.Connector.class);
         assertNull(values);
 
         // Test run
@@ -309,7 +309,7 @@ public class AnnotationsTestCase {
             e.printStackTrace();
             fail("Test preparation error " + e.getMessage());
         }
-        Collection<Annotation> values = ar.getAnnotation(javax.resource.spi.Connector.class);
+        Collection<Annotation> values = ar.getAnnotation(jakarta.resource.spi.Connector.class);
         assertNull(values);
 
         // Test run

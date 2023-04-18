@@ -70,7 +70,7 @@ public class BindingIteratorImpl extends org.omg.CosNaming.BindingIteratorPOA {
             bl.value = bndgs;
             return true;
         } else {
-            bl.value = new org.omg.CosNaming.Binding[0];
+            bl.value = new Binding[0];
             return false;
         }
     }

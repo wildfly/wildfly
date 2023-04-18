@@ -1,6 +1,14 @@
 [[The_native_management_API]]
 = The native management API
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 A standalone WildFly process, or a managed domain Domain Controller or
 secondary Host Controller process can be configured to listen for remote
 management requests using its "native management interface":
@@ -143,7 +151,7 @@ library.
 
 Let's show an example of creating an operation request object that can
 be used to
-link:Global_operations.html#src-557234_Globaloperations-read-resource-description[read
+link:Admin_Guide{outfilesuffix}#the-read-resource-description-operation[read
 the resource description] for the web subsystem's HTTP connector:
 
 [source,java,options="nowrap"]
@@ -306,7 +314,7 @@ elements in the address occur is important.
 
 The other key/value pairs are parameter names and their values. The
 names and values should match what is specified in the
-link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-operation-description[operation's
+link:Admin_Guide{outfilesuffix}#description-of-an-operation[operation's
 description].
 
 Parameters may have any name, except for the reserved words `operation`,
@@ -378,7 +386,7 @@ Rollout Plan>>" for details.
 false. Whether an operation that requires restarting some runtime
 services in order to take effect should do so. See discussion of
 `resource-services` in the
-link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-applying-runtime-updates["Applying
+link:Admin_Guide{outfilesuffix}#applying-updates-to-runtime-services["Applying
 Updates to Runtime Services" section of the Description of the
 Management Model section] for further details.
 * `roles` – String or list of strings. Name(s) of RBAC role(s) the
@@ -778,7 +786,7 @@ a field named `response-headers`. For example:
 A response header is typically related to whether an operation could be
 applied to the targeted runtime without requiring a restart of some or
 all services, or even of the target process itself. Please see the
-link:Description_of_the_Management_Model.html#src-557210_DescriptionoftheManagementModel-applying-runtime-updates["Applying
+link:Admin_Guide{outfilesuffix}#applying-updates-to-runtime-services["Applying
 Updates to Runtime Services" section of the Description of the
 Management Model section] for a discussion of the basic concepts related
 to what happens if an operation requires a service restart to be

@@ -39,9 +39,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.ejb.client.SessionID;
 
 /**
  * Base class for {@link org.jboss.as.controller.ResourceDefinition}s describing runtime {@link EJBComponent}s.
@@ -196,19 +199,22 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             resourceRegistration.registerMetric(CACHE_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
-                    context.getResult().set(((StatefulSessionComponent) component).getCache().getCacheSize());
+                    StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache = ((StatefulSessionComponent) component).getCache();
+                    context.getResult().set(cache.getActiveCount());
                 }
             });
             resourceRegistration.registerMetric(PASSIVATED_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
-                    context.getResult().set(((StatefulSessionComponent) component).getCache().getPassivatedCount());
+                    StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache = ((StatefulSessionComponent) component).getCache();
+                    context.getResult().set(cache.getPassiveCount());
                 }
             });
             resourceRegistration.registerMetric(TOTAL_SIZE, new AbstractRuntimeMetricsHandler() {
                 @Override
                 protected void executeReadMetricStep(final OperationContext context, final ModelNode operation, final EJBComponent component) {
-                    context.getResult().set(((StatefulSessionComponent) component).getCache().getTotalSize());
+                    StatefulSessionBeanCache<SessionID, StatefulSessionComponentInstance> cache = ((StatefulSessionComponent) component).getCache();
+                    context.getResult().set(cache.getActiveCount() + cache.getPassiveCount());
                 }
             });
         }

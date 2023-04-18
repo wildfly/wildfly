@@ -32,12 +32,12 @@ import org.jboss.as.clustering.controller.AttributeValueTranslator;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,8 +51,8 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     static final PathElement PATH = pathElement("partition-handling");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        WHEN_SPLIT("when-split", PartitionHandling.ALLOW_READ_WRITES, new EnumValidator<>(PartitionHandling.class)),
-        MERGE_POLICY("merge-policy", MergePolicy.NONE, new EnumValidator<>(MergePolicy.class, EnumSet.complementOf(EnumSet.of(MergePolicy.CUSTOM)))),
+        WHEN_SPLIT("when-split", PartitionHandling.ALLOW_READ_WRITES, EnumValidator.create(PartitionHandling.class)),
+        MERGE_POLICY("merge-policy", MergePolicy.NONE, EnumValidator.create(MergePolicy.class, EnumSet.complementOf(EnumSet.of(MergePolicy.CUSTOM)))),
         ;
         private final AttributeDefinition definition;
 
@@ -77,11 +77,11 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_16_0_0),
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanSubsystemModel.VERSION_16_0_0),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanSubsystemModel deprecation) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
@@ -125,7 +125,7 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
                 })
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(PartitionHandlingServiceConfigurator::new);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         return registration;
     }

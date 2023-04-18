@@ -22,11 +22,11 @@
 
 package org.wildfly.clustering.infinispan.listener;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import org.infinispan.Cache;
-import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
@@ -49,6 +49,6 @@ public class PostPassivateBlockingListener<K, V> extends CacheEventListenerRegis
     @CacheEntryPassivated
     public CompletionStage<Void> postPassivate(CacheEntryPassivatedEvent<K, V> event) {
         this.listener.accept(event);
-        return CompletableFutures.completedNull();
+        return CompletableFuture.completedStage(null);
     }
 }

@@ -22,9 +22,9 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkListener;
+import jakarta.resource.spi.work.ExecutionContext;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkListener;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.jca.core.spi.security.SecurityIntegration;
@@ -40,16 +40,13 @@ public class NamedWorkManager extends WorkManagerImpl {
     /** Default WorkManager name */
     public static final String DEFAULT_NAME = "default";
 
-    private final boolean elytronEnabled;
-
     /**
      * Constructor
      * @param name The name of the WorkManager
      */
-    public NamedWorkManager(String name, final boolean elytronEnabled) {
+    public NamedWorkManager(String name) {
         super();
         setName(name);
-        this.elytronEnabled = elytronEnabled;
     }
 
     @Override
@@ -58,9 +55,5 @@ public class NamedWorkManager extends WorkManagerImpl {
                                             CountDownLatch completedLatch) {
         return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
                 startedLatch, completedLatch, System.currentTimeMillis());
-    }
-
-    public boolean isElytronEnabled() {
-        return elytronEnabled;
     }
 }

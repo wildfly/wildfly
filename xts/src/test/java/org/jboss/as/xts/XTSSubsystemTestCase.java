@@ -21,36 +21,13 @@
 */
 package org.jboss.as.xts;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.xts.XTSSubsystemDefinition.ASYNC_REGISTRATION;
-import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
-import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
-
 import java.io.IOException;
-import java.util.List;
-
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
-import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
-    // These are named for the last version supporting a given model version
-    private static final ModelVersion EAP6_4_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion EAP7_1_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion EAP7_2_0 = ModelVersion.create(3, 0, 0);
 
     public XTSSubsystemTestCase() {
         super(XTSExtension.SUBSYSTEM_NAME, new XTSExtension());
@@ -58,122 +35,11 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource(String.format("subsystem-%s.xml", EAP7_2_0));
+        return readResource(String.format("subsystem-%s.xml", XTSExtension.CURRENT_MODEL_VERSION));
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
+    protected String getSubsystemXsdPath() {
         return "schema/jboss-as-xts_3_0.xsd";
-    }
-
-    @Test
-    public void testTransformersEAP_6_4_0() throws Exception {
-        // EAP 6.4.0 still uses 1.0.0 XTS subsystem version
-        testTransformation(ModelTestControllerVersion.EAP_6_4_0, EAP6_4_0, "jboss-as-xts");
-    }
-
-    @Test
-    public void testTransformersEAP_7_0_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_0_0, EAP7_1_0, "wildfly-xts");
-    }
-
-    @Test
-    public void testTransformersEAP_7_1_0() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0, "wildfly-xts");
-    }
-
-
-    @Test
-    public void testTransformersFailedEAP_6_4_0() throws Exception {
-        testRejectTransformation(ModelTestControllerVersion.EAP_6_4_0, EAP6_4_0, "jboss-as-xts");
-    }
-
-
-    @Test
-    public void testTransformersFailedEAP_7_0_0() throws Exception {
-        testRejectTransformation(ModelTestControllerVersion.EAP_7_0_0, EAP7_1_0, "wildfly-xts");
-    }
-
-    @Test
-    public void testTransformersFailedEAP_7_1_0() throws Exception {
-        testRejectTransformation(ModelTestControllerVersion.EAP_7_1_0, EAP7_1_0, "wildfly-xts");
-    }
-
-
-    private void testTransformation(ModelTestControllerVersion controllerVersion, ModelVersion version, String artifact) throws Exception {
-        String subsystemXml = readResource(String.format("subsystem-%s.xml", version));
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-            .setSubsystemXml(subsystemXml);
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
-            .addMavenResourceURL(String.format("%s:%s:%s",
-                controllerVersion.getMavenGroupId(), artifact, controllerVersion.getMavenGavVersion()))
-            .setExtensionClassName(XTSExtension.class.getName())
-            .configureReverseControllerCheck(createAdditionalInitialization(), null)
-            .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, version);
-    }
-
-    private void testRejectTransformation(ModelTestControllerVersion controllerVersion, ModelVersion version, String artifact) throws Exception {
-        FailedOperationTransformationConfig config = createFailedConfig(version);
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
-
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
-            .addMavenResourceURL(String.format("%s:%s:%s", controllerVersion.getMavenGroupId(), artifact, controllerVersion.getMavenGavVersion()))
-            .dontPersistXml();
-
-        KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version);
-        Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
-        List<ModelNode> ops = builder.parseXmlResource("subsystem-3.0.0.xml"); // the latest version
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version, ops, config);
-    }
-
-    private FailedOperationTransformationConfig createFailedConfig(ModelVersion version) {
-
-        ChainedConfig chainedConfig;
-        if (version == EAP6_4_0) {
-            final AttributesPathAddressConfig hostConfig = new AttributesPathAddressConfig(HOST_NAME.getName()) {
-                private static final String DEFAULT_HOST = "default-host";
-                @Override
-                protected boolean isAttributeWritable(String attributeName) {
-                    return true;
-                }
-
-                @Override
-                protected boolean checkValue(String attrName, ModelNode attribute, boolean isGeneratedWriteAttribute) {
-                    // If it is not equal to 'default-host' we will change it
-                    return !attribute.asString().equals(DEFAULT_HOST);
-                }
-
-                @Override
-                protected ModelNode correctValue(ModelNode toResolve, boolean isGeneratedWriteAttribute) {
-                    return new ModelNode(DEFAULT_HOST);
-                }
-            };
-            chainedConfig = ChainedConfig.createBuilder(ASYNC_REGISTRATION, DEFAULT_CONTEXT_PROPAGATION, HOST_NAME)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(ASYNC_REGISTRATION, DEFAULT_CONTEXT_PROPAGATION))
-                    .addConfig(hostConfig)
-                    .build();
-
-        } else if (version == EAP7_1_0) {
-            chainedConfig = ChainedConfig.createBuilder(ASYNC_REGISTRATION)
-                    .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(ASYNC_REGISTRATION))
-                    .build();
-
-        } else {
-            throw new IllegalStateException();
-        }
-
-        return new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(SUBSYSTEM, XTSExtension.SUBSYSTEM_NAME), chainedConfig);
     }
 }

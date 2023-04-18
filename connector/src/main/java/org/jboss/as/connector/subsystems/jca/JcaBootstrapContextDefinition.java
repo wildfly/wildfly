@@ -41,9 +41,8 @@ import org.jboss.dmr.ModelType;
  */
 public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_BOOTSTRAP_CONTEXT = PathElement.pathElement(BOOTSTRAP_CONTEXT);
-    static final JcaBootstrapContextDefinition INSTANCE = new JcaBootstrapContextDefinition();
 
-    private JcaBootstrapContextDefinition() {
+    JcaBootstrapContextDefinition() {
         super(PATH_BOOTSTRAP_CONTEXT,
                 JcaExtension.getResourceDescriptionResolver(PATH_BOOTSTRAP_CONTEXT.getKey()),
                 BootstrapContextAdd.INSTANCE,

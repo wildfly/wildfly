@@ -22,38 +22,23 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.Schema;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
+ * Extension that registers the distributable-web subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class DistributableWebExtension implements Extension {
+public class DistributableWebExtension extends PersistentSubsystemExtension<DistributableWebSubsystemSchema> {
 
     static final String SUBSYSTEM_NAME = "distributable-web";
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new DistributableWebResourceDescriptionResolver();
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableWebExtension.class);
 
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, DistributableWebModel.CURRENT.getVersion());
-
-        new DistributableWebResourceDefinition().register(registration);
-
-        registration.registerXMLElementWriter(new DistributableWebXMLParser(DistributableWebSchema.CURRENT));
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (Schema<DistributableWebSchema> schema : EnumSet.allOf(DistributableWebSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new DistributableWebXMLParser(schema));
-        }
+    public DistributableWebExtension() {
+        super(SUBSYSTEM_NAME, DistributableWebSubsystemModel.CURRENT, DistributableWebResourceDefinition::new, DistributableWebSubsystemSchema.VERSION_3_0);
     }
 }

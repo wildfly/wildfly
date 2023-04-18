@@ -53,9 +53,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
-import org.wildfly.clustering.ejb.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.ejb.EjbRequirement;
-import org.wildfly.clustering.ejb.LegacyClientMappingsRegistryProviderFactory;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.ejb.remote.RemoteEjbRequirement;
+import org.wildfly.clustering.ejb.remote.LegacyClientMappingsRegistryProviderFactory;
 import org.wildfly.clustering.service.ChildTargetService;
 import org.wildfly.clustering.service.FunctionSupplierDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -203,8 +203,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
      * - otherwise, use the legacy provider loaded from the classpath
      */
     private SupplierDependency<ClientMappingsRegistryProvider> getClientMappingsRegistryProvider(OperationContext context, String clusterName) {
-        if (context.hasOptionalCapability(EjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getName(), EJB_REMOTE_CAPABILITY_NAME, null)) {
-            return new ServiceSupplierDependency<>(EjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getServiceName(context));
+        if (context.hasOptionalCapability(RemoteEjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getName(), EJB_REMOTE_CAPABILITY_NAME, null)) {
+            return new ServiceSupplierDependency<>(RemoteEjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getServiceName(context));
         }
         EjbLogger.ROOT_LOGGER.legacyClientMappingsRegistryProviderInUse(clusterName);
         return new SimpleSupplierDependency<>(this.providerFactory.createClientMappingsRegistryProvider(clusterName));

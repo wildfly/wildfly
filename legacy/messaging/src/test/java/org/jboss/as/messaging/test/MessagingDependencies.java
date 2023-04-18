@@ -21,10 +21,6 @@
  */
 package org.jboss.as.messaging.test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jboss.as.model.test.ModelTestControllerVersion;
 
 /**
@@ -33,25 +29,8 @@ import org.jboss.as.model.test.ModelTestControllerVersion;
  */
 public class MessagingDependencies {
 
-    private static final Map<ModelTestControllerVersion, String[]> HORNETQ_DEPENDENCIES;
-    static {
-        Map<ModelTestControllerVersion, String[]> map = new HashMap<ModelTestControllerVersion, String[]>();
-
-        map.put(ModelTestControllerVersion.EAP_6_4_0, new String[]{
-                "org.hornetq:hornetq-commons:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-journal:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-server:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-jms-server:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-core-client:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-jms-client:2.3.25.Final-redhat-1",
-                "org.hornetq:hornetq-ra:2.3.25.Final-redhat-1",
-        });
-
-        HORNETQ_DEPENDENCIES = Collections.unmodifiableMap(map);
-    }
-
     static String[] getHornetQDependencies(ModelTestControllerVersion controllerVersion) {
-        return HORNETQ_DEPENDENCIES.get(controllerVersion);
+        return new String[0];
     }
 
     static String getMessagingGAV(ModelTestControllerVersion version) {

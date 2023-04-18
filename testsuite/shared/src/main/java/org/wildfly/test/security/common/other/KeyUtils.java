@@ -29,7 +29,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
-
 import javax.security.auth.x500.X500Principal;
 
 import org.wildfly.security.x500.cert.X509CertificateBuilder;

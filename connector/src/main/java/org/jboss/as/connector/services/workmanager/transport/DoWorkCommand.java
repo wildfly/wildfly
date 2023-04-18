@@ -22,8 +22,8 @@
 
 package org.jboss.as.connector.services.workmanager.transport;
 
-import javax.resource.spi.work.DistributableWork;
-import javax.resource.spi.work.WorkException;
+import jakarta.resource.spi.work.DistributableWork;
+import jakarta.resource.spi.work.WorkException;
 
 import org.jboss.jca.core.spi.workmanager.Address;
 import org.wildfly.clustering.dispatcher.Command;

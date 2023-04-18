@@ -22,13 +22,13 @@
 
 package org.jboss.as.test.integration.common;
 
-import org.jboss.as.test.http.Authentication;
-import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
-
-import javax.management.remote.JMXConnector;
-import javax.naming.Context;
 import java.util.HashMap;
 import java.util.Properties;
+import javax.management.remote.JMXConnector;
+import javax.naming.Context;
+
+import org.jboss.as.test.http.Authentication;
+import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 
 /**
  * Created by fspolti on 10/20/16.

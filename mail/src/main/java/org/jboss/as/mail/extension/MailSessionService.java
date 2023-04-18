@@ -22,19 +22,15 @@
 
 package org.jboss.as.mail.extension;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.mail.Session;
 
-import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.inject.MapInjector;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import jakarta.mail.Session;
 
 /**
  * Service that provides a jakarta.mail.Session.
@@ -42,34 +38,22 @@ import jakarta.mail.Session;
  * @author Tomaz Cerar
  * @created 27.7.11 0:14
  */
-public class MailSessionService implements Service<Session> {
-    private final MailSessionConfig config;
-    private volatile SessionProvider provider;
-    private Map<String, OutboundSocketBinding> socketBindings = new HashMap<String, OutboundSocketBinding>();
+public class MailSessionService implements Service {
+    private final Consumer<Session> session;
+    private final Supplier<SessionProvider> provider;
 
-    public MailSessionService(MailSessionConfig config) {
-        MailLogger.ROOT_LOGGER.tracef("service constructed with config: %s", config);
-        this.config = config;
+    public MailSessionService(Consumer<Session> session, Supplier<SessionProvider> provider) {
+        this.session = session;
+        this.provider = provider;
     }
 
-    public MailSessionConfig getConfig() {
-        return config;
+    @Override
+    public void start(final StartContext startContext) throws StartException {
+        this.session.accept(this.provider.get().getSession());
     }
 
-    public void start(StartContext startContext) throws StartException {
-        MailLogger.ROOT_LOGGER.trace("start...");
-        provider = SessionProviderFactory.create(config, socketBindings);
-    }
-
-    public void stop(StopContext stopContext) {
-        MailLogger.ROOT_LOGGER.trace("stop...");
-    }
-
-    Injector<OutboundSocketBinding> getSocketBindingInjector(String name) {
-        return new MapInjector<>(socketBindings, name);
-    }
-
-    public Session getValue() throws IllegalStateException, IllegalArgumentException {
-        return provider.getSession();
+    @Override
+    public void stop(final StopContext stopContext) {
+        // Nothing to stop
     }
 }

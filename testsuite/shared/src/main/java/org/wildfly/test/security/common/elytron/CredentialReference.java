@@ -23,6 +23,7 @@
 package org.wildfly.test.security.common.elytron;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import org.jboss.dmr.ModelNode;
 
 /**

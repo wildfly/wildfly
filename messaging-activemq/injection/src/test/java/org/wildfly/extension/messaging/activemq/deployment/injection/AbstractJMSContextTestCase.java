@@ -30,8 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import org.mockito.stubbing.Answer;
 /**
  * Test class for AbstractJMSContextTes.
  *
- * @author <a href="http://fnbrandao.com.br/">Fabio Nascimento Brandão</a> (c) 2021 Red Hat inc.
+ * @author <a href="http://fnbrandao.com.br/">Fabio Nascimento Brand&atilde;o</a> (c) 2021 Red Hat inc.
  */
 public class AbstractJMSContextTestCase {
 

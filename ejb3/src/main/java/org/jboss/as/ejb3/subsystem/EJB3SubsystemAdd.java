@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
@@ -46,7 +45,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -134,6 +135,7 @@ import org.jboss.as.ejb3.remote.AssociationService;
 import org.jboss.as.ejb3.remote.EJBClientContextService;
 import org.jboss.as.ejb3.remote.LocalTransportProvider;
 import org.jboss.as.ejb3.remote.http.EJB3RemoteHTTPService;
+import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.ejb3.suspend.EJBSuspendHandlerService;
 import org.jboss.as.network.ProtocolSocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -150,12 +152,13 @@ import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
@@ -171,15 +174,13 @@ import io.undertow.server.handlers.PathHandler;
 /**
  * Add operation handler for the EJB3 subsystem.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    private final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor;
-    private final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor;
     private static final String UNDERTOW_HTTP_INVOKER_CAPABILITY_NAME = "org.wildfly.undertow.http-invoker";
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
@@ -187,10 +188,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final String LEGACY_JACC_CAPABILITY = "org.wildfly.legacy-security.jacc";
     private static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";
 
-    EJB3SubsystemAdd(final EJBDefaultSecurityDomainProcessor defaultSecurityDomainDeploymentProcessor, final MissingMethodPermissionsDenyAccessMergingProcessor missingMethodPermissionsDenyAccessMergingProcessor, AttributeDefinition... attributes) {
+    private final AtomicReference<String> defaultSecurityDomainName;
+    private final Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains;
+    private final Iterable<String> outflowSecurityDomains;
+    private final AtomicBoolean denyAccessByDefault;
+
+    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault, AttributeDefinition... attributes) {
         super(attributes);
-        this.defaultSecurityDomainDeploymentProcessor = defaultSecurityDomainDeploymentProcessor;
-        this.missingMethodPermissionsDenyAccessMergingProcessor = missingMethodPermissionsDenyAccessMergingProcessor;
+        this.defaultSecurityDomainName = defaultSecurityDomainName;
+        this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
+        this.outflowSecurityDomains = outflowSecurityDomains;
+        this.denyAccessByDefault = denyAccessByDefault;
     }
 
     @Override
@@ -321,16 +329,16 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         // set the default security domain name in the deployment unit processor, configured at the subsystem level
         final ModelNode defaultSecurityDomainModelNode = EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN.resolveModelAttribute(context, model);
         final String defaultSecurityDomain = defaultSecurityDomainModelNode.isDefined() ? defaultSecurityDomainModelNode.asString() : null;
-        this.defaultSecurityDomainDeploymentProcessor.setDefaultSecurityDomainName(defaultSecurityDomain);
+        this.defaultSecurityDomainName.set(defaultSecurityDomain);
 
         // set the default security domain name in the deployment unit processor, configured at the subsytem level
         final ModelNode defaultMissingMethod = EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS.resolveModelAttribute(context, model);
         final boolean defaultMissingMethodValue = defaultMissingMethod.asBoolean();
-        this.missingMethodPermissionsDenyAccessMergingProcessor.setDenyAccessByDefault(defaultMissingMethodValue);
+        this.denyAccessByDefault.set(defaultMissingMethodValue);
 
         final ModelNode defaultStatefulSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model);
-        final ValueService<AtomicLong> defaultStatefulSessionTimeoutService = new ValueService<>(new ImmediateValue<>(
-                defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE));
+        final AtomicLong defaultTimeout = defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE;
+        final ValueService defaultStatefulSessionTimeoutService = new ValueService(defaultTimeout);
         context.getServiceTarget().addService(DefaultStatefulBeanSessionTimeoutWriteHandler.SERVICE_NAME, defaultStatefulSessionTimeoutService).install();
 
         final boolean defaultMdbPoolAvailable = model.hasDefined(DEFAULT_MDB_INSTANCE_POOL);
@@ -363,7 +371,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_JNDI_BINDINGS, new EjbJndiBindingsDeploymentUnitProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_CLIENT_METADATA, new EJBClientDescriptorMetaDataProcessor(appclient));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DISCOVERY, new DiscoveryRegistrationProcessor(appclient));
-                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DEFAULT_SECURITY_DOMAIN, EJB3SubsystemAdd.this.defaultSecurityDomainDeploymentProcessor);
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_DEFAULT_SECURITY_DOMAIN, new EJBDefaultSecurityDomainProcessor(EJB3SubsystemAdd.this.defaultSecurityDomainName, EJB3SubsystemAdd.this.knownApplicationSecurityDomains, EJB3SubsystemAdd.this.outflowSecurityDomains));
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND, new EJBComponentSuspendDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND + 1, new EjbClientContextSetupProcessor()); //TODO: real phase numbers
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND + 2, new StartupAwaitDeploymentUnitProcessor());
@@ -399,7 +407,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_REMOVE_METHOD, new RemoveMethodMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_STARTUP_MERGE, new StartupMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_DOMAIN, new SecurityDomainMergingProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_MISSING_METHOD_PERMISSIONS, missingMethodPermissionsDenyAccessMergingProcessor);
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SECURITY_MISSING_METHOD_PERMISSIONS, new MissingMethodPermissionsDenyAccessMergingProcessor(EJB3SubsystemAdd.this.denyAccessByDefault));
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_ROLES, new DeclareRolesMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_METHOD_PERMISSIONS, new MethodPermissionsMergingProcessor());
                     processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_STATEFUL_TIMEOUT, new StatefulTimeoutMergingProcessor());
@@ -435,6 +443,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                                 new ServerInterceptorsBindingsProcessor(serverInterceptorCache));
                     }
 
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_GLOBAL_CLIENT_INTERCEPTORS,
+                            new IdentityInterceptorProcessor());
+
                     if (model.hasDefined(CLIENT_INTERCEPTORS)) {
                         final List<ServerInterceptorMetaData> clientInterceptors = new ArrayList<>();
 
@@ -447,7 +458,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                                 new StaticInterceptorsDependenciesDeploymentUnitProcessor(clientInterceptors));
 
                         final ClientInterceptorCache clientInterceptorCache = new ClientInterceptorCache(clientInterceptors);
-                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
+                        processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_SERVER_INTERCEPTORS,
                                 new ClientInterceptorsBindingsProcessor(clientInterceptorCache));
                     }
                 }
@@ -461,10 +472,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (model.hasDefined(DEFAULT_SLSB_INSTANCE_POOL)) {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model);
-        }
-
-        if (model.hasDefined(DEFAULT_ENTITY_BEAN_INSTANCE_POOL)) {
-            EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL.updatePoolService(context, model);
         }
 
         if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
@@ -599,6 +606,25 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
             Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.POLICY.getName(), SingletonDefaultRequirement.POLICY.getType()));
             builder.setInstance(new SingletonBarrierService(policy)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
+    }
+
+    private static final class ValueService implements Service<AtomicLong> {
+        private final AtomicLong value;
+        public ValueService(final AtomicLong value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            // noop
+        }
+
+        public void stop(final StopContext context) {
+            // noop
+        }
+
+        public AtomicLong getValue() throws IllegalStateException {
+            return value;
         }
     }
 }

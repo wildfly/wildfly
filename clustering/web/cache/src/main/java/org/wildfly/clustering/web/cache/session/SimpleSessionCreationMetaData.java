@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     private final Instant creationTime;
-    private volatile Duration maxInactiveInterval = Duration.ZERO;
+    private volatile Duration timeout = Duration.ZERO;
     private volatile boolean newSession;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
@@ -59,13 +59,13 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
     }
 
     @Override
-    public Duration getMaxInactiveInterval() {
-        return this.maxInactiveInterval;
+    public Duration getTimeout() {
+        return this.timeout;
     }
 
     @Override
-    public void setMaxInactiveInterval(Duration duration) {
-        this.maxInactiveInterval = duration;
+    public void setTimeout(Duration timeout) {
+        this.timeout = timeout;
     }
 
     @Override
@@ -85,9 +85,9 @@ public class SimpleSessionCreationMetaData implements SessionCreationMetaData {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append('{');
-        builder.append("created=").append(this.creationTime);
-        builder.append(", max-inactive-interval=").append(this.maxInactiveInterval);
-        return builder.append('}').toString();
+        StringBuilder builder = new StringBuilder(this.getClass().getSimpleName()).append(" { ");
+        builder.append("created = ").append(this.creationTime);
+        builder.append(", timeout = ").append(this.timeout);
+        return builder.append(" }").toString();
     }
 }

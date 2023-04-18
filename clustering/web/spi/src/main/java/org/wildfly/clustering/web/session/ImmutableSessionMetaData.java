@@ -23,11 +23,13 @@ package org.wildfly.clustering.web.session;
 
 import java.time.Instant;
 
+import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
+
 /**
  * Abstraction for immutable meta information about a web session.
  * @author Paul Ferraro
  */
-public interface ImmutableSessionMetaData extends SessionExpirationMetaData {
+public interface ImmutableSessionMetaData extends ExpirationMetaData {
 
     /**
      * Indicates whether or not this session was created by the current thread.

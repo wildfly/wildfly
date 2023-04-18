@@ -25,6 +25,7 @@ package org.wildfly.clustering.ejb.timer;
 import java.time.Instant;
 
 /**
+ * Describes the expiration-related metadata of a timer.
  * @author Paul Ferraro
  */
 public interface TimerExpirationMetaData {

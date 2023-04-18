@@ -55,12 +55,8 @@ public class ReplicationPrimaryDefinition extends PersistentResourceDefinition {
             INITIAL_REPLICATION_SYNC_TIMEOUT
     ));
 
-    public static final ReplicationPrimaryDefinition INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, true);
-    public static final ReplicationPrimaryDefinition HC_INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, false);
-    public static final ReplicationPrimaryDefinition CONFIGURATION_INSTANCE = new ReplicationPrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true, true);
-
     private final boolean registerRuntime;
-    private ReplicationPrimaryDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
+    public ReplicationPrimaryDefinition(PathElement path, boolean allowSibling, boolean registerRuntime) {
         super(path,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(path.getKey(), allowSibling, ATTRIBUTES),

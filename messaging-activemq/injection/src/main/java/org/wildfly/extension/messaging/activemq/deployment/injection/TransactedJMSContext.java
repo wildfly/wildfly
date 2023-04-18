@@ -22,10 +22,10 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import javax.jms.JMSContext;
-import javax.transaction.Synchronization;
-import javax.transaction.TransactionScoped;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.jms.JMSContext;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.TransactionScoped;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 

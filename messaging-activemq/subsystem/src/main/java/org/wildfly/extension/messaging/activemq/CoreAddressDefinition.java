@@ -62,8 +62,6 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRS = { QUEUE_NAMES, BINDING_NAMES, NUMBER_OF_PAGES, NUMBER_OF_BYTES_PER_PAGE };
 
-    static final CoreAddressDefinition INSTANCE = new CoreAddressDefinition();
-
     public CoreAddressDefinition() {
         super(new Parameters(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CORE_ADDRESS)).setRuntime());
@@ -76,8 +74,6 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        super.registerAttributes(registry);
-
         for (AttributeDefinition attr : ATTRS) {
             registry.registerReadOnlyAttribute(attr, AddressControlHandler.INSTANCE);
         }
@@ -85,10 +81,6 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration registry) {
-        super.registerChildren(registry);
-
-        // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
-        ManagementResourceRegistration securityRole = registry.registerSubModel(SecurityRoleDefinition.RUNTIME_INSTANCE);
-        securityRole.setRuntimeOnly(true);
+        registry.registerSubModel(new SecurityRoleDefinition(true));
     }
 }

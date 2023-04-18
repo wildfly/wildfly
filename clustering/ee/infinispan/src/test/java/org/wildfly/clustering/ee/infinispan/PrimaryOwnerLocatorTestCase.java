@@ -43,13 +43,15 @@ public class PrimaryOwnerLocatorTestCase {
     public void test() {
         KeyDistribution distribution = mock(KeyDistribution.class);
         NodeFactory<Address> memberFactory = mock(NodeFactory.class);
+        Address staleAddress = mock(Address.class);
         Address address = mock(Address.class);
         Node member = mock(Node.class);
         Object key = new Object();
 
         Function<Object, Node> locator = new PrimaryOwnerLocator<>(distribution, memberFactory);
 
-        when(distribution.getPrimaryOwner(key)).thenReturn(address);
+        when(distribution.getPrimaryOwner(key)).thenReturn(staleAddress, address);
+        when(memberFactory.createNode(staleAddress)).thenReturn(null);
         when(memberFactory.createNode(address)).thenReturn(member);
 
         Node result = locator.apply(key);

@@ -28,8 +28,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
 
 /**
  * Abstract class for managing JMS Contexts.

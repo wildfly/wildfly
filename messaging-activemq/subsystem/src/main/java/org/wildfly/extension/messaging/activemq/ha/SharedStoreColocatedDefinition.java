@@ -64,9 +64,7 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
             BACKUP_PORT_OFFSET
     ));
 
-    public static final SharedStoreColocatedDefinition INSTANCE = new SharedStoreColocatedDefinition();
-
-    private SharedStoreColocatedDefinition() {
+    public SharedStoreColocatedDefinition() {
         super(SHARED_STORE_COLOCATED_PATH,
                 MessagingExtension.getResourceDescriptionResolver(HA_POLICY),
                 createAddOperation(HA_POLICY, false, ATTRIBUTES),
@@ -96,7 +94,7 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
     private static AliasEntry createAlias(ManagementResourceRegistration resourceRegistration, PathElement target) {
         return new AliasEntry(resourceRegistration.getSubModel(PathAddress.pathAddress(target))) {
             @Override
-            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasEntry.AliasContext aliasContext) {
+            public PathAddress convertToTargetAddress(PathAddress aliasAddress, AliasContext aliasContext) {
                 return aliasAddress.getParent().append(target);
             }
         };
@@ -105,9 +103,9 @@ public class SharedStoreColocatedDefinition extends PersistentResourceDefinition
 
     @Override
     protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.unmodifiableList(Arrays.asList(
-                SharedStorePrimaryDefinition.CONFIGURATION_INSTANCE,
-                SharedStoreSecondaryDefinition.CONFIGURATION_INSTANCE));
+        return List.of(
+                new SharedStorePrimaryDefinition(MessagingExtension.CONFIGURATION_PRIMARY_PATH, true),
+                new SharedStoreSecondaryDefinition(MessagingExtension.CONFIGURATION_SECONDARY_PATH, true));
     }
 
 }

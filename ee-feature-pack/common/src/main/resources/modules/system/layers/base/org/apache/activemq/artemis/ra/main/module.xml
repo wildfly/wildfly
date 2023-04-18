@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <artifact name="\${org.apache.activemq:artemis@module.jakarta.suffix@-ra}"/>
+        <artifact name="${org.apache.activemq:artemis-jakarta-ra}"/>
     </resources>
 
     <dependencies>

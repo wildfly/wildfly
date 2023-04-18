@@ -29,9 +29,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
  */
 public class StatelessSessionBeanDeploymentResourceDefinition extends AbstractEJBComponentResourceDefinition {
 
-    public static final StatelessSessionBeanDeploymentResourceDefinition INSTANCE = new StatelessSessionBeanDeploymentResourceDefinition();
-
-    private StatelessSessionBeanDeploymentResourceDefinition() {
+    public StatelessSessionBeanDeploymentResourceDefinition() {
         super(EJBComponentType.STATELESS);
     }
 }

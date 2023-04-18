@@ -25,8 +25,8 @@ package org.jboss.as.connector.services.workmanager.transport;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.resource.spi.work.DistributableWork;
-import javax.resource.spi.work.Work;
+import jakarta.resource.spi.work.DistributableWork;
+import jakarta.resource.spi.work.Work;
 
 import org.jboss.jca.core.api.workmanager.DistributedWorkManagerStatisticsValues;
 import org.jboss.jca.core.spi.workmanager.Address;

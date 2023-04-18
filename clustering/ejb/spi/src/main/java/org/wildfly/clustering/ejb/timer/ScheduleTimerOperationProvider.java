@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.function.UnaryOperator;
 
 /**
+ * Creates an operator for a given schedule expression, used to determine the next time a scheduled timer should timeout.
  * @author Paul Ferraro
  */
 public interface ScheduleTimerOperationProvider {

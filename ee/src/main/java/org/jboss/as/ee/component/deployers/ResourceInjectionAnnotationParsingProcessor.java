@@ -50,8 +50,8 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.modules.Module;
 
-import javax.annotation.Resource;
-import javax.annotation.Resources;
+import jakarta.annotation.Resource;
+import jakarta.annotation.Resources;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,14 +79,14 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
-        locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
-        locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
+        locations.put("jakarta.transaction.UserTransaction", "java:jboss/UserTransaction");
+        locations.put("jakarta.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context available
         //so we can only use it for resources that are not valid to be entries in application.xml
-        locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
-        locations.put("javax.ejb.TimerService", "java:comp/TimerService");
+        locations.put("jakarta.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
+        locations.put("jakarta.ejb.TimerService", "java:comp/TimerService");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 

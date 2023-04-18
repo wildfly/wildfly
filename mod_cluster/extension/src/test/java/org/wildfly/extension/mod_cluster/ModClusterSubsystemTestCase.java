@@ -35,14 +35,14 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Radoslav Husar
  */
 @RunWith(Parameterized.class)
-public class ModClusterSubsystemTestCase extends ClusteringSubsystemTest<ModClusterSchema> {
+public class ModClusterSubsystemTestCase extends ClusteringSubsystemTest<ModClusterSubsystemSchema> {
 
     @Parameters
-    public static Iterable<ModClusterSchema> parameters() {
-        return EnumSet.allOf(ModClusterSchema.class);
+    public static Iterable<ModClusterSubsystemSchema> parameters() {
+        return EnumSet.allOf(ModClusterSubsystemSchema.class);
     }
 
-    public ModClusterSubsystemTestCase(ModClusterSchema schema) {
+    public ModClusterSubsystemTestCase(ModClusterSubsystemSchema schema) {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension(), schema, "subsystem_%d_%d.xml", "schema/jboss-as-mod-cluster_%d_%d.xsd");
     }
 }

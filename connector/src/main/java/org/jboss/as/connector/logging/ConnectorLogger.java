@@ -681,8 +681,8 @@ public interface ConnectorLogger extends BasicLogger {
      * @param moduleName the module name.
      * @return the message.
      */
-    @Message(id = 73, value = "Failed to load module for RA [%s]")
-    String failedToLoadModuleRA(String moduleName);
+    @Message(id = 73, value = "Failed to load module for RA [%s] Cause: %s")
+    String failedToLoadModuleRA(String moduleName, String cause);
 
     /**
      * Creates an exception indicating a method is undefined.

@@ -23,7 +23,7 @@ package org.jboss.as.ee.beanvalidation;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentDescription;

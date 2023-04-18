@@ -77,9 +77,7 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, PRIORITY_AD};
 
-    public static final ManagedThreadFactoryResourceDefinition INSTANCE = new ManagedThreadFactoryResourceDefinition();
-
-    private ManagedThreadFactoryResourceDefinition() {
+    ManagedThreadFactoryResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_THREAD_FACTORY))
                 .setAddHandler(ManagedThreadFactoryAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedThreadFactoryAdd.INSTANCE))

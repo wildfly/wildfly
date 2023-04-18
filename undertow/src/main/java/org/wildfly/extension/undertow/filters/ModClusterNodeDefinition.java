@@ -22,25 +22,45 @@
 
 package org.wildfly.extension.undertow.filters;
 
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
+
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
+import org.jboss.as.clustering.controller.Metric;
+import org.jboss.as.clustering.controller.MetricExecutor;
+import org.jboss.as.clustering.controller.MetricFunction;
+import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.Operation;
+import org.jboss.as.clustering.controller.OperationExecutor;
+import org.jboss.as.clustering.controller.OperationFunction;
+import org.jboss.as.clustering.controller.OperationHandler;
+import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Runtime representation of a mod_cluster node
@@ -49,306 +69,276 @@ import org.wildfly.extension.undertow.logging.UndertowLogger;
  */
 public class ModClusterNodeDefinition extends SimpleResourceDefinition {
 
-    public static final ModClusterNodeDefinition INSTANCE = new ModClusterNodeDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.NODE);
+    static final ResourceDescriptionResolver RESOLVER = UndertowExtension.getResolver(Constants.FILTER, ModClusterDefinition.PATH_ELEMENT.getKey(), ModClusterBalancerDefinition.PATH_ELEMENT.getKey(), PATH_ELEMENT.getKey());
+    static final BiFunction<String, ModelType, PrimitiveListAttributeDefinition.Builder> PRIMITIVE_LIST_BUILDER_FACTORY = PrimitiveListAttributeDefinition.Builder::new;
 
+    enum NodeMetric implements Metric<ModClusterStatus.Node> {
+        LOAD(Constants.LOAD, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getLoad());
+            }
+        },
+        STATUS(Constants.STATUS, ModelType.STRING) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getStatus().name());
+            }
+        },
+        LOAD_BALANCING_GROUP(Constants.LOAD_BALANCING_GROUP, ModelType.STRING) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return Optional.ofNullable(node.getDomain()).map(ModelNode::new).orElse(null);
+            }
+        },
+        CACHE_CONNECTIONS(Constants.CACHE_CONNECTIONS, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getCacheConnections());
+            }
+        },
+        MAX_CONNECTIONS(Constants.MAX_CONNECTIONS, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getMaxConnections());
+            }
+        },
+        OPEN_CONNECTIONS(Constants.OPEN_CONNECTIONS, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getOpenConnections());
+            }
+        },
+        PING(Constants.PING, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getPing());
+            }
+        },
+        READ(Constants.READ, ModelType.LONG) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getRead());
+            }
 
-    public static final AttributeDefinition LOAD = new SimpleAttributeDefinitionBuilder(Constants.LOAD, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+            @Override
+            <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.BYTES);
+            }
+        },
+        REQUEST_QUEUE_SIZE(Constants.REQUEST_QUEUE_SIZE, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getRequestQueueSize());
+            }
+        },
+        TIMEOUT(Constants.TIMEOUT, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getTimeout());
+            }
 
-    public static final AttributeDefinition STATUS = new SimpleAttributeDefinitionBuilder(Constants.STATUS, ModelType.STRING)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+            @Override
+            <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.SECONDS);
+            }
+        },
+        WRITTEN(Constants.WRITTEN, ModelType.LONG) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getTransferred());
+            }
 
-    public static final AttributeDefinition LOAD_BALANCING_GROUP = new SimpleAttributeDefinitionBuilder(Constants.LOAD_BALANCING_GROUP, ModelType.STRING)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+            @Override
+            <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+                return builder.setMeasurementUnit(MeasurementUnit.BYTES);
+            }
+        },
+        TTL(Constants.TTL, ModelType.LONG) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getTtl());
+            }
+        },
+        FLUSH_PACKETS(Constants.FLUSH_PACKETS, ModelType.BOOLEAN) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return node.isFlushPackets() ? ModelNode.TRUE : ModelNode.FALSE;
+            }
+        },
+        QUEUE_NEW_REQUESTS(Constants.QUEUE_NEW_REQUESTS, ModelType.BOOLEAN) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return node.isQueueNewRequests() ? ModelNode.TRUE : ModelNode.FALSE;
+            }
+        },
+        URI(Constants.URI, ModelType.STRING) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getUri().toString());
+            }
+        },
+        ALIASES(Constants.ALIASES, ModelType.STRING, PRIMITIVE_LIST_BUILDER_FACTORY) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                ModelNode result = new ModelNode();
+                for (String alias : node.getAliases()) {
+                    result.add(alias);
+                }
+                return result;
+            }
+        },
+        ELECTED(Constants.ELECTED, ModelType.INT) {
+            @Override
+            public ModelNode execute(ModClusterStatus.Node node) {
+                return new ModelNode(node.getElected());
+            }
+        },
+        ;
 
-    public static final AttributeDefinition CACHE_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.CACHE_CONNECTIONS, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        private final AttributeDefinition definition;
 
-    public static final AttributeDefinition MAX_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.MAX_CONNECTIONS, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        NodeMetric(String name, ModelType type) {
+            this(name, type, SimpleAttributeDefinitionBuilder::new);
+        }
 
-    public static final AttributeDefinition OPEN_CONNECTIONS = new SimpleAttributeDefinitionBuilder(Constants.OPEN_CONNECTIONS, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> NodeMetric(String name, ModelType type, BiFunction<String, ModelType, B> builderFactory) {
+            this.definition = this.configure(builderFactory.apply(name, type))
+                    .setRequired(false)
+                    .setStorageRuntime()
+                    .build();
+        }
 
-    public static final AttributeDefinition PING = new SimpleAttributeDefinitionBuilder(Constants.PING, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        <D extends AttributeDefinition, B extends AbstractAttributeDefinitionBuilder<B, D>> B configure(B builder) {
+            return builder;
+        }
 
-    public static final AttributeDefinition READ = new SimpleAttributeDefinitionBuilder(Constants.READ, ModelType.LONG)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        @Override
+        public AttributeDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
-    public static final AttributeDefinition REQUEST_QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_QUEUE_SIZE, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+    enum NodeOperation implements Operation<ModClusterStatus.Node> {
+        ENABLE(Constants.ENABLE, ModClusterStatus.Context::enable),
+        DISABLE(Constants.DISABLE, ModClusterStatus.Context::disable),
+        STOP(Constants.STOP, ModClusterStatus.Context::stop),
+        ;
+        private OperationDefinition definition;
+        private final Consumer<ModClusterStatus.Context> operation;
 
-    public static final AttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder(Constants.TIMEOUT, ModelType.INT)
-            .setRequired(false)
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
-            .setStorageRuntime()
-            .build();
+        NodeOperation(String name, Consumer<ModClusterStatus.Context> operation) {
+            this.definition = SimpleOperationDefinitionBuilder.of(name, RESOLVER).setRuntimeOnly().build();
+            this.operation = operation;
+        }
 
-    public static final AttributeDefinition WRITTEN = new SimpleAttributeDefinitionBuilder(Constants.WRITTEN, ModelType.LONG)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        @Override
+        public ModelNode execute(ExpressionResolver expressionResolver, ModelNode operation, ModClusterStatus.Node node) {
+            node.getContexts().forEach(this.operation);
+            return null;
+        }
 
-    public static final AttributeDefinition TTL = new SimpleAttributeDefinitionBuilder(Constants.TTL, ModelType.LONG)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
+        @Override
+        public OperationDefinition getDefinition() {
+            return this.definition;
+        }
+    }
 
+    private final FunctionExecutorRegistry<ModCluster> registry;
 
-    public static final AttributeDefinition FLUSH_PACKETS = new SimpleAttributeDefinitionBuilder(Constants.FLUSH_PACKETS, ModelType.BOOLEAN)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
-
-    public static final AttributeDefinition QUEUE_NEW_REQUESTS = new SimpleAttributeDefinitionBuilder(Constants.QUEUE_NEW_REQUESTS, ModelType.BOOLEAN)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
-
-    public static final AttributeDefinition URI = new SimpleAttributeDefinitionBuilder(Constants.URI, ModelType.STRING)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
-
-    public static final AttributeDefinition ALIASES = new PrimitiveListAttributeDefinition.Builder(Constants.ALIASES, ModelType.STRING)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
-
-
-    public static final AttributeDefinition ELECTED = new SimpleAttributeDefinitionBuilder(Constants.ELECTED, ModelType.INT)
-            .setRequired(false)
-            .setStorageRuntime()
-            .build();
-
-    public final OperationDefinition ENABLE = new SimpleOperationDefinition(Constants.ENABLE, getResourceDescriptionResolver());
-    public final OperationDefinition DISABLE = new SimpleOperationDefinition(Constants.DISABLE, getResourceDescriptionResolver());
-    public final OperationDefinition STOP = new SimpleOperationDefinition(Constants.STOP, getResourceDescriptionResolver());
-
-
-    ModClusterNodeDefinition() {
-        super(new Parameters(UndertowExtension.NODE, UndertowExtension.getResolver("handler", "mod-cluster", "balancer", "node"))
-                .setRuntime());
+    ModClusterNodeDefinition(FunctionExecutorRegistry<ModCluster> registry) {
+        super(new Parameters(PATH_ELEMENT, RESOLVER).setRuntime());
+        this.registry = registry;
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(ModClusterContextDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new ModClusterContextDefinition(this.registry));
     }
-
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerOperationHandler(ENABLE, new AbstractNodeOperation() {
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for (ModClusterStatus.Context n : ctx.getContexts()) {
-                    n.enable();
-                }
-            }
-        });
-        resourceRegistration.registerOperationHandler(DISABLE, new AbstractNodeOperation() {
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for (ModClusterStatus.Context n : ctx.getContexts()) {
-                    n.disable();
-                }
-            }
-        });
-        resourceRegistration.registerOperationHandler(STOP, new AbstractNodeOperation() {
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                for (ModClusterStatus.Context n : ctx.getContexts()) {
-                    n.stop();
-                }
-            }
-        });
+        new OperationHandler<>(new NodeOperationExecutor(new FunctionExecutorFactory(this.registry)), NodeOperation.class).register(resourceRegistration);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(LOAD, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getLoad()));
-            }
-        });
-
-        resourceRegistration.registerReadOnlyAttribute(STATUS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getStatus().name()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(LOAD_BALANCING_GROUP, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                final String domain = ctx.getDomain();
-                if (domain == null) {
-                    context.getResult().set(new ModelNode());
-                } else {
-                    context.getResult().set(new ModelNode(domain));
-                }
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(CACHE_CONNECTIONS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getCacheConnections()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(MAX_CONNECTIONS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getMaxConnections()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(OPEN_CONNECTIONS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getOpenConnections()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(PING, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getPing()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(READ, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getRead()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(REQUEST_QUEUE_SIZE, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getRequestQueueSize()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(TIMEOUT, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getTimeout()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(WRITTEN, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getTransferred()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(TTL, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getTtl()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(FLUSH_PACKETS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.isFlushPackets()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(QUEUE_NEW_REQUESTS, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.isQueueNewRequests()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(URI, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getUri().toString()));
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(ALIASES, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                final ModelNode result = new ModelNode();
-                for (String alias : ctx.getAliases()) {
-                    UndertowLogger.ROOT_LOGGER.tracef("Adding alias %s", alias);
-                    result.add(alias);
-                }
-                context.getResult().set(result);
-            }
-        });
-        resourceRegistration.registerReadOnlyAttribute(ELECTED, new AbstractNodeOperation() {
-
-            @Override
-            protected void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(new ModelNode(ctx.getElected()));
-            }
-        });
+        OperationStepHandler handler = new MetricHandler<>(new NodeMetricExecutor(new FunctionExecutorFactory(this.registry)), NodeMetric.class);
+        // TODO Consider registering some subset of these as proper metrics
+        for (NodeMetric metric : EnumSet.allOf(NodeMetric.class)) {
+            resourceRegistration.registerReadOnlyAttribute(metric.getDefinition(), handler);
+        }
     }
 
-    private abstract class AbstractNodeOperation implements OperationStepHandler {
+    static class FunctionExecutorFactory implements Function<OperationContext, FunctionExecutor<ModCluster>> {
+        private final FunctionExecutorRegistry<ModCluster> registry;
 
-        @Override
-        public final void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS));
-            int current = address.size() - 1;
-            String nodeName = address.getElement(current--).getValue();
-            String balancerName = address.getElement(current--).getValue();
-            String modClusterName = address.getElement(current--).getValue();
-            ModClusterService service = ModClusterResource.service(modClusterName);
-            if (service == null) {
-                context.getResult().set(new ModelNode());
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-                return;
-            }
-            ModClusterStatus.LoadBalancer balancer = service.getModCluster().getController().getStatus().getLoadBalancer(balancerName);
-            if (balancer == null) {
-                context.getResult().set(new ModelNode());
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-                return;
-            }
-            ModClusterStatus.Node node = balancer.getNode(nodeName);
-            if (node == null) {
-                context.getResult().set(new ModelNode());
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-                return;
-            }
-            handleNode(context, node, operation);
+        FunctionExecutorFactory(FunctionExecutorRegistry<ModCluster> registry) {
+            this.registry = registry;
         }
 
-        protected abstract void handleNode(OperationContext context, ModClusterStatus.Node ctx, ModelNode operation) throws OperationFailedException;
+        @Override
+        public FunctionExecutor<ModCluster> apply(OperationContext context) {
+            PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
+            return this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
+        }
     }
 
+    static final Function<OperationContext, Function<ModCluster, ModClusterStatus.Node>> NODE_FUNCTION_FACTORY = new Function<>() {
+        @Override
+        public Function<ModCluster, ModClusterStatus.Node> apply(OperationContext context) {
+            PathAddress nodeAddress = context.getCurrentAddress();
+            String nodeName = nodeAddress.getLastElement().getValue();
+            PathAddress balancerAddress = nodeAddress.getParent();
+            String balancerName = balancerAddress.getLastElement().getValue();
+            return new NodeFunction(balancerName, nodeName);
+        }
+    };
+
+    static class NodeMetricExecutor implements MetricExecutor<ModClusterStatus.Node> {
+        private final Function<OperationContext, FunctionExecutor<ModCluster>> factory;
+
+        NodeMetricExecutor(Function<OperationContext, FunctionExecutor<ModCluster>> factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public ModelNode execute(OperationContext context, Metric<ModClusterStatus.Node> metric) throws OperationFailedException {
+            FunctionExecutor<ModCluster> executor = this.factory.apply(context);
+            Function<ModCluster, ModClusterStatus.Node> mapper = NODE_FUNCTION_FACTORY.apply(context);
+            return (executor != null) ? executor.execute(new MetricFunction<>(mapper, metric)) : null;
+        }
+    }
+
+    static class NodeOperationExecutor implements OperationExecutor<ModClusterStatus.Node> {
+        private final Function<OperationContext, FunctionExecutor<ModCluster>> factory;
+
+        NodeOperationExecutor(Function<OperationContext, FunctionExecutor<ModCluster>> factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public ModelNode execute(OperationContext context, ModelNode op, Operation<ModClusterStatus.Node> operation) throws OperationFailedException {
+            FunctionExecutor<ModCluster> executor = this.factory.apply(context);
+            Function<ModCluster, ModClusterStatus.Node> mapper = NODE_FUNCTION_FACTORY.apply(context);
+            return (executor != null) ? executor.execute(new OperationFunction<>(context, op, mapper, operation)) : null;
+        }
+    }
+
+    static class NodeFunction implements Function<ModCluster, ModClusterStatus.Node> {
+        private final String balancerName;
+        private final String nodeName;
+
+        NodeFunction(String balancerName, String nodeName) {
+            this.balancerName = balancerName;
+            this.nodeName = nodeName;
+        }
+
+        @Override
+        public ModClusterStatus.Node apply(ModCluster service) {
+            ModClusterStatus.LoadBalancer balancer = service.getController().getStatus().getLoadBalancer(this.balancerName);
+            return (balancer != null) ? balancer.getNode(this.nodeName) : null;
+        }
+    }
 }

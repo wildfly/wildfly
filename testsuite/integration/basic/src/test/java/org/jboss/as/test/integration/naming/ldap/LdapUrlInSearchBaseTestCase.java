@@ -51,9 +51,11 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,6 +68,11 @@ import org.junit.runner.RunWith;
 @ServerSetup({ LdapUrlInSearchBaseTestCase.LDAPServerSetupTask.class })
 @RunAsClient
 public class LdapUrlInSearchBaseTestCase {
+    @BeforeClass
+    public static void beforeClass() {
+        // https://issues.redhat.com/browse/WFLY-17383
+        AssumeTestGroupUtil.assumeJDKVersionBefore(20);
+    }
 
     private static Logger LOGGER = Logger.getLogger(LdapUrlInSearchBaseTestCase.class);
 

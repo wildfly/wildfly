@@ -62,7 +62,7 @@ class JPADelegatingClassFileTransformer implements ClassTransformer {
 
                         byte[] transformedBuffer = getBytes(classBytes);
                         boolean transformed = false;
-                        for (javax.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
+                        for (jakarta.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
                             if (ROOT_LOGGER.isTraceEnabled())
                                 ROOT_LOGGER.tracef("rewrite entity class '%s' using transformer '%s' for '%s'", className,
                                         transformer.getClass().getName(),

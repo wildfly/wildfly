@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -75,86 +75,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.jboss.resteasy.spring</groupId>
-                <artifactId>resteasy-spring</artifactId>
-                <version>${preview.version.org.jboss.resteasy.spring}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>${version.io.micrometer}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-registry-prometheus</artifactId>
-                <version>${version.io.micrometer}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient</artifactId>
-                <version>${version.io.prometheus}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient_common</artifactId>
-                <version>${version.io.prometheus}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.latencyutils</groupId>
-                <artifactId>LatencyUtils</artifactId>
-                <version>${version.org.latencyutils}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-micrometer</artifactId>
-                <version>${full.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-micrometer-api</artifactId>
-                <version>${full.maven.version}</version>
+                <groupId>org.wildfly.deployment</groupId>
+                <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+                <version>${version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

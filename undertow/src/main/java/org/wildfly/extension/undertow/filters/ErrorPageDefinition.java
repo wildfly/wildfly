@@ -23,15 +23,16 @@
 package org.wildfly.extension.undertow.filters;
 
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
-import io.undertow.Handlers;
-import io.undertow.predicate.Predicate;
-import io.undertow.server.HttpHandler;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -40,7 +41,8 @@ import org.wildfly.extension.undertow.Constants;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ErrorPageDefinition extends Filter{
+public class ErrorPageDefinition extends SimpleFilterDefinition {
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.ERROR_PAGE);
 
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
@@ -52,11 +54,10 @@ public class ErrorPageDefinition extends Filter{
             .setRequired(false)
             .setRestartAllServices()
             .build();
-    public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
-    public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CODE, PATH);
 
-    private ErrorPageDefinition() {
-        super(Constants.ERROR_PAGE);
+    ErrorPageDefinition() {
+        super(PATH_ELEMENT, ErrorPageDefinition::createHandlerWrapper);
     }
 
     @Override
@@ -64,27 +65,9 @@ public class ErrorPageDefinition extends Filter{
         return ATTRIBUTES;
     }
 
-    @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return FileErrorPageHandler.class;
-    }
-
-    @Override
-    public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
-        int code = model.get(CODE.getName()).asInt();
-        String path = model.get(PATH.getName()).asString();
-        FileErrorPageHandler handler = new FileErrorPageHandler(Paths.get(path), code);
-        handler.setNext(next);
-        if(predicate == null) {
-            return handler;
-        } else {
-            return Handlers.predicate(predicate, handler, next);
-        }
-
-    }
-
-    @Override
-    protected Class[] getConstructorSignature() {
-        throw new IllegalStateException(); //should not be used, as the handler is constructed above
+    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+        int code = CODE.resolveModelAttribute(context, model).asInt();
+        String path = PATH.resolveModelAttribute(context, model).asStringOrNull();
+        return next -> new FileErrorPageHandler(next, Paths.get(path), code);
     }
 }

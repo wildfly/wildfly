@@ -206,6 +206,7 @@ public class InterceptorOrder {
 
     public static final class Client {
 
+        public static final int SECURITY_IDENTITY = 0x001;
         public static final int TO_STRING = 0x100;
         public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x110;
         public static final int LOCAL_ASYNC_LOG_SAVE = 0x180;

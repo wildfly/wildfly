@@ -97,6 +97,7 @@ public class FileSystemRealm extends AbstractUserAttributeValuesCapableElement i
         private Builder() {
         }
 
+        /** @implNote if a {@link Path} is set, the folder will not be automatically deleted after the test case completes. */
         public Builder withPath(Path path) {
             this.path = path;
             return this;

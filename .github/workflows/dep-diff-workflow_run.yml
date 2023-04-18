@@ -28,10 +28,10 @@ jobs:
         # It would have been nice to be able to use actions/download-artifact@v2
         # for this, but as the artifacts are uploaded by another workflow it does
         # not seem possible - so we need to do this stuff instead
-        uses: actions/github-script@v3.1.0
+        uses: actions/github-script@v6.4.1
         with:
           script: |
-            var artifacts = await github.actions.listWorkflowRunArtifacts({
+            var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
                run_id: ${{github.event.workflow_run.id }},
@@ -40,7 +40,7 @@ jobs:
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "input-artifacts"
             })[0];
-            var download = await github.actions.downloadArtifact({
+            var download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
@@ -56,24 +56,24 @@ jobs:
           unzip input.zip
           echo current directory contents
           ls -al
-          echo "::set-output name=deps_ok_label_name::${DEPS_OK_LABEL_NAME}"
-          echo "::set-output name=deps_changed_label_name::${DEPS_CHANGED_LABEL_NAME}"
-          echo "::set-output name=change_mentions::${CHANGE_MENTIONS}"
+          echo "deps_ok_label_name=${DEPS_OK_LABEL_NAME}" >> $GITHUB_OUTPUT
+          echo "deps_changed_label_name=${DEPS_CHANGED_LABEL_NAME}" >> $GITHUB_OUTPUT
+          echo "change_mentions=${CHANGE_MENTIONS}" >> $GITHUB_OUTPUT
 
           echo Reading PR number
           tmp=$(<pr)
           echo "PR: ${tmp}"
-          echo "::set-output name=pr::${tmp}"
+          echo "pr=${tmp}" >> $GITHUB_OUTPUT
 
           echo Reading base version files
           tmp=$(<baseVersions)
           echo "Base version files: ${tmp}"
-          echo "::set-output name=base_files::${tmp}"
+          echo "base_files=${tmp}" >> $GITHUB_OUTPUT
 
           echo Reading new version files
           tmp=$(<newVersions)
           echo "New version files: ${tmp}"
-          echo "::set-output name=new_files::${tmp}"
+          echo "new_files=${tmp}" >> $GITHUB_OUTPUT
 
       - name: Check versions
         uses: wildfly/dep-tree-diff@master

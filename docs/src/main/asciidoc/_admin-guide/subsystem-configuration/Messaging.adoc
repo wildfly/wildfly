@@ -1,6 +1,14 @@
 [[Messaging]]
 = Messaging configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Jakarta Messaging server configuration is done through the _messaging-activemq_
 subsystem. In this chapter we are going outline the frequently used
 configuration options. For a more detailed explanation please consult
@@ -310,7 +318,7 @@ By default, Artemis will use the " `ApplicationDomain`" Elytron security
 domain. This domain is used to authenticate users making connections to Artemis
 and then they are authorized to perform specific functions based on their
 role(s) and the `security-settings` described above. This domain can be
-changed by using the `security-domain`, e.g.:
+changed by using the `elytron-domain`, e.g.:
 
 [source,xml,options="nowrap"]
 ----
@@ -318,6 +326,67 @@ changed by using the `security-domain`, e.g.:
    <server name="default">
        <security elytron-domain="mySecurityDomain" />
       [...]
+----
+[[ssl-configuration]]
+== SSL Configuration
+
+The preferred way is to reuse an SSLContext defined in the Elytron subsystem and reference it using the `ssl-context` attribute available on `http-acceptor`, `remote-acceptor`, `http-connector` and `remote-acceptor`.
+That way you can use the SSLContext with the broker but also with other services such as Undertow.
+
+IMPORTANT: One point that you have to take into account is the fact that the connector might be used on a different point than the server you have configured it on.
+For example, if you obtain the connection factory remotely using JNDI, the SSLContext configured in the connector is 'relative' to your client and not to the server it was configured.
+That means that a standalone client wouldn't be able to resolve it, and if this is running on another WildFly instance, the Elytron SSLContext must be configured there.
+
+
+[source,xml,options="nowrap"]
+----
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:15.0">
+    [...]
+    <remote-acceptor name="acceptor" socket-binding="messaging" ssl-context="artemis-remote-ssl">
+        <param name="enabledProtocols" value="TLSv1.2"/>
+        <param name="use-nio" value="true"/>
+    </remote-acceptor>
+    [...]
+    <remote-connector name="netty" socket-binding="messaging-socket-binding" ssl-context="artemis-ra-ssl">
+        <param name="enabledProtocols" value="TLSv1.2"/>
+        <param name="use-nio" value="true"/>
+        <param name="verifyHost" value="true"/>
+    </remote-connector>
+    [...]
+</subsystem>
+[...]
+<subsystem xmlns="urn:wildfly:elytron:16.0">
+    [...]
+    <tls>
+        <key-stores>
+            <key-store name="artemisKS">
+                <credential-reference clear-text="artemisexample"/>
+                <implementation type="JKS"/>
+                <file path="server.keystore" relative-to="jboss.server.config.dir"/>
+            </key-store>
+            <key-store name="artemisTS">
+                <credential-reference clear-text="artemisexample"/>
+                <implementation type="JKS"/>
+                <file path="server.truststore" relative-to="jboss.server.config.dir"/>
+            </key-store>
+            [...]
+        </key-stores>
+        <key-managers>
+            <key-manager name="artemisKM" key-store="artemisKS">
+                <credential-reference clear-text="artemisexample"/>
+            </key-manager>
+            [...]
+        </key-managers>
+        <trust-managers>
+            <trust-manager name="artemisTM" key-store="artemisTS"/>
+            [...]
+        </trust-managers>
+        <server-ssl-contexts>
+            <server-ssl-context name="artemis-remote-ssl" protocols="TLSv1.2" key-manager="artemisKM" trust-manager="artemisTM"/>
+            [...]
+        </server-ssl-contexts>
+    </tls>
+</subsystem>
 ----
 
 [[cluster-authentication]]

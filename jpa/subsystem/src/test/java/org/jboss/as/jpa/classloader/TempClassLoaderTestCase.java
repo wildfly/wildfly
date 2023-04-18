@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 
 import org.junit.Test;
 

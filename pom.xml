@@ -37,7 +37,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>28.0.0.Beta1-SNAPSHOT</version>
+    <version>28.0.0.Final-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -55,54 +55,69 @@
     <modules>
         <module>appclient</module>
         <module>batch-jberet</module>
+        <module>bean-validation</module>
         <module>boms/common-ee</module>
         <module>boms/common-expansion</module>
         <module>boms/legacy-ee</module>
         <module>boms/legacy-expansion</module>
+        <module>boms/legacy-test</module>
         <module>boms/preview-ee</module>
         <module>boms/preview-expansion</module>
         <module>boms/standard-ee</module>
         <module>boms/standard-expansion</module>
+        <module>boms/standard-test</module>
         <module>build</module>
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
+        <module>ee</module>
         <module>ee-build</module>
         <module>ee-dist</module>
         <module>ee-feature-pack</module>
         <module>ee-security</module>
-        <module>ee-9</module>
         <module>ejb3</module>
         <module>elytron-oidc-client</module>
         <module>galleon-pack</module>
         <module>health</module>
+        <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
+        <module>jsf</module>
         <module>mail</module>
         <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/messaging</module>
+        <module>legacy/opentracing-extension</module>
         <module>legacy/web</module>
         <module>metrics</module>
+        <module>messaging-activemq</module>
         <module>microprofile</module>
         <module>mod_cluster</module>
         <module>naming</module>
         <module>observability</module>
         <module>picketlink</module>
         <module>pojo</module>
+        <module>preview</module>
         <module>release</module>
+        <module>rts</module>
         <module>sar</module>
         <module>security</module>
         <module>system-jmx</module>
         <module>spec-api</module>
-        <module>servlet-feature-pack</module>
         <module>weld</module>
         <module>testsuite/test-feature-pack</module>
+        <module>testsuite/shared</module>
         <module>testsuite</module>
+        <module>transactions</module>
+        <module>undertow</module>
+        <module>webservices</module>
+        <module>web-common</module>
+        <module>xts</module>
     </modules>
 
     <scm>
@@ -152,6 +167,7 @@
         <!-- Require Java 11 -->
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.release>11</maven.compiler.release>
 
         <!-- TarArchiver behavior -->
         <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
@@ -248,21 +264,6 @@
              still being easily disabled in profiles where it is not wanted. -->
         <surefire.default-test.phase>test</surefire.default-test.phase>
 
-        <!-- WildFly Preview vs standard WildFly GAV expression properties.
-             Used to drive maven-resource-plugin filtering for module.xml files
-             where WildFly Preview and standard WildFly use different artifacts but
-             otherwise identical module.xml files. The expression encapsulates the part
-             of a groupId/artifactId/classifier that differs in the two dists.
-             Values here are the ones used by standard WildFly; WildFly Preview child
-             modules will override. Often the standard value will be an empty string
-             and WildFly Preview will change it to additional text a project uses to
-             identify its jakarta.* namespace artifacts.
-             -->
-        <!-- TODO clean this out, as these strings no longer differ between WF and WFP -->
-        <module.jakarta.classifier>::jakarta</module.jakarta.classifier>
-        <module.jakarta.suffix>-jakarta</module.jakarta.suffix>
-        <module.jms.suffix>jakarta</module.jms.suffix>
-
         <!-- Base wildfly version used by testsuite/galleon/update test to install a server that gets updated to the SNAPSHOT version -->
         <wildfly.test.galleon.update.base.version>26.1.1.Final</wildfly.test.galleon.update.base.version>
 
@@ -280,15 +281,16 @@
             In cases where multiple artifacts use the same groupId but have different
             versions, add the artifactId or other qualifier to the property name.
          -->
+        <version.ant.junit>1.10.12</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.7</version.org.jacoco>
-        <version.org.jboss.galleon>5.0.5.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.1.0.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.2.0.Final</version.org.wildfly.galleon-plugins>
-        <version.org.wildfly.jar.plugin>8.0.0.Final</version.org.wildfly.jar.plugin>
-        <version.org.wildfly.maven.plugins>2.2.0.Final</version.org.wildfly.maven.plugins>
+        <version.org.wildfly.galleon-plugins>6.4.0.Final</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.jar.plugin>9.0.0.Final</version.org.wildfly.jar.plugin>
+        <version.org.wildfly.maven.plugins>2.3.1.Final</version.org.wildfly.maven.plugins>
         <version.org.wildfly.plugin>3.0.2.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.1</version.xml.plugin>
@@ -312,7 +314,6 @@
             Place the property in the proper alphabetical location as if the 'legacy.' was not present. In the typical case where there's also the same
             property without 'legacy.', put the legacy property first.
          -->
-        <legacy.version.antlr>2.7.7</legacy.version.antlr>
         <version.antlr>4.10</version.antlr>
         <version.com.amazon.aws>1.12.284</version.com.amazon.aws>
         <version.com.amazon.ion>1.0.2</version.com.amazon.ion>
@@ -320,10 +321,10 @@
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.org.elasticsearch.client.rest-client>7.16.3</version.org.elasticsearch.client.rest-client>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.13.4</version.com.fasterxml.jackson>
-        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}.2</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
-        <version.com.github.ben-manes.caffeine>3.1.1</version.com.github.ben-manes.caffeine>
+        <version.com.github.ben-manes.caffeine>3.1.6</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
@@ -335,16 +336,15 @@
         <version.com.google.guava>31.1-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.google.j2objc>1.3</version.com.google.j2objc>
-        <version.com.google.protobuf>3.19.2</version.com.google.protobuf>
-        <version.com.h2database>2.1.210</version.com.h2database>
+        <version.com.google.protobuf>3.19.6</version.com.google.protobuf>
+        <version.com.h2database>2.1.214</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
-        <version.com.nimbus.jose-jwt>9.23</version.com.nimbus.jose-jwt>
+        <version.com.nimbus.jose-jwt>9.24.4</version.com.nimbus.jose-jwt>
+        <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <version.com.squareup.okio-jvm>3.2.0</version.com.squareup.okio-jvm>
-        <legacy.version.com.sun.activation.jakarta.activation>1.2.2</legacy.version.com.sun.activation.jakarta.activation>
-        <legacy.version.com.sun.faces>2.3.17.SP01</legacy.version.com.sun.faces>
         <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.1</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.0</version.com.sun.xml.fastinfoset>
@@ -352,148 +352,112 @@
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-codec>1.15</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
-        <version.commons-digester>1.8.1</version.commons-digester>
         <version.commons-io>2.11.0</version.commons-io>
         <version.dom4j>2.1.3</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>4.0.4</version.groovy-all>
         <version.httpunit>1.7.2</version.httpunit>
         <version.io.agroal>2.0</version.io.agroal>
-        <version.io.grpc>1.38.1</version.io.grpc>
-        <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
         <version.io.micrometer>1.9.3</version.io.micrometer>
-        <version.io.netty>4.1.84.Final</version.io.netty>
-        <version.io.opentelemetry.opentelemetry>1.12.0</version.io.opentelemetry.opentelemetry>
-        <version.io.opentracing>0.33.0</version.io.opentracing>
-        <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
-        <version.io.opentracing.interceptors>0.1.3</version.io.opentracing.interceptors>
-        <version.io.opentracing.jaxrs2>1.0.0</version.io.opentracing.jaxrs2>
-        <legacy.version.io.opentracing.tracerresolver>0.1.8</legacy.version.io.opentracing.tracerresolver>
-        <version.io.opentracing.servlet>0.2.3</version.io.opentracing.servlet>
+        <legacy.version.io.netty>4.0.13.Final</legacy.version.io.netty>
+        <version.io.netty>4.1.87.Final</version.io.netty>
+        <version.io.opentelemetry.opentelemetry>1.20.0</version.io.opentelemetry.opentelemetry>
+        <version.io.opentelemetry.proto>0.19.0-alpha</version.io.opentelemetry.proto>
         <version.io.perfmark>0.23.0</version.io.perfmark>
         <version.io.prometheus>0.16.0</version.io.prometheus>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
-        <version.io.reactivex.rxjava3>3.1.5</version.io.reactivex.rxjava3>
+        <version.io.reactivex.rxjava3>3.1.6</version.io.reactivex.rxjava3>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
-        <version.io.smallrye.open-api>3.0.1</version.io.smallrye.open-api>
-        <legacy.version.io.smallrye.opentracing>2.0.0</legacy.version.io.smallrye.opentracing>
+        <version.io.smallrye.open-api>3.3.2</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <legacy.version.io.smallrye.smallrye-common>1.13.0</legacy.version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-common>2.0.0</version.io.smallrye.smallrye-common>
-        <legacy.version.io.smallrye.smallrye-config>2.10.1</legacy.version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-config>3.0.0</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>6.0.0</version.io.smallrye.smallrye-fault-tolerance>
-        <legacy.version.io.smallrye.smallrye-health>3.3.0</legacy.version.io.smallrye.smallrye-health>
+        <version.io.smallrye.smallrye-config>3.1.3</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-fault-tolerance>6.2.2</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.0</version.io.smallrye.smallrye-health>
-        <legacy.version.io.smallrye.smallrye-jwt>3.1.1</legacy.version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-jwt>4.0.0</version.io.smallrye.smallrye-jwt>
-        <legacy.version.io.smallrye.smallrye-metrics>3.0.4</legacy.version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-metrics>4.0.0</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.smallrye-mutiny>1.7.0</version.io.smallrye.smallrye-mutiny>
-        <version.io.smallrye.smallrye-mutiny-vertx>2.26.0</version.io.smallrye.smallrye-mutiny-vertx>
-        <version.io.smallrye.smallrye-opentracing>3.0.0</version.io.smallrye.smallrye-opentracing>
-        <version.io.smallrye.smallrye-reactive-messaging>4.0.0</version.io.smallrye.smallrye-reactive-messaging>
-        <legacy.version.io.undertow>2.2.20.Final</legacy.version.io.undertow>
-        <legacy.version.io.undertow.jastow>2.0.12.Final</legacy.version.io.undertow.jastow>
-        <version.io.undertow.jastow>2.2.4.Final</version.io.undertow.jastow>
+        <version.io.smallrye.smallrye-jwt>4.2.1</version.io.smallrye.smallrye-jwt>
+        <version.io.smallrye.smallrye-mutiny>2.1.0</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny-vertx>3.0.0</version.io.smallrye.smallrye-mutiny-vertx>
+        <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
+        <version.io.smallrye.smallrye-opentelemetry>2.3.1</version.io.smallrye.smallrye-opentelemetry>
+        <version.io.smallrye.smallrye-reactive-messaging>4.3.0</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.undertow.jastow>2.2.6.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.4</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>${version.io.vertx.vertx}</version.io.vertx.vertx-kafka-client>
-        <version.jakarta.activation.jakarta.activation-api>2.1.1.jbossorg-1</version.jakarta.activation.jakarta.activation-api>
+        <version.jakarta.activation.jakarta.activation-api>2.1.1</version.jakarta.activation.jakarta.activation-api>
         <version.jakarta.annotation.jakarta-annotation-api>2.1.1</version.jakarta.annotation.jakarta-annotation-api>
         <version.jakarta.batch.jakarta.batch-api>2.1.1</version.jakarta.batch.jakarta.batch-api>
         <version.jakarta.ejb.jakarta-ejb-api>4.0.1</version.jakarta.ejb.jakarta-ejb-api>
-        <version.jakarta.el.jakarta-el-api>5.0.0</version.jakarta.el.jakarta-el-api>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.2</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
-        <version.jakarta.enterprise>4.0.0</version.jakarta.enterprise>
+        <version.jakarta.enterprise>4.0.1</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
-        <legacy.version.jakarta.json.jakarta-json-api>1.1.6</legacy.version.jakarta.json.jakarta-json-api>
-        <legacy.version.jakarta.jws.jakarta.jws-api>2.1.0</legacy.version.jakarta.jws.jakarta.jws-api>
-        <legacy.version.jakarta.mail>1.6.7</legacy.version.jakarta.mail>
-        <version.jakarta.mail-api>2.1.1.jbossorg-1</version.jakarta.mail-api>
-        <legacy.version.jakarta.persistence>2.2.3</legacy.version.jakarta.persistence>
+        <version.jakarta.mail-api>2.1.1</version.jakarta.mail-api>
         <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.1.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>3.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>6.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.0</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
-        <legacy.version.jakarta.transaction>2.0.1</legacy.version.jakarta.transaction>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
-        <version.jakarta.validation>2.0.2</version.jakarta.validation>
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.0</version.jakarta.xml.bind.jakarta-xml-bind-api>
-        <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.jaxen>1.1.6</version.jaxen>
         <version.jboss.jaxbintros>2.0.0</version.jboss.jaxbintros>
-        <version.joda-time>2.11.2</version.joda-time>
+        <version.joda-time>2.12.1</version.joda-time>
         <version.jsoup>1.15.3</version.jsoup>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.26.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.0</version.org.apache.avro>
-        <version.org.apache.cxf>3.5.2-jbossorg-3</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.0</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.0.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
-        <version.org.apache.james.apache-mime4j>0.8.7</version.org.apache.james.apache-mime4j>
-        <version.org.apache.jstl>1.2.6-RC1</version.org.apache.jstl>
-        <version.org.apache.kafka>3.2.2</version.org.apache.kafka>
+        <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
+        <version.org.apache.kafka>3.4.0</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
-        <legacy.version.org.apache.myfaces.core>2.3.10</legacy.version.org.apache.myfaces.core>
         <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
-        <version.org.apache.openjpa>3.1.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.34.0</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>3.0.0</version.org.apache.santuario>
+        <version.org.apache.santuario>3.0.1</version.org.apache.santuario>
         <version.org.apache.thrift>0.14.1</version.org.apache.thrift>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
-        <version.org.apache.wss4j>2.4.1-jbossorg-1</version.org.apache.wss4j>
+        <version.org.apache.wss4j>3.0.0</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
-        <version.org.apache.xerces>2.12.0.SP04</version.org.apache.xerces>
+        <version.org.apache.xerces>2.12.0.SP05</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.8.0</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.12.18</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
+        <version.org.codehaus.plexus.plexus-utils>3.5.0</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
-        <version.org.codehaus.woodstox.woodstox-core>6.2.8</version.org.codehaus.woodstox.woodstox-core>
-        <version.org.eclipse.angus.angus-activation>1.0.0</version.org.eclipse.angus.angus-activation>
-        <version.org.eclipse.angus.angus-mail>1.0.0</version.org.eclipse.angus.angus-mail>
+        <version.org.codehaus.woodstox.woodstox-core>6.4.0</version.org.codehaus.woodstox.woodstox-core>
+        <version.org.eclipse.angus.angus-activation>2.0.0</version.org.eclipse.angus.angus-activation>
+        <version.org.eclipse.angus.angus-mail>2.0.1</version.org.eclipse.angus.angus-mail>
         <version.org.eclipse.jdt>3.31.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
         <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
-        <legacy.version.org.eclipse.microprofile.config.api>2.0</legacy.version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.config.api>3.0.2</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
-        <legacy.version.org.eclipse.microprofile.health.api>3.1</legacy.version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
-        <legacy.version.org.eclipse.microprofile.jwt.api>1.2.1</legacy.version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.jwt.api>2.0</version.org.eclipse.microprofile.jwt.api>
-        <legacy.version.org.eclipse.microprofile.metrics.api>3.0</legacy.version.org.eclipse.microprofile.metrics.api>
-        <version.org.eclipse.microprofile.metrics.api>4.0</version.org.eclipse.microprofile.metrics.api>
-        <version.org.eclipse.microprofile.openapi>3.0</version.org.eclipse.microprofile.openapi>
-        <legacy.version.org.eclipse.microprofile.opentracing>2.0</legacy.version.org.eclipse.microprofile.opentracing>
-        <version.org.eclipse.microprofile.opentracing>3.0</version.org.eclipse.microprofile.opentracing>
-        <legacy.version.org.eclipse.microprofile.reactive-messaging.api>2.0.1</legacy.version.org.eclipse.microprofile.reactive-messaging.api>
+        <version.org.eclipse.microprofile.lra.api>2.0</version.org.eclipse.microprofile.lra.api>
+        <version.org.eclipse.microprofile.openapi>3.1</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0</version.org.eclipse.microprofile.reactive-messaging.api>
-        <legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>2.0</legacy.version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0</version.org.eclipse.microprofile.reactive-streams-operators.api>
-        <legacy.version.org.eclipse.microprofile.rest.client.api>2.0</legacy.version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
-        <version.org.eclipse.yasson>3.0.1</version.org.eclipse.yasson>
-        <legacy.version.org.eclipse.persistence.eclipselink>2.7.11</legacy.version.org.eclipse.persistence.eclipselink>
-        <version.org.eclipse.persistence.eclipselink>3.0.3</version.org.eclipse.persistence.eclipselink>
+        <version.org.eclipse.microprofile.telemetry>1.0</version.org.eclipse.microprofile.telemetry>
+        <version.org.eclipse.yasson>3.0.2</version.org.eclipse.yasson>
+        <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
-        <legacy.version.org.glassfish.jakarta.el>3.0.3.jbossorg-4</legacy.version.org.glassfish.jakarta.el>
-        <legacy.version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</legacy.version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <!-- WFLY-14723 For XJC we use a jbossorg variant in WF. Use the version expression from the root
          pom here so we detect if the base version changes there and we didn't do a -jbossorg of that version -->
@@ -501,130 +465,96 @@
         <version.org.glassfish.jaxb.jaxb-xjc>${version.org.glassfish.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>3.0.0</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
-        <version.org.hamcrest>1.3</version.org.hamcrest>
-        <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
-        <version.org.hibernate>6.1.5.Final</version.org.hibernate>
-        <legacy.version.org.hibernate.commons.annotations>5.0.5.Final</legacy.version.org.hibernate.commons.annotations>
-        <version.org.hibernate.commons.annotations>6.0.1.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.search>6.1.7.Final</version.org.hibernate.search>
-        <legacy.version.org.hibernate.validator>6.0.23.Final</legacy.version.org.hibernate.validator>
+        <version.org.hamcrest>2.2</version.org.hamcrest>
+        <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
+        <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate.search>6.1.8.Final</version.org.hibernate.search>
+        <version.org.hibernate>6.2.1.Final</version.org.hibernate>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.2.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.5.0.Final</version.org.infinispan.protostream>
+        <version.org.infinispan>14.0.8.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.6.2.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
-        <version.org.javassist>3.27.0-GA</version.org.javassist>
+        <version.org.javassist>3.29.1-GA</version.org.javassist>
         <version.org.jberet>2.1.1.Final</version.org.jberet>
-        <version.org.jboss.activemq.artemis.integration>1.0.6</version.org.jboss.activemq.artemis.integration>
-        <version.org.jboss.arquillian.core>1.7.0.Alpha12</version.org.jboss.arquillian.core>
+        <version.org.jboss.activemq.artemis.integration>2.0.0.Final</version.org.jboss.activemq.artemis.integration>
+        <version.org.jboss.arquillian.core>1.7.0.Alpha13</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
-        <legacy.version.org.jboss.ejb-client>4.0.49.Final</legacy.version.org.jboss.ejb-client>
-        <version.org.jboss.ejb-client>5.0.1.Final</version.org.jboss.ejb-client>
-        <version.org.jboss.ejb-client-legacy>3.0.3.Final</version.org.jboss.ejb-client-legacy>
+        <version.org.jboss.ejb-client>5.0.4.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.3.0.Final</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>2.0.10.Final</version.org.jboss.genericjms>
-        <version.org.jboss.hal.console>3.6.4.Final</version.org.jboss.hal.console>
-        <version.org.jboss.iiop-client>1.0.2.Final</version.org.jboss.iiop-client>
-        <legacy.version.org.jboss.invocation>1.7.1.Final</legacy.version.org.jboss.invocation>
-        <version.org.jboss.invocation>2.0.0.Final</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.5.9.Final</version.org.jboss.ironjacamar>
-        <version.org.jboss.jboss-transaction-spi>7.6.1.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.genericjms>3.0.0.Final</version.org.jboss.genericjms>
+        <version.org.jboss.hal.console>3.6.5.Final</version.org.jboss.hal.console>
+        <version.org.jboss.iiop-client>2.0.1.Final</version.org.jboss.iiop-client>
+        <version.org.jboss.ironjacamar>3.0.2.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.jboss-transaction-spi>8.0.0.Final</version.org.jboss.jboss-transaction-spi>
         <!-- Only used for testing -->
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
-        <version.org.jboss.metadata>15.2.0.Final</version.org.jboss.metadata>
+        <version.org.jboss.metadata>16.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>2.0.1.Final</version.org.jboss.mod_cluster>
-        <version.org.jboss.narayana>5.13.0.Final</version.org.jboss.narayana>
-        <version.org.jboss.openjdk-orb>8.1.9.Final</version.org.jboss.openjdk-orb>
-        <legacy.version.org.jboss.resteasy>4.7.4.Final</legacy.version.org.jboss.resteasy>
-        <version.org.jboss.resteasy>6.2.1.Final</version.org.jboss.resteasy>
-        <version.org.jboss.resteasy.microprofile>2.0.0.Final</version.org.jboss.resteasy.microprofile>
-        <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
+        <version.org.jboss.narayana>6.0.0.Final</version.org.jboss.narayana>
+        <version.org.jboss.openjdk-orb>9.0.1.Final</version.org.jboss.openjdk-orb>
+        <version.org.jboss.resteasy>6.2.3.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
+        <version.org.jboss.resteasy.microprofile>2.1.1.Final</version.org.jboss.resteasy.microprofile>
+        <version.org.jboss.resteasy.spring>3.0.1.Final</version.org.jboss.resteasy.spring>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itslef  -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <!-- Include the artifactId for org.jboss.spec project versions because artifactId contains the API spec version -->
-        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.0.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
+        <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.1.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>2.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
-        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>2.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
-        <version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>2.0.0.Final</version.org.jboss.spec.javax.el.jboss-el-api_3.0_spec>
-        <version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>2.0.0.Final</version.org.jboss.spec.javax.enterprise.concurrent.jboss-concurrency-api_1.0_spec>
-        <version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>2.0.0.Final</version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
-        <version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>3.1.0.SP02</version.org.jboss.spec.javax.faces.jboss-jsf-api_2.3_spec>
-        <legacy.version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.interceptor.jboss-interceptors-api_1.2_spec>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
-        <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>2.0.0.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
-        <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>2.0.0.Final</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
-        <legacy.version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.5_spec>
-        <legacy.version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>2.0.1.Final</legacy.version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
+        <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
-        <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.3_spec>
-        <version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>2.0.0.Final</version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec>
-        <version.org.jboss.spec.javax.websockets>2.0.0.Final</version.org.jboss.spec.javax.websockets>
-        <version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.1_spec>2.0.2.Final</version.org.jboss.spec.javax.ws.jboss-jaxrs-api_2.1_spec>
-        <version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>2.0.1.Final</version.org.jboss.spec.javax.xml.bind.jboss-jaxb-api_2.3_spec>
-        <version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.rpc.jboss-jaxrpc-api_1.1_spec>
-        <version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.xml.soap.jboss-saaj-api_1.4_spec>
-        <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>2.0.0.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.3_spec>
-        <legacy.version.org.jboss.weld.weld>3.1.9.Final</legacy.version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld>5.1.0.Final</version.org.jboss.weld.weld>
-        <legacy.version.org.jboss.weld.weld-api>3.1.SP4</legacy.version.org.jboss.weld.weld-api>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
-        <legacy.version.org.jboss.ws.api>1.1.2.Final</legacy.version.org.jboss.ws.api>
         <version.org.jboss.ws.api>2.0.0.Final</version.org.jboss.ws.api>
-        <legacy.version.org.jboss.ws.common>3.3.3.Final</legacy.version.org.jboss.ws.common>
         <version.org.jboss.ws.common>4.0.0.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.4.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>6.1.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>6.2.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
-        <legacy.version.org.jboss.ws.spi>3.4.0.Final</legacy.version.org.jboss.ws.spi>
         <version.org.jboss.ws.spi>4.1.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
-        <version.org.jgroups>5.2.9.Final</version.org.jgroups>
+        <version.org.jgroups>5.2.13.Final</version.org.jgroups>
         <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
         <version.org.jvnet.staxex>2.1.0</version.org.jvnet.staxex>
         <version.org.keycloak>18.0.2</version.org.keycloak>
+        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.latencyutils>2.0.3</version.org.latencyutils>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>9.3</version.org.ow2.asm>
+        <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <!-- Test dependency -->
-        <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
-        <version.org.springframework.kafka>2.9.1</version.org.springframework.kafka>
-        <version.org.testcontainers>1.16.0</version.org.testcontainers>
+        <version.org.testcontainers>1.18.0</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
-        <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>20.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.arquillian>5.0.0.Alpha6</version.org.wildfly.arquillian>
+        <version.org.wildfly.core>20.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
-        <legacy.version.org.wildfly.http-client>1.1.15.Final</legacy.version.org.wildfly.http-client>
-        <version.org.wildfly.http-client>2.0.0.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>2.0.2.Final</version.org.wildfly.http-client>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
         <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
-        <legacy.version.org.wildfly.security.elytron>1.20.2.Final</legacy.version.org.wildfly.security.elytron>
-        <legacy.version.org.wildfly.security.elytron-mp>1.20.2.Final</legacy.version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
-        <legacy.version.org.wildfly.security.elytron-web>1.10.2.Final</legacy.version.org.wildfly.security.elytron-web>
-        <legacy.version.org.wildfly.transaction.client>2.0.2.Final</legacy.version.org.wildfly.transaction.client>
         <version.org.wildfly.transaction.client>3.0.0.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
-        <version.xom>1.3.7</version.xom>
-
+        <version.xom>1.3.8</version.xom>
+        <version.junit>4.13.1</version.junit>
+        <version.org.mockito>3.10.0</version.org.mockito>
+        <version.org.jboss.byteman>4.0.20</version.org.jboss.byteman>
 
         <!-- 
             WildFly Preview version properties.
             Property names should be in the form 'preview.version.xxx'. 
         -->
-        <preview.version.org.jboss.resteasy.spring>3.0.0.Beta2</preview.version.org.jboss.resteasy.spring>
 
     </properties>
 
@@ -722,6 +652,34 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-feature-pack-galleon-content</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -875,48 +833,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-servlet-feature-pack-galleon-legacy</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -931,22 +847,9 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared-legacy-namespace</artifactId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
                 <version>${ee.maven.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-testsuite-shared</artifactId>
-                <version>${ee.maven.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <type>pom</type>
             </dependency>
 
             <dependency>
@@ -959,6 +862,13 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-dist</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-feature-pack-common</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
@@ -1000,30 +910,9 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-oidc-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-release</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>com.beust</groupId>
-                <artifactId>jcommander</artifactId>
-                <version>${version.com.beust}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- TODO both a testuite/shared dep and used in std and preview but not legacy -->
@@ -1033,118 +922,10 @@
                 <version>${version.com.nimbus.jose-jwt}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-mock</artifactId>
-                <version>${version.io.opentracing}</version>
-                <scope>test</scope>
-            </dependency>
 
-            <dependency>
-                <groupId>io.rest-assured</groupId>
-                <artifactId>rest-assured</artifactId>
-                <version>${version.io.rest-assured}</version>
-                <scope>test</scope>
-            </dependency>
 
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-interceptor-kerberos</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>test</scope>
-            </dependency>
 
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-test-framework</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>test</scope>
-            </dependency>
 
-            <dependency>
-                <groupId>org.apache.openjpa</groupId>
-                <artifactId>openjpa-all</artifactId>
-                <version>${version.org.apache.openjpa}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>${version.org.awaitility.awaitility}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <type>pom</type>
-                <version>${version.groovy-all}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-http</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-io</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>${version.org.hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>java-hamcrest</artifactId>
-                <version>${version.org.hamcrest.java-hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.httpunit</groupId>
-                <artifactId>httpunit</artifactId>
-                <version>${version.httpunit}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.servlet</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>${version.org.javassist}</version>
-                <scope>test</scope>
-            </dependency>
 
             <!-- Required for the MicroProfile health TCK that is run as part of the testsuite and the TCK brings in an
                  older version.
@@ -1155,90 +936,6 @@
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-container-test-spi</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logmanager</groupId>
-                <artifactId>commons-logging-jboss-logmanager</artifactId>
-                <version>${version.org.jboss.logmanager.commons-logging-jboss-logmanager}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.narayana.jts</groupId>
-                <artifactId>narayana-jts-idlj</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.narayana.xts</groupId>
-                <artifactId>byteman_support</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
-                    <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.transaction</groupId>
-                        <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!-- only still used by tests -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- only still used by JPA tests -->
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>${version.org.jboss.shrinkwrap.shrinkwrap}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-                <artifactId>shrinkwrap-descriptors-impl-javaee</artifactId>
-                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
-                <scope>test</scope>
             </dependency>
 
             <!--
@@ -1262,88 +959,25 @@
             </dependency>
 
             <!--
-            TODO used both in testsuite/integration/legacy-ejb-client and in legacy code.
+            TODO used in legacy code.
             Once legacy code use is gone, convert to <scope>test</scope>
             -->
             <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.transaction.jboss-transaction-api_1.3_spec}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.weld.se</groupId>
-                <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-                <scope>test</scope>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-transaction-spi</artifactId>
+                <version>${version.org.jboss.jboss-transaction-spi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!--
             TODO used both in testuite/integration/elytron-oidc-client dep and in legacy code.
             Once the legacy use is removed, etc structure, this can become a <scope>test</scope> dependency.
             -->
-            <dependency>
-                <groupId>org.jsoup</groupId>
-                <artifactId>jsoup</artifactId>
-                <version>${version.jsoup}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-admin-client</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-core</artifactId>
-                <version>${version.org.keycloak}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Required by the org.eclipse.microprofile.rest.client:microprofile-rest-client-tck -->
-            <dependency>
-                <groupId>org.reactivestreams</groupId>
-                <artifactId>reactive-streams-tck</artifactId>
-                <version>${version.org.reactivestreams}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka-test</artifactId>
-                <version>${version.org.springframework.kafka}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        This version pulls in a different version of Kafka from
-                        our version of Kafka Clients
-                    -->
-                    <exclusion>
-                        <groupId>org.apache.kafka</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>elasticsearch</artifactId>
-                <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-compress</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
@@ -1405,19 +1039,6 @@
                 <version>${version.org.wildfly.checkstyle-config}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-commands</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.extras.creaper</groupId>
-                <artifactId>creaper-core</artifactId>
-                <version>${version.org.wildfly.extras.creaper}</version>
-                <scope>test</scope>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.galleon-plugins</groupId>
@@ -1451,6 +1072,23 @@
                     <exclusion>
                         <groupId>org.jboss.galleon</groupId>
                         <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Required for testsuite/shared which will later be moved to a test bom (WFLY-17331) -->
+            <dependency>
+                <groupId>xom</groupId>
+                <artifactId>xom</artifactId>
+                <version>${version.xom}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -1525,17 +1163,9 @@
                             <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
                             <org.jboss.model.test.cache.strict>true</org.jboss.model.test.cache.strict>
                             <!--<org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>-->
+                            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                            <jdk.xml.enableTemplatesImplDeserialization>true</jdk.xml.enableTemplatesImplDeserialization>
                         </systemPropertyVariables>
-                        <systemProperties>
-                            <property>
-                                <name>java.util.logging.manager</name>
-                                <value>org.jboss.logmanager.LogManager</value>
-                            </property>
-                            <property>
-                                <name>jdk.xml.enableTemplatesImplDeserialization</name>
-                                <value>true</value>
-                            </property>
-                        </systemProperties>
                         <argLine>${surefire.system.args}</argLine>
                     </configuration>
                 </plugin>
@@ -1659,7 +1289,6 @@
                                             <exclude>org.jboss.integration:jboss-jca-spi</exclude>
                                             <exclude>org.jboss.interceptor:jboss-interceptor-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-javaee</exclude>
-                                            <exclude>org.jboss.javaee:jboss-ejb-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jacc-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jad-api</exclude>
                                             <exclude>org.jboss.javaee:jboss-jaspi-api</exclude>
@@ -1937,15 +1566,15 @@
                     <artifactId>asciidoctor-maven-plugin</artifactId>
                     <version>${version.asciidoctor.plugin}</version>
                     <configuration>
-                        <sourceHighlighter>coderay</sourceHighlighter>
                         <attributes>
+                            <sourceHighlighter>coderay</sourceHighlighter>
                             <icons>font</icons>
                             <pagenums></pagenums>
                             <version>${project.version}</version>
                             <idprefix></idprefix>
                             <idseparator>-</idseparator>
                             <allow-uri-read>true</allow-uri-read>
-                            <wildflyVersion>13</wildflyVersion>
+                            <wildflyVersion>${product.docs.server.version}</wildflyVersion>
                             <revnumber>${project.version}</revnumber>
                             <revdate>${maven.build.timestamp}</revdate>
                             <organization>${project.organization.name}</organization>
@@ -1994,49 +1623,12 @@
                 <checkstyle.skip>true</checkstyle.skip>
                 <enforcer.skip>true</enforcer.skip>
                 <license.skip>true</license.skip>
-                <maven.test.skip>true</maven.test.skip>
             </properties>
             <build>
                 <defaultGoal>clean install</defaultGoal>
             </build>
         </profile>
 
-        <profile>
-            <id>ee8.build.profile</id>
-            <activation>
-                <property>
-                    <name>!quickly</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>bean-validation</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>connector</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>ee</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>iiop-openjdk</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>jsf</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>messaging-activemq</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>rts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>transactions</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>undertow</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>web-common</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>webservices</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>xts</module>
-                <!-- TODO once moved to jakarta.* move to main module set-->
-                <module>testsuite/shared</module>
-            </modules>
-        </profile>
         <profile>
             <id>jdk18</id>
             <activation>
@@ -2084,7 +1676,7 @@
                 </property>
             </activation>
             <properties>
-                <wildfly.build.output.dir>ee-9/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->

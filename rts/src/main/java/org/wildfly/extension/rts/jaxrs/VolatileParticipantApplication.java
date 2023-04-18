@@ -23,7 +23,7 @@ package org.wildfly.extension.rts.jaxrs;
 
 import org.jboss.narayana.rest.integration.VolatileParticipantResource;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

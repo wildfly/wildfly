@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
+import javax.net.ssl.SSLContext;
 import javax.sql.DataSource;
 
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
@@ -109,6 +110,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     // Supplier for Elytron SecurityDomain
     private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
+    // Supplier for Elytron SSLContext
+    private final Map<String, Supplier<SSLContext>> sslContexts;
 
     // credential source injectors
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
@@ -126,7 +129,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                  Map<String, String> clusterNames,
                                  Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
                                  Optional<Supplier<MBeanServer>> mbeanServer,
-                                 Optional<Supplier<DataSource>> dataSource) {
+                                 Optional<Supplier<DataSource>> dataSource,
+                                 Map<String, Supplier<SSLContext>> sslContexts) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
         this.dataSource = dataSource;
@@ -145,6 +149,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 bridgeCredentialSource.put(bridgeConfiguration.getName(), new InjectedValue<>());
             }
         }
+        this.sslContexts = sslContexts;
     }
 
     @Override
@@ -171,6 +176,9 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager.get()));
         configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager.get()));
         pathConfig.registerCallbacks(pathManager.get());
+        for (Map.Entry<String, Supplier<SSLContext>> entry : sslContexts.entrySet()) {
+            org.jboss.activemq.artemis.wildfly.integration.WildFlySSLContextFactory.registerSSLContext(entry.getKey(), entry.getValue().get());
+        }
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -287,7 +295,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             for (Interceptor outgoingInterceptor : outgoingInterceptors) {
                 server.getServiceRegistry().addOutgoingInterceptor(outgoingInterceptor);
             }
-
             // the server is actually started by the Jakarta Messaging Service.
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
@@ -309,7 +316,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         binding.get().getSocketBindings().getNamedRegistry().unregisterBinding(binding.get().getName());
                     }
                 }
-
                 // the server is actually stopped by the Jakarta Messaging Service
             }
             pathConfig.closeCallbacks(pathManager.get());
@@ -318,6 +324,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         }
     }
 
+    @Override
     public synchronized ActiveMQServer getValue() throws IllegalStateException {
         final ActiveMQServer server = this.server;
         if (server == null) {

@@ -39,7 +39,7 @@ import org.jboss.dmr.ModelNode;
  * Generic {@link org.jboss.as.controller.OperationStepHandler} for runtime metrics.
  * @author Paul Ferraro
  */
-public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements Registration<ManagementResourceRegistration> {
+public class MetricHandler<C> extends AbstractRuntimeOnlyHandler implements ManagementRegistrar<ManagementResourceRegistration> {
 
     private final Collection<? extends Metric<C>> metrics;
     private final Map<String, Metric<C>> executables = new HashMap<>();

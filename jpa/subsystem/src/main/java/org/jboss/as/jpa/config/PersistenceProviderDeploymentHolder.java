@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.spi.PersistenceProvider;
+import jakarta.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.server.deployment.DeploymentUnit;

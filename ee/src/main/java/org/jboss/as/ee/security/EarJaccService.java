@@ -22,8 +22,8 @@
 
 package org.jboss.as.ee.security;
 
-import javax.security.jacc.PolicyConfiguration;
-import javax.security.jacc.PolicyContextException;
+import jakarta.security.jacc.PolicyConfiguration;
+import jakarta.security.jacc.PolicyContextException;
 
 import org.jboss.metadata.ear.spec.EarMetaData;
 

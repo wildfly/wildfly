@@ -100,7 +100,6 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MAX_POOL_SIZE, DERIVE_SIZE, INSTANCE_ACQUISITION_TIMEOUT, INSTANCE_ACQUISITION_TIMEOUT_UNIT };
     private static final StrictMaxPoolAdd ADD_HANDLER = new StrictMaxPoolAdd(ATTRIBUTES);
-    public static final StrictMaxPoolResourceDefinition INSTANCE = new StrictMaxPoolResourceDefinition();
 
     private static final String NONE_VALUE = "none";
     private static final String FROM_WORKER_POOLS_VALUE = "from-worker-pools";
@@ -148,10 +147,10 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         return Derive.NONE;
     }
 
-    private StrictMaxPoolResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL))
+    StrictMaxPoolResourceDefinition() {
+        super(new Parameters(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new ServiceRemoveStepHandler(null, ADD_HANDLER, STRICT_MAX_POOL_CONFIG_CAPABILITY))
+                .setRemoveHandler(new ServiceRemoveStepHandler(null, ADD_HANDLER))
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_NONE)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(STRICT_MAX_POOL_CONFIG_CAPABILITY));

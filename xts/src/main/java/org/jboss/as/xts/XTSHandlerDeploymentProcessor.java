@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.xts.jandex.CompensatableAnnotation;
 import org.jboss.as.xts.jandex.EndpointMetaData;
-import org.jboss.as.xts.jandex.OldCompensatableAnnotation;
 import org.jboss.as.xts.jandex.TransactionalAnnotation;
 import org.jboss.as.xts.txnclient.WildflyTransactionClientTxBridgeIntegrationHandler;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
@@ -161,10 +160,6 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         for (final String annotation : TransactionalAnnotation.TRANSACTIONAL_ANNOTATIONS) {
-            addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
-        }
-
-        for (final String annotation : OldCompensatableAnnotation.COMPENSATABLE_ANNOTATIONS) {
             addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
         }
 

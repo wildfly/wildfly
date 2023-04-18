@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.jacc.WebResourcePermission;
-import javax.security.jacc.WebRoleRefPermission;
-import javax.security.jacc.WebUserDataPermission;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.security.jacc.WebResourcePermission;
+import jakarta.security.jacc.WebRoleRefPermission;
+import jakarta.security.jacc.WebUserDataPermission;
+import jakarta.servlet.http.HttpServletRequest;
 
 import io.undertow.security.idm.Account;
 import io.undertow.servlet.api.AuthorizationManager;

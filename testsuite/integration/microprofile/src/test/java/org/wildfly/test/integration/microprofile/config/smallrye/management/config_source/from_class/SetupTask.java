@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
@@ -97,7 +98,9 @@ public class SetupTask implements ServerSetupTask {
                 .addClass(CustomConfigSourceAServiceLoader.class)
                 .addAsServiceProvider(ConfigSource.class,
                         CustomConfigSourceAServiceLoader.class, CustomConfigSourceServiceLoader.class);
-        configSourceServiceLoad.as(ZipExporter.class).exportTo(moduleFile);
+        try(FileOutputStream target = new FileOutputStream(moduleFile)) {
+            configSourceServiceLoad.as(ZipExporter.class).exportTo(target);
+        }
         url = ConfigSourceFromClassTestCase.class.getResource("module_service_loader.xml");
         moduleXmlFile = new File(url.toURI());
         testModule = new TestModule(TEST_MODULE_NAME_SERVICE_LOADER, moduleXmlFile);

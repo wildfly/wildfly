@@ -34,7 +34,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-release</artifactId>
@@ -84,7 +84,7 @@
                                     <outputDirectory>${basedir}/target/uploads</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>../ee-9/dist/target</directory>
+                                            <directory>../preview/dist/target</directory>
                                             <includes>
                                                 <include>wildfly-preview-*.tar.gz</include>
                                                 <include>wildfly-preview-*.zip</include>

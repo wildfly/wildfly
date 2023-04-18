@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.security.common;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import javax.security.auth.kerberos.KerberosPrincipal;
+
 import org.apache.directory.api.ldap.model.exception.LdapInvalidDnException;
 import org.apache.directory.server.annotations.CreateChngPwdServer;
 import org.apache.directory.server.annotations.CreateKdcServer;

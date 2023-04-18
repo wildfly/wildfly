@@ -76,7 +76,7 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
 
                 // set Hibernate persistence provider as the default provider
-                javax.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
+                jakarta.persistence.spi.PersistenceProviderResolverHolder.setPersistenceProviderResolver(
                     PersistenceProviderResolverImpl.getInstance());
                 final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
                 PlatformImpl platform;

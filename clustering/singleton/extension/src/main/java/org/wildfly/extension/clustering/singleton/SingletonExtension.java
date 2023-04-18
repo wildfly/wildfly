@@ -22,14 +22,10 @@
 
 package org.wildfly.extension.clustering.singleton;
 
-import java.util.EnumSet;
-
-import org.jboss.as.clustering.controller.ContextualSubsystemRegistration;
-import org.jboss.as.clustering.controller.descriptions.SubsystemResourceDescriptionResolver;
+import org.jboss.as.clustering.controller.SubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -37,24 +33,12 @@ import org.kohsuke.MetaInfServices;
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class SingletonExtension implements Extension {
+public class SingletonExtension extends SubsystemExtension<SingletonSubsystemSchema> {
 
-    public static final String SUBSYSTEM_NAME = "singleton";
+    static final String SUBSYSTEM_NAME = "singleton";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
 
-    static final SubsystemResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, SingletonExtension.class);
-
-    @Override
-    public void initialize(ExtensionContext context) {
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, SingletonModel.CURRENT.getVersion());
-
-        new SingletonResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new SingletonXMLWriter());
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        for (SingletonSchema schema : EnumSet.allOf(SingletonSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new SingletonXMLReader(schema));
-        }
+    public SingletonExtension() {
+        super(SUBSYSTEM_NAME, SingletonSubsystemModel.CURRENT, SingletonResourceDefinition::new, SingletonSubsystemSchema.CURRENT, new SingletonXMLWriter());
     }
 }

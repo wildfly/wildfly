@@ -29,15 +29,19 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJ
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.sql.Driver;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -68,19 +72,11 @@ import org.jboss.msc.service.ServiceTarget;
  * @author John Bailey
  */
 public class JdbcDriverAdd extends AbstractAddStepHandler {
-    static final JdbcDriverAdd INSTANCE = new JdbcDriverAdd();
+    private static final Collection<AttributeDefinition> ATTRIBUTES = Stream.concat(Arrays.stream(JDBC_DRIVER_ATTRIBUTES), Stream.of(DRIVER_NAME)).collect(Collectors.toList());
+    static final JdbcDriverAdd INSTANCE = new JdbcDriverAdd(ATTRIBUTES);
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final ModelNode address = operation.require(OP_ADDR);
-        final String driverName = PathAddress.pathAddress(address).getLastElement().getValue();
-
-        for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
-            // https://issues.jboss.org/browse/WFLY-9324 skip validation on driver-name
-            if (!attribute.getName().equals(DRIVER_NAME_NAME)) {
-                attribute.validateAndSet(operation, model);
-            }
-        }
-        model.get(DRIVER_NAME.getName()).set(driverName);//this shouldn't be here anymore
+    private JdbcDriverAdd(Collection<AttributeDefinition> attributes) {
+        super(attributes);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

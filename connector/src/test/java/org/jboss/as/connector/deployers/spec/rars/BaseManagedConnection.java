@@ -23,12 +23,12 @@ package org.jboss.as.connector.deployers.spec.rars;
 
 import java.io.PrintWriter;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.LocalTransaction;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionMetaData;
+import jakarta.resource.ResourceException;
+import jakarta.resource.spi.ConnectionEventListener;
+import jakarta.resource.spi.ConnectionRequestInfo;
+import jakarta.resource.spi.LocalTransaction;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionMetaData;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
 
@@ -100,7 +100,7 @@ public class BaseManagedConnection implements ManagedConnection {
     }
 
     /**
-     * Returns an <code>javax.resource.spi.LocalTransaction</code> instance.
+     * Returns an <code>jakarta.resource.spi.LocalTransaction</code> instance.
      *
      * @return LocalTransaction instance
      *

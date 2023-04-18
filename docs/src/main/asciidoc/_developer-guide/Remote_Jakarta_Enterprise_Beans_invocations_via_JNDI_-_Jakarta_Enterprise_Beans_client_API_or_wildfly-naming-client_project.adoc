@@ -1,6 +1,14 @@
 [[Remote_Jakarta_Enterprise_Beans_invocations_via_JNDI_-_Jakarta_Enterprise_Beans_client_API_or_wildfly-naming-client_project]]
 = Remote Jakarta Enterprise Beans invocations via JNDI - Jakarta Enterprise Beans client API or wildfly-naming-client project
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[purpose]]
 == Purpose
 
@@ -581,4 +589,4 @@ fine with _not_ wanting the optimizations that the EJB client API can do
 for you or if you have other restrictions that force you to use that
 project.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

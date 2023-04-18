@@ -37,5 +37,4 @@ public interface DistributableSessionManagerConfiguration {
     SessionManager<Map<String, Object>, Batch> getSessionManager();
     SessionListeners getSessionListeners();
     RecordableSessionManagerStatistics getStatistics();
-    boolean isOrphanSessionAllowed();
 }

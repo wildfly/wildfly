@@ -27,15 +27,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.xml.XMLElementSchema;
+import org.jboss.as.pojo.descriptor.BeanDeploymentSchema;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
-import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
-import org.jboss.as.pojo.descriptor.LegacyKernelDeploymentXmlDescriptorParser;
 import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -57,17 +57,8 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  */
 public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
-    private final XMLMapper xmlMapper = XMLMapper.Factory.create();
+    private final XMLMapper xmlMapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(BeanDeploymentSchema.class));
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-
-    public KernelDeploymentParsingProcessor() {
-        final KernelDeploymentXmlDescriptorParser parser = new KernelDeploymentXmlDescriptorParser();
-        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), parser);
-        // old MC parser -- just a warning / info atm
-        final LegacyKernelDeploymentXmlDescriptorParser legacy = new LegacyKernelDeploymentXmlDescriptorParser();
-        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_1_0, "deployment"), legacy);
-        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_2_0, "deployment"), legacy);
-    }
 
     /**
      * Process a deployment for jboss-beans.xml files.

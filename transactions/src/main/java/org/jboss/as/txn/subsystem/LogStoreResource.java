@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelNode;
  */
 class LogStoreResource implements Resource {
 
-    private volatile Resource delegate = Resource.Factory.create();
+    private volatile Resource delegate = Factory.create();
 
     protected void update(final Resource updated) {
         delegate = updated;

@@ -86,7 +86,7 @@ public final class RTSSubsystemExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(RTSSubsystemDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new RTSSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(parser);

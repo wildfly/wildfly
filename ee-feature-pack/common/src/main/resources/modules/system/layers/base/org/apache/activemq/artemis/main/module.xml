@@ -32,9 +32,9 @@
         <artifact name="${org.apache.activemq:artemis-dto}"/>
         <artifact name="${org.apache.activemq:artemis-hqclient-protocol}"/>
         <artifact name="${org.apache.activemq:artemis-jdbc-store}"/>
-        <artifact name="\${org.apache.activemq:artemis-@module.jms.suffix@-client}"/>
-        <artifact name="\${org.apache.activemq:artemis-@module.jms.suffix@-server}"/>
-        <artifact name="\${org.apache.activemq:artemis@module.jakarta.suffix@-service-extensions}"/>
+        <artifact name="${org.apache.activemq:artemis-jakarta-client}"/>
+        <artifact name="${org.apache.activemq:artemis-jakarta-server}"/>
+        <artifact name="${org.apache.activemq:artemis-jakarta-service-extensions}"/>
     </resources>
 
     <dependencies>

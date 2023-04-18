@@ -26,7 +26,7 @@
         <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
             <name>org.wildfly:wildfly-ee-galleon-pack</name>
             <packages inherit="false">
-                <!--exclude name="docs.licenses.merge"/-->
+                <exclude name="docs.licenses.merge"/>
                 <include name="docs"/>
                 <!-- appclient is not referenced from standalone nor domain configuration models.-->
                 <include name="appclient"/>
@@ -38,6 +38,10 @@
                 <include name="host-primary.xml" model="host"/>
                 <include name="host-secondary.xml" model="host"/>
                 <include name="standalone-load-balancer.xml" model="standalone"/>
+                <include name="standalone.xml" model="standalone"/>
+                <include name="standalone-ha.xml" model="standalone"/>
+                <include name="standalone-full.xml" model="standalone"/>
+                <include name="standalone-full-ha.xml" model="standalone"/>
             </default-configs>
         </dependency>
     </dependencies>
@@ -71,24 +75,33 @@
         <extensions>
             <standalone>
                 <extension>org.wildfly.extension.elytron-oidc-client</extension>
+                <extension>org.wildfly.extension.micrometer</extension>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.health-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.lra-coordinator</extension>
+                <extension>org.wildfly.extension.microprofile.lra-participant</extension>
                 <extension>org.wildfly.extension.microprofile.metrics-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.telemetry</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.opentelemetry</extension>
             </standalone>
             <domain>
                 <extension>org.wildfly.extension.microprofile.config-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.jwt-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.lra-coordinator</extension>
+                <extension>org.wildfly.extension.microprofile.lra-participant</extension>
                 <extension>org.wildfly.extension.microprofile.openapi-smallrye</extension>
+                <extension>org.wildfly.extension.microprofile.telemetry</extension>
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.opentelemetry</extension>
             </domain>
         </extensions>
     </generate-feature-specs>

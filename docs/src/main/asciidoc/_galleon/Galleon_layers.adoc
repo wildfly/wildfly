@@ -1,6 +1,14 @@
 [[wildfly_layers]]
 === WildFly Layers
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 A Galleon layer is a name that identifies a server capability (e.g.: jaxrs, 
 ejb, microprofile-config, jpa) or an aggregation of such capabilities. A layer captures a server capability in the form of:
 
@@ -59,6 +67,7 @@ link:#gal.cdi[cdi] (optional) +
 link:#gal.datasources-web-server[datasources-web-server] +
 link:#gal.jaxrs[jaxrs] (optional) +
 link:#gal.jpa[jpa] (optional) +
+link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.cloud-server]]cloud-server
 | An extension of _jaxrs-server_ to address common cloud requirements.
@@ -79,6 +88,16 @@ link:#gal.logging[logging] (optional) +
 link:#gal.management[management] (optional) +
 link:#gal.request-controller[request-controller] (optional) +
 link:#gal.security-manager[security-manager] (optional) +
+
+|[[gal.ee-core-profile-server]]ee-core-profile-server
+| A Jakarta EE Core Profile server.
+|
+link:#gal.core-server[core-server] +
+link:#gal.cdi[cdi] +
+link:#gal.ee-integration[ee-integration] +
+link:#gal.jaxrs[jaxrs-core] +
+link:#gal.jsonp[jsonp] +
+link:#gal.jsonb[jsonb] +
 
 |===
 
@@ -152,6 +171,17 @@ link:#gal.base-server[base-server] +
 link:#gal.base-server[base-server] +
 
 |[[gal.ee]]ee
+|Support for common functionality in the Jakarta EE platform and for Jakarta Concurrency.
+|
+link:#gal.ee-concurrency[ee-concurrency] (optional) +
+link:#gal.ee-integration[ee-integration] +
+
+|[[gal.ee-concurrency]]ee-concurrency
+|Support for Jakarta Concurrency.
+|
+link:#gal.naming[naming] +
+
+|[[gal.ee-integration]]ee-integration
 |Support for common functionality in the Jakarta EE platform.
 |
 link:#gal.jsonb[jsonb] (optional) +
@@ -211,7 +241,7 @@ link:#gal.ee[ee] +
 link:#gal.elytron[elytron] +
 link:#gal.naming[naming] +
 link:#gal.remoting[remoting] +
-link:#gal.resource-adapters[resource-adapters] +
+link:#gal.resource-adapters[messaging-activemq] +
 link:#gal.undertow[undertow] +
 
 |[[gal.git-history]]git-history
@@ -248,11 +278,18 @@ link:#gal.naming[naming] +
 |
 link:#gal.base-server[base-server] +
 
-|[[gal.jaxrs]]jaxrs
-|Support for JAXRS.
+|[[gal.jaxrs-core]]jaxrs-core
+|Support for Jakarta RESTful Web Services.
 |
-link:#gal.web-server[web-server] +
-link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
+link:#gal.ee-integration[ee-integration] +
+link:#gal.servlet[servlet] +
+
+|[[gal.jaxrs]]jaxrs
+|Support for Jakarta RESTful Web Services with optional ee-concurrency and deployment scanner layers.
+|
+link:#gal.deployment-scanner[deployment-scanner] (optional) +
+link:#gal.ee-concurrency[ee-concurrency] (optional) +
+link:#gal.jaxrs-core[jaxrs-core] +
 
 |[[gal.jdr]]jdr
 |Support for the JBoss Diagnostic Reporting (JDR) subsystem.
@@ -338,7 +375,6 @@ link:#gal.cdi[cdi] +
 |
 link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
-link:#gal.microprofile-metrics[microprofile-metrics] +
 
 |[[gal.microprofile-health]]microprofile-health
 |Support for MicroProfile Health.
@@ -353,22 +389,10 @@ link:#gal.ee-security[ee-security] +
 link:#gal.elytron[elytron] +
 link:#gal.microprofile-config[microprofile-config] +
 
-|[[gal.microprofile-metrics]]microprofile-metrics
-|Support for MicroProfile Metrics.
-|
-link:#gal.management[management] +
-link:#gal.microprofile-config[microprofile-config] +
-
 |[[gal.microprofile-openapi]]microprofile-openapi
 |Support for MicroProfile OpenAPI.
 |
 link:#gal.jaxrs[jaxrs] +
-link:#gal.microprofile-config[microprofile-config] +
-
-|[[gal.microprofile-opentracing]]microprofile-opentracing
-|Support for MicroProfile OpenTracing.
-|
-link:#gal.cdi[cdi] +
 link:#gal.microprofile-config[microprofile-config] +
 
 |[[gal.microprofile-platform]]microprofile-platform
@@ -378,9 +402,7 @@ link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-fault-tolerance[microprofile-fault-tolerance] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
 link:#gal.microprofile-jwt[microprofile-jwt] (optional) +
-link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
 link:#gal.microprofile-openapi[microprofile-openapi] (optional) +
-link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.microprofile-rest-client]]microprofile-rest-client
@@ -404,6 +426,19 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |
 link:#gal.cdi[cdi] +
 
+|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
+|Support for MicroProfile LRA Coordinator
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.transactions[transactions] +
+
+|[[gal.microprofile-lra-participant]]microprofile-lra-participant
+|Support for MicroProfile LRA Participant
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+
 |[[gal.mod_cluster]]mod_cluster
 |Support for mod_cluster subsystem.
 |
@@ -419,8 +454,6 @@ link:#gal.base-server[base-server] +
 |
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
-link:#gal.microprofile-metrics[microprofile-metrics] (optional) +
-link:#gal.microprofile-opentracing[microprofile-opentracing] (optional) +
 
 |[[gal.pojo]]pojo
 | Support for legacy JBoss Microcontainer applications.
@@ -431,7 +464,7 @@ link:#gal.base-server[base-server] +
 |Support for connections to a remote Apache Activemq Artemis Jakarta Messaging broker. +
 _Alternative:_ link:#gal.embedded-activemq[embedded-activemq]
 |
-link:#gal.resource-adapters[resource-adapters] +
+link:#gal.resource-adapters[messaging-activemq] +
 
 |[[gal.remoting]]remoting
 |Support for inbound and outbound JBoss Remoting connections, secured using Elytron.
@@ -459,6 +492,13 @@ link:#gal.jmx[jmx] +
 |Support for applying security manager permissions to applications.
 |
 link:#gal.base-server[base-server] +
+
+|[[gal.servlet]]servlet
+|A servlet container.
+|
+link:#gal.ee[ee-integration] +
+link:#gal.naming[naming] +
+link:#gal.undertow[undertow] +
 
 |[[gal.transactions]]transactions
 | Support for transactions.
@@ -510,8 +550,9 @@ link:#gal.web-server[web-server] +
 |
 link:#gal.deployment-scanner[deployment-scanner] (optional) +
 link:#gal.ee[ee] +
+link:#gal.ee[ee-concurrency] (optional) +
 link:#gal.naming[naming] +
-link:#gal.undertow[undertow] +
+link:#gal.servlet[servlet] +
 
 |[[gal.webservices]]webservices
 |Support for Jakarta XML Web Services
@@ -522,5 +563,5 @@ link:#gal.web-server[web-server] +
 
 |===
 
-NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
-      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.
+      References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

@@ -1,6 +1,14 @@
 [[Simple_SSL_Migration]]
 = Simple SSL Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[simple-ssl-migration]]
 == Simple SSL Migration
 
@@ -24,13 +32,11 @@ SSL], and your configuration looks like:
 
 To switch to Elytron you need to:
 
-1.  Create Elytron `key-store` - specifying where is the keystore file
-stored and password by which it is encrypted. Default type of keystore
-generated using keytool is JKS:
+1.  Create Elytron `key-store` - specifying where is the keystore file stored and password by which it is encrypted. Default type of keystore generated using keytool is PKCS12:
 +
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=LocalhostKeyStore:add(path=server.keystore,relative-to=jboss.server.config.dir,credential-reference={clear-text="keystore_password"},type=JKS)
+/subsystem=elytron/key-store=LocalhostKeyStore:add(path=server.keystore,relative-to=jboss.server.config.dir,credential-reference={clear-text="keystore_password"},type=PKCS12)
 ----
 2.  Create Elytron `key-manager` - specifying keystore, alias (using
 `alias-filter`) and password of key:
@@ -71,7 +77,7 @@ Output XML configuration of Elytron subsystem should look like:
                 <key-stores>
                     <key-store name="LocalhostKeyStore">
                         <credential-reference clear-text="keystore_password"/>
-                        <implementation type="JKS"/>
+                        <implementation type="PKCS12"/>
                         <file path="server.keystore" relative-to="jboss.server.config.dir"/>
                     </key-store>
                 </key-stores>
@@ -133,7 +139,7 @@ Then continue by following:
 +
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=TrustStore:add(path=server.truststore,relative-to=jboss.server.config.dir,credential-reference={clear-text="truststore_password"},type=JKS)
+/subsystem=elytron/key-store=TrustStore:add(path=server.truststore,relative-to=jboss.server.config.dir,credential-reference={clear-text="truststore_password"},type=PKCS12)
 ----
 2.  Create `trust-manager` - specifying `key-store` of trustore, created
 above:
@@ -171,12 +177,12 @@ Output XML configuration of Elytron subsystem should look like:
         <key-stores>
             <key-store name="LocalhostKeyStore">
                 <credential-reference clear-text="keystore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.keystore" relative-to="jboss.server.config.dir"/>
             </key-store>
             <key-store name="TrustStore">
                 <credential-reference clear-text="truststore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.truststore" relative-to="jboss.server.config.dir"/>
             </key-store>
         </key-stores>

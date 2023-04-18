@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -128,7 +128,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,12 +160,12 @@
              the tests fail for some reason. Changing the return type to DistributedWorkManager seems to cause issues -->
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+            <artifactId>ironjacamar-jdbc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -190,7 +190,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client-api</artifactId>
+            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -311,7 +311,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

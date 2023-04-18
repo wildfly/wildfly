@@ -126,7 +126,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     public Map<String, SocketBinding> getSocketBindings() {
         Map<String, SocketBinding> bindings = new TreeMap<>();
         SocketBinding binding = this.getSocketBinding();
-        for (String serviceName : Set.of("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.client", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
+        for (String serviceName : Set.of("jgroups.udp.mcast_sock", "jgroups.udp.sock", "jgroups.tcp.server", "jgroups.nio.server", "jgroups.tunnel.ucast_sock")) {
             bindings.put(serviceName, binding);
         }
         bindings.put("jgroups.tp.diag.mcast_sock", this.diagnosticsSocketBinding.get());
@@ -152,7 +152,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             }
         }
 
-        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelFactory.class.getClassLoader()));
+        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useVirtualThreads(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
         protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
 
         SocketBinding diagnosticsBinding = this.diagnosticsSocketBinding.get();

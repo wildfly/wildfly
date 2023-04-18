@@ -1,5 +1,14 @@
 [[SSL_with_Client_Cert_Migration]]
 = SSL with Client Cert Migration
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 As this documentation is primarily intended for users migrating to WildFly Elytron I am going to jump straight into the configuration required with WildFly Elytron.
 
 This section will cover how to create the various resources required to achieve CLIENT_CERT authentication with fallback to username / password authentication for both HTTP and SASL (i.e. Remoting) - both are being covered at the same time as predominantly they require the same core configuration, it is not until the definition of the authentication factories that the configuration becomes really specific.
@@ -32,12 +41,12 @@ This also suppose you have already followed <<Simple_SSL_Migration,Simple SSL Mi
         <key-stores>
             <key-store name="LocalhostKeyStore">
                 <credential-reference clear-text="keystore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.keystore" relative-to="jboss.server.config.dir"/>
             </key-store>
             <key-store name="TrustStore">
                 <credential-reference clear-text="truststore_password"/>
-                <implementation type="JKS"/>
+                <implementation type="PKCS12"/>
                 <file path="server.truststore" relative-to="jboss.server.config.dir"/>
             </key-store>
         </key-stores>
@@ -279,11 +288,11 @@ In such case, following wildfly-config.xml can be created in the location the JB
 <configuration>
     <authentication-client xmlns="urn:elytron:1.0">
         <key-stores>
-            <key-store name="admin" type="jks" >
+            <key-store name="admin" type="PKCS12" >
                 <file name="admin.keystore"/>
                 <key-store-clear-password password="keystore_password" />
             </key-store>
-            <key-store name="ca" type="jks">
+            <key-store name="ca" type="PKCS12">
                 <file name="ca.truststore"/>
                 <key-store-clear-password password="truststore_password" />
             </key-store>

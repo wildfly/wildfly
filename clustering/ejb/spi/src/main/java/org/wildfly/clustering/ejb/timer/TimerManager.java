@@ -31,7 +31,10 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Restartable;
 
 /**
+ * Manages creation, retrieval, and scheduling of timers.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <B> the batch type
  */
 public interface TimerManager<I, B extends Batch> extends Restartable {
 

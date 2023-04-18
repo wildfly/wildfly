@@ -22,14 +22,14 @@
 
 package org.jboss.as.test.integration.transactions;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.xa.XAResource;
 
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.junit.Assert;
 

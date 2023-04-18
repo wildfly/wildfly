@@ -22,9 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.clustering.controller.AdminOnlyOperationStepHandlerTransformer;
+import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
-import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**
@@ -32,25 +33,22 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class HostSingleSignOnDefinition extends SingleSignOnDefinition {
 
-    //we use a runtime API of Object as a hack, so we can check for the presence of the capability in a DUP
-    public static final RuntimeCapability<Object> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true, new Object())
+    public static final RuntimeCapability<Void> HOST_SSO_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST_SSO, true)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setServiceType(SingleSignOnService.class)
-            .setDynamicNameMapper(pathElements -> new String[]{
-                    pathElements.getParent().getParent().getLastElement().getValue(),
-                    pathElements.getParent().getLastElement().getValue()})
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();
 
     public HostSingleSignOnDefinition() {
         super();
-        setDeprecated(ModelVersion.create(12));
+        setDeprecated(UndertowSubsystemModel.VERSION_12_0_0.getVersion());
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(SingleSignOnDefinition.Attribute.class).addCapabilities(() -> HOST_SSO_CAPABILITY);
-        new SimpleResourceRegistration(descriptor, null).register(registration);
+                .addAttributes(SingleSignOnDefinition.Attribute.class).addCapabilities(() -> HOST_SSO_CAPABILITY)
+                .setAddOperationTransformation(AdminOnlyOperationStepHandlerTransformer.INSTANCE)
+                ;
+        new SimpleResourceRegistrar(descriptor, null).register(registration);
     }
-
 }

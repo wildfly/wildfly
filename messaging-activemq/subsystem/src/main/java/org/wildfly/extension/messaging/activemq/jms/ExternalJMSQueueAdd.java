@@ -19,7 +19,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
-import javax.jms.Queue;
+import jakarta.jms.Queue;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;

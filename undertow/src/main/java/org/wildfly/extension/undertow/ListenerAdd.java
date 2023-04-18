@@ -27,6 +27,7 @@ import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ import io.undertow.server.handlers.PeerNameResolvingHandler;
 import io.undertow.servlet.handlers.MarkSecureHandler;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -53,10 +55,10 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-abstract class ListenerAdd extends AbstractAddStepHandler {
+abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHandler {
 
-    ListenerAdd(ListenerResourceDefinition definition) {
-        super(definition.getAttributes());
+    ListenerAdd(Collection<AttributeDefinition> attributes) {
+        super(attributes);
     }
 
     @Override
@@ -85,7 +87,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         String serverName = parent.getLastElement().getValue();
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY);
         final Consumer<ListenerService> serviceConsumer = sb.provides(ListenerResourceDefinition.LISTENER_CAPABILITY, UndertowService.listenerName(name));
-        final ListenerService service = createService(serviceConsumer, name, serverName, context, model, listenerOptions,socketOptions);
+        final S service = createService(serviceConsumer, name, serverName, context, model, listenerOptions,socketOptions);
         if (peerHostLookup) {
             service.addWrapperHandler(PeerNameResolvingHandler::new);
         }
@@ -113,8 +115,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         sb.install();
     }
 
-    abstract ListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
+    abstract S createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
-    abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
-
+    abstract void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, S service) throws OperationFailedException;
 }

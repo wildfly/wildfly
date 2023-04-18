@@ -29,7 +29,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.jsf.logging.JSFLogger;
 
@@ -51,25 +52,16 @@ public class JSFExtension implements Extension {
 
     static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-
-    private static final String RESOURCE_NAME = JSFExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JSFExtension.class);
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
-
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JSFExtension.class.getClassLoader(), true, false);
-    }
 
     /** {@inheritDoc} */
     @Override
     public void initialize(final ExtensionContext context) {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerSubsystemModel(JSFResourceDefinition.INSTANCE);
+        subsystem.registerSubsystemModel(new JSFResourceDefinition());
         subsystem.registerXMLElementWriter(JSFSubsystemParser_1_1.INSTANCE);
     }
 
@@ -87,7 +79,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_0)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_0)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .build();
         }
@@ -104,7 +96,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE, NAMESPACE_1_1)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_1)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .addAttributes(JSFResourceDefinition.DISALLOW_DOCTYPE_DECL)
                     .build();

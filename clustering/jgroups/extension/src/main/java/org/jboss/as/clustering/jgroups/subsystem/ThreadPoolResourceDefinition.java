@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
@@ -66,12 +66,12 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     private final PathElement path;
-    private final JGroupsModel deprecation;
+    private final JGroupsSubsystemModel deprecation;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute keepAliveTime;
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsModel deprecation) {
+    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsSubsystemModel deprecation) {
         this.path = pathElement(name);
         this.deprecation = deprecation;
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
@@ -79,7 +79,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0), deprecation).build());
     }
 
-    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder, JGroupsModel deprecation) {
+    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder, JGroupsSubsystemModel deprecation) {
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
@@ -107,7 +107,7 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
                 .addAttributes(this.minThreads, this.maxThreads, this.keepAliveTime)
                 ;
         ResourceServiceHandler handler = (this.deprecation == null) ? new SimpleResourceServiceHandler(this) : null;
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
     }
 
     @Override

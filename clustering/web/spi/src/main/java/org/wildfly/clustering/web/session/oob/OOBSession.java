@@ -138,24 +138,24 @@ public class OOBSession<L, B extends Batch> implements Session<L>, SessionMetaDa
     }
 
     @Override
-    public Instant getLastAccessEndTime() {
+    public Instant getLastAccessTime() {
         try (B batch = this.manager.getBatcher().createBatch()) {
             ImmutableSession session = this.manager.readSession(this.id);
             if (session == null) {
                 throw new IllegalStateException();
             }
-            return session.getMetaData().getLastAccessEndTime();
+            return session.getMetaData().getLastAccessTime();
         }
     }
 
     @Override
-    public Duration getMaxInactiveInterval() {
+    public Duration getTimeout() {
         try (B batch = this.manager.getBatcher().createBatch()) {
             ImmutableSession session = this.manager.readSession(this.id);
             if (session == null) {
                 throw new IllegalStateException();
             }
-            return session.getMetaData().getMaxInactiveInterval();
+            return session.getMetaData().getTimeout();
         }
     }
 

@@ -184,7 +184,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     /**
      * Hook to allow subclasses to handle read-attribute requests for attributes other than {@link CommonAttributes#STARTED}.
      * Implementations must not call any of the
-     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
+     * {@link OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
      * <p>
      * This default implementation just throws the exception returned by {@link #unsupportedAttribute(String)}.
      * </p>
@@ -202,7 +202,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     /**
      * Hook to allow subclasses to handle operations other than {@code read-attribute}, {@code start} and
      * {@code stop}. Implementations must not call any of the
-     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
+     * {@link OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
      * <p>
      * This default implementation just throws the exception returned by {@link #unsupportedOperation(String)}.
      * </p>
@@ -212,7 +212,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
      * @param context the operation context
      * @param operation the operation
      *
-     * @return an object that can be passed back in {@link #handleRevertOperation(String, org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, Object)}
+     * @return an object that can be passed back in {@link #handleRevertOperation(String, OperationContext, ModelNode, Object)}
      *         if the operation should be reverted. A value of {@code null} is an indication that no reversible
      *         modification was made
      * @throws OperationFailedException
@@ -224,7 +224,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
 
     /**
      * Hook to allow subclasses to handle revert changes made in
-     * {@link #handleOperation(String, org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode)}.
+     * {@link #handleOperation(String, OperationContext, ModelNode)}.
      * <p>
      * This default implementation does nothing.
      * </p>

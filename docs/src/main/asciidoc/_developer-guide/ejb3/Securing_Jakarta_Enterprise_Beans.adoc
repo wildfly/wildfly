@@ -1,6 +1,14 @@
 [[Securing_Jakarta_Enterprise_Beans]]
 = Securing Jakarta Enterprise Beans
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Jakarta EE spec specifies certain annotations (like @RolesAllowed,
 @PermitAll, @DenyAll) which can be used on Jakarta Enterprise Beans implementation classes
 and/or the business method implementations of the beans. Like with all

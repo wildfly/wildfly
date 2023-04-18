@@ -11,7 +11,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -44,6 +44,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -549,6 +555,9 @@
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
+                                <configuration>
+                                    <reportNameSuffix>microprofile.surefire</reportNameSuffix>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -869,6 +878,7 @@
                                         <!-- requires https -->
                                         <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
                                     </excludes>
+                                    <reportNameSuffix>web-profile-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -898,6 +908,7 @@
                                              where elytron is configured but -Delytron is not set. -->
                                         <!--include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include-->
                                     </includes>
+                                    <reportNameSuffix>legacy-https-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -927,6 +938,7 @@
                                         <!-- requires https -->
                                         <exclude>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</exclude>
                                     </excludes>
+                                    <reportNameSuffix>jaxrs-server-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -949,6 +961,7 @@
                                         <module.path>${project.build.directory}/wildfly-cloud/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
+                                    <reportNameSuffix>microprofile.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1060,6 +1073,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-web-profile-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1087,6 +1101,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-legacy-security-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1114,6 +1129,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>ts.bootable.bootable-jar-legacy-https-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1145,6 +1161,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-jaxrs-server-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1176,6 +1193,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-cloud-server-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1288,6 +1306,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-web-profile-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1315,6 +1334,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-legacy-https-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1349,6 +1369,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-jaxrs-server-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -1383,6 +1404,7 @@
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
+                                    <reportNameSuffix>bootable-jar-cloud-server-layers.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>

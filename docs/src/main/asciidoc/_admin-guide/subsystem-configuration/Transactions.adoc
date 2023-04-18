@@ -1,6 +1,14 @@
 [[Transactions_Subsystem]]
 = Transactions subsystem configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 *Required extension:*
 
 [source,xml,options="nowrap"]
@@ -40,20 +48,20 @@ The structure of the transaction subsystem follows the structure of Narayana com
 Narayana defines a separate configuration bean for every
 https://jbossts.blogspot.com/2018/01/narayana-periodic-recovery-of-xa.html#configuration[internal module].
 For example any configuration related to Narayana core is available through beans
-https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoordinatorEnvironmentBean.java[CoordinatorEnvironmentBean] and
-https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoreEnvironmentBean.java[CoreEnvironmentBean],
+https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoordinatorEnvironmentBean.java[CoordinatorEnvironmentBean] and
+https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/CoreEnvironmentBean.java[CoreEnvironmentBean],
 for JTA processing it is
-https://github.com/jbosstm/narayana/blob/master.Final/ArjunaJTA/jta/classes/com/arjuna/ats/jta/common/JTAEnvironmentBean.java[JTAEnvironmentBean],
+https://github.com/jbosstm/narayana/blob/main/ArjunaJTA/jta/classes/com/arjuna/ats/jta/common/JTAEnvironmentBean.java[JTAEnvironmentBean],
 for the transaction recovery setup it's
-https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java[RecoveryEnvironmentBean].
+https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java[RecoveryEnvironmentBean].
 
 The transaction subsystem provides only a sub-set of the configuration available via Narayana beans.
 Any other configuration option provided by Narayana is still possible to be configured via
 link:./#system-properties[system properties] and JVM restart is usually required.
 
 Narayana defines unified naming for the system properties which are used for configuration.
-The system property is in form `[bean name].[property name]`. For example, the system property with name
-https://github.com/jbosstm/narayana/blob/master.Final/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java#L47[`RecoveryEnvironmentBean.periodicRecoveryInitilizationOffset`]
+The system property is in form `[bean name].[property name]`. For example, the system property with name `RecoveryEnvironmentBean.periodicRecoveryInitilizationOffset` defined in
+https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/RecoveryEnvironmentBean.java[RecoveryEnvironmentBean]
 configures a waiting time for first time execution of the periodic recovery after application server starts.
 
 === Configuration in model and in XML
@@ -122,7 +130,7 @@ link:wildscribe{outfilesuffix/}subsystem/transactions[Model Reference Guide].
 
 If you configure the `recovery-listener` then Narayana binds the linked socket, and a user may request
 an explicit launch of
-https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/recovery/RecoveryDriver.java#L47[the recovery scan].
+https://github.com/jbosstm/narayana/blob/main/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/recovery/RecoveryDriver.java[the recovery scan].
 We can see an example of the socket communication in the following example.
 
 .telnet communication with recovery listener
@@ -286,7 +294,7 @@ As a prerequisite the database *must* contain a table named `xids`
 where Narayana persists additional metadata when _two-phase commit_ prepares the non-XA datasource.
 
 The SQL select that has to be working for `xids` table can be found
-https://github.com/jbosstm/narayana/blob/master/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/recovery/arjunacore/CommitMarkableResourceRecordRecoveryModule.java[in the Narayana code].
+https://github.com/jbosstm/narayana/blob/main/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/recovery/arjunacore/CommitMarkableResourceRecordRecoveryModule.java[in the Narayana code].
 
 .example of SQL statement to create the `xids` table to store CMR metadata
 [source,sql,subs="+quotes,+attributes",options="nowrap"]

@@ -40,7 +40,6 @@
         <module name="javax.xml.bind.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="com.ibm.async.asyncutil"/>
-        <module name="org.eclipse.microprofile.config.api" optional="true"/>
         <module name="org.hibernate.validator" optional="true" services="import"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>

@@ -36,14 +36,14 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
     private final Instant creationTime;
     private final Instant lastAccessStartTime;
     private final Instant lastAccessEndTime;
-    private final Duration maxInactiveInterval;
+    private final Duration timeout;
 
     public SimpleImmutableSessionMetaData(ImmutableSessionMetaData metaData) {
         this.newSession = metaData.isNew();
         this.creationTime = metaData.getCreationTime();
         this.lastAccessStartTime = metaData.getLastAccessStartTime();
-        this.lastAccessEndTime = metaData.getLastAccessEndTime();
-        this.maxInactiveInterval = metaData.getMaxInactiveInterval();
+        this.lastAccessEndTime = metaData.getLastAccessTime();
+        this.timeout = metaData.getTimeout();
     }
 
     @Override
@@ -62,12 +62,12 @@ public class SimpleImmutableSessionMetaData implements ImmutableSessionMetaData 
     }
 
     @Override
-    public Instant getLastAccessEndTime() {
+    public Instant getLastAccessTime() {
         return this.lastAccessEndTime;
     }
 
     @Override
-    public Duration getMaxInactiveInterval() {
-        return this.maxInactiveInterval;
+    public Duration getTimeout() {
+        return this.timeout;
     }
 }

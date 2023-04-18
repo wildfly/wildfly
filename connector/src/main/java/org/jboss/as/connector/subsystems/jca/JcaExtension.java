@@ -512,14 +512,14 @@ public class JcaExtension implements Extension {
                 Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
                 switch (element) {
                     case LONG_RUNNING_THREADS: {
-
+                        checkName(reader);
                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                 ns, workManagerAddress, list, WORKMANAGER_LONG_RUNNING, name);
                         break;
                     }
                     case SHORT_RUNNING_THREADS: {
-
+                        checkName(reader);
                         org.jboss.as.threads.Namespace ns = org.jboss.as.threads.Namespace.THREADS_1_1;
                         ThreadsParser.getInstance().parseBlockingBoundedQueueThreadPool(reader, readerNS.getUriString(),
                                 ns, workManagerAddress, list, WORKMANAGER_SHORT_RUNNING, name);
@@ -549,6 +549,17 @@ public class JcaExtension implements Extension {
 
             // For older versions set 'elytron-enabled' to 'false' if not explicitly set, as that was the default in those xsds
             handleLegacyWorkManagerSecurity(workManagerOperation, JcaWorkManagerDefinition.WmParameters.ELYTRON_ENABLED.getAttribute(), elementNs);
+        }
+
+        // WFLY-14587
+        private void checkName(final XMLExtendedStreamReader reader) throws XMLStreamException {
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                org.jboss.as.threads.Attribute attribute = org.jboss.as.threads.Attribute.forName(reader.getAttributeLocalName(i));
+                if (attribute.equals(org.jboss.as.threads.Attribute.NAME)) {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
         }
 
         private void parseDistributedWorkManager(final XMLExtendedStreamReader reader, final ModelNode parentAddress,

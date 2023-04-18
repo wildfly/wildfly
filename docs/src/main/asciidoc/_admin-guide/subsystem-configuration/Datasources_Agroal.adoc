@@ -1,6 +1,14 @@
 [[agroal]]
 = Agroal configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The Agroal subsystem allows the definition of datasources. Declaring a new datasource consists of two separate steps: provide a JDBC driver and define a datasource that references the driver you installed.
 
 The Agroal subsystem is provided by the https://agroal.github.io/[Agroal] project. For a detailed description of the available configuration properties, please consult the project documentation.
@@ -100,7 +108,7 @@ Other features provided by the _connection-factory_ definition include the possi
 ----
 
 [source,options="nowrap"]
----
+----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
 {
     "outcome" => "success",
@@ -120,7 +128,7 @@ Other features provided by the _connection-factory_ definition include the possi
         [...]
     }
 }
----
+----
 
 [[agroal-connection-pool]]
 === Connection Pool definition
@@ -146,7 +154,7 @@ There is a set of flush operations that perform many of these features on-demand
 ----
 
 [source,options="nowrap"]
----
+----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample:read-resource
 {
     "outcome" => "success",
@@ -163,7 +171,7 @@ There is a set of flush operations that perform many of these features on-demand
         [...]
     }
 }
----
+----
 
 [[agroal-common-attributes]]
 === Common datasource attributes
@@ -186,7 +194,7 @@ There is also a _reset-statistics_ operation provided.
 ----
 
 [source,options="nowrap"]
----
+----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
 {
     "outcome" => "success",
@@ -196,7 +204,7 @@ There is also a _reset-statistics_ operation provided.
         [...]
     }
 }
----
+----
 
 The available statistics include the number of created / destroyed connections and the number of connections in use / available in the pool. There are also statistics for the time it takes to create a connection and for how long have threads been blocked waiting for a connection.
 
@@ -251,7 +259,7 @@ The _connectable_ attribute allows a non-XA datasource to take part in an XA tra
 ----
 
 [source,options="nowrap"]
----
+----
 [standalone@localhost:9990  /] /subsystem=datasources-agroal/datasource=sample-xa:read-resource
 {
     "outcome" => "success",
@@ -261,7 +269,7 @@ The _connectable_ attribute allows a non-XA datasource to take part in an XA tra
         [...]
     }
 }
----
+----
 
 [[agroal-xa-datasource-attributes]]
 === XADataSource specific attributes

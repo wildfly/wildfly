@@ -1,5 +1,13 @@
 === Discovery for Kubernetes
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 `KUBE_PING` is a discovery protocol for JGroups cluster nodes managed by Kubernetes.
 Since Kubernetes is in charge of launching nodes, it knows the addresses of all pods it started,
 and is therefore an ideal place to ask for cluster discovery.
@@ -19,4 +27,4 @@ run-batch
 
 NOTE: To be able to query the Kubernetes server ensure view permissions are granted on the service account.
 
-For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-kubernetes/blob/master/README.adoc[here].
+For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-kubernetes/blob/main/README.adoc[here].

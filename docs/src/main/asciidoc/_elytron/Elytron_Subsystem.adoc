@@ -1,6 +1,14 @@
 [[Elytron_Subsystem]]
 = Elytron Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron is a security framework used to unify security across
 the entire application server. The _elytron_ subsystem enables a single
 point of configuration for securing both applications and the management

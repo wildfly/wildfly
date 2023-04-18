@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.transaction.TransactionScoped;
+import jakarta.transaction.TransactionScoped;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,8 +32,9 @@ import org.jboss.jandex.DotName;
  */
 public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("javax.faces.view.ViewScoped");
-    private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("javax.faces.flow.FlowScoped");
+    private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("jakarta.faces.view.ViewScoped");
+    private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("jakarta.faces.flow.FlowScoped");
+    private static final DotName CLIENT_WINDOW_SCOPED = DotName.createSimple("jakarta.faces.lifecycle.ClientWindowScoped");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -52,6 +53,7 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
         addAnnotation(deploymentUnit, new AnnotationType(TransactionScoped.class));
         addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
+        addAnnotation(deploymentUnit, new AnnotationType(CLIENT_WINDOW_SCOPED, true));
 
         for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
             addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));

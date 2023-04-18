@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -64,11 +63,10 @@ class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<ModelNode> handbackHolder) throws OperationFailedException {
-        boolean requiresReload = false;
         if (attributeName.equals(CREDENTIAL_REFERENCE.getName())) {
-            requiresReload = applyCredentialReferenceUpdateToRuntime(context, operation, resolvedValue, currentValue, attributeName);
+            applyCredentialReferenceUpdateToRuntime(context, operation, resolvedValue, currentValue, attributeName);
         }
-        return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handbackHolder) || requiresReload;
+        return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handbackHolder);
     }
 
     @Override
@@ -81,19 +79,16 @@ class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler
 
     @Override
     protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel);
+        MailSessionAdd.installSessionProviderService(context, parentAddress, parentModel);
     }
 
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
-        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress.getLastElement().getValue());
+        return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress).append("provider");
     }
 
     @Override
     protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
-        super.removeServices(context, parentService, parentModel);
-        String jndiName = MailSessionAdd.getJndiName(parentModel, context);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        context.removeService(bindInfo.getBinderServiceName());
+        MailSessionRemove.removeSessionProviderService(context, context.getCurrentAddress().getParent(), parentModel);
     }
 }

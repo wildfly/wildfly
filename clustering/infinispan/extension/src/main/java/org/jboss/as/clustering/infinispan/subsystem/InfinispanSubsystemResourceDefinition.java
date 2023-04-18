@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistration;
+import org.jboss.as.clustering.controller.DeploymentChainContributingResourceRegistrar;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -53,7 +53,7 @@ import org.wildfly.clustering.server.service.ClusteringRequirement;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition<SubsystemRegistration> implements Consumer<DeploymentProcessorTarget> {
+public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefinition implements Consumer<DeploymentProcessorTarget> {
 
     static final PathElement PATH = pathElement(InfinispanExtension.SUBSYSTEM_NAME);
 
@@ -81,7 +81,7 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
                 .addCapabilities(localCapabilities)
                 ;
         ResourceServiceHandler handler = new InfinispanSubsystemServiceHandler();
-        new DeploymentChainContributingResourceRegistration(descriptor, handler, this).register(registration);
+        new DeploymentChainContributingResourceRegistrar(descriptor, handler, this).register(registration);
 
         new CacheContainerResourceDefinition().register(registration);
         new RemoteCacheContainerResourceDefinition().register(registration);

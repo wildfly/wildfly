@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 
 import java.util.HashMap;
@@ -93,7 +94,7 @@ public class SocketDiscoveryGroupAdd extends AbstractAddStepHandler {
                     serviceName = MessagingServices.getActiveMQServiceName((String) null);
                 }
                 ServiceBuilder builder = target.addService(GroupBindingService.getDiscoveryBaseServiceName(serviceName).append(name));
-                builder.setInstance(new GroupBindingService(builder.requires(SocketBinding.JBOSS_BINDING_NAME.append(model.get(SOCKET_BINDING).asString()))));
+                builder.setInstance(new GroupBindingService(builder.requires(SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(model.get(SOCKET_BINDING).asString()))));
                 builder.install();
             }
         }

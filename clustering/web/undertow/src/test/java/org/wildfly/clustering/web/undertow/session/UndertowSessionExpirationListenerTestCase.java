@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionListener;
@@ -45,7 +46,6 @@ import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 
 public class UndertowSessionExpirationListenerTestCase {
@@ -68,7 +68,7 @@ public class UndertowSessionExpirationListenerTestCase {
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
 
-        SessionExpirationListener expirationListener = new UndertowSessionExpirationListener(deployment, listeners, recorder);
+        Consumer<ImmutableSession> expirationListener = new UndertowSessionExpirationListener(deployment, listeners, recorder);
 
         when(deployment.getSessionManager()).thenReturn(manager);
         when(manager.getSessionManager()).thenReturn(delegateManager);
@@ -80,9 +80,9 @@ public class UndertowSessionExpirationListenerTestCase {
         when(session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(Instant.now());
         when(metaData.getLastAccessStartTime()).thenReturn(Instant.now());
-        when(metaData.getMaxInactiveInterval()).thenReturn(Duration.ZERO);
+        when(metaData.getTimeout()).thenReturn(Duration.ZERO);
 
-        expirationListener.sessionExpired(session);
+        expirationListener.accept(session);
 
         verify(recorder).record(metaData);
         verify(batcher).suspendBatch();

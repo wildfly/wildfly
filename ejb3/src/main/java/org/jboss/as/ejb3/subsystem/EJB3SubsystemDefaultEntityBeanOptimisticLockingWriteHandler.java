@@ -22,17 +22,18 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.function.Consumer;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author Stuart Douglas
@@ -78,11 +79,9 @@ public class EJB3SubsystemDefaultEntityBeanOptimisticLockingWriteHandler extends
         }
 
         if (enabled.isDefined()) {
-            final Service<Boolean> newDefaultPoolConfigService = new ValueService<Boolean>(new ImmediateValue<Boolean>(enabled.asBoolean()));
-            ServiceController<?> newController =
-                context.getServiceTarget().addService(SERVICE_NAME, newDefaultPoolConfigService)
-                    .install();
+            final ServiceBuilder<?> sb = context.getServiceTarget().addService(SERVICE_NAME);
+            final Consumer<Boolean> c = sb.provides(SERVICE_NAME);
+            sb.setInstance(Service.newInstance(c, enabled.asBoolean())).install();
         }
-
     }
 }

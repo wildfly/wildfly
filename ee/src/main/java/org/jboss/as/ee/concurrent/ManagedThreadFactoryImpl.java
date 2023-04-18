@@ -29,7 +29,7 @@ import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.wildfly.security.auth.server.SecurityIdentity;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;

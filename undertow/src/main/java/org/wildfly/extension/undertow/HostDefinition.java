@@ -22,14 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -49,7 +48,7 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class HostDefinition extends PersistentResourceDefinition {
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
@@ -90,23 +89,14 @@ class HostDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    static final HostDefinition INSTANCE = new HostDefinition();
-    private static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START));
-    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
-            LocationDefinition.INSTANCE,
-            AccessLogDefinition.INSTANCE,
-            ConsoleAccessLogDefinition.INSTANCE,
-            FilterRefDefinition.INSTANCE,
-            HttpInvokerDefinition.INSTANCE,
-            new HostSingleSignOnDefinition()
-    ));
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ALIAS, DEFAULT_WEB_MODULE, DEFAULT_RESPONSE_CODE, DISABLE_CONSOLE_REDIRECT, QUEUE_REQUESTS_ON_START);
 
-    private HostDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST))
+    HostDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(HostAdd.INSTANCE)
                 .setRemoveHandler(new HostRemove())
-                .addCapabilities(HOST_CAPABILITY,
-                        WebHost.CAPABILITY));
+                .addCapabilities(HOST_CAPABILITY, WebHost.CAPABILITY)
+        );
     }
 
     @Override
@@ -116,7 +106,13 @@ class HostDefinition extends PersistentResourceDefinition {
 
     @Override
     public List<? extends PersistentResourceDefinition> getChildren() {
-        return CHILDREN;
+        return List.of(
+                new LocationDefinition(),
+                new AccessLogDefinition(),
+                new ConsoleAccessLogDefinition(),
+                new FilterRefDefinition(),
+                new HttpInvokerDefinition(),
+                new HostSingleSignOnDefinition());
     }
 
 }

@@ -156,28 +156,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.jr</groupId>
-      <artifactId>jackson-jr-objects</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
       <licenses>
@@ -253,16 +231,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>com.google.api.grpc</groupId>
-      <artifactId>proto-google-common-protos</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <licenses>
@@ -291,28 +259,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <licenses>
-        <license>
-          <name>BSD 3-Clause "New" or "Revised" License</name>
-          <url>https://opensource.org/licenses/BSD-3-Clause</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java-util</artifactId>
-      <licenses>
-        <license>
-          <name>BSD 3-Clause "New" or "Revised" License</name>
-          <url>https://opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -356,19 +302,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>com.squareup.okio</groupId>
-      <artifactId>okio-jvm</artifactId>
+      <groupId>com.squareup</groupId>
+      <artifactId>protoparser</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -573,76 +508,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-api</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-context</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-core</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-okhttp</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-protobuf</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-protobuf-lite</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-stub</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-buffer</artifactId>
       <licenses>
@@ -797,126 +662,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-api</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-context</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-jaeger</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp-common</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-exporter-otlp-trace</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-common</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-logs</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-metrics</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-trace</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-semconv</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>io.perfmark</groupId>
-      <artifactId>perfmark-api</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>https://opensource.org/licenses/Apache-2.0</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>io.reactivex.rxjava2</groupId>
       <artifactId>rxjava</artifactId>
       <licenses>
@@ -934,17 +679,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>jaxen</groupId>
-      <artifactId>jaxen</artifactId>
-      <licenses>
-        <license>
-          <name>BSD 3-Clause "New" or "Revised" License</name>
-          <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -1938,17 +1672,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.dom4j</groupId>
-      <artifactId>dom4j</artifactId>
-      <licenses>
-        <license>
-          <name>Plexus Classworlds License</name>
-          <url>https://fedoraproject.org/wiki/Licensing/Plexus_Classworlds_License</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.angus</groupId>
       <artifactId>angus-activation</artifactId>
       <licenses>
@@ -2331,7 +2054,7 @@
     </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-commons</artifactId>
+      <artifactId>infinispan-commons-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2353,7 +2076,7 @@
     </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-core</artifactId>
+      <artifactId>infinispan-core-jakarta</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2452,7 +2175,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-ejb-client-legacy</artifactId>
+      <artifactId>jboss-iiop-client</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -2463,18 +2186,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss</groupId>
-      <artifactId>jboss-iiop-client-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-transaction-spi-jakarta</artifactId>
+      <artifactId>jboss-transaction-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -2596,6 +2308,17 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-clustering-ee-spi</artifactId>
+      <licenses>
+        <license>
+          <name>GNU Lesser General Public License v2.1 or later</name>
+          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>wildfly-clustering-ejb-cache</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 or later</name>
@@ -3321,28 +3044,6 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry-api</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>wildfly-opentelemetry</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 or later</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>wildfly-picketlink</artifactId>
       <licenses>
         <license>
@@ -3545,19 +3246,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.invocation</groupId>
-      <artifactId>jboss-invocation</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-api-jakarta</artifactId>
+      <artifactId>ironjacamar-common-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3568,7 +3258,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+      <artifactId>ironjacamar-common-impl</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3579,7 +3269,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-spi-jakarta</artifactId>
+      <artifactId>ironjacamar-common-spi</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3590,7 +3280,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-api-jakarta</artifactId>
+      <artifactId>ironjacamar-core-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3601,7 +3291,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+      <artifactId>ironjacamar-core-impl</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3612,7 +3302,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+      <artifactId>ironjacamar-deployers-common</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3623,7 +3313,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+      <artifactId>ironjacamar-jdbc</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3634,7 +3324,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-validator-jakarta</artifactId>
+      <artifactId>ironjacamar-validator</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3700,7 +3390,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana</groupId>
-      <artifactId>jbosstxbridge-jakarta</artifactId>
+      <artifactId>jbosstxbridge</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3711,7 +3401,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.compensations</groupId>
-      <artifactId>compensations-jakarta</artifactId>
+      <artifactId>compensations</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3722,7 +3412,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.jts</groupId>
-      <artifactId>narayana-jts-idlj-jakarta</artifactId>
+      <artifactId>narayana-jts-idlj</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3733,7 +3423,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.jts</groupId>
-      <artifactId>narayana-jts-integration-jakarta</artifactId>
+      <artifactId>narayana-jts-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3744,7 +3434,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-api-jakarta</artifactId>
+      <artifactId>restat-api</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3755,7 +3445,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-bridge-jakarta</artifactId>
+      <artifactId>restat-bridge</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3766,7 +3456,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-integration-jakarta</artifactId>
+      <artifactId>restat-integration</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3777,18 +3467,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.rts</groupId>
-      <artifactId>restat-util-jakarta</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.narayana.txframework</groupId>
-      <artifactId>txframework-jakarta</artifactId>
+      <artifactId>restat-util</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3799,7 +3478,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.narayana.xts</groupId>
-      <artifactId>jbossxts-jakarta</artifactId>
+      <artifactId>jbossxts</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License v2.1 only</name>
@@ -3963,8 +3642,8 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-validator-provider</artifactId>
+      <groupId>org.jboss.resteasy.spring</groupId>
+      <artifactId>resteasy-spring</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -3974,28 +3653,28 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.seam.integration</groupId>
-      <artifactId>jboss-seam-int-jbossas</artifactId>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-tracing-api</artifactId>
       <licenses>
         <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+          <name>Eclipse Public License 2.0</name>
+          <url>https://www.eclipse.org/legal/epl-v20.html</url>
+          <distribution>repo</distribution>
+        </license>
+        <license>
+          <name>GNU General Public License, Version 2 with the Classpath Exception</name>
+          <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.transaction</groupId>
-      <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-validator-provider</artifactId>
       <licenses>
         <license>
-          <name>Eclipse Public License 2.0</name>
-          <url>http://www.eclipse.org/legal/epl-v20.html</url>
-          <distribution>repo</distribution>
-        </license>
-        <license>
-          <name>GNU General Public License v2.0 only, with Classpath exception</name>
-          <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+          <name>Apache License 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
           <distribution>repo</distribution>
         </license>
       </licenses>
@@ -4223,50 +3902,6 @@
     <dependency>
       <groupId>org.jctools</groupId>
       <artifactId>jctools-core</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib-common</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <licenses>
-        <license>
-          <name>Apache License 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib-jdk7</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -4703,17 +4338,6 @@
         <license>
           <name>Apache License 2.0</name>
           <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>xom</groupId>
-      <artifactId>xom</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License v2.1 only</name>
-          <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
           <distribution>repo</distribution>
         </license>
       </licenses>

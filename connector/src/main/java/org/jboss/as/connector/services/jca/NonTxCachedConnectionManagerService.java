@@ -24,13 +24,13 @@ package org.jboss.as.connector.services.jca;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-import javax.resource.spi.ResourceAdapter;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.resource.spi.ActivationSpec;
+import jakarta.resource.spi.ManagedConnection;
+import jakarta.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.spi.ResourceAdapter;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.xa.XAResource;
 
 import org.jboss.jca.core.api.connectionmanager.ConnectionManager;

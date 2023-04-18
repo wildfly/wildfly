@@ -32,7 +32,7 @@ import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathElement;
@@ -71,7 +71,7 @@ public abstract class TransportResourceDefinition extends ChildResourceDefinitio
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addCapabilities(capabilities)
                 ;
-        new SimpleResourceRegistration(descriptor, this.handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, this.handler).register(registration);
 
         return registration;
     }

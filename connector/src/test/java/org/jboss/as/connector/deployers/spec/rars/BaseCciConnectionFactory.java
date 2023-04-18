@@ -23,13 +23,13 @@ package org.jboss.as.connector.deployers.spec.rars;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.ResourceException;
-import javax.resource.cci.Connection;
-import javax.resource.cci.ConnectionFactory;
-import javax.resource.cci.ConnectionSpec;
-import javax.resource.cci.RecordFactory;
-import javax.resource.cci.ResourceAdapterMetaData;
-import javax.resource.spi.ManagedConnectionFactory;
+import jakarta.resource.ResourceException;
+import jakarta.resource.cci.Connection;
+import jakarta.resource.cci.ConnectionFactory;
+import jakarta.resource.cci.ConnectionSpec;
+import jakarta.resource.cci.RecordFactory;
+import jakarta.resource.cci.ResourceAdapterMetaData;
+import jakarta.resource.spi.ManagedConnectionFactory;
 
 /**
  * BaseCciConnectionFactory
@@ -85,7 +85,7 @@ public class BaseCciConnectionFactory implements ConnectionFactory {
     /*
      * getConnection
      *
-     * @see javax.resource.cci.ConnectionFactory#getConnection()
+     * @see jakarta.resource.cci.ConnectionFactory#getConnection()
      */
     @Override
     public Connection getConnection() throws ResourceException {
@@ -95,7 +95,7 @@ public class BaseCciConnectionFactory implements ConnectionFactory {
     /*
      * getConnection
      *
-     * @see javax.resource.cci.ConnectionFactory#getConnection(javax.resource.cci.ConnectionSpec)
+     * @see jakarta.resource.cci.ConnectionFactory#getConnection(jakarta.resource.cci.ConnectionSpec)
      */
     @Override
     public Connection getConnection(ConnectionSpec properties) throws ResourceException {
@@ -105,7 +105,7 @@ public class BaseCciConnectionFactory implements ConnectionFactory {
     /*
      * getMetaData
      *
-     * @see javax.resource.cci.ConnectionFactory#getMetaData()
+     * @see jakarta.resource.cci.ConnectionFactory#getMetaData()
      */
     @Override
     public ResourceAdapterMetaData getMetaData() throws ResourceException {
@@ -115,7 +115,7 @@ public class BaseCciConnectionFactory implements ConnectionFactory {
     /*
      * getRecordFactory
      *
-     * @see javax.resource.cci.ConnectionFactory#getRecordFactory()
+     * @see jakarta.resource.cci.ConnectionFactory#getRecordFactory()
      */
     @Override
     public RecordFactory getRecordFactory() throws ResourceException {
@@ -137,7 +137,7 @@ public class BaseCciConnectionFactory implements ConnectionFactory {
     /*
      * setReference
      *
-     * @see javax.resource.Referenceable#setReference(javax.naming.Reference)
+     * @see jakarta.resource.Referenceable#setReference(javax.naming.Reference)
      */
     @Override
     public void setReference(Reference reference) {

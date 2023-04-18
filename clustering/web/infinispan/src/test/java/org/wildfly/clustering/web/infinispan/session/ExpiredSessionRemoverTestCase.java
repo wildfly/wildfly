@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.junit.Test;
 import org.wildfly.clustering.Registration;
@@ -37,7 +38,6 @@ import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Unit test for {@link ExpiredSessionRemover}.
@@ -50,7 +50,7 @@ public class ExpiredSessionRemoverTestCase {
         SessionFactory<Object, UUID, UUID, Object> factory = mock(SessionFactory.class);
         SessionMetaDataFactory<UUID> metaDataFactory = mock(SessionMetaDataFactory.class);
         SessionAttributesFactory<Object, UUID> attributesFactory = mock(SessionAttributesFactory.class);
-        SessionExpirationListener listener = mock(SessionExpirationListener.class);
+        Consumer<ImmutableSession> listener = mock(Consumer.class);
         ImmutableSessionAttributes expiredAttributes = mock(ImmutableSessionAttributes.class);
         ImmutableSessionMetaData validMetaData = mock(ImmutableSessionMetaData.class);
         ImmutableSessionMetaData expiredMetaData = mock(ImmutableSessionMetaData.class);
@@ -91,7 +91,7 @@ public class ExpiredSessionRemoverTestCase {
             verify(factory, never()).remove(missingSessionId);
             verify(factory, never()).remove(validSessionId);
 
-            verify(listener).sessionExpired(expiredSession);
+            verify(listener).accept(expiredSession);
         }
     }
 }

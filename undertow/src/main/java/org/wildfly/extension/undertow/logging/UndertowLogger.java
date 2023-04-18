@@ -318,7 +318,7 @@ public interface UndertowLogger extends BasicLogger {
     DeploymentUnitProcessingException couldNotFindExternalPath(File path);
 
     @Message(id = 73, value = "mod_cluster advertise socket binding requires multicast address to be set")
-    StartException advertiseSocketBindingRequiresMulticastAddress();
+    IllegalArgumentException advertiseSocketBindingRequiresMulticastAddress();
 
     @LogMessage(level = ERROR)
     @Message(id = 74, value = "Could not find TLD %s")
@@ -441,5 +441,9 @@ public interface UndertowLogger extends BasicLogger {
 
     @Message(id = 110, value = "The use of security realms at runtime is unsupported.")
     OperationFailedException runtimeSecurityRealmUnsupported();
+
+    @LogMessage(level = WARN)
+    @Message(id = 111, value = "The annotation: '%s' will have no effect on Servlet: '%s'")
+    void badAnnotationOnServlet(String annotation, String servlet);
 
 }

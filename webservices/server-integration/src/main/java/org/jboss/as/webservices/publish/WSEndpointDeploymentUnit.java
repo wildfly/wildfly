@@ -131,22 +131,22 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         return currentServiceContainer();
     }
 
-    @Override
+    //@Override
     public ModelNode getDeploymentSubsystemModel(String subsystemName) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    //@Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    //@Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    //@Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address, Resource resource) {
         throw new UnsupportedOperationException();
     }

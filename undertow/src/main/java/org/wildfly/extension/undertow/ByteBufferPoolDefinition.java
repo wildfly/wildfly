@@ -10,6 +10,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -30,7 +31,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
 
-
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.BYTE_BUFFER_POOL);
     static final RuntimeCapability<Void> UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, true, ByteBufferPool.class).build();
 
@@ -93,17 +94,15 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
             .setDefaultValue(ModelNode.ZERO)
             .build();
 
-    private static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(BUFFER_SIZE, MAX_POOL_SIZE, DIRECT, THREAD_LOCAL_CACHE_SIZE, LEAK_DETECTION_PERCENT);
+    static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(BUFFER_SIZE, MAX_POOL_SIZE, DIRECT, THREAD_LOCAL_CACHE_SIZE, LEAK_DETECTION_PERCENT);
 
 
-    public static final ByteBufferPoolDefinition INSTANCE = new ByteBufferPoolDefinition();
-
-    private ByteBufferPoolDefinition() {
-        super(new SimpleResourceDefinition.Parameters(UndertowExtension.BYTE_BUFFER_POOL_PATH,
-                UndertowExtension.getResolver(Constants.BYTE_BUFFER_POOL))
+    ByteBufferPoolDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new BufferPoolAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .addCapabilities(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY));
+                .addCapabilities(UNDERTOW_BUFFER_POOL_RUNTIME_CAPABILITY)
+        );
     }
 
     @Override

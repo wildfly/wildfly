@@ -28,11 +28,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.EnumSet;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -51,13 +53,7 @@ public class SingletonDeploymentParsingProcessor implements DeploymentUnitProces
     private static final String SINGLETON_DEPLOYMENT_DESCRIPTOR = "META-INF/singleton-deployment.xml";
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 
-    private final XMLMapper mapper = XMLMapper.Factory.create();
-
-    public SingletonDeploymentParsingProcessor() {
-        for (SingletonDeploymentSchema schema : SingletonDeploymentSchema.values()) {
-            this.mapper.registerRootElement(schema.getRoot(), new SingletonDeploymentXMLReader(schema));
-        }
-    }
+    private final XMLMapper mapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(SingletonDeploymentSchema.class));
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {

@@ -1,0 +1,214 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+    <example-configs>
+        <config model="standalone" name="standalone-genericjms.xml">
+            <layers>
+                <include name="internal-standalone-profile"/>
+                <exclude name="messaging-activemq"/>
+                <exclude name="microprofile-jwt"/>
+                <include name="iiop-openjdk"/>
+            </layers>
+    
+            <feature-group name="adjust-standalone-config"/>
+
+            <feature-group name="ejb3-mdb"/>
+            <feature spec="subsystem.resource-adapters">
+                <feature spec="subsystem.resource-adapters.resource-adapter">
+                    <param name="resource-adapter" value="generic-jms-ra.rar"/>
+                    <param name="module" value="org.jboss.genericjms"/>
+                    <param name="transaction-support" value="NoTransaction"/>
+                    <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions">
+                        <param name="class-name" value="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory"/>
+                        <param name="jndi-name" value="${genericjms.cf.jndi-name}"/>
+                        <param name="connection-definitions" value="${genericjms.cf.pool-name}"/>
+                        <param name="security-application" value="true"/>
+                        <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions.config-properties">
+                            <param name="config-properties" value="JndiParameters"/>
+                            <param name="value" value="&quot;java.naming.factory.initial=${genericjms.cf.jndi.contextfactory};java.naming.provider.url=${genericjms.cf.jndi.url}&quot;"/>
+                        </feature>
+                        <feature spec="subsystem.resource-adapters.resource-adapter.connection-definitions.config-properties">
+                            <param name="config-properties" value="ConnectionFactory"/>
+                            <param name="value" value="${genericjms.cf.jndi.lookup}"/>
+                        </feature>
+                    </feature>
+                </feature>
+            </feature>
+            <feature spec="subsystem.ejb3">
+                <feature spec="subsystem.ejb3.service.iiop">
+                    <param name="use-qualified-name" value="false"/>
+                    <param name="enable-by-default" value="false"/>
+                </feature>
+            </feature>
+        </config>
+        <config model="standalone" name="standalone-jts.xml">
+            <layers>
+                <include name="internal-standalone-profile"/>
+                <exclude name="messaging-activemq"/>
+                <include name="iiop-openjdk"/>
+            </layers>
+    
+            <feature-group name="adjust-standalone-config"/>
+
+            <feature spec="subsystem.transactions">
+                <param name="jts" value="true"/>
+            </feature>
+        </config>
+        <config model="standalone" name="standalone-minimalistic.xml">
+            <layers>
+                <include name="management"/>
+                <include name="elytron"/>
+            </layers>
+            <feature spec="core-service.management.management-interface.http-interface">
+                <param name="console-enabled" value="false"/>
+            </feature>
+        </config>
+        <config model="standalone" name="standalone-rts.xml">
+            <layers>
+                <include name="internal-standalone-full-profile"/>
+                <exclude name="microprofile-jwt"/>
+            </layers>
+
+            <feature-group name="adjust-standalone-full-config"/>
+
+            <feature spec="subsystem.rts">
+                <param name="host-feature" value="default-host"/>
+                <param name="socket-binding" value="http"/>
+                <param name="server" value="default-server"/>
+            </feature>
+        </config>
+        <config model="standalone" name="standalone-xts.xml">
+            <layers>
+                <include name="internal-standalone-full-profile"/>
+                <exclude name="batch-jberet"/>
+                <exclude name="microprofile-jwt"/>
+            </layers>
+
+            <feature-group name="adjust-standalone-full-config"/>
+
+            <feature spec="subsystem.xts">
+                <param name="host-feature" value="default-host"/>
+                <param name="url" value="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
+                <param name="default-context-propagation" value="true"/>
+            </feature>
+        </config>
+        <config model="standalone" name="standalone-activemq-colocated.xml">
+            <layers>
+                <include name="internal-standalone-full-profile"/>
+                <include name="embedded-activemq"/>
+                <exclude name="microprofile-jwt"/>
+                <exclude name="remote-activemq"/>
+            </layers>
+
+            <feature-group name="adjust-standalone-full-config"/>
+
+            <exclude feature-id="subsystem.messaging-activemq.server.http-acceptor:server=default,subsystem=messaging-activemq,http-acceptor=http-acceptor-throughput"/>
+            <exclude feature-id="subsystem.messaging-activemq.server.http-connector:http-connector=http-connector-throughput,server=default,subsystem=messaging-activemq"/>
+            <feature spec="subsystem.messaging-activemq">
+                <feature spec="subsystem.messaging-activemq.server">
+                    <param name="server" value="default"/>
+                    <!--<unset param="security-domain"/>
+                    <param name="elytron-domain" value="ApplicationDomain"/>
+                    -->
+                    <param name="persistence-enabled" value="true"/>
+                    <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+                    <param name="journal-file-size" value="102400"/>
+                    <param name="journal-min-files" value="2"/>
+                    <param name="journal-type" value="ASYNCIO"/>
+                    <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-primary"/>
+
+                    <feature spec="subsystem.messaging-activemq.server.in-vm-connector">
+                        <param name="in-vm-connector" value="in-vm"/>
+                        <unset param="params"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.in-vm-acceptor">
+                        <param name="in-vm-acceptor" value="in-vm"/>
+                        <unset param="params"/>
+                    </feature>
+
+                    <feature spec="subsystem.messaging-activemq.server.jgroups-broadcast-group">
+                        <param name="jgroups-broadcast-group" value="bg-group1"/>
+                        <param name="jgroups-cluster" value="activemq-cluster"/>
+                        <param name="connectors" value="[http-connector]"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.jgroups-discovery-group">
+                        <param name="jgroups-discovery-group" value="dg-group1"/>
+                        <param name="jgroups-cluster" value="activemq-cluster"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.cluster-connection">
+                        <param name="cluster-connection" value="my-cluster"/>
+                        <param name="cluster-connection-address" value="jms"/>
+                        <param name="connector-name" value="http-connector"/>
+                        <param name="discovery-group" value="dg-group1"/>
+                    </feature>
+
+                    <feature spec="subsystem.messaging-activemq.server.jms-queue">
+                        <param name="jms-queue" value="testQueue"/>
+                        <param name="entries" value="[queue/test,java:jboss/exported/jms/queue/test]"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.jms-topic">
+                        <param name="jms-topic" value="testTopic"/>
+                        <param name="entries" value="[topic/test,java:jboss/exported/jms/topic/test]"/>
+                    </feature>
+                </feature>
+                <!-- Backup server -->
+                <feature spec="subsystem.messaging-activemq.server">
+                    <param name="server" value="backuper-server"/>
+                    <param name="elytron-domain" value="ApplicationDomain"/>
+                    <param name="persistence-enabled" value="true"/>
+                    <param name="cluster-password" value="${jboss.messaging.cluster.password:CHANGE ME!!}"/>
+                    <param name="journal-file-size" value="102400"/>
+                    <param name="journal-min-files" value="2"/>
+                    <param name="journal-type" value="ASYNCIO"/>
+                    <feature spec="subsystem.messaging-activemq.server.ha-policy.shared-store-secondary"/>
+                    <feature spec="subsystem.messaging-activemq.server.path.bindings-directory">
+                        <param name="path-feature" value="activemq-backup/bindings"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.path.journal-directory">
+                        <param name="path-feature" value="activemq-backup/journal"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.path.large-messages-directory">
+                        <param name="path-feature" value="activemq-backup/largemessages"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.path.paging-directory">
+                        <param name="path-feature" value="activemq-backup/paging"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.http-connector">
+                        <param name="http-connector" value="http-connector-backup"/>
+                        <param name="socket-binding" value="http"/>
+                        <param name="endpoint" value="http-acceptor-backup"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.http-acceptor">
+                        <param name="http-acceptor" value="http-acceptor-backup"/>
+                        <param name="http-listener" value="default"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.jgroups-broadcast-group">
+                        <param name="jgroups-broadcast-group" value="bg-group1"/>
+                        <param name="jgroups-cluster" value="activemq-cluster"/>
+                        <param name="connectors" value="[http-connector-backup]"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.jgroups-discovery-group">
+                        <param name="jgroups-discovery-group" value="dg-group2"/>
+                        <param name="jgroups-cluster" value="activemq-cluster"/>
+                    </feature>
+                    <feature spec="subsystem.messaging-activemq.server.cluster-connection">
+                        <param name="cluster-connection" value="my-cluster"/>
+                        <param name="cluster-connection-address" value="jms"/>
+                        <param name="connector-name" value="http-connector-backup"/>
+                        <param name="discovery-group" value="dg-group2"/>
+                    </feature>
+                </feature>
+            </feature>
+            <feature-group name="private-interface"/>
+            <feature-group name="jgroups-all"/>
+        </config>
+        <config model="standalone" name="standalone-activemq-embedded.xml">
+            <layers>
+                <include name="internal-standalone-full-profile"/>
+                <include name="embedded-activemq"/>
+                <exclude name="remote-activemq"/>
+            </layers>
+            <feature-group name="adjust-standalone-full-config"/>
+        </config>
+    </example-configs>
+</tasks>

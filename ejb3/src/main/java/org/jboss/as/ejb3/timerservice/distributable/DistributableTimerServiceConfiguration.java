@@ -27,7 +27,9 @@ import java.util.function.Function;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration;
 
 /**
+ * Encapsulates the configuration of a {@link DistributedTimerService}.
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface DistributableTimerServiceConfiguration<I> extends ManagedTimerServiceConfiguration {
 

@@ -47,10 +47,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ejb.BeanConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
+import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.service.CacheServiceConfigurator;
@@ -88,7 +88,7 @@ public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends Simp
     private volatile Supplier<Cache> cache;
 
     public InfinispanTimerManagerFactoryServiceConfigurator(InfinispanTimerManagementConfiguration configuration, TimerManagerFactoryConfiguration<I> factoryConfiguration) {
-        super(ServiceName.JBOSS.append("clustering", "timer").append(factoryConfiguration.getBeanConfiguration().getName()));
+        super(ServiceName.JBOSS.append("clustering", "timer").append(factoryConfiguration.getTimerServiceConfiguration().getName()));
         this.configuration = configuration;
         this.factoryConfiguration = factoryConfiguration;
         this.persistent = factoryConfiguration.isPersistent();
@@ -103,7 +103,7 @@ public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends Simp
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         String containerName = this.configuration.getContainerName();
         String cacheName = this.configuration.getCacheName();
-        String beanName = this.factoryConfiguration.getBeanConfiguration().getName();
+        String beanName = this.factoryConfiguration.getTimerServiceConfiguration().getName();
 
         ServiceName cacheServiceName = InfinispanCacheRequirement.CACHE.getServiceName(support, containerName, beanName);
         this.dependenciesConfigurator = new CompositeServiceConfigurator(cacheServiceName);
@@ -154,8 +154,8 @@ public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends Simp
     }
 
     @Override
-    public BeanConfiguration getBeanConfiguration() {
-        return this.factoryConfiguration.getBeanConfiguration();
+    public TimerServiceConfiguration getTimerServiceConfiguration() {
+        return this.factoryConfiguration.getTimerServiceConfiguration();
     }
 
     @Override
@@ -165,7 +165,7 @@ public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends Simp
 
     @Override
     public ByteBufferMarshaller getMarshaller() {
-        return this.configuration.getMarshallerFactory().apply(this.factoryConfiguration.getBeanConfiguration().getModule());
+        return this.configuration.getMarshallerFactory().apply(this.factoryConfiguration.getTimerServiceConfiguration().getModule());
     }
 
     @Override

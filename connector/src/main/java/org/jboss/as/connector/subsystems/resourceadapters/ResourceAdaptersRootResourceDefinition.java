@@ -60,6 +60,6 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerAdditionalRuntimePackages(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("javax.jms.api"));
+        resourceRegistration.registerAdditionalRuntimePackages(RuntimePackageDependency.required("jakarta.jms.api"));
     }
 }

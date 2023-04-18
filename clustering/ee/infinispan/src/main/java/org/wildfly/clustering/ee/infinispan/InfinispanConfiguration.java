@@ -65,6 +65,16 @@ public interface InfinispanConfiguration extends CacheConfiguration {
     }
 
     /**
+     * Returns a cache with select-for-update and try-lock semantics.
+     * @param <K> the cache key type
+     * @param <V> the cache value type
+     * @return a cache with try-lock and select-for-update semantics.
+     */
+    default <K, V> Cache<K, V> getTryReadForUpdateCache() {
+        return this.getCacheProperties().isLockOnRead() ? this.<K, V>getCache().getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK, Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY) : this.getCache();
+    }
+
+    /**
      * Returns a cache for use with write-only operations, e.g. put/remove where previous values are not needed.
      * @param <K> the cache key type
      * @param <V> the cache value type

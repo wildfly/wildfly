@@ -108,7 +108,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setResteasyDocumentExpandEntityReferences(JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS)) {
-            config.setResteasyDocumentExpandEntityReferences(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.resolveModelAttribute(context, configuration));
+            config.setResteasySecureDisableDTDs(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE)) {
             config.setResteasyDocumentSecureProcessingFeature(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE.resolveModelAttribute(context, configuration));
@@ -151,6 +151,12 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING)) {
             config.setResteasyWiderRequestMatching(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsAttribute.TRACING_THRESHOLD.getName())) {
+            config.putContextParameter("resteasy.server.tracing.threshold", JaxrsAttribute.TRACING_THRESHOLD.resolveModelAttribute(context, configuration).asString());
+        }
+        if (configuration.hasDefined(JaxrsAttribute.TRACING_TYPE.getName())) {
+            config.putContextParameter("resteasy.server.tracing.type", JaxrsAttribute.TRACING_TYPE.resolveModelAttribute(context, configuration).asString());
         }
         return config;
     }

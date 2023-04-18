@@ -1,6 +1,13 @@
 [[Operating_modes]]
 = Operating mode
+
 ifdef::env-github[:imagesdir: ../images/]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 WildFly can be booted in two different modes. A _managed domain_ allows
 you to run and manage a multi-server topology. Alternatively, you can

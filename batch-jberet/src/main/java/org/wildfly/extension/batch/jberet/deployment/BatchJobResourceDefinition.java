@@ -58,9 +58,7 @@ public class BatchJobResourceDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    public static final BatchJobResourceDefinition INSTANCE = new BatchJobResourceDefinition();
-
-    private BatchJobResourceDefinition() {
+    public BatchJobResourceDefinition() {
         super(new Parameters(PathElement.pathElement(JOB), BatchResourceDescriptionResolver.getResourceDescriptionResolver("deployment", "job")).setRuntime());
     }
 

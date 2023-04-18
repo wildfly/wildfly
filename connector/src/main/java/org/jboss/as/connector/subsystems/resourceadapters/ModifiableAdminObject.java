@@ -192,21 +192,21 @@ public class ModifiableAdminObject implements AdminObject {
         sb.append("<admin-object");
 
         if (className != null)
-            sb.append(" ").append(AdminObject.Attribute.CLASS_NAME).append("=\"").append(className).append("\"");
+            sb.append(" ").append(Attribute.CLASS_NAME).append("=\"").append(className).append("\"");
 
         if (jndiName != null)
-            sb.append(" ").append(AdminObject.Attribute.JNDI_NAME).append("=\"").append(jndiName).append("\"");
+            sb.append(" ").append(Attribute.JNDI_NAME).append("=\"").append(jndiName).append("\"");
 
         if (enabled != null)
-            sb.append(" ").append(AdminObject.Attribute.ENABLED).append("=\"").append(enabled).append("\"");
+            sb.append(" ").append(Attribute.ENABLED).append("=\"").append(enabled).append("\"");
 
         if (useJavaContext != null) {
-            sb.append(" ").append(AdminObject.Attribute.USE_JAVA_CONTEXT);
+            sb.append(" ").append(Attribute.USE_JAVA_CONTEXT);
             sb.append("=\"").append(useJavaContext).append("\"");
         }
 
         if (poolName != null)
-            sb.append(" ").append(AdminObject.Attribute.POOL_NAME).append("=\"").append(poolName).append("\"");
+            sb.append(" ").append(Attribute.POOL_NAME).append("=\"").append(poolName).append("\"");
 
         sb.append(">");
 
@@ -215,10 +215,10 @@ public class ModifiableAdminObject implements AdminObject {
             while (it.hasNext()) {
                 Map.Entry<String, String> entry = it.next();
 
-                sb.append("<").append(AdminObject.Tag.CONFIG_PROPERTY);
+                sb.append("<").append(Tag.CONFIG_PROPERTY);
                 sb.append(" name=\"").append(entry.getKey()).append("\">");
                 sb.append(entry.getValue());
-                sb.append("</").append(AdminObject.Tag.CONFIG_PROPERTY).append(">");
+                sb.append("</").append(Tag.CONFIG_PROPERTY).append(">");
             }
         }
 

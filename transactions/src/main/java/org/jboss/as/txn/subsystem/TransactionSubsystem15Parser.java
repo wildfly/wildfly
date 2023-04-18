@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * The {@link org.jboss.staxmapper.XMLExtendedStreamReader} that handles the version 3.0 of Transaction subsystem xml.
+ * The {@link XMLExtendedStreamReader} that handles the version 3.0 of Transaction subsystem xml.
  */
 class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
 

@@ -83,7 +83,7 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (! deployed )
-            resourceRegistration.registerSubModel(JdbcDriverDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(new JdbcDriverDefinition());
         resourceRegistration.registerSubModel(DataSourceDefinition.createInstance(registerRuntimeOnly, deployed));
         resourceRegistration.registerSubModel(XaDataSourceDefinition.createInstance(registerRuntimeOnly, deployed));
     }

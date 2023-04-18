@@ -23,16 +23,16 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import javax.faces.bean.ManagedBean;
-import javax.faces.component.FacesComponent;
-import javax.faces.component.behavior.FacesBehavior;
-import javax.faces.context.ExternalContext;
-import javax.faces.convert.FacesConverter;
-import javax.faces.event.NamedEvent;
-import javax.faces.render.FacesBehaviorRenderer;
-import javax.faces.render.FacesRenderer;
-import javax.faces.validator.FacesValidator;
-import javax.servlet.ServletContext;
+
+import jakarta.faces.component.FacesComponent;
+import jakarta.faces.component.behavior.FacesBehavior;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.convert.FacesConverter;
+import jakarta.faces.event.NamedEvent;
+import jakarta.faces.render.FacesBehaviorRenderer;
+import jakarta.faces.render.FacesRenderer;
+import jakarta.faces.validator.FacesValidator;
+import jakarta.servlet.ServletContext;
 
 /**
  * This class retrieves the annotation map from application scope.  This map was placed there by the JSFAnnotationProcessor
@@ -65,7 +65,6 @@ public class AnnotationMap {
             stringToAnnoMap.put(FacesConverter.class.getName(), FacesConverter.class);
             stringToAnnoMap.put(FacesValidator.class.getName(), FacesValidator.class);
             stringToAnnoMap.put(FacesRenderer.class.getName(), FacesRenderer.class);
-            stringToAnnoMap.put(ManagedBean.class.getName(), ManagedBean.class);
             stringToAnnoMap.put(NamedEvent.class.getName(), NamedEvent.class);
             stringToAnnoMap.put(FacesBehavior.class.getName(), FacesBehavior.class);
             stringToAnnoMap.put(FacesBehaviorRenderer.class.getName(), FacesBehaviorRenderer.class);
@@ -73,7 +72,7 @@ public class AnnotationMap {
             // Put Jakarta Server Faces 2.2+ annotations below this line if any new ones are to be scanned.
             // Load the class to avoid a NoClassDefFoundError if it is not present in the impl
             ClassLoader loader = AnnotationMap.class.getClassLoader();
-            addAnnotationIfPresent(loader, "javax.faces.view.facelets.FaceletsResourceResolver");
+            addAnnotationIfPresent(loader, "jakarta.faces.view.facelets.FaceletsResourceResolver");
         } catch (Exception e) {
             // Ignore.  Whatever classes are available have been loaded into the map.
         }

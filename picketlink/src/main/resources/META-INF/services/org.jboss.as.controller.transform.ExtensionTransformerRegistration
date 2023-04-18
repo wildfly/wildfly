@@ -1,0 +1,2 @@
+org.wildfly.extension.picketlink.idm.IDMExtension$TransformerRegistration
+org.wildfly.extension.picketlink.federation.FederationExtension$TransformerRegistration

@@ -30,7 +30,7 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceRegistration;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -111,14 +111,14 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
                 .addCapabilities(Capability.class)
                 ;
         ResourceServiceHandler handler = new StackServiceHandler(this.serviceConfiguratorFactory);
-        new SimpleResourceRegistration(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new StackOperationHandler().register(registration);
         }
 
-        new TransportRegistration(this.serviceConfiguratorFactory).register(registration);
-        new ProtocolRegistration(this.serviceConfiguratorFactory).register(registration);
+        new TransportResourceRegistrar(this.serviceConfiguratorFactory).register(registration);
+        new ProtocolResourceRegistrar(this.serviceConfiguratorFactory).register(registration);
         new RelayResourceDefinition(this.serviceConfiguratorFactory).register(registration);
 
         return registration;

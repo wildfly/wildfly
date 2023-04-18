@@ -22,15 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
-import java.io.IOException;
-
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -50,35 +45,24 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String DEFAULT_SERVLET_CONTAINER = "default";
     private static final String DEFAULT_VIRTUAL_HOST = "default-host";
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-13.0.xml");
+    public UndertowServiceTestCase() {
+        super(UndertowSubsystemSchema.VERSION_12_0);
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_13_0.xsd";
-    }
-
-    @Before
     public void setUp() {
-        setProperty();
+        super.setUp();
         System.setProperty("jboss.node.name", NODE_NAME);
     }
 
     private UndertowService load(String xmlFile) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME).setSubsystemXml(readResource(xmlFile));
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(readResource(xmlFile));
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
-        final ServiceName undertowServiceName = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
-        ServiceController<UndertowService> undertowServiceService = (ServiceController<UndertowService>) mainServices.getContainer().getService(undertowServiceName);
-
-        assertNotNull(undertowServiceService);
-        undertowServiceService.setMode(ServiceController.Mode.ACTIVE);
-        final UndertowService undertowService = undertowServiceService.getValue();
+        final UndertowService undertowService = (UndertowService) this.values.get(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()).get();
         assertNotNull(undertowService);
         return undertowService;
     }

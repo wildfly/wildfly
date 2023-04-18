@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.jms.IllegalStateRuntimeException;
+import jakarta.jms.IllegalStateRuntimeException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -883,5 +883,8 @@ public interface MessagingLogger extends BasicLogger {
 
     @Message(id = 106, value = "The bridge %s didn't deploy.")
     OperationFailedException failedBridgeDeployment(String bridgeName);
+
+    @Message(id = 107, value = "You must define a elytron security doman when security is enabled.")
+    IllegalStateException securityEnabledWithoutDomain();
 
 }

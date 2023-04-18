@@ -1,6 +1,14 @@
 [[SSL_Configuration_using_Elytron_Subsystem]]
 = SSL Configuration using Elytron Subsystem
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 This section provides information how to configure mod_cluster
@@ -34,7 +42,7 @@ command:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=default-trust-store:add(type=JKS, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
+/subsystem=elytron/key-store=default-trust-store:add(type=PKCS12, relative-to=jboss.server.config.dir, path=application.truststore, credential-reference={clear-text=password})
 ----
 
 In order to successfully execute the command above you must have a

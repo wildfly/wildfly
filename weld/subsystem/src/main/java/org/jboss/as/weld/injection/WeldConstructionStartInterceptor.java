@@ -2,8 +2,8 @@ package org.jboss.as.weld.injection;
 
 import java.util.Map;
 
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedConstructor;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.spi.AnnotatedConstructor;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;

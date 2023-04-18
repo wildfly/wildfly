@@ -42,7 +42,7 @@ public class GenericProtocolResourceDefinition extends ProtocolResourceDefinitio
         this(WILDCARD_PATH, configurator, parentServiceConfiguratorFactory);
     }
 
-    GenericProtocolResourceDefinition(String name, JGroupsModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    GenericProtocolResourceDefinition(String name, JGroupsSubsystemModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
         this(pathElement(name), configurator, parentServiceConfiguratorFactory);
         this.setDeprecated(deprecation.getVersion());
     }

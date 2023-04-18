@@ -34,6 +34,6 @@ import org.wildfly.clustering.server.service.LocalCacheServiceConfiguratorProvid
 public class LocalCacheGroupServiceConfiguratorProvider extends CacheGroupServiceConfiguratorProvider implements org.wildfly.clustering.server.service.group.LocalCacheGroupServiceConfiguratorProvider {
 
     public LocalCacheGroupServiceConfiguratorProvider() {
-        super((name, containerName, cacheName) -> new LocalCacheGroupServiceConfigurator(name));
+        super((name, containerName, cacheName) -> new LocalGroupServiceConfigurator(name));
     }
 }

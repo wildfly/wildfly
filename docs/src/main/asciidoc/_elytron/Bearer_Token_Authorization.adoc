@@ -1,6 +1,14 @@
 [[Bearer_Token_Authorization]]
 = Bearer Token Authorization
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Bearer Token Authorization is the process of authorizing HTTP requests based on the existence and validity of a bearer
 token representing a subject and his access context, where the token provides valuable information to determine the subject of the call as well whether or not a HTTP resource
 can be accessed.
@@ -167,7 +175,7 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 [[quickstarts]]
 == Quickstarts
 
-* https://github.com/wildfly/quickstart/tree/master/jaxrs-jwt[Jakarta RESTful Web Services secured using JSON Web Tokens]
+* https://github.com/wildfly/quickstart/tree/main/jaxrs-jwt[Jakarta RESTful Web Services secured using JSON Web Tokens]
 
 [[CLI-examples-on-how-to-create-a-token-realm]]
 == CLI Examples on How to Create a Token Realm
@@ -177,7 +185,7 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 [source,bash]
 ----
 # Create a Key Store
-/subsystem=elytron/key-store=my-keystore:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=my-keystore:add(path=/path/to/keystore.pkcs12,credential-reference={clear-text=secret},type=PKCS12)
 
 # Create the realm
 /subsystem=elytron/token-realm=jwt-realm:add(principal-claim=sub, jwt={issuer=["as.example.com"], audience=["api.example.com"], key-store=my-keystore, certificate=as.example.com})
@@ -188,7 +196,7 @@ A policy that defines how host names should be verified when using HTTPS. Allowe
 [source,bash]
 ----
 # Create a Client SSLContext
-/subsystem=elytron/key-store=default-trust-store:add(path=/path/to/keystore.jks,credential-reference={clear-text=secret},type=JKS)
+/subsystem=elytron/key-store=default-trust-store:add(path=/path/to/keystore.pkcs12,credential-reference={clear-text=secret},type=PKCS12)
 /subsystem=elytron/trust-manager=default-trust-manager:add(algorithm=PKIX, key-store=default-trust-store)
 /subsystem=elytron/client-ssl-context=default-client-ssl-context:add(trust-manager=default-trust-manager)
 

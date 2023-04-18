@@ -33,17 +33,28 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-messaging-activemq-subsystem-legacy-namespace</artifactId>
+    <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
 
     <name>WildFly: Messaging Subsystem With ActiveMQ Artemis</name>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-messaging-activemq-injection-legacy-namespace</artifactId>
+            <artifactId>wildfly-messaging-activemq-injection</artifactId>
         </dependency>
 
         <dependency>
@@ -59,6 +70,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
 
         <dependency>
@@ -92,18 +108,13 @@
         </dependency>
 
         <dependency>
-              <groupId>org.apache.activemq</groupId>
-              <artifactId>artemis-core-client</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-core-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-service-extensions</artifactId>
-        </dependency>
-
-        <dependency>
-              <groupId>org.apache.activemq</groupId>
-              <artifactId>artemis-server</artifactId>
+            <artifactId>artemis-server</artifactId>
         </dependency>
 
         <dependency>
@@ -113,6 +124,14 @@
                 <exclusion>
                     <groupId>org.apache.qpid</groupId>
                     <artifactId>qpid-jms-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.activemq</groupId>
+                    <artifactId>artemis-jms-server</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -134,17 +153,22 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-client</artifactId>
+            <artifactId>artemis-jakarta-client</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-jms-server</artifactId>
+            <artifactId>artemis-jakarta-server</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>artemis-ra</artifactId>
+            <artifactId>artemis-jakarta-ra</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-service-extensions</artifactId>
         </dependency>
 
         <!-- This is only required for the MessagingExtension to initialize Netty's InternalLoggerFactory -->
@@ -158,7 +182,6 @@
             <artifactId>netty-transport</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
@@ -170,18 +193,48 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms-client</artifactId>
+            <groupId>jakarta.resource</groupId>
+            <artifactId>jakarta.resource-api</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jakarta-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.inject</groupId>
+                    <artifactId>javax.inject</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-journal</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-connector-legacy-namespace</artifactId>
+            <artifactId>wildfly-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-ee</artifactId>
         </dependency>
 
         <dependency>
@@ -196,31 +249,76 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions-legacy-namespace</artifactId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+            <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-ee-cache</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-ee-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-server-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-web-common-legacy-namespace</artifactId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-service</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-weld-common-legacy-namespace</artifactId>
+            <artifactId>wildfly-web-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-threads</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-core-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ironjacamar</groupId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
         </dependency>
 
         <dependency>
@@ -234,6 +332,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
@@ -243,7 +351,7 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
+            projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -252,7 +360,7 @@
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
+            projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -273,11 +381,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>failureaccess</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -286,6 +389,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- javax dependencies required to bootstrap the legacy controllers for transformer tests -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
             <scope>test</scope>
         </dependency>
 

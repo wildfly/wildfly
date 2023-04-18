@@ -32,7 +32,7 @@ public interface TempClassLoaderFactory {
     /**
      * Creates a temporary classloader with the same scope and classpath as the persistence unit classloader.
      *
-     * @see javax.persistence.spi.PersistenceUnitInfo#getNewTempClassLoader()
+     * @see jakarta.persistence.spi.PersistenceUnitInfo#getNewTempClassLoader()
      */
     ClassLoader createNewTempClassLoader();
 

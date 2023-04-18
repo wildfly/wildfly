@@ -32,6 +32,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -50,13 +51,7 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
     private static final String DISTRIBUTABLE_WEB_DEPLOYMENT_DESCRIPTOR = "WEB-INF/distributable-web.xml";
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 
-    private final XMLMapper mapper = XMLMapper.Factory.create();
-
-    public DistributableWebDeploymentParsingProcessor() {
-        for (DistributableWebDeploymentSchema schema : EnumSet.allOf(DistributableWebDeploymentSchema.class)) {
-            this.mapper.registerRootElement(schema.getRoot(), new DistributableWebDeploymentXMLReader(schema));
-        }
-    }
+    private final XMLMapper mapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(DistributableWebDeploymentSchema.class));
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -82,7 +77,7 @@ public class DistributableWebDeploymentParsingProcessor implements DeploymentUni
         try (FileReader reader = new FileReader(file)) {
             XMLStreamReader xmlReader = XML_INPUT_FACTORY.createXMLStreamReader(reader);
             try  {
-                MutableDistributableDeploymentConfiguration config = new MutableDistributableDeploymentConfiguration(unit);
+                MutableDistributableWebDeploymentConfiguration config = new MutableDistributableWebDeploymentConfiguration(unit);
                 this.mapper.parseDocument(config, xmlReader);
                 return config;
             } finally {

@@ -35,6 +35,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -56,7 +57,7 @@ import java.util.List;
  */
 public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
-    static final NamingBindingResourceDefinition INSTANCE = new NamingBindingResourceDefinition();
+    private static final String[] ALLOWED_TYPES = {"char", "java.lang.Character", "byte", "java.lang.Byte", "short", "java.lang.Short", "int", "java.lang.Integer", "long", "java.lang.Long", "float", "java.lang.Float", "double", "java.lang.Double", "boolean", "java.lang.Boolean", "java.lang.String", "java.net.URL"};
 
     static final SimpleAttributeDefinition BINDING_TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.BINDING_TYPE, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -71,6 +72,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_TYPES))
             .build();
 
     static final SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.CLASS, ModelType.STRING, true)
@@ -111,7 +113,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     static final OperationStepHandler VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER = (context, op) -> validateResourceModel(context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), true);
 
-    private NamingBindingResourceDefinition() {
+    NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
                 NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.BINDING),
                 NamingBindingAdd.INSTANCE, NamingBindingRemove.INSTANCE);

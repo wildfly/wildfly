@@ -32,7 +32,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>28.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-config</artifactId>
@@ -103,13 +103,11 @@
                         <config_ordinal>45</config_ordinal>
                         <customer_name>Bob</customer_name>
                     </environmentVariables>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <!-- We have put these values into mp.tck.properties above -->
                         <mp.tck.prop.dummy>dummy</mp.tck.prop.dummy>
                         <customer.hobby>Tennis</customer.hobby>
                         <config_ordinal>120</config_ordinal>
-                    </systemProperties>
-                    <systemPropertyVariables>
                         <!-- Pass the my_string_property and MY_STRING_PROPERTY as sysprop to exclude them from the
                              ConfigProviderTest#testEnvironmentConfigSource that does not deal with case-sensitive environment variables on Windows
                         -->

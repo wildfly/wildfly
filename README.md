@@ -66,9 +66,7 @@ Documentation
 
 Contributing
 ------------------
-* Git Setup: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/github_setup.adoc
-* Contributing: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/contributing.adoc
-* Pull request standard: https://github.com/wildfly/wildfly/blob/main/docs/src/main/asciidoc/_hacking/pullrequest_standards.adoc
+Please see the instructions available in the [contribution guide](CONTRIBUTING.md).
 
 Build vs. Dist directories
 --------------------------
@@ -109,7 +107,7 @@ Using Eclipse
 4. In eclipse preferences Java->Compiler->Errors/Warnings->Deprecated and restricted
    set forbidden reference to WARNING
 5. In eclipse preferences Java->Code Style, import the cleanup, templates, and
-   formatter configs in [ide-configs/eclipse](https://github.com/wildfly/wildfly-core/tree/master/ide-configs) in the wildfly-core repository.
+   formatter configs in [ide-configs/eclipse](https://github.com/wildfly/wildfly-core/tree/main/ide-configs) in the wildfly-core repository.
 6. In eclipse preferences Java->Editor->Save Actions enable "Additional Actions",
    and deselect all actions except for "Remove trailing whitespace"
 7. Use import on the root pom, which will pull in all modules

@@ -1,6 +1,14 @@
 [[Implicit_module_dependencies_for_deployments]]
 = Implicit module dependencies for deployments
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 As explained in the <<Class_Loading_in_WildFly,Class Loading in WildFly>> article,
 WildFly {wildflyVersion} is based on module classloading. A class within a module B
 isn't visible to a class within a module A, unless module B adds a
@@ -75,7 +83,7 @@ that are always added |Dependencies that are added if a trigger
 condition is met |Trigger which leads to the implicit module dependency
 being added
 
-|Core Server |javax.api sun.jdk org.jboss.vfs |  | 
+|Core Server |java.se sun.jdk |  | 
 
 |Batch Subsystem |jakarta.batch.api |  | implicit
 

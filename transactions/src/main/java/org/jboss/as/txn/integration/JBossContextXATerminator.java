@@ -22,11 +22,11 @@
 
 package org.jboss.as.txn.integration;
 
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkCompletedException;
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.SystemException;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.Work;
+import jakarta.resource.spi.work.WorkCompletedException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.SystemException;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 

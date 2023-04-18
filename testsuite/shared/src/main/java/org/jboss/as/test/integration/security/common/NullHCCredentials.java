@@ -38,7 +38,7 @@ public class NullHCCredentials implements Credentials {
      * Returns <code>null</code> as the Principal.
      *
      * @return
-     * @see org.apache.http.auth.Credentials#getUserPrincipal()
+     * @see Credentials#getUserPrincipal()
      */
     public Principal getUserPrincipal() {
         return null;
@@ -48,7 +48,7 @@ public class NullHCCredentials implements Credentials {
      * Returns <code>null</code> as the password.
      *
      * @return
-     * @see org.apache.http.auth.Credentials#getPassword()
+     * @see Credentials#getPassword()
      */
     public String getPassword() {
         return null;

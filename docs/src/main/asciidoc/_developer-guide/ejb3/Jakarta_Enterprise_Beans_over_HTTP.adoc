@@ -1,6 +1,14 @@
 [[Jakarta_Enterprise_Beans_over_HTTP]]
 = Jakarta Enterprise Beans over HTTP
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Beginning with WildFly 11 it is now possible to use HTTP as the
 transport (instead of remoting) for remote Jakarta Enterprise Beans and JNDI invocations.
 

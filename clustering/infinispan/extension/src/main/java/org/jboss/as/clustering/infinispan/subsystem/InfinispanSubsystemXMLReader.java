@@ -60,9 +60,9 @@ import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 @SuppressWarnings({ "deprecation", "static-method" })
 public class InfinispanSubsystemXMLReader implements XMLElementReader<List<ModelNode>> {
 
-    private final InfinispanSchema schema;
+    private final InfinispanSubsystemSchema schema;
 
-    InfinispanSubsystemXMLReader(InfinispanSchema schema) {
+    InfinispanSubsystemXMLReader(InfinispanSubsystemSchema schema) {
         this.schema = schema;
     }
 
@@ -83,7 +83,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case REMOTE_CACHE_CONTAINER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_6_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_6_0)) {
                         this.parseRemoteContainer(reader, address, operations);
                         break;
                     }
@@ -117,7 +117,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case JNDI_NAME: {
-                    if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -126,14 +126,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case LISTENER_EXECUTOR:
                 case EVICTION_EXECUTOR:
                 case REPLICATION_QUEUE_EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case START: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -144,7 +144,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MODULE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.MODULES);
@@ -155,13 +155,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MODULES: {
-                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                         readAttribute(reader, i, operation, CacheContainerResourceDefinition.ListAttribute.MODULES);
                         break;
                     }
                 }
                 case MARSHALLER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_13_0)) {
                         readAttribute(reader, i, operation, CacheContainerResourceDefinition.Attribute.MARSHALLER);
                         break;
                     }
@@ -173,7 +173,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         if (!operation.hasDefined(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName())) {
-            if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+            if (!this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                 // Apply legacy default value
                 operation.get(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName()).set(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()));
             }
@@ -203,13 +203,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case EXPIRATION_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         this.parseScheduledThreadPool(ScheduledThreadPoolResourceDefinition.EXPIRATION, reader, address, operations);
                         break;
                     }
                 }
                 case LISTENER_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.LISTENER, reader, address, operations);
                         break;
                     }
@@ -219,7 +219,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 case REMOTE_COMMAND_THREAD_POOL:
                 case STATE_TRANSFER_THREAD_POOL:
                 case TRANSPORT_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                     ClusteringLogger.ROOT_LOGGER.elementIgnored(element.getLocalName());
@@ -227,19 +227,19 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case SCATTERED_CACHE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_6_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_6_0)) {
                         this.parseScatteredCache(reader, address, operations);
                         break;
                     }
                 }
                 case BLOCKING_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.BLOCKING, reader, address, operations);
                         break;
                     }
                 }
                 case NON_BLOCKING_THREAD_POOL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                         this.parseThreadPool(ThreadPoolResourceDefinition.NON_BLOCKING, reader, address, operations);
                         break;
                     }
@@ -264,14 +264,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STACK: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     stack = reader.getAttributeValue(i);
                     break;
                 }
                 case EXECUTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -282,14 +282,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case CLUSTER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     cluster = reader.getAttributeValue(i);
                     break;
                 }
                 case CHANNEL: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                         readAttribute(reader, i, operation, JGroupsTransportResourceDefinition.Attribute.CHANNEL);
                         break;
                     }
@@ -300,11 +300,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
-        if (!this.schema.since(InfinispanSchema.VERSION_3_0)) {
+        if (!this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
             // We need to create a corresponding channel add operation
             String channel = "ee-" + containerAddress.getLastElement().getValue();
             setAttribute(reader, channel, operation, JGroupsTransportResourceDefinition.Attribute.CHANNEL);
-            PathAddress channelAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"), PathElement.pathElement("channel", channel));
+            PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "jgroups"));
+            PathAddress channelAddress = subsystemAddress.append(PathElement.pathElement("channel", channel));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
             if (stack != null) {
                 channelOperation.get("stack").set(stack);
@@ -399,7 +400,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case CAPACITY_FACTOR: {
-                    if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                         readAttribute(reader, i, operation, DistributedCacheResourceDefinition.Attribute.CAPACITY_FACTOR);
                         break;
                     }
@@ -440,14 +441,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case START: {
-                if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case BATCHING: {
-                if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 PathAddress transactionAddress = address.append(TransactionResourceDefinition.PATH);
@@ -457,14 +458,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case JNDI_NAME: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case MODULE: {
-                if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 readAttribute(reader, index, operation, CacheResourceDefinition.ListAttribute.MODULES);
@@ -475,7 +476,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case MODULES: {
-                if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                     readAttribute(reader, index, operation, CacheResourceDefinition.ListAttribute.MODULES);
                     break;
                 }
@@ -495,10 +496,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case CONSISTENT_HASH_STRATEGY: {
-                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
-                if (this.schema.since(InfinispanSchema.VERSION_3_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_3_0)) {
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
@@ -514,7 +515,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(index));
         switch (attribute) {
             case MODE: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -533,7 +534,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case ASYNC_MARSHALLING: {
-                if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -550,7 +551,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         XMLElement element = XMLElement.forName(reader.getLocalName());
         switch (element) {
             case EVICTION: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
                 this.parseEviction(reader, cacheAddress, operations);
@@ -581,13 +582,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case HOTROD_STORE: {
-                if (this.schema.since(InfinispanSchema.VERSION_6_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_6_0)) {
                     this.parseHotRodStore(reader, cacheAddress, operations);
                     break;
                 }
             }
             case JDBC_STORE: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     this.parseJDBCStore(reader, cacheAddress, operations);
                 } else {
                     throw ParseUtils.unexpectedElement(reader);
@@ -595,59 +596,59 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case STRING_KEYED_JDBC_STORE: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
                 this.parseStringKeyedJDBCStore(reader, cacheAddress, operations);
                 break;
             }
             case BINARY_KEYED_JDBC_STORE: {
-                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
                 this.parseBinaryKeyedJDBCStore(reader, cacheAddress, operations);
                 break;
             }
             case MIXED_KEYED_JDBC_STORE: {
-                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
                 this.parseMixedKeyedJDBCStore(reader, cacheAddress, operations);
                 break;
             }
             case INDEXING: {
-                if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
                 this.parseIndexing(reader, cacheAddress, operations);
                 break;
             }
             case OBJECT_MEMORY: {
-                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     this.parseHeapMemory(reader, cacheAddress, operations);
                     break;
                 }
             }
             case BINARY_MEMORY: {
-                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                     throw ParseUtils.unexpectedElement(reader);
                 }
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     this.parseBinaryMemory(reader, cacheAddress, operations);
                     break;
                 }
             }
             case OFF_HEAP_MEMORY: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     this.parseOffHeapMemory(reader, cacheAddress, operations);
                     break;
                 }
             }
             case HEAP_MEMORY: {
-                if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                     this.parseHeapMemory(reader, cacheAddress, operations);
                     break;
                 }
@@ -666,13 +667,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case BACKUPS: {
-                if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_2_0)) {
                     this.parseBackups(reader, address, operations);
                     break;
                 }
             }
             case BACKUP_FOR: {
-                if (this.schema.since(InfinispanSchema.VERSION_2_0) && !this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_2_0) && !this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     ClusteringLogger.ROOT_LOGGER.elementIgnored(reader.getLocalName());
                     ParseUtils.requireNoContent(reader);
                     break;
@@ -680,7 +681,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 throw ParseUtils.unexpectedElement(reader);
             }
             case PARTITION_HANDLING: {
-                if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                     this.parsePartitionHandling(reader, address, operations);
                     break;
                 }
@@ -702,20 +703,20 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.DeprecatedAttribute.ENABLED);
                     break;
                 }
                 case WHEN_SPLIT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT);
                         break;
                     }
                 }
                 case MERGE_POLICY: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         readAttribute(reader, i, operation, PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY);
                         break;
                     }
@@ -738,7 +739,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -905,7 +906,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case COMPLETE_TIMEOUT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_13_0)) {
                         readAttribute(reader, i, operation, TransactionResourceDefinition.Attribute.COMPLETE_TIMEOUT);
                         break;
                     }
@@ -1013,7 +1014,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SIZE_UNIT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                         readAttribute(reader, i, operation, HeapMemoryResourceDefinition.Attribute.SIZE_UNIT);
                         break;
                     }
@@ -1048,14 +1049,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CAPACITY: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case SIZE_UNIT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                         readAttribute(reader, i, operation, OffHeapMemoryResourceDefinition.Attribute.SIZE_UNIT);
                         break;
                     }
@@ -1097,7 +1098,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     }
 
     private void applyLegacyStoreAttributeDefaults(ModelNode operation) {
-        if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+        if (!this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
             for (Attribute attribute : Set.of(StoreResourceDefinition.Attribute.PASSIVATION, StoreResourceDefinition.Attribute.PURGE)) {
                 // If undefined, use default value from legacy schema
                 if (!operation.hasDefined(attribute.getName())) {
@@ -1201,7 +1202,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case REMOTE_SERVERS: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         readAttribute(reader, i, operation, RemoteStoreResourceDefinition.Attribute.SOCKET_BINDINGS);
                         break;
                     }
@@ -1218,7 +1219,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case REMOTE_SERVER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -1394,7 +1395,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     // Attempt to convert jndi name to data source name
@@ -1404,13 +1405,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case DIALECT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_2_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_2_0)) {
                         readAttribute(reader, i, operation, JDBCStoreResourceDefinition.Attribute.DIALECT);
                         break;
                     }
                 }
                 case DATA_SOURCE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         readAttribute(reader, i, operation, JDBCStoreResourceDefinition.Attribute.DATA_SOURCE);
                         break;
                     }
@@ -1477,20 +1478,20 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case BATCH_SIZE: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case CREATE_ON_START: {
-                if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_9_0)) {
                     readAttribute(reader, index, operation, TableResourceDefinition.Attribute.CREATE_ON_START);
                     break;
                 }
             }
             case DROP_ON_STOP: {
-                if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_9_0)) {
                     readAttribute(reader, index, operation, TableResourceDefinition.Attribute.DROP_ON_STOP);
                     break;
                 }
@@ -1519,7 +1520,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case SEGMENT_COLUMN: {
-                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_10_0)) {
                         this.parseJDBCStoreColumn(reader, ColumnAttribute.SEGMENT, operation.get(TableResourceDefinition.ColumnAttribute.SEGMENT.getName()).setEmptyObject());
                         break;
                     }
@@ -1575,20 +1576,20 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 break;
             }
             case SINGLETON: {
-                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
                 ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                 break;
             }
             case MAX_BATCH_SIZE: {
-                if (this.schema.since(InfinispanSchema.VERSION_5_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_5_0)) {
                     readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.MAX_BATCH_SIZE);
                     break;
                 }
             }
             case SEGMENTED: {
-                if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                     readAttribute(reader, index, operation, StoreResourceDefinition.Attribute.SEGMENTED);
                     break;
                 }
@@ -1629,7 +1630,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case FLUSH_LOCK_TIMEOUT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -1640,14 +1641,14 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case SHUTDOWN_TIMEOUT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_4_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_4_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 }
                 case THREAD_POOL_SIZE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
@@ -1707,7 +1708,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case MAX_THREADS: {
-                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_10_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     readAttribute(reader, i, operation, pool.getMinThreads());
@@ -1718,7 +1719,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MIN_THREADS: {
-                    if (this.schema.since(InfinispanSchema.VERSION_10_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_10_0)) {
                         readAttribute(reader, i, operation, pool.getMinThreads());
                         break;
                     }
@@ -1763,7 +1764,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case MODULE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
@@ -1790,25 +1791,25 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case STATISTICS_ENABLED: {
-                    if (this.schema.since(InfinispanSchema.VERSION_9_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_9_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED);
                         break;
                     }
                 }
                 case MODULES: {
-                    if (this.schema.since(InfinispanSchema.VERSION_12_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_12_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.ListAttribute.MODULES);
                         break;
                     }
                 }
                 case MARSHALLER: {
-                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_13_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER);
                         break;
                     }
                 }
                 case TRANSACTION_TIMEOUT: {
-                    if (this.schema.since(InfinispanSchema.VERSION_13_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_13_0)) {
                         readAttribute(reader, i, operation, RemoteCacheContainerResourceDefinition.Attribute.TRANSACTION_TIMEOUT);
                         break;
                     }
@@ -1820,7 +1821,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         if (!operation.hasDefined(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName())) {
-            if (!this.schema.since(InfinispanSchema.VERSION_14_0)) {
+            if (!this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                 // Apply legacy default value
                 operation.get(CacheContainerResourceDefinition.Attribute.MARSHALLER.getName()).set(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()));
             }
@@ -1838,7 +1839,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case INVALIDATION_NEAR_CACHE: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                     ClusteringLogger.ROOT_LOGGER.elementIgnored(reader.getLocalName());
@@ -1854,17 +1855,17 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     break;
                 }
                 case TRANSACTION: {
-                    if (this.schema.since(InfinispanSchema.VERSION_14_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_14_0)) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
-                    if (this.schema.since(InfinispanSchema.VERSION_8_0)) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_8_0)) {
                         ClusteringLogger.ROOT_LOGGER.elementIgnored(reader.getLocalName());
                         ParseUtils.requireNoContent(reader);
                         break;
                     }
                 }
                 case PROPERTY: {
-                    if (this.schema.since(InfinispanSchema.VERSION_11_0) || (this.schema.since(InfinispanSchema.VERSION_9_1) && !this.schema.since(InfinispanSchema.VERSION_10_0))) {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_11_0) || (this.schema.since(InfinispanSubsystemSchema.VERSION_9_1) && !this.schema.since(InfinispanSubsystemSchema.VERSION_10_0))) {
                         ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
                         readElement(reader, operation, RemoteCacheContainerResourceDefinition.Attribute.PROPERTIES);
                         break;

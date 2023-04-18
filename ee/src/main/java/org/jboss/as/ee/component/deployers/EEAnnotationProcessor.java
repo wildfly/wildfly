@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.interceptor.ExcludeClassInterceptors;
-import javax.interceptor.ExcludeDefaultInterceptors;
+import jakarta.interceptor.ExcludeClassInterceptors;
+import jakarta.interceptor.ExcludeDefaultInterceptors;
 
 import org.jboss.as.ee.metadata.AbstractEEAnnotationProcessor;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;

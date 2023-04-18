@@ -59,9 +59,9 @@ public class SharedSessionConfigXMLReaderTestCase {
 
     @Test
     public void test() throws IOException, XMLStreamException {
-        URL url = this.getClass().getResource(String.format("shared-session-config-%d.%d.xml", this.schema.major(), this.schema.minor()));
+        URL url = this.getClass().getResource(String.format("shared-session-config-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
         XMLMapper mapper = XMLMapper.Factory.create();
-        mapper.registerRootElement(this.schema.getRoot(), new SharedSessionConfigXMLReader(this.schema, PropertyReplacers.noop()));
+        mapper.registerRootElement(this.schema.getQualifiedName(), new SharedSessionConfigXMLReader(this.schema, PropertyReplacers.noop()));
         try (InputStream input = url.openStream()) {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
             SharedSessionManagerConfig config = new SharedSessionManagerConfig();
@@ -71,7 +71,7 @@ public class SharedSessionConfigXMLReaderTestCase {
             Assert.assertEquals(10, config.getMaxActiveSessions().intValue());
             Assert.assertEquals("/", config.getSessionConfig().getCookieConfig().getPath());
         } finally {
-            mapper.unregisterRootAttribute(this.schema.getRoot());
+            mapper.unregisterRootAttribute(this.schema.getQualifiedName());
         }
     }
 }

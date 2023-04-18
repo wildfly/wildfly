@@ -25,7 +25,7 @@ package org.wildfly.extension.undertow.deployment;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContainerInitializer;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 
