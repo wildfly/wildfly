@@ -448,4 +448,9 @@ public interface JacORBLogger extends BasicLogger {
             "should be transformed manually to the new iiop-openjdk subsystem format")
     String expressionMigrationWarning(String properties);
 
+    @LogMessage(level = WARN)
+    @Message(id=137, value = "After the migration the subsystem will use Elytron implementation of org.omg.PortableInterceptor.ClientRequestInterceptor. " +
+            "Please refer to org.wildfly.iiop.openjdk.csiv2.ElytronSASClientInterceptor documentation for the implementation details.")
+    void migratedToElytronSecurityWarning();
+
 }
