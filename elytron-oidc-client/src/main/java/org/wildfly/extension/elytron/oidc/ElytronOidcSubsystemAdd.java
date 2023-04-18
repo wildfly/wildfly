@@ -18,14 +18,18 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.jboss.as.server.security.VirtualDomainUtil.OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcSubsystemDefinition.installService;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Add handler for the Elytron OpenID Connect subsystem.
@@ -46,6 +50,8 @@ class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model) {
         ROOT_LOGGER.activatingSubsystem();
         OidcConfigService.getInstance().clear();
+        ServiceTarget target = context.getServiceTarget();
+        installService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new OidcVirtualSecurityDomainCreationService(), target);
 
         if (context.isNormalServer()) {
             context.addStep(new AbstractDeploymentChainStep() {
@@ -62,4 +68,10 @@ class ElytronOidcSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
     }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
+        context.removeService(OIDC_VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE);
+    }
+
 }

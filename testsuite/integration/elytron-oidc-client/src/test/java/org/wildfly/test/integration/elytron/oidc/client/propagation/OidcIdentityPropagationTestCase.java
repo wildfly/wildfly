@@ -130,8 +130,10 @@ public class OidcIdentityPropagationTestCase {
     private static final String EAR_DEPLOYMENT_WITH_SERVLET_LOCAL = "ear-servlet-local";
     private static final String SINGLE_DEPLOYMENT_REMOTE = "single-deployment-remote";
     private static final String EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE = "ear-servlet-ejb-deployment-remote";
+    private static final String EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN = "ear-servlet-ejb-deployment-remote-same-domain";
     private static final String EAR_DEPLOYMENT_WITH_EJB_LOCAL = "ear-ejb-deployment-local";
     private static final String EAR_DEPLOYMENT_WITH_EJB_REMOTE = "ear-ejb-deployment-remote";
+    private static final String EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN = "ear-ejb-deployment-remote-same-domain";
     private static final String EJB_SECURITY_DOMAIN_NAME = "ejb-domain";
     private static final String ANOTHER_EJB_SECURITY_DOMAIN_NAME = "another-ejb-domain";
     private static final String SECURE_DEPLOYMENT_ADDRESS = "subsystem=" + ElytronOidcExtension.SUBSYSTEM_NAME + "/secure-deployment=";
@@ -150,10 +152,11 @@ public class OidcIdentityPropagationTestCase {
         CLIENT_IDS.put(EAR_DEPLOYMENT_WITH_SERVLET_LOCAL + "-web", KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         CLIENT_IDS.put(SINGLE_DEPLOYMENT_REMOTE + "-web", KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         CLIENT_IDS.put(EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE + "-web", KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        CLIENT_IDS.put(EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN + "-web", KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     private static ArrayList<String> APP_NAMES = new ArrayList<>(Arrays.asList(SINGLE_DEPLOYMENT_LOCAL, ANOTHER_SINGLE_DEPLOYMENT_LOCAL, OUTFLOW_ANONYMOUS_CONFIG, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_LOCAL,
-            EAR_DEPLOYMENT_WITH_SERVLET_REMOTE, EAR_DEPLOYMENT_WITH_SERVLET_LOCAL, SINGLE_DEPLOYMENT_REMOTE, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE));
+            EAR_DEPLOYMENT_WITH_SERVLET_REMOTE, EAR_DEPLOYMENT_WITH_SERVLET_LOCAL, SINGLE_DEPLOYMENT_REMOTE, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN));
 
     @ArquillianResource
     private URL url;
@@ -427,6 +430,48 @@ public class OidcIdentityPropagationTestCase {
         return ear;
     }
 
+    @Deployment(name= EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN, order = 12)
+    public static Archive<?> ejbDeploymentRemoteSameDomain() {
+        final Package currentPackage = OidcIdentityPropagationTestCase.class.getPackage();
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN + "-ejb.jar")
+                .addClass(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.WhoAmIBeanRemote.class)
+                .addClass(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.EntryBeanRemote.class)
+                .addClass(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.WhoAmIRemote.class)
+                .addClass(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.EntryRemote.class)
+                .addClass(WhoAmIBean.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN + ".ear");
+        ear.addAsModule(jar);
+        return ear;
+    }
+
+    @Deployment(name= EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN, order = 13)
+    public static Archive<?> servletAndEJBDeploymentRemoteSameDomain() {
+        final String SERVER_HOST_PORT = TestSuiteEnvironment.getHttpAddress() + ":" + TestSuiteEnvironment.getHttpPort();
+        final Package currentPackage = OidcIdentityPropagationTestCase.class.getPackage();
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN + "-web.war")
+                .addClasses(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.ComplexServletRemote.class, OidcIdentityPropagationTestCase.class)
+                .addClasses(EJBDomainSetupOverride.class, PropagationSetup.class,
+                        PropagationSetup.class, AbstractMgmtTestBase.class, EjbElytronDomainSetup.class);
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN + "-ejb.jar")
+                .addClass(org.wildfly.test.integration.elytron.oidc.client.propagation.annotation.ManagementBeanRemote.class)
+                .addClass(Util.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsManifestResource(currentPackage, "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: deployment." + EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN + ".ear" + "." + EAR_DEPLOYMENT_WITH_EJB_REMOTE_SAME_DOMAIN + "-ejb.jar"), "MANIFEST.MF");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN + ".ear");
+        ear.addAsModule(war);
+        ear.addAsModule(jar);
+        ear.addAsManifestResource(createPermissionsXmlAsset(
+                        // Util#switchIdentity calls SecurityDomain#getCurrent and SecurityDomain#authenticate
+                        new ElytronPermission("getSecurityDomain"),
+                        new ElytronPermission("authenticate")
+                ),
+                "permissions.xml");
+        return ear;
+    }
+
     @BeforeClass
     public static void checkDockerAvailability() {
         assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
@@ -609,6 +654,12 @@ public class OidcIdentityPropagationTestCase {
                 true, url.toURI().resolve("whoAmI"));
     }
 
+    private void testServletToEjbToEjbInvocationSameDomain() throws Exception {
+        String expectedMessage = "alice,true,false"; // alice should have user role and not Managers role
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, expectedMessage,
+                true, url.toURI().resolve("whoAmI"));
+    }
+
     /**
      * Two EARs are used in this test case.
      * EAR #1 contains:
@@ -639,6 +690,24 @@ public class OidcIdentityPropagationTestCase {
     @OperateOnDeployment(EAR_DEPLOYMENT_WITH_SERVLET_LOCAL)
     public void testServletToEjbEarToEarLocal() throws Exception {
         testServletToEjbInvocation();
+    }
+
+    /**
+     * Two EARs are used in this test case.
+     * EAR #1 contains:
+     * - a servlet within a WAR
+     * - an EJB within a JAR
+     *
+     * EAR #2 contains:
+     * - a remote EJB within a JAR
+     *
+     * The servlet invokes the EJB from EAR #1 and that EJB attempts to invoke the remote EJB in EAR #2.
+     * The EJB in EAR #2 is secured using the same virtual security domain as EAR #1.
+     */
+    @Test
+    @OperateOnDeployment(EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN)
+    public void testEarToEarRemoteSameDomain() throws Exception {
+        testServletToEjbToEjbInvocationSameDomain();
     }
 
     static class EJBDomainSetupOverride extends ElytronDomainSetup {
@@ -815,10 +884,12 @@ public class OidcIdentityPropagationTestCase {
 
     private static ModelNode getAddVirtualSecurityDomainOp(String virtualSecurityDomainName, String outflowSecurityDomain, String anotherOutflowSecurityDomain) {
         ModelNode op = createAddOperation(getVirtualSecurityDomainAddress(virtualSecurityDomainName));
-        ModelNode outflowDomains = new ModelNode();
-        outflowDomains.add(outflowSecurityDomain);
-        outflowDomains.add(anotherOutflowSecurityDomain);
-        op.get("outflow-security-domains").set(outflowDomains);
+        if (! virtualSecurityDomainName.equals(EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN)) {
+            ModelNode outflowDomains = new ModelNode();
+            outflowDomains.add(outflowSecurityDomain);
+            outflowDomains.add(anotherOutflowSecurityDomain);
+            op.get("outflow-security-domains").set(outflowDomains);
+        }
         return op;
     }
 
