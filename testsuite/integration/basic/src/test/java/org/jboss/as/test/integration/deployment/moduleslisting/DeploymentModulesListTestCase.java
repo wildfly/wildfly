@@ -55,7 +55,7 @@ public class DeploymentModulesListTestCase {
 
     private static final String NODE_TYPE = "deployment";
     private static final String INNER_JAR_ARCHIVE_NAME = "inner-jar-lib.jar";
-    private static final String EXAMPLE_MODULE_TO_EXCLUDE = "ibm.jdk";
+    private static final String EXAMPLE_MODULE_TO_EXCLUDE = "org.slf4j.impl";
     private static final String INNER_WAR_ARCHIVE_NAME = "list-modules.war";
     private static final String EAR_DEPLOYMENT_NAME = "list-modules-ear-test.ear";
     private static final String USER_MODULE = "org.hibernate";
