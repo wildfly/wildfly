@@ -16,7 +16,6 @@
     <feature spec="subsystem.ee">
         <feature spec="subsystem.ee.context-service">
             <param name="context-service" value="default"/>
-            <param name="use-transaction-setup-provider" value="true"/>
         </feature>
     </feature>
 
