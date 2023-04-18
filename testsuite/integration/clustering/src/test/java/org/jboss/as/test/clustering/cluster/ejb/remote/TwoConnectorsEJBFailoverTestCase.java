@@ -25,6 +25,8 @@ package org.jboss.as.test.clustering.cluster.ejb.remote;
 import java.util.Properties;
 import java.util.PropertyPermission;
 
+import javax.naming.Context;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,29 +38,24 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
 
-
-import javax.naming.Context;
-
 /**
  * A test of failover when both legacy remoting connector and HTTP Upgrade connector are enabled.
+ *
  * @author Richard Achmatowicz
  */
-
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
 @RunWith(Arquillian.class)
-@Ignore("WFLY-17605")
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
 
     private static final int COUNT = 20;
@@ -107,7 +104,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             //props.put(Context.PROVIDER_URL, String.format("%s://%s:%s/wildfly-services", "https", "localhost", "8080"));
             props.put(Context.PROVIDER_URL, String.format("%s://%s:%s", "remote+http", "localhost", "8080"));
         }
-        return props ;
+        return props;
     }
 
 
@@ -116,7 +113,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
      */
     @Test
     public void testEJBClientUsingHttpUpgradeProtocol() throws Exception {
-        log.infof(MODULE_NAME+ " : testing failover with client using HTTP Upgrade");
+        log.infof(MODULE_NAME + " : testing failover with client using HTTP Upgrade");
         test(() -> new RemoteEJBDirectory(MODULE_NAME, getProperties(false)));
     }
 
@@ -150,7 +147,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
                 Assert.assertEquals(String.valueOf(i), target, result.getNode());
             }
 
-            undeploy(this.findDeployment(target));
+            undeploy(findDeployment(target));
 
             Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
 
@@ -161,7 +158,7 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
             Assert.assertEquals(count++, result.getValue().intValue());
             Assert.assertNotEquals(target, failoverTarget);
 
-            deploy(this.findDeployment(target));
+            deploy(findDeployment(target));
 
             // Allow sufficient time for client to receive new topology
             Thread.sleep(CLIENT_TOPOLOGY_UPDATE_WAIT);
@@ -223,21 +220,30 @@ public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase
         }
     }
 
-        /*
+    /*
      * Set up the server to use both legacy and HTTP Upgrade remoting connectors
      */
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node(TWO_NODES)
-                    .setup("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
-                    .setup("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, sasl-authentication-factory=application-sasl-authentication)")
-                    .setup("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
-                    // this step results in a capabilities error if the list is not formatted correctly for CLI
-                    .setup("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
-                    .teardown("/subsystem=ejb3/service=remote:list-remove(name=connectors, value=remoting-connector)")
-                    .teardown("/subsystem=remoting/connector=remoting-connector:remove")
-                    .teardown("/socket-binding-group=standard-sockets/socket-binding=remoting:remove")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/socket-binding-group=standard-sockets/socket-binding=remoting:add(port=4447)")
+                            .add("/subsystem=remoting/connector=remoting-connector:add(socket-binding=remoting, sasl-authentication-factory=application-sasl-authentication)")
+                            .add("/subsystem=remoting/connector=remoting-connector/property=SSL_ENABLED:add(value=false)")
+                            // this step results in a capabilities error if the list is not formatted correctly for CLI
+                            .add("/subsystem=ejb3/service=remote:list-add(name=connectors, value=remoting-connector)")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=ejb3/service=remote:list-remove(name=connectors, value=remoting-connector)")
+                            .add("/subsystem=remoting/connector=remoting-connector:remove")
+                            .add("/socket-binding-group=standard-sockets/socket-binding=remoting:remove")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }
