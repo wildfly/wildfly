@@ -42,6 +42,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +54,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class JpaStatisticsTestCase extends ContainerResourceMgmtTestBase {
+
+    @BeforeClass
+    public static void noOpenJ9() {
+        org.junit.Assume.assumeFalse("WFLY-17913", System.getProperty("java.vm.name", "").contains("OpenJ9"));
+    }
 
     private static final String ARCHIVE_NAME = "JpaStatisticsTestCase";
 
