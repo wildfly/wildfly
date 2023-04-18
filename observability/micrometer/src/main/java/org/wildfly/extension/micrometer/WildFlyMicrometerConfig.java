@@ -19,6 +19,7 @@
 package org.wildfly.extension.micrometer;
 
 import java.time.Duration;
+import java.util.Map;
 
 import io.micrometer.registry.otlp.OtlpConfig;
 
@@ -40,6 +41,15 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
     @Override
     public String get(String key) {
         return null; // Accept defaults not explicitly overridden below
+    }
+
+    @Override
+    public Map<String, String> resourceAttributes() {
+        Map<String, String> attributes = OtlpConfig.super.resourceAttributes();
+        if (!attributes.containsKey("service.name")) {
+            attributes.put("service.name", "wildfly");
+        }
+        return attributes;
     }
 
     @Override
