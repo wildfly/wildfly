@@ -60,8 +60,6 @@ include::subsystem-configuration/MicroProfile_Health.adoc[]
 
 include::subsystem-configuration/MicroProfile_JWT.adoc[]
 
-include::subsystem-configuration/MicroProfile_Metrics.adoc[]
-
 include::subsystem-configuration/MicroProfile_OpenAPI.adoc[]
 
 include::subsystem-configuration/MicroProfile_Fault_Tolerance_SmallRye.adoc[]
