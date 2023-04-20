@@ -34,6 +34,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpResponse;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -53,6 +54,7 @@ import org.wildfly.security.credential.BearerTokenCredential;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderBearerTokenAbortFilter;
 import org.wildfly.test.integration.elytron.util.ClientConfigProviderNoBasicAuthorizationHeaderFilter;
 import org.wildfly.test.integration.elytron.util.HttpAuthorization;
+import org.wildfly.security.http.client.ElytronHttpClient;
 
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.client.Client;
@@ -317,6 +319,57 @@ public class BasicAuthnTestCase {
             Assert.assertEquals(SC_OK, response.getStatus());
             Assert.assertEquals("response was not GOOD", "GOOD", response.readEntity(String.class));
             client.close();
+        });
+    }
+
+    @Test
+    public void testElytronHttpClientBasicAuth(@ArquillianResource URL url) throws MalformedURLException {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+        AuthenticationConfiguration adminConfig = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
+        AuthenticationContext context = AuthenticationContext.empty();
+        context = context.with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
+        ElytronHttpClient elytronHttpClient = new ElytronHttpClient();
+        context.run(() -> {
+            try{
+                HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
+                Assert.assertEquals(200,response.statusCode());
+            }catch (Exception e){
+                Assert.fail("Can not connect to Elytron Http client");
+            }
+        });
+    }
+
+    @Test
+    public void testElytronHttpClientBasicAuthInvalidUser(@ArquillianResource URL url) throws MalformedURLException {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+        AuthenticationConfiguration adminConfig = AuthenticationConfiguration.empty().useName("user2").usePassword("password1");
+        AuthenticationContext context = AuthenticationContext.empty();
+        context = context.with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
+        ElytronHttpClient elytronHttpClient = new ElytronHttpClient();
+        context.run(() -> {
+            try{
+                HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
+                Assert.assertEquals(401,response.statusCode());
+            }catch (Exception e){
+                Assert.fail("Can not connect to Elytron Http client");
+            }
+        });
+    }
+
+    @Test
+    public void testElytronHttpClientBasicAuthUnsupportedRole(@ArquillianResource URL url) throws MalformedURLException {
+        final URL servletUrl = new URL(url.toExternalForm() + "role2");
+        AuthenticationConfiguration adminConfig = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
+        AuthenticationContext context = AuthenticationContext.empty();
+        context = context.with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
+        ElytronHttpClient elytronHttpClient = new ElytronHttpClient();
+        context.run(() -> {
+            try{
+                HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
+                Assert.assertEquals(403,response.statusCode());
+            }catch (Exception e){
+                Assert.fail("Can not connect to Elytron Http client");
+            }
         });
     }
 }
