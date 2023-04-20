@@ -31,6 +31,11 @@ import jakarta.servlet.http.HttpServletRequest;
 public class PolicyContextTestBean {
 
     public HttpServletRequest getHttpServletRequestFromPolicyContext() throws PolicyContextException {
+        return getHttpServletRequest();
+    }
+
+    // public as accessed from a different module.
+    public static HttpServletRequest getHttpServletRequest() throws PolicyContextException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) PolicyContext
                 .getContext("jakarta.servlet.http.HttpServletRequest");
         return httpServletRequest;

@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.security.jacc.context;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 import java.security.SecurityPermission;
 
@@ -29,23 +33,24 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertTrue;
-
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("[WFLY-15740] Rework PolicyContextTestCase for Elytron")
+@ServerSetup(PolicyContextTestCase.EnableJakartaAuthorizationTask.class)
 public class PolicyContextTestCase {
 
     private static Logger LOGGER = Logger.getLogger(PolicyContextTestCase.class);
@@ -69,10 +74,10 @@ public class PolicyContextTestCase {
     public void testHttpServletRequestFromPolicyContext(@ArquillianResource URL webAppURL) throws Exception {
         String externalFormURL = webAppURL.toExternalForm();
         String servletURL = externalFormURL.substring(0, externalFormURL.length() - 1) + PolicyContextTestServlet.SERVLET_PATH;
-        LOGGER.trace("Testing JACC permissions: " + servletURL);
+        LOGGER.trace("Testing Jakarta Authorization Context: " + servletURL);
 
         String response = HttpRequest.get(servletURL, 1000, SECONDS);
-        assertTrue(response.contains("EJB successfully retrieved HttpServletRequest reference from PolicyContext"));
+        assertTrue(response.contains("HttpServletRequest successfully obtained from both containers."));
     }
 
     private static JavaArchive createJar(final String jarName) {
@@ -86,5 +91,22 @@ public class PolicyContextTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, warName + ".war");
         war.addClass(PolicyContextTestServlet.class);
         return war;
+    }
+
+    static class EnableJakartaAuthorizationTask extends SnapshotRestoreSetupTask {
+
+        @Override
+        protected void doSetup(ManagementClient client, String containerId) throws Exception {
+            ModelNode addOperation = Operations.createAddOperation(Operations.createAddress("subsystem", "elytron", "policy", "jacc"));
+            addOperation.get("jacc-policy").set(new ModelNode().setEmptyObject());
+
+            final ModelNode result = client.getControllerClient().execute(addOperation);
+            if (!Operations.isSuccessfulOutcome(result)) {
+                throw new RuntimeException("Failed to activate Jakarta Authorization: " + Operations.getFailureDescription(result).asString());
+            }
+            // Reload.
+            ServerReload.executeReloadAndWaitForCompletion(client);
+        }
+
     }
 }
