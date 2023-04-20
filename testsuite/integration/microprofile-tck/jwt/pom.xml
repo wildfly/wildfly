@@ -208,7 +208,6 @@
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
                     </systemPropertyVariables>
-                    <argLine>-Djdk.security.defaultKeySize=AES:128</argLine>
                 </configuration>
             </plugin>
         </plugins>
