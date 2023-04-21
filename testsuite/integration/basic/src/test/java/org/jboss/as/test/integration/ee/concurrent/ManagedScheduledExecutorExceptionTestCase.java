@@ -32,8 +32,9 @@ import jakarta.annotation.Resource;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,8 +42,8 @@ import org.junit.runner.RunWith;
 public class ManagedScheduledExecutorExceptionTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {  // TODO why a war?
-        return ShrinkWrap.create(WebArchive.class, ManagedScheduledExecutorExceptionTestCase.class.getSimpleName() + ".war")
+    public static Archive<?> getDeployment() {
+        return ShrinkWrap.create(JavaArchive.class, ManagedScheduledExecutorExceptionTestCase.class.getSimpleName() + ".jar")
                 .addClasses(ManagedScheduledExecutorExceptionTestCase.class);
     }
 
@@ -53,11 +54,12 @@ public class ManagedScheduledExecutorExceptionTestCase {
         throw new RuntimeException(message);
     }
 
-    @Resource
+    @Resource(lookup = "java:comp/DefaultManagedScheduledExecutorService")
     private ManagedScheduledExecutorService executorService;
 
     @Test
     public void testScheduledRunnable() {
+        assert executorService != null;
         Runnable r = ManagedScheduledExecutorExceptionTestCase::badMethod;
         ScheduledFuture<?> future = executorService.schedule(r, 1, TimeUnit.MILLISECONDS);
         checkFuture(future);
@@ -65,6 +67,7 @@ public class ManagedScheduledExecutorExceptionTestCase {
 
     @Test
     public void testScheduledCallable() {
+        assert executorService != null;
         Callable<Void> callable = () -> { badMethod(); return null;};
         ScheduledFuture<?> future = executorService.schedule(callable, 1, TimeUnit.MILLISECONDS);
         checkFuture(future);

@@ -31,8 +31,9 @@ import javax.naming.InitialContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.permission.ElytronPermission;
@@ -46,8 +47,8 @@ import org.wildfly.security.permission.ElytronPermission;
 public class DefaultManagedScheduledExecutorServiceTestCase {
 
     @Deployment
-    public static WebArchive getDeployment() {  // TODO why a war for a pure EJB app?
-        return ShrinkWrap.create(WebArchive.class, DefaultManagedScheduledExecutorServiceTestCase.class.getSimpleName() + ".war")
+    public static Archive<?> getDeployment() {
+        return ShrinkWrap.create(JavaArchive.class, DefaultManagedScheduledExecutorServiceTestCase.class.getSimpleName() + ".jar")
                 .addClasses(DefaultManagedScheduledExecutorServiceTestCase.class, DefaultManagedScheduledExecutorServiceTestEJB.class, TestEJBRunnable.class, Util.class)
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
                                                                  new ElytronPermission("authenticate")), "permissions.xml");
