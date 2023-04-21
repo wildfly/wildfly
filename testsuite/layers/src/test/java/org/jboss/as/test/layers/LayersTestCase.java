@@ -40,6 +40,11 @@ public class LayersTestCase {
     private static final String[] NOT_USED_COMMON = {
             // not used
             "ibm.jdk",
+            "javax.api",
+            "javax.sql.api",
+            "javax.xml.stream.api",
+            "sun.jdk",
+            "sun.scripting",
             // test-all-layers installation is non-ha and does not include layers that provide jgroups
             "org.jboss.as.clustering.jgroups",
             // TODO we need to add an agroal layer
