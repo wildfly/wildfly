@@ -162,7 +162,7 @@ public final class Main {
                 t.printStackTrace(STDERR);
             }
         } finally {
-            SystemExiter.exit(1);
+            SystemExiter.abort(1);
         }
     }
 
