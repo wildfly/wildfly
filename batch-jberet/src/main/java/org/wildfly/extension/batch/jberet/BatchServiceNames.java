@@ -1,5 +1,6 @@
 package org.wildfly.extension.batch.jberet;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.threads.ThreadsServices;
@@ -82,5 +83,11 @@ public class BatchServiceNames {
      */
     public static ServiceName jobOperatorServiceName(final String deploymentRuntimeName, final String subdeploymentName) {
         return Services.deploymentUnitName(deploymentRuntimeName, subdeploymentName).append("batch").append("job-operator");
+    }
+
+    public static final String REQUEST_CONTROLLER_CAPABILITY = "org.wildfly.request-controller";
+
+    public static ServiceName requestControllerServiceName(CapabilityServiceSupport serviceSupport) {
+        return serviceSupport.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY);
     }
 }
