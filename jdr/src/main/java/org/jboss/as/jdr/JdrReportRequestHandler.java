@@ -22,14 +22,14 @@
 
 package org.jboss.as.jdr;
 
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Operation handler for an end user request to generate a JDR report.
@@ -41,8 +41,6 @@ public class JdrReportRequestHandler implements OperationStepHandler {
 
     private static final String OPERATION_NAME = "generate-jdr-report";
 
-    static final JdrReportRequestHandler INSTANCE = new JdrReportRequestHandler();
-
     static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.SUBSYSTEM_RESOLVER)
             .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION)
             .setReadOnly()
@@ -50,16 +48,19 @@ public class JdrReportRequestHandler implements OperationStepHandler {
             .addAccessConstraint(JdrReportExtension.JDR_SENSITIVITY_DEF)
             .build();
 
-    private final ParametersValidator validator = new ParametersValidator();
+    private final Supplier<JdrReportCollector> collectorSupplier;
 
-    private JdrReportRequestHandler() {
+    /**
+     * Create a new handler for the {@code generate-jdr-report} operation.
+     *
+     * @param collectorSupplier supplier of the {@link JdrReportCollector} to use to collect the report. Cannot be {@code null}.
+     */
+    JdrReportRequestHandler(Supplier<JdrReportCollector> collectorSupplier) {
+        this.collectorSupplier = collectorSupplier;
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        // In MODEL stage, just validate the request. Unnecessary if the request has no parameters
-        validator.validate(operation);
 
         // Register a handler for the RUNTIME stage
         context.addStep(new OperationStepHandler() {
@@ -67,8 +68,11 @@ public class JdrReportRequestHandler implements OperationStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                ServiceRegistry registry = context.getServiceRegistry(false);
-                JdrReportCollector jdrCollector = JdrReportCollector.class.cast(registry.getRequiredService(JdrReportService.SERVICE_NAME).getValue());
+                JdrReportCollector jdrCollector = collectorSupplier.get();
+                if (jdrCollector == null) {
+                    // JdrReportService must have failed or been stopped
+                    throw new IllegalStateException();
+                }
 
                 ModelNode response = context.getResult();
                 JdrReport report = jdrCollector.collect();

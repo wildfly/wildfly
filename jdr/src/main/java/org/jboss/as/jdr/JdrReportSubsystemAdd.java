@@ -22,6 +22,7 @@
 
 package org.jboss.as.jdr;
 
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -34,14 +35,21 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  */
 public class JdrReportSubsystemAdd extends AbstractAddStepHandler {
-    static final JdrReportSubsystemAdd INSTANCE = new JdrReportSubsystemAdd();
 
-    private JdrReportSubsystemAdd() {
+    private final Consumer<JdrReportCollector> collectorConsumer;
+
+    /**
+     * Creates a new add handler for the JDR subsystem root resource.
+     *
+     * @param collectorConsumer consumer to pass a ref to the started JdrReportService to the rest of the subsystem. Cannot be {@code null}
+     */
+    JdrReportSubsystemAdd(final Consumer<JdrReportCollector> collectorConsumer) {
+        this.collectorConsumer = collectorConsumer;
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        JdrReportService.addService(context.getServiceTarget());
+        JdrReportService.addService(context.getCapabilityServiceTarget(), collectorConsumer);
     }
 
     @Override
