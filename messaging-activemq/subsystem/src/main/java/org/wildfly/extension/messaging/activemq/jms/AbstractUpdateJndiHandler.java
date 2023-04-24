@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
@@ -68,9 +69,8 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
     private final boolean addOperation;
 
     protected void registerOperation(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
-        SimpleOperationDefinition operation = new SimpleOperationDefinition(addOperation ? ADD_JNDI: REMOVE_JNDI,
-                resolver,
-                JNDI_BINDING);
+        SimpleOperationDefinition operation = new SimpleOperationDefinitionBuilder(addOperation ? ADD_JNDI : REMOVE_JNDI,
+                resolver).setParameters(JNDI_BINDING).build();
         registry.registerOperationHandler(operation, this);
     }
 
