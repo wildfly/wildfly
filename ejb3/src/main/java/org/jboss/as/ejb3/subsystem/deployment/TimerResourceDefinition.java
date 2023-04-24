@@ -139,8 +139,8 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
     private final AbstractEJBComponentRuntimeHandler<T> parentHandler;
 
     TimerResourceDefinition(AbstractEJBComponentRuntimeHandler<T> parentHandler) {
-        super(EJB3SubsystemModel.TIMER_PATH, RESOURCE_DESCRIPTION_RESOLVER, null, null, OperationEntry.Flag.RESTART_NONE,
-                OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.TIMER_PATH, RESOURCE_DESCRIPTION_RESOLVER)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
         this.parentHandler = parentHandler;
     }
 

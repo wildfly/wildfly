@@ -64,10 +64,10 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
     LegacyCacheFactoryResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.CACHE),
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE),
-                ADD_HANDLER, REMOVE_HANDLER,
-                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EJB3SubsystemModel.CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(REMOVE_HANDLER)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
         this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());
     }
 
