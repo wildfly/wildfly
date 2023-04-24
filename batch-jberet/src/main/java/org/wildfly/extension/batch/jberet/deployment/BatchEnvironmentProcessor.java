@@ -24,6 +24,7 @@ package org.wildfly.extension.batch.jberet.deployment;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.batch.jberet.BatchServiceNames.requestControllerServiceName;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -167,7 +168,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 jobRepositorySupplier = () -> jobRepository;
             }
 
-            final Supplier<RequestController> requestControllerSupplier = rcPresent ? serviceBuilder.requires(RequestController.SERVICE_NAME) : null;
+            final Supplier<RequestController> requestControllerSupplier = rcPresent ? serviceBuilder.requires(requestControllerServiceName(support)) : null;
 
             // Install the batch environment service
             final BatchEnvironmentService service = new BatchEnvironmentService(batchEnvironmentConsumer, artifactFactorySupplier, jobExecutorSupplier, requestControllerSupplier, jobRepositorySupplier, batchConfigurationSupplier, moduleClassLoader, jobXmlResolver, deploymentName, namespaceContextSelector);

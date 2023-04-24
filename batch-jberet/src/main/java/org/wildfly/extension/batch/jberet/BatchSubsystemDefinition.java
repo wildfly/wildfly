@@ -183,7 +183,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.hasOptionalCapability("org.wildfly.request-controller", null, null);
+            final boolean rcPresent = context.hasOptionalCapability(BatchServiceNames.REQUEST_CONTROLLER_CAPABILITY, null, null);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
