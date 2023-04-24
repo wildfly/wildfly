@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -252,7 +253,7 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
                 };
 
                 SimpleOperationDefinition definition =
-                    new SimpleOperationDefinition(statisticName, descriptionResolver, attributeDefinition);
+                        new SimpleOperationDefinitionBuilder(statisticName, descriptionResolver).setParameters(attributeDefinition).build();
                 resourceRegistration.registerOperationHandler(definition, operationHandler);
             }
         }
