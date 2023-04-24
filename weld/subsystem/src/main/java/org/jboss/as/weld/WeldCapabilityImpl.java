@@ -18,13 +18,12 @@
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
+
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
-import jakarta.enterprise.inject.spi.InterceptionType;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
-import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -77,20 +76,4 @@ public class WeldCapabilityImpl implements WeldCapability {
         WeldDeploymentMarker.mark(unit);
     }
 
-    @Override
-    public void ignorePrecalculatedJandexForModules(DeploymentUnit deploymentUnit, String... moduleNames) {
-        // Test if running in EE9 or not
-        InterceptionType type = InterceptionType.AROUND_CONSTRUCT;
-        boolean ee9 = !type.getClass().getName().startsWith("javax.");
-
-        if (ee9) {
-            DeploymentUnit root = deploymentUnit;
-            while (root.getParent() != null) {
-                root = root.getParent();
-            }
-            for (String module : moduleNames) {
-                root.addToAttachmentList(WeldAttachments.INGORE_PRECALCULATED_JANDEX_MODULES, module);
-            }
-        }
-    }
 }
