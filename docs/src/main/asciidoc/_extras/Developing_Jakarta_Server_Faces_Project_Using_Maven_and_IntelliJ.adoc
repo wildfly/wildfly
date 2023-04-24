@@ -1,7 +1,8 @@
 [[Developing_Jakarta_Server_Faces_Project_Using,_Maven_and_IntelliJ]]
 = Developing Jakarta Server Faces Project Using JBoss AS7, Maven and IntelliJ
 
-ifdef::env-github[:imagesdir: ../images/]
+ifdef::env-github[]
+:imagesdir: ../images/
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:

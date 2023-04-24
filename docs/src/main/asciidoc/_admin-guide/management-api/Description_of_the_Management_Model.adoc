@@ -1,7 +1,8 @@
 [[Description_of_the_Management_Model]]
 = Description of the Management Model
 
-ifdef::env-github[:outfilesuffix: .adoc]
+ifdef::env-github[]
+:outfilesuffix: .adoc
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
