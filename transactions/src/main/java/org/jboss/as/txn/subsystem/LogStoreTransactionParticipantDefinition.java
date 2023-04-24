@@ -23,7 +23,7 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -50,9 +50,9 @@ public class LogStoreTransactionParticipantDefinition extends SimpleResourceDefi
         final LogStoreParticipantRefreshHandler refreshHandler = LogStoreParticipantRefreshHandler.INSTANCE;
         final LogStoreProbeHandler probeHandler = LogStoreProbeHandler.INSTANCE;
 
-        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.REFRESH, getResourceDescriptionResolver()), refreshHandler);
-        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.RECOVER, getResourceDescriptionResolver()), new LogStoreParticipantRecoveryHandler(refreshHandler));
-        resourceRegistration.registerOperationHandler(new SimpleOperationDefinition(LogStoreConstants.DELETE, getResourceDescriptionResolver()), new LogStoreParticipantDeleteHandler(probeHandler));
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder(LogStoreConstants.REFRESH, getResourceDescriptionResolver()).build(), refreshHandler);
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder(LogStoreConstants.RECOVER, getResourceDescriptionResolver()).build(), new LogStoreParticipantRecoveryHandler(refreshHandler));
+        resourceRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder(LogStoreConstants.DELETE, getResourceDescriptionResolver()).build(), new LogStoreParticipantDeleteHandler(probeHandler));
     }
 
     @Override
