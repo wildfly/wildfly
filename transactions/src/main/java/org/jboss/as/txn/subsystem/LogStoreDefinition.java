@@ -46,11 +46,10 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public LogStoreDefinition(final LogStoreResource resource, final boolean registerRuntimeOnly) {
-        super(TransactionExtension.LOG_STORE_PATH,
-                TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE),
-                new LogStoreAddHandler(resource),
-                NoopOperationStepHandler.WITH_RESULT,
-                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        super(new SimpleResourceDefinition.Parameters(TransactionExtension.LOG_STORE_PATH, TransactionExtension.getResourceDescriptionResolver(LogStoreConstants.LOG_STORE))
+                .setAddHandler(new LogStoreAddHandler(resource))
+                .setRemoveHandler(NoopOperationStepHandler.WITH_RESULT)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_NONE));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 

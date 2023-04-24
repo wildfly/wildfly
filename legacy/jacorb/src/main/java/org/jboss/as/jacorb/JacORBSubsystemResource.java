@@ -49,9 +49,10 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
 
     private JacORBSubsystemResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
-                .getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE, null,
-                null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension.getResourceDescriptionResolver())
+                .setAddHandler(JacORBSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setDeprecationData(new DeprecationData(JacORBExtension.DEPRECATED_SINCE)));
     }
 
     @Override

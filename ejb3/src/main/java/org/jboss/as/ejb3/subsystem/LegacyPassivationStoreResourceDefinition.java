@@ -81,7 +81,12 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
     private final AttributeDefinition[] attributes;
 
     LegacyPassivationStoreResourceDefinition(String element, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel, AttributeDefinition... attributes) {
-        super(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element), addHandler, removeHandler, addRestartLevel, removeRestartLevel, new DeprecationData(DEPRECATED_VERSION));
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element))
+                .setAddHandler(addHandler)
+                .setRemoveHandler(removeHandler)
+                .setAddRestartLevel(addRestartLevel)
+                .setRemoveRestartLevel(removeRestartLevel)
+                .setDeprecationData(new DeprecationData(DEPRECATED_VERSION)));
         this.attributes = attributes;
     }
 
