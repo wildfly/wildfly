@@ -77,6 +77,7 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         resourceRegistration.registerSubModel(new RealmDefinition());
         resourceRegistration.registerSubModel(new ProviderDefinition());
         resourceRegistration.registerSubModel(new SecureDeploymentDefinition());
+        resourceRegistration.registerSubModel(new SecureServerDefinition());
     }
 
     private static class ElytronOidcSubsystemRemove extends ReloadRequiredRemoveStepHandler {

@@ -18,10 +18,12 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_1_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_2_0_0;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
@@ -47,5 +49,6 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {
         ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_2_0_0, VERSION_1_0_0);
+        builder.rejectChildResource(PathElement.pathElement(SECURE_SERVER));
     }
 }

@@ -41,6 +41,15 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="secure-server" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Configuration used to secure the management console using Keycloak.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:choice>
     </xs:complexType>
 
