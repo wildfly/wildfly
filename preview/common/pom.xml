@@ -120,11 +120,7 @@
                                 <configuration>
                                     <rules>
                                         <banTransitiveDependencies>
-                                            <excludes>
-                                                <!-- Ignore jdk jars because they are system scope -->
-                                                <exclude>com.sun:tools</exclude>
-                                                <exclude>sun.jdk:jconsole</exclude>
-                                            </excludes>
+                                            <excludes/>
                                         </banTransitiveDependencies>
                                     </rules>
                                 </configuration>
