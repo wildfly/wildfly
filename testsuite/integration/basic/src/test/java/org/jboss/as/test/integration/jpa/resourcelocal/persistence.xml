@@ -32,6 +32,7 @@
                  to delay starting the persistence unit service until the install phase.
              -->
             <property name="wildfly.jpa.twophasebootstrap" value="false"/>
+            <property name="wildfly.jpa.applicationdatasource" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
