@@ -40,11 +40,11 @@ import org.jboss.as.test.integration.xerces.JSFManagedBean;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.logging.Logger;
-import org.jboss.modules.maven.ArtifactCoordinates;
-import org.jboss.modules.maven.MavenResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,8 +87,9 @@ public class XercesUsageTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "xerces-usage.ear");
         // add the .war
         ear.addAsModule(war);
-        // add the xerces jar in the .ear/lib as a MavenResolver
-        ear.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("xerces", "xercesImpl", "2.12.1")));
+        // add the xerces jar in the .ear/lib
+        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
+        ear.addAsLibrary(resolver.resolve("xerces:xercesImpl:2.12.1").withoutTransitivity().asSingleFile());
 
         ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
@@ -116,8 +117,9 @@ public class XercesUsageTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "xerces-usage-jsf.ear");
         // add the .war
         ear.addAsModule(war);
-        // add the xerces jar in the .ear/lib as a MavenResolver
-        ear.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("xerces", "xercesImpl", "2.12.1")));
+        // add the xerces jar in the .ear/lib
+        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
+        ear.addAsLibrary(resolver.resolve("xerces:xercesImpl:2.12.1").withoutTransitivity().asSingleFile());
 
         ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),

@@ -46,7 +46,6 @@
         <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>microprofile-lra</ts.microprofile-tck-provisioning.decorator.layer>
 
-        <version.org.jboss.shrinkwrap.resolvers>3.1.4</version.org.jboss.shrinkwrap.resolvers>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
