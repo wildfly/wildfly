@@ -34,6 +34,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -45,6 +46,8 @@ public class RunKafkaSetupTask implements ServerSetupTask {
     final boolean ipv6 = WildFlySecurityManager.doChecked(
             (PrivilegedAction<Boolean>) () -> System.getProperties().containsKey("ipv6"));
     protected final String LOOPBACK = ipv6 ? "[::1]" : "127.0.0.1";
+
+    private final Logger logger = Logger.getLogger("RunKafkaSetupTask");
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
@@ -65,11 +68,15 @@ public class RunKafkaSetupTask implements ServerSetupTask {
                 companion.topics().createAndWait(topicAndPartition.getKey(), topicAndPartition.getValue(), Duration.of(10, ChronoUnit.SECONDS));
             }
         } catch (Exception e) {
-            if (companion != null) {
-                companion.close();
-            }
-            if (broker != null) {
-                broker.close();
+            try {
+                if (companion != null) {
+                    companion.close();
+                }
+                if (broker != null) {
+                    broker.close();
+                }
+            } finally {
+                throw e;
             }
         }
     }
