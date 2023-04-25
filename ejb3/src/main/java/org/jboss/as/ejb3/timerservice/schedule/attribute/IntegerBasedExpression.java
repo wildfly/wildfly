@@ -172,11 +172,14 @@ public abstract class IntegerBasedExpression {
         this.assertValid(start);
         int interval = incr.getInterval();
         this.absoluteValues.add(start);
-        int next = start + interval;
-        int maxValue = this.getMaxValue();
-        while (next <= maxValue) {
-            this.absoluteValues.add(next);
-            next = next + interval;
+
+        if (interval > 0) {
+            int next = start + interval;
+            int maxValue = this.getMaxValue();
+            while (next <= maxValue) {
+                this.absoluteValues.add(next);
+                next = next + interval;
+            }
         }
     }
 

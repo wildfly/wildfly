@@ -60,7 +60,7 @@ public class ScheduleValueTestCase {
     @Test
     public void testInvalidIncrement() {
         String[] invalidValues = {
-                "0/0", "1/0", "1/-1", "1/10.0", "10/*", "10/?", "10/", "10/-",
+                "1/-1", "1/10.0", "10/*", "10/?", "10/", "10/-",
                 "/10", "?/10", "-/10", "**/10", "10.0/10"
         };
         for (String v : invalidValues) {
