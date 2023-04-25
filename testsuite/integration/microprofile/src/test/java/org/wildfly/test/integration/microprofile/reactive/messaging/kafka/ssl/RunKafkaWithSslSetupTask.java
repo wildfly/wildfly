@@ -78,11 +78,15 @@ public class RunKafkaWithSslSetupTask implements ServerSetupTask {
             companion = new KafkaCompanion(EmbeddedKafkaBroker.toListenerString(internal));
             companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
         } catch (Exception e) {
-            if (companion != null) {
-                companion.close();
-            }
-            if (broker != null) {
-                broker.close();
+            try {
+                if (companion != null) {
+                    companion.close();
+                }
+                if (broker != null) {
+                    broker.close();
+                }
+            } finally {
+                throw e;
             }
         }
     }

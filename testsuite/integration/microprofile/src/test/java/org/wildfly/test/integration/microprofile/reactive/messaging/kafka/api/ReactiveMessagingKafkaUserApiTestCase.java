@@ -273,11 +273,6 @@ public class ReactiveMessagingKafkaUserApiTestCase {
             brokerProperties.put(KafkaConfig.NumPartitionsProp(), String.valueOf(getPartitions()));
         }
 
-//        @Override
-//        protected String[] getTopics() {
-//            return new String[]{"testing1", "testing2", "testing3", "testing4", "testing5", "testing6"};
-//        }
-
         @Override
         protected Map<String, Integer> getTopicsAndPartitions() {
             Map<String, Integer> map = new LinkedHashMap<>();
