@@ -41,12 +41,10 @@
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
-        <ee.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</ee.common.resources.directory>
         <ee.galleon-common.resources.directory>${basedir}/../../ee-feature-pack/galleon-common/src/main/resources</ee.galleon-common.resources.directory>
 
         <!-- WildFly full and ee galleon contents -->
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
-        <ee.common.resources.directory>${basedir}/../../ee-feature-pack/common/src/main/resources</ee.common.resources.directory>
         <ee.galleon-common.resources.directory>${basedir}/../../ee-feature-pack/galleon-common/src/main/resources</ee.galleon-common.resources.directory>
         <ee.galleon-content.resources.directory>${basedir}/../../ee-feature-pack/galleon-content/src/main/resources</ee.galleon-content.resources.directory>
         <full.common.resources.directory>${basedir}/../../galleon-pack/common/src/main/resources</full.common.resources.directory>
@@ -147,23 +145,6 @@
                             <resources>
                                 <resource>
                                     <directory>${ee.galleon.shared.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-ee-common-feature-pack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <escapeString>\</escapeString>
-                            <resources>
-                                <resource>
-                                    <directory>${ee.common.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -336,7 +317,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-ee-feature-pack-ee-10-api|wildfly-feature-pack-common|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-ee-feature-pack-ee-10-api|wildfly-feature-pack-common|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -351,7 +332,6 @@
                                 <!-- TODO rename this file to plain old 'licenses.xml' -->
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/wildfly-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.common.resources.directory}/license/licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/ee-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/microprofile-feature-pack-licenses.xml</licensesConfigFile>
@@ -478,14 +458,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-common</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Bring in all the WildFly EE 10 API deps in one go -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -589,7 +561,6 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-mp-feature-pack-galleon-common</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-common</exclude>
-                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-ee-10-api</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common-microprofile</exclude>
