@@ -52,6 +52,7 @@ import org.jboss.as.test.integration.jsf.version.ejb.JSFMyFacesEJB;
 import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
+import org.jboss.as.test.shared.MavenArtifactResolver;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.util.LoggingUtil;
@@ -59,8 +60,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -133,17 +132,14 @@ public class JSFDeploymentProcessorTestCase {
         war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
 
         //add Jakarta Server Faces as webapp lib
-        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
         war.addAsLibraries(
-                resolver.resolve(
+                MavenArtifactResolver.resolve(
                             "commons-beanutils:commons-beanutils:1.9.3",
                             "commons-collections:commons-collections:3.2.2",
                             "commons-digester:commons-digester:1.8",
                             "org.apache.myfaces.core:myfaces-api:2.0.24",
                             "org.apache.myfaces.core:myfaces-impl:2.0.24"
                         )
-                        .withoutTransitivity()
-                        .asFile()
         );
 
         // add the .war

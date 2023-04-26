@@ -38,13 +38,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.JSFManagedBean;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
+import org.jboss.as.test.shared.MavenArtifactResolver;
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,8 +87,7 @@ public class XercesUsageTestCase {
         // add the .war
         ear.addAsModule(war);
         // add the xerces jar in the .ear/lib
-        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
-        ear.addAsLibrary(resolver.resolve("xerces:xercesImpl:2.12.1").withoutTransitivity().asSingleFile());
+        ear.addAsLibrary(MavenArtifactResolver.resolveSingleFile("xerces:xercesImpl:2.12.1"));
 
         ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),
@@ -118,8 +116,7 @@ public class XercesUsageTestCase {
         // add the .war
         ear.addAsModule(war);
         // add the xerces jar in the .ear/lib
-        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
-        ear.addAsLibrary(resolver.resolve("xerces:xercesImpl:2.12.1").withoutTransitivity().asSingleFile());
+        ear.addAsLibrary(MavenArtifactResolver.resolveSingleFile("xerces:xercesImpl:2.12.1"));
 
         ear.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.org.apache.xerces.util"),

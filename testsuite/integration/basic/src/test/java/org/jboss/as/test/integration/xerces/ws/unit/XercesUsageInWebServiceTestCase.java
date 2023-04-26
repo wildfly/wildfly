@@ -36,11 +36,10 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.xerces.XercesUsageServlet;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWSEndpoint;
 import org.jboss.as.test.integration.xerces.ws.XercesUsageWebService;
+import org.jboss.as.test.shared.MavenArtifactResolver;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,8 +77,7 @@ public class XercesUsageInWebServiceTestCase {
         war.addAsResource(XercesUsageServlet.class.getPackage(), "dummy.xml", "dummy.xml");
 
         // add the xerces jar in the .war/WEB-INF/lib
-        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
-        war.addAsLibraries(resolver.resolve("xerces:xercesImpl:2.12.1").withoutTransitivity().asSingleFile());
+        war.addAsLibraries(MavenArtifactResolver.resolveSingleFile("xerces:xercesImpl:2.12.1"));
 
 
         return war;
