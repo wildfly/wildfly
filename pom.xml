@@ -606,20 +606,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-feature-pack-common</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-feature-pack-ee-10-api</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
