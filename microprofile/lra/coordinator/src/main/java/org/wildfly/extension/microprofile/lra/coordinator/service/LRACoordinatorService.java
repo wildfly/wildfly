@@ -25,7 +25,6 @@ package org.wildfly.extension.microprofile.lra.coordinator.service;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletInfo;
 import org.jboss.msc.Service;
@@ -33,7 +32,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
 import org.wildfly.extension.microprofile.lra.coordinator._private.MicroProfileLRACoordinatorLogger;
 import org.wildfly.extension.microprofile.lra.coordinator.jaxrs.LRACoordinatorApp;
 import org.wildfly.extension.undertow.Host;
@@ -86,8 +84,6 @@ public final class LRACoordinatorService implements Service {
         // JAX-RS setup
         ServletInfo restEasyServlet = new ServletInfo("RESTEasy", HttpServletDispatcher.class).addMapping("/*");
         deploymentInfo.addServlets(restEasyServlet);
-        ListenerInfo restEasyListener = new ListenerInfo(ResteasyBootstrap.class);
-        deploymentInfo.addListener(restEasyListener);
 
         for (Map.Entry<String, String> entry : initialParameters.entrySet()) {
             deploymentInfo.addInitParameter(entry.getKey(), entry.getValue());
