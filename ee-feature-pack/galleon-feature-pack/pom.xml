@@ -414,9 +414,6 @@
                                     <rules>
                                         <banTransitiveDependencies>
                                             <excludes>
-                                                <!-- Ignore jdk jars because they are system scope -->
-                                                <exclude>com.sun:tools</exclude>
-                                                <exclude>sun.jdk:jconsole</exclude>
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
