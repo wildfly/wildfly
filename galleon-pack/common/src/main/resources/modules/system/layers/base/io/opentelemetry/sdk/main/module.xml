@@ -39,6 +39,8 @@
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
         <module name="io.smallrye.opentelemetry"/>
+
         <module name="java.logging"/>
+        <module name="jdk.unsupported"/>
     </dependencies>
 </module>
