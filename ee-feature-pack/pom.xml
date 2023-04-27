@@ -44,7 +44,6 @@
     <name>WildFly: EE Feature Pack Parent</name>
 
     <modules>
-        <module>ee-10-api</module>
         <module>galleon-common</module>
         <module>galleon-content</module>
         <module>galleon-feature-pack</module>
