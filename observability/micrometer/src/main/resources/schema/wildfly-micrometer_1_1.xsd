@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2022-2023 Red Hat, Inc.
+  ~ Copyright 2023 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,10 +13,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<!--
-    TODO Rename this file and the namespaces something that makes sense.
-    The namespaces should match those in SubsystemParser_1_0.NAMESPACE
--->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:wildfly:micrometer:1.1"
            xmlns="urn:wildfly:micrometer:1.1"
@@ -27,7 +23,7 @@
     <xs:element name="subsystem">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="otlp-registry" minOccurs="1">
+                <xs:element name="otlp-registry" minOccurs="0">
                     <xs:complexType>
                         <xs:attribute name="endpoint" type="xs:string">
                             <xs:annotation>

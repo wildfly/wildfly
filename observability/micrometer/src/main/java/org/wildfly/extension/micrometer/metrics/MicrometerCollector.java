@@ -45,6 +45,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class MicrometerCollector {
     private final LocalModelControllerClient modelControllerClient;

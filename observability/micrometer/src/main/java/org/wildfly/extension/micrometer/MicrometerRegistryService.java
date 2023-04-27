@@ -18,6 +18,7 @@
  */
 package org.wildfly.extension.micrometer;
 
+import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 
 import java.io.IOException;
@@ -30,7 +31,9 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
-import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.NoOpRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyOtlpRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 class MicrometerRegistryService implements Service {
     private final Consumer<WildFlyRegistry> registriesConsumer;
@@ -64,13 +67,18 @@ class MicrometerRegistryService implements Service {
 
     @Override
     public void start(StartContext context) {
-        registry = new WildFlyRegistry(config);
+        if (config.url() != null) {
+            registry = new WildFlyOtlpRegistry(config);
+        } else {
+            MICROMETER_LOGGER.noOpRegistryChosen();
+            registry = new NoOpRegistry();
+        }
 
         try {
             // register metrics from JMX MBeans for base metrics
             new JmxMicrometerCollector(registry).init();
         } catch (IOException e) {
-            throw MicrometerExtensionLogger.MICROMETER_LOGGER.failedInitializeJMXRegistrar(e);
+            throw MICROMETER_LOGGER.failedInitializeJMXRegistrar(e);
         }
 
         registriesConsumer.accept(registry);
