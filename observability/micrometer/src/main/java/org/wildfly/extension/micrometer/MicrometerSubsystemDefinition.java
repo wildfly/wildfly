@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
@@ -68,7 +68,7 @@ class MicrometerSubsystemDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition ENDPOINT = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.ENDPOINT, ModelType.STRING)
             .setAttributeGroup(MicrometerConfigurationConstants.OTLP_REGISTRY)
-            .setRequired(true)
+            .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
