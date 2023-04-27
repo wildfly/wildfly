@@ -378,7 +378,7 @@
         <version.io.smallrye.smallrye-mutiny>2.1.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.0.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
-        <version.io.smallrye.smallrye-opentelemetry>2.3.1</version.io.smallrye.smallrye-opentelemetry>
+        <version.io.smallrye.smallrye-opentelemetry>2.3.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-reactive-messaging>4.3.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.2.6.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.3.4</version.io.vertx.vertx>
