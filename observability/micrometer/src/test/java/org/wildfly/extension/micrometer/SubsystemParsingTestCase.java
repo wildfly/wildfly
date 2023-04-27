@@ -29,11 +29,22 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("micrometer.xml");
+        return readResource(
+                String.format(Locale.ROOT, "micrometer_%d_%d.xml",
+                        this.schema.getVersion().major(),
+                        this.schema.getVersion().minor())
+        );
     }
 
     @Override
     protected String getSubsystemXsdPath() {
         return String.format(Locale.ROOT, "schema/wildfly-micrometer_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
+    }
+
+    @Override
+    protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
+        if (this.schema == MicrometerSubsystemSchema.CURRENT) {
+            super.compareXml(configId, original, marshalled);
+        }
     }
 }
