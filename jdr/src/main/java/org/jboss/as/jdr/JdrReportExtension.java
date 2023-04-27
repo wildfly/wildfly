@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -39,9 +40,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -71,13 +70,10 @@ public class JdrReportExtension implements Extension {
     public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
 
-        ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(new JdrReportSubsystemDefinition());
-        root.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        AtomicReference<JdrReportCollector> collectorReference = context.isRuntimeOnlyRegistrationValid() ? new AtomicReference<>() : null;
+        subsystemRegistration.registerSubsystemModel(new JdrReportSubsystemDefinition(collectorReference));
 
 
-        if (context.isRuntimeOnlyRegistrationValid()) {
-            root.registerOperationHandler(JdrReportRequestHandler.DEFINITION, JdrReportRequestHandler.INSTANCE);
-        }
         subsystemRegistration.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
     }
 
