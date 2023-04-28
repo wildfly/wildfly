@@ -71,6 +71,7 @@
         <version.jwt>${version.org.eclipse.microprofile.jwt.api}</version.jwt>
         <version.openapi>${version.org.eclipse.microprofile.openapi}</version.openapi>
         <version.rest-client>${version.org.eclipse.microprofile.rest.client.api}</version.rest-client>
+        <version.telemetry>${version.org.eclipse.microprofile.telemetry}</version.telemetry>
     </properties>
 
     <dependencies>

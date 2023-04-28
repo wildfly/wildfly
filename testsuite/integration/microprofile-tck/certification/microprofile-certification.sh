@@ -76,6 +76,9 @@ translate_to_spec_name() {
   "rest-client")
     echo "REST Client"
     ;;
+  "telemetry")
+    echo "Telemetry"
+    ;;
   *)
     return 1
     ;;
@@ -122,11 +125,11 @@ is_defined "${MP_VERSION}" "No MicroProfile version provided as an argument" 1
 rm -rf $PWD/target
 mkdir $PWD/target
 
-readonly FILE="$PWD/target/microprofile-${MP_VERSION}-jdk-${JDK_VERSION}.adoc"
+readonly FILE="$PWD/target/microprofile-${MP_VERSION}-selected-specifications-jdk-${JDK_VERSION}.adoc"
 touch "$FILE"
 
 tee -a "${FILE}" <<EOF
-= Platform TCK Test results JDK ${JDK_VERSION}
+= Selected MicroProfile TCKs Test results JDK ${JDK_VERSION}
 
 == Environment
 
@@ -139,14 +142,10 @@ $(mvn -version)
 EOF
 cd "$BASE_DIR"
 
-# metrics results need to be moved to junitreports directory
-mkdir -p "metrics/target/surefire-reports/junitreports"
-cp metrics/target/surefire-reports/TEST* metrics/target/surefire-reports/junitreports/
-
 parse_test_results "$FILE" "config"
 parse_test_results "$FILE" "fault-tolerance"
 parse_test_results "$FILE" "health"
 parse_test_results "$FILE" "jwt" "jwt-auth"
-parse_test_results "$FILE" "metrics"
 parse_test_results "$FILE" "openapi"
 parse_test_results "$FILE" "rest-client"
+parse_test_results "$FILE" "telemetry"
