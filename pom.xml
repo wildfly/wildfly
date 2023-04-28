@@ -444,7 +444,7 @@
         <version.org.eclipse.jdt>3.31.0</version.org.eclipse.jdt>
         <!-- Required by the Wiremock used in the MicroProfile REST Client TCK -->
         <version.org.eclipse.jetty>9.2.30.v20200428</version.org.eclipse.jetty>
-        <version.org.eclipse.microprofile>4.1</version.org.eclipse.microprofile>
+        <version.org.eclipse.microprofile>6.0</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.0.2</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>4.0</version.org.eclipse.microprofile.health.api>
