@@ -37,9 +37,13 @@
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
         <module name="java.sql"/>
+        <module name="java.xml"/>
+
+        <!-- Required by DNS_PING -->
+        <module name="jdk.naming.dns"/>
+
         <module name="org.jgroups.azure"/>
         <module name="org.jgroups.kubernetes"/>
-        <module name="java.xml"/>
     </dependencies>
 
 </module>
