@@ -47,8 +47,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.SystemExiter;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceActivator;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
@@ -97,7 +95,7 @@ public final class Main {
         }
 
         try {
-            Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
+            Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule("org.jboss.vfs"));
 
             final ParsedOptions options = determineEnvironment(args, new Properties(WildFlySecurityManager.getSystemPropertiesPrivileged()), WildFlySecurityManager.getSystemEnvironmentPrivileged(), ServerEnvironment.LaunchType.APPCLIENT);
             if(options == null) {
@@ -149,7 +147,7 @@ public final class Main {
                     }
                 };
                 configuration.setConfigurationPersisterFactory(configurationPersisterFactory);
-                bootstrap.bootstrap(configuration, Collections.<ServiceActivator>emptyList()).get();
+                bootstrap.bootstrap(configuration, Collections.emptyList()).get();
             }
         } catch (Throwable t) {
             abort(t);
@@ -167,7 +165,7 @@ public final class Main {
     }
 
     public static ParsedOptions determineEnvironment(String[] args, Properties systemProperties, Map<String, String> systemEnvironment, ServerEnvironment.LaunchType launchType) {
-        List<String> clientArguments = new ArrayList<String>();
+        List<String> clientArguments = new ArrayList<>();
         ParsedOptions ret = new ParsedOptions();
         ret.clientArguments = clientArguments;
         final int argsLength = args.length;
@@ -184,7 +182,7 @@ public final class Main {
                     clientArguments.add(arg);
                 } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), null);
+                    productConfig = ProductConfig.fromFilesystemSlot(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), null);
                     STDOUT.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
@@ -216,28 +214,24 @@ public final class Main {
                         throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
-                    String urlSpec = args[++i];
-                    ret.hostUrl = urlSpec;
+                    ret.hostUrl = args[++i];
                 } else if (arg.startsWith(CommandLineConstants.SHORT_HOST)) {
                     if(ret.propertiesFile != null) {
                         throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
-                    String urlSpec = parseValue(arg, CommandLineConstants.SHORT_HOST);
-                    ret.hostUrl = urlSpec;
+                    ret.hostUrl = parseValue(arg, CommandLineConstants.SHORT_HOST);
                 } else if (arg.startsWith(CommandLineConstants.HOST)) {
                     if(ret.propertiesFile != null) {
                         throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
                     hostSet = true;
-                    String urlSpec = parseValue(arg, CommandLineConstants.HOST);
-                    ret.hostUrl = urlSpec;
+                    ret.hostUrl = parseValue(arg, CommandLineConstants.HOST);
                 } else if (arg.startsWith(CommandLineConstants.CONNECTION_PROPERTIES)) {
                     if(hostSet) {
                         throw AppClientLogger.ROOT_LOGGER.cannotSpecifyBothHostAndPropertiesFile();
                     }
-                    String fileUrl = parseValue(arg, CommandLineConstants.CONNECTION_PROPERTIES);
-                    ret.propertiesFile = fileUrl;
+                    ret.propertiesFile = parseValue(arg, CommandLineConstants.CONNECTION_PROPERTIES);
                 } else if (arg.startsWith(CommandLineConstants.SYS_PROP)) {
                     // set a system property
                     String name, value;
@@ -269,7 +263,7 @@ public final class Main {
                             return null;
                         }
                     } else {
-                        yamlFile = arg.substring(idx + 1, arg.length());
+                        yamlFile = arg.substring(idx + 1);
                     }
                 } else {
                     if (arg.startsWith("-")) {
@@ -289,9 +283,9 @@ public final class Main {
         }
 
         String hostControllerName = null; // No host controller unless in domain mode.
-        productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
+        productConfig = ProductConfig.fromFilesystemSlot(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
         ret.environment = new ServerEnvironment(hostControllerName, systemProperties, systemEnvironment, appClientConfig, null, launchType, null, productConfig,
-                System.currentTimeMillis(), false, null, null, null, yamlFile);
+                System.currentTimeMillis(), false, false,null, null, null, yamlFile);
         return ret;
     }
 
@@ -306,6 +300,7 @@ public final class Main {
         return value;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private static boolean processProperties(final String arg, final String urlSpec) {
         URL url = null;
         try {
