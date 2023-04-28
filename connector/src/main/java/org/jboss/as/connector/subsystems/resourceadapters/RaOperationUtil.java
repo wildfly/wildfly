@@ -505,7 +505,7 @@ public class RaOperationUtil {
                 }
                 //final Closeable closable = VFS.mountZip((InputStream) new JarInputStream(new FileInputStream(path.getPath().split("!")[0].split(":")[1])), path.getPath().split("!")[0].split(":")[1], child, TempFileProviderService.provider());
 
-                final MountHandle mountHandle = new MountHandle(closable);
+                final MountHandle mountHandle = MountHandle.create(closable);
                 final ResourceRoot resourceRoot = new ResourceRoot(child, mountHandle);
 
                 final VirtualFile deploymentRoot = resourceRoot.getRoot();

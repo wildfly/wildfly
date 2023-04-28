@@ -125,12 +125,12 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         String relativeName = child.getPathNameRelativeTo(deploymentRoot.getRoot());
                         MountedDeploymentOverlay overlay = overlays.get(relativeName);
                         final MountHandle mountHandle;
-                        if(overlay != null) {
+                        if (overlay != null) {
                             overlay.remountAsZip(false);
-                            mountHandle = new MountHandle(null);
+                            mountHandle = MountHandle.create(null);
                         } else {
                             final Closeable closable = child.isFile() ? mount(child, false) : null;
-                            mountHandle = new MountHandle(closable);
+                            mountHandle = MountHandle.create(closable);
                         }
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_EXTENSION)) {
@@ -269,7 +269,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file, final boolean markAsSubDeployment, final boolean explodeDuringMount) throws IOException {
         final boolean war = file.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
         final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : exportExplodedWar(war, file, deploymentUnit);
-        final MountHandle mountHandle = new MountHandle(closable);
+        final MountHandle mountHandle = MountHandle.create(closable);
         final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
         if (markAsSubDeployment) {

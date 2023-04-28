@@ -75,7 +75,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
                     ModuleRootMarker.mark(existingRoot);
                 } else {
                     final Closeable closable = appClientRoot.isFile() ? mount(appClientRoot, false) : null;
-                    final MountHandle mountHandle = new MountHandle(closable);
+                    final MountHandle mountHandle = MountHandle.create(closable);
                     final ResourceRoot childResource = new ResourceRoot(appClientRoot, mountHandle);
                     ModuleRootMarker.mark(childResource);
                     SubDeploymentMarker.mark(childResource);

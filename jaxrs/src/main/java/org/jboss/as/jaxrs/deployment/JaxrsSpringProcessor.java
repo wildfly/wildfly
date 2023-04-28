@@ -194,7 +194,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             }
             if (found) {
                 try {
-                    MountHandle mh = new MountHandle(null); // actual close is done by the MSC service above
+                    MountHandle mh = MountHandle.create(null); // actual close is done by the MSC service above
                     ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(), mh);
                     ModuleRootMarker.mark(resourceRoot);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
