@@ -74,11 +74,6 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
     }
 
     @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        // Skip
-    }
-
-    @Override
     protected void compare(ModelNode model1, ModelNode model2) {
         purgeJGroupsModel(model1);
         purgeJGroupsModel(model2);
