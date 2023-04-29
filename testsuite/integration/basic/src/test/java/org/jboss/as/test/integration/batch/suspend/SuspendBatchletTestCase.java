@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
+import javax.naming.InitialContext;
+
 import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.BatchRuntime;
 import jakarta.batch.runtime.BatchStatus;
@@ -29,8 +31,11 @@ import jakarta.batch.runtime.JobExecution;
 import jakarta.batch.runtime.JobInstance;
 import jakarta.batch.runtime.StepExecution;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -53,14 +58,19 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class SuspendBatchletTestCase extends AbstractBatchTestCase {
-
+    private static final String ARCHIVE_NAME = "suspend-batchlet";
     @ArquillianResource
     private ManagementClient managementClient;
 
+    @ContainerResource
+    private InitialContext remoteContext;
+
     @Deployment
     public static WebArchive createDeployment() {
-        return createDefaultWar("suspend-batchlet.war", SuspendBatchletTestCase.class.getPackage(), "suspend-batchlet.xml")
-                .addClass(LongRunningBatchlet.class)
+        return createDefaultWar(ARCHIVE_NAME + ".war", SuspendBatchletTestCase.class.getPackage(),
+                "suspend-batchlet.xml", "suspend-batchlet-ejb.xml")
+                .addClasses(LongRunningBatchlet.class, LongRunningBatchletWithEjb.class,
+                        SuspendBatchLocal.class, SuspendBatchRemote.class, SuspendBatchSingleton.class)
                 .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller, org.jboss.remoting\n"), "META-INF/MANIFEST.MF")
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new RemotingPermission("createEndpoint"),
@@ -123,6 +133,7 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
      * @throws Exception if an error occurs
      */
     @Test
+    @InSequence(1)
     public void testSuspendResume() throws Exception {
         final Properties jobProperties = new Properties();
         jobProperties.setProperty("max.seconds", "10");
@@ -147,5 +158,26 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
 
         // check job finishes OK
         checkJobExecution(jobOperator, jobExecution, BatchStatus.COMPLETED, "OK");
+    }
+
+    @Test
+    @InSequence(2)
+    @RunAsClient
+    public void testSuspendResumeWithEjb() throws Exception {
+        final String lookupName = "ejb:/" + ARCHIVE_NAME + "/"
+                + SuspendBatchSingleton.class.getSimpleName() + "!"
+                + SuspendBatchRemote.class.getName();
+        SuspendBatchRemote suspendRemoteBean = (SuspendBatchRemote) remoteContext.lookup(lookupName);
+        suspendRemoteBean.startJob("suspend-batchlet-ejb.xml", 10);
+
+        suspendServer();
+        Thread.sleep(TimeoutUtil.adjust(1000));
+
+        resumeServer();
+        Thread.sleep(TimeoutUtil.adjust(1000));
+
+        suspendRemoteBean = (SuspendBatchRemote) remoteContext.lookup(lookupName);
+        final BatchStatus status = suspendRemoteBean.getStatus();
+        Assert.assertEquals(BatchStatus.COMPLETED, status);
     }
 }
