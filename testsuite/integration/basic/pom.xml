@@ -2739,6 +2739,9 @@
                                     <excludes>
                                         <!-- Test requires agroal -->
                                         <exclude>org/jboss/as/test/integration/batch/repository/JdbcRepositoryTestCase.java</exclude>
+
+                                        <!-- Test requires remote ejb -->
+                                        <exclude>org/jboss/as/test/integration/batch/ejb/**/*</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
