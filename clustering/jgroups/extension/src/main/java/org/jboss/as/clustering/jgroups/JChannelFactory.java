@@ -43,6 +43,7 @@ import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Factory for creating fork-able channels.
@@ -115,7 +116,7 @@ public class JChannelFactory implements ChannelFactory {
         TP transport = (TP) protocols.get(0);
         transport.setSocketFactory(new ManagedSocketFactory(SelectorProvider.provider(), this.configuration.getSocketBindingManager(), bindings));
 
-        JChannel channel = new JChannel(protocols);
+        JChannel channel = createChannel(protocols);
 
         channel.setName(this.configuration.getNodeName());
 
@@ -125,6 +126,18 @@ public class JChannelFactory implements ChannelFactory {
         }
 
         return channel;
+    }
+
+    // TODO Remove this once DNS_PING is configurable via an explicit DNSResolver
+    private static JChannel createChannel(List<Protocol> protocols) throws Exception {
+        // DNS_PING current loads its InitialContextFactory via the TCCL
+        ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(JChannel.class);
+            return new JChannel(protocols);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
+        }
     }
 
     @Override
