@@ -70,14 +70,14 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
                 ), "permissions.xml");
     }
 
-    private void suspendServer() throws IOException {
+    public static void suspendServer(ManagementClient managementClient) throws IOException {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set("suspend");
         ModelNode result = managementClient.getControllerClient().execute(op);
         Assert.assertTrue("Failed to suspend: " + result, Operations.isSuccessfulOutcome(result));
     }
 
-    private void resumeServer() throws IOException {
+    public static void resumeServer(ManagementClient managementClient) throws IOException {
         ModelNode op = new ModelNode();
         op.get(ModelDescriptionConstants.OP).set("resume");
         ModelNode result = managementClient.getControllerClient().execute(op);
@@ -131,12 +131,12 @@ public class SuspendBatchletTestCase extends AbstractBatchTestCase {
         long executionId = jobOperator.start("suspend-batchlet", jobProperties);
         JobExecution jobExecution = jobOperator.getJobExecution(executionId);
 
-        suspendServer();
+        suspendServer(managementClient);
 
         // check job is stopped
         checkJobExecution(jobOperator, jobExecution, BatchStatus.STOPPED, "KO");
 
-        resumeServer();
+        resumeServer(managementClient);
 
         // the job should be restarted with a new ID, wait for it a max of 10s
         JobInstance jobInstance = jobOperator.getJobInstance(executionId);
