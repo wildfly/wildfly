@@ -219,7 +219,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                     } else {
                         closable = null;
                     }
-                    final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
+                    final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, MountHandle.create(closable));
                     ModuleRootMarker.mark(webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
                 } catch (IOException e) {
