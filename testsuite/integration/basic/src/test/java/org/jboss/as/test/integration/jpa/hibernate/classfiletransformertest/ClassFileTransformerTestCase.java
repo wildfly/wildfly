@@ -90,4 +90,11 @@ public class ClassFileTransformerTestCase {
         assertTrue("was able to read database row with hibernate.ejb.use_class_enhancer enabled", emp != null);
     }
 
+    @Test
+    public void testHibernateByteCodeEnhancement() {
+        // Note: ManagedTypeHelper is an internal Hibernate ORM class, if it is removed or renamed then this test can be updated
+        // accordingly.
+        assertTrue("Employee class is not bytecode enhanced", org.hibernate.engine.internal.ManagedTypeHelper.isManagedType(Employee.class));
+    }
+
 }

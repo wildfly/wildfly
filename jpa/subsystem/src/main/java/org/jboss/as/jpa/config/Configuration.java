@@ -141,11 +141,6 @@ public class Configuration {
      */
     public static final String JPA_CONTAINER_CLASS_TRANSFORMER = "jboss.as.jpa.classtransformer";
 
-    private static final String HIBERNATE_USE_CLASS_ENHANCER = "hibernate.ejb.use_class_enhancer";
-    private static final String HIBERNATE_ENABLE_DIRTY_TRACKING = "hibernate.enhancer.enableDirtyTracking";
-    private static final String HIBERNATE_ENABLE_LAZY_INITIALIZATION = "hibernate.enhancer.enableLazyInitialization";
-    private static final String HIBERNATE_ENABLE_ASSOCIATION_MANAGEMENT = "hibernate.enhancer.enableAssociationManagement";
-
     /**
      * set to false to force a single phase persistence unit bootstrap to be used (default is true
      * which uses two phases to start the persistence unit).
@@ -276,32 +271,17 @@ public class Configuration {
     /**
      * Determine if class file transformer is needed for the specified persistence unit
      *
-     * if the persistence provider is Hibernate and use_class_enhancer is not true, don't need a class transformer.
-     * for other persistence providers, the transformer is assumed to be needed.
+     * for all persistence providers, the transformer is assumed to be needed unless the application indicates otherwise.
      *
      * @param pu the PU
      * @return true if class file transformer support is needed for pu
      */
     public static boolean needClassFileTransformer(PersistenceUnitMetadata pu) {
-        boolean result = true;
-        String provider = pu.getPersistenceProviderClassName();
-        if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
-            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
-        }
-        else if (isHibernateProvider(provider)) {
-            result = (Boolean.TRUE.toString().equals(pu.getProperties().getProperty(HIBERNATE_USE_CLASS_ENHANCER))
-                    || Boolean.TRUE.toString().equals(pu.getProperties().getProperty(HIBERNATE_ENABLE_DIRTY_TRACKING))
-                    || Boolean.TRUE.toString().equals(pu.getProperties().getProperty(HIBERNATE_ENABLE_LAZY_INITIALIZATION))
-                    || Boolean.TRUE.toString().equals(pu.getProperties().getProperty(HIBERNATE_ENABLE_ASSOCIATION_MANAGEMENT)));
-        }
-        return result;
-    }
 
-    private static boolean isHibernateProvider(String provider) {
-        return provider == null ||
-                PROVIDER_CLASS_HIBERNATE.equals(provider) ||
-                PROVIDER_CLASS_HIBERNATE_OGM.equals(provider) ||
-                PROVIDER_CLASS_HIBERNATE4_1.equals(provider);
+        if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
+            return Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
+        }
+        return true;
     }
 
     // key = provider class name, value = adapter module name
