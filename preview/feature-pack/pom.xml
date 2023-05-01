@@ -44,7 +44,6 @@
 
         <!-- WildFly full and ee galleon contents -->
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
-        <ee.galleon-content.resources.directory>${basedir}/../../ee-feature-pack/galleon-content/src/main/resources</ee.galleon-content.resources.directory>
         <full.common.resources.directory>${basedir}/../../galleon-pack/common/src/main/resources</full.common.resources.directory>
         <mp.galleon.common.resources.directory>${basedir}/../../microprofile/galleon-common/src/main/resources</mp.galleon.common.resources.directory>
 
@@ -213,24 +212,6 @@
                             <resources>
                                 <resource>
                                     <directory>${common.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-
-                    <!-- WildFly EE Galleon Content -->
-                    <execution>
-                        <id>copy-ee.galleon-content-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${ee.galleon-content.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
