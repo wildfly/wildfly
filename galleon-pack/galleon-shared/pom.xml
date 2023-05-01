@@ -37,10 +37,10 @@
         <version>29.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-feature-pack-common</artifactId>
+    <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
 
-    <name>WildFly: Feature Pack Common Resources</name>
-    <description>Galleon feature pack content that is used in this feature pack and may also be used in other feature packs.</description>
+    <name>WildFly: Feature Pack Shared Galleon Content</name>
+    <description>Content for the wildfly feature pack that can also be used in the wildfly-preview feature pack</description>
     <packaging>pom</packaging>
 
     <dependencies>
