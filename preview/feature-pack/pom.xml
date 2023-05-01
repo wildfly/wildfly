@@ -262,7 +262,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-ee-feature-pack-pruned|wildfly-elytron\z|wildfly-feature-pack-common|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-common|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-common-microprofile</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
