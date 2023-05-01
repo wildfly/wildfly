@@ -47,7 +47,6 @@
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
-        <module>pruned</module>
     </modules>
 
     <dependencyManagement>
