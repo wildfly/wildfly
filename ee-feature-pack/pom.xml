@@ -71,11 +71,6 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-legacy-ee-bom</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-common-ee-dependency-management</artifactId>
             <type>pom</type>
         </dependency>
