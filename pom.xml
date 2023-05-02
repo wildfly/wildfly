@@ -799,7 +799,7 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+                <artifactId>wildfly-feature-pack-galleon-local</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
