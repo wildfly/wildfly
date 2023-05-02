@@ -837,13 +837,6 @@
 
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-mp-feature-pack-galleon-common</artifactId>
-                <version>${full.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-release</artifactId>
                 <version>${full.maven.version}</version>
                 <type>pom</type>
