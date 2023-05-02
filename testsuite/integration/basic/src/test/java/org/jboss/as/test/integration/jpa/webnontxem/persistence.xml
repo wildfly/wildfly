@@ -28,10 +28,6 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
-            <!-- TODO: WFLY-17966 Allow JPA bytecode enhancement to work with applications using java:comp/DefaultDataSource
-               To recreate, set <property name="jboss.as.jpa.classtransformer" value="true"/>
-            -->
-            <property name="jboss.as.jpa.classtransformer" value="false"/>
         </properties>
     </persistence-unit>
 </persistence>
