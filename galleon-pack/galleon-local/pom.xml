@@ -34,11 +34,13 @@
         <version>29.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+    <artifactId>wildfly-feature-pack-galleon-local</artifactId>
+    <name>WildFly: Feature Pack Local Galleon Content</name>
+    <description>
+        Content for the wildfly feature pack that can only be used in that feature pack
+        and not in the wildfly-preview feature pack
+    </description>
     <packaging>pom</packaging>
-
-    <name>WildFly: Feature Pack Galleon Content</name>
-    <description>Galleon feature pack content that is *local* to this feature pack and not to be used in other feature packs.</description>
 
     <build>
         <plugins>

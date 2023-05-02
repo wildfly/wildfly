@@ -47,7 +47,7 @@
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
-        <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
+        <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
     </properties>
 
     <build>
@@ -110,7 +110,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-galleon-content-resources</id>
+                        <id>copy-galleon-local-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -119,7 +119,7 @@
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${content.resources.directory}</directory>
+                                    <directory>${galleon.local.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -146,7 +146,7 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-feature-pack-galleon-shared|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-shared|wildfly-feature-pack-galleon-content</excludedArtifacts>
+                            <excludedArtifacts>microprofile-reactive-messaging-api|wildfly-standard-expansion-bom|wildfly-standard-ee-bom|wildfly-feature-pack-galleon-shared|wildfly-common-expansion-dependency-management|wildfly-common-ee-dependency-management|wildfly-ee-galleon-pack|wildfly-feature-pack-galleon-shared|wildfly-feature-pack-galleon-local</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -200,14 +200,14 @@
 
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
+            <artifactId>wildfly-feature-pack-galleon-local</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
 
-         <dependency>
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-feature-pack-galleon-content</artifactId>
+            <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -273,7 +273,7 @@
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
-                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-content</exclude>
+                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-local</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

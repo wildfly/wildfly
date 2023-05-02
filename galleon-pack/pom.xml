@@ -44,8 +44,8 @@
     <name>WildFly: Feature Pack Parent</name>
 
     <modules>
-        <module>galleon-content</module>
         <module>galleon-feature-pack</module>
+        <module>galleon-local</module>
         <module>galleon-shared</module>
     </modules>
 
