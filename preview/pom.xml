@@ -114,7 +114,6 @@
                 <module>build</module>
                 <module>dist</module>
                 <module>feature-pack</module>
-                <module>common</module>
                 <module>galleon-local</module>
                 <module>galleon-content</module>
                 <module>galleon-content-microprofile</module>
