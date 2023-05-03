@@ -46,7 +46,6 @@
         <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
 
         <!-- WildFly Preview modules -->
-        <common.resources.directory>${basedir}/../common/src/main/resources</common.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <content.resources.directory>${basedir}/../galleon-content/src/main/resources</content.resources.directory>
         <content-microprofile.resources.directory>${basedir}/../galleon-content-microprofile/src/main/resources</content-microprofile.resources.directory>
@@ -161,23 +160,6 @@
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
-                    <!-- WildFly preview feature pack common resources -->
-                    <execution>
-                        <id>copy-common-feature-pack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${common.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>copy-galleon-local-feature-pack-resources</id>
                         <phase>process-resources</phase>
@@ -239,7 +221,7 @@
                 <configuration>
                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                     <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-common|wildfly-preview-feature-pack-galleon-local</excludedArtifacts>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-galleon-local</excludedArtifacts>
                 </configuration>
                 <executions>
                     <execution>
@@ -254,7 +236,6 @@
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/preview-feature-pack-common-licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/microprofile-feature-pack-licenses.xml</licensesOutputFile>
                         </configuration>
@@ -377,14 +358,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Bring in all the WildFly preview feature pack common deps in one go -->
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-preview-feature-pack-common</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Bring in all the WildFly Preview Galleon Local deps in one go -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -455,7 +428,6 @@
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
-                                                <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
