@@ -722,14 +722,14 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
+                <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-feature-pack-common-microprofile</artifactId>
+                <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
