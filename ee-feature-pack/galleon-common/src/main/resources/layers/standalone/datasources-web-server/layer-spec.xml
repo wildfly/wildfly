@@ -3,6 +3,7 @@
     <dependencies>
         <layer name="web-server"/>
         <layer name="core-server"/>
+        <layer name="elytron"/>  <!-- Non optional dependency needed due to use of undertow-elytron-security feature-group-->
         <layer name="core-tools" optional="true"/>
         <layer name="datasources" optional="true"/>
     </dependencies>
