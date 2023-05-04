@@ -311,7 +311,7 @@ link:#gal.base-server[base-server] +
 |Support for a JMX remoting connector.
 |
 link:#gal.jmx[jmx] +
-link:#gal.management[management] (optional) +
+link:#gal.management[management] +
 
 |[[gal.jpa]]jpa
 |Support for JPA (using the latest WildFly supported Hibernate release). +
