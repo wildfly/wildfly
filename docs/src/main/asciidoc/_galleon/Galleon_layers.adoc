@@ -96,6 +96,7 @@ link:#gal.security-manager[security-manager] (optional) +
 link:#gal.core-server[core-server] +
 link:#gal.cdi[cdi] +
 link:#gal.ee-integration[ee-integration] +
+link:#gal.elytron[elytron] +
 link:#gal.jaxrs[jaxrs-core] +
 link:#gal.jsonp[jsonp] +
 link:#gal.jsonb[jsonb] +

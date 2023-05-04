@@ -23,8 +23,11 @@
         <layer name="core-server"/>
         <layer name="cdi"/>
         <layer name="ee-integration"/>
+        <layer name="elytron"/>  <!-- Non optional dependency needed due to use of undertow-elytron-security feature-group-->
         <layer name="jaxrs-core"/>
         <layer name="jsonp"/>
         <layer name="jsonb"/>
     </dependencies>
+    <!-- Ensure we have an application-security-domain mapping i.e. default security-domain -->
+    <feature-group name="undertow-elytron-security"/>
 </layer-spec>
