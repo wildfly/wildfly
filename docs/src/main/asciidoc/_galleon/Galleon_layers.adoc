@@ -191,6 +191,7 @@ link:#gal.naming[naming] +
 |Support for EE Security.
 |
 link:#gal.cdi[cdi] +
+link:#gal.elytron[elytron] +
 
 |[[gal.ejb-http-invoker]]ejb-http-invoker
 |Support for invoking Jakarta Enterprise Beans over HTTP.
@@ -386,7 +387,6 @@ link:#gal.microprofile-config[microprofile-config] +
 |Support for MicroProfile JWT.
 |
 link:#gal.ee-security[ee-security] +
-link:#gal.elytron[elytron] +
 link:#gal.microprofile-config[microprofile-config] +
 
 |[[gal.microprofile-openapi]]microprofile-openapi
