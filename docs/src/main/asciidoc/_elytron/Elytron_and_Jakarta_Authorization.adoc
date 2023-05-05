@@ -11,33 +11,20 @@ endif::[]
 
 [abstract]
 
-This document will guide you on how to enable JACC using Elytron
-Subsystem.
+This document will guide you on how to enable JACC for your deployments
+using the default policy defined in the Elytron subsystem.
 
 [[defining-a-jacc-policy-provider]]
 == Defining a JACC Policy Provider
 
 Elytron subsystem provides a built-in policy provider based on JACC
-specification. To create the policy provider you can execute a CLI
-command as follows:
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=elytron/policy=jacc:add(jacc-policy={})
-----
-
-After executing the command above, please reload the server
-configuration as follows:
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] reload
-----
+specification. This policy provider is active by default in the 
+default configuration.
 
 [[enabling-jacc-to-a-web-deployment]]
 == Enabling JACC to a Web Deployment
 
-Once JACC Policy Provider is defined you can enable JACC to web
+You can enable JACC to web
 deployments by executing the following command:
 
 [source,options="nowrap"]
@@ -58,8 +45,7 @@ can execute a command as follows:
 [[enabling-jacc-to-a-ejb-deployment]]
 == Enabling JACC to a EJB Deployment
 
-Once JACC Policy Provider is defined you can enable JACC to EJB
-deployments by executing the following command:
+You can enable JACC to EJB deployments by executing the following command:
 
 [source,options="nowrap"]
 ----
