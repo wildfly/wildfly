@@ -29,6 +29,7 @@
     <feature-group name="transactions"/>
     <feature-group name="datasources"/>
     <feature spec="subsystem.ee-security"/>
+    <feature-group name="jacc-policy" />
     <feature-group name="ejb3"/>
     <feature spec="subsystem.resource-adapters"/>
     <feature-group name="jca"/>

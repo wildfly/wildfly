@@ -4,5 +4,6 @@
         <layer name="cdi"/>
         <layer name="elytron"/>
      </dependencies>
+    <feature-group name="jacc-policy"/>
     <feature spec="subsystem.ee-security"/>
 </layer-spec>
