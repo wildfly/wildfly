@@ -37,7 +37,7 @@ public interface ExpirationMetaData extends Expiration {
     default boolean isExpired() {
         if (this.isImmortal()) return false;
         Instant lastAccessedTime = this.getLastAccessTime();
-        return (lastAccessedTime != null) ? lastAccessedTime.plus(this.getTimeout()).isBefore(Instant.now()) : false;
+        return (lastAccessedTime != null) ? !lastAccessedTime.plus(this.getTimeout()).isAfter(Instant.now()) : false;
     }
 
     /**
