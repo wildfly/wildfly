@@ -104,18 +104,12 @@ public class EESecurityInjectionEnabledElytronTestCase extends EESecurityInjecti
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements =  new ConfigurableElement[7];
+            ConfigurableElement[] elements =  new ConfigurableElement[6];
             // Add module with custom principal and principal transformer
             elements[0] = module;
 
-            // Add empty JACC policy
-            elements[1] = Policy.builder()
-                    .withName("jacc")
-                    .withJaccPolicy()
-                    .build();
-
             // Create filesystem security realm with one identity
-            elements[2] = FileSystemRealm.builder()
+            elements[1] = FileSystemRealm.builder()
                     .withName(TEST_REALM)
                     .withUser(UserWithAttributeValues.builder()
                             .withName("user1")
@@ -125,14 +119,14 @@ public class EESecurityInjectionEnabledElytronTestCase extends EESecurityInjecti
                     .build();
 
             // Add custom pre-realm principal transformer to create custom principal
-            elements[3] = CustomPrincipalTransformer.builder()
+            elements[2] = CustomPrincipalTransformer.builder()
                     .withName(TEST_CUSTOM_PRINCIPAL_TRANSFORMER)
                     .withModule(MODULE_NAME)
                     .withClassName(TestCustomPrincipalTransformer.class.getCanonicalName())
                     .build();
 
             // Create security domain using security realm and principal transformer
-            elements[4] = SimpleSecurityDomain.builder()
+            elements[3] = SimpleSecurityDomain.builder()
                     .withName(TEST_SECURITY_DOMAIN)
                     .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
                             .withRealm(TEST_REALM)
@@ -142,7 +136,7 @@ public class EESecurityInjectionEnabledElytronTestCase extends EESecurityInjecti
                     .build();
 
             // Create HTTP authentication factory
-            elements[5] = SimpleHttpAuthenticationFactory.builder()
+            elements[4] = SimpleHttpAuthenticationFactory.builder()
                     .withName(TEST_HTTP_FACTORY)
                     .withHttpServerMechanismFactory("global")
                     .withSecurityDomain(TEST_SECURITY_DOMAIN)
@@ -156,7 +150,7 @@ public class EESecurityInjectionEnabledElytronTestCase extends EESecurityInjecti
                     .build();
 
             // Add HTTP authentication factory to Undertow configuration
-            elements[6] = UndertowApplicationSecurityDomain.builder()
+            elements[5] = UndertowApplicationSecurityDomain.builder()
                     .withName(TEST_APP_DOMAIN)
                     .httpAuthenticationFactory(TEST_HTTP_FACTORY)
                     .withEnableJacc(true)

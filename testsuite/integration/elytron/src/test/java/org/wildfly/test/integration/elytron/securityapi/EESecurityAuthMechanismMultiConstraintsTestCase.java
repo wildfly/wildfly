@@ -161,15 +161,10 @@ public class EESecurityAuthMechanismMultiConstraintsTestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[2];
-            // 1 - Add empty JACC Policy
-            elements[0] = Policy.builder()
-                    .withName("jacc")
-                    .withJaccPolicy()
-                    .build();
+            ConfigurableElement[] elements = new ConfigurableElement[1];
 
-            // 2 - Map the application-security-domain
-            elements[1] = UndertowApplicationSecurityDomain.builder()
+            // 1 - Map the application-security-domain
+            elements[0] = UndertowApplicationSecurityDomain.builder()
                     .withName("SecurityAPI")
                     .withSecurityDomain("ApplicationDomain")
                     .withIntegratedJaspi(false)
