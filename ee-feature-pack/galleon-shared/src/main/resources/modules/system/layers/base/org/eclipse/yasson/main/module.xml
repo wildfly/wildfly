@@ -16,18 +16,21 @@
   ~ limitations under the License.
   -->
 
-<module xmlns="urn:jboss:module:1.7" name="org.eclipse.yasson">
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.yasson">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <resources>
+        <artifact name="${org.eclipse:yasson}"/>
+    </resources>
+
     <dependencies>
+        <module name="java.logging"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.json.api"/>
         <module name="javax.json.bind.api"/>
     </dependencies>
-    <resources>
-        <artifact name="${org.eclipse:yasson}"/>
-    </resources>
+
 </module>
