@@ -369,6 +369,7 @@ public class MessagingSubsystemParser_16_0 extends PersistentResourceXMLParser {
                                                         AddressSettingDefinition.REDELIVERY_DELAY,
                                                         AddressSettingDefinition.REDELIVERY_MULTIPLIER,
                                                         AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS,
+                                                        AddressSettingDefinition.MAX_READ_PAGE_BYTES,
                                                         AddressSettingDefinition.MAX_REDELIVERY_DELAY,
                                                         AddressSettingDefinition.MAX_SIZE_BYTES,
                                                         AddressSettingDefinition.PAGE_SIZE_BYTES,

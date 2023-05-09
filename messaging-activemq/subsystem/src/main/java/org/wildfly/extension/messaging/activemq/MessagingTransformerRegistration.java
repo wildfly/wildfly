@@ -26,6 +26,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_ACC
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HTTP_CONNECTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.REMOTE_CONNECTOR;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_MASTER_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_PRIMARY_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.CONFIGURATION_SECONDARY_PATH;
@@ -74,12 +75,20 @@ public class MessagingTransformerRegistration implements ExtensionTransformerReg
     @Override
     public void registerTransformers(SubsystemTransformerRegistration registration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
+        registerTransformers_WF_29(builder.createBuilder(MessagingExtension.VERSION_16_0_0, MessagingExtension.VERSION_15_0_0));
         registerTransformers_WF_28(builder.createBuilder(MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_14_0_0));
         registerTransformers_WF_27(builder.createBuilder(MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_13_1_0));
         registerTransformers_WF_26_1(builder.createBuilder(MessagingExtension.VERSION_13_1_0, MessagingExtension.VERSION_13_0_0));
         builder.buildAndRegister(registration, new ModelVersion[]{MessagingExtension.VERSION_13_0_0, MessagingExtension.VERSION_13_1_0,
-            MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0});
+            MessagingExtension.VERSION_14_0_0, MessagingExtension.VERSION_15_0_0, MessagingExtension.VERSION_16_0_0});
     }
+
+    private static void registerTransformers_WF_29(ResourceTransformationDescriptionBuilder subsystem) {
+        ResourceTransformationDescriptionBuilder addressSettings = subsystem.addChildResource(SERVER_PATH)
+                .addChildResource(ADDRESS_SETTING_PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSettings, AddressSettingDefinition.MAX_READ_PAGE_BYTES);
+    }
+
     private static void registerTransformers_WF_28(ResourceTransformationDescriptionBuilder subsystem) {
         ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(SERVER_PATH);
                 server.addChildResource(PathElement.pathElement(REMOTE_ACCEPTOR)).getAttributeBuilder()

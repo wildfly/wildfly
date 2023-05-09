@@ -412,6 +412,7 @@
                     <xs:attribute name="redelivery-delay" type="xs:long" use="optional" />
                     <xs:attribute name="redelivery-multiplier" type="xs:double" use="optional" />
                     <xs:attribute name="max-delivery-attempts" type="xs:int" use="optional" />
+                    <xs:attribute name="max-read-page-bytes" type="xs:int" use="optional" />
                     <xs:attribute name="max-redelivery-delay" type="xs:long" use="optional" />
                     <xs:attribute name="max-size-bytes" type="xs:long" use="optional" />
                     <xs:attribute name="page-size-bytes" type="xs:int" use="optional" />

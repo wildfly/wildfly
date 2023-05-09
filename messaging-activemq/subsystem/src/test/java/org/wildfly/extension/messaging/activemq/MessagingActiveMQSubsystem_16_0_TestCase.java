@@ -25,6 +25,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTE
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getJGroupsDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
@@ -205,6 +206,7 @@ public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemB
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(AddressSettingDefinition.MAX_READ_PAGE_BYTES));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
     }
