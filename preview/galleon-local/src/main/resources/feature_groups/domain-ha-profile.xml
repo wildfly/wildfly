@@ -6,5 +6,6 @@
     </feature-group>
 
     <feature-group name="basic-ha-profile"/>
-
+    <feature spec="subsystem.microprofile-config-smallrye"/>
+    <feature spec="subsystem.microprofile-jwt-smallrye"/>
 </feature-group-spec>

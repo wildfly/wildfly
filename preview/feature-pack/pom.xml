@@ -47,7 +47,6 @@
 
         <!-- WildFly Preview modules -->
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
-        <content-microprofile.resources.directory>${basedir}/../galleon-content-microprofile/src/main/resources</content-microprofile.resources.directory>
 
     </properties>
 
@@ -170,24 +169,6 @@
                             <resources>
                                 <resource>
                                     <directory>${galleon.local.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-
-                    <!-- WildFly Preview MicroProfile Content -->
-                    <execution>
-                        <id>copy-content-microprofile-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${content-microprofile.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
