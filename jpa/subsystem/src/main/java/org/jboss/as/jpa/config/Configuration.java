@@ -238,7 +238,7 @@ public class Configuration {
     private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name
     private static final Map<String, String> providerClassToModuleName = new HashMap<String, String>();
-    public static final String HIBERNATE = "Hibernate";
+    private static final String HIBERNATE = "Hibernate";
 
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
@@ -282,14 +282,14 @@ public class Configuration {
         if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
             return Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
         }
-        final String provider = pu.getPersistenceProviderClassName();
-        if (provider != null && provider.contains(HIBERNATE)) {
+        if (isHibernateProvider(pu.getPersistenceProviderClassName())) {
             return false;
         }
         return true;
     }
     private static boolean isHibernateProvider(String provider) {
-        return provider == null || provider.contains("Hibernate");
+        // If the persistence provider is not specified (null case), Hibernate ORM will be used as the persistence provider.
+        return provider == null || provider.contains(HIBERNATE);
     }
 
     // key = provider class name, value = adapter module name
