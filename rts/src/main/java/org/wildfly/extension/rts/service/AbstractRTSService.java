@@ -38,7 +38,6 @@ import jakarta.servlet.ServletException;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.jbossts.star.service.ContextListener;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
 import org.wildfly.extension.rts.logging.RTSLogger;
 import org.wildfly.extension.undertow.Host;
 
@@ -65,7 +64,6 @@ public class AbstractRTSService {
         deploymentInfo.setContextPath(contextPath);
         deploymentInfo.setDeploymentName(name);
         deploymentInfo.addServlets(getResteasyServlet());
-        deploymentInfo.addListener(getResteasyListener());
         deploymentInfo.addListener(getRestATListener());
 
         for (Entry<String, String> entry : initialParameters.entrySet()) {
@@ -112,12 +110,6 @@ public class AbstractRTSService {
         servletInfo.addMapping("/*");
 
         return servletInfo;
-    }
-
-    private ListenerInfo getResteasyListener() {
-        final ListenerInfo listenerInfo = new ListenerInfo(ResteasyBootstrap.class);
-
-        return listenerInfo;
     }
 
     private ListenerInfo getRestATListener() {
