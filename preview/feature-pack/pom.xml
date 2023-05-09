@@ -177,24 +177,6 @@
                         </configuration>
                     </execution>
 
-                    <!-- WildFly Preview Galleon Content -->
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${content.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-
                     <!-- WildFly Preview MicroProfile Content -->
                     <execution>
                         <id>copy-content-microprofile-resources</id>
