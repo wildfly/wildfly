@@ -57,6 +57,7 @@ You don't have to base your WildFly installation on one of these foundational la
 link:#gal.core-server[core-server] +
 link:#gal.core-tools[core-tools] (optional) +
 link:#gal.datasources[datasources] (optional) +
+link:#gal.elytron[elytron] +
 link:#gal.web-server[web-server] +
 
 |[[gal.jaxrs-server]]jaxrs-server
@@ -95,6 +96,7 @@ link:#gal.security-manager[security-manager] (optional) +
 link:#gal.core-server[core-server] +
 link:#gal.cdi[cdi] +
 link:#gal.ee-integration[ee-integration] +
+link:#gal.elytron[elytron] +
 link:#gal.jaxrs[jaxrs-core] +
 link:#gal.jsonp[jsonp] +
 link:#gal.jsonb[jsonb] +
