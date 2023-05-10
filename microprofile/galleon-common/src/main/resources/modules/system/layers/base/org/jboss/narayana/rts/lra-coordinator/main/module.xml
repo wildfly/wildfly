@@ -39,6 +39,7 @@
     <module name="org.jboss.logging"/>
     <!-- lra-coordinator-jar -->
     <module name="org.jboss.jts"/>
+    <module name="org.eclipse.microprofile.config.api"/>
     <module name="jakarta.enterprise.api"/>
     <module name="jakarta.servlet.api"/>
     <module name="org.eclipse.microprofile.openapi.api"/>
