@@ -227,6 +227,24 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- Needed if people use compression.type=zstd in their Kafka config -->
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed if people use compression.type=lz4 in their Kafka config -->
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed if people use compression.type=snappy in their Kafka config -->
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
         </dependency>

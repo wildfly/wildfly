@@ -40,7 +40,19 @@
         </dependency>
 
         <dependency><groupId>com.fasterxml.jackson.jr</groupId><artifactId>jackson-jr-objects</artifactId></dependency>
-        
+
+
+        <dependency>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency><groupId>com.google.api.grpc</groupId><artifactId>proto-google-common-protos</artifactId></dependency>
         <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></dependency>
         <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java-util</artifactId></dependency>
@@ -637,8 +649,30 @@
         <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib-jdk7</artifactId></dependency>
 
         <dependency>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.security.mp</groupId>
             <artifactId>wildfly-elytron-jwt</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>*</artifactId>
+                    <groupId>*</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
             <exclusions>
                 <exclusion>
                     <artifactId>*</artifactId>
@@ -780,7 +814,6 @@
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-telemetry-cdi-provider</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
