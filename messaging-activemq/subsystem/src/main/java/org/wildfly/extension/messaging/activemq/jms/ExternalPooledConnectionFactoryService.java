@@ -594,10 +594,10 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
         //   <application />
         // </security>
         // => PoolStrategy.POOL_BY_CRI
-        Security security = new SecurityImpl(null, null, true, false);
+        Security security = new SecurityImpl(null, null, true);
         // register the XA Connection *without* recovery. ActiveMQ already takes care of the registration with the correct credentials
         // when its ResourceAdapter is started
-        Recovery recovery = new Recovery(new CredentialImpl(null, null, null, false, null), null, Boolean.TRUE);
+        Recovery recovery = new Recovery(new CredentialImpl(null, null, null, null), null, Boolean.TRUE);
         Validation validation = new ValidationImpl(Defaults.VALIDATE_ON_MATCH, null, null, false);
         // do no track
         return new ConnectionDefinitionImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, ACTIVEMQ_CONN_DEF, true, true, true, Defaults.SHARABLE, Defaults.ENLISTMENT, Defaults.CONNECTABLE, false, managedConnectionPoolClassName, enlistmentTrace, pool, timeOut, validation, security, recovery, isXA);

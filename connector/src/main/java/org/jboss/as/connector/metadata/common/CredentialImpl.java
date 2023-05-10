@@ -40,12 +40,6 @@ public class CredentialImpl implements Credential {
     private final String userName;
     private final String password;
     private final String securityDomain;
-
-    /**
-     * Deprecated. Elytron is enabled by default and this field is ignored.
-     */
-    private boolean elytronEnabled;
-
     private final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier;
 
     /**
@@ -54,16 +48,14 @@ public class CredentialImpl implements Credential {
      * @param userName        user name
      * @param password        user password
      * @param securityContext specific information that helps implementation define which context this Credential belongs to
-     * @param elytronEnabled  Deprecated. Elytron is enabled by default and this field is ignored.
      * @throws ValidateException ValidateException in case of validation error
      */
-    public CredentialImpl(final String userName, final String password, final String securityContext, final boolean elytronEnabled,
+    public CredentialImpl(final String userName, final String password, final String securityContext,
                           final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier)
             throws ValidateException {
         this.userName = userName;
         this.password = password;
         this.securityDomain = securityContext;
-        this.elytronEnabled = elytronEnabled;
         this.credentialSourceSupplier = credentialSourceSupplier;
 
     }
@@ -99,23 +91,12 @@ public class CredentialImpl implements Credential {
 
     }
 
-
-
-    /**
-     * Deprecated. Elytron is enabled by default and this field is ignored.
-     */
-    @Override
-    public final boolean isElytronEnabled() {
-        return elytronEnabled;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CredentialImpl that = (CredentialImpl) o;
-        return elytronEnabled == that.elytronEnabled &&
-                Objects.equals(userName, that.userName) &&
+        return Objects.equals(userName, that.userName) &&
                 Objects.equals(password, that.password) &&
                 Objects.equals(securityDomain, that.securityDomain) &&
                 Objects.equals(credentialSourceSupplier, that.credentialSourceSupplier);
@@ -123,7 +104,7 @@ public class CredentialImpl implements Credential {
 
     @Override
     public int hashCode() {
-        return Objects.hash(userName, password, securityDomain, elytronEnabled, credentialSourceSupplier);
+        return Objects.hash(userName, password, securityDomain, credentialSourceSupplier);
     }
 
     @Override
@@ -132,7 +113,6 @@ public class CredentialImpl implements Credential {
                 "userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", securityDomain='" + securityDomain + '\'' +
-                ", elytronEnabled=" + elytronEnabled +
                 ", credentialSourceSupplier=" + credentialSourceSupplier +
                 '}';
     }

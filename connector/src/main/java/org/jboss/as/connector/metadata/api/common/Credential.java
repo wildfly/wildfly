@@ -16,6 +16,7 @@
 package org.jboss.as.connector.metadata.api.common;
 
 import org.jboss.as.controller.security.CredentialReference;
+import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 
 /**
  * Extension of {@link org.jboss.jca.common.api.metadata.common.Credential} with added Elytron support.

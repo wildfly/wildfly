@@ -977,4 +977,10 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 130, value = "Report directory %s does not exist")
     OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
+
+    @Message(id = 131, value = "Legacy security attribute %s is no longer supported. Please use Elytron configuration instead")
+    OperationFailedException legacySecurityAttributeNotSupported(String attribute);
+
+    @Message(id = 132, value = "Legacy security is no longer supported. Please use Elytron configuration instead")
+    String legacySecurityNotSupported();
 }

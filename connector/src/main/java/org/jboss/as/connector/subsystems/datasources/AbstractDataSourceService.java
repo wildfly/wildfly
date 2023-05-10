@@ -480,6 +480,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 return null;
             // safe assertion because all parsers create Credential
             assert credential instanceof Credential;
+
             try {
                 return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
             } catch (URISyntaxException e) {

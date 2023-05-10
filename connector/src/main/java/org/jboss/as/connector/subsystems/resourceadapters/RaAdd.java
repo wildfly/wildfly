@@ -26,9 +26,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.STATISTICS_ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_ELYTRON_SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,11 +138,5 @@ public class RaAdd extends AbstractAddStepHandler {
 
         resource.registerChild(peStats, statsResource);
 
-    }
-
-    static boolean requiresLegacySecurity(OperationContext context, ModelNode raModel) throws OperationFailedException {
-        return WM_SECURITY.resolveModelAttribute(context, raModel).asBoolean()
-                && WM_ELYTRON_SECURITY_DOMAIN.resolveModelAttribute(context, raModel).asStringOrNull() == null
-                && WM_SECURITY_DOMAIN.resolveModelAttribute(context, raModel).asStringOrNull() != null;
     }
 }

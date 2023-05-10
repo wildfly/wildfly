@@ -58,6 +58,7 @@ import org.jboss.jca.core.spi.transaction.TransactionIntegration;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 
 public class DirectConnectionFactoryActivatorService implements org.jboss.msc.service.Service<ContextNames.BindInfo> {
@@ -145,7 +146,6 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
             Map<String, String> mcfConfigProperties = new HashMap<String, String>();
             String securitySetting = null;
             String securitySettingDomain = null;
-            boolean elytronEnabled = false;
 
             if (properties != null) {
                 for (Map.Entry<String,String> prop : properties.entrySet()) {
@@ -153,13 +153,10 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
                     String value = prop.getValue();
                     if (key.equals("ironjacamar.security")) {
                         securitySetting = value;
-                    } else if (key.equals("ironjacamar.security.elytron") && value.equals("true")) {
-                        elytronEnabled = true;
                     } else if (key.equals("ironjacamar.security.elytron-authentication-context")) {
                         securitySettingDomain = value;
-                        elytronEnabled = true;
                     } else if (key.equals("ironjacamar.security.domain")) {
-                        securitySettingDomain = value;
+                        throw new StartException(SUBSYSTEM_RA_LOGGER.legacySecurityNotSupported());
                     } else {
                         if (key.startsWith("ra.")) {
                             raConfigProperties.put(key.substring(3), value);
@@ -185,14 +182,12 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
 
             Security security = null;
             if (securitySetting != null) {
-                if ("".equals(securitySetting)) {
-                    security = new SecurityImpl(null, null, false, false);
-                } else if ("application".equals(securitySetting)) {
-                    security = new SecurityImpl(null, null, true, false);
+                if ("".equals(securitySetting) || ("application".equals(securitySetting))) {
+                    throw new StartException(SUBSYSTEM_RA_LOGGER.legacySecurityNotSupported());
                 } else if ("domain".equals(securitySetting) && securitySettingDomain != null) {
-                    security = new SecurityImpl(securitySettingDomain, null, false, elytronEnabled);
+                    security = new SecurityImpl(securitySettingDomain, null, false);
                 } else if ("domain-and-application".equals(securitySetting) && securitySettingDomain != null) {
-                    security = new SecurityImpl(null, securitySettingDomain, false, elytronEnabled);
+                    security = new SecurityImpl(null, securitySettingDomain, false);
                 }
             }
 

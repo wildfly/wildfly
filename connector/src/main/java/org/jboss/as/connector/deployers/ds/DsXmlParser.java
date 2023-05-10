@@ -28,6 +28,7 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
@@ -72,8 +73,6 @@ public class DsXmlParser extends DsParser {
 
         String userName = null;
         String password = null;
-        String securityDomain = null;
-        boolean elytronEnabled = false;
         String authenticationContext = null;
         Extension reauthPlugin = null;
 
@@ -83,8 +82,7 @@ public class DsXmlParser extends DsParser {
                     if (DataSource.Tag.forName(reader.getLocalName()) ==
                             DataSource.Tag.SECURITY) {
 
-                        return new DsSecurityImpl(userName, password,elytronEnabled? authenticationContext: securityDomain,
-                                elytronEnabled, null, reauthPlugin);
+                        return new DsSecurityImpl(userName, password,authenticationContext, null, reauthPlugin);
                     } else {
                         if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -112,12 +110,10 @@ public class DsXmlParser extends DsParser {
                             break;
                         }
                         case SECURITY_DOMAIN: {
-                            securityDomain = elementAsString(reader);
-                            break;
+                            throw new ParserException(ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotSupported());
                         }
                         case ELYTRON_ENABLED: {
-                            Boolean value = elementAsBoolean(reader);
-                            elytronEnabled = value == null? true : value;
+                            elementAsBoolean(reader);
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {
@@ -153,8 +149,6 @@ public class DsXmlParser extends DsParser {
 
         String userName = null;
         String password = null;
-        String securityDomain = null;
-        boolean elytronEnabled = false;
         String authenticationContext = null;
 
         while (reader.hasNext()) {
@@ -163,8 +157,7 @@ public class DsXmlParser extends DsParser {
                     if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY ||
                             Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
 
-                        return new CredentialImpl(userName, password, elytronEnabled? authenticationContext: securityDomain,
-                                elytronEnabled, null);
+                        return new CredentialImpl(userName, password, authenticationContext, null);
                     } else {
                         if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -188,12 +181,10 @@ public class DsXmlParser extends DsParser {
                             break;
                         }
                         case SECURITY_DOMAIN: {
-                            securityDomain = elementAsString(reader);
-                            break;
+                            throw new ParserException(ConnectorLogger.SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable());
                         }
                         case ELYTRON_ENABLED: {
-                            Boolean value = elementAsBoolean(reader);
-                            elytronEnabled = value == null? true : value;
+                            elementAsBoolean(reader);
                             break;
                         }
                         case AUTHENTICATION_CONTEXT: {

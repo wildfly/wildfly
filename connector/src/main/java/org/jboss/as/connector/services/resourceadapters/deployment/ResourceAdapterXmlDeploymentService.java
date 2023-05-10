@@ -25,27 +25,21 @@ package org.jboss.as.connector.services.resourceadapters.deployment;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
-import org.jboss.as.connector.security.ElytronSubjectFactory;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 import org.jboss.jca.common.api.metadata.resourceadapter.Activation;
 import org.jboss.jca.common.api.metadata.spec.Connector;
 import org.jboss.jca.common.metadata.merge.Merger;
 import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.jca.deployers.common.CommonDeployment;
-import org.jboss.jca.deployers.common.DeployException;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -206,25 +200,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             } catch (Throwable t) {
                 DEPLOYMENT_CONNECTOR_LOGGER.unableToRegisterRecovery(key, isXA);
             }
-        }
-
-        @Override
-        protected org.jboss.jca.core.spi.security.SubjectFactory getSubjectFactory(
-                SecurityMetadata securityMetadata, final String jndiName) throws DeployException {
-            if (securityMetadata == null)
-                return null;
-            final String securityDomain = securityMetadata.resolveSecurityDomain();
-            if (securityMetadata instanceof org.jboss.as.connector.metadata.api.common.SecurityMetadata &&
-                    ((org.jboss.as.connector.metadata.api.common.SecurityMetadata)securityMetadata).isElytronEnabled()) {
-                try {
-                    return new ElytronSubjectFactory(null, new URI(jndiName));
-                } catch (URISyntaxException e) {
-                    throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
-                }
-            } else if (securityDomain == null || securityDomain.trim().equals("")) {
-                return null;
-            }
-            return null;
         }
     }
 }

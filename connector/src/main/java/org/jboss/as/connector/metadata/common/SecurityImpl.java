@@ -41,23 +41,10 @@ public class SecurityImpl extends org.jboss.jca.common.metadata.common.SecurityI
      * @param securityDomainAndApplication securityDomain and application managed authentication. This field will refer
      *                                     to an Elytron authentication context
      * @param applicationManaged           application managed authentication
-     * @param elytronEnabled               Deprecated. Elytron is enabled by default and this field is ignored.
      * @throws ValidateException ValidateException in case of a validation error
      */
-    public SecurityImpl(String securityDomain, String securityDomainAndApplication, boolean applicationManaged, boolean elytronEnabled) throws ValidateException {
+    public SecurityImpl(String securityDomain, String securityDomainAndApplication, boolean applicationManaged) throws ValidateException {
         super(securityDomain, securityDomainAndApplication, applicationManaged);
-        this.elytronEnabled = elytronEnabled;
-    }
-
-    /**
-     * Indicates if Elytron is enabled. In this case, {@link #getSecurityDomain()} and
-     * {@link #getSecurityDomainAndApplication()} both refer to an Elytron authentication context.
-     *
-     * @return {@code true} if is Elytron enabled
-     */
-    @Override
-    public boolean isElytronEnabled() {
-        return elytronEnabled;
     }
 
     /**
@@ -90,12 +77,9 @@ public class SecurityImpl extends org.jboss.jca.common.metadata.common.SecurityI
      */
     @Override
     public String toString() {
-        if (!elytronEnabled)
-            return super.toString();
         StringBuilder sb = new StringBuilder(1024);
 
         sb.append("<security>");
-        sb.append("</").append(Security.Tag.ELYTRON_ENABLED).append(">");
 
         if (getSecurityDomain() != null) {
             sb.append("<").append(Security.Tag.AUTHENTICATION_CONTEXT).append("/>");

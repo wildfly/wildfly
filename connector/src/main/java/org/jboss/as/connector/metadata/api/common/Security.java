@@ -15,6 +15,9 @@
  */
 package org.jboss.as.connector.metadata.api.common;
 
+
+import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
+
 import java.util.HashMap;
 import java.util.Map;
 

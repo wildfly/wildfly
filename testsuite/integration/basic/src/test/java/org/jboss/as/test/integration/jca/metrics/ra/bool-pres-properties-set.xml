@@ -9,9 +9,6 @@
                         <interleaving>true</interleaving>
                         <no-tx-separate-pools>true</no-tx-separate-pools>
                     </xa-pool>
-                    <security>
-                        <application>true</application>
-                    </security>
                     <recovery no-recovery="true"></recovery>
                 </connection-definition>
             </connection-definitions>

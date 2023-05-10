@@ -15,7 +15,7 @@
  */
 package org.jboss.as.connector.metadata.api.ds;
 
-import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
+import org.jboss.jca.common.api.metadata.common.SecurityMetadata;
 
 /**
  * Extension of {@link org.jboss.jca.common.api.metadata.ds.DsSecurity} with added Elytron support.
