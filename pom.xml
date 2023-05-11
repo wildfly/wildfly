@@ -88,7 +88,6 @@
         <module>jpa</module>
         <module>jsf</module>
         <module>mail</module>
-        <module>legacy/jacorb</module>
         <module>legacy/jsr77</module>
         <module>legacy/keycloak</module>
         <module>legacy/messaging</module>

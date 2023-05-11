@@ -234,7 +234,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                         );
             }
             */
-            return Collections.emptyList();
+            return Collections.singletonList("org.jboss.as.jacorb");
         }
 
         private final String name;
