@@ -2205,8 +2205,6 @@
                                                 <layer>core-server</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>ee-concurrency</layer>
-                                                <!-- TODO stop using unnecessarily using wars for test apps and drop this -->
-                                                <layer>servlet</layer>
                                             </layers>
                                         </config>
                                     </configurations>
