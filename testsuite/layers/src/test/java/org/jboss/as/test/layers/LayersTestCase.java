@@ -49,7 +49,6 @@ public class LayersTestCase {
             // Legacy subsystems for which we will not provide layers
             "org.wildfly.extension.picketlink",
             "org.jboss.as.jsr77",
-            "org.jboss.as.messaging",
             "org.jboss.as.web",
             "org.keycloak.keycloak-adapter-subsystem",
             "org.jboss.as.security",

@@ -590,11 +590,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-metrics</artifactId>
                 <version>${ee.maven.version}</version>
             </dependency>

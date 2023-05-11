@@ -1237,17 +1237,6 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-messaging</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-messaging-activemq-injection</artifactId>
             <exclusions>
                 <exclusion>
