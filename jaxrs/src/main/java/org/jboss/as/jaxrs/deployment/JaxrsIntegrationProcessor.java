@@ -417,7 +417,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             Method clearCache = typeFactoryClass.getDeclaredMethod("clearCache");
             clearCache.invoke(typeFactory);
             // Remove the deployment from the registered configuration factory
-            WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
+            if (JaxrsDeploymentMarker.isJaxrsDeployment(context)) {
+                WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
+            }
         } catch (Exception e) {
             JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
         }
