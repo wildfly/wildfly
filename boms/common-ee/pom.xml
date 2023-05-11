@@ -647,17 +647,6 @@
                 <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-web</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
                 <version>${full.maven.version}</version>
