@@ -172,6 +172,7 @@
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
