@@ -1,12 +1,7 @@
 embed-server --admin-only=true --server-config=standalone-full.xml
 
-/subsystem=batch-jberet:write-attribute(name=security-domain, value=ApplicationDomain)
-
 # Check if the default server exists, if it does we can updated if not we need to add it
-if (outcome == success) of /subsystem=messaging-activemq/server=default:read-resource
-    /subsystem=messaging-activemq/server=default:undefine-attribute(name=security-domain)
-    /subsystem=messaging-activemq/server=default:write-attribute(name=elytron-domain, value=ApplicationDomain)
-else
+if (outcome != success) of /subsystem=messaging-activemq/server=default:read-resource
     # Add the server
     # Remove the default configuration
     /subsystem=messaging-activemq/pooled-connection-factory=activemq-ra:remove
@@ -31,7 +26,5 @@ else
     /subsystem=messaging-activemq/server=default/connection-factory=RemoteConnectionFactory:add(connectors=[http-connector], entries=[java:jboss/exported/jms/RemoteConnectionFactory])
     /subsystem=messaging-activemq/server=default/pooled-connection-factory=activemq-ra:add(entries=["java:/JmsXA", "java:jboss/DefaultJMSConnectionFactory"], connectors=[in-vm], transaction=xa)
 end-if
-
-/subsystem=iiop-openjdk:write-attribute(name=security, value=elytron)
 
 stop-embedded-server

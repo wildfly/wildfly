@@ -24,7 +24,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <ts.elytron.cli>ssl-enable-elytron.cli</ts.elytron.cli>
         <wildfly>wildfly</wildfly>
         <wildfly.config.dir>${basedir}/target/${wildfly}/standalone/configuration</wildfly.config.dir>
         <!-- Disable the default surefire test execution. All profiles use custom executions. -->
@@ -191,7 +190,7 @@
                         <configuration>
                             <offline>true</offline>
                             <scripts>
-                                <script>${ts.elytron.cli}</script>
+                                <script>ssl-enable.cli</script>
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
                             <stdout>none</stdout>

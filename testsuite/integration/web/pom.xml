@@ -906,6 +906,8 @@
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
                                         <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
                                              where elytron is configured but -Delytron is not set. -->
+										<!-- TODO this works with ts.bootable with the same set of layers so it's not clear why it doesn't 
+										     work with ts.layers -->
                                         <!--include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include-->
                                     </includes>
                                     <reportNameSuffix>legacy-https-layers.surefire</reportNameSuffix>
@@ -1120,9 +1122,7 @@
                                     </systemPropertyVariables>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
-                                        <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
-                                             where elytron is configured but -Delytron is not set. -->
-                                        <!--include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include-->
+                                        <include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include>
                                     </includes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
@@ -1325,9 +1325,7 @@
                                     </systemPropertyVariables>
                                     <includes>
                                         <include>org/jboss/as/test/integration/web/handlers/RequestDumpingHandlerTestCase.java</include>
-                                        <!-- TODO this has special setup logic for -Delytron vs not; needs a variant for this test setup
-                                             where elytron is configured but -Delytron is not set. -->
-                                        <!--include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include-->
+                                        <include>org/jboss/as/test/integration/web/security/**/TransportGuaranteeTestCase.java</include>
                                     </includes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
