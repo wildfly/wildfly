@@ -402,12 +402,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.wildfly.galleon-plugins</groupId>
-            <artifactId>transformer</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- module and copy artifact dependencies -->
 
         <!-- Deps from the source modules we copy in -->

@@ -506,7 +506,6 @@
         <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.1.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
-        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>2.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
         <version.org.jboss.weld.weld>5.1.0.Final</version.org.jboss.weld.weld>
@@ -917,141 +916,10 @@
                 <type>pom</type>
             </dependency>
 
-            <!-- TODO both a testuite/shared dep and used in std and preview but not legacy -->
-            <dependency>
-                <groupId>com.nimbusds</groupId>
-                <artifactId>nimbus-jose-jwt</artifactId>
-                <version>${version.com.nimbus.jose-jwt}</version>
-            </dependency>
-
-
-
-
-
-
-            <!-- Required for the MicroProfile health TCK that is run as part of the testsuite and the TCK brings in an
-                 older version.
-
-                 It also needs to be a runtime dependency because the shared testsuite requires it.
-             -->
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <!--
-            TODO used both in testsuite/shared and in tests in clustering/marshalling/protostream.
-            Once testsuite/shared use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.annotation</groupId>
-                <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec}</version>
-            </dependency>
-
-            <!--
-            TODO used both in MicroProfile REST Client TCK and in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec}</version>
-            </dependency>
-
-            <!--
-            TODO used in legacy code.
-            Once legacy code use is gone, convert to <scope>test</scope>
-            -->
-            <dependency>
-                <groupId>org.jboss</groupId>
-                <artifactId>jboss-transaction-spi</artifactId>
-                <version>${version.org.jboss.jboss-transaction-spi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!--
-            TODO used both in testuite/integration/elytron-oidc-client dep and in legacy code.
-            Once the legacy use is removed, etc structure, this can become a <scope>test</scope> dependency.
-            -->
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-common</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-bootable</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-container-managed</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.sasl</groupId>
-                        <artifactId>jboss-sasl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.wildfly.security</groupId>
-                        <artifactId>wildfly-security-manager</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-                <version>${version.org.wildfly.arquillian}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.wildfly.checkstyle</groupId>
                 <artifactId>wildfly-checkstyle-config</artifactId>
                 <version>${version.org.wildfly.checkstyle-config}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>transformer</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

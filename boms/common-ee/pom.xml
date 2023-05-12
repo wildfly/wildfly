@@ -883,6 +883,18 @@
             </dependency>
 
             <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>${version.com.nimbus.jose-jwt}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>com.squareup</groupId>
                 <artifactId>protoparser</artifactId>
                 <version>${version.com.squareup.protoparser}</version>
