@@ -17,6 +17,8 @@
  */
 package org.jboss.as.ee.concurrent.resource.definition;
 
+import java.util.function.Consumer;
+
 import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
@@ -57,21 +59,22 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
             // install the resource service
             final ServiceName resourceServiceName = ManagedThreadFactoryResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
             final ServiceBuilder resourceServiceBuilder = phaseContext.getServiceTarget().addService(resourceServiceName);
-            final ManagedThreadFactoryService resourceService = new ManagedThreadFactoryService(resourceName, resourceJndiName, priority);
-            resourceServiceBuilder.setInstance(resourceService);
-            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
-            final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
+            final Consumer<ManagedThreadFactoryImpl> consumer = resourceServiceBuilder.provides(resourceServiceName);
+            final ManagedThreadFactoryService resourceService = new ManagedThreadFactoryService(consumer, null, resourceName, resourceJndiName, priority);
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
-                    resourceService.getContextServiceInjector().inject((ContextServiceImpl)value.getReference().getInstance());
+                    resourceService.getContextServiceSupplier().set(() -> (ContextServiceImpl)value.getReference().getInstance());
                 }
                 @Override
                 public void uninject() {
-                    resourceService.getContextServiceInjector().uninject();
+                    resourceService.getContextServiceSupplier().set(() -> null);
                 }
             };
+            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
+            final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
             contextServiceBindInfo.setupLookupInjection(resourceServiceBuilder, contextServiceLookupInjector, phaseContext.getDeploymentUnit(), false);
+            resourceServiceBuilder.setInstance(resourceService);
             resourceServiceBuilder.install();
             // use a dependency to the resource service installed to inject the resource
             serviceBuilder.addDependency(resourceServiceName, ManagedThreadFactoryImpl.class, new Injector<>() {

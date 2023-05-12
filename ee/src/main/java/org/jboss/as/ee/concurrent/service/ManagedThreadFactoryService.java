@@ -22,14 +22,15 @@
 
 package org.jboss.as.ee.concurrent.service;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.logging.EeLogger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Eduardo Martins
@@ -37,9 +38,9 @@ import org.jboss.msc.value.InjectedValue;
 public class ManagedThreadFactoryService extends EEConcurrentAbstractService<ManagedThreadFactoryImpl> {
 
     private volatile ManagedThreadFactoryImpl managedThreadFactory;
-
+    private final Consumer<ManagedThreadFactoryImpl> consumer;
     private final String name;
-    private final InjectedValue<ContextServiceImpl> contextService;
+    private final DelegatingSupplier<ContextServiceImpl> contextServiceSupplier = new DelegatingSupplier<>();
     private final int priority;
 
     /**
@@ -48,23 +49,24 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
      * @param priority
      * @see org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
      */
-    public ManagedThreadFactoryService(String name, String jndiName, int priority) {
+    public ManagedThreadFactoryService(final Consumer<ManagedThreadFactoryImpl> consumer, final Supplier<ContextServiceImpl> ctxServiceSupplier, String name, String jndiName, int priority) {
         super(jndiName);
+        this.consumer = consumer;
         this.name = name;
-        this.contextService = new InjectedValue<>();
+        this.contextServiceSupplier.set(ctxServiceSupplier);
         this.priority = priority;
     }
 
     @Override
     void startValue(StartContext context) throws StartException {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextService.getOptionalValue(), priority);
+        consumer.accept(managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextServiceSupplier.get(), priority));
     }
 
     @Override
     void stopValue(StopContext context) {
         managedThreadFactory.stop();
-        managedThreadFactory = null;
+        consumer.accept(managedThreadFactory = null);
     }
 
     public ManagedThreadFactoryImpl getValue() throws IllegalStateException {
@@ -74,8 +76,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
         return managedThreadFactory;
     }
 
-    public Injector<ContextServiceImpl> getContextServiceInjector() {
-        return contextService;
+    public DelegatingSupplier<ContextServiceImpl> getContextServiceSupplier() {
+        return contextServiceSupplier;
     }
-
 }
