@@ -77,7 +77,7 @@
             <dependency>
                 <groupId>org.wildfly.deployment</groupId>
                 <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
-                <version>${version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
+                <version>${preview.version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
