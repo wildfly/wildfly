@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -50,6 +51,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:szhantem@redhat.com">Sultan Zhantemirov</a> (c) 2019 Red Hat, inc.
  */
 @RunWith(Arquillian.class)
+@ServerSetup(UserModuleSetupTask.class)
 @RunAsClient
 public class DeploymentModulesListTestCase {
 
@@ -58,8 +60,7 @@ public class DeploymentModulesListTestCase {
     private static final String EXAMPLE_MODULE_TO_EXCLUDE = "org.slf4j.impl";
     private static final String INNER_WAR_ARCHIVE_NAME = "list-modules.war";
     private static final String EAR_DEPLOYMENT_NAME = "list-modules-ear-test.ear";
-    private static final String USER_MODULE = "org.hibernate";
-    private static final String CUSTOM_SLOT = "main"; // TODO WFLY-17891 install a TestModule with a non-main slot
+    public static final String TEST_MODULE = "org.testModule";
 
     @ContainerResource
     private static ManagementClient managementClient;
@@ -121,8 +122,7 @@ public class DeploymentModulesListTestCase {
             // check module presence
             assertTrue(checkModulesListPresence(operationResult, "deployment." + EAR_DEPLOYMENT_NAME));
             // check user defined module with custom slot
-            // TODO WFLY-17891 install a TestModule with a non-main slot
-            assertTrue(checkModulesListPresence(operationResult, USER_MODULE /*+ ":" + CUSTOM_SLOT*/));
+            assertTrue(checkModulesListPresence(operationResult, TEST_MODULE));
             // check module absence
             assertFalse(checkModulesListPresence(operationResult, EXAMPLE_MODULE_TO_EXCLUDE));
             // check system and user dependencies presence
@@ -214,7 +214,7 @@ public class DeploymentModulesListTestCase {
                 "           <module name=\"" + EXAMPLE_MODULE_TO_EXCLUDE + "\"/>\n" +
                 "       </exclusions>\n" +
                 "       <dependencies>\n" +
-                "           <module name=\"" + USER_MODULE + "\" slot=\"" + CUSTOM_SLOT + "\"/>\n" +
+                "           <module name=\"" + TEST_MODULE + "\"/>\n" +
                 "       </dependencies>\n" +
                 "   </sub-deployment>\n" +
                 "</jboss-deployment-structure>\n";
