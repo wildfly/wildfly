@@ -2,8 +2,6 @@
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ee-security">
      <dependencies>
         <layer name="cdi"/>
-        <layer name="elytron"/>
      </dependencies>
-    <feature-group name="jacc-policy"/>
     <feature spec="subsystem.ee-security"/>
 </layer-spec>

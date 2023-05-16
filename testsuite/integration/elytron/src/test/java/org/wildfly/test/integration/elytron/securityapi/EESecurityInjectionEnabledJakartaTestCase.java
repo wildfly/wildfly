@@ -120,18 +120,24 @@ public class EESecurityInjectionEnabledJakartaTestCase extends EESecurityInjecti
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements  = new ConfigurableElement[3];
+            ConfigurableElement[] elements  = new ConfigurableElement[4];
             // Add module with custom principal and principal transformer
             elements[0] = module;
 
+            // Add empty JACC policy
+            elements[1] = Policy.builder()
+                    .withName("jacc")
+                    .withJaccPolicy()
+                    .build();
+
             // Create security domain with default permission mapper
-            elements[1] = SimpleSecurityDomain.builder()
+            elements[2] = SimpleSecurityDomain.builder()
                     .withName(TEST_SECURITY_DOMAIN)
                     .withPermissionMapper(DEFAULT_PERMISSION_MAPPER)
                     .build();
 
             // Add security domain to Undertow configuration
-            elements[2] = UndertowApplicationSecurityDomain.builder()
+            elements[3] = UndertowApplicationSecurityDomain.builder()
                     .withName(TEST_APP_DOMAIN)
                     .withSecurityDomain(TEST_SECURITY_DOMAIN)
                     .withIntegratedJaspi(false)

@@ -207,7 +207,13 @@ public class CustomAuthenticationWebFailoverTestCase extends AbstractClusteringT
             super(NODE_1_2, createContainerConfigurationBuilder()
                     .setupScript(createScriptBuilder()
                             .startBatch()
+                            .add("/subsystem=elytron/policy=jacc:add(jacc-policy={})")
                             .add("/subsystem=undertow/application-security-domain=%s:write-attribute(name=integrated-jaspi, value=false)", SECURITY_DOMAIN_NAME)
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=elytron/policy=jacc:remove")
                             .endBatch()
                             .build())
                     .build());
