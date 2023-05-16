@@ -129,4 +129,9 @@ public class DiscoveryGroupDefinition extends ShallowResourceDefinition {
         }
         return ignoredAttributes;
     }
+
+    @Override
+    protected boolean isUsingSocketBinding(PathAddress targetAddress) {
+        return CommonAttributes.SOCKET_DISCOVERY_GROUP.equals(targetAddress.getLastElement().getKey());
+    }
 }

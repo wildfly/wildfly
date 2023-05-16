@@ -887,4 +887,6 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 107, value = "You must define a elytron security doman when security is enabled.")
     IllegalStateException securityEnabledWithoutDomain();
 
+    @Message(id = 108, value = "Either socket-binding or jgroups-cluster attribute is required.")
+    OperationFailedException socketBindingOrJGroupsClusterRequired();
 }

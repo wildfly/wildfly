@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
@@ -66,6 +65,7 @@ import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceDefinitio
  * @deprecated Use JGroupsBroadcastGroupDefinition or SocketBroadcastGroupDefinition.
  */
 public class BroadcastGroupDefinition extends ShallowResourceDefinition {
+
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
             .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
@@ -75,7 +75,7 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
             .setRestartAllServices()
             .build();
 
-     /**
+    /**
      * @see ActiveMQDefaultConfiguration#getDefaultBroadcastPeriod
      */
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
@@ -93,8 +93,8 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
-            BROADCAST_PERIOD, CONNECTOR_REFS };
+    public static final AttributeDefinition[] ATTRIBUTES = {JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
+        BROADCAST_PERIOD, CONNECTOR_REFS};
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
 
@@ -111,7 +111,6 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
     }
-
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
@@ -130,33 +129,33 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     }
 
     static void validateConnectors(OperationContext context, ModelNode operation, ModelNode connectorRefs) throws OperationFailedException {
-        final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
+        final Set<String> availableConnectors = getAvailableConnectors(context, operation);
         final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
-        if(connectorRefs.isDefined()) {
-            for(ModelNode connectorRef:connectorRefs.asList()){
+        if (connectorRefs.isDefined()) {
+            for (ModelNode connectorRef : connectorRefs.asList()) {
                 final String connectorName = connectorRef.asString();
-                if(!availableConnectors.contains(connectorName)){
-                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(getBroadCastGroupName(operationAddress.get(operationAddress.size()-1)), connectorName, availableConnectors);
+                if (!availableConnectors.contains(connectorName)) {
+                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(getBroadCastGroupName(operationAddress.get(operationAddress.size() - 1)), connectorName, availableConnectors);
                 }
             }
         }
     }
 
     private static String getBroadCastGroupName(ModelNode node) {
-        if(node.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
             return node.get(CommonAttributes.BROADCAST_GROUP).asString();
         }
-        if(node.hasDefined(CommonAttributes.SOCKET_BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.SOCKET_BROADCAST_GROUP)) {
             return node.get(CommonAttributes.SOCKET_BROADCAST_GROUP).asString();
         }
-        if(node.hasDefined(CommonAttributes.JGROUPS_BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.JGROUPS_BROADCAST_GROUP)) {
             return node.get(CommonAttributes.JGROUPS_BROADCAST_GROUP).asString();
         }
         return ModelType.UNDEFINED.name();
     }
 
     // FIXME use capabilities & requirements
-    private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
+    private static Set<String> getAvailableConnectors(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         PathAddress active = MessagingServices.getActiveMQServerPathAddress(address);
         Set<String> availableConnectors = new HashSet<>();
@@ -197,5 +196,10 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
             ignoredAttributes.add(JGROUPS_CLUSTER.getName());
         }
         return ignoredAttributes;
+    }
+
+    @Override
+    protected boolean isUsingSocketBinding(PathAddress targetAddress) {
+        return CommonAttributes.SOCKET_BROADCAST_GROUP.equals(targetAddress.getLastElement().getKey());
     }
 }
