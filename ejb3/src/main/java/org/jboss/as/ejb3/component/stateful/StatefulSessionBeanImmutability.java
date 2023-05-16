@@ -26,14 +26,14 @@ import java.lang.reflect.InvocationHandler;
 
 import org.jboss.as.ee.component.ProxyInvocationHandler;
 import org.jboss.invocation.proxy.ProxyFactory;
-//import org.kohsuke.MetaInfServices;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ee.Immutability;
 
 /**
- * Immutability test for EJB proxies.
+ * Immutability test for EJB proxies, whose serializable placeholders are immutable.
  * @author Paul Ferraro
  */
-//@MetaInfServices(Immutability.class)
+@MetaInfServices(Immutability.class)
 public class StatefulSessionBeanImmutability implements Immutability {
 
     @Override
