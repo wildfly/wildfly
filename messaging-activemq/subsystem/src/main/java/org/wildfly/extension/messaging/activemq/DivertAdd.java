@@ -53,6 +53,11 @@ public class DivertAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         ServiceRegistry registry = context.getServiceRegistry(true);

@@ -710,7 +710,7 @@ class ServerAdd extends AbstractAddStepHandler {
                     final String match = property.getName();
                     final ModelNode config = property.getValue();
                     final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
-                    configuration.getAddressesSettings().put(match, settings);
+                    configuration.addAddressSetting(match, settings);
                 }
             }
         }

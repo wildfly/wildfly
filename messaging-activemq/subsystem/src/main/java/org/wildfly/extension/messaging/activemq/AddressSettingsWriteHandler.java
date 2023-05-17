@@ -31,7 +31,6 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -61,10 +60,9 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
         final ActiveMQServer server = getActiveMQServer(context, operation);
         if(server != null) {
             final ModelNode model = resource.getModel();
-            final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final AddressSettings settings = AddressSettingAdd.createSettings(context, model);
             final HierarchicalRepository<AddressSettings> repository = server.getAddressSettingsRepository();
-            final String match = address.getLastElement().getValue();
+            final String match = context.getCurrentAddressValue();
             final AddressSettings existingSettings = repository.getMatch(match);
             repository.addMatch(match, settings);
             if(existingSettings != null) {
@@ -72,7 +70,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
                     @Override
                     public void doRevertUpdateToRuntime() {
                         // Restore the old settings
-                        repository.addMatch(address.getLastElement().getValue(), existingSettings);
+                        repository.addMatch(match, existingSettings);
                     }
                 });
             }
