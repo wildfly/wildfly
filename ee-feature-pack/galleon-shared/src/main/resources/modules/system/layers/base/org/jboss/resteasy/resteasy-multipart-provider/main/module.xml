@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="java.desktop"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.mail.api"/>
         <module name="javax.servlet.api"/>

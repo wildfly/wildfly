@@ -38,7 +38,7 @@
         <module name="jakarta.persistence.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
 
         <module name="org.hibernate"/>
         <module name="org.hibernate.commons-annotations"/>

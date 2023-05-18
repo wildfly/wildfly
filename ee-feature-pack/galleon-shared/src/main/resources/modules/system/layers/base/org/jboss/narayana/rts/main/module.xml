@@ -40,7 +40,7 @@
         <module name="javax.resource.api"/>
         <module name="javax.ws.rs.api" services="export"/>
         <module name="javax.servlet.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="javax.ejb.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.wildfly.extension.rts" export="true">

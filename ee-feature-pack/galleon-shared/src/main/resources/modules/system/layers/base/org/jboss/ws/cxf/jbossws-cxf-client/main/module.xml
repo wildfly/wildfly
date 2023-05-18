@@ -26,7 +26,7 @@
 
     <dependencies>
         <!-- JAXB API + REF IMPL -->
-        <module name="javax.xml.bind.api" export="true"/>
+        <module name="jakarta.xml.bind.api" export="true"/>
         <module name="org.glassfish.jaxb" export="true" services="export"/>
         <module name="javax.xml.ws.api" export="true"/>
         <module name="javax.jws.api" export="true"/>

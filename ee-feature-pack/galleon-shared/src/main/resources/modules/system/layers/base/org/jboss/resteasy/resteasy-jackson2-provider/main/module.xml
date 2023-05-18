@@ -36,7 +36,7 @@
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
         <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
         <module name="com.github.fge.json-patch"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.ws.rs.api"/>

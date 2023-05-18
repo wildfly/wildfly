@@ -41,7 +41,7 @@
         <module name="javax.resource.api" />
         <module name="javax.servlet.api" />
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.bind.api" services="import"/>
+        <module name="jakarta.xml.bind.api" services="import"/>
         <module name="javax.xml.soap.api" />
         <module name="javax.xml.ws.api" />
         <module name="org.apache.commons.lang3" />

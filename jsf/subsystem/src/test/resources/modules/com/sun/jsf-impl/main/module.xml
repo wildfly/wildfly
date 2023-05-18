@@ -36,7 +36,7 @@
         <module name="javax.validation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.ejb.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
         <module name="javax.servlet.jstl.api"/>
         <module name="java.xml"/>

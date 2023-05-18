@@ -51,7 +51,7 @@
         <module name="javax.mail.api" />
         <module name="javax.resource.api" />
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.bind.api" services="import"/>
+        <module name="jakarta.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
         <module name="javax.xml.soap.api" />

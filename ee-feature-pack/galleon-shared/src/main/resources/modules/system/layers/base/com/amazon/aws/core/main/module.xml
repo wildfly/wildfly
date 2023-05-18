@@ -37,7 +37,7 @@
         <module name="java.management"/>
         <module name="java.xml"/>
 
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
 
         <module name="com.amazon.ion"/>
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
