@@ -27,7 +27,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.json.api"/>
+        <module name="jakarta.json.api"/>
         <!-- Circular dependency on the implementation to ensure that:
              1. The implementation is loaded
              2. It is done last via the hard-coded class name in the spec API

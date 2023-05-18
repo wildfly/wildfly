@@ -27,6 +27,6 @@
     <dependencies>
         <module name="javax.enterprise.api" />
         <module name="javax.inject.api" />
-        <module name="javax.json.api" />
+        <module name="jakarta.json.api" />
     </dependencies>
 </module>

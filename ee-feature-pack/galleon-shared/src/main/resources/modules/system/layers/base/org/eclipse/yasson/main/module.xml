@@ -29,7 +29,7 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.json.api"/>
+        <module name="jakarta.json.api"/>
         <module name="javax.json.bind.api"/>
     </dependencies>
 

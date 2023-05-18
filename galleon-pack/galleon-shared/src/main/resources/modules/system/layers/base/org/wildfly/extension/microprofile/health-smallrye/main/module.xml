@@ -49,6 +49,6 @@
         <module name="org.jboss.as.weld.common" />
         <module name="javax.enterprise.api" />
         <module name="jakarta.annotation.api" />
-        <module name="javax.json.api" />
+        <module name="jakarta.json.api" />
     </dependencies>
 </module>

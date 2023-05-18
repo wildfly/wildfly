@@ -39,7 +39,7 @@
         <module name="jakarta.servlet.jsp.api"/>
         <module name="jakarta.websocket.api" />
         <module name="jakarta.validation.api"/>
-        <module name="javax.json.api"/>
+        <module name="jakarta.json.api"/>
         <module name="javax.ejb.api"/>
         <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
