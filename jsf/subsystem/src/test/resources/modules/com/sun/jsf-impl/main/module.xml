@@ -32,13 +32,13 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
         <module name="jakarta.websocket.api" />
         <module name="jakarta.validation.api"/>
         <module name="jakarta.json.api"/>
         <module name="jakarta.ejb.api"/>
         <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
-        <module name="javax.servlet.jstl.api"/>
         <module name="java.xml"/>
     </dependencies>
 
