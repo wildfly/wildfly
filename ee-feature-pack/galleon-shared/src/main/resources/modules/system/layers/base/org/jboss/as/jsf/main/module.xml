@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="javax.annotation.api"/>
-        <module name="javax.faces.api" />
+        <module name="jakarta.faces.api" />
         <module name="javax.enterprise.api"/>
         <module name="com.sun.jsf-impl"/>
         <!-- Only used if capability org.wildfly.bean-validation is available -->

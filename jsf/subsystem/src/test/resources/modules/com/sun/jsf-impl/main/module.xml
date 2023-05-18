@@ -28,7 +28,7 @@
     </properties>
 
     <dependencies>
-        <module name="javax.faces.api"/>
+        <module name="jakarta.faces.api"/>
         <module name="javax.annotation.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>

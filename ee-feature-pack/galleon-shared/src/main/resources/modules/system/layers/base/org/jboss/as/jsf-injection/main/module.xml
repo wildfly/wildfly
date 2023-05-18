@@ -47,6 +47,6 @@
         <module name="org.jboss.weld.api"/>
 
         <!-- added this for MyFacesAnnotationProvider -->
-        <module name="javax.faces.api"/>
+        <module name="jakarta.faces.api"/>
     </dependencies>
 </module>
