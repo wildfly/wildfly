@@ -36,7 +36,7 @@
         <module name="jakarta.faces.api"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
         <module name="javax.websocket.api" />
         <module name="javax.validation.api"/>
         <module name="javax.json.api"/>

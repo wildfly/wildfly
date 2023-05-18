@@ -23,6 +23,6 @@
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="jakarta.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
     </dependencies>
 </module>
