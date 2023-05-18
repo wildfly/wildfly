@@ -225,16 +225,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             /*
             if (AssumeTestGroupUtil.isWildFlyPreview()) {
                 return Arrays.asList(
-                        "org.jboss.as.messaging",
-                        "org.jboss.as.jacorb",
                         "org.jboss.as.jsr77",
-                        "org.jboss.as.web",
                         "org.wildfly.extension.picketlink",
                         "org.jboss.as.security"
                         );
             }
             */
-            return Collections.emptyList();
+            return Arrays.asList("org.jboss.as.jacorb", "org.jboss.as.messaging", "org.jboss.as.web");
         }
 
         private final String name;

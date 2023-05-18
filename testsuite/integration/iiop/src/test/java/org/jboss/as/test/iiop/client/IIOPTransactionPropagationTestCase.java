@@ -230,7 +230,7 @@ public class IIOPTransactionPropagationTestCase {
         }
 
         public String checkTransactionsOnJacorb() throws IOException, MgmtOperationException {
-            /* /subsystem=jacorb:read-attribute(name=transactions) */
+            /* /subsystem=iiop-openjdk:read-attribute(name=transactions) */
             final ModelNode address = new ModelNode();
             address.add("subsystem", "iiop-openjdk");
             final ModelNode operation = new ModelNode();
