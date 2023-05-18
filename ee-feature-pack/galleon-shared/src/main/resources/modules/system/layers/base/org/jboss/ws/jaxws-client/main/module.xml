@@ -40,7 +40,7 @@
         <module name="jakarta.xml.bind.api" />
         <module name="javax.security.auth.message.api"/>
         <module name="com.sun.xml.bind" services="import"/>
-        <module name="javax.xml.ws.api" />
+        <module name="jakarta.xml.ws.api" />
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
         <module name="org.jboss.ws.common" />

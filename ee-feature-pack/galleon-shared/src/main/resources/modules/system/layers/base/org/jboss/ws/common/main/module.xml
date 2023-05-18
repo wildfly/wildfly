@@ -39,7 +39,7 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.ws.api"/>
         <module name="org.jboss.ws.api"/>
         <module name="org.jboss.ws.spi"/>
         <module name="org.jboss.logging"/>

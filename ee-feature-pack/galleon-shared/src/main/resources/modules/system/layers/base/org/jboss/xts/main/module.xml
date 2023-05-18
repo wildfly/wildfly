@@ -47,7 +47,7 @@
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
         <module name="jakarta.xml.soap.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.ws.api"/>
 
         <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
              classloader scope-->

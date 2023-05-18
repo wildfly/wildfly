@@ -28,7 +28,7 @@
         <!-- JAXB API + REF IMPL -->
         <module name="jakarta.xml.bind.api" export="true"/>
         <module name="org.glassfish.jaxb" export="true" services="export"/>
-        <module name="javax.xml.ws.api" export="true"/>
+        <module name="jakarta.xml.ws.api" export="true"/>
         <!-- WSDL4J API -->
         <module name="javax.wsdl4j.api" export="true"/>
         <!-- JBossWS API -->

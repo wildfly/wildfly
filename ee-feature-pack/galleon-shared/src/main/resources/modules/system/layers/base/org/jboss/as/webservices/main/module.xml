@@ -42,7 +42,7 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.ejb.api"/>
         <module name="jakarta.servlet.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.ws.api"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata.common"/>
