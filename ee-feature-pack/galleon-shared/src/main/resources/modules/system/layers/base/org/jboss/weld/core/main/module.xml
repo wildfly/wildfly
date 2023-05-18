@@ -36,7 +36,7 @@
 
   <dependencies>
     <module name="jakarta.annotation.api"/>
-    <module name="javax.ejb.api" />
+    <module name="jakarta.ejb.api" />
     <module name="javax.enterprise.api"/>
     <module name="javax.inject.api"/>
     <module name="javax.interceptor.api"/>

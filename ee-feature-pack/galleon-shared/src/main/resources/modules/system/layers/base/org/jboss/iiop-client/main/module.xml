@@ -33,7 +33,7 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.rmi"/>
-        <module name="javax.ejb.api"/>
+        <module name="jakarta.ejb.api"/>
         <module name="org.omg.api"/>
         <module name="javax.rmi.api"/>
     </dependencies>

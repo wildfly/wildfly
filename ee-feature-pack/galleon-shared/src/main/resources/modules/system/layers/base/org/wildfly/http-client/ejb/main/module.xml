@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="java.rmi"/>
-        <module name="javax.ejb.api"/>
+        <module name="jakarta.ejb.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.wildfly.http-client.common"/>
         <module name="org.wildfly.http-client.naming"/>
