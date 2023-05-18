@@ -24,7 +24,6 @@
         <feature spec="subsystem.ee.context-service">
             <param name="context-service" value="default"/>
             <param name="jndi-name" value="java:jboss/ee/concurrency/context/default"/>
-            <param name="use-transaction-setup-provider" value="false"/>
         </feature>
         <feature spec="subsystem.ee.managed-executor-service">
             <param name="managed-executor-service" value="default"/>

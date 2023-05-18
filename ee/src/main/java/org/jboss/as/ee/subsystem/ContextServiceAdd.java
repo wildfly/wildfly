@@ -46,7 +46,8 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
         final ModelNode model = resource.getModel();
         final String name = context.getCurrentAddressValue();
         final String jndiName = ContextServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
-        // TODO *FOLLOW UP* deprecate USE_TRANSACTION_SETUP_PROVIDER_AD since it's of no use anymore (replaced by spec's context service config of context type Transaction)
+        // WFLY-16705 deprecated USE_TRANSACTION_SETUP_PROVIDER_AD is ignored since it's of no use anymore (replaced by spec's context service config of context type Transaction)
+        // TODO https://issues.redhat.com/browse/WFLY-17912 -- allow Context Service configuration via the subsystem management API
         // install the service which manages the default context service
         final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), ContextServiceTypesConfiguration.DEFAULT);
         context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY).setInstance(contextServiceService).install();

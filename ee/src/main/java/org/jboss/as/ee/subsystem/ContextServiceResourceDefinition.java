@@ -61,6 +61,7 @@ public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(ModelNode.FALSE)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(EESubsystemModel.Version.v6_0_0)
                     .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, USE_TRANSACTION_SETUP_PROVIDER_AD};
