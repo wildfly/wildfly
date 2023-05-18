@@ -46,7 +46,7 @@
         <module name="org.jboss.ws.api" services="export"/>
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
-        <module name="javax.xml.soap.api"/>
+        <module name="jakarta.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
 
         <!-- this is needed to get javax.xml.namespace.QName but it would be better if it were exposed on its own -->
