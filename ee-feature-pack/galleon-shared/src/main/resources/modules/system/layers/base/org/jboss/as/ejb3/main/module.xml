@@ -37,7 +37,7 @@
         <module name="java.rmi"/>
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="org.wildfly.http-client.ejb" services="import"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.ejb.api"/>

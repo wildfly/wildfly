@@ -39,7 +39,7 @@
         <module name="java.sql"/>
         <module name="java.xml"/>
         <module name="java.transaction.xa"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator"/>

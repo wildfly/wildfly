@@ -37,7 +37,7 @@
     </exports>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="jakarta.ejb.api"/>
         <module name="jakarta.xml.bind.api"/>
         <module name="org.jboss.staxmapper"/>

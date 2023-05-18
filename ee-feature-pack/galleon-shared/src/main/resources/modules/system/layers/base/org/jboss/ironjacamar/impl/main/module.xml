@@ -40,7 +40,7 @@
         <module name="java.rmi"/>
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.security.auth.message.api"/>
         <module name="jakarta.validation.api"/>

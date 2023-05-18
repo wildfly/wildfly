@@ -49,7 +49,7 @@
         <module name="org.wildfly.transaction.client"/>
         <module name="org.wildfly.common"/>
         <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
     </dependencies>
 
 </module>

@@ -31,7 +31,7 @@
     <dependencies>
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="javax.jms.api"/>
         <module name="org.apache.qpid.proton"/>
         <!--<module name="io.netty"/>-->

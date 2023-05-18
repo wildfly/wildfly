@@ -40,7 +40,7 @@
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="jdk.jconsole"/>
         <module name="org.omg.api" />
         <module name="org.jboss.logging"/>

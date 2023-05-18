@@ -37,7 +37,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
 
         <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>

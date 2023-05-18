@@ -55,7 +55,7 @@
         <module name="javax.interceptor.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.glassfish.jakarta.el" />
         <module name="org.jboss.jandex"/>

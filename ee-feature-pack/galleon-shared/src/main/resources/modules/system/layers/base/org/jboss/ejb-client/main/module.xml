@@ -29,7 +29,7 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.rmi"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="jakarta.ejb.api"/>
         <module name="javax.interceptor.api"/>
         <module name="org.wildfly.client.config"/>
