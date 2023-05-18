@@ -36,7 +36,7 @@
         <module name="java.compiler"/>
         <module name="java.management"/>
         <module name="java.naming"/>
-        <module name="javax.servlet.api" />
+        <module name="jakarta.servlet.api" />
         <module name="jakarta.xml.bind.api" />
         <module name="javax.security.auth.message.api"/>
         <module name="com.sun.xml.bind" services="import"/>

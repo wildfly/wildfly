@@ -41,7 +41,7 @@
         <module name="org.jboss.xts" />
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
-        <module name="javax.servlet.api" />
+        <module name="jakarta.servlet.api" />
         <module name="jakarta.annotation.api" export="true" />
         <module name="javax.interceptor.api"  export="true" />
         <module name="java.xml" />

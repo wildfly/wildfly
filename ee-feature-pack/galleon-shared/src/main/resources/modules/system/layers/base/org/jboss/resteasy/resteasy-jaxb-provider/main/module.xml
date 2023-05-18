@@ -32,7 +32,7 @@
         <module name="com.sun.xml.bind"/>
         <module name="jakarta.xml.bind.api"/>
         <module name="javax.enterprise.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <!-- Some features are used in the SecureUnmarshaller that only work with Xerces. -->
         <module name="org.apache.xerces" services="import"/>

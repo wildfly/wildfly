@@ -34,7 +34,7 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="javax.servlet.jsp.api"/>
     </dependencies>
 

@@ -40,6 +40,6 @@
         <module name="org.jboss.logging"/>
         <module name="javax.json.api"/>
         <module name="java.security.sasl"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
     </dependencies>
 </module>

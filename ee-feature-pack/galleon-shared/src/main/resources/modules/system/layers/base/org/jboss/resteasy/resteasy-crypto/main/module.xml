@@ -37,7 +37,7 @@
         <module name="javax.activation.api"/>
         <module name="javax.mail.api"/>
         <module name="org.apache.james.mime4j"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.bouncycastle.bcmail"/>
         <module name="org.bouncycastle.bcpkix"/>
