@@ -35,6 +35,6 @@
         <module name="java.naming"/>
         <module name="org.jboss.logging"/>
         <module name="jakarta.transaction.api"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
     </dependencies>
 </module>

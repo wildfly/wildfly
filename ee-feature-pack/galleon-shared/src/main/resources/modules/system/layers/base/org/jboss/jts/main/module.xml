@@ -46,7 +46,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.jboss-transaction-spi"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="org.apache.activemq.artemis.journal"/>
         <module name="javax.orb.api"/>
         <module name="javax.enterprise.api"/>

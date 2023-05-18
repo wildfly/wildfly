@@ -32,7 +32,7 @@
         <module name="jakarta.transaction.api"/>
         <!-- WFLY-4656 export the JMS API module,  otherwise MDB using this RA will not found JMS classes -->
         <module name="jakarta.jms.api" export="true"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="org.jboss.logging"/>
 
         <!--

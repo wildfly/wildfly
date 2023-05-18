@@ -40,7 +40,7 @@
         <module name="java.xml"/>
         <module name="java.transaction.xa"/>
         <module name="jakarta.transaction.api"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator"/>
         <module name="org.jboss.as.naming"/>

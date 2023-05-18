@@ -39,7 +39,7 @@
         <module name="java.naming"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.jms.api" />
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <!-- <module name="io.netty"/> -->
         <module name="io.netty.netty-buffer"/>
         <module name="io.netty.netty-transport"/>

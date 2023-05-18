@@ -69,7 +69,7 @@
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.netty.netty-codec-http"/>
         <module name="org.jctools"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <!-- WFLY-5213 Optional dependency to use the org.apache.activemq.artemis as a naming's external-context module -->
         <module name="org.jboss.invocation" optional="true"/>
         <module name="org.jboss.jboss-transaction-spi"/>

@@ -39,7 +39,7 @@
         <module name="jakarta.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="jakarta.jms.api"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
 
         <module name="org.jboss.as.controller"/>

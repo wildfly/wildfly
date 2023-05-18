@@ -64,7 +64,7 @@
         <module name="javax.enterprise.api"/>
         <module name="jakarta.jms.api"/>
         <module name="jakarta.json.api"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="org.apache.activemq.artemis" services="import"/>
         <module name="org.apache.activemq.artemis.ra"/>

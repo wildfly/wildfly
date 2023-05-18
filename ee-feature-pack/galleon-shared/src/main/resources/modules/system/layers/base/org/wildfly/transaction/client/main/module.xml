@@ -35,7 +35,7 @@
 <dependencies>
     <!-- Sorted alphabetically -->
     <module name="java.naming"/>
-    <module name="javax.resource.api"/>
+    <module name="jakarta.resource.api"/>
     <module name="jakarta.transaction.api"/>
 
     <module name="org.jboss.ejb-client" services="import" optional="true"/>

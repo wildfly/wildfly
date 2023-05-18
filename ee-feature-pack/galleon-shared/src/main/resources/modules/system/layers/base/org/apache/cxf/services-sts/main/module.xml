@@ -56,7 +56,7 @@
         <module name="jakarta.jms.api" />
         <module name="javax.jws.api" />
         <module name="javax.mail.api" />
-        <module name="javax.resource.api" />
+        <module name="jakarta.resource.api" />
         <module name="jakarta.servlet.api" />
         <module name="javax.wsdl4j.api" />
         <module name="jakarta.xml.bind.api" services="import"/>
