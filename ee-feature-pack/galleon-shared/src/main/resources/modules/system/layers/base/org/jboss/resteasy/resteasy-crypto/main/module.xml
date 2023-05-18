@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="java.naming"/>
-        <module name="javax.activation.api"/>
+        <module name="jakarta.activation.api"/>
         <module name="javax.mail.api"/>
         <module name="org.apache.james.mime4j"/>
         <module name="jakarta.servlet.api"/>
