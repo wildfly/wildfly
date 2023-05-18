@@ -53,7 +53,7 @@
         </module>
         <module name="asm.asm" />
         <module name="jakarta.annotation.api" />
-        <module name="javax.jms.api" />
+        <module name="jakarta.jms.api" />
         <module name="javax.jws.api" />
         <module name="javax.mail.api" />
         <module name="javax.resource.api" />

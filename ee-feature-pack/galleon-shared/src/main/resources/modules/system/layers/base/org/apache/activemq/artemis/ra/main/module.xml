@@ -49,7 +49,7 @@
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-transport-native-epoll"/>
         <module name="io.netty.netty-transport-native-kqueue"/>
-        <module name="javax.jms.api" />
+        <module name="jakarta.jms.api" />
         <module name="javax.resource.api"/>
         <module name="org.apache.activemq.artemis"/>
         <module name="org.jboss.jboss-transaction-spi"/>
