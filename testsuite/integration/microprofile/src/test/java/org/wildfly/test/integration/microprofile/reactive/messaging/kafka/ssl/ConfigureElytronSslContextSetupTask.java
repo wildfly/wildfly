@@ -33,13 +33,10 @@ import org.jboss.as.test.shared.CLIServerSetupTask;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ConfigureElytronSslContextSetupTask extends CLIServerSetupTask {
-    private final String CLIENT_KEYSTORE =
-            "src/test/resources/org/wildfly/test/integration/microprofile/reactive/messaging/kafka/client.truststore.p12";
-    private final String KEYSTORE_PWD = "clientts";
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        Path path = Paths.get(CLIENT_KEYSTORE)
+        Path path = Paths.get(RunKafkaWithSslSetupTask.CLIENT_TRUSTSTORE)
                 .toAbsolutePath()
                 .normalize();
         if (!Files.exists(path)) {
@@ -47,7 +44,7 @@ public class ConfigureElytronSslContextSetupTask extends CLIServerSetupTask {
         }
 
         NodeBuilder nb = this.builder.node(containerId);
-        nb.setup("/subsystem=elytron/key-store=kafka-ssl-test:add(credential-reference={clear-text=%s}, path=%s, type=PKCS12)", KEYSTORE_PWD, CLIENT_KEYSTORE);
+        nb.setup("/subsystem=elytron/key-store=kafka-ssl-test:add(credential-reference={clear-text=%s}, path=%s, type=PKCS12)", RunKafkaWithSslSetupTask.CLIENT_TRUESTSTORE_PWD, RunKafkaWithSslSetupTask.CLIENT_TRUSTSTORE);
         nb.setup("/subsystem=elytron/trust-manager=kafka-ssl-test:add(key-store=kafka-ssl-test)");
         nb.setup("/subsystem=elytron/client-ssl-context=kafka-ssl-test:add(trust-manager=kafka-ssl-test)");
 
