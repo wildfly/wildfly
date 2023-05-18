@@ -49,12 +49,6 @@
         <module name="jakarta.xml.soap.api"/>
         <module name="javax.xml.ws.api"/>
 
-        <!-- this is needed to get javax.xml.namespace.QName but it would be better if it were exposed on its own -->
-        <!-- this is needed because our endpoints are not in a normal deployment and we need to be able
-            to resolve the javax.jws.WebService annotation attached to them. presumably an endpoint
-            found in a deployment gets this package auto-added to its module loader
-            -->
-        <module name="javax.jws.api"/>
         <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
              classloader scope-->
         <module name="jakarta.annotation.api"  export="true" />
