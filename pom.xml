@@ -1078,23 +1078,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- Required for testsuite/shared which will later be moved to a test bom (WFLY-17331) -->
-            <dependency>
-                <groupId>xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>${version.xom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xerces</groupId>
-                        <artifactId>xercesImpl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
         </dependencies>
 
     </dependencyManagement>

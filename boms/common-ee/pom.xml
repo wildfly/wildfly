@@ -1599,12 +1599,8 @@
                 <version>${version.org.apache.ws.xmlschema}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.bcel</groupId>
-                        <artifactId>bcel</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xalan</groupId>
-                        <artifactId>xalan</artifactId>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
