@@ -43,7 +43,7 @@
         <module name="javax.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
         <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
+        <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.infinispan"/>
         <!-- Only used if capability org.wildfly.bean-validation is available -->

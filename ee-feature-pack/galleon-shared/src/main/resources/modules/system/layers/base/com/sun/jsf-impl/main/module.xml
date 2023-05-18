@@ -38,7 +38,7 @@
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
         <module name="jakarta.websocket.api" />
-        <module name="javax.validation.api"/>
+        <module name="jakarta.validation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.ejb.api"/>
         <module name="jakarta.xml.bind.api"/>

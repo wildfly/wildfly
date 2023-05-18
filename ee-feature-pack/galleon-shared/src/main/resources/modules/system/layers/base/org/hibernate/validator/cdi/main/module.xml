@@ -31,7 +31,7 @@
   <dependencies>
     <module name="jakarta.annotation.api"/>
     <module name="javax.enterprise.api"/>
-    <module name="javax.validation.api"/>
+    <module name="jakarta.validation.api"/>
     <module name="org.hibernate.validator"/>
   </dependencies>
 </module>
