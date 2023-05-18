@@ -42,7 +42,7 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.modules"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
     </dependencies>
 
 </module>

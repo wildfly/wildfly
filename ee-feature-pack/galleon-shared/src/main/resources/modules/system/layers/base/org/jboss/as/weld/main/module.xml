@@ -50,7 +50,7 @@
         <module name="java.naming"/>
         <module name="java.xml"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
         <module name="javax.interceptor.api"/>
         <module name="jakarta.servlet.api"/>

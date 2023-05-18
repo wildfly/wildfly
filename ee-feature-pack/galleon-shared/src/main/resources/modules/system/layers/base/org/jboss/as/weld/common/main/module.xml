@@ -47,7 +47,7 @@
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.metadata.common"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.annotation.api"/>
         <module name="java.desktop"/>
     </dependencies>

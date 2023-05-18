@@ -37,7 +37,7 @@
         <module name="org.jboss.weld.spi" />
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
     </dependencies>
 
 </module>

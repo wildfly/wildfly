@@ -36,7 +36,7 @@
         <module name="java.desktop"/>
         <module name="java.naming"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="javax.persistence.api"/>
         <module name="jakarta.servlet.api"/>

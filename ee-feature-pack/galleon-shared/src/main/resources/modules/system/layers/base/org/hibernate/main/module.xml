@@ -38,7 +38,7 @@
         <module name="java.sql"/>
         <module name="com.fasterxml.classmate"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>

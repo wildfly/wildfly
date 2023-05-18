@@ -31,7 +31,7 @@
     <dependencies>
         <module name="com.sun.xml.bind"/>
         <module name="jakarta.xml.bind.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="javax.ws.rs.api"/>
         <!-- Some features are used in the SecureUnmarshaller that only work with Xerces. -->

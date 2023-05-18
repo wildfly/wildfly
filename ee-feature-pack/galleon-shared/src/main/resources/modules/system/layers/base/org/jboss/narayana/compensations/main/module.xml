@@ -37,7 +37,7 @@
         <!-- narayana compensations works directly with weld core -->
         <module name="org.jboss.weld.core" />
         <module name="jakarta.xml.ws.api" />
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="org.jboss.xts" />
         <module name="jakarta.transaction.api" />
         <module name="org.jboss.logging" />

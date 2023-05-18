@@ -40,7 +40,7 @@
         <module name="java.instrument"/>
         <module name="java.sql"/>
         <module name="jakarta.ejb.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>

@@ -20,7 +20,7 @@
     </resources>
     <!-- see org.jboss.as.test.shared.ModuleUtils.createTestModuleWithEEDependencies -->
     <dependencies>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>

@@ -57,7 +57,7 @@
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.modules"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.as.naming"/>

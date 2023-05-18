@@ -40,7 +40,7 @@
 
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.resource.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
 
         <module name="org.jboss.jts"/>
         <module name="org.jboss.ws.api" services="export"/>

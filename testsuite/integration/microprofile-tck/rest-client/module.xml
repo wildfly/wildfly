@@ -26,7 +26,7 @@
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="javax.inject.api"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>

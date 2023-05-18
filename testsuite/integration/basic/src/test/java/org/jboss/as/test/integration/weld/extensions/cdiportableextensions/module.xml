@@ -29,6 +29,6 @@
 
     <dependencies>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
     </dependencies>
 </module>

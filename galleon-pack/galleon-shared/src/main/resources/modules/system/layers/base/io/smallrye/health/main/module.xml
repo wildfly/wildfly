@@ -35,7 +35,7 @@
     <dependencies>
         <module name="org.eclipse.microprofile.config.api" />
         <module name="org.eclipse.microprofile.health.api"/>
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="jakarta.annotation.api" />
         <module name="jakarta.json.api" />
         <module name="org.jboss.logging" />

@@ -37,7 +37,7 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.jms.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>

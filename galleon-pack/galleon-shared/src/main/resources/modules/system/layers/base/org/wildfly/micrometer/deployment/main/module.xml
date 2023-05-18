@@ -39,7 +39,7 @@
         <module name="org.jboss.weld.api"/>
         <module name="org.wildfly.security.manager"/>
 
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="java.logging"/>
     </dependencies>
 </module>

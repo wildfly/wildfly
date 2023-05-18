@@ -38,7 +38,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="org.jboss.as.controller"/>

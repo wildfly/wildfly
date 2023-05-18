@@ -39,7 +39,7 @@
         <module name="io.smallrye.opentelemetry" />
 
         <module name="java.logging"/>
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
 
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>

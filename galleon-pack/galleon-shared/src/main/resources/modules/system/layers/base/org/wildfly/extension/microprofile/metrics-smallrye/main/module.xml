@@ -44,7 +44,7 @@
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.extension.metrics" />
         <module name="org.wildfly.extension.microprofile.config-smallrye" />
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="jakarta.annotation.api" />
     </dependencies>
 </module>

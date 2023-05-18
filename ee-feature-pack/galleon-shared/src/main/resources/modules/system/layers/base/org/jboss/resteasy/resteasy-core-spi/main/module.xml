@@ -30,7 +30,7 @@
         <module name="java.xml"/>
         <module name="jakarta.activation.api"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.validation.api"/>
         <module name="jakarta.xml.bind.api"/>

@@ -31,7 +31,7 @@
     <dependencies>
         <module name="java.desktop"/>
         <module name="jakarta.xml.bind.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.mail.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="javax.ws.rs.api"/>

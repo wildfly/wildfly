@@ -34,7 +34,7 @@
         <module name="java.sql"/>
         <module name="java.xml"/>
         <module name="com.sun.jsf-impl"/>
-        <module name="javax.enterprise.api" export="true"/>
+        <module name="jakarta.enterprise.api" export="true"/>
         <module name="jakarta.servlet.api" export="true"/>
         <module name="jakarta.servlet.jsp.api" export="true"/>
         <module name="jakarta.servlet.jstl.api" export="true"/>
