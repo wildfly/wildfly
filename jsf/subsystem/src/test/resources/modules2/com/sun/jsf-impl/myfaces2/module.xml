@@ -32,7 +32,7 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
-        <module name="javax.websocket.api" />
+        <module name="jakarta.websocket.api" />
         <module name="javax.validation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.ejb.api"/>

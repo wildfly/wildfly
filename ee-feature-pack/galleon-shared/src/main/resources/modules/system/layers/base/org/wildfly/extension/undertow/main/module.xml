@@ -51,7 +51,7 @@
         <module name="javax.security.jacc.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
-        <module name="javax.websocket.api"/>
+        <module name="jakarta.websocket.api"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.clustering.common"/>
