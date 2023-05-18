@@ -53,7 +53,6 @@ public class UncheckedStatelessBean {
     public Set<Principal> unchecked() {
         org.wildfly.security.auth.server.SecurityDomain securityDomain = org.wildfly.security.auth.server.SecurityDomain.getCurrent();
         if (securityDomain != null) {
-            // elytron profile is enabled
             final Roles roles = ((SessionContextImpl) ctx).getComponent().getIncomingRunAsIdentity().getRoles("ejb");
             final HashSet<Principal> rolesSet = new HashSet<>();
             if (roles != null) {

@@ -61,7 +61,6 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        // elytron profile is enabled
         elytronDomainSetup = new ElytronDomainSetup(getUsersFile(), getGroupsFile(), getSecurityDomainName());
         ejbElytronDomainSetup = new EjbElytronDomainSetup(getSecurityDomainName());
         servletElytronDomainSetup = new ServletElytronDomainSetup(getSecurityDomainName());
