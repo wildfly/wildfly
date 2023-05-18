@@ -47,7 +47,7 @@
         <module name="asm.asm" />
         <module name="jakarta.annotation.api" />
         <module name="jakarta.validation.api" optional="true"/>
-        <module name="javax.mail.api" />
+        <module name="jakarta.mail.api" />
         <module name="jakarta.resource.api" />
         <module name="javax.wsdl4j.api" />
         <module name="jakarta.xml.bind.api" services="import"/>

@@ -36,7 +36,7 @@
         <module name="java.xml" />
         <module name="jakarta.annotation.api" />
         <module name="jakarta.jms.api" />
-        <module name="javax.mail.api" />
+        <module name="jakarta.mail.api" />
         <module name="jakarta.resource.api" />
         <module name="jakarta.servlet.api" />
         <module name="javax.wsdl4j.api" />
