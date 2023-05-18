@@ -200,12 +200,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.wildfly.galleon-plugins</groupId>
-            <artifactId>transformer</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- MicroProfile Reactive Messaging Kafka Connector Test Dependencies -->
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
