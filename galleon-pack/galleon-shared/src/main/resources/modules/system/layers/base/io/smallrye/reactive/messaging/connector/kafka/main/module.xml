@@ -47,7 +47,7 @@
         <module name="io.smallrye.reactive.mutiny.zero-flow-adapters"/>
         <module name="io.vertx.client.kafka"/>
         <module name="io.vertx.core"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.enterprise.api" />
         <module name="org.apache.kafka.client" export="true" services="export"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>

@@ -36,7 +36,7 @@
         <module name="java.logging"/>
         <module name="java.management"/>
         <module name="java.naming"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.resource.api"/>

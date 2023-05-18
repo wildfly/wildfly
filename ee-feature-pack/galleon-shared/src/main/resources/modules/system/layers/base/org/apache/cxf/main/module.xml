@@ -45,7 +45,7 @@
         </module>
         <module name="org.slf4j"/>
         <module name="asm.asm" />
-        <module name="javax.annotation.api" />
+        <module name="jakarta.annotation.api" />
         <module name="javax.validation.api" optional="true"/>
         <module name="javax.jws.api" />
         <module name="javax.mail.api" />

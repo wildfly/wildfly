@@ -74,7 +74,7 @@
         <module name="java.security.jgss"/>
         <module name="java.xml"/>
         <module name="asm.asm"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.jms.api"/>
         <module name="javax.jws.api"/>
         <module name="javax.mail.api"/>

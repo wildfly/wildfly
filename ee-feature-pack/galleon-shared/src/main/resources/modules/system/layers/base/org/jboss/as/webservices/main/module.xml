@@ -39,7 +39,7 @@
 
     <dependencies>
         <module name="java.management"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.ejb.api"/>
         <module name="javax.jws.api"/>
         <module name="javax.servlet.api"/>

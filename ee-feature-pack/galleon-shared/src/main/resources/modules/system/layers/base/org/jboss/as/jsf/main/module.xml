@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="jakarta.faces.api" />
         <module name="javax.enterprise.api"/>
         <module name="com.sun.jsf-impl"/>

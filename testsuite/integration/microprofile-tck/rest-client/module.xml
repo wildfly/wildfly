@@ -28,7 +28,7 @@
         <module name="org.jboss.weld.spi"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.inject.api"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="export" export="true">
           <imports>

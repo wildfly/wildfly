@@ -35,7 +35,7 @@
     <dependencies>
         <module name="javax.json.bind.api"/>
         <module name="org.apache.commons.io"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.json.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>

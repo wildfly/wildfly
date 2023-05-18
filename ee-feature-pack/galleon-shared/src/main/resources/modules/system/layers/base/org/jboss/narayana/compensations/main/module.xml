@@ -42,7 +42,7 @@
         <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
         <module name="javax.servlet.api" />
-        <module name="javax.annotation.api" export="true" />
+        <module name="jakarta.annotation.api" export="true" />
         <module name="javax.interceptor.api"  export="true" />
         <module name="java.xml" />
     </dependencies>

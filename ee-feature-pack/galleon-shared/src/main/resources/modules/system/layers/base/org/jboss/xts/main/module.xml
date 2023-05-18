@@ -57,7 +57,7 @@
         <module name="javax.jws.api"/>
         <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
              classloader scope-->
-        <module name="javax.annotation.api"  export="true" />
+        <module name="jakarta.annotation.api"  export="true" />
         <!-- this is needed to ensure the JaxWS endpoint classes canb refer to HttpServletRequest etc -->
         <module name="javax.servlet.api"/>
         <module name="org.jboss.weld.core" />

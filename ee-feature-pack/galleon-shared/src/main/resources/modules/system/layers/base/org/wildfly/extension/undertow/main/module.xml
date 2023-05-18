@@ -44,7 +44,7 @@
         <module name="java.logging"/>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <!-- Only needed if using access logging -->
         <module name="javax.json.api" optional="true"/>
         <module name="javax.security.auth.message.api"/>

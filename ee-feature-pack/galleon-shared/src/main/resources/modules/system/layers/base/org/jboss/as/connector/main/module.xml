@@ -44,7 +44,7 @@
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.resource.api"/>
         <module name="javax.security.auth.message.api" />
         <module name="javax.transaction.api"/>

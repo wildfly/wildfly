@@ -26,7 +26,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="org.eclipse.microprofile.restclient"/>
