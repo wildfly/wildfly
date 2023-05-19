@@ -46,6 +46,7 @@ import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
  */
 public class DistributableWebDeploymentProcessor implements DeploymentUnitProcessor {
 
+    private static final String WEB_API = "org.wildfly.clustering.web.api";
     private static final String PROTOSTREAM = "org.infinispan.protostream";
     private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
@@ -63,6 +64,8 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
 
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
+
+            specification.addSystemDependency(new ModuleDependency(loader, WEB_API, false, false, false, false));
 
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
                 specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
