@@ -1,12 +1,15 @@
 embed-server --admin-only=true --server-config=standalone-full.xml
 
+# Remove the default messaging configuration configuration
+if (outcome == success) of /subsystem=messaging-activemq/pooled-connection-factory=activemq-ra:read-resource
+    /subsystem=messaging-activemq/pooled-connection-factory=activemq-ra:remove
+end-if
+if (outcome == success) of /subsystem=messaging-activemq/remote-connector=artemis:read-resource
+    /subsystem=messaging-activemq/remote-connector=artemis:remove
+end-if
+
 # Check if the default server exists, if it does we can updated if not we need to add it
 if (outcome != success) of /subsystem=messaging-activemq/server=default:read-resource
-    # Add the server
-    # Remove the default configuration
-    /subsystem=messaging-activemq/pooled-connection-factory=activemq-ra:remove
-    /subsystem=messaging-activemq/remote-connector=artemis:remove
-
     # Add the default server which was in previous versions of WildFly
     /subsystem=messaging-activemq/server=default:add(elytron-domain=ApplicationDomain, statistics-enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}")
     /subsystem=messaging-activemq/server=default/security-setting=#:add()
