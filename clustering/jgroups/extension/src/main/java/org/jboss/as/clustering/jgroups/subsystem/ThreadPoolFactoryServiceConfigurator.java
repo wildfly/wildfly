@@ -32,42 +32,53 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceNameProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class ThreadPoolFactoryServiceConfigurator extends QueuelessThreadPoolFactory implements ResourceServiceConfigurator {
+public class ThreadPoolFactoryServiceConfigurator extends ThreadPoolServiceNameProvider implements ResourceServiceConfigurator, ThreadPoolConfiguration {
 
     private final ThreadPoolDefinition definition;
-    private final ServiceNameProvider serviceNameProvider;
+
+    private volatile int minThreads = 0;
+    private volatile int maxThreads = Integer.MAX_VALUE;
+    private volatile long keepAliveTime = 0;
 
     public ThreadPoolFactoryServiceConfigurator(ThreadPoolDefinition definition, PathAddress address) {
+        super(address);
         this.definition = definition;
-        this.serviceNameProvider = new ThreadPoolServiceNameProvider(address);
-    }
-
-    @Override
-    public ServiceName getServiceName() {
-        return this.serviceNameProvider.getServiceName();
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.setMinThreads(this.definition.getMinThreads().resolveModelAttribute(context, model).asInt());
-        this.setMaxThreads(this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt());
-        this.setKeepAliveTime(this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong());
+        this.minThreads = this.definition.getMinThreads().resolveModelAttribute(context, model).asInt();
+        this.maxThreads = this.definition.getMaxThreads().resolveModelAttribute(context, model).asInt();
+        this.keepAliveTime = this.definition.getKeepAliveTime().resolveModelAttribute(context, model).asLong();
         return this;
     }
 
     @Override
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<ThreadPoolFactory> factory = builder.provides(this.getServiceName());
+        Consumer<ThreadPoolConfiguration> factory = builder.provides(this.getServiceName());
         Service service = Service.newInstance(factory, this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
+    }
+
+    @Override
+    public int getMinThreads() {
+        return this.minThreads;
+    }
+
+    @Override
+    public int getMaxThreads() {
+        return this.maxThreads;
+    }
+
+    @Override
+    public long getKeepAliveTime() {
+        return this.keepAliveTime;
     }
 }
