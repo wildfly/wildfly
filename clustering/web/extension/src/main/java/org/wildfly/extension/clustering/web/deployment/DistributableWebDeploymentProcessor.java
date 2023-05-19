@@ -47,6 +47,7 @@ import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 public class DistributableWebDeploymentProcessor implements DeploymentUnitProcessor {
 
     private static final String WEB_API = "org.wildfly.clustering.web.api";
+    private static final String MARSHALLING_API = "org.wildfly.clustering.marshalling.api";
     private static final String PROTOSTREAM = "org.infinispan.protostream";
     private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
@@ -85,6 +86,8 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                         throw new IllegalStateException(e);
                     }
                 }
+            } else {
+                specification.addSystemDependency(new ModuleDependency(loader, MARSHALLING_API, false, false, false, false));
             }
 
             if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
