@@ -54,7 +54,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String EJB_IIOP_CLIENT = "org.jboss.iiop-client";
     private static final String IIOP_OPENJDK = "org.wildfly.iiop-openjdk";
     private static final String EJB_API = "jakarta.ejb.api";
-    private static final String JAX_RPC_API = "javax.xml.rpc.api";
     private static final String HTTP_EJB = "org.wildfly.http-client.ejb";
     private static final String HTTP_TRANSACTION = "org.wildfly.http-client.transaction";
     private static final String HTTP_NAMING = "org.wildfly.http-client.naming";
@@ -79,8 +78,6 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
         //always add EE API
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_API, false, false, true, false));
-        // previously exported by Jakarta Enterprise Beans_API prior to WFLY-5922 TODO WFLY-5967 look into moving this to WS subsystem
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JAX_RPC_API, true, false, true, false));
         //we always give them the Jakarta Enterprise Beans client
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_CLIENT, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, EJB_NAMING_CLIENT, false, false, true, false));
