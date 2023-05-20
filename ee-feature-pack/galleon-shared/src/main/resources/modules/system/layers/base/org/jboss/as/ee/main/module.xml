@@ -42,7 +42,7 @@
         <module name="javax.enterprise.concurrent.api"/>
         <module name="jakarta.el.api"/>
         <module name="jakarta.interceptor.api"/>
-        <module name="javax.security.jacc.api"/>
+        <module name="jakarta.security.jacc.api"/>
         <module name="jakarta.transaction.api" optional="true"/>
         <module name="org.glassfish.javax.enterprise.concurrent"/>
         <module name="org.jboss.staxmapper"/>

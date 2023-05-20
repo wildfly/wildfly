@@ -41,7 +41,7 @@
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
         <module name="jakarta.servlet.api"/>
-        <module name="javax.security.jacc.api"/>
+        <module name="jakarta.security.jacc.api"/>
         <module name="jakarta.security.auth.message.api"/>
     </dependencies>
 </module>
