@@ -34,7 +34,7 @@
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.validation.api"/>
         <module name="jakarta.xml.bind.api"/>
-        <module name="javax.ws.rs.api"/>
+        <module name="jakarta.ws.rs.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>
         <!-- If present, import services that are needed for runtime. This includes deployment specific implementations. -->
