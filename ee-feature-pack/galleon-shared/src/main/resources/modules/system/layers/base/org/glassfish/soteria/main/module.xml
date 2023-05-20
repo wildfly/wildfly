@@ -36,7 +36,7 @@
         <module name="java.logging" />
         <module name="java.naming" />
         <module name="java.sql" />
-        <module name="javax.security.enterprise.api" />
+        <module name="jakarta.security.enterprise.api" />
         <module name="jakarta.servlet.api" />
         <module name="jakarta.enterprise.api" />
         <module name="javax.security.auth.message.api" />

@@ -31,7 +31,7 @@
         <module name="org.glassfish.soteria" export="true"/>
 
         <module name="java.logging" />
-        <module name="javax.security.enterprise.api" />
+        <module name="jakarta.security.enterprise.api" />
         <module name="jakarta.servlet.api" />
         <module name="jakarta.enterprise.api" />
         <module name="javax.security.auth.message.api" />
