@@ -38,7 +38,7 @@
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.security.auth.message.api" />
-        <module name="javax.interceptor.api" />
+        <module name="jakarta.interceptor.api" />
         <module name="jakarta.annotation.api" />
         <module name="javax.inject.api" />
         <module name="jakarta.json.api" />

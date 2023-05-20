@@ -31,7 +31,7 @@
         <module name="java.rmi"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.ejb.api"/>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
         <module name="org.wildfly.client.config"/>
         <module name="org.wildfly.discovery"/>
         <module name="org.wildfly.common"/>

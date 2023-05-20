@@ -52,7 +52,7 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.enterprise.api"/>
         <module name="javax.enterprise.concurrent.api"/>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
         <module name="jakarta.transaction.api"/>

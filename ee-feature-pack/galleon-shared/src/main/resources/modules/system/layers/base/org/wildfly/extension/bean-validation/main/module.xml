@@ -37,7 +37,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator" optional="true" services="import"/>
         <module name="org.jboss.staxmapper"/>

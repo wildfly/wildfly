@@ -39,7 +39,7 @@
         <module name="org.jboss.weld.spi" />
         <module name="org.wildfly.security.elytron" />
         <module name="jakarta.xml.bind.api" />
-        <module name="javax.interceptor.api" />
+        <module name="jakarta.interceptor.api" />
         <module name="jakarta.annotation.api" />
         <module name="javax.inject.api" />
         <module name="javax.security.jacc.api" />
