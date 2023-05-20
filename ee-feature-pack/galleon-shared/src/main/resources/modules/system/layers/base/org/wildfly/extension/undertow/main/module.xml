@@ -47,7 +47,7 @@
         <module name="jakarta.annotation.api"/>
         <!-- Only needed if using access logging -->
         <module name="jakarta.json.api" optional="true"/>
-        <module name="javax.security.auth.message.api"/>
+        <module name="jakarta.security.auth.message.api"/>
         <module name="javax.security.jacc.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>

@@ -34,7 +34,7 @@
     <dependencies>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <module name="javax.security.auth.message.api"/>
+        <module name="jakarta.security.auth.message.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
         <module name="org.jboss.staxmapper"/>

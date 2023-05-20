@@ -46,7 +46,7 @@
         <module name="java.xml"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.resource.api"/>
-        <module name="javax.security.auth.message.api" />
+        <module name="jakarta.security.auth.message.api" />
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator" services="import"/>

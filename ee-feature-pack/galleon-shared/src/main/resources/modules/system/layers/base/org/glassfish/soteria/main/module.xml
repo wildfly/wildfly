@@ -39,7 +39,7 @@
         <module name="jakarta.security.enterprise.api" />
         <module name="jakarta.servlet.api" />
         <module name="jakarta.enterprise.api" />
-        <module name="javax.security.auth.message.api" />
+        <module name="jakarta.security.auth.message.api" />
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
         <module name="jakarta.xml.bind.api" />
