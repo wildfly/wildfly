@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.json.bind.api"/>
+        <module name="jakarta.json.bind.api"/>
         <module name="org.apache.commons.io"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.json.api"/>

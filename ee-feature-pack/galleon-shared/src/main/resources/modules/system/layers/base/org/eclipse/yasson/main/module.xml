@@ -30,7 +30,7 @@
         <module name="java.logging"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.json.api"/>
-        <module name="javax.json.bind.api"/>
+        <module name="jakarta.json.bind.api"/>
     </dependencies>
 
 </module>
