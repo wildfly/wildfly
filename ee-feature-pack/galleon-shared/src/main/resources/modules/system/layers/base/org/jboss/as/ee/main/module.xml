@@ -39,7 +39,7 @@
         <module name="java.naming"/>
         <module name="java.xml"/>
         <module name="jakarta.annotation.api"/>
-        <module name="javax.enterprise.concurrent.api"/>
+        <module name="jakarta.enterprise.concurrent.api"/>
         <module name="jakarta.el.api"/>
         <module name="jakarta.interceptor.api"/>
         <module name="jakarta.security.jacc.api"/>
