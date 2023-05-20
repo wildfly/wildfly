@@ -45,7 +45,7 @@
         <module name="jakarta.xml.bind.api" />
         <module name="jakarta.interceptor.api" />
         <module name="jakarta.annotation.api" />
-        <module name="javax.inject.api" />
+        <module name="jakarta.inject.api" />
         <module name="javax.security.jacc.api" />
         <module name="jakarta.ejb.api" />
         <module name="jakarta.json.api" />
