@@ -269,7 +269,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         // identity element
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IDENTITY) && model.get(SERVICE, IDENTITY).hasDefined(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getName())) {
             writer.writeStartElement(EJB3SubsystemXMLElement.IDENTITY.getLocalName());
-            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getAttributeMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
+            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
             writer.writeEndElement();
         }
 
@@ -761,6 +761,6 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     }
 
     private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
-        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
+        attribute.getMarshaller().marshallAsAttribute(attribute, model, true, writer);
     }
 }
