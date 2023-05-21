@@ -30,9 +30,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.jboss.as.ejb3.security.IdentityEJBClientInterceptor;
 import org.jboss.as.ejb3.subsystem.EJBClientConfiguratorService;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.DeploymentNodeSelector;
@@ -70,6 +73,12 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
 
     public static final ServiceName DEFAULT_SERVICE_NAME = BASE_SERVICE_NAME.append("default");
 
+    /**
+     * this list is used so that interceptors that are used in all scenarios don't have to be configured for each deployment
+     * and allow for EJBClientContext sharing if no additional metadata is configured see f.e. WFLY-18040
+     */
+    private static List<EJBClientInterceptor> WILDFLY_CLIENT_INTERCEPTORS = new ArrayList<>(Arrays.asList(IdentityEJBClientInterceptor.INSTANCE));
+
     private EJBClientContext clientContext;
 
     private final InjectedValue<EJBClientConfiguratorService> configuratorServiceInjector = new InjectedValue<>();
@@ -85,11 +94,14 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
     private DeploymentNodeSelector deploymentNodeSelector;
     private List<EJBClientCluster> clientClusters = null;
     private AuthenticationContext clustersAuthenticationContext = null;
+
+
     private List<EJBClientInterceptor> clientInterceptors = null;
     private int defaultCompression = -1;
 
     public EJBClientContextService(final boolean makeGlobal) {
         this.makeGlobal = makeGlobal;
+
     }
 
     public EJBClientContextService() {
@@ -162,6 +174,9 @@ public final class EJBClientContextService implements Service<EJBClientContextSe
             LegacyPropertiesConfiguration.configure(builder);
         }
 
+        for (EJBClientInterceptor clientInterceptor : WILDFLY_CLIENT_INTERCEPTORS) {
+            builder.addInterceptor(clientInterceptor);
+        }
         if (clientInterceptors != null) {
             for (EJBClientInterceptor clientInterceptor : clientInterceptors) {
                 builder.addInterceptor(clientInterceptor);
