@@ -39,7 +39,9 @@ import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -196,9 +198,9 @@ public interface CommonAttributes {
             .build();
 
     PropertiesAttributeDefinition PARAMS = new PropertiesAttributeDefinition.Builder("params", true)
-            .setWrapXmlElement(false)
             .setAllowExpression(true)
-            .setXmlName("param")
+            .setAttributeParser(new AttributeParsers.PropertiesParser(null, "param", false))
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller(null, "param", false))
             .build();
 
     @Deprecated SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create("jgroups-stack", ModelType.STRING)
