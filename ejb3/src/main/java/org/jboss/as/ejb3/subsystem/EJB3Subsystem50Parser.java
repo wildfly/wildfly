@@ -173,9 +173,8 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case OUTFLOW_SECURITY_DOMAINS: {
-                    for (String outflowDomain : reader.getListAttributeValue(i)) {
-                        IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.parseAndAddParameterElement(outflowDomain, addIdentity, reader);
-                    }
+                    IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getParser().parseAndSetParameter(
+                            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, reader.getAttributeValue(i), addIdentity, reader);
                     break;
                 }
                 default: {

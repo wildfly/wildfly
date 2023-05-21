@@ -143,7 +143,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, topic, reader);
+                    CommonAttributes.DESTINATION_ENTRIES.getParser().parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, topic, reader);
                     break;
                 }
                 default: {
@@ -169,7 +169,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, queue, reader);
+                    CommonAttributes.DESTINATION_ENTRIES.getParser().parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, queue, reader);
                     break;
                 }
                 case "selector": {
