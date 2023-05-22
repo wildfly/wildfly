@@ -293,7 +293,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case BEAN_VALIDATION_GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(BEANVALIDATION_GROUPS.getName()).add(BEANVALIDATIONGROUP.parse(value, reader));
+                            operation.get(BEANVALIDATION_GROUPS.getName()).add(BEANVALIDATIONGROUP.getParser().parse(BEANVALIDATIONGROUP, value, reader));
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
@@ -312,7 +312,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             }
                             String value = rawElementText(reader);
                             TRANSACTION_SUPPORT.parseAndSetParameter(value, operation, reader);
-                            ModelNode transactionSupport = TRANSACTION_SUPPORT.parse(value, reader);
+                            ModelNode transactionSupport = TRANSACTION_SUPPORT.getParser().parse(TRANSACTION_SUPPORT, value, reader);
                             // so we need to know the transaction support level to give a chance to throw XMLStreamException for
                             // unexpectedElement when parsing connection-definitions in CommonIronJacamarParser ?
                             String transactionSupportResolved = transactionSupport.resolve().asString();
@@ -447,7 +447,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.parse(value, reader));
+                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.getParser().parse(WM_SECURITY_DEFAULT_GROUP, value, reader));
                             break;
                         }
                         case USERS: {
@@ -549,7 +549,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.parse(value, reader));
+                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.getParser().parse(WM_SECURITY_DEFAULT_GROUP, value, reader));
                             break;
                         }
                         case USERS: {

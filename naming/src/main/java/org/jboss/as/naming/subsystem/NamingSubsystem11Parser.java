@@ -141,10 +141,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case VALUE:
-                    bindingValue = NamingBindingResourceDefinition.VALUE.parse(value, reader).asString();
+                    bindingValue = NamingBindingResourceDefinition.VALUE.getParser().parse(NamingBindingResourceDefinition.VALUE, value, reader).asString();
                     break;
                 case TYPE:
-                    type = NamingBindingResourceDefinition.TYPE.parse(value, reader).asString();
+                    type = NamingBindingResourceDefinition.TYPE.getParser().parse(NamingBindingResourceDefinition.TYPE, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -187,10 +187,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case MODULE:
-                    module = NamingBindingResourceDefinition.MODULE.parse(value, reader).asString();
+                    module = NamingBindingResourceDefinition.MODULE.getParser().parse(NamingBindingResourceDefinition.MODULE, value, reader).asString();
                     break;
                 case CLASS:
-                    factory = NamingBindingResourceDefinition.CLASS.parse(value, reader).asString();
+                    factory = NamingBindingResourceDefinition.CLASS.getParser().parse(NamingBindingResourceDefinition.CLASS, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -230,7 +230,7 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case LOOKUP:
-                    lookup = NamingBindingResourceDefinition.LOOKUP.parse(value, reader).asString();
+                    lookup = NamingBindingResourceDefinition.LOOKUP.getParser().parse(NamingBindingResourceDefinition.LOOKUP, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

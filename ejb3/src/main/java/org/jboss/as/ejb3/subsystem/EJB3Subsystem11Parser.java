@@ -237,13 +237,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                     poolName = value;
                     break;
                 case MAX_POOL_SIZE:
-                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
+                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.getParser().parse(StrictMaxPoolResourceDefinition.MAX_POOL_SIZE, value, reader).asInt();
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT:
-                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
+                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.getParser().parse(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT, value, reader).asLong();
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT_UNIT:
-                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
+                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.getParser().parse(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT, value, reader).asString();
                     break;
 
                 default:
@@ -303,13 +303,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = FileDataStoreResourceDefinition.PATH.parse(value, reader).asString();
+                                dataStorePath = FileDataStoreResourceDefinition.PATH.getParser().parse(FileDataStoreResourceDefinition.PATH, value, reader).asString();
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
+                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.getParser().parse(FileDataStoreResourceDefinition.RELATIVE_TO, value, reader).asString();
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);

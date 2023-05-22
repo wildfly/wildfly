@@ -689,13 +689,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = FileDataStoreResourceDefinition.PATH.parse(value, reader);
+                                dataStorePath = FileDataStoreResourceDefinition.PATH.getParser().parse(FileDataStoreResourceDefinition.PATH, value, reader);
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.parse(value, reader);
+                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.getParser().parse(FileDataStoreResourceDefinition.RELATIVE_TO, value, reader);
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);

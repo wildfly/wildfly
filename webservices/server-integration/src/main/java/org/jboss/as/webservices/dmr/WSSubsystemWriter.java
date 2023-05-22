@@ -59,7 +59,7 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
         }
 
         for (SimpleAttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
-            attr.marshallAsElement(subsystem, true, writer);
+            attr.getMarshaller().marshallAsElement(attr, subsystem, true, writer);
         }
         if (subsystem.hasDefined(ENDPOINT_CONFIG)) {
             // write endpoint-config elements
