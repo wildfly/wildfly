@@ -48,7 +48,6 @@
     </licenses>
 
     <properties>
-        <version.junit>4.13.2</version.junit>
         <version.org.jboss.arquillian.extension.drone>2.5.2</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>2.3.2</version.org.jboss.arquillian.graphene>
         <version.org.jboss.shrinkwrap.resolver>2.2.7</version.org.jboss.shrinkwrap.resolver>
@@ -58,11 +57,13 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- Recommended JUnit version -->
+            <!-- imports the related server's test BOM -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${version.server}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Recommended TestNG version -->
