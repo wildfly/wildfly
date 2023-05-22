@@ -83,11 +83,9 @@ public class PooledConnectionFactoryStatisticsService implements Service<Managem
             if (poolStatsSize > 0
                     && registration != null
                     && registration.getSubModel(PathAddress.pathAddress(POOL_STATISTICS)) == null) {
-                // TODO WFLY-5285 get rid of redundant .setRuntimeOnly once WFCORE-959 is integrated
                 ManagementResourceRegistration poolRegistration = registration
                         .registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS,
                                 DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
-                poolRegistration.setRuntimeOnly(true);
             }
         }
     }
