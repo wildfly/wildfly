@@ -269,7 +269,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         // identity element
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IDENTITY) && model.get(SERVICE, IDENTITY).hasDefined(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getName())) {
             writer.writeStartElement(EJB3SubsystemXMLElement.IDENTITY.getLocalName());
-            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
+            writeAttribute(writer, model.get(SERVICE, IDENTITY), IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, false);
             writer.writeEndElement();
         }
 
@@ -527,7 +527,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 ModelNode cache = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
                 LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES);
+                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES, true);
                 writer.writeEndElement();
             }
         }
@@ -760,7 +760,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
-    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
-        attribute.getMarshaller().marshallAsAttribute(attribute, model, true, writer);
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute, boolean marshallDefault) throws XMLStreamException {
+        attribute.getMarshaller().marshallAsAttribute(attribute, model, marshallDefault, writer);
     }
 }

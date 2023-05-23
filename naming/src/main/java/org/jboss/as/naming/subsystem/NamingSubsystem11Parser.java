@@ -46,7 +46,9 @@ import java.util.EnumSet;
 import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
@@ -141,10 +143,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case VALUE:
-                    bindingValue = NamingBindingResourceDefinition.VALUE.getParser().parse(NamingBindingResourceDefinition.VALUE, value, reader).asString();
+                    bindingValue = parse(NamingBindingResourceDefinition.VALUE, value, reader).asString();
                     break;
                 case TYPE:
-                    type = NamingBindingResourceDefinition.TYPE.getParser().parse(NamingBindingResourceDefinition.TYPE, value, reader).asString();
+                    type = parse(NamingBindingResourceDefinition.TYPE, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -187,10 +189,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case MODULE:
-                    module = NamingBindingResourceDefinition.MODULE.getParser().parse(NamingBindingResourceDefinition.MODULE, value, reader).asString();
+                    module = parse(NamingBindingResourceDefinition.MODULE, value, reader).asString();
                     break;
                 case CLASS:
-                    factory = NamingBindingResourceDefinition.CLASS.getParser().parse(NamingBindingResourceDefinition.CLASS, value, reader).asString();
+                    factory = parse(NamingBindingResourceDefinition.CLASS, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -230,7 +232,7 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
                     name = value.trim();
                     break;
                 case LOOKUP:
-                    lookup = NamingBindingResourceDefinition.LOOKUP.getParser().parse(NamingBindingResourceDefinition.LOOKUP, value, reader).asString();
+                    lookup = parse(NamingBindingResourceDefinition.LOOKUP, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -250,6 +252,10 @@ public class NamingSubsystem11Parser implements XMLElementReader<List<ModelNode>
         bindingAdd.get(BINDING_TYPE).set(LOOKUP);
         bindingAdd.get(LOOKUP).set(lookup);
         operations.add(bindingAdd);
+    }
+
+    protected static ModelNode parse(AttributeDefinition ad, String value, XMLStreamReader reader) throws XMLStreamException {
+        return ad.getParser().parse(ad, value, reader);
     }
 
 

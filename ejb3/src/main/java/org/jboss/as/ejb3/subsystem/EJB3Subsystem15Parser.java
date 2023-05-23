@@ -138,13 +138,13 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
                     if (dataStorePath != null) {
                         throw unexpectedAttribute(reader, i);
                     }
-                    dataStorePath = FileDataStoreResourceDefinition.PATH.getParser().parse(FileDataStoreResourceDefinition.PATH, value, reader).asString();
+                    dataStorePath = parse(FileDataStoreResourceDefinition.PATH, value, reader).asString();
                     break;
                 case RELATIVE_TO:
                     if (dataStorePathRelativeTo != null) {
                         throw unexpectedAttribute(reader, i);
                     }
-                    dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.getParser().parse(FileDataStoreResourceDefinition.RELATIVE_TO, value, reader).asString();
+                    dataStorePathRelativeTo = parse(FileDataStoreResourceDefinition.RELATIVE_TO, value, reader).asString();
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -217,6 +217,5 @@ public class EJB3Subsystem15Parser extends EJB3Subsystem14Parser {
     protected EJB3SubsystemNamespace getExpectedNamespace() {
         return EJB3SubsystemNamespace.EJB3_1_5;
     }
-
 
 }

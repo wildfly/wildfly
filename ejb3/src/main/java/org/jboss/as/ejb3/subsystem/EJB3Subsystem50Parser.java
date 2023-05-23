@@ -41,7 +41,9 @@ import java.util.EnumSet;
 import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -173,8 +175,7 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case OUTFLOW_SECURITY_DOMAINS: {
-                    IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getParser().parseAndSetParameter(
-                            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, reader.getAttributeValue(i), addIdentity, reader);
+                    parseAndSetParameter(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, reader.getAttributeValue(i), addIdentity, reader);
                     break;
                 }
                 default: {
@@ -329,5 +330,9 @@ public class EJB3Subsystem50Parser extends EJB3Subsystem40Parser {
             }
         }
         return staticDiscovery;
+    }
+
+    protected static void parseAndSetParameter(AttributeDefinition ad, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+        ad.getParser().parseAndSetParameter(ad, value, operation, reader);
     }
 }
