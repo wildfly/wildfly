@@ -23,6 +23,7 @@
 package org.wildfly.test.integration.elytron.oidc.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
@@ -122,9 +123,11 @@ public abstract class OidcBaseTest {
 
     public static void sendRealmCreationRequest(RealmRepresentation realm) {
         try {
+            String adminAccessToken = KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl());
+            assertNotNull(adminAccessToken);
             RestAssured
                     .given()
-                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .auth().oauth2(adminAccessToken)
                     .contentType("application/json")
                     .body(JsonSerialization.writeValueAsBytes(realm))
                     .when()
