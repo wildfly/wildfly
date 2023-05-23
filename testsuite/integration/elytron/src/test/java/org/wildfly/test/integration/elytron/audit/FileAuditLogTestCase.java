@@ -25,10 +25,12 @@ import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
@@ -62,6 +64,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     private static final String AUDIT_LOG_NAME = "test-audit.log";
     private static final File WORK_DIR = new File("target" + File.separatorChar + NAME);
     private static final File AUDIT_LOG_FILE = new File(WORK_DIR, AUDIT_LOG_NAME);
+    private static final String ENCODING_16BE = "UTF-16BE";
 
     /**
      * Tests whether successful authentication was logged.
@@ -148,6 +151,23 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     }
 
     /**
+     * Tests audit log file encoding.
+     */
+    @Test
+    @OperateOnDeployment(SD_WITHOUT_LOGIN_PERMISSION)
+    public void testAuditLogFileEncoding() throws Exception {
+        final URL servletUrl = new URL(url.toExternalForm() + "role1");
+
+        discardCurrentContents(AUDIT_LOG_FILE);
+        Utils.makeCallWithBasicAuthn(servletUrl, USER, PASSWORD, SC_UNAUTHORIZED);
+
+        //Read the logged event using the same encoding "UTF-16BE" as the audit log file setup
+        assertTrue(loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_16BE));
+        //Read the logged event using different encoding
+        assertFalse(loggedAuthResult(AUDIT_LOG_FILE, USER, UNSUCCESSFUL_PERMISSION_CHECK_EVENT, StandardCharsets.UTF_8));
+    }
+
+    /**
      * Creates Elytron 'file-audit-log' and sets it as ApplicationDomain's security listener.
      */
     static class FileAuditLogSetupTask implements ServerSetupTask {
@@ -161,6 +181,7 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
 
                 auditLog = FileAuditLog.builder().withName(NAME)
                         .withPath(asAbsolutePath(AUDIT_LOG_FILE))
+                        .withEncoding(ENCODING_16BE)
                         .build();
                 auditLog.create(cli);
 
@@ -198,7 +219,11 @@ public class FileAuditLogTestCase extends AbstractAuditLogTestCase {
     }
 
     private static boolean loggedAuthResult(File file, String user, String expectedEvent) throws Exception {
-        List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+        return loggedAuthResult(file, user, expectedEvent, StandardCharsets.UTF_16BE);
+    }
+
+    private static boolean loggedAuthResult(File file, String user, String expectedEvent, Charset charset) throws Exception {
+        List<String> lines = Files.readAllLines(file.toPath(), charset);
         for (String line : lines) {
             if (line.contains(expectedEvent) && line.contains(user)) {
                 return true;
