@@ -67,7 +67,7 @@ public class JSFModuleIdFactoryTestCase {
     public void computeSlotTest() {
         Assert.assertEquals("main", factory.computeSlot("main"));
         Assert.assertEquals("main", factory.computeSlot(null));
-        Assert.assertEquals("main", factory.computeSlot(JsfVersionMarker.JSF_2_0));
+        Assert.assertEquals("main", factory.computeSlot(JsfVersionMarker.JSF_4_0));
         Assert.assertEquals("myfaces2", factory.computeSlot("myfaces2"));
     }
 
@@ -77,7 +77,7 @@ public class JSFModuleIdFactoryTestCase {
         Assert.assertFalse(factory.isValidJSFSlot("1.2"));
         Assert.assertTrue(factory.isValidJSFSlot("myfaces"));
         Assert.assertTrue(factory.isValidJSFSlot("myfaces2"));
-        Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_2_0));
+        Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_4_0));
         Assert.assertFalse(factory.isValidJSFSlot(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL));
         Assert.assertFalse(factory.isValidJSFSlot("bogus"));
         Assert.assertFalse(factory.isValidJSFSlot("bogus2"));

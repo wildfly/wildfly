@@ -164,7 +164,7 @@ public class JSFModuleIdFactory {
      */
     String computeSlot(String jsfVersion) {
         if (jsfVersion == null) return defaultSlot;
-        if (JsfVersionMarker.JSF_2_0.equals(jsfVersion)) return defaultSlot;
+        if (JsfVersionMarker.JSF_4_0.equals(jsfVersion)) return defaultSlot;
         return jsfVersion;
     }
 

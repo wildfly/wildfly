@@ -19,17 +19,17 @@
 
 package org.jboss.as.jsf.injection;
 
-import org.apache.myfaces.webapp.StartupServletContextListener;
-
+import java.util.Set;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import java.util.Set;
+
+import org.apache.myfaces.webapp.StartupServletContextListener;
 
 /**
  * @author Dmitrii Tikhomirov <chani@me.com>
  * Created by treblereel on 8/13/18.
  */
-public class MyFacesContainerInitializer extends org.apache.myfaces.ee.MyFacesContainerInitializer {
+public class MyFacesContainerInitializer extends org.apache.myfaces.webapp.MyFacesContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {

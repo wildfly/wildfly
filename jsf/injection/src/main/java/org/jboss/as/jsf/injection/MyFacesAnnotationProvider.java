@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import jakarta.faces.context.ExternalContext;
+
 import org.apache.myfaces.spi.AnnotationProvider;
 
 /**
@@ -44,8 +45,8 @@ public class MyFacesAnnotationProvider extends AnnotationProvider {
     }
 
     @Override
-    public Set<URL> getBaseUrls() throws IOException {
-        throw new UnsupportedOperationException("Not supported.");
+    public Set<URL> getBaseUrls(ExternalContext externalContext) throws IOException {
+        return null;
     }
 
 }

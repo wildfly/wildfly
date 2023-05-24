@@ -70,7 +70,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             if (jsfVersion.equals(defaultJsfVersion) && !moduleIdFactory.isValidJSFSlot(jsfVersion)) {
                 throw JSFLogger.ROOT_LOGGER.invalidDefaultJSFImpl(defaultJsfVersion);
             }
-            addJSFAPI(JsfVersionMarker.JSF_2_0, moduleSpecification, moduleLoader);
+            addJSFAPI(JsfVersionMarker.JSF_4_0, moduleSpecification, moduleLoader);
             return;
         }
         if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {

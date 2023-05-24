@@ -2983,6 +2983,17 @@
 
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
+                <artifactId>myfaces-api</artifactId>
+                <version>${version.org.apache.myfaces.core}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.myfaces.core</groupId>
                 <artifactId>myfaces-impl</artifactId>
                 <version>${version.org.apache.myfaces.core}</version>
                 <exclusions>

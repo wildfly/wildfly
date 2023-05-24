@@ -21,15 +21,13 @@
  */
 package org.jboss.as.jsf.injection;
 
+import jakarta.faces.context.ExternalContext;
+
 import org.apache.myfaces.spi.InjectionProvider;
 import org.apache.myfaces.spi.InjectionProviderFactory;
 
-import jakarta.faces.context.ExternalContext;
-
 /**
  * {@link InjectionProviderFactory} implementation which provides MyFaces 2.2 support
- *
- *
  * @author Dmitrii Tikhomirov dtikhomi@redhat.com (C) 2016 Red Hat Inc.
  */
 public class MyFacesInjectionProviderFactory extends InjectionProviderFactory {

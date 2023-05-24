@@ -33,29 +33,23 @@
                 <include path="META-INF/**"/>
             </imports>
         </module>
-        <module name="jakarta.annotation.api"/>
-        <module name="jakarta.servlet.api"/>
-        <module name="jakarta.servlet.jsp.api"/>
-        <module name="jakarta.websocket.api" />
-        <module name="jakarta.validation.api"/>
-        <module name="jakarta.json.api"/>
-        <module name="jakarta.ejb.api"/>
-        <module name="jakarta.xml.bind.api"/>
-        <module name="jakarta.servlet.jstl.api"/>
         <module name="java.desktop"/>
+        <module name="java.xml"/>
         <module name="java.logging"/>
         <module name="java.naming"/>
-        <module name="java.sql"/>
-        <module name="java.xml"/>
+
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.json.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.websocket.api" />
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
-
-        <!-- extra dependencies for MyFaces -->
-        <module name="org.apache.commons.collections"/>
-        <module name="org.apache.commons.codec"/>
-        <module name="org.apache.commons.beanutils"/>
-        <module name="org.apache.commons.digester"/>
     </dependencies>
 
     <resources>

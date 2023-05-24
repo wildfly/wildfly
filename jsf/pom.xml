@@ -42,8 +42,8 @@
     <name>WildFly: JSF</name>
 
     <modules>
-       <module>subsystem</module>
-       <module>injection</module>
+        <module>subsystem</module>
+        <module>injection</module>
     </modules>
 
     <dependencyManagement>
