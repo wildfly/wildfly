@@ -104,6 +104,10 @@
                                     <artifactId>microprofile-jwt-auth-api</artifactId>
                                 </dependency>
                                 <dependency>
+                                    <groupId>org.eclipse.microprofile.lra</groupId>
+                                    <artifactId>microprofile-lra-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>org.eclipse.microprofile.openapi</groupId>
                                     <artifactId>microprofile-openapi-api</artifactId>
                                 </dependency>
