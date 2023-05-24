@@ -30,6 +30,8 @@ import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshallers;
+import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -63,9 +65,9 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
 
     public static final PropertiesAttributeDefinition PARAMETERS = new PropertiesAttributeDefinition.Builder("parameters", true)
             .setRequired(false)
-            .setWrapXmlElement(false)
-            .setXmlName("param")
             .setAllowExpression(true)
+            .setAttributeParser(new AttributeParsers.PropertiesParser(null, "param", false))
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller(null, "param", false))
             .setRestartAllServices()
             .build();
 

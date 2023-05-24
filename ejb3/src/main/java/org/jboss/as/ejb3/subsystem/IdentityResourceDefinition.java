@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -73,6 +74,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
             .setRequired(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAttributeParser(AttributeParser.STRING_LIST)
             .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY_NAME, IDENTITY_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();

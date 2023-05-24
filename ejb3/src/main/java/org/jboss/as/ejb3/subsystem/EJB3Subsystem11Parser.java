@@ -28,7 +28,9 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
@@ -237,13 +239,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                     poolName = value;
                     break;
                 case MAX_POOL_SIZE:
-                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
+                    maxPoolSize = parse(StrictMaxPoolResourceDefinition.MAX_POOL_SIZE, value, reader).asInt();
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT:
-                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
+                    timeout = parse(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT, value, reader).asLong();
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT_UNIT:
-                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
+                    unit = parse(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT, value, reader).asString();
                     break;
 
                 default:
@@ -303,13 +305,13 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
                                 if (dataStorePath != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePath = FileDataStoreResourceDefinition.PATH.parse(value, reader).asString();
+                                dataStorePath = parse(FileDataStoreResourceDefinition.PATH, value, reader).asString();
                                 break;
                             case RELATIVE_TO:
                                 if (dataStorePathRelativeTo != null) {
                                     throw unexpectedAttribute(reader, i);
                                 }
-                                dataStorePathRelativeTo = FileDataStoreResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
+                                dataStorePathRelativeTo = parse(FileDataStoreResourceDefinition.RELATIVE_TO, value, reader).asString();
                                 break;
                             default:
                                 throw unexpectedAttribute(reader, i);
@@ -362,5 +364,9 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
 
     private PathAddress getEJB3SubsystemAddress() {
        return EJB3Subsystem12Parser.SUBSYSTEM_PATH;
+    }
+
+    private static ModelNode parse(AttributeDefinition ad, String value, XMLStreamReader reader) throws XMLStreamException {
+        return ad.getParser().parse(ad, value, reader);
     }
 }

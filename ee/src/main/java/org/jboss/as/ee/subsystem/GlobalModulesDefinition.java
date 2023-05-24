@@ -94,7 +94,7 @@ public class GlobalModulesDefinition {
             if (resourceModel.isDefined()) {
                 writer.writeEmptyElement(Element.MODULE.getLocalName());
                 for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
-                    valueType.getAttributeMarshaller().marshall(valueType, resourceModel, true, writer);
+                    valueType.getMarshaller().marshall(valueType, resourceModel, true, writer);
                 }
             }
         }

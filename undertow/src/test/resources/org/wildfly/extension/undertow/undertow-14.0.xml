@@ -111,7 +111,9 @@
       <mod-cluster name="mod-cluster-other" management-socket-binding="test3">
          <single-affinity/>
       </mod-cluster>
-      <filter class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" name="custom-filter"/>
+      <filter class-name="io.undertow.server.handlers.HttpTraceHandler" module="io.undertow.core" name="custom-filter">
+         <param name="foo" value="bar"/>
+      </filter>
       <expression-filter expression="dump-request" name="requestDumper"/>
       <rewrite name="redirects" redirect="true" target="'/foo/'"/>
    </filters>

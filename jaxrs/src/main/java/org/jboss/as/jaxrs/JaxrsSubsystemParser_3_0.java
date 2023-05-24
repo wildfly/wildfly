@@ -165,7 +165,7 @@ public class JaxrsSubsystemParser_3_0 extends JaxrsSubsystemParser_2_0 implement
         context.startSubsystemElement(NAMESPACE, false);
         ModelNode subsystem = context.getModelNode();
         for (AttributeDefinition attr : JaxrsAttribute.ATTRIBUTES) {
-            attr.marshallAsElement(subsystem, true, streamWriter);
+            attr.getMarshaller().marshallAsElement(attr, subsystem, true, streamWriter);
         }
         streamWriter.writeEndElement();
     }
