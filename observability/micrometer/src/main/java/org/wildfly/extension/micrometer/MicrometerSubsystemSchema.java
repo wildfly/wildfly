@@ -28,8 +28,10 @@ import org.jboss.staxmapper.IntVersion;
 
 public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly 28
+    VERSION_1_1(1, 1), // WildFly 29.0.0.Alpha1
     ;
-    public static final MicrometerSubsystemSchema CURRENT = VERSION_1_0;
+
+    public static final MicrometerSubsystemSchema CURRENT = VERSION_1_1;
 
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 

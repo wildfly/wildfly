@@ -34,7 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
-import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
 
 class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
     private final boolean exposeAnySubsystem;
@@ -83,7 +84,7 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
                     throw new DeploymentUnitProcessingException(new IllegalStateException());
                 }
 
-                weldCapability.registerExtensionInstance(new MicrometerCdiExtension(registry), deploymentUnit);
+                weldCapability.registerExtensionInstance(new MicrometerCdiExtension((MeterRegistry) registry), deploymentUnit);
             }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             //We should not be here since the subsystem depends on weld capability. Just in case ...

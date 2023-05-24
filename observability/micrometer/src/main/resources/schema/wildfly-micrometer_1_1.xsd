@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2022-2023 Red Hat, Inc.
+  ~ Copyright 2023 Red Hat, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
   ~ limitations under the License.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:wildfly:micrometer:1.0"
-           xmlns="urn:wildfly:micrometer:1.0"
+           targetNamespace="urn:wildfly:micrometer:1.1"
+           xmlns="urn:wildfly:micrometer:1.1"
            elementFormDefault="qualified"
-           version="1.0">
+           version="1.1">
 
     <!-- The subsystem root element -->
     <xs:element name="subsystem">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="otlp-registry" minOccurs="1">
+                <xs:element name="otlp-registry" minOccurs="0">
                     <xs:complexType>
                         <xs:attribute name="endpoint" type="xs:string">
                             <xs:annotation>
