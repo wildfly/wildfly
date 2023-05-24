@@ -56,7 +56,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory {
 
-    DEFAULT("default", 0, 200, 0, 60000L, null),
+    DEFAULT("default", 0, 200, 0, 60000L),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
@@ -66,20 +66,18 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     private final PathElement path;
-    private final JGroupsSubsystemModel deprecation;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute keepAliveTime;
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime, JGroupsSubsystemModel deprecation) {
+    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepAliveTime) {
         this.path = pathElement(name);
-        this.deprecation = deprecation;
-        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
-        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0), deprecation).build());
-        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0), deprecation).build());
+        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
+        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepAliveTime), new LongRangeValidatorBuilder().min(0)).build());
     }
 
-    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder, JGroupsSubsystemModel deprecation) {
+    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
         SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
@@ -87,9 +85,6 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
                 .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
                 ;
-        if (deprecation != null) {
-            builder.setDeprecated(deprecation.getVersion());
-        }
         return builder.setValidator(validatorBuilder.configure(builder).build());
     }
 
@@ -97,16 +92,13 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     public void register(ManagementResourceRegistration parentRegistration) {
         ResourceDescriptionResolver resolver = JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(this.path, pathElement(PathElement.WILDCARD_VALUE));
         SimpleResourceDefinition.Parameters parameters = new SimpleResourceDefinition.Parameters(this.path, resolver);
-        if (this.deprecation != null) {
-            parameters.setDeprecatedSince(this.deprecation.getVersion());
-        }
         ResourceDefinition definition = new SimpleResourceDefinition(parameters);
         ManagementResourceRegistration registration = parentRegistration.registerSubModel(definition);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(resolver)
                 .addAttributes(this.minThreads, this.maxThreads, this.keepAliveTime)
                 ;
-        ResourceServiceHandler handler = (this.deprecation == null) ? new SimpleResourceServiceHandler(this) : null;
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
     }
 

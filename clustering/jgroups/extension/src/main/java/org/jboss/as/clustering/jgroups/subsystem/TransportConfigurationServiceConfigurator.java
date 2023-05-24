@@ -50,6 +50,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.DiagnosticsHandler;
 import org.jgroups.util.DefaultThreadFactory;
+import org.jgroups.util.ThreadPool;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -64,7 +65,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class TransportConfigurationServiceConfigurator<T extends TP> extends AbstractProtocolConfigurationServiceConfigurator<T, TransportConfiguration<T>> implements TransportConfiguration<T> {
 
     private final ServiceNameProvider provider;
-    private final SupplierDependency<ThreadPoolFactory> threadPoolFactory;
+    private final SupplierDependency<ThreadPoolConfiguration> threadPoolConfiguration;
 
     private volatile SupplierDependency<SocketBinding> socketBinding;
     private volatile SupplierDependency<SocketBinding> diagnosticsSocketBinding;
@@ -73,7 +74,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     public TransportConfigurationServiceConfigurator(PathAddress address) {
         super(address.getLastElement().getValue());
         this.provider = new SingletonProtocolServiceNameProvider(address);
-        this.threadPoolFactory = new ServiceSupplierDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()));
+        this.threadPoolConfiguration = new ServiceSupplierDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()));
     }
 
     @Override
@@ -88,7 +89,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
 
     @Override
     public <B> ServiceBuilder<B> register(ServiceBuilder<B> builder) {
-        return super.register(new CompositeDependency(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding).register(builder));
+        return super.register(new CompositeDependency(this.threadPoolConfiguration, this.socketBinding, this.diagnosticsSocketBinding).register(builder));
     }
 
     @Override
@@ -152,8 +153,16 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             }
         }
 
+        ThreadPoolConfiguration threadPoolConfiguration = this.threadPoolConfiguration.get();
+        ThreadPool threadPool = protocol.getThreadPool();
+        threadPool.setMinThreads(threadPoolConfiguration.getMinThreads());
+        threadPool.setMaxThreads(threadPoolConfiguration.getMaxThreads());
+        threadPool.setKeepAliveTime(threadPoolConfiguration.getKeepAliveTime());
+        // Let JGroups retransmit if pool is full
+        threadPool.setRejectionPolicy("discard");
+
+        // JGroups propagates this to the ThreadPool
         protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useVirtualThreads(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
-        protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
 
         SocketBinding diagnosticsBinding = this.diagnosticsSocketBinding.get();
         if (diagnosticsBinding != null) {
