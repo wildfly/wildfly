@@ -778,11 +778,6 @@
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-jacorb</artifactId>
-                <version>${ee.maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-jaxrs</artifactId>
                 <version>${ee.maven.version}</version>
                 <exclusions>
@@ -850,11 +845,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-messaging</artifactId>
-                <version>${ee.maven.version}</version>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
@@ -977,17 +967,6 @@
                     <exclusion>
                         <groupId>*</groupId>
                         <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-web</artifactId>
-                <version>${ee.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
