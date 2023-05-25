@@ -44,7 +44,6 @@
     <modules>
         <module>config-smallrye</module>
         <module>fault-tolerance-smallrye</module>
-        <module>galleon-common</module>
         <module>health-smallrye</module>
         <module>jwt-smallrye</module>
         <module>metrics-smallrye</module>

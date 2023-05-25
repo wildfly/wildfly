@@ -44,14 +44,9 @@
     <name>WildFly: EE Feature Pack Parent</name>
 
     <modules>
-        <module>common</module>
-        <module>ee-10-api</module>
-        <module>galleon-common</module>
-        <module>galleon-content</module>
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
-        <module>pruned</module>
     </modules>
 
     <dependencyManagement>
@@ -72,11 +67,6 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-standard-ee-bom</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-legacy-ee-bom</artifactId>
             <type>pom</type>
         </dependency>
         <dependency>

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:3.1">
+    <copy-path src="docs/licenses/licenses.xsl" relative-to="content" target="docs/licenses/wildfly-preview-licenses.xsl"/>
+    <transform stylesheet="docs/licenses/wildfly-preview-licenses.xsl" src="docs/licenses/wildfly-preview-feature-pack-licenses.xml" output="docs/licenses/wildfly-preview-feature-pack-licenses.html" feature-pack-properties="true" phase="FINALIZING"/>
+    <delete path="docs/licenses/wildfly-preview-licenses.xsl"/>
+    <line-endings>
+      <unix>
+        <filter pattern="wildfly-preview-feature-pack-licenses.html" include="true"/>
+      </unix>
+    </line-endings>
+</tasks>
