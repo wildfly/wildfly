@@ -1382,18 +1382,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.faces</groupId>
-                <artifactId>jsf-impl</artifactId>
-                <version>${version.com.sun.faces}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
                 <version>${version.com.sun.istack}</version>
@@ -1890,17 +1878,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>jakarta.faces</groupId>
-                <artifactId>jakarta.faces-api</artifactId>
-                <version>${version.jakarta.faces.jakarta-faces-api}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
@@ -2982,18 +2960,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.myfaces.core</groupId>
-                <artifactId>myfaces-impl</artifactId>
-                <version>${version.org.apache.myfaces.core}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
                 <version>${version.org.apache.neethi}</version>
@@ -3270,6 +3236,18 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.enterprise.concurrent</artifactId>
                 <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.faces</artifactId>
+                <version>${version.jakarta.faces}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

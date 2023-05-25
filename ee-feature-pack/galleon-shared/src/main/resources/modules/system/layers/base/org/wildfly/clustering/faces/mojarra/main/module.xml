@@ -33,9 +33,10 @@
     </resources>
 
     <dependencies>
+        <module name="jakarta.faces"/>
         <module name="jakarta.faces.api"/>
+        <module name="jakarta.servlet.api"/>
 
-        <module name="com.sun.jsf-impl"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.faces.api"/>

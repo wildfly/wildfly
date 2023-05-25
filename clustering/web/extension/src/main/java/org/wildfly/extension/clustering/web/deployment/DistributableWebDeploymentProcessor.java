@@ -90,7 +90,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                 specification.addSystemDependency(new ModuleDependency(loader, MARSHALLING_API, false, false, false, false));
             }
 
-            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
+            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_4_0)) {
                 specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
                 specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
             }

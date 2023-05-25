@@ -324,22 +324,6 @@
             </licenses>
         </dependency>
         <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-            <licenses>
-                <license>
-                    <name>Common Development and Distribution License 1.1</name>
-                    <url>https://javaee.github.io/glassfish/LICENSE</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-                    <distribution>repo</distribution>
-                </license>
-            </licenses>
-        </dependency>
-        <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-runtime</artifactId>
             <licenses>
@@ -2206,6 +2190,22 @@
                 <license>
                     <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.faces</artifactId>
+            <licenses>
+                <license>
+                    <name>Common Development and Distribution License 1.1</name>
+                    <url>https://javaee.github.io/glassfish/LICENSE</url>
+                    <distribution>repo</distribution>
+                </license>
+                <license>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>

@@ -37,47 +37,27 @@ public class JSFModuleIdFactoryTestCase {
 
     private static final JSFModuleIdFactory factory = JSFModuleIdFactory.getInstance();
 
-    /* This test is for the unusual situation where there is no module path.
-     * If you want to run this test then uncomment the test and remove the module.path
-     * system property in pom.xml.  Note that if you do this, other tests will fail.
-     @Test
-     public void noModulePathTest() {
-     JSFModuleIdFactory factory = JSFModuleIdFactory.getInstance();
-     Assert.assertEquals(1, factory.getActiveJSFVersions().size());
-
-     Assert.assertEquals(API_MODULE, factory.getApiModId("main").getName());
-     Assert.assertEquals("main", factory.getApiModId("main").getSlot());
-     Assert.assertEquals(IMPL_MODULE, factory.getImplModId("main").getName());
-     Assert.assertEquals("main", factory.getImplModId("main").getSlot());
-     Assert.assertEquals(INJECTION_MODULE, factory.getInjectionModId("main").getName());
-     Assert.assertEquals("main", factory.getInjectionModId("main").getSlot());
-     } */
-
     @Test
     public void getActiveJSFVersionsTest() {
         List<String> versions = factory.getActiveJSFVersions();
-        Assert.assertEquals(3, versions.size());
+        Assert.assertEquals(2, versions.size());
         Assert.assertTrue(versions.contains("main"));
-        Assert.assertFalse(versions.contains("1.2"));
         Assert.assertTrue(versions.contains("myfaces"));
-        Assert.assertTrue(versions.contains("myfaces2"));
     }
 
     @Test
     public void computeSlotTest() {
         Assert.assertEquals("main", factory.computeSlot("main"));
         Assert.assertEquals("main", factory.computeSlot(null));
-        Assert.assertEquals("main", factory.computeSlot(JsfVersionMarker.JSF_2_0));
+        Assert.assertEquals("main", factory.computeSlot(JsfVersionMarker.JSF_4_0));
         Assert.assertEquals("myfaces2", factory.computeSlot("myfaces2"));
     }
 
     @Test
     public void validSlotTest() {
         Assert.assertTrue(factory.isValidJSFSlot("main"));
-        Assert.assertFalse(factory.isValidJSFSlot("1.2"));
         Assert.assertTrue(factory.isValidJSFSlot("myfaces"));
-        Assert.assertTrue(factory.isValidJSFSlot("myfaces2"));
-        Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_2_0));
+        Assert.assertTrue(factory.isValidJSFSlot(JsfVersionMarker.JSF_4_0));
         Assert.assertFalse(factory.isValidJSFSlot(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL));
         Assert.assertFalse(factory.isValidJSFSlot("bogus"));
         Assert.assertFalse(factory.isValidJSFSlot("bogus2"));

@@ -33,9 +33,10 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl:myfaces"/>
-        <module name="org.jboss.as.web"/>
+        <module name="jakarta.faces:myfaces"/>
         <module name="jakarta.servlet.api"/>
+
+        <module name="org.jboss.as.web"/>
         <module name="org.jboss.logging"/>
 
         <!-- added this for MyFacesAnnotationProvider -->

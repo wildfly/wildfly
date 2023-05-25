@@ -87,7 +87,7 @@ public class ExternalTldParsingDeploymentProcessor implements DeploymentUnitProc
                 //we don't want to parse Jakarta Server Faces TLD's
                 //this would be picked up by the shared tlds check below, but this means we don't
                 //waste time re-parsing them
-                if(resource.getURL().toString().contains("com/sun/jsf-impl/main")) {
+                if(resource.getURL().toString().contains("jakarta/faces/main")) {
                     continue;
                 }
 

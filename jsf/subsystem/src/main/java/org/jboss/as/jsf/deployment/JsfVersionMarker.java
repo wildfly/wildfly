@@ -29,7 +29,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  */
 public class JsfVersionMarker {
 
-    public static final String JSF_2_0 = "Mojarra-2.0";
+    public static final String JSF_4_0 = "Mojarra-4.0";
     public static final String WAR_BUNDLES_JSF_IMPL = "WAR_BUNDLES_JSF_IMPL";
     public static final String NONE = "NONE";
 
@@ -45,7 +45,7 @@ public class JsfVersionMarker {
 
     public static String getVersion(final DeploymentUnit deploymentUnit) {
         final String version = deploymentUnit.getAttachment(VERSION_KEY);
-        return version == null ? JSF_2_0 : version;
+        return version == null ? JSF_4_0 : version;
     }
 
     public static boolean isJsfDisabled(final DeploymentUnit deploymentUnit) {
