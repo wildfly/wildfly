@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" model="standalone">
+    <props>
+        <prop name="config.branch-is-batch" value="true"/>
+        <prop name="config.merge-independent-branches" value="true"/>
+        <!-- <prop name="config.merge-same-deps-branches" value="true"/> -->
+        <prop name="--admin-only" value=""/>
+        <prop name="--internal-empty-config" value=""/>
+        <prop name="--internal-remove-config" value=""/>
+    </props>
+    <packages>
+        <package name="product.conf" optional="true"/>
+        <package name="misc.standalone"/>
+        <package name="org.jboss.as.standalone"/>
+        <package name="org.jboss.as.domain-management"/>
+        <!-- cleanup runtime dirs -->
+        <package name="cleanup.standalone.config.history.dir" optional="true"/>
+        <package name="cleanup.standalone.log.dir" optional="true"/>
+        <package name="cleanup.standalone.data.dir" optional="true"/>
+        <package name="cleanup.standalone.tmp.vfs" optional="true"/>
+
+        <package name="org.wildfly.bootable-jar" optional="true"/>
+        <package name="org.wildfly.embedded"/>
+        <!-- Is optional in server module.xml because located in servlet  -->
+        <!-- Servlet works properly without it (in nominal) making it optional in case
+            it needs to be excluded -->
+        <package name="org.jboss.common-beans" optional="true"/>
+
+        <package name="org.wildfly.deployment.transformation"/>
+        <package name="docs.licenses" optional="true"/>
+        <package name="docs.licenses.merge" optional="true"/>
+    </packages>
+</config>
