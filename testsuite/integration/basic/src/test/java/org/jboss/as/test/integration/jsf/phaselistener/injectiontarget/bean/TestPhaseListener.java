@@ -21,13 +21,10 @@
  */
 package org.jboss.as.test.integration.jsf.phaselistener.injectiontarget.bean;
 
-import java.io.IOException;
-
 import jakarta.faces.event.PhaseEvent;
 import jakarta.faces.event.PhaseId;
 import jakarta.faces.event.PhaseListener;
 import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletResponse;
 
 public class TestPhaseListener implements PhaseListener{
 
@@ -41,12 +38,7 @@ public class TestPhaseListener implements PhaseListener{
     @Override
     public void beforePhase(PhaseEvent phaseEvent) {
         if (phaseEvent.getPhaseId().equals(PhaseId.RENDER_RESPONSE)) {
-            HttpServletResponse response = (HttpServletResponse) phaseEvent.getFacesContext().getExternalContext().getResponse();
-            try {
-                response.getWriter().write(simpleBean.ping());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            phaseEvent.getFacesContext().getExternalContext().addResponseHeader("X-WildFly", simpleBean.ping());
         }
     }
 

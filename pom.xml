@@ -392,7 +392,7 @@
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <version.com.squareup.okio-jvm>3.2.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
-        <version.com.sun.faces>4.0.0.SP01</version.com.sun.faces>
+        <version.com.sun.faces>4.0.2.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.1</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.0</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.messaging.saaj>3.0.0</version.com.sun.xml.messaging.saaj>
