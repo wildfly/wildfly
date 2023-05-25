@@ -38,7 +38,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
@@ -61,7 +60,6 @@ import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.
  */
 @RunWith(Arquillian.class)
 @ServerSetup({ReactiveMessagingKafkaUserApiTestCase.CustomRunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
-@Ignore("WFLY-17783")
 public class ReactiveMessagingKafkaUserApiTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
