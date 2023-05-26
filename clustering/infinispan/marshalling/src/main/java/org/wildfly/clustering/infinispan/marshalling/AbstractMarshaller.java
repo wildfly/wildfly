@@ -68,7 +68,7 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
     }
 
     @Override
-    public byte[] objectToByteBuffer(Object object) throws IOException, InterruptedException {
+    public byte[] objectToByteBuffer(Object object) throws IOException {
         if (object == null) {
             return this.objectToByteBuffer(null, 1);
         }
@@ -97,7 +97,7 @@ public abstract class AbstractMarshaller implements Marshaller, StreamAwareMarsh
     }
 
     @Override
-    public byte[] objectToByteBuffer(Object obj, int estimatedSize) throws IOException, InterruptedException {
+    public byte[] objectToByteBuffer(Object obj, int estimatedSize) throws IOException {
        ByteBuffer b = this.objectToBuffer(obj, estimatedSize);
        return trim(b);
     }
