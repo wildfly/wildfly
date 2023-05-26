@@ -24,6 +24,7 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
+import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
  * @author Paul Ferraro
@@ -31,6 +32,10 @@ import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
 public class DefaultProtoStreamOperation implements ProtoStreamOperation, OperationContext {
 
     private final OperationContext context;
+
+    public DefaultProtoStreamOperation(ImmutableSerializationContext context) {
+        this(TagWriterImpl.newInstance(context));
+    }
 
     public DefaultProtoStreamOperation(OperationContext context) {
         this.context = context;

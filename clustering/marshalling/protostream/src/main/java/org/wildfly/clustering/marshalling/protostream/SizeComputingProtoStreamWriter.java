@@ -55,9 +55,7 @@ public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter im
     public void writeObjectNoTag(Object value) throws IOException {
         if (this.present) {
             ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-            SizeComputingProtoStreamWriter sizer = new SizeComputingProtoStreamWriter(this.getSerializationContext());
-            marshaller.writeTo(sizer, value);
-            OptionalInt size = sizer.get();
+            OptionalInt size = marshaller.size(this, value);
             if (size.isPresent()) {
                 int length = size.getAsInt();
                 this.writeVarint32(length);
