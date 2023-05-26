@@ -255,10 +255,19 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, ByteBuffer buffer) throws IOException {
-            int offset = buffer.arrayOffset();
-            int size = buffer.limit() - offset;
-            writer.writeVarint32(size);
-            writer.writeRawBytes(buffer.array(), offset, size);
+            if (buffer.hasArray()) {
+                int length = buffer.remaining();
+                writer.writeVarint32(length);
+                writer.writeRawBytes(buffer.array(), buffer.arrayOffset(), length);
+            } else {
+                // Don't mess with existing position
+                ByteBuffer copy = buffer.asReadOnlyBuffer();
+                int length = copy.remaining();
+                writer.writeVarint32(length);
+                byte[] bytes = new byte[length];
+                copy.get(bytes, copy.position(), length);
+                writer.writeRawBytes(bytes, 0, length);
+            }
         }
 
         @Override

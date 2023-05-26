@@ -50,7 +50,7 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
             TagWriterImpl writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context, output);
             marshaller.writeTo(new DefaultProtoStreamWriter(writer), value);
             writer.flush();
-            ByteBuffer buffer = output.getBuffer();
+            ByteBuffer buffer = output.getBuffer(); // Buffer is array backed
             int offset = buffer.arrayOffset();
             int length = buffer.limit() - offset;
             this.writeVarint32(length);

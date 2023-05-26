@@ -28,6 +28,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 import org.jboss.logging.Logger;
 
@@ -64,11 +65,18 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
     public synchronized ByteBuffer getBuffer() throws IOException {
         ByteBuffer buffer = this.buffer;
-        if (buffer != null) return buffer;
-        if (this.object == null) return null;
-        ByteBuffer result = this.marshaller.write(this.object);
-        LOGGER.debugf("Marshalled size of %s(%s) = %d bytes", this.object.getClass().getCanonicalName(), this.object, result.limit() - result.arrayOffset());
-        return result;
+        if ((buffer == null) && (this.object != null)) {
+            // Since the wrapped object is likely mutable, we cannot cache the generated buffer
+            buffer = this.marshaller.write(this.object);
+            // N.B. Refrain from logging wrapped object
+            // If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
+            LOGGER.debugf("Marshalled size of %s object = %d bytes", this.object.getClass().getCanonicalName(), buffer.limit() - buffer.arrayOffset());
+        }
+        return buffer;
+    }
+
+    public synchronized OptionalInt size() {
+        return (this.buffer != null) ? OptionalInt.of(this.buffer.remaining()) : this.marshaller.size(this.object);
     }
 
     @SuppressWarnings("unchecked")
@@ -110,10 +118,9 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
     @Override
     public String toString() {
-        Object object = this.object;
-        if (object != null) return object.toString();
-        ByteBuffer buffer = this.buffer;
-        return (buffer != null) ? buffer.toString() : null;
+        // N.B. Refrain from logging wrapped object
+        // If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
+        return String.format("%s [%s]", this.getClass().getName(), (this.object != null) ? this.object.getClass().getName() : "<serialized>");
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
