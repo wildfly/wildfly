@@ -39,6 +39,11 @@
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.installation-manager</groupId>
+            <artifactId>installation-manager-api</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <profiles>
 

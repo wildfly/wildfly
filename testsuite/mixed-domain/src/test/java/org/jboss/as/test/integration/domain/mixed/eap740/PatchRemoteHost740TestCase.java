@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,26 +22,20 @@
 
 package org.jboss.as.test.integration.domain.mixed.eap740;
 
-import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
-import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.jboss.as.test.integration.domain.mixed.Version.AsVersion.EAP_7_4_0;
 
-/**
- * Test suite for the standard mixed domain tests.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- */
-@RunWith(Suite.class)
-@SuiteClasses(value= {SimpleMixedDomain740TestCase.class, MixedDomainDeployment740TestCase.class, PatchRemoteHost740TestCase.class})
-@Version(AsVersion.EAP_7_4_0)
-public class MixedDomain740TestSuite extends MixedDomainTestSuite {
+import java.io.IOException;
+
+import org.jboss.as.test.integration.domain.mixed.PatchRemoteHostTest;
+import org.jboss.as.test.integration.domain.mixed.Version;
+import org.junit.BeforeClass;
+
+@Version(EAP_7_4_0)
+public class PatchRemoteHost740TestCase extends PatchRemoteHostTest {
 
     @BeforeClass
-    public static void initializeDomain() {
-        MixedDomainTestSuite.getSupport(MixedDomain740TestSuite.class);
+    public static void beforeClass() throws IOException {
+        MixedDomain740TestSuite.initializeDomain();
+        PatchRemoteHostTest.setup(PatchRemoteHost740TestCase.class);
     }
 }

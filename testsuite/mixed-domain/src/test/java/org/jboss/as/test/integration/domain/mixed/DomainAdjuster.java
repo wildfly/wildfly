@@ -111,7 +111,7 @@ public class DomainAdjuster {
         removeIpv4SystemProperty(client);
 
         // We don't want any standard host-excludes as the tests are meant to see what happens
-        // with the current configs on legacy secondarys
+        // with the current configs on legacy secondaries
         removeHostExcludes(client);
 
         // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
