@@ -34,7 +34,7 @@
         <ignore-oauth-query-parameter>false</ignore-oauth-query-parameter>
         <verify-token-audience>false</verify-token-audience>
     </realm>
-    <secure-deployment name="secret-credential-app">
+    <secure-deployment name="secret-credential-app.war">
         <realm>master</realm>
         <resource>secret-credential-app</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -53,7 +53,7 @@
         <credential name="secret">0aa31d98-e0aa-404c-b6e0-e771dba1e798</credential>
         <redirect-rewrite-rule name="^/wsmaster/api/(.*)$">api/$1/</redirect-rewrite-rule>
     </secure-deployment>
-    <secure-deployment name="jwt-credential-app">
+    <secure-deployment name="jwt-credential-app.war">
         <realm>master</realm>
         <resource>jwt-credential-app</resource>
         <use-resource-role-mappings>true</use-resource-role-mappings>
@@ -71,7 +71,7 @@
         </credential>
         <redirect-rewrite-rule name="^/wsmaster/api/(.*)$">/api/$1/</redirect-rewrite-rule>
     </secure-deployment>
-    <secure-deployment name="bearer-only-app">
+    <secure-deployment name="bearer-only-app.war">
         <realm>jboss-infra</realm>
         <resource>bearer-only-app</resource>
         <bearer-only>true</bearer-only>

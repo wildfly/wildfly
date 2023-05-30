@@ -45,6 +45,4 @@ public interface KeycloakLogger extends BasicLogger {
     @Message(id = 2, value = "Migration failed, see results for more details.")
     String migrationFailed();
 
-    @Message(id = 3, value = "Cannot migrate 'secure-server' resource. This resource is not supported by the new elytron-oidc-subsystem yet.")
-    String couldNotMigrateUnsupportedSecureServerResource();
 }
