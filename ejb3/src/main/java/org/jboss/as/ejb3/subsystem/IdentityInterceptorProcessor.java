@@ -32,19 +32,14 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.security.IdentityEJBClientInterceptor;
 import org.jboss.as.ejb3.security.IdentityInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * A {@link DeploymentUnitProcessor} that adds interceptors to EJB deployments that will always
@@ -57,14 +52,7 @@ class IdentityInterceptorProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        registerIdentityEJBClientInterceptor(deploymentUnit);
         registerIdentityInterceptor(deploymentUnit);
-    }
-
-    private static void registerIdentityEJBClientInterceptor(final DeploymentUnit deploymentUnit) {
-        // this EJBClientInterceptor will get used when invoking remote EJBs
-        final List<EJBClientInterceptor> clientInterceptors = new ArrayList<>(Arrays.asList(IdentityEJBClientInterceptor.INSTANCE));
-        deploymentUnit.putAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS, clientInterceptors);
     }
 
     private static void registerIdentityInterceptor(final DeploymentUnit deploymentUnit) {
