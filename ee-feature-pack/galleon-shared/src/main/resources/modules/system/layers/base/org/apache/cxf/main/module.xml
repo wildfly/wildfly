@@ -31,12 +31,12 @@
 
     <dependencies>
         <module name="java.compiler"/>
-        <module name="java.datatransfer"/>
         <module name="java.desktop"/>
         <module name="java.logging"/>
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.sql"/>
+        <module name="java.xml"/>
         <module name="org.apache.cxf.impl" services="import">
             <imports>
                 <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
@@ -45,7 +45,6 @@
         </module>
         <module name="org.slf4j"/>
         <module name="asm.asm" />
-        <module name="javax.api" />
         <module name="javax.annotation.api" />
         <module name="javax.validation.api" optional="true"/>
         <module name="javax.jws.api" />
@@ -67,7 +66,6 @@
                 <include path="META-INF"/>
             </imports>
         </module>
-        <module name="java.xml"/>
     </dependencies>
 
 </module>

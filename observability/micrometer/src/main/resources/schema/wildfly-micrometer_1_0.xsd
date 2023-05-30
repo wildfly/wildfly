@@ -13,10 +13,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<!--
-    TODO Rename this file and the namespaces something that makes sense.
-    The namespaces should match those in SubsystemParser_1_0.NAMESPACE
--->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="urn:wildfly:micrometer:1.0"
            xmlns="urn:wildfly:micrometer:1.0"

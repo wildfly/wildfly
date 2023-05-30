@@ -28,7 +28,4 @@
         <artifact name="${joda-time:joda-time}"/>
     </resources>
 
-    <dependencies>
-        <module name="javax.api" />
-    </dependencies>
 </module>

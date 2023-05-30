@@ -42,7 +42,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 class MicrometerDeploymentService implements Service {
     private final Resource rootResource;

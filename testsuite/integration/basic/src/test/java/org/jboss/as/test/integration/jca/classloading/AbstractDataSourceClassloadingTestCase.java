@@ -102,9 +102,8 @@ public abstract class AbstractDataSourceClassloadingTestCase {
                         "\n" +
                         "    <dependencies>\n" +
                         "        <module name=\"java.sql\"/>\n" +
-                        "        <module name=\"sun.jdk\"/>\n" +
-                        "        <module name=\"javax.orb.api\"/>\n" +
                         "        <module name=\"java.logging\"/>\n" +
+                        "        <module name=\"javax.orb.api\"/>\n" +
                         "    </dependencies>\n" +
                         "</module>");
             }

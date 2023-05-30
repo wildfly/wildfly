@@ -36,6 +36,7 @@ public class FileAuditLog extends AbstractConfigurableElement {
     private final Boolean paramSynchronized;
     private final String path;
     private final String relativeTo;
+    private final String encoding;
 
     private FileAuditLog(Builder builder) {
         super(builder);
@@ -43,6 +44,7 @@ public class FileAuditLog extends AbstractConfigurableElement {
         this.paramSynchronized = builder.paramSynchronized;
         this.path = builder.path;
         this.relativeTo = builder.relativeTo;
+        this.encoding = builder.encoding;
     }
 
     @Override
@@ -61,6 +63,9 @@ public class FileAuditLog extends AbstractConfigurableElement {
         }
         if (isNotBlank(relativeTo)) {
             command.append("relative-to=\"").append(relativeTo).append("\", ");
+        }
+        if (isNotBlank(encoding)) {
+            command.append("encoding=\"").append(encoding).append("\", ");
         }
 
         command.append(")");
@@ -91,6 +96,7 @@ public class FileAuditLog extends AbstractConfigurableElement {
         private String relativeTo;
         private Boolean paramSynchronized;
         private String format;
+        private String encoding;
 
         private Builder() {
         }
@@ -112,6 +118,11 @@ public class FileAuditLog extends AbstractConfigurableElement {
 
         public Builder withFormat(String format) {
             this.format = format;
+            return this;
+        }
+
+        public Builder withEncoding(String encoding) {
+            this.encoding = encoding;
             return this;
         }
 

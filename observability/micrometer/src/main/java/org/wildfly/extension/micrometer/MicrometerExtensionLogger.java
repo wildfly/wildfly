@@ -75,4 +75,8 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 10, value = "Not activating Micrometer Subsystem")
     void notActivatingSubsystem();
+
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Micrometer has been enabled, but no endpoint has been configured. A No-op metrics registry has been configured.")
+    void noOpRegistryChosen();
 }
