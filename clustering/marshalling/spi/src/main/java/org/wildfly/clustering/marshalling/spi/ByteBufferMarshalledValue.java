@@ -45,12 +45,25 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
     private transient volatile T object;
     private transient volatile ByteBuffer buffer;
 
+    /**
+     * Constructs a marshalled value from the specified object and marshaller.
+     * @param object the wrapped object
+     * @param marshaller a marshaller suitable for marshalling the specified object
+     */
     public ByteBufferMarshalledValue(T object, ByteBufferMarshaller marshaller) {
         this.marshaller = marshaller;
         this.object = object;
     }
 
+    /**
+     * Constructs a marshalled value from the specified byte buffer.
+     * This constructor is only public to facilitate marshallers of this object (from other packages).
+     * The byte buffer parameter must not be read outside the context of this object.
+     * @param buffer a byte buffer
+     */
     public ByteBufferMarshalledValue(ByteBuffer buffer) {
+        // Normally, we would create a defensive ByteBuffer.asReadOnlyBuffer()
+        // but this would preclude the use of operations on the backing array.
         this.buffer = buffer;
     }
 
@@ -76,6 +89,8 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
     }
 
     public synchronized OptionalInt size() {
+        // N.B. Buffer position is guarded by synchronization on this object
+        // We invalidate buffer upon reading it, ensuring that ByteBuffer.remaining() returns the effective buffer size
         return (this.buffer != null) ? OptionalInt.of(this.buffer.remaining()) : this.marshaller.size(this.object);
     }
 
@@ -85,6 +100,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
         if (this.object == null) {
             this.marshaller = marshaller;
             if (this.buffer != null) {
+                // Invalidate buffer after reading object
                 this.object = (T) this.marshaller.read(this.buffer);
                 this.buffer = null;
             }
