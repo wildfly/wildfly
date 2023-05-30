@@ -420,7 +420,9 @@
         <version.org.hibernate.search>5.10.11.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>6.0.23.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.8.Final</version.org.hornetq>
-        <version.org.infinispan>13.0.10.Final-PSI-1</version.org.infinispan>
+        <!-- After changing infinispan version make sure to run WildFly tests and be sure that
+        infinispan-server-${version.org.infinispan}.zip is available at psi nexus-->
+        <version.org.infinispan>13.0.10.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.4.3.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.27.0-GA</version.org.javassist>
