@@ -47,7 +47,6 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
     private static final String UNDERTOW_SERVLET = "io.undertow.servlet";
     private static final String UNDERTOW_JSP = "io.undertow.jsp";
     private static final String UNDERTOW_WEBSOCKET = "io.undertow.websocket";
-    private static final String CLUSTERING_API = "org.wildfly.clustering.web.api";
 
     private static final String SERVLET_API = "jakarta.servlet.api";
     private static final String JSP_API = "jakarta.servlet.jsp.api";
@@ -83,6 +82,5 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_SERVLET, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JSP, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_WEBSOCKET, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_API, true, false, false, false));
     }
 }

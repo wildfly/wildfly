@@ -58,7 +58,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String HTTP_EJB = "org.wildfly.http-client.ejb";
     private static final String HTTP_TRANSACTION = "org.wildfly.http-client.transaction";
     private static final String HTTP_NAMING = "org.wildfly.http-client.naming";
-
+    private static final String CLUSTERING_EJB_CLIENT = "org.wildfly.clustering.ejb.client";
 
     /**
      * Adds Jakarta EE module as a dependency to any deployment unit which is an Jakarta Enterprise Beans deployment
@@ -91,6 +91,9 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_EJB, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_NAMING, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HTTP_TRANSACTION, false, false, true, false));
+        // Marshalling support for EJB SessionIDs
+        // TODO Move this to distributable-ejb subsystem
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_EJB_CLIENT, false, false, true, false));
 
         if (IIOPDeploymentMarker.isIIOPDeployment(deploymentUnit)) {
             //needed for dynamic IIOP stubs

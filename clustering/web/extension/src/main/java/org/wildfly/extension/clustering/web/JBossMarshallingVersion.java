@@ -29,6 +29,7 @@ import java.util.function.Function;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
+import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 
@@ -56,6 +57,16 @@ public enum JBossMarshallingVersion implements Function<Module, MarshallingConfi
             return config;
         }
     },
+    VERSION_3() {
+        @Override
+        public MarshallingConfiguration apply(Module module) {
+            MarshallingConfiguration config = new MarshallingConfiguration();
+            config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
+            config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+            config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
+            return config;
+        }
+    },
     ;
-    static final JBossMarshallingVersion CURRENT = VERSION_2;
+    static final JBossMarshallingVersion CURRENT = VERSION_3;
 }
