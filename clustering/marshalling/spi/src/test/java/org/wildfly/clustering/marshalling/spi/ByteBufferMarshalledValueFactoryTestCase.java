@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -127,7 +128,18 @@ public class ByteBufferMarshalledValueFactoryTestCase {
 
     @SuppressWarnings("unchecked")
     <V> ByteBufferMarshalledValue<V> replicate(ByteBufferMarshalledValue<V> value) throws IOException {
+        OptionalInt size = this.marshaller.size(value);
         ByteBuffer buffer = this.marshaller.write(value);
-        return (ByteBufferMarshalledValue<V>) this.marshaller.read(buffer);
+        if (size.isPresent()) {
+            // Verify that computed size equals actual size
+            assertEquals(size.getAsInt(), buffer.remaining());
+        }
+        ByteBufferMarshalledValue<V> result = (ByteBufferMarshalledValue<V>) this.marshaller.read(buffer);
+        OptionalInt resultSize = this.marshaller.size(result);
+        if (size.isPresent() && resultSize.isPresent()) {
+            // Verify that computed size equals actual size
+            assertEquals(size.getAsInt(), resultSize.getAsInt());
+        }
+        return result;
     }
 }

@@ -24,7 +24,9 @@ package org.wildfly.clustering.marshalling.spi;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.OptionalInt;
 
+import org.junit.Assert;
 import org.wildfly.clustering.marshalling.TestMarshaller;
 
 /**
@@ -47,6 +49,11 @@ public class ByteBufferTestMarshaller<T> implements TestMarshaller<T> {
 
     @Override
     public ByteBuffer write(T object) throws IOException {
-        return this.marshaller.write(object);
+        ByteBuffer buffer = this.marshaller.write(object);
+        OptionalInt size = this.marshaller.size(object);
+        if (size.isPresent()) {
+            Assert.assertEquals(buffer.remaining(), size.getAsInt());
+        }
+        return buffer;
     }
 }
