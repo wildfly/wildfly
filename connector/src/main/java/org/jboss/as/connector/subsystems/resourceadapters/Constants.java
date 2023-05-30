@@ -303,6 +303,7 @@ public class Constants {
             .setAllowExpression(true)
             .setRequired(false)
             .setDefaultValue(ModelNode.FALSE)
+            .setXmlName(ResourceAdapterParser.Attribute.ENABLED.getLocalName())
             .setRestartAllServices()
             .build();
 

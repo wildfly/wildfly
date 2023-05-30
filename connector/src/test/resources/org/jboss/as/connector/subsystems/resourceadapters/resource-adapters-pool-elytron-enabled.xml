@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -16,7 +16,7 @@
       <config-property name="config1">value</config-property>
       <transaction-support>NoTransaction</transaction-support>
         <workmanager>
-            <security>
+            <security enabled="true">
                 <mapping-required>true</mapping-required>
                 <elytron-security-domain>ApplicationDomain</elytron-security-domain>
             </security>
