@@ -33,6 +33,8 @@ import org.keycloak.representations.idm.RolesRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 /**
  * Keycloak configuration for testing.
@@ -75,15 +77,26 @@ public class KeycloakConfiguration {
     }
 
     public static String getAdminAccessToken(String authServerUrl) {
-        return RestAssured
+        RequestSpecification requestSpecification = RestAssured
                 .given()
                 .param("grant_type", "password")
                 .param("username", KeycloakContainer.ADMIN_USER)
                 .param("password", KeycloakContainer.ADMIN_PASSWORD)
-                .param("client_id", "admin-cli")
-                .when()
-                .post(authServerUrl + "/realms/master/protocol/openid-connect/token")
-                .as(AccessTokenResponse.class).getToken();
+                .param("client_id", "admin-cli");
+
+        Response response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
+
+        final long deadline = System.currentTimeMillis() + 180000;
+        while (response.getStatusCode() != 200) {
+            // the Keycloak admin user isn't available yet, keep trying until it is to ensure we can obtain the token
+            // needed to set up the realms for the test
+            response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
+            if (System.currentTimeMillis() > deadline) {
+                return null;
+            }
+        }
+
+        return response.as(AccessTokenResponse.class).getToken();
     }
 
     public static String getAccessToken(String authServerUrl, String realmName, String username, String password, String clientId, String clientSecret) {

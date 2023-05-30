@@ -80,16 +80,6 @@
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-legacy-ee-bom</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-legacy-expansion-bom</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-standard-ee-bom</artifactId>
             <type>pom</type>
         </dependency>
@@ -124,10 +114,7 @@
                 <module>build</module>
                 <module>dist</module>
                 <module>feature-pack</module>
-                <module>common</module>
-                <module>common-microprofile</module>
-                <module>galleon-content</module>
-                <module>galleon-content-microprofile</module>
+                <module>galleon-local</module>
             </modules>
         </profile>
     </profiles>

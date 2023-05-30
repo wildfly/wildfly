@@ -48,9 +48,4 @@ class MailServerRemove extends RestartParentResourceRemoveHandler {
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return MailSessionDefinition.SESSION_CAPABILITY.getCapabilityServiceName(parentAddress).append("provider");
     }
-
-    @Override
-    protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
-        MailSessionRemove.removeSessionProviderService(context, context.getCurrentAddress().getParent(), parentModel);
-    }
 }

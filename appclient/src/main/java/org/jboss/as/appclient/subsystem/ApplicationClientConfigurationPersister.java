@@ -111,7 +111,7 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
 
     }
 
-    @Override
+    // TODO once WFCORE-6362 is integrated remove this method
     public String snapshot() throws ConfigurationPersistenceException {
         return null;
     }
@@ -126,7 +126,7 @@ public class ApplicationClientConfigurationPersister extends XmlConfigurationPer
 
     }
 
-    @Override
+    // TODO once WFCORE-6362 is integrated remove this method
     public void registerSubsystemWriter(final String name, final XMLElementWriter<SubsystemMarshallingContext> writer) {
 
     }

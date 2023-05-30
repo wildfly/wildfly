@@ -80,7 +80,7 @@ public class StaticEJBDiscoveryDefinition {
             if (resourceModel.isDefined()) {
                 writer.writeEmptyElement(EJB3SubsystemXMLElement.MODULE.getLocalName());
                 for (SimpleAttributeDefinition valueType : VALUE_TYPE_FIELDS) {
-                    valueType.getAttributeMarshaller().marshall(valueType, resourceModel, true, writer);
+                    valueType.getMarshaller().marshall(valueType, resourceModel, true, writer);
                 }
             }
         }

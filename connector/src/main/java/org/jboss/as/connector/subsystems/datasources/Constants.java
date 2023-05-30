@@ -896,7 +896,6 @@ public class Constants {
             DRIVER_CLASS_NAME,
             DRIVER_DATASOURCE_CLASS_NAME,
             DRIVER_XA_DATASOURCE_CLASS_NAME,
-            XA_DATASOURCE_CLASS,
             DRIVER_MAJOR_VERSION,
             DRIVER_MINOR_VERSION,
             JDBC_COMPLIANT,

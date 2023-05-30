@@ -194,9 +194,10 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             isXa = true;
         }
-        if (ra.hasDefined(WM_SECURITY.getName()) && ra.get(WM_SECURITY.getName()).asBoolean()) {
+        if (ra.hasDefined(WM_SECURITY.getName()) && (ra.get(WM_SECURITY.getName()).getType().equals(ModelType.EXPRESSION) || ra.get(WM_SECURITY.getName()).asBoolean())) {
             streamWriter.writeStartElement(Activation.Tag.WORKMANAGER.getLocalName());
             streamWriter.writeStartElement(WorkManager.Tag.SECURITY.getLocalName());
+            WM_SECURITY.marshallAsAttribute(ra, streamWriter);
             WM_SECURITY_MAPPING_REQUIRED.marshallAsElement(ra, streamWriter);
             WM_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
             WM_ELYTRON_SECURITY_DOMAIN.marshallAsElement(ra, streamWriter);
@@ -478,17 +479,11 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         list.add(subsystem);
 
         try {
-            String localName;
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case RESOURCEADAPTERS_1_0:
-                case RESOURCEADAPTERS_1_1:
-                case RESOURCEADAPTERS_2_0:
-                case RESOURCEADAPTERS_3_0:
-                case RESOURCEADAPTERS_4_0:
-                case RESOURCEADAPTERS_5_0:
-                case RESOURCEADAPTERS_6_0:
-                case RESOURCEADAPTERS_6_1:{
-                    localName = reader.getLocalName();
+                case UNKNOWN:
+                    break;
+                default: {
+                    String localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);
                     switch (element) {

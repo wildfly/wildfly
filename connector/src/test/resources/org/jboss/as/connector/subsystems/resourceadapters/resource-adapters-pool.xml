@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -16,7 +16,7 @@
       <!--Optional:-->
       <transaction-support>NoTransaction</transaction-support>
       <workmanager>
-        <security>
+        <security enabled="true">
           <mapping-required>false</mapping-required>
           <domain>domain</domain>
           <default-groups>

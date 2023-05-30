@@ -37,7 +37,9 @@ import java.util.Collections;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.property.PropertyReplacer;
@@ -143,7 +145,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, topic, reader);
+                    parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, topic, reader);
                     break;
                 }
                 default: {
@@ -169,7 +171,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, queue, reader);
+                    parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, queue, reader);
                     break;
                 }
                 case "selector": {
@@ -194,5 +196,9 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             }
         }
         result.getQueues().add(new JmsDestination(queue, serverName, name));
+    }
+
+    protected static void parseAndSetParameter(AttributeDefinition ad, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+        ad.getParser().parseAndSetParameter(ad, value, operation, reader);
     }
 }
