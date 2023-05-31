@@ -60,6 +60,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.security.common.Utils;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -161,6 +162,11 @@ public class OidcIdentityPropagationTestCase {
 
     @ArquillianResource
     protected static Deployer deployer;
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17785 Intermittent failures in OidcIdentityPropagationTestCase");
+    }
 
     @Deployment(name= EAR_DEPLOYMENT_WITH_EJB_LOCAL, order = 1)
     public static Archive<?> ejbDeploymentLocal() {
