@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.mixed.eap740;
+package org.jboss.as.test.integration.mgmt.access;
 
-import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
-import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.jboss.arquillian.core.spi.LoadableExtension;
+
 
 /**
- * Test suite for the standard mixed domain tests.
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * Custom arquillian extension to allow us register notifications about server lifecycle.
  */
-@RunWith(Suite.class)
-@SuiteClasses(value= {SimpleMixedDomain740TestCase.class, MixedDomainDeployment740TestCase.class, PatchRemoteHost740TestCase.class})
-@Version(AsVersion.EAP_7_4_0)
-public class MixedDomain740TestSuite extends MixedDomainTestSuite {
-
-    @BeforeClass
-    public static void initializeDomain() {
-        MixedDomainTestSuite.getSupport(MixedDomain740TestSuite.class);
+public class CustomLoadableExtension implements LoadableExtension {
+    @Override
+    public void register(ExtensionBuilder builder) {
+        builder.observer(ServerLifecycleObserver.class);
     }
 }

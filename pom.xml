@@ -547,7 +547,7 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.4</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.core>20.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>21.0.0.Beta1</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.2.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>2.0.0.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
