@@ -1,0 +1,3 @@
+module add --name=javax.faces.api --slot=mojarra-${jsf-version} --resources=${jsf-api-name}-${jsf-version}.jar --module-xml=mojarra-api-module.xml
+module add --name=com.sun.jsf-impl --slot=mojarra-${jsf-version} --resources=jsf-impl-${jsf-version}.jar --module-xml=mojarra-impl-module.xml
+module add --name=org.jboss.as.jsf-injection --slot=mojarra-${jsf-version} --resources=weld-jsf-${version.org.jboss.weld.weld}.jar:wildfly-jsf-injection-${project.version}.jar --resource-delimiter=: --module-xml=mojarra-injection-module.xml
