@@ -245,7 +245,7 @@ By default, Narayana persists transaction log in database table named `JBossTSTx
 ----
 # PostgreSQL driver module
 ./bin/jboss-cli.sh "embed-server, module add --name=org.postgresql --resources=/tmp/postgresql.jar \
-  --dependencies=javax.api\,jakarta.transaction.api"
+  --dependencies=java.se\,jakarta.transaction.api"
 
 # non-jta PostgreSQL datasource creation
 ./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,data-source add --name=JDBCStore \

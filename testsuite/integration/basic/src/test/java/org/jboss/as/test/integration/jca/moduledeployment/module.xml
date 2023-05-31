@@ -30,7 +30,6 @@
 
     <dependencies>
         <module name="java.xml"/>
-        <module name="javax.api"/>
         <module name="jakarta.jms.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.validation.api"/>

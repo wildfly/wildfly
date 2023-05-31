@@ -313,7 +313,6 @@ abstract class ConfiguredJaspiTestBase extends JaspiTestBase {
                     .withResource(modulePath.toAbsolutePath().toString())
                     .withDependency("javax.security.auth.message.api")
                     .withDependency("javax.servlet.api")
-                    .withDependency("javax.api")
                     .withDependency("org.wildfly.security.elytron")
                     .build();
             // 2 - Map the application-security-domain

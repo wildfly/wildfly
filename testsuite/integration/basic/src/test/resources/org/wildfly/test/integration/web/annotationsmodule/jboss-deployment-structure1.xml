@@ -6,7 +6,6 @@
         </resources>
         <dependencies>
             <module name="javaee.api" export="true"/>
-            <module name="javax.api" export="true"/>
             <module name="javax.servlet.api" export="true"/>
         </dependencies>
     </module>

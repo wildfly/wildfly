@@ -31,7 +31,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator"/>
