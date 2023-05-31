@@ -38,18 +38,22 @@ class HostRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = context.getCurrentAddress();
-        final PathAddress parent = address.getParent();
-        final String name = address.getLastElement().getValue();
-        final String serverName = parent.getLastElement().getValue();
-        final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(serverName, name);
-        context.removeService(virtualHostServiceName);
-        final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
-        context.removeService(consoleRedirectName);
-        final ServiceName commonHostName = WebHost.SERVICE_NAME.append(name);
-        context.removeService(commonHostName);
-        final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
-        DefaultDeploymentMappingProvider.instance().removeMapping(defaultWebModule);
+        if (context.isResourceServiceRestartAllowed()) {
+            final PathAddress address = context.getCurrentAddress();
+            final PathAddress parent = address.getParent();
+            final String name = address.getLastElement().getValue();
+            final String serverName = parent.getLastElement().getValue();
+            final ServiceName virtualHostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(serverName, name);
+            context.removeService(virtualHostServiceName);
+            final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
+            context.removeService(consoleRedirectName);
+            final ServiceName commonHostName = WebHost.SERVICE_NAME.append(name);
+            context.removeService(commonHostName);
+            final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
+            DefaultDeploymentMappingProvider.instance().removeMapping(defaultWebModule);
+        } else {
+            context.reloadRequired();
+        }
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
