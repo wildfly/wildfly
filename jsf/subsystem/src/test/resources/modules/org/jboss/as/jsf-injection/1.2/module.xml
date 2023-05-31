@@ -35,7 +35,7 @@
     <dependencies>
         <module name="com.sun.jsf-impl:1.2"/>
         <module name="org.jboss.as.web"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

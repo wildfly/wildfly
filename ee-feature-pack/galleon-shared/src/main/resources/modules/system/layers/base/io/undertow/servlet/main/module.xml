@@ -29,10 +29,10 @@
 
     <dependencies>
         <module name="io.undertow.core" />
-        <module name="javax.annotation.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
-        <module name="javax.servlet.jstl.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
         <module name="jdk.unsupported"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.xnio"/>

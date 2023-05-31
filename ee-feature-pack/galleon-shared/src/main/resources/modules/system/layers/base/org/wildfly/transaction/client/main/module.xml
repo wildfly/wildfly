@@ -35,8 +35,8 @@
 <dependencies>
     <!-- Sorted alphabetically -->
     <module name="java.naming"/>
-    <module name="javax.resource.api"/>
-    <module name="javax.transaction.api"/>
+    <module name="jakarta.resource.api"/>
+    <module name="jakarta.transaction.api"/>
 
     <module name="org.jboss.ejb-client" services="import" optional="true"/>
     <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->

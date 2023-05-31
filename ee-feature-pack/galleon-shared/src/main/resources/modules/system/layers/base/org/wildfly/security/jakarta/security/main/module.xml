@@ -31,19 +31,19 @@
         <module name="org.glassfish.soteria" export="true"/>
 
         <module name="java.logging" />
-        <module name="javax.security.enterprise.api" />
-        <module name="javax.servlet.api" />
-        <module name="javax.enterprise.api" />
-        <module name="javax.security.auth.message.api" />
+        <module name="jakarta.security.enterprise.api" />
+        <module name="jakarta.servlet.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.security.auth.message.api" />
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.weld.spi" />
         <module name="org.wildfly.security.elytron" />
-        <module name="javax.xml.bind.api" />
-        <module name="javax.interceptor.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.inject.api" />
-        <module name="javax.security.jacc.api" />
-        <module name="javax.ejb.api" />
+        <module name="jakarta.xml.bind.api" />
+        <module name="jakarta.interceptor.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.inject.api" />
+        <module name="jakarta.security.jacc.api" />
+        <module name="jakarta.ejb.api" />
         <module name="jakarta.json.api" />
         <module name="jakarta.ws.rs.api" />
         <module name="com.nimbusds.nimbus-jose-jwt" />

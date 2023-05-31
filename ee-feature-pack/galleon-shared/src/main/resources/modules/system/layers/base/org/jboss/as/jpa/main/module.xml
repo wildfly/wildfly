@@ -39,11 +39,11 @@
     <dependencies>
         <module name="java.instrument"/>
         <module name="java.sql"/>
-        <module name="javax.ejb.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.infinispan"/>
         <!-- Only used if capability org.wildfly.bean-validation is available -->
@@ -76,6 +76,6 @@
         <module name="org.wildfly.common"/>
 
         <module name="java.xml"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.xml.bind.api"/>
     </dependencies>
 </module>

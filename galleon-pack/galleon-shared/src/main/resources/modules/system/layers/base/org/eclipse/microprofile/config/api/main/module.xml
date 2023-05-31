@@ -29,6 +29,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
     </dependencies>
 </module>

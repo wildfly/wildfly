@@ -38,8 +38,8 @@
         <module name="org.jboss.jboss-transaction-spi"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.logging"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="org.jboss.as.transactions">
             <imports>
                 <include path="org.jboss.iiop.tm"/>

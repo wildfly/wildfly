@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.ejb.api"/>
+        <module name="jakarta.ejb.api"/>
         <module name="org.jboss.as.clustering.common"/>
         <!-- Enable dynamic loading of schedule timer operation provider -->
         <module name="org.jboss.as.ejb3" services="import"/>

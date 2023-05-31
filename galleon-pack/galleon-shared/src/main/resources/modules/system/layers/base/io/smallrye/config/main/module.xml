@@ -38,8 +38,8 @@
         <module name="asm.asm"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.jboss.logging" />
-        <module name="javax.enterprise.api" />
-        <module name="javax.annotation.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.annotation.api" />
         <module name="io.smallrye.common.constraint"/>
         <module name="io.smallrye.common.classloader"/>
         <module name="io.smallrye.common.expression"/>

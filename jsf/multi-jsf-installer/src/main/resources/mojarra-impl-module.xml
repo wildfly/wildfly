@@ -29,17 +29,17 @@
 
     <dependencies>
         <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.servlet.jsp.api"/>
-        <module name="javax.websocket.api" />
-        <module name="javax.validation.api"/>
-        <module name="javax.json.api"/>
-        <module name="javax.ejb.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.websocket.api" />
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.json.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
         <module name="javax.api"/>
-        <module name="javax.servlet.jstl.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
         <module name="java.xml"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>

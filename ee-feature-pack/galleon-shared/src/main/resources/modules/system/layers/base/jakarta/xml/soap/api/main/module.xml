@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.activation.api" export="true"/>
+        <module name="jakarta.activation.api" export="true"/>
         <module name="org.eclipse.angus.activation" services="export" export="true"/>
         <module name="org.jboss.modules"/>
         <module name="java.xml"/>

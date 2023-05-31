@@ -40,7 +40,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.wildfly.security.elytron"/>
 
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>
     </dependencies>
 </module>

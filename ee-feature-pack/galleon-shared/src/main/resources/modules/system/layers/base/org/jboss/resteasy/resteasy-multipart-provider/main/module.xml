@@ -30,11 +30,11 @@
 
     <dependencies>
         <module name="java.desktop"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.mail.api"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.ws.rs.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.mail.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.ws.rs.api"/>
         <module name="org.apache.james.mime4j"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-core"/>

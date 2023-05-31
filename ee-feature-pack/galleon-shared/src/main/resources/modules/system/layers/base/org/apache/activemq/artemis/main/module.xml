@@ -47,9 +47,9 @@
         <module name="java.security.jgss"/>
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="com.google.guava"/>
-        <module name="javax.jms.api" />
+        <module name="jakarta.jms.api" />
         <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.apache.activemq.artemis.journal" export="true"/>
@@ -69,7 +69,7 @@
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.netty.netty-codec-http"/>
         <module name="org.jctools"/>
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <!-- WFLY-5213 Optional dependency to use the org.apache.activemq.artemis as a naming's external-context module -->
         <module name="org.jboss.invocation" optional="true"/>
         <module name="org.jboss.jboss-transaction-spi"/>

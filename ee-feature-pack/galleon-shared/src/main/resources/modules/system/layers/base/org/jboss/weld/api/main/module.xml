@@ -29,10 +29,10 @@
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.persistence.api"/>
-        <module name="javax.interceptor.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.inject.api"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.interceptor.api"/>
+        <module name="jakarta.servlet.api"/>
     </dependencies>
 </module>

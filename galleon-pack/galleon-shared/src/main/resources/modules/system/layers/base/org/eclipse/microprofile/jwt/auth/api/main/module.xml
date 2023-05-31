@@ -25,8 +25,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.enterprise.api" />
-        <module name="javax.inject.api" />
-        <module name="javax.json.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.inject.api" />
+        <module name="jakarta.json.api" />
     </dependencies>
 </module>

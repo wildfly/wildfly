@@ -24,11 +24,11 @@
 
 <module xmlns="urn:jboss:module:1.5" name="jakarta.faces.api">
     <dependencies>
-        <module name="javax.el.api" export="true"/>
-        <module name="javax.servlet.api" export="true"/>
-        <module name="javax.servlet.jsp.api" export="true"/>
-        <module name="javax.servlet.jstl.api" export="true"/>
-        <module name="javax.validation.api" export="true"/>
+        <module name="jakarta.el.api" export="true"/>
+        <module name="jakarta.servlet.api" export="true"/>
+        <module name="jakarta.servlet.jsp.api" export="true"/>
+        <module name="jakarta.servlet.jstl.api" export="true"/>
+        <module name="jakarta.validation.api" export="true"/>
     </dependencies>
 
     <resources>

@@ -48,8 +48,8 @@
         <module name="io.smallrye.reactive.mutiny.zero"/>
         <module name="io.smallrye.reactive.mutiny.zero-flow-adapters"/>
         <module name="io.vertx.core"/>
-        <module name="javax.annotation.api" />
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>

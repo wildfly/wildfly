@@ -37,12 +37,12 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="com.fasterxml.classmate"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.xml.bind.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jaxb"/>
         <module name="org.antlr"/>
         <module name="org.jboss.as.jpa.spi"/>

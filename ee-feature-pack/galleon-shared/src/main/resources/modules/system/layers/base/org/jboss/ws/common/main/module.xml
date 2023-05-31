@@ -36,18 +36,15 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.xml"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.jws.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.ws.api"/>
         <module name="org.jboss.ws.api"/>
         <module name="org.jboss.ws.spi"/>
         <module name="org.jboss.logging"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.jboss.jaxbintros"/>
-        <!-- Not supported and the API is not provided in an EE 9 server -->
-        <module name="javax.xml.rpc.api" optional="true"/>
     </dependencies>
 
 </module>

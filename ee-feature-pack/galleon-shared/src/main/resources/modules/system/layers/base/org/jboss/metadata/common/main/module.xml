@@ -33,7 +33,7 @@
 
     <dependencies>
         <module name="java.xml"/>
-        <module name="javax.annotation.api"/>
+        <module name="jakarta.annotation.api"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.logging"/>
     </dependencies>

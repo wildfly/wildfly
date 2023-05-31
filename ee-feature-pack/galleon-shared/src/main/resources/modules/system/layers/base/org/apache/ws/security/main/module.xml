@@ -35,7 +35,7 @@
 
     <dependencies>
       <module name="java.security.jgss"/>
-      <module name="javax.xml.bind.api" services="import"/>
+      <module name="jakarta.xml.bind.api" services="import"/>
       <module name="com.sun.xml.bind" services="import"/>
       <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
       <module name="org.apache.commons.codec"/>

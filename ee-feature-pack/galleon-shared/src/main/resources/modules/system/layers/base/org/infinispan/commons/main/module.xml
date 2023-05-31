@@ -31,7 +31,7 @@
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
         <module name="java.xml"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.reactivex.rxjava3.rxjava"/>

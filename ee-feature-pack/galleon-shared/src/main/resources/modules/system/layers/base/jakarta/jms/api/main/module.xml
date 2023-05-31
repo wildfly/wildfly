@@ -29,6 +29,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.transaction.api" export="true"/>
+        <module name="jakarta.transaction.api" export="true"/>
     </dependencies>
 </module>

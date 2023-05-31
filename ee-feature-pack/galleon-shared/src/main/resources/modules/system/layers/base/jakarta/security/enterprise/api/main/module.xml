@@ -35,12 +35,12 @@
     <dependencies>
         <module name="java.logging"/>
         <module name="java.desktop"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.security.auth.message.api" />
-        <module name="javax.interceptor.api" />
-        <module name="javax.annotation.api" />
-        <module name="javax.inject.api" />
-        <module name="javax.json.api" />
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.security.auth.message.api" />
+        <module name="jakarta.interceptor.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.inject.api" />
+        <module name="jakarta.json.api" />
     </dependencies>
 </module>

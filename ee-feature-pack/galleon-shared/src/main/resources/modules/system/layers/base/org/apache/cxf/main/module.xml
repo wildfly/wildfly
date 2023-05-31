@@ -45,17 +45,16 @@
         </module>
         <module name="org.slf4j"/>
         <module name="asm.asm" />
-        <module name="javax.annotation.api" />
-        <module name="javax.validation.api" optional="true"/>
-        <module name="javax.jws.api" />
-        <module name="javax.mail.api" />
-        <module name="javax.resource.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.validation.api" optional="true"/>
+        <module name="jakarta.mail.api" />
+        <module name="jakarta.resource.api" />
         <module name="javax.wsdl4j.api" />
-        <module name="javax.xml.bind.api" services="import"/>
+        <module name="jakarta.xml.bind.api" services="import"/>
         <module name="com.sun.xml.bind" services="import"/>
         <module name="com.sun.xml.messaging.saaj" export="true" services="export"/>
-        <module name="javax.xml.soap.api" />
-        <module name="javax.xml.ws.api" />
+        <module name="jakarta.xml.soap.api" />
+        <module name="jakarta.xml.ws.api" />
         <module name="com.sun.xml.fastinfoset"/>
         <module name="org.apache.neethi" />
         <module name="org.apache.ws.xmlschema" />

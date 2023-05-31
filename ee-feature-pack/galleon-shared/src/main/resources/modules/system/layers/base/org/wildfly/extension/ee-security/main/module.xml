@@ -45,8 +45,8 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.glassfish.soteria" />
-        <module name="javax.security.enterprise.api" />
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.security.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
         <module name="org.jboss.jandex"/>
     </dependencies>
 </module>

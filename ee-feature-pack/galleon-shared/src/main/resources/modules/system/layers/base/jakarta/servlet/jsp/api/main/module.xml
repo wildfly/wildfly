@@ -30,7 +30,7 @@
 
     <dependencies>
         <module name="java.desktop"/>
-        <module name="javax.servlet.api" export="true"/>
+        <module name="jakarta.servlet.api" export="true"/>
         <module name="org.glassfish.jakarta.el" export="true"/>
     </dependencies>
 </module>

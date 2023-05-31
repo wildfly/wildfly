@@ -31,8 +31,8 @@
     </resources>
 
     <dependencies>
-        <module name="javax.persistence.api"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="org.jboss.logging" />
         <module name="org.hibernate" />
         <module name="org.hibernate.search.engine" export="true" />

@@ -36,12 +36,12 @@
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-json-p-provider"/>
-        <module name="javax.transaction.api"/>
-        <module name="javax.resource.api"/>
-        <module name="javax.ws.rs.api" services="export"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.xml.bind.api"/>
-        <module name="javax.ejb.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.ws.rs.api" services="export"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="jakarta.ejb.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.wildfly.extension.rts" export="true">
             <imports>

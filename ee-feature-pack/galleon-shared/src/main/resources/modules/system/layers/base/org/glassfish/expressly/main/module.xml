@@ -33,6 +33,6 @@
     </resources>
     <dependencies>
             <module name="java.desktop"/>
-            <module name="javax.el.api" services="import" export="true"/>
+            <module name="jakarta.el.api" services="import" export="true"/>
     </dependencies>
 </module>

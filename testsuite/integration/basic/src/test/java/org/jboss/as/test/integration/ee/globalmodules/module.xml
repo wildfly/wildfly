@@ -31,7 +31,7 @@
     <dependencies>
         <module name="java.xml"/>
         <module name="jakarta.resource.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.enterprise.api"/>
         <module name="jakarta.inject.api"/>
         <module name="jakarta.interceptor.api"/>
         <module name="jakarta.validation.api"/>

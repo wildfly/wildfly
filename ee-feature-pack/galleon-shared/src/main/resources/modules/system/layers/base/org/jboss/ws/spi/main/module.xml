@@ -35,8 +35,8 @@
     <dependencies>
         <module name="java.management"/>
         <module name="java.xml"/>
-        <module name="javax.servlet.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.xml.ws.api"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.ws.api"/>
         <module name="org.jboss.as.webservices"/>

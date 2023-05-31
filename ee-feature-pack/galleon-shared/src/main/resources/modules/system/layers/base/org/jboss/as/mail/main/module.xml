@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.mail.api" />
+        <module name="jakarta.mail.api" />
         <module name="org.eclipse.angus.mail">
             <imports>
                 <include path="META-INF"/>

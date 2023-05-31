@@ -38,32 +38,26 @@
         <module name="java.rmi"/>
         <module name="java.xml"/>
 
-        <module name="javax.transaction.api"/>
-        <module name="javax.resource.api"/>
-        <module name="javax.enterprise.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.enterprise.api"/>
 
         <module name="org.jboss.jts"/>
         <module name="org.jboss.ws.api" services="export"/>
         <module name="org.jboss.ws.jaxws-client" services="export"/>
         <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
-        <module name="javax.xml.soap.api"/>
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.soap.api"/>
+        <module name="jakarta.xml.ws.api"/>
 
-        <!-- this is needed to get javax.xml.namespace.QName but it would be better if it were exposed on its own -->
-        <!-- this is needed because our endpoints are not in a normal deployment and we need to be able
-            to resolve the javax.jws.WebService annotation attached to them. presumably an endpoint
-            found in a deployment gets this package auto-added to its module loader
-            -->
-        <module name="javax.jws.api"/>
         <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
              classloader scope-->
-        <module name="javax.annotation.api"  export="true" />
+        <module name="jakarta.annotation.api"  export="true" />
         <!-- this is needed to ensure the JaxWS endpoint classes canb refer to HttpServletRequest etc -->
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="org.jboss.weld.core" />
         <module name="org.jboss.logging" />
         <module name="org.jboss.narayana.compensations" export="true" />
-        <module name="javax.interceptor.api"  export="true" />
+        <module name="jakarta.interceptor.api"  export="true" />
 
         <!-- This dependency is required only if the
              xts subsystem is present. If it is the

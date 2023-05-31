@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="javax.xml.ws.api"/>
+        <module name="jakarta.xml.ws.api"/>
         <module name="io.undertow.core"/>
     </dependencies>
 </module>

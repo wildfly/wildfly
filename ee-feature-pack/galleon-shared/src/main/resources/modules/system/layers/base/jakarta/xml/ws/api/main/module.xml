@@ -30,8 +30,8 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.xml.bind.api" export="true"/>
-        <module name="javax.xml.soap.api" export="true"/>
+        <module name="jakarta.xml.bind.api" export="true"/>
+        <module name="jakarta.xml.soap.api" export="true"/>
         <module name="org.jboss.modules"/>
         <module name="java.xml"/>
     </dependencies>

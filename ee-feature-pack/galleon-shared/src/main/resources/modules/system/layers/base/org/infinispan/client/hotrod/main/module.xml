@@ -30,7 +30,7 @@
         <module name="java.management"/>
         <module name="java.naming"/>
         <module name="java.security.sasl"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
 
         <module name="com.github.ben-manes.caffeine"/>
         <module name="io.netty.netty-buffer"/>

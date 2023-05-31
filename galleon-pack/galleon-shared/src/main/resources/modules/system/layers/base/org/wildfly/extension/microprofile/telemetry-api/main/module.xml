@@ -44,7 +44,7 @@
 
         <module name="java.logging"/>
 
-        <module name="javax.enterprise.api" />
-        <module name="javax.ws.rs.api" optional="true" services="import"/>
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.ws.rs.api" optional="true" services="import"/>
     </dependencies>
 </module>

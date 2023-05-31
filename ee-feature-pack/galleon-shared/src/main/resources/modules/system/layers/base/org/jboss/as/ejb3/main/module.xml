@@ -37,17 +37,17 @@
         <module name="java.rmi"/>
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
-        <module name="javax.transaction.api"/>
+        <module name="jakarta.transaction.api"/>
         <module name="org.wildfly.http-client.ejb" services="import"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.ejb.api"/>
-        <module name="javax.interceptor.api"/>
-        <module name="javax.jms.api"/>
-        <module name="javax.persistence.api" />
-        <module name="javax.security.jacc.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.interceptor.api"/>
+        <module name="jakarta.jms.api"/>
+        <module name="jakarta.persistence.api" />
+        <module name="jakarta.security.jacc.api"/>
         <module name="javax.orb.api"/>
         <!-- For message inflow -->
-        <module name="javax.resource.api"/>
+        <module name="jakarta.resource.api"/>
         <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.clustering.ee.cache"/>
@@ -115,7 +115,7 @@
         <module name="org.wildfly.transaction.client"/>
 
         <!-- Those are needed for integration with hibernate validator -->
-        <module name="javax.enterprise.api" optional="true"/>
+        <module name="jakarta.enterprise.api" optional="true"/>
         <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.hibernate.validator" optional="true"/>
         <module name="org.hibernate.validator.cdi" optional="true"/>

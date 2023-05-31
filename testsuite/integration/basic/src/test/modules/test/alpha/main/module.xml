@@ -32,7 +32,7 @@
     <dependencies>
         <module name="test.bravo"/>
 
-        <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.inject.api"/>
     </dependencies>
 </module>

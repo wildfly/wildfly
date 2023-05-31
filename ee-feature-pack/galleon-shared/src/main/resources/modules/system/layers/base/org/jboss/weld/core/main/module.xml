@@ -35,15 +35,15 @@
   </resources>
 
   <dependencies>
-    <module name="javax.annotation.api"/>
-    <module name="javax.ejb.api" />
-    <module name="javax.enterprise.api"/>
-    <module name="javax.inject.api"/>
-    <module name="javax.interceptor.api"/>
-    <module name="javax.persistence.api"/>
-    <module name="javax.servlet.api"/>
-    <module name="javax.transaction.api"/>
-    <module name="javax.validation.api"/>
+    <module name="jakarta.annotation.api"/>
+    <module name="jakarta.ejb.api" />
+    <module name="jakarta.enterprise.api"/>
+    <module name="jakarta.inject.api"/>
+    <module name="jakarta.interceptor.api"/>
+    <module name="jakarta.persistence.api"/>
+    <module name="jakarta.servlet.api"/>
+    <module name="jakarta.transaction.api"/>
+    <module name="jakarta.validation.api"/>
     <module name="org.glassfish.jakarta.el" />
     <module name="org.jboss.classfilewriter"/>
     <module name="org.jboss.weld.api" export="true"/>

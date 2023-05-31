@@ -30,6 +30,6 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="javax.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
     </dependencies>
 </module>

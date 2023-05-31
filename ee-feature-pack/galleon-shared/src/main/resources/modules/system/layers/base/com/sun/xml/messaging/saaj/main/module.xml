@@ -38,8 +38,8 @@
         <module name="java.desktop"/>
         <module name="java.logging"/>
         <module name="java.xml"/>
-        <module name="javax.xml.soap.api"/>
-        <module name="javax.activation.api"/>
+        <module name="jakarta.xml.soap.api"/>
+        <module name="jakarta.activation.api"/>
         <module name="org.apache.xerces" services="import" />
     </dependencies>
 
