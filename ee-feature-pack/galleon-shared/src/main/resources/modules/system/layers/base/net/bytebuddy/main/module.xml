@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="java.instrument"/>
-        <module name="sun.jdk"/>
         <module name="jdk.unsupported"/>
     </dependencies>
+
 </module>
