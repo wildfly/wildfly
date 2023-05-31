@@ -16,25 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.wildfly.extension.micrometer;
+package org.wildfly.extension.micrometer.registry;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.SubsystemModel;
+import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.registry.otlp.OtlpMeterRegistry;
 
-public enum MicrometerSubsystemModel implements SubsystemModel {
-    VERSION_1_0_0(1, 0, 0),
-    VERSION_1_1_0(1, 1, 0);
+public class WildFlyOtlpRegistry extends OtlpMeterRegistry implements WildFlyRegistry {
 
-    public static final MicrometerSubsystemModel CURRENT = VERSION_1_1_0;
-
-    private final ModelVersion version;
-
-    MicrometerSubsystemModel(int major, int minor, int micro) {
-        this.version = ModelVersion.create(major, minor, micro);
-    }
-
-    @Override
-    public ModelVersion getVersion() {
-        return version;
+    public WildFlyOtlpRegistry(WildFlyMicrometerConfig config) {
+        super(config, Clock.SYSTEM);
     }
 }

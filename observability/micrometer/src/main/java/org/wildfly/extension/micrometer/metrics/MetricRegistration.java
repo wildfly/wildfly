@@ -22,6 +22,7 @@ package org.wildfly.extension.micrometer.metrics;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 import io.micrometer.core.instrument.Meter;
 
 public class MetricRegistration {
@@ -37,14 +38,14 @@ public class MetricRegistration {
     public void register() {
         // synchronized to avoid registering same thing twice. Shouldn't really be possible; just being cautious
         synchronized (registry) {
-            registrationTasks.forEach(t -> t.run());
+            registrationTasks.forEach(Runnable::run);
             registrationTasks.clear();
         }
     }
 
     public void unregister() {
         synchronized (registry) {
-            unregistrationTasks.forEach(id -> registry.remove(id));
+            unregistrationTasks.forEach(registry::remove);
             unregistrationTasks.clear();
         }
     }
