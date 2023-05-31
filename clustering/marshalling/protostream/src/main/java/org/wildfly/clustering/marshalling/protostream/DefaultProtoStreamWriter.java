@@ -45,26 +45,16 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
     public void writeObjectNoTag(Object value) throws IOException {
         ImmutableSerializationContext context = this.getSerializationContext();
         ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-        OptionalInt size = this.size(marshaller, value);
+        OptionalInt size = marshaller.size(this, value);
         try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
-            TagWriterImpl writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context,  output);
+            TagWriterImpl writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context, output);
             marshaller.writeTo(new DefaultProtoStreamWriter(writer), value);
             writer.flush();
-            ByteBuffer buffer = output.getBuffer();
+            ByteBuffer buffer = output.getBuffer(); // Buffer is array backed
             int offset = buffer.arrayOffset();
             int length = buffer.limit() - offset;
             this.writeVarint32(length);
             this.writeRawBytes(buffer.array(), offset, length);
-        }
-    }
-
-    private OptionalInt size(ProtoStreamMarshaller<Object> marshaller, Object value) {
-        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.getSerializationContext());
-        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(writer)) {
-            marshaller.writeTo(writer, value);
-            return writer.get();
-        } catch (IOException e) {
-            return OptionalInt.empty();
         }
     }
 }

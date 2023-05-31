@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,60 +27,50 @@ import java.nio.ByteBuffer;
 import java.util.OptionalInt;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKey;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
 
 /**
- * {@link ProtoStreamMarshaller} for a {@link ByteBufferMarshalledKey}.
+ * {@link ProtoStreamMarshaller} for a {@link ByteBufferMarshalledValue}.
  * @author Paul Ferraro
  */
-public class ByteBufferMarshalledKeyMarshaller implements ProtoStreamMarshaller<ByteBufferMarshalledKey<Object>> {
+public class ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshaller<ByteBufferMarshalledValue<Object>> {
 
     private static final int BUFFER_INDEX = 1;
-    private static final int HASH_CODE_INDEX = 2;
 
     @Override
-    public ByteBufferMarshalledKey<Object> readFrom(ProtoStreamReader reader) throws IOException {
+    public ByteBufferMarshalledValue<Object> readFrom(ProtoStreamReader reader) throws IOException {
         ByteBuffer buffer = null;
-        int hashCode = 0;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case BUFFER_INDEX:
                     buffer = reader.readByteBuffer();
                     break;
-                case HASH_CODE_INDEX:
-                    hashCode = reader.readSFixed32();
-                    break;
                 default:
                     reader.skipField(tag);
             }
         }
-        return new ByteBufferMarshalledKey<>(buffer, hashCode);
+        return new ByteBufferMarshalledValue<>(buffer);
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, ByteBufferMarshalledKey<Object> key) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, ByteBufferMarshalledValue<Object> key) throws IOException {
         ByteBuffer buffer = key.getBuffer();
         if (buffer != null) {
             writer.writeBytes(BUFFER_INDEX, buffer);
         }
-        int hashCode = key.hashCode();
-        if (hashCode != 0) {
-            writer.writeSFixed32(HASH_CODE_INDEX, hashCode);
-        }
     }
 
     @Override
-    public OptionalInt size(ProtoStreamOperation context, ByteBufferMarshalledKey<Object> key) {
-        if (key.isEmpty()) return OptionalInt.of(0);
-        int hashCodeSize = WireType.FIXED_32_SIZE + context.tagSize(HASH_CODE_INDEX, WireType.FIXED32);
-        OptionalInt size = key.size();
-        return size.isPresent() ? OptionalInt.of(context.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + context.varIntSize(size.getAsInt()) + size.getAsInt() + hashCodeSize) : OptionalInt.empty();
+    public OptionalInt size(ProtoStreamOperation context, ByteBufferMarshalledValue<Object> value) {
+        if (value.isEmpty()) return OptionalInt.of(0);
+        OptionalInt size = value.size();
+        return size.isPresent() ? OptionalInt.of(context.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + context.varIntSize(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends ByteBufferMarshalledKey<Object>> getJavaClass() {
-        return (Class<ByteBufferMarshalledKey<Object>>) (Class<?>) ByteBufferMarshalledKey.class;
+    public Class<? extends ByteBufferMarshalledValue<Object>> getJavaClass() {
+        return (Class<ByteBufferMarshalledValue<Object>>) (Class<?>) ByteBufferMarshalledValue.class;
     }
 }

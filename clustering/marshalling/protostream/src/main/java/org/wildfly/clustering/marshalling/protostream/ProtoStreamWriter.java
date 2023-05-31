@@ -34,7 +34,9 @@ import org.infinispan.protostream.descriptors.WireType;
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
     default Context getContext() {
-        return ProtoStreamWriterContext.FACTORY.get().apply(this);
+        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(this)) {
+            return context;
+        }
     }
 
     /**

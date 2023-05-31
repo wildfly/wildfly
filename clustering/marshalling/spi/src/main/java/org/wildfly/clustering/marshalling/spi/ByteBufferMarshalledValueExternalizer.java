@@ -71,12 +71,6 @@ public class ByteBufferMarshalledValueExternalizer implements Externalizer<ByteB
 
     @Override
     public OptionalInt size(ByteBufferMarshalledValue<Object> value) {
-        try {
-            ByteBuffer buffer = value.getBuffer();
-            int length = (buffer != null) ? buffer.limit() - buffer.arrayOffset() : 0;
-            return OptionalInt.of(IndexSerializer.VARIABLE.size(length) + length);
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
+        return value.size();
     }
 }

@@ -23,6 +23,7 @@
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
+import java.util.OptionalInt;
 
 /**
  * Provides a {@link ProtoStreamMarshaller}.
@@ -49,6 +50,11 @@ public interface ProtoStreamMarshallerProvider extends ProtoStreamMarshaller<Obj
     @Override
     default void write(WriteContext context, Object value) throws IOException {
         this.cast(Object.class).write(context, value);
+    }
+
+    @Override
+    default OptionalInt size(ProtoStreamOperation operation, Object value) {
+        return this.cast(Object.class).size(operation, value);
     }
 
     @Override

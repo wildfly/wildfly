@@ -45,17 +45,18 @@ interface ProtoStreamWriterContext extends ProtoStreamOperation.Context, AutoClo
         }
 
         class DefaultFactory implements Factory {
-            final Map<Class<?>, ProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
+            final Map<Class<?>, DefaultProtoStreamWriterContext> contexts = new IdentityHashMap<>(2);
 
             @Override
             public ProtoStreamWriterContext apply(ProtoStreamWriter writer) {
-                return this.contexts.computeIfAbsent(writer.getClass(), DefaultProtoStreamWriterContext::new);
+                return this.contexts.computeIfAbsent(writer.getClass(), DefaultProtoStreamWriterContext::new).open();
             }
 
             class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Integer> {
                 private final Class<?> writerClass;
                 private final Map<Object, Integer> references = new IdentityHashMap<>(64);
-                private int index = 0;
+                private int reference = 0; // Enumerates object references
+                private int index = 0; // Tracks context lifecycle
 
                 DefaultProtoStreamWriterContext(Class<?> targetClass) {
                     this.writerClass = targetClass;
@@ -73,12 +74,19 @@ interface ProtoStreamWriterContext extends ProtoStreamOperation.Context, AutoClo
 
                 @Override
                 public Integer apply(Object key) {
-                    return this.index++;
+                    return this.reference++;
+                }
+
+                ProtoStreamWriterContext open() {
+                    this.index += 1;
+                    return this;
                 }
 
                 @Override
                 public void close() {
-                    DefaultFactory.this.contexts.remove(this.writerClass);
+                    if (--this.index <= 0) {
+                        DefaultFactory.this.contexts.remove(this.writerClass);
+                    }
                 }
             }
         }

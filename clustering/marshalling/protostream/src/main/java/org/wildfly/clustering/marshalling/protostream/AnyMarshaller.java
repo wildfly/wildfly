@@ -67,16 +67,17 @@ public enum AnyMarshaller implements ProtoStreamMarshaller<Any> {
     public void writeTo(ProtoStreamWriter writer, Any value) throws IOException {
         Object object = value.get();
         if (object != null) {
-            ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(writer);
-            Integer referenceId = context.getReference(object);
+            try (ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(writer)) {
+                Integer referenceId = context.getReference(object);
 
-            // If we already wrote this object to the stream, write the object reference intead
-            AnyField field = (referenceId == null) ? getField(writer, object) : AnyField.REFERENCE;
-            writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
-            field.getMarshaller().writeTo(writer, (referenceId == null) ? object : referenceId);
+                // If we already wrote this object to the stream, write the object reference instead
+                AnyField field = (referenceId == null) ? getField(writer, object) : AnyField.REFERENCE;
+                writer.writeTag(field.getIndex(), field.getMarshaller().getWireType());
+                field.getMarshaller().writeTo(writer, (referenceId == null) ? object : referenceId);
 
-            if (referenceId == null) {
-                context.addReference(object);
+                if (referenceId == null) {
+                    context.addReference(object);
+                }
             }
         }
     }

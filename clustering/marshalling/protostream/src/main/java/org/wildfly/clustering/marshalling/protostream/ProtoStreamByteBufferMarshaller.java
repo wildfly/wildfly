@@ -48,13 +48,8 @@ public class ProtoStreamByteBufferMarshaller implements ByteBufferMarshaller {
     public OptionalInt size(Object value) {
         try (ProtoStreamWriterContext.Factory factory = ProtoStreamWriterContext.FACTORY.get()) {
             ProtoStreamMarshaller<Any> marshaller = (ProtoStreamMarshaller<Any>) this.context.getMarshaller(Any.class);
-            SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(this.context);
-            try {
-                marshaller.writeTo(writer, new Any(value));
-                return writer.get();
-            } catch (IOException e) {
-                return OptionalInt.empty();
-            }
+            ProtoStreamOperation operation = new DefaultProtoStreamOperation(this.context);
+            return marshaller.size(operation, new Any(value));
         }
     }
 
