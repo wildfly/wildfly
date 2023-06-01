@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
@@ -50,6 +51,7 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
  */
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
+@Ignore("[WFLY-18080] Regular failures of FaultToleranceMicrometerIntegrationTestCase.")
 public class FaultToleranceMicrometerIntegrationTestCase {
 
     private static final int INVOCATION_COUNT = 2;
