@@ -62,35 +62,49 @@ public class OidcTestCase extends AbstractSubsystemTest {
     public void testSecureDeploymentWithSecretCredential() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"main\", \"realm-public-key\" : \"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB\", \"auth-server-url\" : \"http://localhost:8080/auth\", \"truststore\" : \"truststore.jks\", \"truststore-password\" : \"secret\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"allow-any-hostname\" : false, \"disable-trust-manager\" : true, \"connection-pool-size\" : 20, \"enable-cors\" : true, \"client-keystore\" : \"keys.jks\", \"client-keystore-password\" : \"secret\", \"client-key-password\" : \"secret\", \"cors-max-age\" : 600, \"cors-allowed-headers\" : \"X-Custom\", \"cors-allowed-methods\" : \"PUT,POST,DELETE,GET\", \"expose-token\" : false, \"always-refresh-token\" : false, \"register-node-at-startup\" : true, \"register-node-period\" : 60, \"token-store\" : \"session\", \"principal-attribute\" : \"sub\", \"proxy-url\" : \"http://localhost:9000\", \"resource\" : \"myAppId\", \"use-resource-role-mappings\" : true, \"turn-off-change-session-id-on-login\" : false, \"token-minimum-time-to-live\" : 10, \"min-time-between-jwks-requests\" : 20, \"public-key-cache-ttl\" : 3600, \"verify-token-audience\" : true, \"credentials\" : {\"secret\" : \"0aa31d98-e0aa-404c-b6e0-e771dba1e798\"}, \"redirect-rewrite-rules\" : {\"^/wsmain/api/(.*)$\" : \"/api/$1/\"}}";
-        assertEquals(expectedJson, configService.getJSON("myAppWithSecret"));
+        assertEquals(expectedJson, configService.getJSON("myAppWithSecret.war"));
     }
 
     @Test
     public void testSecureDeploymentWithJwtCredential() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"main\", \"realm-public-key\" : \"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB\", \"auth-server-url\" : \"http://localhost:8080/auth\", \"truststore\" : \"truststore.jks\", \"truststore-password\" : \"secret\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"allow-any-hostname\" : false, \"disable-trust-manager\" : true, \"connection-pool-size\" : 20, \"enable-cors\" : true, \"client-keystore\" : \"keys.jks\", \"client-keystore-password\" : \"secret\", \"client-key-password\" : \"secret\", \"cors-max-age\" : 600, \"cors-allowed-headers\" : \"X-Custom\", \"cors-allowed-methods\" : \"PUT,POST,DELETE,GET\", \"expose-token\" : false, \"always-refresh-token\" : false, \"register-node-at-startup\" : true, \"register-node-period\" : 60, \"token-store\" : \"session\", \"principal-attribute\" : \"sub\", \"proxy-url\" : \"http://localhost:9000\", \"resource\" : \"http-endpoint\", \"use-resource-role-mappings\" : true, \"adapter-state-cookie-path\" : \"/\", \"credentials\" : { \"jwt\" : {\"client-keystore-file\" : \"/tmp/keystore.jks\", \"client-keystore-type\" : \"jks\", \"client-keystore-password\" : \"keystorePassword\", \"client-key-password\" : \"keyPassword\", \"token-timeout\" : \"10\", \"client-key-alias\" : \"keyAlias\"} }, \"redirect-rewrite-rules\" : {\"^/wsmain/api/(.*)$\" : \"/api/$1/\"}}";
-        assertEquals(expectedJson, configService.getJSON("myAppWithJwt"));
+        assertEquals(expectedJson, configService.getJSON("myAppWithJwt.war"));
     }
 
     @Test
     public void testSecureDeploymentWithSecretJwtCredential() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"main\", \"realm-public-key\" : \"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB\", \"auth-server-url\" : \"http://localhost:8080/auth\", \"truststore\" : \"truststore.jks\", \"truststore-password\" : \"secret\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"allow-any-hostname\" : false, \"disable-trust-manager\" : true, \"connection-pool-size\" : 20, \"enable-cors\" : true, \"client-keystore\" : \"keys.jks\", \"client-keystore-password\" : \"secret\", \"client-key-password\" : \"secret\", \"cors-max-age\" : 600, \"cors-allowed-headers\" : \"X-Custom\", \"cors-allowed-methods\" : \"PUT,POST,DELETE,GET\", \"expose-token\" : false, \"always-refresh-token\" : false, \"register-node-at-startup\" : true, \"register-node-period\" : 60, \"token-store\" : \"session\", \"principal-attribute\" : \"sub\", \"proxy-url\" : \"http://localhost:9000\", \"resource\" : \"some-endpoint\", \"use-resource-role-mappings\" : true, \"adapter-state-cookie-path\" : \"/\", \"credentials\" : { \"secret-jwt\" : {\"secret\" : \"fd8f54e1-6994-413a-acf8-90bc67f05412\", \"algorithm\" : \"HS512\"} }, \"redirect-rewrite-rules\" : {\"^/wsmain/api/(.*)$\" : \"/api/$1/\"}}";
-        assertEquals(expectedJson, configService.getJSON("myAppWithSecretJwt"));
+        assertEquals(expectedJson, configService.getJSON("myAppWithSecretJwt.war"));
     }
 
     @Test
     public void testSecureDeploymentWithRealmInlined() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"demo\", \"resource\" : \"customer-portal\", \"auth-server-url\" : \"http://localhost:8081/auth\", \"ssl-required\" : \"EXTERNAL\", \"credentials\" : {\"secret\" : \"password\"}}";
-        assertEquals(expectedJson, configService.getJSON("myAppWithRealmInline"));
+        assertEquals(expectedJson, configService.getJSON("myAppWithRealmInline.war"));
     }
 
     @Test
     public void testSecureDeploymentWithProvider() throws Exception {
         String expectedJson =
                 "{\"provider-url\" : \"https://accounts.google.com\", \"ssl-required\" : \"EXTERNAL\", \"principal-attribute\" : \"firstName\", \"client-id\" : \"customer-portal\", \"credentials\" : {\"secret\" : \"password\"}}";
-        assertEquals(expectedJson, configService.getJSON("myAppWithProvider"));
+        assertEquals(expectedJson, configService.getJSON("myAppWithProvider.war"));
+    }
+
+    @Test
+    public void testSecureServerWithProvider() throws Exception {
+        String expectedJson =
+                "{\"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"client-id\" : \"wildfly-console\", \"public-client\" : true, \"ssl-required\" : \"EXTERNAL\"}";
+        assertEquals(expectedJson, configService.getJSON("another-wildfly-console"));
+    }
+
+    @Test
+    public void testSecureServerWithRealm() throws Exception {
+        String expectedJson =
+                "{\"realm\" : \"jboss-infra\", \"realm-public-key\" : \"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB\", \"auth-server-url\" : \"http://localhost:8180/auth\", \"resource\" : \"wildfly-console\", \"public-client\" : true, \"adapter-state-cookie-path\" : \"/\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"proxy-url\" : \"http://localhost:9000\"}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-console"));
     }
 
     private static class DefaultInitializer extends AdditionalInitialization {

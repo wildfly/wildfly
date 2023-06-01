@@ -56,6 +56,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
@@ -124,6 +128,10 @@
         <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-auth-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-auth-server-deprecated</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

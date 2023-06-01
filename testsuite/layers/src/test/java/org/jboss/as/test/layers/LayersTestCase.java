@@ -41,6 +41,7 @@ public class LayersTestCase {
             // not used
             "ibm.jdk",
             "javax.api",
+            "javax.sql.api",
             "javax.xml.stream.api",
             "sun.jdk",
             "sun.scripting",

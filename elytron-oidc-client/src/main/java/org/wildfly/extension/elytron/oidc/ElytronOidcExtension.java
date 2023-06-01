@@ -48,9 +48,11 @@ public class ElytronOidcExtension implements Extension {
     private static final String RESOURCE_NAME = ElytronOidcExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
+    protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
 
-    private static final ElytronOidcSubsystemParser_1_0 CURRENT_PARSER = new ElytronOidcSubsystemParser_1_0();
+    private static final ElytronOidcSubsystemParser_1_0 ELYTRON_OIDC_SUBSYSTEM_PARSER_1_0 = new ElytronOidcSubsystemParser_1_0();
+    private static final ElytronOidcSubsystemParser_2_0 CURRENT_PARSER = new ElytronOidcSubsystemParser_2_0();
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefixes) {
         StringBuilder sb = new StringBuilder(SUBSYSTEM_NAME);
@@ -72,7 +74,8 @@ public class ElytronOidcExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_1_0.NAMESPACE, CURRENT_PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_1_0.NAMESPACE_1_0, ELYTRON_OIDC_SUBSYSTEM_PARSER_1_0);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_2_0.NAMESPACE_2_0, CURRENT_PARSER);
     }
 
 

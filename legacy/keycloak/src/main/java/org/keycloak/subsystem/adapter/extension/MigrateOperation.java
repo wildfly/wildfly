@@ -257,11 +257,6 @@ public class MigrateOperation implements OperationStepHandler {
             }
             newAddOp.get(OP_ADDR).set(newAddress);
             PathAddress address = PathAddress.pathAddress(newAddress);
-            if (newAddress.asList().size() == 2 && SecureServerDefinition.TAG_NAME.equals(address.getLastElement().getKey())) {
-                // elytron-oidc-client doesn't support the secure-server resource yet
-                warnings.add(ROOT_LOGGER.couldNotMigrateUnsupportedSecureServerResource());
-                continue;
-            }
 
             if (newAddress.asList().size() > 2) {
                 // element 0 is subsystem=elytron-oidc-client

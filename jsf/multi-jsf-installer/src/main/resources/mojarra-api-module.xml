@@ -30,9 +30,12 @@
         <module name="jakarta.servlet.jsp.api" export="true"/>
         <module name="jakarta.servlet.jstl.api" export="true"/>
         <module name="jakarta.validation.api" export="true"/>
-        <module name="org.glassfish.jakarta.el" export="true"/>
-        <module name="javax.api"/>
         <module name="jakarta.websocket.api"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+        <module name="org.glassfish.jakarta.el" export="true"/>
     </dependencies>
 
     <resources>

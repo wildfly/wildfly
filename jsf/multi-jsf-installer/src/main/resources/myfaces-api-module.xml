@@ -29,8 +29,11 @@
         <module name="jakarta.servlet.jsp.api" export="true"/>
         <module name="jakarta.servlet.jstl.api" export="true"/>
         <module name="jakarta.validation.api" export="true"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
         <module name="org.glassfish.jakarta.el" export="true"/>
-        <module name="javax.api"/>
 
         <!-- extra dependencies for MyFaces 1.1
         <module name="org.apache.commons.logging"/>
