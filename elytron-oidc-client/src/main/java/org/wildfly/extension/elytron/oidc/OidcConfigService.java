@@ -18,6 +18,11 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.AUTH_SERVER_URL;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_ID;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER_URL;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.RESOURCE;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
@@ -30,6 +35,7 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.wildfly.security.http.oidc.Oidc;
 
 final class OidcConfigService {
 
@@ -192,8 +198,12 @@ final class OidcConfigService {
     }
 
     public String getJSON(String deploymentName) {
+        return getJSON(deploymentName, false);
+    }
+
+    public String getJSON(String deploymentName, boolean convertToRealmConfiguration) {
         ModelNode deployment = this.secureDeployments.get(deploymentName);
-        return getJSON(deployment);
+        return getJSON(deployment, convertToRealmConfiguration);
     }
 
     public void clear() {
@@ -203,6 +213,10 @@ final class OidcConfigService {
     }
 
     private String getJSON(ModelNode deployment) {
+        return getJSON(deployment, false);
+    }
+
+    private String getJSON(ModelNode deployment, boolean convertToRealmConfiguration) {
         ModelNode json = new ModelNode();
         ModelNode realmOrProvider = null;
         boolean removeProvider = false;
@@ -225,6 +239,22 @@ final class OidcConfigService {
         setJSONValues(json, deployment);
         if (removeProvider) {
             json.remove(ElytronOidcDescriptionConstants.PROVIDER);
+        }
+
+        if (convertToRealmConfiguration) {
+            String clientId = json.get(CLIENT_ID).asStringOrNull();
+            if (clientId != null) {
+                json.remove(CLIENT_ID);
+                json.get(RESOURCE).set(clientId);
+            }
+
+            String providerUrl = json.get(PROVIDER_URL).asStringOrNull();
+            if (providerUrl != null) {
+                String[] authServerUrlAndRealm = providerUrl.split(Oidc.SLASH + Oidc.KEYCLOAK_REALMS_PATH);
+                json.get(AUTH_SERVER_URL).set(authServerUrlAndRealm[0]);
+                json.get(REALM).set(authServerUrlAndRealm[1]);
+                json.remove(PROVIDER_URL);
+            }
         }
         return json.toJSONString(true);
     }

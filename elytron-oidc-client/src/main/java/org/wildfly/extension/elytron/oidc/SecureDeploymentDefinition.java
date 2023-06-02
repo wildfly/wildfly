@@ -18,11 +18,17 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.jboss.as.server.security.SecurityMetaData.OPERATION_CONTEXT_ATTACHMENT_KEY;
+import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
+import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL;
+import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryName;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -39,8 +45,23 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.security.AdvancedSecurityMetaData;
+import org.jboss.as.server.security.VirtualDomainMarkerUtility;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.security.auth.permission.LoginPermission;
+import org.wildfly.security.auth.server.SecurityDomain;
+import org.wildfly.security.http.HttpServerAuthenticationMechanismFactory;
+import org.wildfly.security.http.oidc.OidcClientConfigurationBuilder;
+import org.wildfly.security.http.oidc.OidcClientContext;
+import org.wildfly.security.http.oidc.OidcMechanismFactory;
+import org.wildfly.security.http.oidc.OidcSecurityRealm;
 
 /**
  * A {@link ResourceDefinition} for securing deployments via OpenID Connect.
@@ -151,6 +172,8 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         }
     }
 
+    private static final String WAR_FILE_EXTENSION = ".war";
+
     SecureDeploymentDefinition() {
         super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT),
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT))
@@ -182,6 +205,18 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         }
 
         @Override
+        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
+            super.populateModel(operation, resource);
+            if (! isWarDeployment(context)) {
+                VirtualDomainMarkerUtility.virtualDomainRequired(context);
+                AdvancedSecurityMetaData advancedSecurityMetaData = new AdvancedSecurityMetaData();
+                advancedSecurityMetaData.setHttpServerAuthenticationMechanismFactory(virtualMechanismFactoryName(context));
+                advancedSecurityMetaData.setSecurityDomain(virtualDomainName(context));
+                context.attach(OPERATION_CONTEXT_ATTACHMENT_KEY, advancedSecurityMetaData);
+            }
+        }
+
+        @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
             String clientId = CLIENT_ID.resolveModelAttribute(context, model).asStringOrNull();
@@ -194,8 +229,43 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             if (disableTrustManager) {
                 ROOT_LOGGER.disableTrustManagerSetToTrue();
             }
+            String secureDeploymentName = context.getCurrentAddressValue();
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
-            oidcConfigService.addSecureDeployment(context.getCurrentAddressValue(), context.resolveExpressions(model));
+            oidcConfigService.addSecureDeployment(secureDeploymentName, context.resolveExpressions(model));
+
+            if (! isWarDeployment(context)) {
+                ServiceTarget serviceTarget = context.getServiceTarget();
+
+                ServiceName virtualMechanismFactoryName = virtualMechanismFactoryName(context);
+                ServiceBuilder<?> serviceBuilder = serviceTarget.addService(virtualMechanismFactoryName);
+
+                final OidcClientContext oidcClientContext = new OidcClientContext(OidcClientConfigurationBuilder
+                        .build(new ByteArrayInputStream(oidcConfigService.getJSON(secureDeploymentName).getBytes())));
+                final HttpServerAuthenticationMechanismFactory virtualMechanismFactory = new OidcMechanismFactory(oidcClientContext);
+
+                final Consumer<HttpServerAuthenticationMechanismFactory> mechanismFactoryConsumer = serviceBuilder.provides(virtualMechanismFactoryName);
+                serviceBuilder.setInstance(Service.newInstance(mechanismFactoryConsumer, virtualMechanismFactory));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+                serviceBuilder.install();
+
+                ServiceName virtualDomainName = VirtualDomainMarkerUtility.virtualDomainName(context);
+                serviceBuilder = serviceTarget.addService(virtualDomainName);
+
+                SecurityDomain virtualDomain = SecurityDomain.builder()
+                        .addRealm(VIRTUAL, new OidcSecurityRealm()).build()
+                        .setDefaultRealmName(VIRTUAL)
+                        .setPermissionMapper((permissionMappable, roles) -> LoginPermission.getInstance())
+                        .build();
+
+                Consumer<SecurityDomain> securityDomainConsumer = serviceBuilder.provides(new ServiceName[]{virtualDomainName});
+                serviceBuilder.setInstance(Service.newInstance(securityDomainConsumer, virtualDomain));
+                serviceBuilder.setInitialMode(ServiceController.Mode.ON_DEMAND);
+                serviceBuilder.install();
+
+                if (! context.isBooting()) {
+                    context.reloadRequired();
+                }
+            }
         }
     }
 
@@ -212,7 +282,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.updateSecureDeployment(context.getCurrentAddressValue(), attributeName, resolvedValue);
             handbackHolder.setHandback(oidcConfigService);
-            return false;
+            return ! isWarDeployment(context);
         }
 
         @Override
@@ -232,6 +302,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             OidcConfigService oidcConfigService = OidcConfigService.getInstance();
             oidcConfigService.removeSecureDeployment(context.getCurrentAddressValue());
+            if (! isWarDeployment(context)) {
+                context.reloadRequired();
+            }
         }
+    }
+
+    static boolean isWarDeployment(OperationContext context) {
+        return context.getCurrentAddressValue().endsWith(WAR_FILE_EXTENSION);
     }
 }

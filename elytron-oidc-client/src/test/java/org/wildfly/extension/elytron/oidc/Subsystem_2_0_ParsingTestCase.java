@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021 Red Hat, Inc., and individual contributors
+ * Copyright 2023 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,20 +28,20 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class Subsystem_1_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem_1_0_ParsingTestCase() {
+    public Subsystem_2_0_ParsingTestCase() {
         super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("legacy_subsystem_1_0.xml");
+        return readResource("subsystem_2_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-elytron-oidc-client_1_0.xsd";
+        return "schema/wildfly-elytron-oidc-client_2_0.xsd";
     }
 
     @Override
