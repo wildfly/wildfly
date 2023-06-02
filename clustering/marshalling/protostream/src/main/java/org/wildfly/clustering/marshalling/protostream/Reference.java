@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,37 +22,36 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
-import org.infinispan.protostream.impl.TagWriterImpl;
+import java.util.function.IntSupplier;
 
 /**
+ * Encapsulates an object reference.
  * @author Paul Ferraro
  */
-public class DefaultProtoStreamOperation implements ProtoStreamOperation, OperationContext {
+public class Reference implements IntSupplier {
+    private final int reference;
 
-    private final OperationContext context;
-
-    public DefaultProtoStreamOperation(ImmutableSerializationContext context) {
-        this(TagWriterImpl.newInstance(context));
-    }
-
-    public DefaultProtoStreamOperation(OperationContext context) {
-        this.context = context;
+    public Reference(int reference) {
+        this.reference = reference;
     }
 
     @Override
-    public ImmutableSerializationContext getSerializationContext() {
-        return this.context.getSerializationContext();
+    public int getAsInt() {
+        return this.reference;
     }
 
     @Override
-    public Object getParam(Object key) {
-        return this.context.getParam(key);
+    public int hashCode() {
+        return this.reference;
     }
 
     @Override
-    public void setParam(Object key, Object value) {
-        this.context.setParam(key, value);
+    public boolean equals(Object object) {
+        return (object instanceof Reference) ? this.reference == ((Reference) object).reference : false;
+    }
+
+    @Override
+    public String toString() {
+        return Integer.toString(this.reference);
     }
 }

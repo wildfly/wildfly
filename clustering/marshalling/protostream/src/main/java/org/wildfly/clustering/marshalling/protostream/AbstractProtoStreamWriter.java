@@ -24,6 +24,9 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
 import org.infinispan.protostream.TagWriter;
@@ -33,15 +36,38 @@ import org.infinispan.protostream.descriptors.WireType;
  * Delegates most {@link ProtoStreamWriter} operations to a {@link TagWriter}.
  * @author Paul Ferraro
  */
-public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperation implements ProtoStreamWriter, WriteContext {
+public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOperation implements ProtoStreamWriter, WriteContext {
+
+    interface ProtoStreamWriterContext extends ProtoStreamOperation.Context {
+        /**
+         * Returns an existing reference to the specified object, if one exists.
+         * @param object an object whose may already have been referenced
+         * @return a reference for the specified object, or null, if no reference yet exists.
+         */
+        Reference getReference(Object object);
+
+        /**
+         * Creates a copy of this writer context.
+         * Used to ensure reference integrity between size and write operations.
+         * @return a copy of this writer context
+         */
+        ProtoStreamWriterContext clone();
+    }
 
     private final TagWriter writer;
     private final int depth;
+    private final ProtoStreamWriterContext context;
 
-    protected AbstractProtoStreamWriter(WriteContext context) {
+    protected AbstractProtoStreamWriter(WriteContext context, ProtoStreamWriterContext writerContext) {
         super(context);
         this.writer = context.getWriter();
         this.depth = context.depth();
+        this.context = writerContext;
+    }
+
+    @Override
+    public Context getContext() {
+        return this.context;
     }
 
     @Override
@@ -52,6 +78,16 @@ public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperat
     @Override
     public int depth() {
         return this.depth;
+    }
+
+    @Override
+    public void writeAnyNoTag(Object value) throws IOException {
+        Reference reference = this.context.getReference(value);
+        Any any = new Any((reference != null) ? reference : value);
+        this.writeObjectNoTag(any);
+        if (reference == null) {
+            this.context.record(value);
+        }
     }
 
     @Override
@@ -183,5 +219,35 @@ public abstract class AbstractProtoStreamWriter extends DefaultProtoStreamOperat
     @Override
     public void flush() throws IOException {
         this.writer.flush();
+    }
+
+    static class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Reference> {
+        private final Map<Object, Reference> references = new IdentityHashMap<>(128);
+        private int reference = 0; // Enumerates object references
+
+        @Override
+        public void record(Object object) {
+            if (object != null) {
+                this.references.computeIfAbsent(object, this);
+            }
+        }
+
+        @Override
+        public Reference getReference(Object object) {
+            return (object != null) ? this.references.get(object) : null;
+        }
+
+        @Override
+        public Reference apply(Object key) {
+            return new Reference(this.reference++);
+        }
+
+        @Override
+        public ProtoStreamWriterContext clone() {
+            DefaultProtoStreamWriterContext context = new DefaultProtoStreamWriterContext();
+            context.references.putAll(this.references);
+            context.reference = this.reference;
+            return context;
+        }
     }
 }

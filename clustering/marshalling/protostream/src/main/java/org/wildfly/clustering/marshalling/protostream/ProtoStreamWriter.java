@@ -33,12 +33,6 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
-    default Context getContext() {
-        try (ProtoStreamWriterContext context = ProtoStreamWriterContext.FACTORY.get().apply(this)) {
-            return context;
-        }
-    }
-
     /**
      * Writes the specified object of an abitrary type using the specified index.
      * Object will be read via {@link ProtoStreamReader#readAny()}.
@@ -47,7 +41,8 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
      */
     default void writeAny(int index, Object value) throws IOException {
-        this.writeObject(index, new Any(value));
+        this.writeTag(index, WireType.LENGTH_DELIMITED);
+        this.writeAnyNoTag(value);
     }
 
     /**
@@ -63,7 +58,14 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
     }
 
     /**
-     * Writes the specified object.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
+     * Writes the specified object of an arbitrary type.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    void writeAnyNoTag(Object value) throws IOException;
+
+    /**
+     * Writes the specified object of a specific type.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
      * @param value a value to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
      */

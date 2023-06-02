@@ -35,15 +35,22 @@ import org.infinispan.protostream.impl.TagWriterImpl;
 public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter implements Supplier<OptionalInt> {
 
     private final TagWriterImpl writer;
+    private final ProtoStreamWriterContext context;
     private boolean present = true;
 
-    public SizeComputingProtoStreamWriter(ImmutableSerializationContext context) {
-        this(TagWriterImpl.newInstance(context));
+    public SizeComputingProtoStreamWriter(ProtoStreamSizeOperation operation, ProtoStreamWriterContext context) {
+        this(TagWriterImpl.newInstance(operation.getSerializationContext()), context);
     }
 
-    private SizeComputingProtoStreamWriter(TagWriterImpl writer) {
-        super(writer);
+    private SizeComputingProtoStreamWriter(TagWriterImpl writer, ProtoStreamWriterContext writerContext) {
+        super(writer, writerContext);
         this.writer = writer;
+        this.context = writerContext;
+    }
+
+    @Override
+    public ProtoStreamOperation.Context getContext() {
+        return this.context;
     }
 
     @Override
@@ -53,16 +60,17 @@ public class SizeComputingProtoStreamWriter extends AbstractProtoStreamWriter im
 
     @Override
     public void writeObjectNoTag(Object value) throws IOException {
-        if (this.present) {
-            ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-            OptionalInt size = marshaller.size(this, value);
-            if (size.isPresent()) {
-                int length = size.getAsInt();
-                this.writeVarint32(length);
+        ImmutableSerializationContext context = this.getSerializationContext();
+        ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
+        OptionalInt size = marshaller.size(new DefaultProtoStreamSizeOperation(context, this.context), value);
+        if (this.present && size.isPresent()) {
+            int length = size.getAsInt();
+            this.writeVarint32(length);
+            if (length > 0) {
                 this.writeRawBytes(null, 0, length);
-            } else {
-                this.present = false;
             }
+        } else {
+            this.present = false;
         }
     }
 }

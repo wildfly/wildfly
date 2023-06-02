@@ -62,10 +62,10 @@ public class ByteBufferMarshalledValueMarshaller implements ProtoStreamMarshalle
     }
 
     @Override
-    public OptionalInt size(ProtoStreamOperation context, ByteBufferMarshalledValue<Object> value) {
+    public OptionalInt size(ProtoStreamSizeOperation operation, ByteBufferMarshalledValue<Object> value) {
         if (value.isEmpty()) return OptionalInt.of(0);
         OptionalInt size = value.size();
-        return size.isPresent() ? OptionalInt.of(context.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + context.varIntSize(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(operation.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + operation.varIntSize(size.getAsInt()) + size.getAsInt()) : OptionalInt.empty();
     }
 
     @SuppressWarnings("unchecked")

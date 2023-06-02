@@ -32,29 +32,59 @@ import org.infinispan.protostream.impl.TagWriterImpl;
 import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
 
 /**
- * {@link ProtoStreamWriter} implementation that writes to a {@link CodedOutputStream}.
+ * {@link ProtoStreamWriter} implementation that writes to a {@link TagWriterImpl}.
  * @author Paul Ferraro
  */
 public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
 
+    private final ProtoStreamWriterContext context;
+
+    /**
+     * Creates a default ProtoStream writer.
+     * @param context the write context
+     */
     public DefaultProtoStreamWriter(WriteContext context) {
-        super(context);
+        this(context, new DefaultProtoStreamWriterContext());
+    }
+
+    private DefaultProtoStreamWriter(WriteContext context, ProtoStreamWriterContext writerContext) {
+        super(context, writerContext);
+        this.context = writerContext;
+    }
+
+    @Override
+    public ProtoStreamOperation.Context getContext() {
+        return this.context;
     }
 
     @Override
     public void writeObjectNoTag(Object value) throws IOException {
         ImmutableSerializationContext context = this.getSerializationContext();
         ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-        OptionalInt size = marshaller.size(this, value);
-        try (ByteBufferOutputStream output = new ByteBufferOutputStream(size)) {
-            TagWriterImpl writer = size.isPresent() ? TagWriterImpl.newInstance(context, output, size.getAsInt()) : TagWriterImpl.newInstance(context, output);
-            marshaller.writeTo(new DefaultProtoStreamWriter(writer), value);
-            writer.flush();
-            ByteBuffer buffer = output.getBuffer(); // Buffer is array backed
-            int offset = buffer.arrayOffset();
-            int length = buffer.limit() - offset;
+        // Retain reference integrity by using a copy of the current context during size operation
+        OptionalInt size = marshaller.size(new DefaultProtoStreamSizeOperation(context, this.context.clone()), value);
+        if (size.isPresent()) {
+            // If size is known, we can marshal directly to our output stream
+            int length = size.getAsInt();
             this.writeVarint32(length);
-            this.writeRawBytes(buffer.array(), offset, length);
+            if (length > 0) {
+                marshaller.writeTo(this, value);
+            }
+        } else {
+            // If size is unknown, marshal to an expandable temporary buffer
+            // This should only be the case if delegating to JBoss Marshalling or Java Serialization
+            try (ByteBufferOutputStream output = new ByteBufferOutputStream()) {
+                TagWriterImpl writer = TagWriterImpl.newInstanceNoBuffer(context, output);
+                marshaller.writeTo(new DefaultProtoStreamWriter(writer, this.context), value);
+                // Byte buffer is array backed
+                ByteBuffer buffer = output.getBuffer();
+                int offset = buffer.arrayOffset();
+                int length = buffer.limit() - offset;
+                this.writeVarint32(length);
+                if (length > 0) {
+                    this.writeRawBytes(buffer.array(), offset, length);
+                }
+            }
         }
     }
 }

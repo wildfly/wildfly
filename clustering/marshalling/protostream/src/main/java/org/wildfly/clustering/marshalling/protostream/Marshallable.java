@@ -54,14 +54,8 @@ public interface Marshallable<T> {
      * @param value the value whose size is to be calculated
      * @return an optional buffer size, only present if the buffer size could be computed
      */
-    default OptionalInt size(ProtoStreamOperation operation, T value) {
-        SizeComputingProtoStreamWriter writer = new SizeComputingProtoStreamWriter(operation.getSerializationContext());
-        try (ProtoStreamWriterContext ctx = ProtoStreamWriterContext.FACTORY.get().apply(writer)) {
-            this.writeTo(writer, value);
-            return writer.get();
-        } catch (IOException e) {
-            return OptionalInt.empty();
-        }
+    default OptionalInt size(ProtoStreamSizeOperation operation, T value) {
+        return operation.computeSize(this::writeTo, value);
     }
 
     /**

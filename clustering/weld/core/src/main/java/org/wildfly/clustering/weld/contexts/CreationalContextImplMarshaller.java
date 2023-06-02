@@ -66,7 +66,7 @@ public class CreationalContextImplMarshaller<T> implements ProtoStreamMarshaller
     @Override
     public CreationalContextImpl<T> readFrom(ProtoStreamReader reader) throws IOException {
         CreationalContextImpl<T> result = new CreationalContextImpl<>(null);
-        reader.getContext().addReference(result);
+        reader.getContext().record(result);
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
@@ -101,7 +101,7 @@ public class CreationalContextImplMarshaller<T> implements ProtoStreamMarshaller
     @SuppressWarnings("unchecked")
     @Override
     public void writeTo(ProtoStreamWriter writer, CreationalContextImpl<T> context) throws IOException {
-        writer.getContext().addReference(context);
+        writer.getContext().record(context);
         CreationalContextImpl<?> parent = context.getParentCreationalContext();
         if (parent != null) {
             writer.writeAny(PARENT_INDEX, parent);

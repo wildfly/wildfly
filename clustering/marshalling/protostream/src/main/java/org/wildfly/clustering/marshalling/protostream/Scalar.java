@@ -42,7 +42,7 @@ public enum Scalar implements ScalarMarshallerProvider {
 
         @Override
         public void writeTo(ProtoStreamWriter writer, Object value) throws IOException {
-            writer.writeObjectNoTag(new Any(value));
+            writer.writeAnyNoTag(value);
         }
 
         @Override
@@ -321,6 +321,27 @@ public enum Scalar implements ScalarMarshallerProvider {
         @Override
         public WireType getWireType() {
             return WireType.LENGTH_DELIMITED;
+        }
+    }),
+    REFERENCE(new ScalarMarshaller<Reference>() {
+        @Override
+        public Reference readFrom(ProtoStreamReader reader) throws IOException {
+            return new Reference(reader.readUInt32());
+        }
+
+        @Override
+        public void writeTo(ProtoStreamWriter writer, Reference value) throws IOException {
+            writer.writeVarint32(value.getAsInt());
+        }
+
+        @Override
+        public Class<? extends Reference> getJavaClass() {
+            return Reference.class;
+        }
+
+        @Override
+        public WireType getWireType() {
+            return WireType.VARINT;
         }
     }),
     ;

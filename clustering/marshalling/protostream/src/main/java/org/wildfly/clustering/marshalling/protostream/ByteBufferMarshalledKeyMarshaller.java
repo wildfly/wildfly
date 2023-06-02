@@ -71,11 +71,11 @@ public class ByteBufferMarshalledKeyMarshaller implements ProtoStreamMarshaller<
     }
 
     @Override
-    public OptionalInt size(ProtoStreamOperation context, ByteBufferMarshalledKey<Object> key) {
+    public OptionalInt size(ProtoStreamSizeOperation operation, ByteBufferMarshalledKey<Object> key) {
         if (key.isEmpty()) return OptionalInt.of(0);
-        int hashCodeSize = WireType.FIXED_32_SIZE + context.tagSize(HASH_CODE_INDEX, WireType.FIXED32);
+        int hashCodeSize = WireType.FIXED_32_SIZE + operation.tagSize(HASH_CODE_INDEX, WireType.FIXED32);
         OptionalInt size = key.size();
-        return size.isPresent() ? OptionalInt.of(context.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + context.varIntSize(size.getAsInt()) + size.getAsInt() + hashCodeSize) : OptionalInt.empty();
+        return size.isPresent() ? OptionalInt.of(operation.tagSize(BUFFER_INDEX, WireType.LENGTH_DELIMITED) + operation.varIntSize(size.getAsInt()) + size.getAsInt() + hashCodeSize) : OptionalInt.empty();
     }
 
     @SuppressWarnings("unchecked")
