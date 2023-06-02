@@ -31,7 +31,6 @@
 
     <dependencies>
         <module name="java.sql"/>
-        <module name="javax.sql.api"/>
         <module name="jdk.unsupported"/>
     </dependencies>
 
