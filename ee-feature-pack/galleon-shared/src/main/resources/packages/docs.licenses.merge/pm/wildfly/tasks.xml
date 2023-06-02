@@ -5,7 +5,7 @@
     <xml-merge basedir="docs/licenses" output="docs/licenses/licenses.xml">
         <filter pattern="*-licenses.xml" include="true"/>
     </xml-merge>
-    <transform stylesheet="docs/licenses/licenses.xsl" src="docs/licenses/licenses.xml" output="docs/licenses/licenses.html" phase="FINALIZING"/>
+    <transform stylesheet="docs/licenses/licenses.xsl" src="docs/licenses/licenses.xml" output="docs/licenses/licenses.html" phase="FINALIZING" feature-pack-properties="true"/>
     <line-endings phase="FINALIZING">
       <unix>
         <filter pattern="docs?licenses?licenses.html" include="true"/>
