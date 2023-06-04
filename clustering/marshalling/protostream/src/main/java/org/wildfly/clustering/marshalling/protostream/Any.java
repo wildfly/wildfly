@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  * A wrapper for an arbitrary object.
  * @author Paul Ferraro
  */
-public class Any implements Supplier<Object> {
+class Any implements Supplier<Object> {
 
     private final Object value;
 

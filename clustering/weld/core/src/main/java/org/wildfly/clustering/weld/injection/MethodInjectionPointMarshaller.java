@@ -42,7 +42,6 @@ import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
 import org.jboss.weld.serialization.spi.ContextualStore;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -92,7 +91,7 @@ public class MethodInjectionPointMarshaller<T, X> implements ProtoStreamMarshall
                     method = reader.readObject(BackedAnnotatedMethod.class);
                     break;
                 case BEAN_INDEX:
-                    beanId = (BeanIdentifier) reader.readObject(Any.class).get();
+                    beanId = reader.readAny(BeanIdentifier.class);
                     break;
                 default:
                     reader.skipField(tag);
