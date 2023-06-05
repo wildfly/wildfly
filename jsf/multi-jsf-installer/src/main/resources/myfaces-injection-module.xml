@@ -47,10 +47,10 @@
         <module name="org.jboss.weld.api"/>
         <module name="org.wildfly.security.elytron"/>
 
-        <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}"/>
+        <module name="jakarta.faces.api:${jsf-impl-name}-${jsf-version}"/>
     </dependencies>
     <provides>
-        <service name="javax.servlet.ServletContainerInitializer">
+        <service name="jakarta.servlet.ServletContainerInitializer">
             <with-class name="org.jboss.as.jsf.injection.MyFacesContainerInitializer"/>
         </service>
     </provides>

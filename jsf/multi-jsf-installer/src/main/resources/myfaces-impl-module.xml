@@ -28,7 +28,7 @@
     </properties>
 
     <dependencies>
-        <module name="javax.faces.api:${jsf-impl-name}-${jsf-version}">
+        <module name="jakarta.faces.api:${jsf-impl-name}-${jsf-version}">
             <imports>
                 <include path="META-INF/**"/>
             </imports>
