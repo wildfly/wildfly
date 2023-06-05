@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.OptionalInt;
+import java.util.function.Function;
 
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
@@ -35,7 +36,7 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferOutputStream;
  * {@link ProtoStreamWriter} implementation that writes to a {@link TagWriterImpl}.
  * @author Paul Ferraro
  */
-public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
+public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter implements Function<Object, OptionalInt> {
 
     private final ProtoStreamWriterContext context;
 
@@ -61,8 +62,7 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
     public void writeObjectNoTag(Object value) throws IOException {
         ImmutableSerializationContext context = this.getSerializationContext();
         ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
-        // Retain reference integrity by using a copy of the current context during size operation
-        OptionalInt size = marshaller.size(new DefaultProtoStreamSizeOperation(context, this.context.clone()), value);
+        OptionalInt size = this.context.computeSize(value, this);
         if (size.isPresent()) {
             // If size is known, we can marshal directly to our output stream
             int length = size.getAsInt();
@@ -86,5 +86,12 @@ public class DefaultProtoStreamWriter extends AbstractProtoStreamWriter {
                 }
             }
         }
+    }
+
+    @Override
+    public OptionalInt apply(Object value) {
+        ProtoStreamMarshaller<Object> marshaller = this.findMarshaller(value.getClass());
+        // Retain reference integrity by using a copy of the current context during size operation
+        return marshaller.size(new DefaultProtoStreamSizeOperation(this.getSerializationContext(), this.context.clone()), value);
     }
 }

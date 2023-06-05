@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.Function;
 
 import org.infinispan.protostream.ProtobufTagMarshaller.WriteContext;
@@ -52,6 +53,14 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
          * @return a copy of this writer context
          */
         ProtoStreamWriterContext clone();
+
+        /**
+         * Computes the size of the specified object via the specified function, if not already known
+         * @param object the target object
+         * @param function a function that computes the size of the specified object
+         * @return the computed or cached size
+         */
+        OptionalInt computeSize(Object object, Function<Object, OptionalInt> function);
     }
 
     private final TagWriter writer;
@@ -224,6 +233,15 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
     static class DefaultProtoStreamWriterContext implements ProtoStreamWriterContext, Function<Object, Reference> {
         private final Map<Object, Reference> references = new IdentityHashMap<>(128);
         private int reference = 0; // Enumerates object references
+        private final Map<Object, OptionalInt> sizes;
+
+        DefaultProtoStreamWriterContext() {
+            this(new IdentityHashMap<>(128));
+        }
+
+        private DefaultProtoStreamWriterContext(Map<Object, OptionalInt> sizes) {
+            this.sizes = sizes;
+        }
 
         @Override
         public void record(Object object) {
@@ -244,10 +262,18 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
 
         @Override
         public ProtoStreamWriterContext clone() {
-            DefaultProtoStreamWriterContext context = new DefaultProtoStreamWriterContext();
+            // Share size cache
+            DefaultProtoStreamWriterContext context = new DefaultProtoStreamWriterContext(this.sizes);
+            // Copy references
             context.references.putAll(this.references);
             context.reference = this.reference;
             return context;
+        }
+
+        @Override
+        public OptionalInt computeSize(Object object, Function<Object, OptionalInt> function) {
+            // Don't cache size for internal wrappers, which would otherwise bloat our hashtable
+            return (object instanceof Any) ? function.apply(object) : this.sizes.computeIfAbsent(object, function);
         }
     }
 }
