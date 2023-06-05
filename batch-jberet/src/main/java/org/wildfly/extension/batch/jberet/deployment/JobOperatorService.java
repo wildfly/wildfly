@@ -536,8 +536,8 @@ public class JobOperatorService extends AbstractJobOperator implements WildFlyJo
                         }
                         try {
                             final long newId;
-                            // If the user is not null we need to restart the job with the user specified
-                            if (user == null) {
+                            // If the user is not null or $local, we need to restart the job with the user specified
+                            if (user == null || user.equals("$local")) {
                                 newId = restart(id, RESTART_PROPS);
                             } else {
                                 newId = privilegedRunAs(user, () -> restart(id, RESTART_PROPS));
