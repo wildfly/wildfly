@@ -52,6 +52,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     private final SessionID id;
     private final StatefulSessionComponent ejbComponent;
     private final Map<Class<?>, ServiceName> viewServices;
+    private volatile boolean removed = false;
 
     private transient Map<String, ManagedReference> businessInterfaceToReference;
 
@@ -122,6 +123,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @Override
     public void remove() {
         try (StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = this.ejbComponent.getCache().findStatefulSessionBean(this.id)) {
+            this.removed = true;
             if (bean != null) {
                 bean.remove();
             }
@@ -130,8 +132,6 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
 
     @Override
     public boolean isRemoved() {
-        try (StatefulSessionBean<SessionID, StatefulSessionComponentInstance> bean = this.ejbComponent.getCache().findStatefulSessionBean(this.id)) {
-            return (bean == null) || bean.isRemoved();
-        }
+        return this.removed;
     }
 }
