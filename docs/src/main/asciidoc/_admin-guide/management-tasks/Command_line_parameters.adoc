@@ -104,7 +104,7 @@ storage. |jboss.server.base.dir/data
 |jboss.server.temp.dir |The directory used for temporary file storage.
 |jboss.server.base.dir/tmp
 
-|jboss.server.deploy.dir |The directory used to store deployed content
+|jboss.server.content.dir |The directory used to store deployed content
 |jboss.server.data.dir/content
 |=======================================================================
 
