@@ -110,7 +110,7 @@ public class BasicIIOPInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testHandle() throws IOException, NamingException {
+    public void testHandle() throws IOException, NamingException, ClassNotFoundException {
         final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteViaHandleMessage());
     }
@@ -121,7 +121,7 @@ public class BasicIIOPInvocationTestCase {
      */
     @Test
     @OperateOnDeployment("client")
-    public void testWrappedHandle() throws IOException, NamingException {
+    public void testWrappedHandle() throws IOException, NamingException, ClassNotFoundException {
         final ClientEjb ejb = client();
         Assert.assertEquals("hello", ejb.getRemoteViaWrappedHandle());
     }
