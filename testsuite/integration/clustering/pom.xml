@@ -259,6 +259,10 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-clustered-counter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-clustered-lock</artifactId>
             <scope>test</scope>
         </dependency>
