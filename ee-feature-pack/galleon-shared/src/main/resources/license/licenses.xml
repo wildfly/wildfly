@@ -575,7 +575,7 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-handler-proxy</artifactId>
+      <artifactId>netty-handler</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>
@@ -586,7 +586,7 @@
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
+      <artifactId>netty-handler-proxy</artifactId>
       <licenses>
         <license>
           <name>Apache License 2.0</name>

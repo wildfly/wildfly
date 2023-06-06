@@ -1609,6 +1609,12 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-handler-proxy</artifactId>
                 <version>${version.io.netty}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -1658,7 +1664,7 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport-native-epoll</artifactId>
                 <version>${version.io.netty}</version>
-                <classifier>linux-x86_64</classifier>
+                <classifier>linux-aarch_64</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1670,19 +1676,7 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport-native-epoll</artifactId>
                 <version>${version.io.netty}</version>
-                <classifier>linux-aarch_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-kqueue</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-x86_64</classifier>
+                <classifier>linux-x86_64</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1704,8 +1698,32 @@
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <version>${version.io.netty}</version>
+                <classifier>osx-x86_64</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
                 <artifactId>netty-transport-native-unix-common</artifactId>
                 <version>${version.io.netty}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <version>${version.io.netty}</version>
+                <classifier>linux-aarch_64</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1729,7 +1747,7 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-transport-native-unix-common</artifactId>
                 <version>${version.io.netty}</version>
-                <classifier>linux-aarch_64</classifier>
+                <classifier>osx-aarch_64</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1742,18 +1760,6 @@
                 <artifactId>netty-transport-native-unix-common</artifactId>
                 <version>${version.io.netty}</version>
                 <classifier>osx-x86_64</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport-native-unix-common</artifactId>
-                <version>${version.io.netty}</version>
-                <classifier>osx-aarch_64</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
