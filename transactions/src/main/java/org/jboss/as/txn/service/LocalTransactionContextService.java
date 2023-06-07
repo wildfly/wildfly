@@ -59,8 +59,6 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();
         builder.setExtendedJBossXATerminator(extendedJBossXATerminatorInjector.getValue());
         builder.setTransactionManager(transactionManagerInjector.getValue().getTransactionManager());
-        builder.setTransactionSynchronizationRegistry(transactionManagerInjector.getValue().getTransactionSynchronizationRegistry());
-        builder.setXATerminator(transactionManagerInjector.getValue().getJbossXATerminator());
         builder.setXAResourceRecoveryRegistry(xaResourceRecoveryRegistryInjector.getValue());
         builder.setXARecoveryLogDirRelativeToPath(serverEnvironmentInjector.getValue().getServerDataDir().toPath());
         builder.setStaleTransactionTime(staleTransactionTime);
