@@ -367,8 +367,6 @@
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
         <version.antlr>4.10</version.antlr>
-        <version.com.amazon.aws>1.12.284</version.com.amazon.aws>
-        <version.com.amazon.ion>1.0.2</version.com.amazon.ion>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
@@ -537,7 +535,7 @@
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
         <version.org.jgroups>5.2.14.Final</version.org.jgroups>
-        <version.org.jgroups.aws>2.0.1.Final</version.org.jgroups.aws>
+        <version.org.jgroups.aws>3.0.0.Final</version.org.jgroups.aws>
         <version.org.jgroups.azure>2.0.2.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>2.0.1.Final</version.org.jgroups.kubernetes>
         <version.org.jipijapa>1.0.1.Final</version.org.jipijapa>
@@ -553,6 +551,8 @@
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.0.Final</version.org.wildfly.transaction.client>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
+        <version.software.amazon.awssdk>2.20.77</version.software.amazon.awssdk>
+        <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>

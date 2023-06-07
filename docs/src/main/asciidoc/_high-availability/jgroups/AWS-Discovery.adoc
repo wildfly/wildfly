@@ -8,11 +8,12 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol for AWS EC2.
+The `org.jgroups.protocols.aws.S3_PING` is a discovery protocol using AWS S3 buckets as cluster information store.
 
-For provisioning using Galleon, use the `jgroups-aws` layer.
+To provision using Galleon, use the `jgroups-aws` layer.
+Note that the layer does not update configuration, only provisions necessary modules.
 
-The following example updates the `tcp` stack to use this discovery protocol instead of `MPING`:
+The following minimal example updates the existing `tcp` stack to use this discovery protocol instead of `MPING`:
 
 [source,options="nowrap"]
 ----
@@ -21,5 +22,10 @@ batch
 /subsystem=jgroups/stack=tcp/protocol=org.jgroups.protocols.aws.S3_PING:add(add-index=1, module="org.jgroups.aws", properties={region_name="eu-central-1", bucket_name="jgroups-s3"})
 run-batch
 ----
+
+The S3 client used by the protocol uses the default credential store provider.
+Refer to AWS documentation how to generate and supply appropriate credentials.
+For instance, credentials can be provided by Java system properties (`aws.accessKeyId` and `aws.secretAccessKey`),
+environmental properties (`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`), etc.
 
 For advanced configuration options, please visit protocol's documentation https://github.com/jgroups-extras/jgroups-aws#readme[here].
