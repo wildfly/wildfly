@@ -27,10 +27,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +49,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSubsystemSchema> {
+public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroupsSubsystemSchema> {
 
     @Parameters
     public static Iterable<JGroupsSubsystemSchema> parameters() {
@@ -59,8 +59,13 @@ public class JGroupsSubsystemTestCase extends ClusteringSubsystemTest<JGroupsSub
     private final JGroupsSubsystemSchema schema;
 
     public JGroupsSubsystemTestCase(JGroupsSubsystemSchema schema) {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, "subsystem-jgroups-%d_%d.xml", "schema/jboss-as-jgroups_%d_%d.xsd");
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), schema, JGroupsSubsystemSchema.CURRENT);
         this.schema = schema;
+    }
+
+    @Override
+    protected String getSubsystemXsdPathPattern() {
+        return "schema/jboss-as-%s_%d_%d.xsd";
     }
 
     private KernelServices buildKernelServices() throws Exception {
