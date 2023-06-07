@@ -325,7 +325,7 @@ Next, create a second OpenID Connect client called `wildfly-management`. This wi
 the *Capability* configuration, be sure to uncheck the Standard flow and Direct access grants.
 
 If you will be configuring WildFly to enable <<RBAC.adoc#rbac-roles,Role Based Access Control>> (RBAC), you can also create
-a new *Realm role* (e.g., ADMINISTRATOR) and assign it to a user.
+a new *Realm role* (e.g., Administrator) and assign it to a user.
 
 === Elytron OIDC Client Subsystem Configuration
 
