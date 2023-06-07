@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.util.AbstractMapMarshaller;
@@ -72,10 +71,10 @@ public class LRUMapMarshaller extends AbstractMapMarshaller<LRUMap<Object, Objec
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case KEY_INDEX:
-                    keys.add(reader.readObject(Any.class).get());
+                    keys.add(reader.readAny());
                     break;
                 case VALUE_INDEX:
-                    values.add(reader.readObject(Any.class).get());
+                    values.add(reader.readAny());
                     break;
                 case MAX_CAPACITY_INDEX:
                     maxCapacity = reader.readUInt32();

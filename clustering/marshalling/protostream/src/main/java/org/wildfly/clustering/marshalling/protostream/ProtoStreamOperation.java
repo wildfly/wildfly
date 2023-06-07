@@ -22,11 +22,7 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
-
 import org.infinispan.protostream.ImmutableSerializationContext;
-import org.infinispan.protostream.descriptors.WireType;
-import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
  * Common interface of {@link ProtoStreamReader} and {@link ProtoStreamWriter}.
@@ -36,12 +32,17 @@ public interface ProtoStreamOperation {
 
     interface Context {
         /**
-         * Records a the specified object reference, in case it is referenced again within a stream.
-         * This method is idempotent.
-         * @param object an object reference
+         * Records the specified object, so that it can be referenced later within the same stream
+         * @param object an object
          */
-        void addReference(Object object);
+        void record(Object object);
     }
+
+    /**
+     * Returns the context of this operation
+     * @return the operation context
+     */
+    ProtoStreamOperation.Context getContext();
 
     /**
      * Returns the serialization context of the associated marshaller.
@@ -74,30 +75,5 @@ public interface ProtoStreamOperation {
             }
         }
         throw exception;
-    }
-
-    /**
-     * Returns the marshalled size of the protobuf tag containing the specified field index and wire type.
-     * @param index a field index
-     * @param type a wire type
-     * @return the marshalled size of the protobuf tag
-     */
-    default int tagSize(int index, WireType type) {
-        return this.varIntSize(WireType.makeTag(index, type));
-    }
-
-    /**
-     * Returns the marshalled size of the specified variable-width integer.
-     * @param index a variable-width integer
-     * @return the marshalled size of the specified variable-width integer.
-     */
-    default int varIntSize(int value) {
-        TagWriterImpl writer = TagWriterImpl.newInstance(this.getSerializationContext());
-        try {
-            writer.writeVarint32(value);
-            return writer.getWrittenBytes();
-        } catch (IOException e) {
-            return WireType.MAX_VARINT_SIZE;
-        }
     }
 }

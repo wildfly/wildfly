@@ -53,7 +53,7 @@ public interface ProtoStreamMarshallerProvider extends ProtoStreamMarshaller<Obj
     }
 
     @Override
-    default OptionalInt size(ProtoStreamOperation operation, Object value) {
+    default OptionalInt size(ProtoStreamSizeOperation operation, Object value) {
         return this.cast(Object.class).size(operation, value);
     }
 

@@ -40,27 +40,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public enum AnyField implements Field<Object> {
     ANY(Scalar.ANY), // For re-use by other fields
-    REFERENCE(new ScalarMarshaller<Integer>() {
-        @Override
-        public Integer readFrom(ProtoStreamReader reader) throws IOException {
-            return reader.readUInt32();
-        }
-
-        @Override
-        public void writeTo(ProtoStreamWriter writer, Integer value) throws IOException {
-            writer.writeVarint32(value);
-        }
-
-        @Override
-        public Class<? extends Integer> getJavaClass() {
-            return Integer.class;
-        }
-
-        @Override
-        public WireType getWireType() {
-            return WireType.VARINT;
-        }
-    }),
+    REFERENCE(Scalar.REFERENCE),
     BOOLEAN(Scalar.BOOLEAN),
     BYTE(Scalar.BYTE),
     SHORT(Scalar.SHORT),

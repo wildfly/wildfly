@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,39 +22,37 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.util.Objects;
-import java.util.function.Supplier;
+import org.infinispan.protostream.ImmutableSerializationContext;
+import org.infinispan.protostream.ProtobufTagMarshaller.OperationContext;
+import org.infinispan.protostream.impl.TagWriterImpl;
 
 /**
- * A wrapper for an arbitrary object.
  * @author Paul Ferraro
  */
-class Any implements Supplier<Object> {
+public abstract class AbstractProtoStreamOperation implements ProtoStreamOperation, OperationContext {
 
-    private final Object value;
+    private final OperationContext context;
 
-    Any(Object value) {
-        this.value = value;
+    public AbstractProtoStreamOperation(ImmutableSerializationContext context) {
+        this(TagWriterImpl.newInstance(context));
+    }
+
+    public AbstractProtoStreamOperation(OperationContext context) {
+        this.context = context;
     }
 
     @Override
-    public Object get() {
-        return this.value;
+    public ImmutableSerializationContext getSerializationContext() {
+        return this.context.getSerializationContext();
     }
 
     @Override
-    public int hashCode() {
-        return (this.value != null) ? this.value.hashCode() : 0;
+    public Object getParam(Object key) {
+        return this.context.getParam(key);
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof Any)) return false;
-        return Objects.equals(this.value, ((Any) object).value);
-    }
-
-    @Override
-    public String toString() {
-        return (this.value != null) ? this.value.toString() : null;
+    public void setParam(Object key, Object value) {
+        this.context.setParam(key, value);
     }
 }

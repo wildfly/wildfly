@@ -57,7 +57,7 @@ public class SortedSetMarshaller<T extends SortedSet<Object>> extends AbstractCo
 
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if (index == 1) {
+            if (index == ELEMENT_INDEX) {
                 set.add(reader.readAny());
             } else if ((index >= COMPARATOR_INDEX) && (index < COMPARATOR_INDEX + ComparatorMarshaller.INSTANCE.getFields())) {
                 T existing = set;

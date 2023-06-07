@@ -32,18 +32,12 @@ import org.infinispan.protostream.TagReader;
  */
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
-    default Context getContext() {
-        return ProtoStreamReaderContext.INSTANCE.get();
-    }
-
     /**
      * Reads an object of an arbitrary type from this reader.
      * @return a supplier of the unmarshalled object
      * @throws IOException if the object could not be read with the associated marshaller.
      */
-    default Object readAny() throws IOException {
-        return this.readObject(Any.class).get();
-    }
+    Object readAny() throws IOException;
 
     /**
      * Reads an object of an arbitrary type from this reader, cast to the specified type.
