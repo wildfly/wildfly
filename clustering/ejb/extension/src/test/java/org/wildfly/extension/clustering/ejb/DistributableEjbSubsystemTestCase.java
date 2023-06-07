@@ -23,10 +23,10 @@
 package org.wildfly.extension.clustering.ejb;
 
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
  * @author Richard Achmatowicz
  */
 @RunWith(value = Parameterized.class)
-public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<DistributableEjbSubsystemSchema> {
+public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTest<DistributableEjbSubsystemSchema> {
 
     @Parameters
     public static Iterable<DistributableEjbSubsystemSchema> parameters() {
@@ -55,7 +55,7 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
     }
 
     public DistributableEjbSubsystemTestCase(DistributableEjbSubsystemSchema schema) {
-        super(DistributableEjbExtension.SUBSYSTEM_NAME, new DistributableEjbExtension(), schema, "wildfly-distributable-ejb-%d_%d.xml", "schema/wildfly-distributable-ejb_%d_%d.xsd");
+        super(DistributableEjbExtension.SUBSYSTEM_NAME, new DistributableEjbExtension(), schema, DistributableEjbSubsystemSchema.CURRENT);
     }
 
     /**
@@ -67,11 +67,6 @@ public class DistributableEjbSubsystemTestCase extends ClusteringSubsystemTest<D
                 .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
                 .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
                 ;
-    }
-
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        // Skip
     }
 
     /**
