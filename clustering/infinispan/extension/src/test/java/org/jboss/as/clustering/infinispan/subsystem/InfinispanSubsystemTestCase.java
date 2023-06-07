@@ -27,7 +27,7 @@ import java.util.Properties;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
-import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +47,7 @@ import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<InfinispanSubsystemSchema> {
+public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<InfinispanSubsystemSchema> {
 
     @Parameters
     public static Iterable<InfinispanSubsystemSchema> parameters() {
@@ -57,8 +57,13 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
     private final InfinispanSubsystemSchema schema;
 
     public InfinispanSubsystemTestCase(InfinispanSubsystemSchema schema) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
         this.schema = schema;
+    }
+
+    @Override
+    protected String getSubsystemXsdPathPattern() {
+        return "schema/jboss-as-%s_%d_%d.xsd";
     }
 
     @Override
