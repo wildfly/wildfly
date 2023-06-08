@@ -66,7 +66,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
         this.propertyReplacer = propertyReplacer;
     }
 
-
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult result) throws XMLStreamException {
 
         final Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
@@ -145,7 +145,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, topic, reader);
+                    parseAndAddParameter(CommonAttributes.DESTINATION_ENTRIES, entry, topic, reader);
                     break;
                 }
                 default: {
@@ -171,7 +171,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    parseAndSetParameter(CommonAttributes.DESTINATION_ENTRIES, entry, queue, reader);
+                    parseAndAddParameter(CommonAttributes.DESTINATION_ENTRIES, entry, queue, reader);
                     break;
                 }
                 case "selector": {
@@ -198,7 +198,8 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
         result.getQueues().add(new JmsDestination(queue, serverName, name));
     }
 
-    protected static void parseAndSetParameter(AttributeDefinition ad, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
-        ad.getParser().parseAndSetParameter(ad, value, operation, reader);
+    protected static void parseAndAddParameter(AttributeDefinition ad, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+        ModelNode attValue = ad.getParser().parse(ad, value, reader);
+        operation.get(ad.getName()).add(attValue);
     }
 }
