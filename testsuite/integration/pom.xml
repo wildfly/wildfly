@@ -57,12 +57,11 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <!-- Tests of EE feature pack functionality -->
                 <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>iiop</module>
                 <module>xts</module>
@@ -75,6 +74,11 @@
                 <module>legacy</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+
+                <!-- Tests of expansion functionality -->
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>manualmode-expansion</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -82,12 +86,11 @@
             <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <!-- Tests of EE feature pack functionality -->
                 <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>clustering</module>
                 <module>iiop</module>
@@ -100,6 +103,11 @@
                 <module>legacy</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+
+                <!-- Tests of expansion functionality -->
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>manualmode-expansion</module>
             </modules>
         </profile>
 
@@ -174,6 +182,15 @@
             <activation><property><name>ts.manualmode</name></property></activation>
             <modules>
                 <module>manualmode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.manualmode-expansion -->
+        <profile>
+            <id>ts.integ.group.manualmode-expansion</id>
+            <activation><property><name>ts.manualmode-expansion</name></property></activation>
+            <modules>
+                <module>manualmode-expansion</module>
             </modules>
         </profile>
 

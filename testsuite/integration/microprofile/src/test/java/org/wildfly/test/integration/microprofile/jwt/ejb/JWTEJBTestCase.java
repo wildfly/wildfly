@@ -24,7 +24,7 @@ package org.wildfly.test.integration.microprofile.jwt.ejb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.wildfly.test.microprofile.jwt.TokenUtil.generateJWT;
+import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
 import java.io.File;
 import java.net.URL;

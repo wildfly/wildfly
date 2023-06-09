@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.wildfly.test.microprofile.jwt;
+package org.wildfly.test.integration.microprofile.jwt;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
