@@ -22,14 +22,18 @@
 package org.jboss.as.test.manualmode.model;
 
 
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.base.AbstractExpressionSupportTestCase;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Smoke test of expression support for default configurations.
  *
  * @author Ivan Straka (c) 2020 Red Hat Inc.
  */
+@RunWith(Arquillian.class)
 public class ExpressionSupportSmokeTestCase extends AbstractExpressionSupportTestCase {
 
     private static final String JBOSSAS = "jbossas-custom";

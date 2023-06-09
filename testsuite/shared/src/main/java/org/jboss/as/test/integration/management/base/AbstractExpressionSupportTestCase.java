@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.manualmode.model;
+package org.jboss.as.test.integration.management.base;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
@@ -38,7 +37,6 @@ import org.jboss.dmr.Property;
 import org.jboss.dmr.ValueExpression;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,7 +73,6 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestUti
  *
  * @author Ivan Straka (c) 2020 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
 public abstract class AbstractExpressionSupportTestCase {
     private static final Logger LOGGER = Logger.getLogger(AbstractExpressionSupportTestCase.class);
 

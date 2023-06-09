@@ -392,29 +392,7 @@
 
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-codec-dns</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
                 <artifactId>netty-codec-http2</artifactId>
-                <version>${version.io.netty}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-resolver-dns</artifactId>
                 <version>${version.io.netty}</version>
                 <exclusions>
                     <exclusion>

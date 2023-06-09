@@ -22,19 +22,23 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="io.netty.netty-codec-dns">
+<module xmlns="urn:jboss:module:1.9" name="io.netty.netty-resolver-dns">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${io.netty:netty-codec-dns}"/>
+        <artifact name="${io.netty:netty-resolver-dns}"/>
     </resources>
 
     <dependencies>
-        <module name="io.netty.netty-common" />
-        <module name="io.netty.netty-buffer" />
-        <module name="io.netty.netty-transport" />
-        <module name="io.netty.netty-codec" />
+        <module name="java.naming"/>
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-dns"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport"/>
     </dependencies>
 </module>
