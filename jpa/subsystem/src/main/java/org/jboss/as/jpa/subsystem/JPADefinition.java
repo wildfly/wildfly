@@ -70,20 +70,17 @@ public class JPADefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
                     .build();
 
-    JPADefinition(boolean feature) {
-        super(getParameters(feature));
+    JPADefinition() {
+        super(getParameters());
     }
 
-    private static Parameters getParameters(boolean feature) {
+    private static Parameters getParameters() {
         Parameters result = new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME),
                 JPAExtension.getResourceDescriptionResolver())
-                .setFeature(feature).setRuntime(!feature);
-        if (feature) {
-            result = result.setCapabilities(JPA_CAPABILITY);
-        }
-        // TODO WFLY-11173 add/remove handlers don't make sense on the deployment resource
-        result = result.setAddHandler(JPASubSystemAdd.INSTANCE).setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE);
-
+                .setFeature(true)
+                .setCapabilities(JPA_CAPABILITY)
+                .setAddHandler(JPASubSystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE);
         return result;
     }
 
