@@ -32,7 +32,7 @@ import org.wildfly.clustering.group.Node;
  * Registered {@link GroupListener} are never invoked, as membership of a local group is fixed.
  * @author Paul Ferraro
  */
-public class LocalGroup implements AutoCloseableGroup<Void>, Registration {
+public class LocalGroup implements AutoCloseableGroup<Object>, Registration {
 
     private final Membership membership;
     private final String name;
@@ -74,7 +74,7 @@ public class LocalGroup implements AutoCloseableGroup<Void>, Registration {
     }
 
     @Override
-    public Node createNode(Void address) {
+    public Node createNode(Object ignored) {
         return this.getLocalMember();
     }
 }
