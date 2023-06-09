@@ -1,20 +1,24 @@
 /*
- * Copyright 2016-2018 Red Hat, Inc. and/or its affiliates
- * and other contributors as indicated by the @author tags.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * JBoss, Home of Professional Open Source.
+ *  * Copyright 2023 Red Hat, Inc., and individual contributors
+ *  * as indicated by the @author tags.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
-package org.jboss.as.test.layers;
+
+package org.jboss.as.test.shared;
 
 import java.io.File;
 import java.util.Arrays;
@@ -23,17 +27,14 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.jboss.as.test.layers.LayersTest;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- *
- * @author jdenise@redhat.com
- */
-public class LayersTestCase {
+public class LayersTestBase {
     // Packages that are provisioned by the test-standalone-reference installation
     // but not used in the test-all-layers installation.
     // This is the expected set of not provisioned modules when all layers are provisioned.
@@ -305,7 +306,7 @@ public class LayersTestCase {
                     "org.apache.avro",
                     // Brought by galleon ServerRootResourceDefinition
                     "wildflyee.api"
-                    );
+            );
         }
     }
 
