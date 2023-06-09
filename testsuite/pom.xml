@@ -437,12 +437,18 @@
             <modules><module>layers</module></modules>
         </profile>
         <profile>
+            <id>layers-expansion.module.profile</id>
+            <activation><property><name>layers-expansion.module</name></property></activation>
+            <modules><module>layers-expansion</module></modules>
+        </profile>
+        <profile>
             <id>layers_.module.profile</id>
             <activation><property><name>ts.layers</name></property></activation>
             <modules>
                 <module>integration</module>
                 <module>preview</module>
                 <module>layers</module>
+                <module>layers-expansion</module>
             </modules>
         </profile>
         <profile>
@@ -477,6 +483,7 @@
                 <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
+                <module>layers-expansion</module>
                 <module>preview</module>
                 <module>scripts</module>
             </modules>

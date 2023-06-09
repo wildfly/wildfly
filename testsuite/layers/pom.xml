@@ -16,7 +16,7 @@
 
     <artifactId>wildfly-ts-layers</artifactId>
     <packaging>jar</packaging>
-    <name>WildFly Test Suite: Galleon Layers</name>
+    <name>WildFly Test Suite: Galleon Layers -- Base</name>
 
     <dependencies>
         <dependency>
@@ -69,7 +69,6 @@
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
         <ee.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</ee.feature.pack.artifactId>
         <ee.feature.pack.version>${testsuite.ee.galleon.pack.version}</ee.feature.pack.version>
-        <full.feature.pack.artifactId>wildfly-galleon-pack</full.feature.pack.artifactId>
 
         <!-- Where to look for artifacts when provisioning and running. -->
         <maven.repo.local>${settings.localRepository}</maven.repo.local>
@@ -121,7 +120,6 @@
                 <ee.feature.pack.groupId>${project.groupId}</ee.feature.pack.groupId>
                 <ee.feature.pack.artifactId>wildfly-preview-feature-pack</ee.feature.pack.artifactId>
                 <ee.feature.pack.version>${project.version}</ee.feature.pack.version>
-                <full.feature.pack.artifactId>wildfly-preview-feature-pack</full.feature.pack.artifactId>
                 <!-- Use the transformed artifact repo -->
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
             </properties>
@@ -2103,310 +2101,6 @@
                             </execution>
 
                             <!--
-                                Galleon layers defined only in wildfly-galleon-pack
-                             -->
-                            <execution>
-                                <id>microprofile-platform-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-platform</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-platform</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-config-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-config</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-config</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-health-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-health</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-health</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-openapi-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-openapi</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-openapi</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-fault-tolerance-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-fault-tolerance</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-jwt-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-jwt</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-jwt</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-lra-coordinator-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-lra-coordinator</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-lra-coordinator</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-lra-participant</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-lra-participant</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>microprofile-lra-participant</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-standalone-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-standalone</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>web-passivation</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>micrometer</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>microprofile-standalone-ha-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/microprofile-standalone-ha</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
-                                            <version>${full.maven.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>undertow-https</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>web-clustering</layer>
-                                            </layers>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                                <layer>micrometer</layer>
-                                            </excluded-layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-
-                            <!--
                                 All layers provisioned all together
                              -->
                             <execution>
@@ -2420,7 +2114,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -2527,7 +2221,7 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>${full.feature.pack.artifactId}</artifactId>
+                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
                                             <version>${full.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
@@ -2711,7 +2405,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
-                                                <layer>micrometer</layer>
+                                                <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
@@ -2729,20 +2423,6 @@
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-lra-coordinator</layer>
-                                                <layer>microprofile-lra-participant</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-reactive-streams-operators</layer>
-                                                <layer>microprofile-reactive-messaging</layer>
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>microprofile-rest-client</layer>
-                                                <layer>microprofile-telemetry</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2811,7 +2491,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
-                                                <layer>micrometer</layer>
+                                                <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
@@ -2830,14 +2510,6 @@
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-telemetry</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
