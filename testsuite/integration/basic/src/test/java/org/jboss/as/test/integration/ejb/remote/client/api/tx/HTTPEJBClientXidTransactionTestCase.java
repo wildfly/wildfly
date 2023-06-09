@@ -22,11 +22,19 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.tx;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import com.arjuna.ats.internal.jbossatx.jta.jca.XATerminator;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionSynchronizationRegistryImple;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.ats.jta.common.jtaPropertyManager;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,7 +53,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.tm.XAResourceRecovery;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -58,15 +65,6 @@ import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.ContextTransactionSynchronizationRegistry;
 import org.wildfly.transaction.client.LocalTransactionContext;
 import org.wildfly.transaction.client.provider.jboss.JBossLocalTransactionProvider;
-
-import jakarta.transaction.TransactionManager;
-import jakarta.transaction.TransactionSynchronizationRegistry;
-
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 /**
  * @author Jaikiran Pai
@@ -129,12 +127,10 @@ public class HTTPEJBClientXidTransactionTestCase {
         jtaEnvironmentBean.setTransactionManagerClassName(TransactionManagerImple.class.getName());
         jtaEnvironmentBean.setTransactionSynchronizationRegistryClassName(TransactionSynchronizationRegistryImple.class.getName());
         final TransactionManager narayanaTm = jtaEnvironmentBean.getTransactionManager();
-        final TransactionSynchronizationRegistry narayanaTsr = jtaEnvironmentBean.getTransactionSynchronizationRegistry();
         final XATerminator xat = new XATerminator();
         final JBossLocalTransactionProvider.Builder builder = JBossLocalTransactionProvider.builder();
-        builder.setXATerminator(xat).setExtendedJBossXATerminator(xat);
+        builder.setExtendedJBossXATerminator(xat);
         builder.setTransactionManager(narayanaTm);
-        builder.setTransactionSynchronizationRegistry(narayanaTsr);
         builder.setXAResourceRecoveryRegistry(new XAResourceRecoveryRegistry() {
             @Override public void addXAResourceRecovery(
                   XAResourceRecovery xaResourceRecovery) {}
