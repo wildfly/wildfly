@@ -396,6 +396,10 @@ public class ExternalPooledConnectionFactoryService implements Service<ExternalP
                 if (tc == null) {
                     throw MessagingLogger.ROOT_LOGGER.connectorNotDefined("null");
                 }
+                if (connectorClassname.length() > 0) {
+                    connectorClassname.append(",");
+                    connectorParams.append(",");
+                }
                 connectorClassname.append(tc.getFactoryClassName());
                 Map<String, Object> params = tc.getParams();
                 boolean multiple = false;
