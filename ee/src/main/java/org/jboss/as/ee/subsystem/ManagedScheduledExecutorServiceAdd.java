@@ -22,14 +22,16 @@
 package org.jboss.as.ee.subsystem;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
+import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
@@ -85,26 +87,25 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         }
 
         final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
+        final Consumer<ManagedScheduledExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
-        final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
-        serviceBuilder.setInstance(service);
         String contextService = null;
-        if(model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
+        if (model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
-        if (contextService != null) {
-            serviceBuilder.addCapabilityRequirement(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextServiceImpl.class, service.getContextServiceInjector(), contextService);
-        }
+        final Supplier<ContextServiceImpl> contextServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextServiceImpl.class, contextService) : null;
         String threadFactory = null;
-        if(model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY)) {
+        if (model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY)) {
             threadFactory = ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();
         }
-        if (threadFactory != null) {
-            serviceBuilder.addCapabilityRequirement(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, service.getManagedThreadFactoryInjector(), threadFactory);
-        }
+        final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
+        Supplier<RequestController> requestControllerSupplier = null;
         if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, null, null)) {
-            serviceBuilder.addCapabilityRequirement(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class, service.getRequestController());
+            requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
+        final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(consumer, contextServiceSupplier, managedThreadFactorySupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+        serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }
+
 }

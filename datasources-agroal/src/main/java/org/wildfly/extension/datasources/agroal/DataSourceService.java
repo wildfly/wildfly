@@ -35,7 +35,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 import org.wildfly.extension.datasources.agroal.logging.LoggingDataSourceListener;
@@ -64,6 +63,7 @@ import java.net.URISyntaxException;
 import java.security.AccessController;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -75,6 +75,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
     private static final AuthenticationContextConfigurationClient AUTH_CONFIG_CLIENT = AccessController.doPrivileged(AuthenticationContextConfigurationClient.ACTION);
 
+    private final Consumer<AgroalDataSource> consumer;
     private final String dataSourceName;
     private final String jndiName;
     private final boolean jta;
@@ -84,12 +85,22 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
     private final AgroalDataSourceConfigurationSupplier dataSourceConfiguration;
     private AgroalDataSource agroalDataSource;
 
-    private InjectedValue<Class> driverInjector = new InjectedValue<>();
-    private InjectedValue<AuthenticationContext> authenticationContextInjector = new InjectedValue<>();
-    private InjectedValue<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplierInjector = new InjectedValue<>();
-    private InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryInjector = new InjectedValue<>();
+    private final Supplier<Class> driverSupplier;
+    private final Supplier<AuthenticationContext> authenticationContextSupplier;
+    private final Supplier<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier;
+    private final Supplier<TransactionSynchronizationRegistry> transactionSynchronizationRegistrySupplier;
 
-    public DataSourceService(String dataSourceName, String jndiName, boolean jta, boolean connectable, boolean xa, AgroalDataSourceConfigurationSupplier dataSourceConfiguration) {
+    public DataSourceService(final Consumer<AgroalDataSource> consumer,
+                             final Supplier<Class> driverSupplier,
+                             final Supplier<AuthenticationContext> authenticationContextSupplier,
+                             final Supplier<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier,
+                             final Supplier<TransactionSynchronizationRegistry> transactionSynchronizationRegistrySupplier,
+                             String dataSourceName, String jndiName, boolean jta, boolean connectable, boolean xa, AgroalDataSourceConfigurationSupplier dataSourceConfiguration) {
+        this.consumer = consumer;
+        this.driverSupplier = driverSupplier;
+        this.authenticationContextSupplier = authenticationContextSupplier;
+        this.credentialSourceSupplier = credentialSourceSupplier;
+        this.transactionSynchronizationRegistrySupplier = transactionSynchronizationRegistrySupplier;
         this.dataSourceName = dataSourceName;
         this.jndiName = jndiName;
         this.jta = jta;
@@ -100,7 +111,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
     @Override
     public void start(StartContext context) throws StartException {
-        Class<?> providerClass = driverInjector.getOptionalValue();
+        Class<?> providerClass = driverSupplier != null ? driverSupplier.get() : null;
         if (xa) {
             if (!XADataSource.class.isAssignableFrom(providerClass)) {
                 throw AgroalLogger.SERVICE_LOGGER.invalidXAConnectionProvider();
@@ -115,7 +126,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
 
         if (jta || xa) {
             TransactionManager transactionManager = ContextTransactionManager.getInstance();
-            TransactionSynchronizationRegistry transactionSynchronizationRegistry = transactionSynchronizationRegistryInjector.getValue();
+            TransactionSynchronizationRegistry transactionSynchronizationRegistry = transactionSynchronizationRegistrySupplier != null ? transactionSynchronizationRegistrySupplier.get() : null;
 
             if (transactionManager == null || transactionSynchronizationRegistry == null) {
                 throw AgroalLogger.SERVICE_LOGGER.missingTransactionManager();
@@ -124,7 +135,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
             dataSourceConfiguration.connectionPoolConfiguration().transactionIntegration(txIntegration);
         }
 
-        AuthenticationContext authenticationContext = authenticationContextInjector.getOptionalValue();
+        AuthenticationContext authenticationContext = authenticationContextSupplier != null ? authenticationContextSupplier.get() : null;
 
         if (authenticationContext != null) {
             try {
@@ -162,7 +173,7 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
             }
         }
 
-        ExceptionSupplier<CredentialSource, Exception> credentialSourceExceptionExceptionSupplier = credentialSourceSupplierInjector.getOptionalValue();
+        ExceptionSupplier<CredentialSource, Exception> credentialSourceExceptionExceptionSupplier = credentialSourceSupplier != null ? credentialSourceSupplier.get() : null;
 
         if (credentialSourceExceptionExceptionSupplier != null) {
             try {
@@ -196,10 +207,12 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
                 throw AgroalLogger.SERVICE_LOGGER.datasourceStartException(e, dataSourceName);
             }
         }
+        consumer.accept(agroalDataSource);
     }
 
     @Override
     public void stop(StopContext context) {
+        consumer.accept(null);
         agroalDataSource.close();
         if (xa) {
             AgroalLogger.SERVICE_LOGGER.stoppedXADataSource(dataSourceName);
@@ -218,21 +231,4 @@ public class DataSourceService implements Service<AgroalDataSource>, Supplier<Ag
         return agroalDataSource;
     }
 
-    // --- //
-
-    public InjectedValue<Class> getDriverInjector() {
-        return this.driverInjector;
-    }
-
-    public InjectedValue<AuthenticationContext> getAuthenticationContextInjector() {
-        return this.authenticationContextInjector;
-    }
-
-    public InjectedValue<ExceptionSupplier<CredentialSource, Exception>> getCredentialSourceSupplierInjector() {
-        return credentialSourceSupplierInjector;
-    }
-
-     InjectedValue<TransactionSynchronizationRegistry> getTransactionSynchronizationRegistryInjector() {
-        return transactionSynchronizationRegistryInjector;
-    }
 }

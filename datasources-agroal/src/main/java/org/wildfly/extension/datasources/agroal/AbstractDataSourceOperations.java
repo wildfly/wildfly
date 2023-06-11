@@ -51,6 +51,7 @@ import org.wildfly.security.credential.source.CredentialSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 import static io.agroal.api.configuration.AgroalConnectionPoolConfiguration.ConnectionValidator.defaultValidator;
 import static java.time.Duration.ofMillis;
@@ -118,16 +119,21 @@ class AbstractDataSourceOperations {
         return configuration;
     }
 
-    protected static void setupElytronSecurity(OperationContext context, ModelNode model, DataSourceService dataSourceService, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
+    protected static Supplier<AuthenticationContext> setupAuthenticationContext(OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
         if (AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).isDefined()) {
             String authenticationContextName = AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString();
             ServiceName authenticationContextCapability = context.getCapabilityServiceName(AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT_CAPABILITY, authenticationContextName, AuthenticationContext.class);
-            serviceBuilder.addDependency(authenticationContextCapability, AuthenticationContext.class, dataSourceService.getAuthenticationContextInjector());
+            return serviceBuilder.requires(authenticationContextCapability);
         }
+        return null;
+    }
+
+    protected static Supplier<ExceptionSupplier<CredentialSource, Exception>> setupCredentialReference(OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
         if (AbstractDataSourceDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model).isDefined()) {
             ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier = CredentialReference.getCredentialSourceSupplier(context, AbstractDataSourceDefinition.CREDENTIAL_REFERENCE, model, serviceBuilder);
-            dataSourceService.getCredentialSourceSupplierInjector().inject(credentialSourceSupplier);
+            return () -> credentialSourceSupplier;
         }
+        return null;
     }
 
     protected static AgroalConnectionPoolConfigurationSupplier connectionPoolConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {

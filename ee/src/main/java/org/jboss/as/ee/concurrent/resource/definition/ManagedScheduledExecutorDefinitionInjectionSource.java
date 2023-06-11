@@ -17,6 +17,10 @@
  */
 package org.jboss.as.ee.concurrent.resource.definition;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -38,9 +42,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.common.cpu.ProcessorInfo;
 import org.wildfly.extension.requestcontroller.RequestController;
-
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 /**
  * The {@link ResourceDefinitionInjectionSource} for {@link jakarta.enterprise.concurrent.ManagedScheduledExecutorDefinition}.
@@ -79,25 +80,27 @@ public class ManagedScheduledExecutorDefinitionInjectionSource extends ResourceD
             // install the resource service
             final ServiceName resourceServiceName = ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
             final ServiceBuilder resourceServiceBuilder = phaseContext.getServiceTarget().addService(resourceServiceName);
+            final Consumer<ManagedScheduledExecutorServiceAdapter> consumer = resourceServiceBuilder.provides(resourceServiceName);
             final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = resourceServiceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
-            final ManagedScheduledExecutorServiceService resourceService = new ManagedScheduledExecutorServiceService(resourceName, resourceJndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, maxAsync, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+            Supplier<RequestController> requestControllerSupplier = null;
+            if (capabilityServiceSupport.hasCapability(REQUEST_CONTROLLER_CAPABILITY_NAME)) {
+                requestControllerSupplier = resourceServiceBuilder.requires(capabilityServiceSupport.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY_NAME));
+            }
+            final ManagedScheduledExecutorServiceService resourceService = new ManagedScheduledExecutorServiceService(consumer, null, null, requestControllerSupplier, resourceName, resourceJndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, maxAsync, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
             resourceServiceBuilder.setInstance(resourceService);
-            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
-            final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
-                    resourceService.getContextServiceInjector().inject((ContextServiceImpl)value.getReference().getInstance());
+                    resourceService.getContextServiceSupplier().set(() -> (ContextServiceImpl)value.getReference().getInstance());
                 }
                 @Override
                 public void uninject() {
-                    resourceService.getContextServiceInjector().uninject();
+                    resourceService.getContextServiceSupplier().set(() -> null);
                 }
             };
+            final String contextServiceRef = this.contextServiceRef == null || this.contextServiceRef.isEmpty() ? EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME : this.contextServiceRef;
+            final ContextNames.BindInfo contextServiceBindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), contextServiceRef);
             contextServiceBindInfo.setupLookupInjection(resourceServiceBuilder, contextServiceLookupInjector, phaseContext.getDeploymentUnit(), false);
-            if (capabilityServiceSupport.hasCapability(REQUEST_CONTROLLER_CAPABILITY_NAME)) {
-                resourceServiceBuilder.addDependency(capabilityServiceSupport.getCapabilityServiceName(REQUEST_CONTROLLER_CAPABILITY_NAME), RequestController.class, resourceService.getRequestController());
-            }
             resourceServiceBuilder.install();
             // use a dependency to the resource service installed to inject the resource
             serviceBuilder.addDependency(resourceServiceName, ManagedScheduledExecutorServiceAdapter.class, new Injector<>() {
