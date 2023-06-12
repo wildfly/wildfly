@@ -21,12 +21,10 @@
  */
 package org.wildfly.extension.health;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Properties;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -35,27 +33,20 @@ import org.junit.runners.Parameterized.Parameters;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2019 Red Hat inc.
  */
 @RunWith(Parameterized.class)
-public class HealthSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class HealthSubsystemTestCase extends AbstractSubsystemSchemaTest<HealthSubsystemSchema> {
     @Parameters
     public static Iterable<HealthSubsystemSchema> parameters() {
         return EnumSet.allOf(HealthSubsystemSchema.class);
     }
 
-    private final HealthSubsystemSchema schema;
-
     public HealthSubsystemTestCase(HealthSubsystemSchema schema) {
-        super(HealthExtension.SUBSYSTEM_NAME, new HealthExtension());
-        this.schema = schema;
+        super(HealthExtension.SUBSYSTEM_NAME, new HealthExtension(), schema, HealthSubsystemSchema.CURRENT);
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() {
-        return String.format(Locale.ROOT, "schema/wildfly-health_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
+    protected String getSubsystemXmlPathPattern() {
+        // Exclude subsystem name from pattern
+        return "subsystem_%2$d_%3$d.xml";
     }
 
     @Override
