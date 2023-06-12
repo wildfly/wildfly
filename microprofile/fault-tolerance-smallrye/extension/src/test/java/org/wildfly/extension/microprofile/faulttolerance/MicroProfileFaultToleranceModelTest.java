@@ -24,11 +24,9 @@ package org.wildfly.extension.microprofile.faulttolerance;
 
 import static org.junit.runners.Parameterized.Parameters;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -36,27 +34,20 @@ import org.junit.runners.Parameterized;
  * @author Radoslav Husar
  */
 @RunWith(value = Parameterized.class)
-public class MicroProfileFaultToleranceModelTest extends AbstractSubsystemBaseTest {
+public class MicroProfileFaultToleranceModelTest extends AbstractSubsystemSchemaTest<MicroProfileFaultToleranceSchema> {
 
     @Parameters
     public static Iterable<MicroProfileFaultToleranceSchema> parameters() {
         return EnumSet.allOf(MicroProfileFaultToleranceSchema.class);
     }
 
-    private MicroProfileFaultToleranceSchema testSchema;
-
     public MicroProfileFaultToleranceModelTest(MicroProfileFaultToleranceSchema testSchema) {
-        super(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new MicroProfileFaultToleranceExtension());
-        this.testSchema = testSchema;
+        super(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new MicroProfileFaultToleranceExtension(), testSchema, MicroProfileFaultToleranceSchema.CURRENT);
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.testSchema.getVersion().major(), this.testSchema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() {
-        return String.format(Locale.ROOT, "schema/wildfly-microprofile-fault-tolerance-smallrye_%d_%d.xsd", this.testSchema.getVersion().major(), this.testSchema.getVersion().minor());
+    protected String getSubsystemXmlPathPattern() {
+        // Exclude subsystem name from pattern
+        return "subsystem_%2$d_%3$d.xml";
     }
 }
