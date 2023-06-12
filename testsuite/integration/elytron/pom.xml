@@ -380,7 +380,7 @@
              which is part of wildfly-testsuite-shared module, contains implementation of BouncyCastle provider based
              on older version of BouncyCastle. -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
