@@ -24,11 +24,9 @@ package org.wildfly.extension.microprofile.reactive.streams.operators;
 
 import static org.wildfly.extension.microprofile.reactive.streams.operators.MicroProfileReactiveStreamsOperatorsExtension.WELD_CAPABILITY_NAME;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -38,28 +36,14 @@ import org.junit.runners.Parameterized.Parameters;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Parameterized.class)
-public class MicroprofileReactiveStreamsOperatorsSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class MicroprofileReactiveStreamsOperatorsSubsystemTestCase extends AbstractSubsystemSchemaTest<MicroProfileReactiveStreamsOperatorsSubsystemSchema> {
     @Parameters
     public static Iterable<MicroProfileReactiveStreamsOperatorsSubsystemSchema> parameters() {
         return EnumSet.allOf(MicroProfileReactiveStreamsOperatorsSubsystemSchema.class);
     }
 
-    private final MicroProfileReactiveStreamsOperatorsSubsystemSchema schema;
-
     public MicroprofileReactiveStreamsOperatorsSubsystemTestCase(MicroProfileReactiveStreamsOperatorsSubsystemSchema schema) {
-        super(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, new MicroProfileReactiveStreamsOperatorsExtension());
-        this.schema = schema;
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        //test configuration put in standalone.xml
-        return readResource(String.format(Locale.ROOT, "reactive-streams-operators-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format(Locale.ROOT, "schema/wildfly-microprofile-reactive-streams-operators-smallrye_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
+        super(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, new MicroProfileReactiveStreamsOperatorsExtension(), schema, MicroProfileReactiveStreamsOperatorsSubsystemSchema.CURRENT);
     }
 
     @Override
