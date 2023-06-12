@@ -47,7 +47,7 @@ public class MicroProfileLRAParticipantExtension implements Extension {
 
     private static final MicroProfileLRAParticipantSubsystemModel CURRENT_MODEL = MicroProfileLRAParticipantSubsystemModel.VERSION_1_0_0;
 
-    private static final MicroProfileLRAParticipantSubsystemSchema CURRENT_SCHEMA = MicroProfileLRAParticipantSubsystemSchema.VERSION_1_0;
+    static final MicroProfileLRAParticipantSubsystemSchema CURRENT_SCHEMA = MicroProfileLRAParticipantSubsystemSchema.VERSION_1_0;
 
     private final PersistentResourceXMLDescription currentDescription = CURRENT_SCHEMA.getXMLDescription();
 

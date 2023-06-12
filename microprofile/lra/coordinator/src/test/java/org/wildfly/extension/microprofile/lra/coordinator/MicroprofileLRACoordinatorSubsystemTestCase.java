@@ -22,35 +22,22 @@
 
 package org.wildfly.extension.microprofile.lra.coordinator;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.IOException;
 import java.util.EnumSet;
 
 @RunWith(Parameterized.class)
-public class MicroprofileLRACoordinatorSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class MicroprofileLRACoordinatorSubsystemTestCase extends AbstractSubsystemSchemaTest<MicroProfileLRACoordinatorSubsystemSchema> {
 
     @Parameterized.Parameters
     public static Iterable<MicroProfileLRACoordinatorSubsystemSchema> parameters() {
         return EnumSet.allOf(MicroProfileLRACoordinatorSubsystemSchema.class);
     }
 
-    private final MicroProfileLRACoordinatorSubsystemSchema schema;
-
     public MicroprofileLRACoordinatorSubsystemTestCase(MicroProfileLRACoordinatorSubsystemSchema schema) {
-        super(MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME, new MicroProfileLRACoordinatorExtension());
-        this.schema = schema;
+        super(MicroProfileLRACoordinatorExtension.SUBSYSTEM_NAME, new MicroProfileLRACoordinatorExtension(), schema, MicroProfileLRACoordinatorExtension.CURRENT_SCHEMA);
     }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format("lra-coordinator-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/wildfly-microprofile-lra-coordinator_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
-    }
 }
