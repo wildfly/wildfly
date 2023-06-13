@@ -22,11 +22,9 @@
 
 package org.wildfly.extension.beanvalidation;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -37,26 +35,13 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Eduardo Martins
  */
 @RunWith(Parameterized.class)
-public class BeanValidationSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class BeanValidationSubsystemTestCase extends AbstractSubsystemSchemaTest<BeanValidationSubsystemSchema> {
     @Parameters
     public static Iterable<BeanValidationSubsystemSchema> parameters() {
         return EnumSet.allOf(BeanValidationSubsystemSchema.class);
     }
 
-    private final BeanValidationSubsystemSchema schema;
-
     public BeanValidationSubsystemTestCase(BeanValidationSubsystemSchema schema) {
-        super(BeanValidationExtension.SUBSYSTEM_NAME, new BeanValidationExtension());
-        this.schema = schema;
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, "bean-validation-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format(Locale.ROOT, "schema/wildfly-bean-validation_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
+        super(BeanValidationExtension.SUBSYSTEM_NAME, new BeanValidationExtension(), schema, BeanValidationSubsystemSchema.CURRENT);
     }
 }
