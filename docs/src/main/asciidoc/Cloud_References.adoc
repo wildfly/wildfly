@@ -1,0 +1,23 @@
+# References
+
+## Helm
+* https://helm.sh/[Official page]
+* https://helm.sh/docs/intro/install/[Installing Helm]
+* https://github.com/wildfly/wildfly-charts/blob/main/charts/wildfly/README.md[Helm Chart for WildFly]
+** https://www.wildfly.org/news/2021/05/05/helm-charts-for-wildfly/[Related blog post]
+* https://docs.wildfly.org/wildfly-charts/[Helm Charts for WildFly]
+
+## OpenShift
+* https://access.redhat.com/downloads/content/290/[Download OpenShift]
+* https://developers.redhat.com/products/openshift-local/overview[Red Hat OpenShift Local]
+* https://www.redhat.com/en/technologies/cloud-computing/openshift/try-it[Try Red Hat OpenShift]
+* https://docs.okd.io/latest/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli_cli-developer-commands[Getting started with the OpenShift CLI]
+
+## WildFly
+* https://docs.wildfly.org/wildfly-maven-plugin/[WildFly Maven Plugin (wildfly-maven-plugin)]
+* https://github.com/wildfly-extras/wildfly-jar-maven-plugin[Bootable Jar GitHub repository]
+* https://docs.wildfly.org/bootablejar/[Bootable Jar Documentation]
+* https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/doc/index.md[WildFly Cloud Galleon Pack’s documentation]
+* https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/[WildFly Datasources Galleon Pack github repository]
+* https://www.wildfly.org/news/2022/11/09/WildFly-s2i-wildfly-27-final/[What's new for WildFly 27 in the cloud]
+* https://github.com/wildfly/quickstart[WildFly’s quickstart]
