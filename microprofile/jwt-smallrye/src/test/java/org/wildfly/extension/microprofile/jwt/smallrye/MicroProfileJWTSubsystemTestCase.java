@@ -18,12 +18,10 @@
 
 package org.wildfly.extension.microprofile.jwt.smallrye;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.Properties;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -34,27 +32,20 @@ import org.junit.runners.Parameterized.Parameters;
  * <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 @RunWith(Parameterized.class)
-public class MicroProfileJWTSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class MicroProfileJWTSubsystemTestCase extends AbstractSubsystemSchemaTest<MicroProfileJWTSubsystemSchema> {
     @Parameters
     public static Iterable<MicroProfileJWTSubsystemSchema> parameters() {
         return EnumSet.allOf(MicroProfileJWTSubsystemSchema.class);
     }
 
-    private final MicroProfileJWTSubsystemSchema schema;
-
     public MicroProfileJWTSubsystemTestCase(MicroProfileJWTSubsystemSchema schema) {
-        super(MicroProfileJWTExtension.SUBSYSTEM_NAME, new MicroProfileJWTExtension());
-        this.schema = schema;
+        super(MicroProfileJWTExtension.SUBSYSTEM_NAME, new MicroProfileJWTExtension(), schema, MicroProfileJWTSubsystemSchema.CURRENT);
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format(Locale.ROOT, "subsystem_%d_%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return String.format(Locale.ROOT, "schema/wildfly-microprofile-jwt-smallrye_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
+    protected String getSubsystemXmlPathPattern() {
+        // Exclude subsystem name from pattern
+        return "subsystem_%2$d_%3$d.xml";
     }
 
     @Override
