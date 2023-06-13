@@ -62,7 +62,10 @@ public class SimpleSchedulesBean {
 
     @Schedules({
             @Schedule(second="0/2", minute = "*", hour = "*", info = "info"),
-            @Schedule(second="1/2", minute = "*", hour = "*", info = "info")
+            @Schedule(second="1/2", minute = "*", hour = "*", info = "info"),
+            @Schedule(second="1/0", info = "S0", year = "9999", persistent = false),
+            @Schedule(minute = "1/0", info = "M0", year = "9999", persistent = false),
+            @Schedule(hour = "0/0", info = "H0", year = "9999", persistent = false)
     })
     public void timeout(Timer timer) {
         timerInfo = (String) timer.getInfo();

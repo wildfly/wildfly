@@ -88,8 +88,9 @@ public class IncrementValue implements ScheduleValue {
 
         // start will be validated by the target timer attribute classes
         // (Hour, Minute, and Second) accordingly.
-        // check for invalid interval values here:
-        if (this.interval < 1) {
+        // check for invalid interval values here.
+        // Note that 0 interval is valid, making this increment value behave as if it's a single value.
+        if (this.interval < 0) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidScheduleValue(ScheduleExpressionType.INCREMENT.name(), value);
         }
     }

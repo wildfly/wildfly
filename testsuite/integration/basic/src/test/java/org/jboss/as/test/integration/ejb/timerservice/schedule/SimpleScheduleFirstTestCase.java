@@ -81,7 +81,7 @@ public class SimpleScheduleFirstTestCase {
         InitialContext ctx = new InitialContext();
         SimpleSchedulesBean bean = (SimpleSchedulesBean) ctx.lookup("java:module/" + SimpleSchedulesBean.class.getSimpleName());
         Assert.assertTrue(SimpleSchedulesBean.awaitTimerCall());
-        Assert.assertEquals(2, bean.getTimers().size());
+        Assert.assertEquals(5, bean.getTimers().size());
 
         Assert.assertEquals("info", bean.getTimerInfo());
         Assert.assertTrue(bean.isCalendar());
