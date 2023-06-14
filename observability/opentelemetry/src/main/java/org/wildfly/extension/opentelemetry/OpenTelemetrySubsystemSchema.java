@@ -4,7 +4,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -16,7 +16,7 @@ public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<Op
     private final VersionedNamespace<IntVersion, OpenTelemetrySubsystemSchema> namespace;
 
     OpenTelemetrySubsystemSchema(int major, int minor) {
-        this.namespace = new SubsystemURN<>(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

@@ -24,7 +24,7 @@ package org.wildfly.extension.microprofile.lra.participant;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -39,7 +39,7 @@ enum MicroProfileLRAParticipantSubsystemSchema implements PersistentSubsystemSch
     private final VersionedNamespace<IntVersion, MicroProfileLRAParticipantSubsystemSchema> namespace;
 
     MicroProfileLRAParticipantSubsystemSchema(int major) {
-        this.namespace = new SubsystemURN<>(MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileLRAParticipantExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

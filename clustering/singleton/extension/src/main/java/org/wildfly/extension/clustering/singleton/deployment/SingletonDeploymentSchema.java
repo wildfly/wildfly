@@ -22,10 +22,12 @@
 
 package org.wildfly.extension.clustering.singleton.deployment;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.xml.IntVersionSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.as.controller.xml.VersionedURN;
 import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllSchema;
@@ -45,7 +47,7 @@ public enum SingletonDeploymentSchema implements XMLElementSchema<SingletonDeplo
     private final VersionedNamespace<IntVersion, SingletonDeploymentSchema> namespace;
 
     SingletonDeploymentSchema(int major, int minor) {
-        this.namespace = new VersionedURN<>(VersionedURN.JBOSS_IDENTIFIER, this.getLocalName(), new IntVersion(major, minor));
+        this.namespace = IntVersionSchema.createURN(List.of(IntVersionSchema.JBOSS_IDENTIFIER, this.getLocalName()), new IntVersion(major, minor));
     }
 
     @Override

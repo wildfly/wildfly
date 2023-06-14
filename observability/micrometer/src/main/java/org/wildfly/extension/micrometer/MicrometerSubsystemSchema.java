@@ -22,7 +22,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -36,7 +36,7 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
     MicrometerSubsystemSchema(int major, int minor) {
-        this.namespace = new SubsystemURN<>(MicrometerExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicrometerExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

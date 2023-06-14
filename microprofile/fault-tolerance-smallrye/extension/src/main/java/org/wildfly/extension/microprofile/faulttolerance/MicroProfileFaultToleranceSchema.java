@@ -25,7 +25,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum MicroProfileFaultToleranceSchema implements PersistentSubsystemSchem
     private final VersionedNamespace<IntVersion, MicroProfileFaultToleranceSchema> namespace;
 
     MicroProfileFaultToleranceSchema(int major, int minor) {
-        this.namespace = new SubsystemURN<>(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileFaultToleranceExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

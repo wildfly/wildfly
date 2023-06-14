@@ -24,9 +24,9 @@ package org.jboss.as.jdr;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -45,7 +45,7 @@ enum JdrReportSubsystemSchema implements PersistentSubsystemSchema<JdrReportSubs
     private final VersionedNamespace<IntVersion, JdrReportSubsystemSchema> namespace;
 
     JdrReportSubsystemSchema(int major) {
-        this.namespace = new LegacySubsystemURN<>(JdrReportExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(JdrReportExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

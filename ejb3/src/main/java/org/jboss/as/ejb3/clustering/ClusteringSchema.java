@@ -22,15 +22,16 @@
 
 package org.jboss.as.ejb3.clustering;
 
+import java.util.List;
+
+import org.jboss.as.controller.xml.IntVersionSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.as.controller.xml.VersionedSchema;
-import org.jboss.as.controller.xml.VersionedURN;
 import org.jboss.staxmapper.IntVersion;
 
 /**
  * @author Paul Ferraro
  */
-public enum ClusteringSchema implements VersionedSchema<IntVersion, ClusteringSchema> {
+public enum ClusteringSchema implements IntVersionSchema<ClusteringSchema> {
 
     VERSION_1_0(1, 0),
     VERSION_1_1(1, 1),
@@ -40,7 +41,7 @@ public enum ClusteringSchema implements VersionedSchema<IntVersion, ClusteringSc
     private final VersionedNamespace<IntVersion, ClusteringSchema> namespace;
 
     ClusteringSchema(int major, int minor) {
-        this.namespace = new VersionedURN<>(this.getLocalName(), new IntVersion(major, minor));
+        this.namespace = IntVersionSchema.createURN(List.of(this.getLocalName()), new IntVersion(major, minor));
     }
 
     @Override

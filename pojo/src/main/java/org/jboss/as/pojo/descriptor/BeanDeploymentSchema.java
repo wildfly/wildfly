@@ -22,10 +22,12 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.xml.IntVersionSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.as.controller.xml.VersionedURN;
 import org.jboss.as.controller.xml.XMLElementSchema;
 import org.jboss.as.pojo.ParseResult;
 import org.jboss.as.pojo.logging.PojoLogger;
@@ -47,7 +49,7 @@ public enum BeanDeploymentSchema implements XMLElementSchema<BeanDeploymentSchem
     private final VersionedNamespace<IntVersion, BeanDeploymentSchema> namespace;
 
     BeanDeploymentSchema(String nss, int major) {
-        this.namespace = new VersionedURN<>(VersionedURN.JBOSS_IDENTIFIER, nss, new IntVersion(major));
+        this.namespace = IntVersionSchema.createURN(List.of(IntVersionSchema.JBOSS_IDENTIFIER, nss), new IntVersion(major));
     }
 
     @Override
