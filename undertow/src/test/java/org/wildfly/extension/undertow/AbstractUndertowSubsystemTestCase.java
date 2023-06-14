@@ -24,7 +24,6 @@ package org.wildfly.extension.undertow;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -49,7 +48,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
+public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemSchemaTest<UndertowSubsystemSchema> {
     final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
     private final UndertowSubsystemSchema schema;
 
@@ -58,23 +57,8 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     }
 
     AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
+        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
         this.schema = schema;
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource(String.format("undertow-%d.%d.xml", this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return String.format("schema/wildfly-undertow_%d_%d.xsd", this.schema.getVersion().major(), this.schema.getVersion().minor());
-    }
-
-    @Override
-    protected void standardSubsystemTest(String configId) throws Exception {
-        super.standardSubsystemTest(configId, false);
     }
 
     @Before

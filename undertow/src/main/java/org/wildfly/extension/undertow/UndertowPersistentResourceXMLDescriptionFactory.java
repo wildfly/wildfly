@@ -185,10 +185,10 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ServletContainerDefinition.PATH_ELEMENT);
 
         builder.addChild(builder(JspDefinition.PATH_ELEMENT).addAttributes(JspDefinition.ATTRIBUTES.stream()).setXmlElementName(Constants.JSP_CONFIG));
-        builder.addChild(builder(SessionCookieDefinition.PATH_ELEMENT).addAttributes(SessionCookieDefinition.ATTRIBUTES.stream()));
         if (schema.since(UndertowSubsystemSchema.VERSION_14_0)) {
             builder.addChild(builder(AffinityCookieDefinition.PATH_ELEMENT).addAttributes(AffinityCookieDefinition.ATTRIBUTES.stream()));
         }
+        builder.addChild(builder(SessionCookieDefinition.PATH_ELEMENT).addAttributes(SessionCookieDefinition.ATTRIBUTES.stream()));
         builder.addChild(builder(PersistentSessionsDefinition.PATH_ELEMENT).addAttributes(PersistentSessionsDefinition.ATTRIBUTES.stream()));
         builder.addChild(websocketsBuilder(schema));
         builder.addChild(builder(MimeMappingDefinition.PATH_ELEMENT).addAttributes(MimeMappingDefinition.ATTRIBUTES.stream()).setXmlWrapperElement("mime-mappings"));
