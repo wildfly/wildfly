@@ -134,6 +134,29 @@
             </licenses>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-base</artifactId>
+            <licenses>
+              <license>
+                  <name>Apache License 2.0</name>
+                  <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                  <distribution>repo</distribution>
+              </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-base</artifactId>
             <licenses>
@@ -147,6 +170,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
             <licenses>
                 <license>
                     <name>Apache License 2.0</name>
@@ -313,6 +347,17 @@
             </licenses>
         </dependency>
         <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
             <groupId>com.squareup</groupId>
             <artifactId>protoparser</artifactId>
             <licenses>
@@ -350,16 +395,6 @@
             <artifactId>relaxng-datatype</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
                     <name>Eclipse Distribution License, Version 1.0</name>
                     <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
                     <distribution>repo</distribution>
@@ -370,16 +405,6 @@
             <groupId>com.sun.xml.bind.external</groupId>
             <artifactId>rngom</artifactId>
             <licenses>
-                <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-                    <distribution>repo</distribution>
-                </license>
                 <license>
                     <name>Eclipse Distribution License, Version 1.0</name>
                     <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
@@ -396,6 +421,11 @@
                     <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
+                <license>
+                    <name>Eclipse Distribution License, Version 1.0</name>
+                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
+                    <distribution>repo</distribution>
+                </license>
             </licenses>
         </dependency>
         <dependency>
@@ -403,13 +433,8 @@
             <artifactId>saaj-impl</artifactId>
             <licenses>
                 <license>
-                    <name>Common Development and Distribution License 1.1</name>
-                    <url>https://javaee.github.io/glassfish/LICENSE</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+                    <name>Eclipse Distribution License, Version 1.0</name>
+                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -749,8 +774,8 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Distribution License, Version 1.0</name>
-                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
@@ -931,8 +956,8 @@
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>Eclipse Distribution License, Version 1.0</name>
-                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -958,13 +983,13 @@
             <artifactId>jakarta.servlet-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-2.0</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
-                    <url>https://www.gnu.org/software/classpath/license.html</url>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -974,12 +999,12 @@
             <artifactId>jakarta.servlet.jsp-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -990,12 +1015,12 @@
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -1006,12 +1031,12 @@
             <artifactId>jakarta.transaction-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -1033,12 +1058,12 @@
             <artifactId>jakarta.websocket-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -1049,12 +1074,12 @@
             <artifactId>jakarta.websocket-client-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -1065,12 +1090,12 @@
             <artifactId>jakarta.ws.rs-api</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
+                    <name>Eclipse Public License 2.0</name>
                     <url>http://www.eclipse.org/legal/epl-2.0</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
                     <url>https://www.gnu.org/software/classpath/license.html</url>
                     <distribution>repo</distribution>
                 </license>
@@ -1080,11 +1105,6 @@
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <licenses>
-                <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>https://www.eclipse.org/legal/epl-2.0</url>
-                    <distribution>repo</distribution>
-                </license>
                 <license>
                     <name>Eclipse Distribution License, Version 1.0</name>
                     <url>https://repository.jboss.org/licenses/edl-1.0.txt</url>
@@ -1146,8 +1166,8 @@
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>The BSD License</name>
-                    <url>http://repository.jboss.org/licenses/bsd.txt</url>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                    <url>https://www.opensource.org/licenses/BSD-3-Clause</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1157,8 +1177,8 @@
             <artifactId>antlr4</artifactId>
             <licenses>
                 <license>
-                    <name>The Antlr4 4.9.1 License</name>
-                    <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                    <url>https://www.opensource.org/licenses/BSD-3-Clause</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1168,8 +1188,8 @@
             <artifactId>antlr4-runtime</artifactId>
             <licenses>
                 <license>
-                    <name>The antlr4-runtime 4.9.1 License</name>
-                    <url>https://github.com/antlr/antlr4/blob/4.9.1/LICENSE.txt</url>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                    <url>https://www.opensource.org/licenses/BSD-3-Clause</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1368,6 +1388,11 @@
                 <license>
                     <name>Apache License 2.0</name>
                     <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+                <license>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                    <url>http://www.opensource.org/licenses/BSD-3-Clause</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
@@ -2066,7 +2091,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcmail-jdk18on</artifactId>
+            <artifactId>bcjmail-jdk18on</artifactId>
             <licenses>
                 <license>
                     <name>MIT License</name>
@@ -2080,8 +2105,8 @@
             <artifactId>stax2-api</artifactId>
             <licenses>
                 <license>
-                    <name>The BSD License</name>
-                    <url>http://repository.jboss.org/licenses/bsd.txt</url>
+                    <name>BSD 2-clause "Simplified" License</name>
+                    <url>https://opensource.org/license/BSD-2-Clause/</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2143,6 +2168,11 @@
                     <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
+                <license>
+                    <name>Eclipse Distribution License, Version 1.0</name>
+                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
+                    <distribution>repo</distribution>
+                </license>
             </licenses>
         </dependency>
         <dependency>
@@ -2195,17 +2225,33 @@
             </licenses>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.faces</artifactId>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
             <licenses>
                 <license>
-                    <name>Common Development and Distribution License 1.1</name>
-                    <url>https://javaee.github.io/glassfish/LICENSE</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
                     <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+                    <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.faces</artifactId>
+            <licenses>
+                <license>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
+                    <distribution>repo</distribution>
+                </license>
+                <license>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2215,15 +2261,16 @@
             <artifactId>codemodel</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
+                    <name>Eclipse Distribution License, Version 1.0</name>
+                    <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
                     <distribution>repo</distribution>
                 </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-                    <distribution>repo</distribution>
-                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <licenses>
                 <license>
                     <name>Eclipse Distribution License, Version 1.0</name>
                     <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
@@ -2280,16 +2327,6 @@
             <artifactId>xsom</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
                     <name>Eclipse Distribution License, Version 1.0</name>
                     <url>http://repository.jboss.org/licenses/edl-1.0.txt</url>
                     <distribution>repo</distribution>
@@ -2333,13 +2370,13 @@
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <licenses>
                 <license>
-                    <name>EPL 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-2.0</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
-                    <url>https://www.gnu.org/software/classpath/license.html</url>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2672,13 +2709,8 @@
             <artifactId>jboss-saaj-api_3.0_spec</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Public License 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
-                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+                    <name>Eclipse Distribution License, Version 1.0</name>
+                    <url>https://repository.jboss.org/licenses/edl-1.0.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2699,8 +2731,8 @@
             <artifactId>jberet-core</artifactId>
             <licenses>
                 <license>
-                    <name>Eclipse Public License 1.0</name>
-                    <url>http://repository.jboss.org/licenses/epl-1.0.txt</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3850,6 +3882,17 @@
             </licenses>
         </dependency>
         <dependency>
+            <groupId>org.jboss.activemq.artemis.integration</groupId>
+            <artifactId>artemis-wildfly-integration</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-ext-api</artifactId>
             <licenses>
@@ -3867,11 +3910,6 @@
                 <license>
                     <name>Apache License 2.0</name>
                     <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                    <distribution>repo</distribution>
-                </license>
-                <license>
-                    <name>MIT License</name>
-                    <url>http://www.opensource.org/licenses/MIT</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4153,6 +4191,17 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
+            <artifactId>openjdk-orb</artifactId>
+            <licenses>
+                <license>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.openjdk-orb</groupId>
             <artifactId>openjdk-orb-jakarta</artifactId>
             <licenses>
                 <license>
@@ -4326,8 +4375,8 @@
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GNU General Public License, Version 2 with the Classpath Exception</name>
-                    <url>https://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>https://fedoraproject.org/wiki/Licensing/GPL_Classpath_Exception</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4368,6 +4417,17 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-lite-extension-translator</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-lite-extension-translator</artifactId>
             <licenses>
                 <license>
                     <name>Apache License 2.0</name>
@@ -4799,8 +4859,8 @@
             <artifactId>reactive-streams</artifactId>
             <licenses>
                 <license>
-                    <name>Creative Commons Zero v1.0 Universal</name>
-                    <url>http://creativecommons.org/publicdomain/zero/1.0/legalcode</url>
+                    <name>MIT-0</name>
+                    <url>https://spdx.org/licenses/MIT-0.html</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4945,13 +5005,13 @@
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>EPL 2.0</name>
-                    <url>http://www.eclipse.org/legal/epl-2.0</url>
+                    <name>Eclipse Public License 2.0</name>
+                    <url>http://www.eclipse.org/legal/epl-v20.html</url>
                     <distribution>repo</distribution>
                 </license>
                 <license>
-                    <name>GPL2 w/ CPE</name>
-                    <url>https://www.gnu.org/software/classpath/license.html</url>
+                    <name>GNU General Public License v2.0 only, with Classpath exception</name>
+                    <url>http://repository.jboss.org/licenses/gpl-2.0-ce.txt</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
