@@ -21,11 +21,9 @@
  */
 package org.wildfly.extension.microprofile.telemetry;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -35,9 +33,7 @@ import org.junit.runners.Parameterized.Parameters;
  * @author Jason Lee
  */
 @RunWith(value = Parameterized.class)
-public class MicroProfileTelemetrySubsystemTestCase extends AbstractSubsystemBaseTest {
-
-    private final MicroProfileTelemetrySubsystemSchema schema;
+public class MicroProfileTelemetrySubsystemTestCase extends AbstractSubsystemSchemaTest<MicroProfileTelemetrySubsystemSchema> {
 
     @Parameters
     public static Iterable<MicroProfileTelemetrySubsystemSchema> parameters() {
@@ -45,19 +41,11 @@ public class MicroProfileTelemetrySubsystemTestCase extends AbstractSubsystemBas
     }
 
     public MicroProfileTelemetrySubsystemTestCase(MicroProfileTelemetrySubsystemSchema schema) {
-        super(MicroProfileTelemetryExtension.SUBSYSTEM_NAME, new MicroProfileTelemetryExtension());
-        this.schema = schema;
+        super(MicroProfileTelemetryExtension.SUBSYSTEM_NAME, new MicroProfileTelemetryExtension(), schema, MicroProfileTelemetrySubsystemSchema.CURRENT);
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return this.readResource(String.format(Locale.ROOT, "%s_%d_%d.xml", this.getMainSubsystemName(),
-                this.schema.getVersion().major(), this.schema.getVersion().minor()));
-    }
-
-    @Override
-    protected String getSubsystemXsdPath() throws IOException {
-        return String.format(Locale.ROOT, "schema/wildfly-%s_%d_%d.xsd", this.getMainSubsystemName(),
-                this.schema.getVersion().major(), this.schema.getVersion().minor());
+    protected String getSubsystemXmlPathPattern() {
+        return "%s_%d_%d.xml";
     }
 }
