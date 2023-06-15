@@ -25,7 +25,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
-import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -36,7 +36,7 @@ import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
  * @author Paul Ferraro
  */
 @RunWith(Parameterized.class)
-public class SingletonSubsystemTestCase extends ClusteringSubsystemTest<SingletonSubsystemSchema> {
+public class SingletonSubsystemTestCase extends AbstractSubsystemSchemaTest<SingletonSubsystemSchema> {
 
     @Parameters
     public static Iterable<SingletonSubsystemSchema> parameters() {
@@ -44,7 +44,7 @@ public class SingletonSubsystemTestCase extends ClusteringSubsystemTest<Singleto
     }
 
     public SingletonSubsystemTestCase(SingletonSubsystemSchema schema) {
-        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, "subsystem-singleton-%d_%d.xml", "schema/wildfly-singleton_%d_%d.xsd");
+        super(SingletonExtension.SUBSYSTEM_NAME, new SingletonExtension(), schema, SingletonSubsystemSchema.CURRENT);
     }
 
     @Override

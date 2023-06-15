@@ -38,6 +38,8 @@ public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema
     VERSION_2_0(2, 0), // WildFly 18-26.1
     VERSION_3_0(3, 0), // WildFly 27
     ;
+    static final DistributableWebSubsystemSchema CURRENT = VERSION_3_0;
+
     private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
 
     DistributableWebSubsystemSchema(int major, int minor) {

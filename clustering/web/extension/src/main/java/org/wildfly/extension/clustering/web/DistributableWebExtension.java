@@ -39,6 +39,6 @@ public class DistributableWebExtension extends PersistentSubsystemExtension<Dist
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, DistributableWebExtension.class);
 
     public DistributableWebExtension() {
-        super(SUBSYSTEM_NAME, DistributableWebSubsystemModel.CURRENT, DistributableWebResourceDefinition::new, DistributableWebSubsystemSchema.VERSION_3_0);
+        super(SUBSYSTEM_NAME, DistributableWebSubsystemModel.CURRENT, DistributableWebResourceDefinition::new, DistributableWebSubsystemSchema.CURRENT);
     }
 }
