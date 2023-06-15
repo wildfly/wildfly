@@ -65,7 +65,19 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
         addValue(config, OTEL_BSP_SCHEDULE_DELAY, batchDelay);
         addValue(config, OTEL_BSP_MAX_QUEUE_SIZE, maxQueueSize);
         addValue(config, OTEL_BSP_MAX_EXPORT_BATCH_SIZE, maxExportBatchSize);
-        addValue(config, OTEL_TRACES_SAMPLER, sampler);
+        if (sampler != null) {
+            switch (sampler) {
+                case "on":
+                    addValue(config, OTEL_TRACES_SAMPLER, "always_on");
+                    break;
+                case "off":
+                    addValue(config, OTEL_TRACES_SAMPLER, "always_off");
+                    break;
+                case "ratio":
+                    addValue(config, OTEL_TRACES_SAMPLER, "traceidratio");
+                    break;
+            }
+        }
         addValue(config, OTEL_TRACES_SAMPLER_ARG, ratio);
 
         properties = Collections.unmodifiableMap(config);
