@@ -392,7 +392,6 @@
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <version.com.squareup.okio-jvm>3.2.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
-        <version.com.sun.faces>4.0.2.SP01</version.com.sun.faces>
         <version.com.sun.istack>4.1.1</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.0</version.com.sun.xml.fastinfoset>
         <version.com.sun.xml.messaging.saaj>3.0.0</version.com.sun.xml.messaging.saaj>
@@ -430,7 +429,7 @@
         <version.jakarta.ejb.jakarta-ejb-api>4.0.1</version.jakarta.ejb.jakarta-ejb-api>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.0.2</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.0.1</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>4.0.1</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.faces>4.0.2</version.jakarta.faces>
         <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
@@ -459,7 +458,6 @@
         <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
         <version.org.apache.kafka>3.4.0</version.org.apache.kafka>
         <version.org.apache.lucene>8.11.1</version.org.apache.lucene>
-        <version.org.apache.myfaces.core>3.0.2</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.34.0</version.org.apache.qpid.proton>
         <version.org.apache.santuario>3.0.1</version.org.apache.santuario>

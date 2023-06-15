@@ -52,8 +52,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.faces</groupId>
-            <artifactId>jakarta.faces-api</artifactId>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.faces</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -84,10 +84,6 @@
         </dependency>
 
         <!-- External dependencies -->
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>

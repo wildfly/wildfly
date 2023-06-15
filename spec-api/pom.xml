@@ -103,8 +103,8 @@
     </dependency>
 
     <dependency>
-      <groupId>jakarta.faces</groupId>
-      <artifactId>jakarta.faces-api</artifactId>
+      <groupId>org.glassfish</groupId>
+      <artifactId>jakarta.faces</artifactId>
     </dependency>
 
     <dependency>

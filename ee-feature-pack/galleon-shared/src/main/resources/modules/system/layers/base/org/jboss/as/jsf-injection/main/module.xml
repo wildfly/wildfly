@@ -34,7 +34,6 @@
     </resources>
 
     <dependencies>
-        <module name="com.sun.jsf-impl"/>
         <module name="java.naming"/>
         <module name="java.desktop"/>
         <module name="org.jboss.as.ee"/>
@@ -48,5 +47,6 @@
 
         <!-- added this for MyFacesAnnotationProvider -->
         <module name="jakarta.faces.api"/>
+        <module name="jakarta.faces"/>
     </dependencies>
 </module>

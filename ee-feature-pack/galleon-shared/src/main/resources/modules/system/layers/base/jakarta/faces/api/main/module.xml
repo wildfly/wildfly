@@ -24,23 +24,50 @@
 
 <module xmlns="urn:jboss:module:1.9" name="jakarta.faces.api">
 
-    <resources>
-        <artifact name="${jakarta.faces:jakarta.faces-api}"/>
-    </resources>
-
     <dependencies>
         <module name="java.desktop"/>
         <module name="java.logging"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <module name="com.sun.jsf-impl"/>
         <module name="jakarta.enterprise.api" export="true"/>
         <module name="jakarta.servlet.api" export="true"/>
         <module name="jakarta.servlet.jsp.api" export="true"/>
         <module name="jakarta.servlet.jstl.api" export="true"/>
         <module name="jakarta.validation.api" export="true"/>
-        <module name="org.glassfish.jakarta.el" export="true"/>
         <module name="jakarta.websocket.api"/>
+
+        <module name="jakarta.faces">
+            <exports>
+                <include-set>
+                    <path name="jakarta/faces"/>
+                    <path name="jakarta/faces/annotation"/>
+                    <path name="jakarta/faces/application"/>
+                    <path name="jakarta/faces/component"/>
+                    <path name="jakarta/faces/component/behavior"/>
+                    <path name="jakarta/faces/component/html"/>
+                    <path name="jakarta/faces/component/search"/>
+                    <path name="jakarta/faces/component/visit"/>
+                    <path name="jakarta/faces/context"/>
+                    <path name="jakarta/faces/convert"/>
+                    <path name="jakarta/faces/el"/>
+                    <path name="jakarta/faces/event"/>
+                    <path name="jakarta/faces/flow"/>
+                    <path name="jakarta/faces/flow/builder"/>
+                    <path name="jakarta/faces/lifecycle"/>
+                    <path name="jakarta/faces/mock"/>
+                    <path name="jakarta/faces/model"/>
+                    <path name="jakarta/faces/push"/>
+                    <path name="jakarta/faces/render"/>
+                    <path name="jakarta/faces/validator"/>
+                    <path name="jakarta/faces/view"/>
+                    <path name="jakarta/faces/view/facelets"/>
+                    <path name="jakarta/faces/webapp"/>
+                </include-set>
+            </exports>
+        </module>
+
+        <module name="org.glassfish.jakarta.el" export="true"/>
+
         <!--TODO remove the WELD dependencies from this module, they should be in implementation module only. See comments on https://github.com/wildfly/wildfly/pull/16155 for possible causes-->
         <module name="org.jboss.weld.api"/>
         <module name="org.jboss.weld.core"/>

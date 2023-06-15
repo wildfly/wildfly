@@ -40,7 +40,7 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class JSFModuleIdFactory {
     private static final String API_MODULE = "jakarta.faces.api";
-    private static final String IMPL_MODULE = "com.sun.jsf-impl";
+    private static final String IMPL_MODULE = "jakarta.faces";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 
     private static final JSFModuleIdFactory instance = new JSFModuleIdFactory();
@@ -164,7 +164,7 @@ public class JSFModuleIdFactory {
      */
     String computeSlot(String jsfVersion) {
         if (jsfVersion == null) return defaultSlot;
-        if (JsfVersionMarker.JSF_2_0.equals(jsfVersion)) return defaultSlot;
+        if (JsfVersionMarker.JSF_4_0.equals(jsfVersion)) return defaultSlot;
         return jsfVersion;
     }
 
