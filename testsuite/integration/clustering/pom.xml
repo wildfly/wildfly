@@ -285,6 +285,7 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-clustered-counter</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -294,6 +295,7 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-component-annotations</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
