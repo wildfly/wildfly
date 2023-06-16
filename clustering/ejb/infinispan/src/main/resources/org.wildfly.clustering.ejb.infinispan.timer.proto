@@ -59,3 +59,10 @@ message TimerIndexKey {
 	optional	string	methodName	 = 3;
 	optional	uint32	index	 = 4;
 }
+
+/**
+ * @TypeId(345)
+ */
+enum TimerCreationMetaDataKeyFilter {
+	INSTANCE	 = 0;
+}
