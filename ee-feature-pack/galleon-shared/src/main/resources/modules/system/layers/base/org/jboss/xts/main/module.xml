@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.jboss.xts">
 
     <properties>
-        <property name="jboss.api" value="deprecated"/>
+        <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
