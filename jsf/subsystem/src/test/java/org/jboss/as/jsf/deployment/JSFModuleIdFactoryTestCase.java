@@ -32,7 +32,7 @@ import org.junit.Test;
 public class JSFModuleIdFactoryTestCase {
 
     private static final String API_MODULE = "jakarta.faces.api";
-    private static final String IMPL_MODULE = "com.sun.jsf-impl";
+    private static final String IMPL_MODULE = "jakarta.faces.impl";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 
     private static final JSFModuleIdFactory factory = JSFModuleIdFactory.getInstance();
@@ -40,7 +40,7 @@ public class JSFModuleIdFactoryTestCase {
     @Test
     public void getActiveJSFVersionsTest() {
         List<String> versions = factory.getActiveJSFVersions();
-        Assert.assertEquals(2, versions.size());
+        Assert.assertEquals(3, versions.size());
         Assert.assertTrue(versions.contains("main"));
         Assert.assertTrue(versions.contains("myfaces"));
     }

@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="jakarta.faces"/>
+        <module name="jakarta.faces.impl"/>
         <module name="jakarta.faces.api"/>
         <module name="jakarta.servlet.api"/>
 

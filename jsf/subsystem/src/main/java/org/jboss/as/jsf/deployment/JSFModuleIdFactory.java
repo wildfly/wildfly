@@ -40,7 +40,7 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class JSFModuleIdFactory {
     private static final String API_MODULE = "jakarta.faces.api";
-    private static final String IMPL_MODULE = "jakarta.faces";
+    private static final String IMPL_MODULE = "jakarta.faces.impl";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 
     private static final JSFModuleIdFactory instance = new JSFModuleIdFactory();

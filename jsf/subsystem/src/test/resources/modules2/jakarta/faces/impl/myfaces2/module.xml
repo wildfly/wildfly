@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="jakarta.faces:myfaces">
+<module xmlns="urn:jboss:module:1.9" name="jakarta.faces.impl:myfaces2">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
@@ -32,11 +32,11 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
         <module name="jakarta.websocket.api" />
         <module name="jakarta.validation.api"/>
         <module name="jakarta.json.api"/>
         <module name="jakarta.ejb.api"/>
-        <module name="jakarta.servlet.jstl.api"/>
         <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jakarta.el"/>
         <module name="java.xml"/>

@@ -34,7 +34,7 @@
     </resources>
 
     <dependencies>
-        <module name="jakarta.faces:${jsf-impl-name}-${jsf-version}"/>
+        <module name="jakarta.faces.impl:${jsf-impl-name}-${jsf-version}"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="java.desktop"/>
