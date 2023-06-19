@@ -164,6 +164,15 @@ Other OpenID providers haven't been extensively tested yet so the use of other O
 be considered experimental for now and should not be used in a production environment yet. Proper support
 for other OpenID providers will be added in a future WildFly release.
 
+=== Disabling "typ" Claim Validation
+
+By default, when verifying an access token, the _elytron-oidc-client_ subsystem expects the token
+to contain a `typ` claim with value `Bearer`. Access tokens provided by the Keycloak OpenID provider
+contain this claim. However, access tokens provided by other OpenID providers might not include this
+claim, causing token validation to fail. When using an OpenID provider other than Keycloak,
+it is possible to disable the `typ` claim validation by setting the `wildfly.elytron.oidc.disable.typ.claim.validation`
+system property to `true`.
+
 == Multi-Tenancy Support
 
 In some cases, it might be desirable to secure an application using multiple `oidc.json` configuration files.
