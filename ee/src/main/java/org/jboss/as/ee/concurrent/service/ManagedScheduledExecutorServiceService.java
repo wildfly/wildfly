@@ -127,10 +127,12 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         if (hungTaskThreshold > 0 && hungTaskTerminationPeriod > 0) {
             hungTasksPeriodicTerminationFuture = hungTasksPeriodicTerminationService.get().startHungTaskPeriodicTermination(executorService, hungTaskTerminationPeriod);
         }
+        consumer.accept(executorService.getAdapter());
     }
 
     @Override
     void stopValue(StopContext context) {
+        consumer.accept(null);
         if (executorService != null) {
             if (hungTasksPeriodicTerminationFuture != null) {
                 hungTasksPeriodicTerminationFuture.cancel(true);
