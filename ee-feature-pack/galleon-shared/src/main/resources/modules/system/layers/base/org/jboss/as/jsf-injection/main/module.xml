@@ -47,6 +47,6 @@
 
         <!-- added this for MyFacesAnnotationProvider -->
         <module name="jakarta.faces.api"/>
-        <module name="jakarta.faces"/>
+        <module name="jakarta.faces.impl"/>
     </dependencies>
 </module>

@@ -33,7 +33,7 @@
     </resources>
 
     <dependencies>
-        <module name="jakarta.faces:myfaces"/>
+        <module name="jakarta.faces.impl:myfaces"/>
         <module name="jakarta.servlet.api"/>
 
         <module name="org.jboss.as.web"/>

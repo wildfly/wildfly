@@ -36,7 +36,7 @@
         <module name="jakarta.validation.api" export="true"/>
         <module name="jakarta.websocket.api"/>
 
-        <module name="jakarta.faces">
+        <module name="jakarta.faces.impl">
             <exports>
                 <include-set>
                     <path name="jakarta/faces"/>
