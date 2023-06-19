@@ -35,10 +35,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
-import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
+import org.jboss.as.test.integration.jpa.webtxem.entity.WebTxEmFlight;
 
 /**
- * Test servlet used by {@link WebJPATestCase}. Entity {@link Flight} is read or written, type of operation depends on
+ * Test servlet used by {@link WebJPATestCase}. Entity {@link WebTxEmFlight} is read or written, type of operation depends on
  * parameter: mode=write or mode=read.
  *
  * @author Zbyněk Roubalík
@@ -64,14 +64,14 @@ public class TestServlet extends HttpServlet {
                 String mode = req.getParameter("mode");
 
                 if (mode.equals("write")) {
-                    Flight f = new Flight();
+                    WebTxEmFlight f = new WebTxEmFlight();
                     f.setId(new Long(1));
                     f.setName("Flight number one");
                     em.merge(f);
 
                 } else if (mode.equals("read")) {
 
-                    Flight f = em.find(Flight.class, Long.valueOf(1));
+                    WebTxEmFlight f = em.find(WebTxEmFlight.class, Long.valueOf(1));
                     resp.setContentType("text/plain");
                     PrintWriter out = resp.getWriter();
                     out.print(f.getName());
