@@ -26,6 +26,7 @@
         <layer name="cdi"/>
         <layer name="jaxrs"/>
         <layer name="transactions"/>
+        <layer name="microprofile-config" optional="true"/>
     </dependencies>
 
     <feature spec="subsystem.microprofile-lra-coordinator"/>

@@ -45,6 +45,7 @@
     <module name="jakarta.enterprise.api"/>
     <!-- lra-proxy-api -->
     <module name="org.jboss.jandex" />
+    <module name="io.smallrye.config" optional="true"/>
 
   </dependencies>
 </module>

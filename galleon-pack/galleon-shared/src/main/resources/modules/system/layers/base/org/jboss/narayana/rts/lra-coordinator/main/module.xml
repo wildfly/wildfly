@@ -44,6 +44,7 @@
     <module name="jakarta.servlet.api"/>
     <module name="org.eclipse.microprofile.openapi.api"/>
     <module name="io.smallrye.fault-tolerance"/>
+    <module name="io.smallrye.config" optional="true"/>
 
     <!-- Loading JAX-RS dependencies for LRA recovery coordinator to be able to do JAX-RS remote calls -->
     <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
