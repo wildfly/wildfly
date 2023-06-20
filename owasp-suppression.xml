@@ -1246,4 +1246,15 @@
         <packageUrl regex="true">^pkg:maven/org\.codehaus\.jettison/jettison@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-1436</vulnerabilityName>
     </suppress>
+
+<!--    CVE-2023-35116 This happens with any recursive data structure.-->
+<!--    Jackson will not detect loops in data structures. -->
+<!--    False Positive based on: https://github.com/FasterXML/jackson-databind/issues/3972 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.2-1-PSI.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.13.3)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-35116</vulnerabilityName>
+    </suppress>
 </suppressions>
