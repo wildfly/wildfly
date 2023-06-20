@@ -23,6 +23,26 @@
   -->
 
 <module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.protocol.hornetq">
+
+    <properties>
+        <!--
+            END USER MODULE USAGE: Subsystem configuration plug points
+
+            End users may depend on this module for access to APIs needed to
+            implement custom plug points exposed by a subsystem's supported
+            management API (in this case the messaging-activemq subsystem).
+            Typically such plug points involve classname and module name
+            configuration attribute pairs where the end user specifies a module and
+            class that they provide to implement an API provided by the subsystem.
+
+            Such APIs and the name of this module are stable API. All other resources
+            exposed by this module are subject to change or removal at any time.
+
+            This module should not be directly depended upon by deployments.
+        -->
+        <property name="jboss.api" value="private"/>
+    </properties>
+
     <resources>
         <artifact name="${org.apache.activemq:artemis-hornetq-protocol}"/>
     </resources>
