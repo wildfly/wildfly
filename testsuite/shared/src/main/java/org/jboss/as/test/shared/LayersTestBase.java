@@ -141,10 +141,6 @@ public class LayersTestBase {
     // This is the expected set of un-referenced modules found when scanning
     // the default configuration.
     private static final String[] NOT_REFERENCED_COMMON = {
-            // This is a deprecated module which was previously public. It's effectively an alias for
-            // com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider. This can be removed once the module itself
-            // is removed.
-            "com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider",
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
