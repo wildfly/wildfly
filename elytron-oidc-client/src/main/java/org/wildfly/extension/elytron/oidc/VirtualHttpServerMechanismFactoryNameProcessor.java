@@ -26,8 +26,8 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.security.AdvancedSecurityMetaData;
 import org.jboss.as.server.security.SecurityMetaData;
-import org.jboss.as.web.common.AdvancedSecurityMetaData;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.msc.service.ServiceName;
 
