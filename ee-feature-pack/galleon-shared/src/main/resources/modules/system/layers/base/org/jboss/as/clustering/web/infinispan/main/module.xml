@@ -21,4 +21,9 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
+<!--
+    END USER MODULE USAGE: Alias for a private module.
+
+    This module is an alias for a private module and may be removed at any time.
+-->
 <module-alias xmlns="urn:jboss:module:1.9" name="org.jboss.as.clustering.web.infinispan" target-name="org.wildfly.clustering.web.infinispan"/>
