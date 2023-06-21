@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
-import static org.jboss.as.controller.operations.common.Util.getUndefineAttributeOperation;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assume.assumeTrue;
@@ -60,7 +59,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -162,11 +160,6 @@ public class OidcIdentityPropagationTestCase {
 
     @ArquillianResource
     protected static Deployer deployer;
-
-    @BeforeClass
-    public static void beforeClass() {
-        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17785 Intermittent failures in OidcIdentityPropagationTestCase");
-    }
 
     @Deployment(name= EAR_DEPLOYMENT_WITH_EJB_LOCAL, order = 1)
     public static Archive<?> ejbDeploymentLocal() {
@@ -741,9 +734,10 @@ public class OidcIdentityPropagationTestCase {
             updates.add(getAddEjbApplicationSecurityDomainOp(EJB_SECURITY_DOMAIN_NAME, EJB_SECURITY_DOMAIN_NAME));
             updates.add(getAddEjbApplicationSecurityDomainOp(ANOTHER_EJB_SECURITY_DOMAIN_NAME, ANOTHER_EJB_SECURITY_DOMAIN_NAME));
 
-            // /subsystem=elytron/virtual-security-domain=APP_NAME:add(outflow-security-domains=["ejb-domain", "another-ejb-domain"])
+            // /subsystem=elytron/virtual-security-domain=APP_NAME:add(outflow-security-domains=["ejb-domain"])
+            // /subsystem=elytron/virtual-security-domain=another-single-deployment-local:add(outflow-security-domains=["another-ejb-domain"])
             for (String app : APP_NAMES) {
-                updates.add(getAddVirtualSecurityDomainOp(app, EJB_SECURITY_DOMAIN_NAME, ANOTHER_EJB_SECURITY_DOMAIN_NAME));
+                updates.add(getAddVirtualSecurityDomainOp(app, app.equals(ANOTHER_SINGLE_DEPLOYMENT_LOCAL) ? ANOTHER_EJB_SECURITY_DOMAIN_NAME : EJB_SECURITY_DOMAIN_NAME));
             }
 
             // /subsystem=elytron/virtual-security-domain=outflow-anonymous-config.ear:write-attribute(name=outflow-anonymous, value=true)
@@ -776,8 +770,6 @@ public class OidcIdentityPropagationTestCase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             final List<ModelNode> updates = new ArrayList<>();
-
-            updates.add(getUndefineAttributeOperation(PathAddress.pathAddress("subsystem", "elytron").append("security-domain", EJB_SECURITY_DOMAIN_NAME), "trusted-virtual-security-domains"));
 
             ModelNode op = ModelUtil.createOpNode(
                     "subsystem=ejb3/application-security-domain=" + EJB_SECURITY_DOMAIN_NAME, REMOVE);
@@ -886,13 +878,14 @@ public class OidcIdentityPropagationTestCase {
                 .append("virtual-security-domain", virtualSecurityDomainName + ".ear");
     }
 
-    private static ModelNode getAddVirtualSecurityDomainOp(String virtualSecurityDomainName, String outflowSecurityDomain, String anotherOutflowSecurityDomain) {
+    private static ModelNode getAddVirtualSecurityDomainOp(String virtualSecurityDomainName, String... outflowDomains) {
         ModelNode op = createAddOperation(getVirtualSecurityDomainAddress(virtualSecurityDomainName));
         if (! virtualSecurityDomainName.equals(EAR_DEPLOYMENT_WITH_SERVLET_AND_EJB_REMOTE_SAME_DOMAIN)) {
-            ModelNode outflowDomains = new ModelNode();
-            outflowDomains.add(outflowSecurityDomain);
-            outflowDomains.add(anotherOutflowSecurityDomain);
-            op.get("outflow-security-domains").set(outflowDomains);
+            ModelNode outflowSecurityDomains = new ModelNode();
+            for (String outflowSecurityDomain : outflowDomains) {
+                outflowSecurityDomains.add(outflowSecurityDomain);
+            }
+            op.get("outflow-security-domains").set(outflowSecurityDomains);
         }
         return op;
     }
