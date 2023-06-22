@@ -203,6 +203,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 reportListOfStrings(context, list);
             } else if (LIST_PRODUCERS_INFO_AS_JSON.equals(operationName)) {
                 String json = serverControl.listProducersInfoAsJSON();
+                json = json.replace("lastProducedMessageID", "lastUUIDSent");
                 context.getResult().set(json);
             } else if (LIST_SESSIONS.equals(operationName)) {
                 String connectionID = CONNECTION_ID.resolveModelAttribute(context, operation).asString();
