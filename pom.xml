@@ -496,7 +496,7 @@
         <version.org.glassfish.soteria>3.0.0</version.org.glassfish.soteria>
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.0</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate>6.2.4.Final</version.org.hibernate>
+        <version.org.hibernate>6.2.5.Final</version.org.hibernate>
         <version.org.hibernate.search>6.1.8.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.0.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
