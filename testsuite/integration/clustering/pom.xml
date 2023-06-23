@@ -220,6 +220,7 @@
                                     <groupId>org.infinispan.server</groupId>
                                     <artifactId>infinispan-server</artifactId>
                                     <version>${version.org.infinispan.server}</version>
+                                    <classifier>bin</classifier>
                                     <type>zip</type>
                                     <unpack>true</unpack>
                                 </configuration>
