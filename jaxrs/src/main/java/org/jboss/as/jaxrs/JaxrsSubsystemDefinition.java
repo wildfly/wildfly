@@ -20,6 +20,7 @@
  */
 package org.jboss.as.jaxrs;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 
@@ -61,6 +62,13 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver())
                  .setAddHandler(new JaxrsSubsystemAdd(JaxrsAttribute.ATTRIBUTES))
                  .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE));
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration registration) {
+       for (AttributeDefinition definition : JaxrsAttribute.ATTRIBUTES) {
+          registration.registerReadWriteAttribute(definition, null, new JaxrsParamHandler(definition));
+       }
     }
 
     @Override
