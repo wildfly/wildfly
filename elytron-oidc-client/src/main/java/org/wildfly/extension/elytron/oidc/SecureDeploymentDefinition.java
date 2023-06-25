@@ -206,7 +206,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
-            super.populateModel(operation, resource);
+            super.populateModel(context, operation, resource);
             if (! isWarDeployment(context)) {
                 VirtualDomainMarkerUtility.virtualDomainRequired(context);
                 AdvancedSecurityMetaData advancedSecurityMetaData = new AdvancedSecurityMetaData();
