@@ -26,11 +26,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -43,8 +43,8 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
 
     public HandlerDefinitions() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
-                .setAddHandler(new AbstractAddStepHandler())
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setAddHandler(new ModelOnlyAddStepHandler())
+                .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
         );
     }
 
