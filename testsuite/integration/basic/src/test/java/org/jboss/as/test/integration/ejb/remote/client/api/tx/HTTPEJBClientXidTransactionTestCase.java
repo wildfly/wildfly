@@ -145,7 +145,7 @@ public class HTTPEJBClientXidTransactionTestCase {
         // setup the tx manager and tx sync registry
 
 
-        AuthenticationConfiguration config = AuthenticationConfiguration.EMPTY.useName("user1").usePassword("password1");
+        AuthenticationConfiguration config = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
         AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, config);
         old = AuthenticationContext.captureCurrent();
         AuthenticationContext.getContextManager().setGlobalDefault(context);

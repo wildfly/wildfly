@@ -24,11 +24,10 @@ package org.jboss.as.test.integration.ejb.security;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import jakarta.ejb.EJBAccessException;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -101,7 +100,7 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
+        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
         authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
@@ -274,7 +273,7 @@ public abstract class AnnSBTest {
         final AuthenticationContext authenticationContext = AuthenticationContext.empty()
                 .with(
                         MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY
+                        AuthenticationConfiguration.empty()
                                 .useName(username == null ? "$local" : username)
                                 .usePassword(password)
                                 .useRealm(null)

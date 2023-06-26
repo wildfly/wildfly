@@ -241,7 +241,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 AuthenticationContext clustersAuthenticationContext = AuthenticationContext.empty();
                 for (EJBClientDescriptorMetaData.ClusterConfig clusterConfig : clusterConfigs) {
                     MatchRule defaultRule = MatchRule.ALL.matchAbstractType("ejb", "jboss");
-                    AuthenticationConfiguration defaultAuthenticationConfiguration = AuthenticationConfiguration.EMPTY;
+                    AuthenticationConfiguration defaultAuthenticationConfiguration = AuthenticationConfiguration.empty();
                     final EJBClientCluster.Builder clientClusterBuilder = new EJBClientCluster.Builder();
 
                     final String clusterName = clusterConfig.getClusterName();
@@ -278,7 +278,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                     final Collection<EJBClientDescriptorMetaData.ClusterNodeConfig> clusterNodeConfigs = clusterConfig.getClusterNodeConfigs();
                     for (EJBClientDescriptorMetaData.ClusterNodeConfig clusterNodeConfig : clusterNodeConfigs) {
                         MatchRule nodeRule = MatchRule.ALL.matchAbstractType("ejb", "jboss");
-                        AuthenticationConfiguration nodeAuthenticationConfiguration = AuthenticationConfiguration.EMPTY;
+                        AuthenticationConfiguration nodeAuthenticationConfiguration = AuthenticationConfiguration.empty();
 
                         final String nodeName = clusterNodeConfig.getNodeName();
                         nodeRule = nodeRule.matchProtocol("node");

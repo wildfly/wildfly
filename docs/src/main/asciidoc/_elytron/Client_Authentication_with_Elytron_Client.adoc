@@ -212,7 +212,7 @@ in the client's code:
 ----
 //create your authentication configuration
 AuthenticationConfiguration adminConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm")
@@ -247,7 +247,7 @@ to use a masked password instead.
 ----
 //create your authentication configuration
 AuthenticationConfiguration adminConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm")
@@ -283,7 +283,7 @@ connecting over different hostnames, you could do the following:
 ----
 //create your authentication configuration
 AuthenticationConfiguration commonConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm");
@@ -363,13 +363,13 @@ Default Configuration Approach>>, and
 <<using-elytron-client-with-clients-deployed-to-wildfly,Using Elytron Client
 with Clients Deployed to WildFly>> sections.
 
-Using _AuthenticationConfiguration.EMPTY_ should only be used as a base
+Using _AuthenticationConfiguration.empty()_ should only be used as a base
 to build a configuration on top of and should not be used on its own. It
 provides a configuration that uses the JVM-wide registered providers and
 enables anonymous authentication.
 
 When specifying the providers on top of the
-_AuthenticationConfiguration.EMPTY_ configuration, you can specify a
+_AuthenticationConfiguration.empty()_ configuration, you can specify a
 custom list, but most users should use _WildFlyElytronProvider()_
 providers.
 
