@@ -52,7 +52,8 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
 @ServerSetup(MicrometerSetupTask.class)
 public class FaultToleranceMicrometerIntegrationTestCase {
 
-    private static final int INVOCATION_COUNT = 2;
+    // Let's use a slightly higher number of invocations, so we can at times differentiate between stale read and or other problems
+    private static final int INVOCATION_COUNT = 10;
 
     @Deployment
     public static Archive<?> deploy() {

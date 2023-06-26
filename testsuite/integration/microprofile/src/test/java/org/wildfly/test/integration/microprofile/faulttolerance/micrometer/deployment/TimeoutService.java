@@ -29,6 +29,8 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
+ * A service that always times out!
+ *
  * @author Radoslav Husar
  */
 @Path("/timeout")
@@ -36,12 +38,13 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 public class TimeoutService {
 
     @Fallback(fallbackMethod = "fallback")
-    @Timeout(500)
+    @Timeout(100)
     @GET
     public String alwaysTimeout() {
         try {
             // Note that sleep duration is longer than the timeout above.
-            Thread.sleep(700);
+            // Also note that this needs to be more than slightly higher than the timeout on slow/overloaded systems.
+            Thread.sleep(5_000);
         } catch (InterruptedException e) {
             // Ignore.
         }
