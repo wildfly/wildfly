@@ -368,6 +368,11 @@ link:#gal.elytron[elytron] +
 |
 link:#gal.resource-adapters[resource-adapters] +
 
+|[[gal.micrometer]]micrometer
+|Support for Micrometer
+|
+link:#gal.cdi[cdi] +
+
 |[[gal.microprofile-config]]microprofile-config
 |Support for MicroProfile Config.
 |
@@ -441,6 +446,13 @@ link:#gal.transactions[transactions] +
 link:#gal.cdi[cdi] +
 link:#gal.jaxrs[jaxrs] +
 
+|[[gal.microprofile-telemetry]]microprofile-telemetry
+|Support for MicroProfile Telemetry
+|
+link:#gal.cdi[cdi] +
+link:#gal.microprofile-config[microprofile-config] +
+link:#gal.opentelemetry[opentelemetry]
+
 |[[gal.mod_cluster]]mod_cluster
 |Support for mod_cluster subsystem.
 |
@@ -457,6 +469,10 @@ link:#gal.base-server[base-server] +
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
 
+|[[gal.opentelemetry]]opentelemetry
+|Support for OpenTelemetry
+|
+link:#gal.cdi[cdi] +
 |[[gal.pojo]]pojo
 | Support for legacy JBoss Microcontainer applications.
 |
