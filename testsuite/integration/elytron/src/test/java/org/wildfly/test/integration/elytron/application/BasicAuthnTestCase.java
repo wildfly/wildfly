@@ -332,7 +332,7 @@ public class BasicAuthnTestCase {
         context.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(200,response.statusCode());
+                Assert.assertEquals(SC_OK,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }
@@ -349,7 +349,7 @@ public class BasicAuthnTestCase {
         context.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(401,response.statusCode());
+                Assert.assertEquals(SC_UNAUTHORIZED,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }
@@ -366,7 +366,7 @@ public class BasicAuthnTestCase {
         context.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(403,response.statusCode());
+                Assert.assertEquals(SC_FORBIDDEN,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }

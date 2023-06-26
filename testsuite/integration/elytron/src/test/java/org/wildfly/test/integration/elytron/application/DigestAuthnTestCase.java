@@ -21,6 +21,9 @@
  */
 package org.wildfly.test.integration.elytron.application;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -57,13 +60,21 @@ public class DigestAuthnTestCase {
     public void testElytronHttpClientDigestAuth(@ArquillianResource URL url) throws MalformedURLException {
         final URL servletUrl = new URL(url.toExternalForm() + "role1");
         AuthenticationConfiguration adminConfig = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
-        AuthenticationContext context = AuthenticationContext.empty();
-        context = context.with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
+        AuthenticationContext context1 = AuthenticationContext.empty().with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
+        AuthenticationContext context2 = AuthenticationContext.empty().with(MatchRule.ALL.matchHost(servletUrl.getHost()), adminConfig);
         ElytronHttpClient elytronHttpClient = new ElytronHttpClient();
-        context.run(() -> {
+        context1.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(200,response.statusCode());
+                Assert.assertEquals(SC_OKi,response.statusCode());
+            }catch (Exception e){
+                Assert.fail("Can not connect to Elytron Http client");
+            }
+        });
+        context2.run(() -> {
+            try{
+                HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
+                Assert.assertEquals(SC_OK,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }
@@ -80,7 +91,7 @@ public class DigestAuthnTestCase {
         context.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(401,response.statusCode());
+                Assert.assertEquals(SC_UNAUTHORIZED,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }
@@ -97,7 +108,7 @@ public class DigestAuthnTestCase {
         context.run(() -> {
             try{
                 HttpResponse response = elytronHttpClient.connect(servletUrl.toString());
-                Assert.assertEquals(403,response.statusCode());
+                Assert.assertEquals(SC_FORBIDDEN,response.statusCode());
             }catch (Exception e){
                 Assert.fail("Can not connect to Elytron Http client");
             }
