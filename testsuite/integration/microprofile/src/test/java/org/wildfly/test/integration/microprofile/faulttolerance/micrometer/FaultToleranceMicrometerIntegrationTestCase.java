@@ -50,7 +50,6 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
  */
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@org.junit.Ignore("WFLY-18162")
 public class FaultToleranceMicrometerIntegrationTestCase {
 
     private static final int INVOCATION_COUNT = 2;
