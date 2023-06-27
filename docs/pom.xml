@@ -42,9 +42,6 @@
     <name>WildFly: Documentation</name>
 
     <properties>
-        <!-- Because this version is only used here and should not currently be used outside of this module we are
-             going to define it here rather than the root pom. -->
-        <version.org.jboss.wildscribe>2.0.0.Final</version.org.jboss.wildscribe>
         <server.name>wildfly-${project.version}</server.name>
         <messages.filename>${server.name}.messages</messages.filename>
         <management-model.filename>${server.name}.dmr</management-model.filename>
