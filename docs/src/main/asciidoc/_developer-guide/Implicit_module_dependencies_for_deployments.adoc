@@ -83,7 +83,7 @@ that are always added |Dependencies that are added if a trigger
 condition is met |Trigger which leads to the implicit module dependency
 being added
 
-|Core Server |java.se |  | 
+|Core Server |java.se org.jboss.vfs|  | 
 
 |Batch Subsystem |jakarta.batch.api |  | implicit
 
