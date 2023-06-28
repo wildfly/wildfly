@@ -107,7 +107,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <install-dir>${basedir}/target/${project.build.finalName}</install-dir>
-                            <record-state>false</record-state>
+                            <record-state>true</record-state>
                             <log-time>${galleon.log.time}</log-time>
                             <offline>true</offline>
                             <plugin-options>

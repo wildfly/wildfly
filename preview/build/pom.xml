@@ -72,7 +72,7 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <install-dir>${project.build.directory}/${project.build.finalName}</install-dir>
-                            <record-state>false</record-state>
+                            <record-state>true</record-state>
                             <log-time>${galleon.log.time}</log-time>
                             <offline>true</offline>
                             <feature-packs>
