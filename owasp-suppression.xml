@@ -996,4 +996,16 @@
         <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-35116</vulnerabilityName>
     </suppress>
+
+    <!--   False positive, based on https://nvd.nist.gov/vuln/detail/CVE-2023-34615 this cve concerns -->
+    <!--   https://github.com/billdavidson/JSONUtil/issues/10 -->
+    <!--   wildfly-elytron-json-util does not contain this JSONUtil -->
+    <!--   CVE was raised based on library name, but it is different library -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-json-util-1.19.2-1-PSI.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-json\-util@.*$</packageUrl>
+        <cve>CVE-2023-34615</cve>
+    </suppress>
 </suppressions>
