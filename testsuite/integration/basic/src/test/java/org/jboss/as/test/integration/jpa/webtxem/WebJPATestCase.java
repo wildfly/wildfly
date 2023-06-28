@@ -32,10 +32,10 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.jpa.webtxem.entity.WebTxEmCompany;
-import org.jboss.as.test.integration.jpa.webtxem.entity.WebTxEmCustomer;
-import org.jboss.as.test.integration.jpa.webtxem.entity.WebTxEmFlight;
-import org.jboss.as.test.integration.jpa.webtxem.entity.WebTxEmTicket;
+import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
+import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
+import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
+import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -61,8 +61,8 @@ public class WebJPATestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(WebJPATestCase.class, TestServlet.class,
-                HttpRequest.class, WebTxEmFlight.class, WebTxEmCompany.class, WebTxEmCustomer.class,
-                WebTxEmTicket.class);
+                HttpRequest.class, Flight.class, Company.class, Customer.class,
+                Ticket.class);
         // WEB-INF/classes/ is implied
         war.addAsResource(WebJPATestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         return war;
