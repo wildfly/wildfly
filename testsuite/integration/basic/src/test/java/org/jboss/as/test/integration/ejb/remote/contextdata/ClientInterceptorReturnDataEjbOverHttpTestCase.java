@@ -76,7 +76,7 @@ public class ClientInterceptorReturnDataEjbOverHttpTestCase {
 
     @BeforeClass
     public static void setup() {
-        AuthenticationConfiguration config = AuthenticationConfiguration.EMPTY.useName("user1").usePassword("password1");
+        AuthenticationConfiguration config = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
         AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, config);
         old = AuthenticationContext.captureCurrent();
         AuthenticationContext.getContextManager().setGlobalDefault(context);

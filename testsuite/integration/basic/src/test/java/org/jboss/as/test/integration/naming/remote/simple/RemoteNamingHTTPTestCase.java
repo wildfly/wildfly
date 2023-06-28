@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.naming.remote.simple;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.junit.Assert.assertEquals;
+
+import java.net.URI;
+import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,14 +47,6 @@ import org.wildfly.naming.java.permission.JndiPermission;
 import org.wildfly.security.auth.client.AuthenticationConfiguration;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.MatchRule;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.net.URI;
-import java.util.Properties;
-
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stuart Douglas
@@ -85,7 +85,7 @@ public class RemoteNamingHTTPTestCase {
     private static AuthenticationContext old;
     @BeforeClass
     public static void setup() {
-        AuthenticationConfiguration config = AuthenticationConfiguration.EMPTY.useName("user1").usePassword("password1");
+        AuthenticationConfiguration config = AuthenticationConfiguration.empty().useName("user1").usePassword("password1");
         AuthenticationContext context = AuthenticationContext.empty().with(MatchRule.ALL, config);
         old = AuthenticationContext.captureCurrent();
         AuthenticationContext.getContextManager().setGlobalDefault(context);

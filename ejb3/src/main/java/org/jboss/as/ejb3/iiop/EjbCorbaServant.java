@@ -30,23 +30,22 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import javax.management.MBeanException;
 
 import jakarta.ejb.EJBMetaData;
 import jakarta.ejb.HomeHandle;
-import javax.management.MBeanException;
 import jakarta.transaction.Status;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.MarshallerFactory;
@@ -296,7 +295,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         if (this.securityDomain != null) {
                             // an elytron security domain is available: authenticate and authorize the client before invoking the component.
                             SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
-                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.EMPTY;
+                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.empty();
 
                             if (identityPrincipal != null) {
                                 // we have an identity token principal - check if the TLS identity, if available,
