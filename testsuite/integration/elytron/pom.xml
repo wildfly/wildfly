@@ -668,7 +668,6 @@
                         <configuration>
                             <offline>true</offline>
                             <scripts>
-                                <script>enable-embedded-messaging.cli</script>
                                 <script>modify-elytron-config.cli</script>
                             </scripts>
                             <jboss-home>${wildfly.dir}</jboss-home>
@@ -763,17 +762,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>                    <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.plugin}</version>
-                    <configuration>
-                        <!-- Do not configure messaging as some layers do not include messaging -->
-                        <scripts combine.children="override">
-                            <script>modify-elytron-config.cli</script>
-                        </scripts>
-                    </configuration>
-                </plugin>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -1011,6 +1000,10 @@
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
                         <configuration>
+                            <scripts combine.children="override">
+                                <script>enable-embedded-messaging.cli</script>
+                                <script>modify-elytron-config.cli</script>
+                            </scripts>
                             <system-properties>
                                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
                             </system-properties>
