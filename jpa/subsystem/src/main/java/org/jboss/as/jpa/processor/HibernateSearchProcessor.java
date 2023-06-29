@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -124,6 +124,11 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
                         ANNOTATION_INDEXED_NAME, MODULE_MAPPER_ORM_DEFAULT);
             }
         }
+
+        // Configure sourcing of Jandex indexes in Hibernate Search,
+        // so that it can look for @ProjectionConstructor annotations
+        deploymentUnit.addToAttachmentList(JpaAttachments.INTEGRATOR_ADAPTOR_MODULE_NAMES,
+                Configuration.HIBERNATE_SEARCH_INTEGRATOR_ADAPTOR_MODULE_NAME);
 
         List<String> backendTypes = HibernateSearchDeploymentMarker.getBackendTypes(deploymentUnit);
         if (backendTypes != null) {
