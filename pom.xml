@@ -296,7 +296,7 @@
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
         <version.com.google.errorprone>2.4.0</version.com.google.errorprone>
-        <version.com.google.guava>31.1-jre</version.com.google.guava>
+        <version.com.google.guava>32.0.1-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.google.j2objc>1.3</version.com.google.j2objc>
         <version.com.google.protobuf>3.21.7</version.com.google.protobuf>
