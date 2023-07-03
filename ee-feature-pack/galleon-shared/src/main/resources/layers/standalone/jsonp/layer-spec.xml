@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jsonp">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jsonp">
+    <props>
+        <prop name="org.wildfly.rule.class" value="jakarta.json"/>
+    </props>
     <dependencies>
         <layer name="base-server"/>
     </dependencies>

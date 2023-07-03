@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="elytron-oidc-client">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="elytron-oidc-client">
+    <props>
+        <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/login-config/auth-method,OIDC"/>
+    </props>
     <dependencies>
         <layer name="elytron"/>
     </dependencies>

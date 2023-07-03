@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="web-clustering">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="web-clustering">
+    <props>
+        <prop name="org.wildfly.rule.profile-ha" value="web-passivation"/>
+    </props>
     <dependencies>
         <layer name="web-server"/>
         <layer name="transactions"/>

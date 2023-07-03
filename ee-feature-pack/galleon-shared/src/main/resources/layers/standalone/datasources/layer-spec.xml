@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="datasources">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="datasources">
+    <props>
+        <prop name="org.wildfly.rule.class" value="javax.sql"/>
+    </props>
     <dependencies>
         <layer name="transactions"/>
     </dependencies>

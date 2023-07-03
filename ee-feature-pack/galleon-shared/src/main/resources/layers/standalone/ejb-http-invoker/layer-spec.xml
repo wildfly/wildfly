@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-http-invoker">
-
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-http-invoker">
+    <props>
+        <prop name="org.wildfly.rule.add-on" value="ejb,http-invoker"/>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
+    </props>
     <dependencies>
         <layer name="ejb-lite"/>
         <layer name="elytron"/>

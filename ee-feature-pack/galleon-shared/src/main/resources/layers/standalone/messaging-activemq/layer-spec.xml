@@ -1,5 +1,10 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="messaging-activemq">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="messaging-activemq">
+    <props>
+        <prop name="org.wildfly.rule.class" value="jakarta.jms"/>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.jms"/>
+        <prop name="org.wildfly.rule.expect-add-on-family" value="messaging"/>
+    </props>
     <dependencies>
         <layer name="resource-adapters"/>
     </dependencies>

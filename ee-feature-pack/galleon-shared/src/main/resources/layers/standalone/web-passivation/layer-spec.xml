@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="web-passivation">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="web-passivation">
+    <props>
+        <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/distributable"/>
+    </props>
     <dependencies>
         <layer name="web-server"/>
         <layer name="transactions"/>

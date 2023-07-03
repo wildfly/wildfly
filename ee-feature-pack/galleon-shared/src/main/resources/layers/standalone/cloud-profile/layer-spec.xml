@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="cloud-profile">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="cloud-profile">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="hidden"/>
+    </props>
     <dependencies>
         <layer name="web-server"/>
         <layer name="bean-validation" optional="true"/>

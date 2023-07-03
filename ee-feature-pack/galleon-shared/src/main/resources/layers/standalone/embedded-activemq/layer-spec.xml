@@ -1,5 +1,11 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="embedded-activemq">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="embedded-activemq">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:messaging-activemq"/>
+        <prop name="org.wildfly.rule.add-on" value="messaging,embedded-activemq"/>
+        <prop name="org.wildfly.rule.add-on-cardinality" value="1"/>
+        <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*-jms.xml,/META-INF/*-jms.xml],/messaging-deployment/server/jms-destinations"/>
+    </props>
     <dependencies>
         <layer name="messaging-activemq"/>
         <layer name="cdi"/>
