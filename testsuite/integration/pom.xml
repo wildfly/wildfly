@@ -52,6 +52,7 @@
 
         <ts.skipTests>${skipTests}</ts.skipTests>
 
+        <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
         <container.java.home>${java.home}</container.java.home>
     </properties>
@@ -373,7 +374,7 @@
                     <!-- Copy users and roles config from shared resources. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>${ts.config-as.copy-mgmt-users.phase}</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <inherited>true</inherited>
                         <configuration>

@@ -36,10 +36,16 @@
         <ts.copy-wildfly.phase>generate-test-resources</ts.copy-wildfly.phase>
         <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
         <ts.bootable-jar-microprofile-tck-packaging.phase>none</ts.bootable-jar-microprofile-tck-packaging.phase>
-        <!-- Child modules override these properties to control what layers are provisioned if galleon provisioning occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>FIXME-must-override</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
-
+        <ts.microprofile-tck-glow.phase>none</ts.microprofile-tck-glow.phase>
+        <ts.microprofile-tck-glow.config.name>standalone-microprofile.xml</ts.microprofile-tck-glow.config.name>
+        <ts.microprofile-tck-glow.expected-discovery>FIXME-must-override</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.verbose>false</ts.microprofile-tck-glow.verbose>
+        <!-- Child modules override these properties to control what feature packs are used
+             and what layers are provisioned if galleon provision occurs -->
+        <ts.microprofile-tck-provisioning.fp.groupId>${full.maven.groupId}</ts.microprofile-tck-provisioning.fp.groupId>
+        <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-galleon-pack</ts.microprofile-tck-provisioning.fp.artifactId>
+        <ts.microprofile-tck-provisioning.fp.version>${full.maven.version}</ts.microprofile-tck-provisioning.fp.version>
+        <ts.microprofile-tck-tests-dependency>FIXME-must-override</ts.microprofile-tck-tests-dependency>
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
 
@@ -103,6 +109,38 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <!-- Child modules can set properties to override what feature pack is used -->
+                            <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
+                            <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
+                            <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <config-name>${ts.microprofile-tck-glow.config.name}</config-name>
+                    <dependenciesToScan>
+                        <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
+                    </dependenciesToScan>
+                    <surefire-execution-for-included-classes>default-test</surefire-execution-for-included-classes>
+                    <enable-verbose-output>${ts.microprofile-tck-glow.verbose}</enable-verbose-output>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-deployments</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${ts.microprofile-tck-glow.phase}</phase>
+                        <configuration>
+                            <expected-discovery>${ts.microprofile-tck-glow.expected-discovery}</expected-discovery>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jboss.galleon</groupId>
                 <artifactId>galleon-maven-plugin</artifactId>
                 <executions>
@@ -110,7 +148,7 @@
                     <execution>
                         <id>microprofile-tck-provisioning</id>
                         <goals>
-                            <goal>provision</goal>
+                            <goal>provision-file</goal>
                         </goals>
                         <!-- Use a property to drive whether this execution is enabled.
                              Default is 'none', i.e. disabled. -->
@@ -123,30 +161,8 @@
                             <plugin-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
                             </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                </feature-pack>
-                            </feature-packs>
-                            <configurations>
-                                <config>
-                                    <model>standalone</model>
-                                    <!-- Call the file standalone-microprofile.xml as that is what
-                                         arquillian.xml says to use for testing in the default maven profile-->
-                                    <name>standalone-microprofile.xml</name>
-                                    <layers>
-                                        <!-- Child modules would set properties to drive the desired layers -->
-                                        <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
-                                        <layer>${ts.microprofile-tck-provisioning.decorator.layer}</layer>
-                                    </layers>
-                                </config>
-                            </configurations>
+                            <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -172,18 +188,7 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <!-- Child modules would set properties to drive the desired layers -->
-                                <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
-                                <layer>${ts.microprofile-tck-provisioning.decorator.layer}</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>

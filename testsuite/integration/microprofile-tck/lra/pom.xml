@@ -25,21 +25,15 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-lra</ts.microprofile-tck-provisioning.decorator.layer>
-
+        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.lra:microprofile-lra-tck</ts.microprofile-tck-tests-dependency>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-        <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
-        <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer.participant>microprofile-lra-participant</ts.microprofile-tck-provisioning.decorator.layer.participant>
-        <ts.microprofile-tck-provisioning.decorator.layer.coordinator>microprofile-lra-coordinator</ts.microprofile-tck-provisioning.decorator.layer.coordinator>
+        <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+        <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
         <lra.coordinator.url>http://localhost:8080/lra-coordinator/lra-coordinator</lra.coordinator.url>
         <lra.tck.base.url>http://localhost:8080</lra.tck.base.url>
         <lra.http.recovery.host>localhost</lra.http.recovery.host>
@@ -51,6 +45,7 @@
         <connect.to.server>true</connect.to.server>
         <wait.for.ports>9990</wait.for.ports>
         <port.waiting.timeout>10</port.waiting.timeout>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, microprofile-config, microprofile-lra-coordinator, microprofile-lra-participant, transactions]==>ee-core-profile-server,microprofile-lra-coordinator,microprofile-lra-participant</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -98,11 +93,20 @@
         <finalName>microprofile-lra-${project.version}</finalName>
         <plugins>
             <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <add-ons>
+                        <add-on>lra-coordinator</add-on>
+                    </add-ons>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>
-                        <dependency>org.eclipse.microprofile.lra:microprofile-lra-tck</dependency>
+                        <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}
@@ -116,94 +120,6 @@
                         </microprofile.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
-                <executions>
-                    <!-- Provision a server slimmed to only what we want for a particular TCK. -->
-                    <execution>
-                        <id>microprofile-tck-provisioning</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <!-- Use a property to drive whether this execution is enabled.
-                             Default is 'none', i.e. disabled. -->
-                        <phase>${ts.microprofile-tck-provisioning.phase}</phase>
-                        <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                    <inherit-configs>false</inherit-configs>
-                                    <inherit-packages>false</inherit-packages>
-                                </feature-pack>
-                            </feature-packs>
-                            <configurations>
-                                <config>
-                                    <model>standalone</model>
-                                    <!-- Call the file standalone-microprofile.xml as that is what
-                                         arquillian.xml says to use for testing in the default maven profile-->
-                                    <name>standalone-microprofile.xml</name>
-                                    <layers>
-                                        <!-- Child modules would set properties to drive the desired layers -->
-                                        <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
-                                        <layer>${ts.microprofile-tck-provisioning.decorator.layer.participant}</layer>
-                                        <layer>${ts.microprofile-tck-provisioning.decorator.layer.coordinator}</layer>
-                                    </layers>
-                                </config>
-                            </configurations>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
-                <executions>
-                    <execution>
-                        <id>bootable-jar-microprofile-tck-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${ts.bootable-jar-microprofile-tck-packaging.phase}</phase>
-                        <configuration>
-                            <output-file-name>test-wildfly-microprofile-tck.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <!-- Child modules would set properties to drive the desired layers -->
-                                <layer>${ts.microprofile-tck-provisioning.base.layer}</layer>
-                                <layer>${ts.microprofile-tck-provisioning.decorator.layer.participant}</layer>
-                                <layer>${ts.microprofile-tck-provisioning.decorator.layer.coordinator}</layer>
-                            </layers>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -219,7 +135,8 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
             </properties>
         </profile>
 
@@ -232,7 +149,10 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
@@ -245,7 +165,10 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
@@ -258,7 +181,8 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
             </properties>
         </profile>
 

@@ -31,6 +31,7 @@ import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.Simp
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.SingletonStartupBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.util.LoggingUtil;
@@ -98,18 +99,23 @@ public class RunAsPrincipalTestCase  {
                 .addClass(RunAsPrincipalTestCase.class)
                 .addClass(TestLogHandlerSetupTask.class)
                 .addClass(LoggingUtil.class)
+                .addClass(GlowUtil.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF")
-               // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
-                .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
-                        new PropertyPermission("jboss.server.log.dir", "read"),
-                        createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
-                        new ElytronPermission("authenticate"),
-                        new ElytronPermission("getIdentity"),
-                        new ElytronPermission("createAdHocIdentity"),
-                        new ChangeRoleMapperPermission("ejb"),
-                        new ElytronPermission("setRunAsPrincipal")), "permissions.xml");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+        // When WildFly Glow instantiate and scan the deployment, the deployment is not deployed, the following
+        // code creates error at deployment instantiation time.
+        if (!GlowUtil.isGlowScan()) {
+            // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
+            war.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+                    new PropertyPermission("jboss.server.log.dir", "read"),
+                    createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
+                    new ElytronPermission("authenticate"),
+                    new ElytronPermission("getIdentity"),
+                    new ElytronPermission("createAdHocIdentity"),
+                    new ChangeRoleMapperPermission("ejb"),
+                    new ElytronPermission("setRunAsPrincipal")), "permissions.xml");
+        }
         war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }

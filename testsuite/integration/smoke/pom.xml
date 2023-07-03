@@ -33,7 +33,8 @@
         <jboss.dist>${basedir}/target/wildfly</jboss.dist>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
-
+        <glow.phase.observability>none</glow.phase.observability>
+        <glow.phase.sar>none</glow.phase.sar>
     </properties>
 
     <dependencies>
@@ -536,6 +537,49 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.ee.galleon.pack.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <config-name>standalone.xml</config-name>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-observability</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase.observability}</phase>
+                        <configuration>
+                            <expected-errors>
+                                <error>an add-on of the messaging family is expected by the messaging-activemq layer</error>
+                                <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <add-layers-for-jndi>h2-datasource</add-layers-for-jndi>
+                            <expected-discovery>[datasources, ee-integration, h2-datasource, jaxrs, messaging-activemq, naming, resource-adapters, servlet]==>ee-core-profile-server,h2-datasource,jaxrs,messaging-activemq</expected-discovery>
+                            <surefire-execution-for-included-classes>microprofile.surefire</surefire-execution-for-included-classes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-legacy-sar-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase.sar}</phase>
+                        <configuration>
+                            <expected-discovery>[sar]==>ee-core-profile-server,sar</expected-discovery>
+                            <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
                 <version>${version.org.wildfly.jar.plugin}</version>
@@ -557,17 +601,7 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>h2-default-datasource</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -673,6 +707,8 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <glow.phase.observability>test-compile</glow.phase.observability>
+                <glow.phase.sar>test-compile</glow.phase.sar>
             </properties>
             <build>
                 <plugins>
@@ -698,9 +734,9 @@
                             <execution>
                                 <id>observability-provisioning</id>
                                 <goals>
-                                    <goal>provision</goal>
+                                    <goal>provision-file</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <install-dir>${project.build.directory}/wildfly</install-dir>
                                     <record-state>false</record-state>
@@ -711,25 +747,7 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                     </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
 
@@ -737,9 +755,9 @@
                             <execution>
                                 <id>legacy-sar-provisioning</id>
                                 <goals>
-                                    <goal>provision</goal>
+                                    <goal>provision-file</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
                                     <record-state>false</record-state>
@@ -750,31 +768,7 @@
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
                                     </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>sar</layer>
-
-                                                <!-- Needed by arquillian: protocol and security manager -->
-                                                <layer>jmx-remoting</layer>
-                                                <layer>security-manager</layer>
-
-                                                <!-- Needed by org.jboss.as.test.smoke.sar.ConfigService -->
-                                                <layer>logging</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    <provisioning-file>target/glow-scan/legacy-sar-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -854,7 +848,8 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <glow.phase.observability>test-compile</glow.phase.observability>
             </properties>
             <build>
                 <plugins>
@@ -939,7 +934,8 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <glow.phase.observability>test-compile</glow.phase.observability>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
