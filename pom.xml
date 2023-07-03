@@ -324,7 +324,7 @@
         <version.io.agroal>1.16</version.io.agroal>
         <version.io.grpc>1.38.1</version.io.grpc>
         <version.io.jaegertracing>1.6.0</version.io.jaegertracing>
-        <version.io.netty>4.1.86.Final</version.io.netty>
+        <version.io.netty>4.1.94.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.9.1</version.io.opentelemetry.opentelemetry>
         <version.io.opentracing>0.33.0</version.io.opentracing>
         <version.io.opentracing.concurrent>0.4.0</version.io.opentracing.concurrent>
