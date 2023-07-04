@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,59 +19,55 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.projectionconstructor;
 
-package org.jboss.as.test.integration.jpa.webtxem.entity;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OrderColumn;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 
-/**
- * Ticket entity class
- *
- * @author Zbyněk Roubalík
- */
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-public class WebTxEmTicket {
-
-    Long id;
-    String number;
-    WebTxEmCustomer customer;
-
-    public WebTxEmTicket() {
-    }
+@Indexed
+public class Book {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @FullTextField
+    private String title;
+
+    @IndexedEmbedded(includeDepth = 1)
+    @ManyToMany
+    @OrderColumn
+    private List<Author> authors = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long long1) {
-        id = long1;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getNumber() {
-        return number;
+    public String getTitle() {
+        return title;
     }
 
-    public void setNumber(String string) {
-        number = string;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "CUSTOMER_ID")
-    public WebTxEmCustomer getCustomer() {
-        return customer;
+    public List<Author> getAuthors() {
+        return authors;
     }
 
-    public void setCustomer(WebTxEmCustomer customer) {
-        this.customer = customer;
+    public void setAuthors(List<Author> authors) {
+        this.authors = authors;
     }
-
 }
-

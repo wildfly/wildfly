@@ -3049,6 +3049,17 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>jipijapa-hibernatesearch</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-appclient</artifactId>
             <exclusions>
                 <exclusion>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,63 +19,62 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.hibernate.search.backend.elasticsearch.projectionconstructor;
 
-package org.jboss.as.test.integration.jpa.webtxem.entity;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Company entity class
- *
- * @author Zbyněk Roubalík
- */
 @Entity
-public class WebTxEmCompany {
-
-    private Long id;
-    private String name;
-    private Set<WebTxEmFlight> flights = new HashSet<WebTxEmFlight>();
-
-    public WebTxEmCompany() {
-    }
+public class Author {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "comp_id")
+    @GeneratedValue
+    private Long id;
+
+    @FullTextField
+    private String firstName;
+
+    @FullTextField
+    private String lastName;
+
+    @ManyToMany(mappedBy = "authors")
+    private List<Book> books = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setId(Long newId) {
-        id = newId;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String string) {
-        name = string;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "company")
-    @Column(name = "flight_id")
-    public Set<WebTxEmFlight> getFlights() {
-        return flights;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setFlights(Set<WebTxEmFlight> flights) {
-        this.flights = flights;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
 }

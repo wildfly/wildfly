@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2023, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -25,6 +25,7 @@ import org.jboss.as.jpa.beanmanager.BeanManagerAfterDeploymentValidation;
 import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.msc.service.ServiceName;
 
 import jakarta.transaction.TransactionSynchronizationRegistry;
@@ -50,6 +51,8 @@ public final class JpaAttachments {
     public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
 
     public static final AttachmentKey<BeanManagerAfterDeploymentValidation> BEAN_MANAGER_AFTER_DEPLOYMENT_VALIDATION_ATTACHMENT_KEY = AttachmentKey.create(BeanManagerAfterDeploymentValidation.class);
+
+    public static final AttachmentKey<AttachmentList<String>> INTEGRATOR_ADAPTOR_MODULE_NAMES = AttachmentKey.createList(String.class);
 
     private JpaAttachments() {
     }

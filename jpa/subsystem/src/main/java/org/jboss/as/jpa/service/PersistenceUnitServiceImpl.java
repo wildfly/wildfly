@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -53,6 +54,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
+import org.jipijapa.plugin.spi.PersistenceProviderIntegratorAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -81,6 +83,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
     private final Map properties;
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
+    private final List<PersistenceProviderIntegratorAdaptor> persistenceProviderIntegratorAdaptors;
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
     private final ClassLoader classLoader;
@@ -98,6 +101,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final ClassLoader classLoader,
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
+            final List<PersistenceProviderIntegratorAdaptor> persistenceProviderIntegratorAdaptors,
             final PersistenceProvider persistenceProvider,
             final PersistenceUnitRegistryImpl persistenceUnitRegistry,
             final ServiceName deploymentUnitServiceName,
@@ -106,6 +110,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
+        this.persistenceProviderIntegratorAdaptors = persistenceProviderIntegratorAdaptors;
         this.persistenceProvider = persistenceProvider;
         this.classLoader = classLoader;
         this.persistenceUnitRegistry = persistenceUnitRegistry;
@@ -367,6 +372,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
         } finally {
             persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
+            for (PersistenceProviderIntegratorAdaptor adaptor : persistenceProviderIntegratorAdaptors) {
+                adaptor.afterCreateContainerEntityManagerFactory(pu);
+            }
         }
     }
 

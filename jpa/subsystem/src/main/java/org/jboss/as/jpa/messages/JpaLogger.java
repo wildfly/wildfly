@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -757,4 +757,16 @@ public interface JpaLogger extends BasicLogger {
     IllegalStateException invalidClassFormat(@Cause Exception cause, String className);
 
     // @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
+
+    /**
+     * Creates an exception indicating the persistence provider integrator module, represented by the
+     * {@code persistenceProviderModule} parameter, had an error loading.
+     *
+     * @param cause                     the cause of the error.
+     * @param persistenceProviderModule the name of the adapter module.
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 74, value = "Persistence provider integrator module load error for %s")
+    DeploymentUnitProcessingException cannotLoadPersistenceProviderIntegratorModule(@Cause Throwable cause, String persistenceProviderModule);
+
 }
