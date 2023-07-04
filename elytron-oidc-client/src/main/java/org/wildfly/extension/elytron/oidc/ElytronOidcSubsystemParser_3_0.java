@@ -32,6 +32,7 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TURN
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.USE_RESOURCE_ROLE_MAPPINGS;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+
 /**
  * Subsystem parser for the Elytron OpenID Connect subsystem.
  *
