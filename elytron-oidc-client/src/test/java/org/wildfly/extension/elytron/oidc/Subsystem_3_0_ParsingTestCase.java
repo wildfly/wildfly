@@ -28,20 +28,20 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class Subsystem_2_0_ParsingTestCase extends AbstractSubsystemBaseTest {
+public class Subsystem_3_0_ParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public Subsystem_2_0_ParsingTestCase() {
+    public Subsystem_3_0_ParsingTestCase() {
         super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("legacy_subsystem_2_0.xml");
+        return readResource("subsystem_3_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-elytron-oidc-client_2_0.xsd";
+        return "schema/wildfly-elytron-oidc-client_3_0.xsd";
     }
 
     @Override
