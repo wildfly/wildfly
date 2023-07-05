@@ -75,6 +75,7 @@ public class ServerProbesService implements Service {
         modelControllerClient = modelControllerClientFactory.get().createSuperUserClient(managementExecutor.get(), true);
 
         serverProbes.add(new ServerProbes.ServerStateCheck(modelControllerClient));
+        serverProbes.add(new ServerProbes.SuspendStateCheck(modelControllerClient));
         serverProbes.add(new ServerProbes.DeploymentsStatusCheck(modelControllerClient));
         serverProbes.add(new ServerProbes.NoBootErrorsCheck(modelControllerClient));
 
