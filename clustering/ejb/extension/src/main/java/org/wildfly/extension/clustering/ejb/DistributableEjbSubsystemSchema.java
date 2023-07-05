@@ -21,9 +21,9 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -41,7 +41,7 @@ public enum DistributableEjbSubsystemSchema implements PersistentSubsystemSchema
     private final VersionedNamespace<IntVersion, DistributableEjbSubsystemSchema> namespace;
 
     DistributableEjbSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(DistributableEjbExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableEjbExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

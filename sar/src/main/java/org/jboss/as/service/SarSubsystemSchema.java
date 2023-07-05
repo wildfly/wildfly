@@ -24,9 +24,9 @@ package org.jboss.as.service;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum SarSubsystemSchema implements PersistentSubsystemSchema<SarSubsystem
     private final VersionedNamespace<IntVersion, SarSubsystemSchema> namespace;
 
     SarSubsystemSchema(int major) {
-        this.namespace = new LegacySubsystemURN<>(SarExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(SarExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

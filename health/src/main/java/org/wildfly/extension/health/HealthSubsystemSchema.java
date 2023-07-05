@@ -26,7 +26,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum HealthSubsystemSchema implements PersistentSubsystemSchema<HealthSub
     private final VersionedNamespace<IntVersion, HealthSubsystemSchema> namespace;
 
     HealthSubsystemSchema(int major) {
-        this.namespace = new SubsystemURN<>(HealthExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createSubsystemURN(HealthExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

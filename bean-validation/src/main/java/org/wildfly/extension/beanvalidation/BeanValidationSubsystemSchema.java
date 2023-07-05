@@ -25,9 +25,9 @@ package org.wildfly.extension.beanvalidation;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -45,7 +45,7 @@ enum BeanValidationSubsystemSchema implements PersistentSubsystemSchema<BeanVali
     private final VersionedNamespace<IntVersion, BeanValidationSubsystemSchema> namespace;
 
     BeanValidationSubsystemSchema(int major) {
-        this.namespace = new LegacySubsystemURN<>(BeanValidationExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(BeanValidationExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

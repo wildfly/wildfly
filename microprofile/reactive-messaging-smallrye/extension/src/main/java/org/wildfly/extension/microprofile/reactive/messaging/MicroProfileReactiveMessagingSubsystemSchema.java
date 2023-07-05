@@ -26,7 +26,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum MicroProfileReactiveMessagingSubsystemSchema implements PersistentSu
     private final VersionedNamespace<IntVersion, MicroProfileReactiveMessagingSubsystemSchema> namespace;
 
     MicroProfileReactiveMessagingSubsystemSchema(int major) {
-        this.namespace = new SubsystemURN<>(MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
@@ -45,7 +44,7 @@ public enum SingletonSubsystemSchema implements SubsystemSchema<SingletonSubsyst
     private final VersionedNamespace<IntVersion, SingletonSubsystemSchema> namespace;
 
     SingletonSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(SingletonExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(SingletonExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
