@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -189,6 +189,11 @@ public class Configuration {
      * name of the Hibernate Search module name configuration setting in persistence unit definition
      */
     public static final String HIBERNATE_SEARCH_MODULE = "wildfly.jpa.hibernate.search.module";
+
+    /**
+     * name of the Hibernate Search integrator adaptor module
+     */
+    public static final String HIBERNATE_SEARCH_INTEGRATOR_ADAPTOR_MODULE_NAME = "org.hibernate.search.jipijapa-hibernatesearch";
 
     /**
      * name of the Hibernate Search module providing the ORM mapper

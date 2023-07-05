@@ -20,19 +20,15 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<!-- Hibernate Search Pojo-base Mapper: base code for mappers such as org.hibernate.search.mapper.orm -->
-<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.pojo">
-
-    <resources>
-        <artifact name="${org.hibernate.search:hibernate-search-mapper-pojo-base}"/>
-    </resources>
-
-    <dependencies>
-        <module name="org.jboss.logging" />
-        <module name="org.jboss.jandex"/>
-        <module name="java.sql" export="true" /> <!-- For java.sql.Date, etc. -->
-        <module name="org.hibernate.search.engine" export="true" />
-        <module name="org.hibernate.commons-annotations" export="true" />
-    </dependencies>
-</module>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="jpa-search-test-pu">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.search.schema_management.strategy" value="drop-and-create-and-drop"/>
+            <property name="hibernate.search.backend.type" value="lucene"/>
+            <property name="hibernate.search.backend.lucene_version" value="LUCENE_CURRENT"/>
+            <property name="hibernate.search.backend.directory.type" value="local-heap"/>
+        </properties>
+    </persistence-unit>
+</persistence>

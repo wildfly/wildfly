@@ -39,6 +39,7 @@
 
     <modules>
         <module>hibernate6</module>
+        <module>hibernatesearch</module>
         <module>subsystem</module>
         <module>spi</module>
         <module>eclipselink</module>
