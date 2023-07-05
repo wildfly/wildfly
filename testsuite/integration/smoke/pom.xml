@@ -137,6 +137,16 @@
             <artifactId>artemis-server</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+           <groupId>com.google.guava</groupId>
+           <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>com.google.guava</groupId>
+           <artifactId>failureaccess</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- The following are required at for JAXB on Java 11 -->
         <dependency>
             <groupId>org.apache.cxf</groupId>

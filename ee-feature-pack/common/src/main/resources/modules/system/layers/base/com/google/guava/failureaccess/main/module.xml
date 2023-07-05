@@ -22,19 +22,13 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="com.google.guava">
+<module xmlns="urn:jboss:module:1.9" name="com.google.guava.failureaccess">
 
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${com.google.guava:guava}"/>
+        <artifact name="${com.google.guava:failureaccess}"/>
     </resources>
-
-    <dependencies>
-        <module name="com.google.guava.failureaccess" export="true"/>
-        <module name="java.logging"/>
-        <module name="jdk.unsupported"/>
-    </dependencies>
 </module>

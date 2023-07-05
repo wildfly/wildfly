@@ -265,7 +265,8 @@
         <version.com.github.spullara.mustache>0.9.6</version.com.github.spullara.mustache>
         <version.com.github.tomakehurst.wiremock>2.20.0</version.com.github.tomakehurst.wiremock>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
-        <version.com.google.guava>25.0-jre</version.com.google.guava>
+        <version.com.google.guava>32.0.1-jre</version.com.google.guava>
+        <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.22</version.com.nimbus.jose-jwt>
@@ -1620,22 +1621,33 @@
                         <artifactId>jsr305</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-compat-qual</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>com.google.errorprone</groupId>
                         <artifactId>error_prone_annotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>failureaccess</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>listenablefuture</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>com.google.j2objc</groupId>
                         <artifactId>j2objc-annotations</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>animal-sniffer-annotations</artifactId>
+                        <groupId>org.checkerframework</groupId>
+                        <artifactId>checker-qual</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <!-- This is a transitive dep of com.google.guava -->
+                <groupId>com.google.guava</groupId>
+                <artifactId>failureaccess</artifactId>
+                <version>${version.com.google.guava.failureaccess}</version>
             </dependency>
 
             <dependency>
@@ -2820,6 +2832,10 @@
                     <exclusion>
                         <groupId>org.jctools</groupId>
                         <artifactId>jctools-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
