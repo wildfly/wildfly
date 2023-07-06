@@ -29,16 +29,16 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import io.undertow.server.handlers.PathHandler;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
- * Service that exposes the Wildfly
+ * Service that exposes the Wildfly remote HTTP invoker mechanism.
  *
  * @author Stuart Douglas
  */
 public class RemoteHttpInvokerService implements Service<PathHandler> {
 
     private static final String AFFINITY_PATH = "/common/v1/affinity";
-
     private final PathHandler pathHandler = new PathHandler();
 
     @Override
@@ -46,12 +46,15 @@ public class RemoteHttpInvokerService implements Service<PathHandler> {
         pathHandler.clearPaths();
         SecureRandomSessionIdGenerator generator = new SecureRandomSessionIdGenerator();
 
+        // handler for assigning a HTTP session id to the response
         pathHandler.addPrefixPath(AFFINITY_PATH, exchange -> {
             String resolved = exchange.getResolvedPath();
+            UndertowLogger.ROOT_LOGGER.debugf("RemoteHttpInvokerService: handling affinity request for path %s", resolved);
             int index = resolved.lastIndexOf(AFFINITY_PATH);
             if(index > 0) {
                 resolved = resolved.substring(0, index);
             }
+            UndertowLogger.ROOT_LOGGER.debugf("RemoteHttpInvokerService: setting response Cookie with path %s", resolved);
             exchange.getResponseCookies().put("JSESSIONID", new CookieImpl("JSESSIONID", generator.createSessionId()).setPath(resolved));
         });
     }
