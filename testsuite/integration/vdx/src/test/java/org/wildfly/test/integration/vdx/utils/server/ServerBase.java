@@ -29,7 +29,7 @@ import org.wildfly.test.integration.vdx.transformations.DoNothing;
 import org.wildfly.test.integration.vdx.utils.FileUtils;
 
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -127,7 +127,7 @@ public abstract class ServerBase implements Server {
 
     @Override
     public String getErrorMessageFromServerStart() throws Exception {
-        return String.join("\n", Files.readAllLines(Paths.get(ERRORS_LOG_FILE_NAME), Charset.forName(System.getProperty("file.encoding", "UTF-8"))));
+        return String.join("\n", Files.readAllLines(Paths.get(ERRORS_LOG_FILE_NAME), StandardCharsets.UTF_8));
     }
 
     private void backupConfiguration() throws Exception {
