@@ -53,7 +53,6 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -114,9 +113,7 @@ public class ClientCompatibilityUnitTestCase {
 
     private static final String CONTROLLER_ADDRESS = System.getProperty("node0", "localhost");
 
-    private static final String WF_CLIENT = "org.wildfly:wildfly-controller-client";
     private static final String WFCORE_CLIENT = "org.wildfly.core:wildfly-controller-client";
-    private static final String AS7_CLIENT = "org.jboss.as:jboss-as-controller-client";
 
     private static final String[] excludes = new String[]{"org.jboss.threads:jboss-threads", "org.jboss:jboss-dmr", "org.jboss.logging:jboss-logging"};
     private static final Archive deployment;
@@ -130,71 +127,6 @@ public class ClientCompatibilityUnitTestCase {
             archive.add(new ByteArrayAsset(data), "data" + i);
         }
         deployment = archive;
-    }
-
-
-    @Test
-    public void test711Final() throws Exception {
-        testAS7("7.1.1.Final");
-    }
-
-    @Test
-    public void test720Final() throws Exception {
-        testAS7("7.2.0.Final");
-    }
-
-    @Test
-    public void test800Final() throws Exception {
-        test(createClient(WF_CLIENT, "8.0.0.Final", CONTROLLER_ADDRESS, 9999));
-    }
-
-    @Ignore("http upgrade compat issue")
-    @Test
-    public void test800FinalHttp() throws Exception {
-        test(createClient(WF_CLIENT, "8.0.0.Final", CONTROLLER_ADDRESS, 9990));
-    }
-
-    @Test
-    public void test810Final() throws Exception {
-        test(createClient(WF_CLIENT, "8.1.0.Final", CONTROLLER_ADDRESS, 9999));
-    }
-
-    @Ignore("http upgrade compat issue")
-    @Test
-    public void test810FinalHttp() throws Exception {
-        test(createClient(WF_CLIENT, "8.1.0.Final", CONTROLLER_ADDRESS, 9990));
-    }
-
-    @Test
-    public void test820Final() throws Exception {
-        test(createClient(WF_CLIENT, "8.2.0.Final", CONTROLLER_ADDRESS, 9999));
-    }
-
-    @Ignore("http upgrade compat issue")
-    @Test
-    public void test820FinalHttp() throws Exception {
-        test(createClient(WF_CLIENT, "8.2.0.Final", CONTROLLER_ADDRESS, 9990));
-    }
-
-    @Test
-    public void test821Final() throws Exception {
-        test(createClient(WF_CLIENT, "8.2.1.Final", CONTROLLER_ADDRESS, 9999));
-    }
-
-    @Ignore("http upgrade compat issue")
-    @Test
-    public void test821FinalHttp() throws Exception {
-        test(createClient(WF_CLIENT, "8.2.1.Final", CONTROLLER_ADDRESS, 9990));
-    }
-
-    @Test
-    public void testCore100Final() throws Exception {
-        testWF("1.0.0.Final", 9999);
-    }
-
-    @Test
-    public void testCore100FinalHttp() throws Exception {
-        testWF("1.0.0.Final", 9990);
     }
 
     @Test
@@ -237,6 +169,75 @@ public class ClientCompatibilityUnitTestCase {
         testWF("3.0.10.Final", 9990);
     }
 
+    // https://issues.redhat.com/browse/WFLY-18171
+    // Test WF Core versions that went into WildFly 23 and later (latest micro for each major/minor release)
+    // Tests WF Core 15.0.1.Final for WildFly 23.0.2.Final.
+    @Test
+    public void testCore1501Final() throws Exception {
+        testWF("15.0.1.Final", 9999);
+    }
+
+    @Test
+    public void testCore1501FinalHttp() throws Exception {
+        testWF("15.0.1.Final", 9990);
+    }
+
+    // Tests WF Core 16.0.1.Final for WildFly 24.0.1.Final. WildFly 24 was the last release that supported Picketbox
+    @Test
+    public void testCore1601Final() throws Exception {
+        testWF("16.0.1.Final", 9999);
+    }
+
+    @Test
+    public void testCore1601FinalHttp() throws Exception {
+        testWF("16.0.1.Final", 9990);
+    }
+
+    // Tests WF Core 17.0.3.Final for WildFly 25.0.1.Final
+    @Test
+    public void testCore1703Final() throws Exception {
+        testWF("17.0.3.Final", 9999);
+    }
+
+    @Test
+    public void testCore1703FinalHttp() throws Exception {
+        testWF("17.0.3.Final", 9990);
+    }
+
+    // WildFly 26.0 is skipped as it was soon followed up by WildFly 26.1
+    // Tests WF Core 18.1.2.Final for WildFly 26.1.3.Final.
+    @Test
+    public void testCore1812Final() throws Exception {
+        testWF("18.1.2.Final", 9999);
+    }
+
+    @Test
+    public void testCore1812FinalHttp() throws Exception {
+        testWF("18.1.2.Final", 9990);
+    }
+
+    // Tests WF Core 19.0.1.Final for WildFly 27.0.1.Final
+    @Test
+    public void testCore1901Final() throws Exception {
+        testWF("19.0.1.Final", 9999);
+    }
+
+    @Test
+    public void testCore1901FinalHttp() throws Exception {
+        testWF("19.0.1.Final", 9990);
+    }
+
+    // Tests WF Core 20.0.2.Final for WildFly 28.0.1.Final
+    @Test
+    public void testCore2002Final() throws Exception {
+        testWF("20.0.2.Final", 9999);
+    }
+
+    @Test
+    public void testCore2002FinalHttp() throws Exception {
+        testWF("20.0.2.Final", 9990);
+    }
+
     @Test
     public void testCurrent() throws Exception {
         test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9999));
@@ -247,12 +248,8 @@ public class ClientCompatibilityUnitTestCase {
         test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9990));
     }
 
-    private void testAS7(final String version) throws Exception {
-        test(createClient(AS7_CLIENT, version, CONTROLLER_ADDRESS, 9999));
-    }
-
     private void testWF(final String version, int port) throws Exception {
-        test(createClient(WFCORE_CLIENT, version, CONTROLLER_ADDRESS, port));
+        test(createClient(version, port));
     }
 
     private void test(final ModelControllerClient client) throws Exception {
@@ -297,10 +294,10 @@ public class ClientCompatibilityUnitTestCase {
         }
     }
 
-    protected static ModelControllerClient createClient(final String artifact, final String version, final String host, final int port) throws Exception {
+    protected static ModelControllerClient createClient(final String version, final int port) throws Exception {
 
         final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder(false);
-        classLoaderBuilder.addRecursiveMavenResourceURL(artifact + ":" + version, excludes);
+        classLoaderBuilder.addRecursiveMavenResourceURL(WFCORE_CLIENT + ":" + version, excludes);
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.ModelControllerClient");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.OperationMessageHandler");
         classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.controller.client.Operation");
@@ -310,7 +307,7 @@ public class ClientCompatibilityUnitTestCase {
         final Class<?> factoryClass = classLoader.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory");
         final Method factory = factoryClass.getMethod("create", String.class, int.class);
         try {
-            final Object client = factory.invoke(null, host, port);
+            final Object client = factory.invoke(null, CONTROLLER_ADDRESS, port);
 
             final InvocationHandler invocationHandler = new InvocationHandler() {
                 @Override
