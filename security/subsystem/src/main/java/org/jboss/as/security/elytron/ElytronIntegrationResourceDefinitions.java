@@ -22,6 +22,7 @@ import static org.jboss.as.security.elytron.Capabilities.TRUST_MANAGER_RUNTIME_C
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -75,7 +76,7 @@ public class ElytronIntegrationResourceDefinitions {
     public static ResourceDefinition getElytronRealmResourceDefinition() {
 
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JAAS_CONFIG, APPLY_ROLE_MAPPERS};
-        final AbstractAddStepHandler addHandler = new AbstractAddStepHandler(attributes);
+        final AbstractAddStepHandler addHandler = new ModelOnlyAddStepHandler(attributes);
 
         return new BasicResourceDefinition(Constants.ELYTRON_REALM, addHandler, attributes, SECURITY_REALM_RUNTIME_CAPABILITY);
     }
@@ -94,7 +95,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronKeyStoreResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new AbstractAddStepHandler(attributes);
+        final AbstractAddStepHandler addHandler = new ModelOnlyAddStepHandler(attributes);
 
         return new BasicResourceDefinition(Constants.ELYTRON_KEY_STORE, addHandler, attributes, KEY_STORE_RUNTIME_CAPABILITY);
     }
@@ -122,7 +123,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronTrustStoreResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new AbstractAddStepHandler(attributes);
+        final AbstractAddStepHandler addHandler = new ModelOnlyAddStepHandler(attributes);
 
         return new BasicResourceDefinition(Constants.ELYTRON_TRUST_STORE, addHandler, attributes, KEY_STORE_RUNTIME_CAPABILITY);
     }
@@ -141,7 +142,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronKeyManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new AbstractAddStepHandler(attributes);
+        final AbstractAddStepHandler addHandler = new ModelOnlyAddStepHandler(attributes);
 
         return new BasicResourceDefinition(Constants.ELYTRON_KEY_MANAGER, addHandler, attributes, KEY_MANAGER_RUNTIME_CAPABILITY);
     }
@@ -165,7 +166,7 @@ public class ElytronIntegrationResourceDefinitions {
      */
     public static ResourceDefinition getElytronTrustManagersResourceDefinition() {
         final AttributeDefinition[] attributes = new AttributeDefinition[] {LEGACY_JSSE_CONFIG};
-        final AbstractAddStepHandler addHandler = new AbstractAddStepHandler(attributes);
+        final AbstractAddStepHandler addHandler = new ModelOnlyAddStepHandler(attributes);
 
         return new BasicResourceDefinition(Constants.ELYTRON_TRUST_MANAGER, addHandler, attributes, TRUST_MANAGER_RUNTIME_CAPABILITY);
     }
