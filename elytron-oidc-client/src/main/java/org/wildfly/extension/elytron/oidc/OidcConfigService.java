@@ -25,15 +25,15 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.RESOURCE;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.wildfly.security.http.oidc.Oidc;
 
@@ -234,9 +234,9 @@ final class OidcConfigService {
 
         // set realm/provider values first, some can be overridden by deployment values
         if (realmOrProvider != null) {
-            setJSONValues(json, realmOrProvider);
+            setJSONValues(json, realmOrProvider, Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).map(AttributeDefinition::getName)::iterator);
         }
-        setJSONValues(json, deployment);
+        setJSONValues(json, deployment, Stream.concat(SecureDeploymentDefinition.ALL_ATTRIBUTES.stream().map(AttributeDefinition::getName), Stream.of(CREDENTIALS_JSON_NAME, REDIRECT_REWRITE_RULE_JSON_NAME))::iterator);
         if (removeProvider) {
             json.remove(ElytronOidcDescriptionConstants.PROVIDER);
         }
@@ -259,13 +259,11 @@ final class OidcConfigService {
         return json.toJSONString(true);
     }
 
-    private void setJSONValues(ModelNode json, ModelNode values) {
+    private static void setJSONValues(ModelNode json, ModelNode values, Iterable<String> keys) {
         synchronized (values) {
-            for (Property prop : new ArrayList<>(values.asPropertyList())) {
-                String name = prop.getName();
-                ModelNode value = prop.getValue();
-                if (value.isDefined()) {
-                    json.get(name).set(value);
+            for (String key : keys) {
+                if (values.hasDefined(key)) {
+                    json.get(key).set(values.get(key));
                 }
             }
         }
