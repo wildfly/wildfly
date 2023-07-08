@@ -75,8 +75,8 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
                 new SimpleResourceDefinition.Parameters(
                         SUBSYSTEM_PATH,
                         MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER)
-                .setAddHandler(AddHandler.INSTANCE)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setAddHandler(new AddHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
         );
     }
@@ -102,12 +102,6 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
 
     static class AddHandler extends AbstractBoottimeAddStepHandler {
 
-        static AddHandler INSTANCE = new AddHandler();
-
-        private AddHandler() {
-            super(Collections.emptyList());
-        }
-
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performBoottime(context, operation, model);
@@ -115,6 +109,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
             installKafkaElytronSSLContextRegistryServiceIfPresent(context);
 
             context.addStep(new AbstractDeploymentChainStep() {
+                @Override
                 public void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES,
                             DEPENDENCIES_MICROPROFILE_REACTIVE_MESSAGING, new ReactiveMessagingDependencyProcessor());

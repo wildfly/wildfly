@@ -43,7 +43,7 @@ class WelcomeFileDefinition extends PersistentResourceDefinition {
     WelcomeFileDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setAddHandler(new ReloadRequiredAddStepHandler())
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );
     }
 

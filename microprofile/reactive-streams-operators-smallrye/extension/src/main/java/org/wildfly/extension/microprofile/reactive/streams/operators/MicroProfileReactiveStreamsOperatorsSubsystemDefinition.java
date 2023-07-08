@@ -62,8 +62,8 @@ public class MicroProfileReactiveStreamsOperatorsSubsystemDefinition extends Per
                 new SimpleResourceDefinition.Parameters(
                         MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_PATH,
                         MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_RESOLVER)
-                .setAddHandler(AddHandler.INSTANCE)
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setAddHandler(new AddHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
         );
     }
@@ -85,17 +85,12 @@ public class MicroProfileReactiveStreamsOperatorsSubsystemDefinition extends Per
 
     static class AddHandler extends AbstractBoottimeAddStepHandler {
 
-        static AddHandler INSTANCE = new AddHandler();
-
-        private AddHandler() {
-            super(Collections.emptyList());
-        }
-
         @Override
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performBoottime(context, operation, model);
 
             context.addStep(new AbstractDeploymentChainStep() {
+                @Override
                 public void execute(DeploymentProcessorTarget processorTarget) {
                     processorTarget.addDeploymentProcessor(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROPROFILE_REACTIVE_STREAMS_OPERATORS, new ReactiveStreamsOperatorsDependencyProcessor());
                 }

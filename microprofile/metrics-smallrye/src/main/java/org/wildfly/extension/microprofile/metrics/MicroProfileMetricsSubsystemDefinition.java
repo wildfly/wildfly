@@ -76,7 +76,7 @@ public class MicroProfileMetricsSubsystemDefinition extends ModelOnlyResourceDef
         super(new SimpleResourceDefinition.Parameters(MicroProfileMetricsExtension.SUBSYSTEM_PATH,
                 MicroProfileMetricsExtension.getResourceDescriptionResolver(MicroProfileMetricsExtension.SUBSYSTEM_NAME))
                 .setAddHandler(new ModelOnlyAddStepHandler(ATTRIBUTES))
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(MICROPROFILE_METRICS_HTTP_SECURITY_CAPABILITY, MICROPROFILE_METRICS_SCAN));
     }
 
