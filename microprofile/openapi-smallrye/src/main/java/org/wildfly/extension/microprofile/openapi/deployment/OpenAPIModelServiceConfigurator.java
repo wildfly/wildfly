@@ -31,6 +31,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +41,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import io.smallrye.openapi.api.OpenApiConfig;
+import io.smallrye.openapi.runtime.OpenApiProcessor;
+import io.smallrye.openapi.runtime.OpenApiStaticFile;
+import io.smallrye.openapi.runtime.io.Format;
+import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
+import io.smallrye.openapi.runtime.scanner.spi.AnnotationScanner;
+import io.smallrye.openapi.spi.OASFactoryResolverImpl;
+import io.undertow.servlet.api.DeploymentInfo;
 
 import org.eclipse.microprofile.openapi.OASFactory;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -73,15 +84,6 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowListener;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentInfoService;
-
-import io.smallrye.openapi.api.OpenApiConfig;
-import io.smallrye.openapi.runtime.OpenApiProcessor;
-import io.smallrye.openapi.runtime.OpenApiStaticFile;
-import io.smallrye.openapi.runtime.io.Format;
-import io.smallrye.openapi.runtime.scanner.FilteredIndexView;
-import io.smallrye.openapi.runtime.scanner.spi.AnnotationScanner;
-import io.smallrye.openapi.spi.OASFactoryResolverImpl;
-import io.undertow.servlet.api.DeploymentInfo;
 
 /**
  * Configures a service that provides an OpenAPI model for a deployment.
@@ -164,7 +166,9 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
             }
         }
 
-        builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, AnnotationScanner.class.getClassLoader(), indexView));
+        // Workaround  for https://github.com/smallrye/smallrye-open-api/issues/1508
+        ClassLoader scannerClassLoader = new CompositeClassLoader(List.of(AnnotationScanner.class.getClassLoader(), this.module.getClassLoader()));
+        builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, scannerClassLoader, indexView));
         builder.readerModel(OpenApiProcessor.modelFromReader(config, this.module.getClassLoader()));
         builder.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader()));
         OpenAPI model = builder.build();
@@ -245,6 +249,46 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         } catch (MalformedURLException e) {
             // Skip listeners with no known URLStreamHandler (e.g. AJP)
             return null;
+        }
+    }
+
+    private static class CompositeClassLoader extends ClassLoader {
+        private final List<ClassLoader> loaders;
+
+        CompositeClassLoader(List<ClassLoader> loaders) {
+            this.loaders = loaders;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            List<URL> result = new LinkedList<>();
+            for (ClassLoader loader : this.loaders) {
+                result.addAll(Collections.list(loader.getResources(name)));
+            }
+            return Collections.enumeration(result);
+        }
+
+        @Override
+        protected URL findResource(String name) {
+            for (ClassLoader loader : this.loaders) {
+                URL url = loader.getResource(name);
+                if (url != null) {
+                    return url;
+                }
+            }
+            return super.findResource(name);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            for (ClassLoader loader : this.loaders) {
+                try {
+                    return loader.loadClass(name);
+                } catch (ClassNotFoundException e) {
+                    // try again
+                }
+            }
+            return super.findClass(name);
         }
     }
 }
