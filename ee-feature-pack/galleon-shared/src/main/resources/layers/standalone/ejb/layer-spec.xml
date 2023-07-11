@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb">
     <!-- Aggregates EJB functionality, excluding ejb-iiop. -->
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.ejb.MessageDriven,jakarta.ejb.Remote"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.ejb.MessageDrivenContext"/>
+    </props>
     <dependencies>
         <layer name="ejb-lite"/>
         <layer name="resource-adapters"/>

@@ -18,7 +18,10 @@
   ~ limitations under the License.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ee-core-profile-server">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-core-profile-server">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="default-base-layer"/>
+    </props>
     <dependencies>
         <layer name="core-server"/>
         <layer name="cdi"/>

@@ -21,7 +21,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-lra-participant">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-lra-participant">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.lra.annotation,org.eclipse.microprofile.lra.annotation.ws.rs"/>
+        <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.lra.*"/>
+    </props>
     <dependencies>
         <layer name="cdi"/>
         <layer name="jaxrs"/>

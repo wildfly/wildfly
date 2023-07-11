@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="sar">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="sar">
+    <props>
+        <prop name="org.wildfly.rule.expected-file" value="/META-INF/jboss-service.xml"/>
+    </props>
     <dependencies>
         <layer name="base-server"/>
         <layer name="jmx"/>

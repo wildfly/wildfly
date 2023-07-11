@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="datasources-web-server">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="datasources-web-server">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="base-layer"/>
+    </props>
     <dependencies>
         <layer name="web-server"/>
         <layer name="core-server"/>

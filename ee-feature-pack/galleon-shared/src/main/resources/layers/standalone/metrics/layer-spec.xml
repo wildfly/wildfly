@@ -22,7 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="metrics">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="metrics">
+    <props>
+        <prop name="org.wildfly.rule.add-on" value="observability,metrics"/>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
+    </props>
     <dependencies>
         <layer name="management"/>
     </dependencies>

@@ -18,7 +18,11 @@
   ~  * limitations under the License.
   ~  */
   -->
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="micrometer">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="micrometer">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:cdi"/>
+        <prop name="org.wildfly.rule.add-on" value="observability,micrometer"/>
+    </props>
     <dependencies>
         <layer name="cdi"/>
     </dependencies>

@@ -1,6 +1,11 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="h2-driver">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-driver">
+    <props>
+        <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/datasource/driver,h2"/>
+        <prop name="org.wildfly.rule.xml-path-xa" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/xa-datasource/driver,h2"/>
+    </props>
     <dependencies>
+        <layer name="datasources"/>
         <layer name="base-server"/>
     </dependencies>
     <feature-group name="h2-driver"/>

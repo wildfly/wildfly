@@ -20,7 +20,11 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="singleton-local">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="singleton-local">
+    <props>
+        <prop name="org.wildfly.rule.expected-file" value="[/META-INF/singleton-deployment.xml,/WEB-INF/classes/META-INF/singleton-deployment.xml]"/>
+        <prop name="org.wildfly.rule.class" value="org.wildfly.clustering.singleton.*"/>
+    </props>
 
     <dependencies>
         <layer name="base-server"/>
