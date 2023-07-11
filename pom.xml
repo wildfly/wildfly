@@ -1301,7 +1301,7 @@
                     <version>${version.asciidoctor.plugin}</version>
                     <configuration>
                         <attributes>
-                            <sourceHighlighter>coderay</sourceHighlighter>
+                            <source-highlighter>coderay</source-highlighter>
                             <icons>font</icons>
                             <pagenums></pagenums>
                             <version>${project.version}</version>
