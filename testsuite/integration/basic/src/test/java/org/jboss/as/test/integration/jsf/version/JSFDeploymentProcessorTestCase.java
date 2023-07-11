@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.PropertyPermission;
-
 import jakarta.faces.context.FacesContext;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -53,7 +52,6 @@ import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -63,11 +61,8 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 
 /**
  * Tests different ways to add Jakarta Server Faces implementation in ear files
@@ -77,7 +72,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
 @RunAsClient
-@Ignore("WFLY-16528")
 public class JSFDeploymentProcessorTestCase {
 
     private static final String WEB_BUNDLED_JSF = "bundled-jsf";
@@ -98,12 +92,6 @@ public class JSFDeploymentProcessorTestCase {
     @ArquillianResource
     @OperateOnDeployment(WEB_FACES_CONFIG_XML)
     private URL facesConfigXml;
-
-    @BeforeClass
-    public static void beforeClass() {
-        // https://issues.redhat.com/browse/WFLY-15367
-        AssumeTestGroupUtil.assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(11);
-    }
 
     /**
      * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
