@@ -301,7 +301,7 @@
          -->
         <version.ant.junit>1.10.12</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
-        <version.org.jacoco>0.8.7</version.org.jacoco>
+        <version.org.jacoco>0.8.10</version.org.jacoco>
         <version.org.jboss.galleon>5.2.0.Final</version.org.jboss.galleon>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
@@ -1569,8 +1569,6 @@
                                                     <fileset dir="${jboss.dist}/modules">
                                                         <include name="**/*.jar"></include>
                                                         <!-- Excludes solve "Can't add different class with same name: ..." -->
-                                                        <exclude name="**/jaxb-jxc*.jar"></exclude>
-                                                        <exclude name="**/jaxb-xjc*.jar"></exclude>
                                                         <exclude name="**/openjdk-orb*.jar"></exclude>
                                                         <exclude name="**/jboss-marshalling*.jar"></exclude>
                                                         <exclude name="**/hornetq-core-client*.jar"></exclude>
@@ -1580,8 +1578,14 @@
                                                         <exclude name="**/wildfly-common*.jar"></exclude>
                                                         <exclude name="**/wildfly-elytron*.jar"></exclude>
                                                         <exclude name="**/jaxb*.jar"></exclude>
-                                                        <exclude name="**/jaxb*.jar"></exclude>
-                                                        <exclude name="**/jaxb*.jar"></exclude>
+                                                        <exclude name="**/h2-*.jar"></exclude>
+                                                        <exclude name="**/snakeyaml-*.jar"></exclude>
+                                                        <exclude name="**/yasson-*.jar"></exclude>
+                                                        <exclude name="**/bcprov-*.jar"></exclude>
+                                                        <exclude name="**/lucene-*.jar"></exclude>
+                                                        <exclude name="**/log4j-api-*.jar"></exclude>
+                                                        <exclude name="**/vertx-core-*.jar"></exclude>
+                                                        <exclude name="**/opentelemetry-sdk-common-*.jar"></exclude>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
