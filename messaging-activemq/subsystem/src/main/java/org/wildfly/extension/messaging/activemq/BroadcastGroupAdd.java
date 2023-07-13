@@ -24,6 +24,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.SOCKET_BINDING;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +69,11 @@ public class BroadcastGroupAdd extends ShallowResourceAdd {
             if (operation.hasDefined(JGROUPS_CLUSTER.getName())) {
                 target = target.append(CommonAttributes.JGROUPS_BROADCAST_GROUP, context.getCurrentAddressValue());
                 addHandler = JGroupsBroadcastGroupAdd.LEGACY_INSTANCE;
-            } else {
+            } else if (operation.hasDefined(SOCKET_BINDING.getName())) {
                 target = target.append(CommonAttributes.SOCKET_BROADCAST_GROUP, context.getCurrentAddressValue());
                 addHandler = SocketBroadcastGroupAdd.LEGACY_INSTANCE;
+            } else {
+                throw MessagingLogger.ROOT_LOGGER.socketBindingOrJGroupsClusterRequired();
             }
             op.get(OP_ADDR).set(target.toModelNode());
             context.addStep(op, addHandler, OperationContext.Stage.MODEL, true);
