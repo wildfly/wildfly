@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.getActiveMQServer;
+
 import java.util.Set;
 
 import org.apache.activemq.artemis.core.security.Role;
@@ -34,8 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@code OperationStepHandler} for adding a new security role.
@@ -51,11 +51,16 @@ class SecurityRoleAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
                     throws OperationFailedException {
         if(context.isNormalServer()) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-            final ActiveMQServer server = getServer(context, operation);
+            final ActiveMQServer server = getActiveMQServer(context, operation);
             final String match = address.getElement(address.size() - 2).getValue();
             final String roleName = address.getLastElement().getValue();
 
@@ -71,18 +76,9 @@ class SecurityRoleAdd extends AbstractAddStepHandler {
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, Resource resource) {
         final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        final ActiveMQServer server = getServer(context, operation);
+        final ActiveMQServer server = getActiveMQServer(context, operation);
         final String match = address.getElement(address.size() - 2).getValue();
         final String roleName = address.getLastElement().getValue();
         SecurityRoleRemove.removeRole(server, match, roleName);
-    }
-
-    static ActiveMQServer getServer(final OperationContext context, ModelNode operation) {
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
-        if(controller != null) {
-            return ActiveMQServer.class.cast(controller.getValue());
-        }
-        return null;
     }
 }
