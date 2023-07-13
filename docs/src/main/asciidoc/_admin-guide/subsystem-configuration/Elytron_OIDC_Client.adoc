@@ -56,6 +56,7 @@ Here is an example of an `oidc.json` configuration file:
   "cors-exposed-headers" : "WWW-Authenticate, My-custom-exposed-Header",
   "enable-basic-auth" : false,
   "expose-token" : true,
+  "scope" : "profile email phone",
   "verify-token-audience" : true,
    "credentials" : {
       "secret" : "234234-234234-234234"
@@ -94,6 +95,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
     <secure-deployment name="DEPLOYMENT_RUNTIME_NAME.war">
         <client-id>customer-portal</client-id>
         <provider-url>http://localhost:8180/auth/realms/demo</provider-url>
+        <scope>email profile phone</scope>
         <ssl-required>external</ssl-required>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
     </secure-deployment>
@@ -140,6 +142,34 @@ has either been found within the deployment or if there is OIDC configuration fo
 configuration). If the subsystem detects that the `OIDC` mechanism is indeed required, the subsystem will
 activate the authentication mechanism automatically. Otherwise, no activation will occur and deployment
 will continue normally.
+
+=== Scope Configuration
+
+NOTE: Since this attribute is a preview level feature, the WildFly server's stability level must be set to `preview`
+or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
+`scope` attribute. For more information about the stability levels of the WildFly server, please refer to the
+link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
+
+OpenID Connect allows the client to use scope values to request access to specific privileges for access tokens. An access token's scopes determine what resources will be available when using the access token to access an OAuth2 protected endpoint. The OpenID Connect https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims[specification] defines a few scope values including:
+
+* `profile` : requests access to the End-User's default profile Claims, such as name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthday etc. 
+
+* `email` : requests access to the email and email_verified Claims.
+
+* `address` :  requests access to the address Claim. 
+
+* `phone` : requests access to the phone_number and phone_number_verified Claims.
+
+Scopes can be used to request that specific sets of information be made available as Claim Values. The scope values must be added as a space separated, case-sensitive list of ascii values.
+
+==== Subsystem Configuration
+It is possible to configure the scope values that would be used in the OIDC authentication request using the `scope` attribute of a `secure-deployment` or a `secure-server` resource in the `elytron-oidc-client` subsystem.
+
+==== Deployment Configuration
+It is also possible to configure the scope values that would be used via the scope attribute in a deployment's `oidc.json` file.
+
+NOTE: If both the deployment and subsystem configuration is present, then the subsystem configuration will override the deployment values.
 
 == Virtual Security
 
