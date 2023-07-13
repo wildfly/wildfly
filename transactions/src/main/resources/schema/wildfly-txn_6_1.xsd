@@ -226,7 +226,17 @@
                 </xs:annotation>
             </xs:element>
         </xs:all>
-        <xs:attribute name="datasource-jndi-name" type="xs:string" use="required">
+        <!-- these attributes are mutually exclusive but there is no way to declare it -->
+        <xs:attribute name="datasource-name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        Configure datasource used to connect for jdbc store
+                        ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="datasource-jndi-name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
