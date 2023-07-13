@@ -9,7 +9,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ElasticsearchServerSetupObserver {
-    private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.8.2";
+    private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:7.17.11";
 
     private static final AtomicReference<String> httpHostAddress = new AtomicReference<>();
 
