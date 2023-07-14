@@ -4,9 +4,9 @@
     <copy-path src="docs/licenses/licenses.xsl" relative-to="content" target="docs/licenses/wildfly-ee-licenses.xsl"/>
     <transform stylesheet="docs/licenses/wildfly-ee-licenses.xsl" src="docs/licenses/wildfly-ee-feature-pack-licenses.xml" output="docs/licenses/wildfly-ee-feature-pack-licenses.html" feature-pack-properties="true" phase="FINALIZING"/>
     <delete path="docs/licenses/wildfly-ee-licenses.xsl"/>
-    <line-endings>
+    <line-endings phase="FINALIZING">
       <unix>
-        <filter pattern="docs?licenses?full-feature-pack-licenses.html" include="true"/>
+        <filter pattern="docs?licenses?wildfly-ee-feature-pack-licenses.html" include="true"/>
       </unix>
     </line-endings>
 </tasks>
