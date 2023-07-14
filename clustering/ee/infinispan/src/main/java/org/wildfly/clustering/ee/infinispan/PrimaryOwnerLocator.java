@@ -53,8 +53,13 @@ public class PrimaryOwnerLocator<K> implements Function<K, Node> {
         Node member = null;
         while (member == null) {
             Address address = this.distribution.getPrimaryOwner(key);
-            // This can return null if member has left the cluster
-            member = this.memberFactory.createNode(address);
+            // This has been observed to return null mid-rebalance
+            if (address != null) {
+                // This can return null if member has left the cluster
+                member = this.memberFactory.createNode(address);
+            } else {
+                Thread.yield();
+            }
         }
         return member;
     }
