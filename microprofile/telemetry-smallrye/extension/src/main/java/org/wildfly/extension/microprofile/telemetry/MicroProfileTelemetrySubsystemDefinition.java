@@ -53,7 +53,7 @@ public class MicroProfileTelemetrySubsystemDefinition extends PersistentResource
     protected MicroProfileTelemetrySubsystemDefinition() {
         super(new Parameters(MicroProfileTelemetryExtension.SUBSYSTEM_PATH, MicroProfileTelemetryExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(new MicroProfileTelemetrySubsystemAdd())
-                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(MICROPROFILE_TELEMETRY_CAPABILITY)
         );
     }

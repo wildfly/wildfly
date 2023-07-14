@@ -182,7 +182,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
                     PathElement bvExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.bean-validation");
                     ManagementResourceRegistration extensionRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvExtension, NonResolvingResourceDescriptionResolver.INSTANCE));
                     extensionRegistration.registerReadOnlyAttribute(new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build(), null);
-                    extensionRegistration.registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    extensionRegistration.registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
                     extensionRegistration.registerOperationHandler(addExtension,
                             new ReloadRequiredAddStepHandler(
                                     new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build()));
@@ -195,7 +195,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
 
                     PathElement bvSubsystem = PathElement.pathElement(SUBSYSTEM, "bean-validation");
                     ManagementResourceRegistration subsystemRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvSubsystem, NonResolvingResourceDescriptionResolver.INSTANCE));
-                    subsystemRegistration.registerOperationHandler(removeSubsystem, new ReloadRequiredRemoveStepHandler());
+                    subsystemRegistration.registerOperationHandler(removeSubsystem, ReloadRequiredRemoveStepHandler.INSTANCE);
                     subsystemRegistration.registerOperationHandler(addSubsystem, new ReloadRequiredAddStepHandler());
                 }
 
