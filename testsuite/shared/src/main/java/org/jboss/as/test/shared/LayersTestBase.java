@@ -126,13 +126,9 @@ public class LayersTestBase {
             "org.infinispan.query",
             "org.infinispan.query.core",
             // JGroups external protocols - AWS
-            "com.amazon.aws.core",
-            "com.amazon.aws.jmespath",
-            "com.amazon.aws.kms",
-            "com.amazon.aws.s3",
-            "com.amazon.ion",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-cbor",
             "org.jgroups.aws",
+            "software.amazon.awssdk.s3",
+            // MicroProfile
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
     };
