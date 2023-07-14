@@ -49,7 +49,9 @@ public class ElasticsearchServerSetupObserver {
                 // Recent versions of ES limit themselves to 50% of the total available RAM,
                 // but on CI this can be too much, as we also have the Maven JVM
                 // and the JVMs that runs tests taking up a significant amount of RAM.
-                .withEnv("ES_JAVA_OPTS", "-Xms1g -Xmx1g");
+                .withEnv("ES_JAVA_OPTS", "-Xms1g -Xmx1g")
+                .withEnv("xpack.security.enabled", "false")
+                .withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");
     }
 
     public void startElasticsearch(@Observes StartClassContainers event) {
