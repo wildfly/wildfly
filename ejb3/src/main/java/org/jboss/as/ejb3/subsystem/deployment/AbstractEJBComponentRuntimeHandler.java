@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.subsystem.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.ASYNC_METHODS;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.BUSINESS_LOCAL;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.BUSINESS_REMOTE;
@@ -38,15 +39,40 @@ import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourc
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.RUN_AS_ROLE;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.SECURITY_DOMAIN;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.TIMEOUT_METHOD;
+import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.TIMERS;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.TRANSACTION_TYPE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.CALENDAR_TIMER;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.DAY_OF_MONTH;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.DAY_OF_WEEK;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.END;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.HOUR;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.INFO;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.MINUTE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.MONTH;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.NEXT_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.PERSISTENT;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.SCHEDULE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.SECOND;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.START;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.TIMEZONE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.TIME_REMAINING;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.YEAR;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.ScheduleExpression;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 import jakarta.ejb.TransactionManagementType;
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -63,6 +89,7 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
@@ -174,8 +201,8 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
                     }
                 }
             }
-        } else if (componentType.hasTimer() && TimerAttributeDefinition.INSTANCE.getName().equals(attributeName)) {
-            TimerAttributeDefinition.addTimers(component, result);
+        } else if (componentType.hasTimer() && TIMERS.getName().equals(attributeName)) {
+            addTimers(component, result);
         } else if (hasPool && POOL_AVAILABLE_COUNT.getName().equals(attributeName)) {
             final Pool<?> pool = componentType.getPool(component);
             if (pool != null) {
@@ -320,5 +347,137 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         final ModelNode runtimeName = context.readResourceFromRoot(PathAddress.pathAddress(address),false).getModel()
                 .get(ModelDescriptionConstants.RUNTIME_NAME);
             return runtimeName.asString();
+    }
+
+    private static void addTimers(final EJBComponent ejb, final ModelNode response) {
+        response.setEmptyList();
+        final String name = ejb.getComponentName();
+        TimerService ts = ejb.getTimerService();
+        if (ts != null) {
+            for (Timer timer : ts.getTimers()) {
+                ModelNode timerNode = response.add();
+                addTimeRemaining(timer, timerNode, name);
+                addNextTimeout(timer, timerNode, name);
+                addCalendarTimer(timer, timerNode, name);
+                addPersistent(timer, timerNode, name);
+                addInfo(timer, timerNode, name);
+                addSchedule(timer, timerNode, name);
+            }
+        }
+    }
+
+    private static void addTimeRemaining(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final ModelNode detailNode = timerNode.get(TIME_REMAINING.getName());
+            long time = timer.getTimeRemaining();
+            detailNode.set(time);
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addNextTimeout(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final ModelNode detailNode = timerNode.get(NEXT_TIMEOUT.getName());
+            Date d = timer.getNextTimeout();
+            if (d != null) {
+                detailNode.set(d.getTime());
+            }
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addSchedule(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final ModelNode schedNode = timerNode.get(SCHEDULE.getName());
+            ScheduleExpression sched = timer.getSchedule();
+            addScheduleDetailString(schedNode, sched.getYear(), YEAR.getName());
+            addScheduleDetailString(schedNode, sched.getMonth(), MONTH.getName());
+            addScheduleDetailString(schedNode, sched.getDayOfMonth(), DAY_OF_MONTH.getName());
+            addScheduleDetailString(schedNode, sched.getDayOfWeek(), DAY_OF_WEEK.getName());
+            addScheduleDetailString(schedNode, sched.getHour(), HOUR.getName());
+            addScheduleDetailString(schedNode, sched.getMinute(), MINUTE.getName());
+            addScheduleDetailString(schedNode, sched.getSecond(), SECOND.getName());
+            addScheduleDetailString(schedNode, sched.getTimezone(), TIMEZONE.getName());
+            addScheduleDetailDate(schedNode, sched.getStart(), START.getName());
+            addScheduleDetailDate(schedNode, sched.getEnd(), END.getName());
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addCalendarTimer(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final ModelNode detailNode = timerNode.get(CALENDAR_TIMER.getName());
+            boolean b = timer.isCalendarTimer();
+            detailNode.set(b);
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addPersistent(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final ModelNode detailNode = timerNode.get(PERSISTENT.getName());
+            boolean b = timer.isPersistent();
+            detailNode.set(b);
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addInfo(Timer timer, ModelNode timerNode, final String componentName) {
+        try {
+            final Serializable info = (timer instanceof TimerImpl) ? ((TimerImpl) timer).getCachedTimerInfo() : timer.getInfo();
+            if (info != null) {
+                final ModelNode detailNode = timerNode.get(INFO.getName());
+                detailNode.set(info.toString());
+            }
+        } catch (IllegalStateException e) {
+            // ignore
+        } catch (NoSuchObjectLocalException e) {
+            // ignore
+        } catch (EJBException e) {
+            logTimerFailure(componentName, e);
+        }
+    }
+
+    private static void addScheduleDetailString(ModelNode schedNode, String value, String detailName) {
+        final ModelNode node = schedNode.get(detailName);
+        if (value != null) {
+            node.set(value);
+        }
+    }
+
+    private static void addScheduleDetailDate(ModelNode schedNode, Date value, String detailName) {
+        final ModelNode node = schedNode.get(detailName);
+        if (value != null) {
+            node.set(value.getTime());
+        }
+    }
+
+    private static void logTimerFailure(final String componentName, final EJBException e) {
+        ROOT_LOGGER.failToReadTimerInformation(componentName, e);
     }
 }
