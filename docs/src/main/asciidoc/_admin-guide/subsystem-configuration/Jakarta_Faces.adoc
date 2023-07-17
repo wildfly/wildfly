@@ -1,0 +1,120 @@
+:module-url: https://raw.githubusercontent.com/wildfly/wildfly/main/jsf/multi-jsf-installer/src/main/resources
+
+[[Jakarta_Faces]]
+= Jakarta Faces Configuration
+
+Jakarta Faces configuration is handled by the `jsf` subsystem. The `jsf` subsystem
+allows multiple Jakarta Faces implementations to be installed on the same WildFly server. In particular, any
+version that implements spec level 4.0 or higher can be installed. For each Jakarta Faces
+implementation, a new slot needs to be created under `jakarta.faces.impl`, `jakarta.faces.api`, and
+`org.jboss.as.jsf-injection`. When the `jsf` subsystem starts up, it scans the module path to find all
+the Jakarta Faces implementations that have been installed. The default Jakarta Faces implementation that
+WildFly should use is defined by the `default-jsf-impl-slot` subsystem attribute.
+
+[[installing-a-new-jsf-implementation-via-feature-pack]]
+== Installing a new Jakarta Faces implementation via a feature pack
+
+WildFly supports provisioning a server using the Galleon tool, which allows an administrator to provision a server with
+only the desired features, which are delivered as feature packs. For more information, see link:Galleon_Guide{outfilesuffix}[Provisioning WildFly with Galleon].
+For an example of such a feature pack, see the https://github.com/wildfly-extras/wildfly-myfaces-feature-pack[WildFly MyFaces Feature Pack]
+project in the WildFly Extras GitHub organization.
+
+As a quick start, to provision a server using this feature pack, one might use a commandline like the following:
+
+[source,bash]
+-----
+$ galleon.sh provision myfaces_server.xml --dir=$SERVER_DIR
+-----
+
+.myfaces_server.xml
+[source,xml]
+-----
+<?xml version="1.0" ?>
+<installation xmlns="urn:jboss:galleon:provisioning:3.0">
+  <feature-pack location="org.wildfly:wildfly-galleon-pack:{wildfly.version}">
+    <default-configs inherit="true"/>
+    <packages inherit="true"/>
+  </feature-pack>
+  <feature-pack location="org.wildfly:wildfly-myfaces-feature-pack:{feature-pack.version}">
+    <default-configs inherit="true"/>
+    <packages inherit="true"/>
+  </feature-pack>
+  <config model="standalone" name="standalone.xml">
+    <layers>
+      <!-- Base layer -->
+      <include name="management"/>
+      <include name="myfaces"/>
+    </layers>
+  </config>
+  <options>
+    <option name="optional-packages" value="passive+"/>
+    <option name="jboss-fork-embedded" value="true"/>
+  </options>
+</installation>
+-----
+
+[[start-the-server]]
+=== Start the server
+
+After starting the server, the following CLI command can be used to verify that your new Jakarta Faces
+implementation has been installed successfully. The new Jakarta Faces implementation should appear in the output
+of this command.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=jsf:list-active-jsf-impls()
+----
+
+[[changing-the-default-jsf-implementation]]
+== Changing the default Jakarta Faces implementation
+
+The following CLI command can be used to make a newly installed Jakarta Faces implementation the default Jakarta
+Server Faces implementation used by WildFly:
+
+[source,options="nowrap"]
+----
+/subsystem=jsf/:write-attribute(name=default-jsf-impl-slot,value=<JSF_IMPL_NAME>-<JSF_VERSION>)
+----
+
+A server restart will be required for this change to take effect.
+
+[[configuring-a-jsf-app-to-use-a-non-default-jsf-implementation]]
+== Configuring a Jakarta Faces app to use a non-default Jakarta Faces implementation
+
+A Jakarta Faces app can be configured to use an installed Jakarta Faces implementation that's not the
+default implementation by adding a `org.jboss.jbossfaces.JSF_CONFIG_NAME` context parameter to its `web.xml` file. For
+example, to indicate that a Jakarta Faces app should use MyFaces 4.0.0 (assuming MyFaces 4.0.0 has been installed
+on the server), the following context parameter would need to be added:
+
+[source,xml,options="nowrap"]
+----
+<context-param>
+  <param-name>org.jboss.jbossfaces.JSF_CONFIG_NAME</param-name>
+  <param-value>myfaces-4.0.0</param-value>
+</context-param>
+----
+
+If a Jakarta Faces app does not specify this context parameter, the default Jakarta Faces implementation
+will be used for that app.
+
+[[disallowing-doctype-declarations]]
+== Disallowing DOCTYPE declarations
+
+The following CLI commands can be used to disallow DOCTYPE declarations in Jakarta Faces deployments:
+
+[source,options="nowrap"]
+----
+/subsystem=jsf:write-attribute(name=disallow-doctype-decl, value=true)
+reload
+----
+
+This setting can be overridden for a particular Jakarta Faces deployment by adding the
+`com.sun.faces.disallowDoctypeDecl` context parameter to the deployment's `web.xml` file:
+
+[source,xml,options="nowrap"]
+----
+<context-param>
+  <param-name>com.sun.faces.disallowDoctypeDecl</param-name>
+  <param-value>false</param-value>
+</context-param>
+----
