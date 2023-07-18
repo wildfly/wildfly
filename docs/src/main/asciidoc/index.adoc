@@ -3,7 +3,6 @@
 :ext-relative: {outfilesuffix}
 
 ifdef::env-github[]
-:imagesdir: images/
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -13,7 +12,7 @@ endif::[]
 
 :toc!:
 
-image:splash_wildflylogo_small.png[WildFly, align="center"]
+image:images/splash_wildflylogo_small.png[WildFly, align="center"]
 
 Welcome to the WildFly documentation. The documentation for WildFly is
 split into multiple categories:

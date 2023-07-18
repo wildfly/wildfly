@@ -2,7 +2,7 @@
 = add-user utility
 
 ifdef::env-github[]
-:imagesdir: ../images/
+:imagesdir: ../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -58,7 +58,7 @@ unless you have switched to a different realm.
 [[interactive-mode]]
 ==== Interactive Mode
 
-image:add-mgmt-user-interactive.png[images/add-mgmt-user-interactive.png]
+image:images/add-mgmt-user-interactive.png[alt=add-mgmt-user-interactive.png]
 
 Here we have added a new Management User called `adminUser`, as you can
 see some of the questions offer default responses so you can just press
@@ -74,7 +74,7 @@ management chapter.
 To add a user in non-interactive mode the command
 `./add-user.sh {username} {password`} can be used.
 
-image:add-mgmt-user-non-interactive.png[images/add-mgmt-user-non-interactive.png]
+image:images/add-mgmt-user-non-interactive.png[alt=add-mgmt-user-non-interactive.png]
 
 [WARNING]
 
@@ -94,7 +94,7 @@ user.
 [[interactive-mode-1]]
 ==== Interactive Mode
 
-image:add-app-user-interactive.png[images/add-app-user-interactive.png]
+image:images/add-app-user-interactive.png[alt=add-app-user-interactive.png]
 
 Here a new user called `appUser` has been added, in this case a comma
 separated list of roles has also been specified.
@@ -109,7 +109,7 @@ a connection from one server to another.
 To add an application user non-interactively use the command
 `./add-user.sh -a {username} {password`}.
 
-image:add-app-user-non-interactive.png[images/add-app-user-non-interactive.png]
+image:images/add-app-user-non-interactive.png[alt=add-app-user-non-interactive.png]
 
 [NOTE]
 
@@ -130,7 +130,7 @@ your intention.
 [[interactive-mode-2]]
 ==== Interactive Mode
 
-image:update-mgmt-user-interactive.png[images/update-mgmt-user-interactive.png]
+image:images/update-mgmt-user-interactive.png[alt=update-mgmt-user-interactive.png]
 
 [[non-interactive-mode-2]]
 ==== Non-Interactive Mode
@@ -143,7 +143,7 @@ with no confirmation prompt.
 
 ==== Interactive Mode
 
-image:update-app-user-interactive.png[images/update-app-user-interactive.png]
+image:images/update-app-user-interactive.png[alt=update-app-user-interactive.png]
 
 [NOTE]
 

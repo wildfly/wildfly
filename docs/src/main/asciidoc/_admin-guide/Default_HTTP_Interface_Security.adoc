@@ -2,7 +2,7 @@
 = Default HTTP Interface Security
 
 ifdef::env-github[]
-:imagesdir: ../images/
+:imagesdir: ../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -24,7 +24,7 @@ default user in the distribution.
 If you attempt to connect to the admin console before you have added a
 user to the server you will be presented with the following screen.
 
-image:no-users.png[images/no-users.png]
+image:images/no-users.png[alt=no-users.png]
 ////
 
 The user are stored in a properties file called mgmt-users.properties
@@ -43,7 +43,7 @@ the same password.
 To manipulate the files and add users we provide a utility add-user.sh
 and add-user.bat to add the users and generate the hashes, to add a user
 you should execute the script and follow the guided process.
-image:add-user.png[images/add-user.png] +
+image:images/add-user.png[alt=add-user.png] +
 The full details of the add-user utility are described later but for the
 purpose of accessing the management interface you need to enter the
 following values: -
