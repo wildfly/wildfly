@@ -2,6 +2,7 @@
 = Jakarta Enterprise Beans Deployment Runtime Resources
 
 ifdef::env-github[]
+:imagesdir: ../../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -101,7 +102,7 @@ The following is a sample output for a stateless session bean named `ManagedStat
 
 To view it in WildFly Administration Console, go to the `Management Model` section of the target deployment. For example,
 
-image:ejb/stateless-management-resource.png[images/ejb/stateless-management-resource.png]
+image:images/ejb/stateless-management-resource.png[alt=ejb/stateless-management-resource.png]
 
 [[Stateful_Session_Bean_Runtime_Resources]]
 == Stateful Session Bean Runtime Resources
@@ -182,7 +183,7 @@ The following is a sample output for a stateful session bean named `ManagedState
 
 To view it in WildFly Administration Console, go to the `Management Model` section of the target deployment. For example,
 
-image:ejb/stateful-management-resource.png[images/ejb/stateful-management-resource.png]
+image:images/ejb/stateful-management-resource.png[alt=ejb/stateful-management-resource.png]
 
 [[Singleton_Bean_Runtime_Resources]]
 == Singleton Bean Runtime Resources
@@ -257,7 +258,7 @@ The following is a sample output for a singleton bean named `ManagedSingletonBea
 
 To view it in WildFly Administration Console, go to the `Management Model` section of the target deployment. For example,
 
-image:ejb/singleton-management-resource.png[images/ejb/singleton-management-resource.png]
+image:images/ejb/singleton-management-resource.png[alt=ejb/singleton-management-resource.png]
 
 [[Message_Driven_Bean_Runtime_Resources]]
 == Message-driven Bean Runtime Resources
@@ -328,4 +329,4 @@ The following is a sample output for a message-driven bean named `ManagedMDB` in
 
 To view it in WildFly Administration Console, go to the `Management Model` section of the target deployment. For example,
 
-image:ejb/mdb-management-resource.png[images/ejb/mdb-management-resource.png]
+image:images/ejb/mdb-management-resource.png[alt=ejb/mdb-management-resource.png]

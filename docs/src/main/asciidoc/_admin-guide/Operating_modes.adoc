@@ -2,7 +2,7 @@
 = Operating mode
 
 ifdef::env-github[]
-:imagesdir: ../images/
+:imagesdir: ../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -58,7 +58,7 @@ Controller. See <<Domain_Setup,Domain Setup>> for details.
 
 The following is an example managed domain topology:
 
-image:DC-HC-Server.png[images/DC-HC-Server.png]
+image::images/DC-HC-Server.png[alt=DC-HC-Server.png]
 
 [[host]]
 === Host

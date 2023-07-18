@@ -2,7 +2,7 @@
 = WS-Security
 
 ifdef::env-github[]
-:imagesdir: ../../images/
+:imagesdir: ../../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -31,7 +31,7 @@ configure WS-Security. With public key cryptography, a user has a pair
 of public and private keys. These are generated using a large prime
 number and a key function.
 
-image:Public_key_making.png[images/Public_key_making.png]
+image:images/Public_key_making.png[alt=Public_key_making.png]
 
 The keys are related mathematically, but cannot be derived from one
 another. With these keys we can encrypt messages. For example, if Bob
@@ -40,7 +40,7 @@ public key. Alice can then decrypt this message using her private key.
 Only Alice can decrypt this message as she is the only one with the
 private key.
 
-image:Public_key_encryption-mod.svg.png[images/Public_key_encryption-mod.svg.png]
+image:images/Public_key_encryption-mod.svg.png[alt=Public_key_encryption-mod.svg.png]
 
 Messages can also be signed. This allows you to ensure the authenticity
 of the message. If Alice wants to send a message to Bob, and Bob wants
@@ -48,7 +48,7 @@ to be sure that it is from Alice, Alice can sign the message using her
 private key. Bob can then verify that the message is from Alice by using
 her public key.
 
-image:250px-Public_key_making.svg.png[images/250px-Public_key_making.svg.png]
+image:images/250px-Public_key_making.svg.png[alt=250px-Public_key_making.svg.png]
 
 [[jboss-ws-security-support]]
 == JBoss WS-Security support

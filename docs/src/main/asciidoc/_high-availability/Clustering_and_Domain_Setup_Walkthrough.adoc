@@ -2,7 +2,7 @@
 = Clustering and Domain Setup Walkthrough
 
 ifdef::env-github[]
-:imagesdir: ../images/
+:imagesdir: ../
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -47,7 +47,7 @@ will run as a domain controller, the secondary host will under the domain manage
 mod_cluster module. The WildFly on primary and secondary hosts will form a
 cluster and discovered by httpd.
 
-image:clustering/Clustering.jpg[images/clustering/Clustering.jpg]
+image:images/clustering/Clustering.jpg[alt=clustering/Clustering.jpg]
 
 * We will deploy a demo project into the domain, and verify that the project
 is deployed into both primary and secondary Host Controllers by the domain controller.
@@ -68,7 +68,7 @@ the HA is working and sessions are replicated.
 it. We should see the Domain Controller is registered back into cluster, also we
 should see the secondary Host Controller sees the primary Host Controller as a domain controller again and connect to it.
 
-image:clustering/test_scenario.jpg[images/clustering/test_scenario.jpg]
+image:images/clustering/test_scenario.jpg[alt=clustering/test_scenario.jpg]
 
 Please don't worry if you cannot digest so many details currently. Let's
 move on and you will get the points step by step.
@@ -403,7 +403,7 @@ After server-three on both primary and secondary hosts are started, we will add 
 cluster-demo.war for deployment. Click on the 'Manage Deployments' link
 at the bottom of left menu list.
 
-image:clustering/JBoss_Management.png[images/clustering/JBoss_Management.png] +
+image:images/clustering/JBoss_Management.png[alt=clustering/JBoss_Management.png] +
 (We should ensure the server-three should be started on both primary and
 secondary hosts)
 
@@ -417,7 +417,7 @@ button and add the war to 'other-server-group' and then click 'save'.
 Wait a few seconds, management console will tell you that the project is
 deployed into 'other-server-group'.：
 
-image:clustering/JBoss_Management_2.png[images/clustering/JBoss_Management_2.png]
+image:images/clustering/JBoss_Management_2.png[alt=clustering/JBoss_Management_2.png]
 
 Please note we have two hosts participate in this server group, so the
 project should be deployed in both primary and secondary hosts now - that's the
@@ -431,14 +431,14 @@ and secondary hosts, and they should all work now:
 http://10.211.55.7:8330/cluster-demo/
 ----
 
-image:clustering/http---10.211.55.7-8330-cluster-demo-.png[images/clustering/http---10.211.55.7-8330-cluster-demo-.png]
+image:images/clustering/http---10.211.55.7-8330-cluster-demo-.png[alt=clustering/http---10.211.55.7-8330-cluster-demo-.png]
 
 [source,options="nowrap"]
 ----
 http://10.211.55.2:8330/cluster-demo/
 ----
 
-image:clustering/http---10.211.55.2-8330-cluster-demo-.png[images/clustering/http---10.211.55.2-8330-cluster-demo-.png]
+image:images/clustering/http---10.211.55.2-8330-cluster-demo-.png[alt=clustering/http---10.211.55.2-8330-cluster-demo-.png]
 
 Now that we have finished the project deployment and see the usages of
 domain controller, we will then head up for using these two hosts to
@@ -651,7 +651,7 @@ Now we access the cluster:
 http://10.211.55.7/cluster-demo/put.jsp
 ----
 
-image:clustering/http---10.211.55.7-cluster-demo-put.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png]
+image:images/clustering/http---10.211.55.7-cluster-demo-put.jsp.png[alt=clustering/http---10.211.55.7-cluster-demo-put.jsp.png]
 
 We should see the request is distributed to one of the hosts (primary or
 secondary) from the WildFly log. For me the request is sent to primary host:
@@ -677,7 +677,7 @@ Then wait for a few seconds and access cluster:
 http://10.211.55.7/cluster-demo/get.jsp
 ----
 
-image:clustering/http---10.211.55.7-cluster-demo-get.jsp.png[images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png]
+image:images/clustering/http---10.211.55.7-cluster-demo-get.jsp.png[alt=clustering/http---10.211.55.7-cluster-demo-get.jsp.png]
 
 Now the request should be served by the secondary host and we should see the log from
 the secondary Host Controller:
