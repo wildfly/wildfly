@@ -45,7 +45,9 @@
     <module name="jakarta.enterprise.api"/>
     <!-- lra-proxy-api -->
     <module name="org.jboss.jandex" />
-    <module name="io.smallrye.config" optional="true"/>
+    <!-- narayana-lra -->
+    <module name="org.eclipse.microprofile.config.api"/>
+    <module name="io.smallrye.config"/>
 
   </dependencies>
 </module>
