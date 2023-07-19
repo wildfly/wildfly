@@ -24,9 +24,9 @@ package org.wildfly.extension.eesecurity;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum EESecuritySubsystemSchema implements PersistentSubsystemSchema<EESec
     private final VersionedNamespace<IntVersion, EESecuritySubsystemSchema> namespace;
 
     EESecuritySubsystemSchema(int major) {
-        this.namespace = new LegacySubsystemURN<>(EESecurityExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(EESecurityExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override

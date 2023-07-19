@@ -9,7 +9,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ElasticsearchServerSetupObserver {
-    private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:7.16.3";
+    private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:8.8.2";
 
     private static final AtomicReference<String> httpHostAddress = new AtomicReference<>();
 
@@ -49,7 +49,9 @@ public class ElasticsearchServerSetupObserver {
                 // Recent versions of ES limit themselves to 50% of the total available RAM,
                 // but on CI this can be too much, as we also have the Maven JVM
                 // and the JVMs that runs tests taking up a significant amount of RAM.
-                .withEnv("ES_JAVA_OPTS", "-Xms1g -Xmx1g");
+                .withEnv("ES_JAVA_OPTS", "-Xms1g -Xmx1g")
+                .withEnv("xpack.security.enabled", "false")
+                .withEnv("cluster.routing.allocation.disk.threshold_enabled", "false");
     }
 
     public void startElasticsearch(@Observes StartClassContainers event) {

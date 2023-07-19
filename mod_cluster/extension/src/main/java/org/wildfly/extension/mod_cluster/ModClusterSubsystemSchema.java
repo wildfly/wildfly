@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
@@ -53,7 +52,7 @@ public enum ModClusterSubsystemSchema implements SubsystemSchema<ModClusterSubsy
     private final VersionedNamespace<IntVersion, ModClusterSubsystemSchema> namespace;
 
     ModClusterSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(ModClusterExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(ModClusterExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

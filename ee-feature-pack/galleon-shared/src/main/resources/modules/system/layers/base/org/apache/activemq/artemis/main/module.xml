@@ -40,7 +40,16 @@
 
             This module should not be directly depended upon by deployments.
         -->
-        <property name="jboss.api" value="private"/>
+        <!--
+            NOTE: The previous comment reflects the intent of the WildFly project
+            that this module be marked as jboss-api=private, i.e. not to be directly
+            depended upon by deployments. However, we have identified valid use cases
+            where such a dependency is needed (see https://issues.redhat.com/browse/WFLY-18240).
+            While we evaluate whether those use cases can be handled while leaving
+            this module as private, we are temporarily marking it as "deprecated"
+            in order to make users aware its status may be changing in a later release.
+        -->
+        <property name="jboss.api" value="deprecated"/>
     </properties>
 
     <resources>

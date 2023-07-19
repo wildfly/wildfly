@@ -1,5 +1,9 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="mail">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="mail">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.mail" />
+        <prop name="org.wildfly.rule.class" value="jakarta.mail.*"/>
+    </props>
     <dependencies>
         <layer name="base-server"/>
         <layer name="naming"/>

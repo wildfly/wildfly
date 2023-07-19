@@ -46,7 +46,7 @@ public class MicroProfileLRACoordinatorExtension implements Extension {
 
     private static final MicroProfileLRACoordinatorSubsystemModel CURRENT_MODEL = MicroProfileLRACoordinatorSubsystemModel.VERSION_1_0_0;
 
-    private static final MicroProfileLRACoordinatorSubsystemSchema CURRENT_SCHEMA = MicroProfileLRACoordinatorSubsystemSchema.VERSION_1_0;
+    static final MicroProfileLRACoordinatorSubsystemSchema CURRENT_SCHEMA = MicroProfileLRACoordinatorSubsystemSchema.VERSION_1_0;
 
     private final PersistentResourceXMLDescription currentDescription = CURRENT_SCHEMA.getXMLDescription();
 
@@ -58,6 +58,7 @@ public class MicroProfileLRACoordinatorExtension implements Extension {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
+    @Override
     public void initializeParsers(ExtensionParsingContext context) {
         for (MicroProfileLRACoordinatorSubsystemSchema schema : EnumSet.allOf(MicroProfileLRACoordinatorSubsystemSchema.class)) {
             XMLElementReader<List<ModelNode>> reader = (schema == CURRENT_SCHEMA) ? new PersistentResourceXMLDescriptionReader(this.currentDescription) : schema;

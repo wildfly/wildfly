@@ -22,9 +22,9 @@
 
 package org.wildfly.extension.clustering.web;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema
     private final VersionedNamespace<IntVersion, DistributableWebSubsystemSchema> namespace;
 
     DistributableWebSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(DistributableWebExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(DistributableWebExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

@@ -22,6 +22,9 @@
 
 package org.wildfly.extension.messaging.activemq;
 
+
+import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.getActiveMQServer;
+
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -30,8 +33,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@code OperationStepHandler} removing an existing address setting.
@@ -44,20 +45,10 @@ class AddressSettingRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final ActiveMQServer server = getServer(context, operation);
-        if(server != null) {
+        final ActiveMQServer server = getActiveMQServer(context, operation);
+        if (server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             server.getAddressSettingsRepository().removeMatch(address.getLastElement().getValue());
         }
     }
-
-    static ActiveMQServer getServer(final OperationContext context, ModelNode operation) {
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
-        if(controller != null) {
-            return ActiveMQServer.class.cast(controller.getValue());
-        }
-        return null;
-    }
-
 }

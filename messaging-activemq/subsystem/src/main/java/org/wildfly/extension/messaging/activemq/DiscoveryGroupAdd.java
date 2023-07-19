@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceAdd;
 
 /**
@@ -60,9 +61,11 @@ public class DiscoveryGroupAdd extends ShallowResourceAdd {
             if (operation.hasDefined(JGROUPS_CLUSTER.getName())) {
                 target = target.append(CommonAttributes.JGROUPS_DISCOVERY_GROUP, context.getCurrentAddressValue());
                 addHandler = JGroupsDiscoveryGroupAdd.LEGACY_INSTANCE;
-            } else {
+            } else if (operation.hasDefined(CommonAttributes.SOCKET_BINDING.getName())) {
                 target = target.append(CommonAttributes.SOCKET_DISCOVERY_GROUP, context.getCurrentAddressValue());
                 addHandler = SocketDiscoveryGroupAdd.LEGACY_INSTANCE;
+            } else {
+                throw MessagingLogger.ROOT_LOGGER.socketBindingOrJGroupsClusterRequired();
             }
             op.get(OP_ADDR).set(target.toModelNode());
             context.addStep(op, addHandler, OperationContext.Stage.MODEL, true);

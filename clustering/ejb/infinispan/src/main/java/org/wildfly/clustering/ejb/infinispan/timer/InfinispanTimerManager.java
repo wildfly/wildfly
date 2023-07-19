@@ -186,7 +186,8 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
 
     @Override
     public Stream<I> getActiveTimers() {
-        return this.scheduler.stream();
+        // The primary owner scheduler can miss entries, if called during a concurrent topology change event
+        return this.group.isSingleton() ? this.scheduledTimers.stream() : this.cache.keySet().stream().filter(TimerCreationMetaDataKeyFilter.INSTANCE).map(Key::getId);
     }
 
     @Override

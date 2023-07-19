@@ -55,6 +55,11 @@ public class QueueAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (final AttributeDefinition attributeDefinition : QueueDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);

@@ -24,7 +24,6 @@ package org.jboss.as.jaxrs;
 
 import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -69,7 +68,6 @@ public class JaxrsExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JaxrsSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        registerAttributes(registration);
         ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(new JaxrsDeploymentDefinition());
         jaxrsResReg.registerSubModel(new DeploymentRestResourcesDefintion());
         subsystem.registerXMLElementWriter(JaxrsSubsystemParser_3_0::new);
@@ -83,11 +81,5 @@ public class JaxrsExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:1.0", JaxrsSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:2.0", JaxrsSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:3.0", JaxrsSubsystemParser_3_0::new);
-    }
-
-    private static void registerAttributes(ManagementResourceRegistration registration) {
-       for (AttributeDefinition definition : JaxrsAttribute.ATTRIBUTES) {
-          registration.registerReadWriteAttribute(definition, null, new JaxrsParamHandler(definition));
-       }
     }
 }

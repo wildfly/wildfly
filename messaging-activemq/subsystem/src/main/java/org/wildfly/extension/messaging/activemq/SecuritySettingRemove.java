@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
+
+import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.getActiveMQServer;
 
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -29,8 +30,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * {@code OperationStepHandler} for removing an existing security setting.
@@ -43,20 +42,12 @@ class SecuritySettingRemove extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final ActiveMQServer server = getServer(context, operation);
-        if(server != null) {
+        final ActiveMQServer server = getActiveMQServer(context, operation);
+        if (server != null) {
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String match = address.getLastElement().getValue();
             server.getSecurityRepository().removeMatch(match);
         }
     }
 
-    static ActiveMQServer getServer(final OperationContext context, ModelNode operation) {
-        final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-        final ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
-        if(controller != null) {
-            return ActiveMQServer.class.cast(controller.getValue());
-        }
-        return null;
-    }
 }

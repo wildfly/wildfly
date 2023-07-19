@@ -22,9 +22,9 @@
 
 package org.wildfly.extension.undertow;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -66,7 +66,7 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     }
 
     UndertowSubsystemSchema(IntVersion version) {
-        this.namespace = new LegacySubsystemURN<>(UndertowExtension.SUBSYSTEM_NAME, version);
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(UndertowExtension.SUBSYSTEM_NAME, version);
     }
 
     @Override

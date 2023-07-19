@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.infinispan.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
 /**
@@ -40,5 +41,6 @@ public class TimerSerializationContextInitializer extends AbstractSerializationC
         context.registerMarshaller(new IntervalTimerCreationMetaDataMarshaller());
         context.registerMarshaller(new ScheduleTimerCreationMetaDataMarshaller());
         context.registerMarshaller(new FunctionalMarshaller<>(TimerIndexKey.class, TimerIndexMarshaller.INSTANCE, TimerIndexKey::getId, TimerIndexKey::new));
+        context.registerMarshaller(new EnumMarshaller<>(TimerCreationMetaDataKeyFilter.class));
     }
 }

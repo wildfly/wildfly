@@ -1,5 +1,10 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="core-tools">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="core-tools">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
+        <prop name="org.wildfly.rule.add-on" value="management,wildfly-cli"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Server command line tools: jboss-cli, add-user, elytron-tool"/>
+    </props>
     <dependencies>
         <layer name="management" optional="true"/>
     </dependencies>

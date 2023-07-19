@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
@@ -54,7 +53,7 @@ public enum JGroupsSubsystemSchema implements SubsystemSchema<JGroupsSubsystemSc
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
 
     JGroupsSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

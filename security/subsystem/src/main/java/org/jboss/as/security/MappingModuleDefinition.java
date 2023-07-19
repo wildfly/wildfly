@@ -24,8 +24,8 @@
 
 package org.jboss.as.security;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
@@ -72,7 +72,7 @@ class MappingModuleDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        super.registerAddOperation(resourceRegistration, new AbstractAddStepHandler(this.getAttributes()), OperationEntry.Flag.RESTART_NONE);
+        super.registerAddOperation(resourceRegistration, new ModelOnlyAddStepHandler(this.getAttributes()), OperationEntry.Flag.RESTART_NONE);
     }
 
     @Override
@@ -87,6 +87,4 @@ class MappingModuleDefinition extends SimpleResourceDefinition {
     public AttributeDefinition[] getAttributes() {
         return ATTRIBUTES;
     }
-
-
 }

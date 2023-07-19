@@ -139,7 +139,7 @@ is a SAR archive
 
 |Security Subsystem |org.picketbox |  | 
 
-|Web Subsystem |  |javaee.api jakarta.faces.api jakarta.faces.impl org.hibernate.validator org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Server Faces
+|Web Subsystem |  |javaee.api jakarta.faces.api jakarta.faces.impl org.hibernate.validator org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Faces
 is only added if used. Multiple version options exist for Jakarta Faces.
 
 |Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 

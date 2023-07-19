@@ -279,11 +279,11 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
                     .build();
             PathElement keycloakExtension = PathElement.pathElement(EXTENSION, "org.keycloak.keycloak-adapter-subsystem");
             rootRegistration.registerSubModel(new SimpleResourceDefinition(keycloakExtension, ControllerResolver.getResolver(EXTENSION)))
-                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
             rootResource.registerChild(keycloakExtension, Resource.Factory.create());
             PathElement elytronExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.elytron");
             rootRegistration.registerSubModel(new SimpleResourceDefinition(elytronExtension, ControllerResolver.getResolver(EXTENSION)))
-                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
             rootResource.registerChild(elytronExtension, Resource.Factory.create());
 
             rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(EXTENSION),

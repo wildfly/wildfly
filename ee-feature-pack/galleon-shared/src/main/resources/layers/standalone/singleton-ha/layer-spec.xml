@@ -20,8 +20,10 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="singleton-ha">
-
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="singleton-ha">
+    <props>
+        <prop name="org.wildfly.rule.profile-ha" value="singleton-local"/>
+    </props>
     <dependencies>
         <layer name="base-server"/>
         <layer name="transactions"/>

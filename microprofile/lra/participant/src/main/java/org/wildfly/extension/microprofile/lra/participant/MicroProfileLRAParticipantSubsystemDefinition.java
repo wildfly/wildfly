@@ -87,7 +87,7 @@ public class MicroProfileLRAParticipantSubsystemDefinition extends PersistentRes
     MicroProfileLRAParticipantSubsystemDefinition() {
         super(new Parameters(PATH, RESOLVER)
             .setAddHandler(new MicroProfileLRAParticipantAdd())
-            .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+            .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
             .setCapabilities(LRA_PARTICIPANT_CAPABILITY));
     }
 

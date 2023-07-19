@@ -1,5 +1,9 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jaxrs">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jaxrs">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.ws.rs"/>
+        <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/servlet/servlet-class,jakarta.ws.rs.core.Application"/>
+    </props>
     <dependencies>
         <layer name="deployment-scanner" optional="true"/>
         <layer name="ee-concurrency" optional="true"/>

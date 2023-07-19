@@ -1,8 +1,10 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-dist-cache">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-dist-cache">
 
     <!-- Infinispan cache configuration used for distributed SFSB caching -->
-
+    <props>
+        <prop name="org.wildfly.rule.profile-ha" value="ejb-local-cache"/>
+    </props>
     <dependencies>
         <layer name="transactions"/>
     </dependencies>

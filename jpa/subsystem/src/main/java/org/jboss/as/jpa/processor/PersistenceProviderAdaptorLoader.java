@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,6 +24,9 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -32,6 +35,7 @@ import jakarta.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
+import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -39,6 +43,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jipijapa.plugin.spi.JtaManager;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
+import org.jipijapa.plugin.spi.PersistenceProviderIntegratorAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.Platform;
 
@@ -169,6 +174,34 @@ public class PersistenceProviderAdaptorLoader {
         return persistenceProviderAdaptor == null ?
                 noopAdaptor:
                 persistenceProviderAdaptor;
+    }
+
+
+    /**
+     * Loads the persistence provider integrator adapter
+     *
+     * @param adapterModule the adapter module name
+     * @return the adaptors for the given module
+     * @throws ModuleLoadException
+     */
+    public static List<PersistenceProviderIntegratorAdaptor> loadPersistenceProviderIntegratorModule(
+            String adapterModule, Collection<Index> indexes) throws ModuleLoadException {
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
+        List<PersistenceProviderIntegratorAdaptor> persistenceProviderAdaptors = new ArrayList<>();
+
+        Module module = moduleLoader.loadModule(adapterModule);
+        final ServiceLoader<PersistenceProviderIntegratorAdaptor> serviceLoader =
+                module.loadService(PersistenceProviderIntegratorAdaptor.class);
+        for (PersistenceProviderIntegratorAdaptor adaptor : serviceLoader) {
+            persistenceProviderAdaptors.add(adaptor);
+            ROOT_LOGGER.debugf("loaded persistence provider integrator adapter %s from %s", adaptor, adapterModule);
+            if (adaptor != null) {
+                adaptor.injectIndexes(indexes);
+            }
+        }
+
+        return persistenceProviderAdaptors;
     }
 
 }

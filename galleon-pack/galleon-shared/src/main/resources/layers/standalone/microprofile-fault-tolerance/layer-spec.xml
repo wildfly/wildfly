@@ -22,7 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="microprofile-fault-tolerance">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-fault-tolerance">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.faulttolerance"/>
+        <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.faulttolerance.*"/> 
+    </props>
     <dependencies>
         <layer name="cdi"/>
         <layer name="microprofile-config"/>

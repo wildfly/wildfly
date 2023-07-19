@@ -21,8 +21,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="jgroups-aws">
-
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jgroups-aws">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:jgroups"/>
+        <prop name="org.wildfly.rule.add-on" value="clustering,jgroups-aws"/>
+    </props>
     <!--
     This layer only brings in modules required to configure the 'aws.S3_PING' discovery protocol:
     <protocol name="org.jgroups.protocols.aws.S3_PING" module="org.jgroups.aws">

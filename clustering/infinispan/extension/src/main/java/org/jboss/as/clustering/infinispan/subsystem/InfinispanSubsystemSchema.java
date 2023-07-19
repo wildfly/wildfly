@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.LegacySubsystemURN;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.dmr.ModelNode;
@@ -65,7 +64,7 @@ public enum InfinispanSubsystemSchema implements SubsystemSchema<InfinispanSubsy
     private final VersionedNamespace<IntVersion, InfinispanSubsystemSchema> namespace;
 
     InfinispanSubsystemSchema(int major, int minor) {
-        this.namespace = new LegacySubsystemURN<>(InfinispanExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(InfinispanExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override

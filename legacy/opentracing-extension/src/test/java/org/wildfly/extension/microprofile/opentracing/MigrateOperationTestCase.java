@@ -110,7 +110,7 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
                     .build();
             PathElement opentracingExtension = PathElement.pathElement(EXTENSION, SubsystemExtension.EXTENSION_NAME);
             rootRegistration.registerSubModel(new SimpleResourceDefinition(opentracingExtension, ControllerResolver.getResolver(EXTENSION)))
-                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
             rootResource.registerChild(opentracingExtension, Resource.Factory.create());
 
             rootRegistration.registerSubModel(

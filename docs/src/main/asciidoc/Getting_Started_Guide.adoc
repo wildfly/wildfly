@@ -11,7 +11,6 @@ WildFly team;
 :source-highlighter: coderay
 
 ifdef::env-github[]
-:imagesdir: images/
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -86,7 +85,7 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Security 3.0 |X |X |X |X
 
-|Jakarta Server Faces 4.0 |X |X |X |X
+|Jakarta Faces 4.0 |X |X |X |X
 
 |Jakarta Server Pages 3.1 |X |X |X |X
 
@@ -444,7 +443,7 @@ As with previous WildFly releases, you can point your browser to
 *_http://localhost:8080_* (if using the default configured http port)
 which brings you to the Welcome Screen:
 
-image:wildfly.png[images/wildfly.png]
+image:images/wildfly.png[wildfly.png]
 
 From here you can access links to the WildFly community documentation
 set, stay up-to-date on the latest project information, have a

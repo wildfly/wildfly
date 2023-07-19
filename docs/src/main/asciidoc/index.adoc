@@ -3,7 +3,6 @@
 :ext-relative: {outfilesuffix}
 
 ifdef::env-github[]
-:imagesdir: images/
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -13,7 +12,7 @@ endif::[]
 
 :toc!:
 
-image:splash_wildflylogo_small.png[WildFly, align="center"]
+image:images/splash_wildflylogo_small.png[WildFly, align="center"]
 
 Welcome to the WildFly documentation. The documentation for WildFly is
 split into multiple categories:
@@ -80,7 +79,7 @@ and failover.
 Started Developing Applications Guide] shows you how to build Jakarta EE
 applications and deploy them to WildFly. The guide starts by showing you
 the simplest _helloworld_ application using just Servlet and Jakarta Contexts and Dependency Injection, and
-then adds in Jakarta Server Faces, persistence and transactions, Jakarta Enterprise Beans, Bean Validation,
+then adds in Jakarta Faces, persistence and transactions, Jakarta Enterprise Beans, Bean Validation,
 RESTful web services and more. Finally, you'll get the opportunity to create
 your own skeleton project. Each tutorial is accompanied by a quickstart,
 which contains the source code, deployment descriptors and a Maven based

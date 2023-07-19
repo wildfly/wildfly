@@ -22,15 +22,16 @@
 
 package org.jboss.as.ejb3.timerservice;
 
+import java.util.List;
+
+import org.jboss.as.controller.xml.IntVersionSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.as.controller.xml.VersionedSchema;
-import org.jboss.as.controller.xml.VersionedURN;
 import org.jboss.staxmapper.IntVersion;
 
 /**
  * @author Paul Ferraro
  */
-public enum TimerServiceMetaDataSchema implements VersionedSchema<IntVersion, TimerServiceMetaDataSchema> {
+public enum TimerServiceMetaDataSchema implements IntVersionSchema<TimerServiceMetaDataSchema> {
     VERSION_1_0(1, 0),
     VERSION_2_0(2, 0),
     ;
@@ -39,7 +40,7 @@ public enum TimerServiceMetaDataSchema implements VersionedSchema<IntVersion, Ti
     private final VersionedNamespace<IntVersion, TimerServiceMetaDataSchema> namespace;
 
     TimerServiceMetaDataSchema(int major, int minor) {
-        this.namespace = new VersionedURN<>(this.getLocalName(), new IntVersion(major, minor));
+        this.namespace = IntVersionSchema.createURN(List.of(this.getLocalName()), new IntVersion(major, minor));
     }
 
     @Override

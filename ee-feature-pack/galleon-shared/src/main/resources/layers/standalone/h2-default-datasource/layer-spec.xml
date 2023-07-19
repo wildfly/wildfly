@@ -1,6 +1,12 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="h2-default-datasource">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-default-datasource">
+    <props>
+        <prop name="org.wildfly.rule.add-on" value="database,h2-database:default"/>
+        <prop name="org.wildfly.rule.add-on-fix-no-default-datasource" value=""/>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:datasources"/>
+    </props>
     <dependencies>
+        <layer name="datasources"/>
         <layer name="h2-datasource"/>
     </dependencies>
     <feature-group name="h2-default-datasource"/>

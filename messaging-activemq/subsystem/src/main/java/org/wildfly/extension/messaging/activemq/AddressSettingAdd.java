@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.getActiveMQServer;
@@ -57,13 +56,18 @@ class AddressSettingAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 
-        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL);
+        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL, true);
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ActiveMQServer server = getActiveMQServer(context, operation);
-        if(server != null) {
+        if (server != null) {
             final AddressSettings settings = createSettings(context, model);
             server.getAddressSettingsRepository().addMatch(context.getCurrentAddressValue(), settings);
         }

@@ -26,7 +26,7 @@ import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.SubsystemURN;
+import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
 
@@ -43,7 +43,7 @@ public enum MicroProfileReactiveStreamsOperatorsSubsystemSchema implements Persi
     private final VersionedNamespace<IntVersion, MicroProfileReactiveStreamsOperatorsSubsystemSchema> namespace;
 
     MicroProfileReactiveStreamsOperatorsSubsystemSchema(int major) {
-        this.namespace = new SubsystemURN<>(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, new IntVersion(major));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileReactiveStreamsOperatorsExtension.SUBSYSTEM_NAME, new IntVersion(major));
     }
 
     @Override
