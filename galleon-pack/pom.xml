@@ -47,6 +47,7 @@
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
+        <module>layer-metadata-tests</module>
     </modules>
 
     <dependencyManagement>
@@ -61,6 +62,13 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -87,7 +95,6 @@
             <artifactId>wildfly-standard-expansion-bom</artifactId>
             <type>pom</type>
         </dependency>
-
     </dependencies>
 
 </project>

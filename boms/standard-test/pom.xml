@@ -353,6 +353,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-core</artifactId>
+                <version>${version.org.wildfly.glow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-maven-resolver</artifactId>
+                <version>${version.org.wildfly.glow}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>xom</groupId>
                 <artifactId>xom</artifactId>
                 <version>${version.xom}</version>
