@@ -19,175 +19,17 @@
 package org.wildfly.extension.elytron.oidc;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
-import java.util.List;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
-import org.jboss.as.server.deployment.DelegatingSupplier;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.LoginConfigMetaData;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 import org.junit.Test;
 
 public class OidcActivationProcessorTest {
-    private final class MockDeploymentPhaseContext implements DeploymentPhaseContext {
-        private final class MockDeploymentUnit implements DeploymentUnit {
-            @Override
-            public boolean hasAttachment(AttachmentKey<?> key) {
-                return false;
-            }
-
-            @Override
-            public <T> T getAttachment(AttachmentKey<T> key) {
-                if (WarMetaData.ATTACHMENT_KEY.equals(key)) {
-                    return (T) new NonNullRealmNullEverythingElseWarMetaData();
-                }
-
-                return null;
-            }
-
-            @Override
-            public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
-                return null;
-            }
-
-            @Override
-            public <T> T putAttachment(AttachmentKey<T> key, T value) {
-                return null;
-            }
-
-            @Override
-            public <T> T removeAttachment(AttachmentKey<T> key) {
-                return null;
-            }
-
-            @Override
-            public <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> key, T value) {
-            }
-
-            @Override
-            public ServiceName getServiceName() {
-                return null;
-            }
-
-            @Override
-            public DeploymentUnit getParent() {
-                return null;
-            }
-
-            @Override
-            public String getName() {
-                return null;
-            }
-
-            @Override
-            public ServiceRegistry getServiceRegistry() {
-                return null;
-            }
-
-            //@Override
-            public ModelNode getDeploymentSubsystemModel(String subsystemName) {
-                return null;
-            }
-
-            //@Override
-            public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
-                return null;
-            }
-
-            //@Override
-            public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address) {
-                return null;
-            }
-
-            //@Override
-            public ModelNode createDeploymentSubModel(String subsystemName, PathAddress address,
-                    Resource resource) {
-                return null;
-            }
-        }
-
-        @Override
-        public <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> arg0, T arg1) {
-        }
-
-        @Override
-        public <T> T getAttachment(AttachmentKey<T> arg0) {
-            return null;
-        }
-
-        @Override
-        public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> arg0) {
-            return null;
-        }
-
-        @Override
-        public boolean hasAttachment(AttachmentKey<?> arg0) {
-            return false;
-        }
-
-        @Override
-        public <T> T putAttachment(AttachmentKey<T> arg0, T arg1) {
-            return null;
-        }
-
-        @Override
-        public <T> T removeAttachment(AttachmentKey<T> arg0) {
-            return null;
-        }
-
-        @Override
-        public <T> void addDependency(ServiceName arg0, AttachmentKey<T> arg1) {
-        }
-
-        public <T> void addDependency(ServiceName arg0, Class<T> arg1, Injector<T> arg2) {
-        }
-
-        @Override
-        public <T> void addDeploymentDependency(ServiceName arg0, AttachmentKey<T> arg1) {
-        }
-
-        @Override
-        public DeploymentUnit getDeploymentUnit() {
-            return new MockDeploymentUnit();
-        }
-
-        @Override
-        public Phase getPhase() {
-            return null;
-        }
-
-        @Override
-        public ServiceName getPhaseServiceName() {
-            return null;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry() {
-            return null;
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() {
-            return null;
-        }
-
-        @Override
-        public <T> void requires(ServiceName arg0, DelegatingSupplier<T> arg1) {
-        }
-    }
 
     private final class NonNullRealmNullEverythingElseWarMetaData extends WarMetaData {
         private final class JBossWebMetaDataExtension extends JBossWebMetaData {
@@ -215,7 +57,14 @@ public class OidcActivationProcessorTest {
      */
     @Test
     public void testDeployLoginConfigWithRealmAndNullAuthMethod() throws Exception {
-        new OidcActivationProcessor().deploy(new MockDeploymentPhaseContext());
+        DeploymentUnit unit = mock(DeploymentUnit.class);
+        doReturn(true).when(unit).hasAttachment(WarMetaData.ATTACHMENT_KEY);
+        doReturn(new NonNullRealmNullEverythingElseWarMetaData()).when(unit).getAttachment(WarMetaData.ATTACHMENT_KEY);
+
+        DeploymentPhaseContext context = mock(DeploymentPhaseContext.class);
+        doReturn(unit).when(context).getDeploymentUnit();
+
+        new OidcActivationProcessor().deploy(context);
 
         assertTrue("Expect to succeed and reach this point", true);
     }
