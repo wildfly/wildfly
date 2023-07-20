@@ -37,7 +37,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
     -->
-    <version>29.0.0.Final</version>
+    <version>30.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -144,9 +144,9 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <product.docs.server.version>29</product.docs.server.version>
+        <product.docs.server.version>30</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>29.0</verifier.product.release.version>
+        <verifier.product.release.version>30.0</verifier.product.release.version>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
