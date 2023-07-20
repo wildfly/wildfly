@@ -325,7 +325,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 26, value = "Could not read timer information for Jakarta Enterprise Beans component %s")
-    void failToReadTimerInformation(String componentName);
+    void failToReadTimerInformation(String componentName, @Cause Throwable cause);
 
 //    /**
 //     * Logs an error message indicating it could not remove persistent timer

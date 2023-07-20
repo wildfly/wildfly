@@ -22,9 +22,17 @@
 
 package org.jboss.as.ejb3.subsystem.deployment;
 
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.CALENDAR_TIMER;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.INFO;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.NEXT_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.PERSISTENT;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.SCHEDULE;
+import static org.jboss.as.ejb3.subsystem.deployment.TimerResourceDefinition.TIME_REMAINING;
+
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectMapAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -157,6 +165,15 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
     public static final SimpleAttributeDefinition POOL_MAX_SIZE = new SimpleAttributeDefinitionBuilder("pool-max-size", ModelType.INT, false)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
+    static final ObjectTypeAttributeDefinition TIMER = new ObjectTypeAttributeDefinition.Builder("timer",
+            TIME_REMAINING, NEXT_TIMEOUT, CALENDAR_TIMER, PERSISTENT, INFO, new ObjectTypeAttributeDefinition.Builder(SCHEDULE.getName(), SCHEDULE.getValueTypes()).setSuffix("schedule").build())
+            .setStorageRuntime()
+            .build();
+
+    static final ObjectListAttributeDefinition TIMERS = new ObjectListAttributeDefinition.Builder("timers", TIMER)
+            .setStorageRuntime()
+            .build();
+
     final EJBComponentType componentType;
 
     public AbstractEJBComponentResourceDefinition(final EJBComponentType componentType) {
@@ -182,7 +199,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
         }
 
         if (componentType.hasTimer()) {
-            resourceRegistration.registerReadOnlyAttribute(TimerAttributeDefinition.INSTANCE, handler);
+            resourceRegistration.registerReadOnlyAttribute(TIMERS, handler);
             resourceRegistration.registerReadOnlyAttribute(TIMEOUT_METHOD, handler);
         }
 

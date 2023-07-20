@@ -29,7 +29,6 @@ import jakarta.ejb.NoSuchObjectLocalException;
 import jakarta.ejb.ScheduleExpression;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -63,20 +62,20 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
 
     private static final ResourceDescriptionResolver RESOURCE_DESCRIPTION_RESOLVER = EJB3Extension
             .getResourceDescriptionResolver(EJB3SubsystemModel.TIMER);
-    // attributes, copy of TimerAttributeDefinition
-    private static final SimpleAttributeDefinition TIME_REMAINING = new SimpleAttributeDefinitionBuilder("time-remaining",
+
+    static final SimpleAttributeDefinition TIME_REMAINING = new SimpleAttributeDefinitionBuilder("time-remaining",
             ModelType.LONG, true).setStorageRuntime().build();
 
-    private static final SimpleAttributeDefinition NEXT_TIMEOUT = new SimpleAttributeDefinitionBuilder("next-timeout",
+    static final SimpleAttributeDefinition NEXT_TIMEOUT = new SimpleAttributeDefinitionBuilder("next-timeout",
             ModelType.LONG, true).setStorageRuntime().build();
 
-    private static final SimpleAttributeDefinition CALENDAR_TIMER = new SimpleAttributeDefinitionBuilder("calendar-timer",
+    static final SimpleAttributeDefinition CALENDAR_TIMER = new SimpleAttributeDefinitionBuilder("calendar-timer",
             ModelType.BOOLEAN, true).setStorageRuntime().build();
 
-    private static final SimpleAttributeDefinition PERSISTENT = new SimpleAttributeDefinitionBuilder("persistent",
+    static final SimpleAttributeDefinition PERSISTENT = new SimpleAttributeDefinitionBuilder("persistent",
             ModelType.BOOLEAN, true).setStorageRuntime().build();
 
-    private static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder("active", ModelType.BOOLEAN,
+    static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder("active", ModelType.BOOLEAN,
             true).setStorageRuntime().build();
 
     // schedule and its children
@@ -110,13 +109,12 @@ public class TimerResourceDefinition<T extends EJBComponent> extends SimpleResou
     static final SimpleAttributeDefinition END = new SimpleAttributeDefinitionBuilder("end", ModelType.LONG, true)
             .setStorageRuntime().build();
 
-    public static final ObjectListAttributeDefinition SCHEDULE = ObjectListAttributeDefinition.Builder.of(
-            "schedule",
-            ObjectTypeAttributeDefinition.Builder.of("schedule", YEAR, MONTH, DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE, SECOND,
-                    TIMEZONE, START, END).build()).build();
+    static final ObjectTypeAttributeDefinition SCHEDULE = ObjectTypeAttributeDefinition.Builder.of("schedule",
+            YEAR, MONTH, DAY_OF_MONTH, DAY_OF_WEEK, HOUR, MINUTE, SECOND, TIMEZONE, START, END)
+            .build();
 
     // TimerConfig.info
-    private static final SimpleAttributeDefinition INFO = new SimpleAttributeDefinitionBuilder("info", ModelType.STRING, true)
+    static final SimpleAttributeDefinition INFO = new SimpleAttributeDefinitionBuilder("info", ModelType.STRING, true)
             .setStorageRuntime().build();
 
     @Deprecated
