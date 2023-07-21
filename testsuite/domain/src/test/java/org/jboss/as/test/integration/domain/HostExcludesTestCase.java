@@ -90,7 +90,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "29.";
+    private static final String MAJOR = "30.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -210,7 +210,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.lra-participant",
                 "org.wildfly.extension.microprofile.telemetry"
         ), true),
-        CURRENT(MAJOR, WILDFLY_28_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_29_0("WildFly29.0", WILDFLY_28_0, true),
+        CURRENT(MAJOR, WILDFLY_29_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
