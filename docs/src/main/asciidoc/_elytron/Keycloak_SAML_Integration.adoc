@@ -26,8 +26,7 @@ The Keycloak SAML adapter can then be added to the WildFly installation with the
 
 [source]
 ----
-TODO: Update the version here when we know what it is
-galleon.sh install org.keycloak:keycloak-saml-adapter-galleon-pack:999 --layers=keycloak-client-saml --dir=wildfly
+galleon.sh install org.keycloak:keycloak-saml-adapter-galleon-pack:22.0.1 --layers=keycloak-client-saml --dir=wildfly
 ----
 
 [NOTE]
@@ -63,7 +62,7 @@ using both the `web-server` and `keycloak-client-saml` layers:
             <feature-pack>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-saml-adapter-galleon-pack</artifactId>
-                <version>999</version> <!-- TODO: Update version when we know what it is -->
+                <version>22.0.1</version>
             </feature-pack>
         </feature-packs>
         <layers>
@@ -156,7 +155,7 @@ using both the `web-server` and `keycloak-client-saml` layers:
             <feature-pack>
                 <groupId>org.keycloak</groupId>
                 <artifactId>keycloak-saml-adapter-galleon-pack</artifactId>
-                <version>999</version> <!-- TODO: Update version when we know what it is -->
+                <version>22.0.1</version>
             </feature-pack>
         </feature-packs>
         <layers>
