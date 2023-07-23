@@ -36,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -90,7 +89,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "29.";
+    private static final String MAJOR = "30.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -210,14 +209,19 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.lra-participant",
                 "org.wildfly.extension.microprofile.telemetry"
         ), true),
-        CURRENT(MAJOR, WILDFLY_28_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_29_0("WildFly29.0", WILDFLY_28_0, List.of(), List.of(
+                "org.jboss.as.jacorb",
+                "org.jboss.as.messaging",
+                "org.jboss.as.web"
+                ), true),
+        CURRENT(MAJOR, WILDFLY_29_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return Collections.emptyList();
+            return List.of();
         }
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
@@ -231,7 +235,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                         );
             }
             */
-            return Arrays.asList("org.jboss.as.jacorb", "org.jboss.as.messaging", "org.jboss.as.web");
+            return List.of();
         }
 
         private final String name;
