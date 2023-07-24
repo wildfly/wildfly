@@ -39,7 +39,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <!-- These properties control what layers are provisioned if galleon slimmed provisioning occurs -->
         <ts.microprofile-tck-provisioning.base.layer>jaxrs-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>observability</ts.microprofile-tck-provisioning.decorator.layer>
+        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-rest-client</ts.microprofile-tck-provisioning.decorator.layer>
         <!-- properties to enable plugins shared by various bootable profiles -->
         <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
         <!-- Resource path -->
@@ -350,9 +350,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${full.maven.groupId}</groupId>
-                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                    <version>${full.maven.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                     <included-configs>
@@ -382,9 +382,9 @@
                         <configuration>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                     <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
@@ -448,9 +448,9 @@
                             </cli-sessions>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                     <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
                                     provision it. -->

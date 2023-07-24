@@ -188,16 +188,16 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>${dependency.management.import.artifact}</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-test-bom</artifactId>
-                <version>${project.version}</version>
+                <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
