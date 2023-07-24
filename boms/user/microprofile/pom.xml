@@ -123,6 +123,11 @@
                                     <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
                                     <artifactId>microprofile-reactive-streams-operators-api</artifactId>
                                 </dependency>
+                                <!-- include OpenTelemetry API -->
+                                <dependency>
+                                    <groupId>io.opentelemetry</groupId>
+                                    <artifactId>opentelemetry-api</artifactId>
+                                </dependency>
                                 <!-- include jakarta specs APIs -->
                                 <dependency>
                                     <groupId>jakarta.enterprise</groupId>
