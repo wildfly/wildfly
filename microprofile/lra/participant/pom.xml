@@ -37,9 +37,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>${ee.maven.groupId}</groupId>
         <artifactId>wildfly-standard-test-bom</artifactId>
-        <version>${project.version}</version>
+        <version>${ee.maven.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -47,7 +47,7 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-web-common</artifactId>
     </dependency>
     <dependency>
@@ -59,7 +59,7 @@
       <artifactId>jakarta.enterprise.cdi-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-jaxrs</artifactId>
     </dependency>
 
@@ -81,7 +81,7 @@
       <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>${full.maven.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-undertow</artifactId>
     </dependency>
     <dependency>
@@ -101,11 +101,11 @@
       <artifactId>resteasy-cdi</artifactId>
     </dependency>
     <dependency>
-      <groupId>${full.maven.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-clustering-service</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-weld</artifactId>
     </dependency>
     <dependency>
@@ -114,7 +114,7 @@
     </dependency>
 
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-ee</artifactId>
     </dependency>
 

@@ -252,6 +252,13 @@
         <testsuite.ee.galleon.pack.groupId>${full.maven.groupId}</testsuite.ee.galleon.pack.groupId>
         <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
         <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
+        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
+             that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
+             Test jobs can override this using -D to test using a different feature pack.
+        -->
+        <testsuite.full.galleon.pack.groupId>${full.maven.groupId}</testsuite.full.galleon.pack.groupId>
+        <testsuite.full.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.full.galleon.pack.artifactId>
+        <testsuite.full.galleon.pack.version>${full.maven.version}</testsuite.full.galleon.pack.version>
 
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
@@ -581,9 +588,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-common-expansion-dependency-management</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
@@ -728,9 +735,9 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
@@ -1412,6 +1419,7 @@
             <properties>
                 <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -1427,6 +1435,7 @@
             </activation>
             <properties>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <!-- Disable the default surefire test execution for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>

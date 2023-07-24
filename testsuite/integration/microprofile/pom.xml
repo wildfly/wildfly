@@ -385,9 +385,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                 </feature-pack>
                             </feature-packs>
                             <layers>
@@ -549,9 +549,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>wildfly-galleon-pack</artifactId>
-                                            <version>${full.maven.version}</version>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -683,9 +683,9 @@
                                     </plugin-options>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${full.maven.groupId}</groupId>
-                                            <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${full.maven.version}</version>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
