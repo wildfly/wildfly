@@ -56,6 +56,7 @@ interface ElytronOidcDescriptionConstants {
     String REGISTER_NODE_PERIOD = "register-node-period";
     String REPLACEMENT = "replacement";
     String RESOURCE = "resource";
+    String SCOPE = "scope";
     String SECRET = "secret";
     String SECURE_DEPLOYMENT = "secure-deployment";
     String SECURE_SERVER = "secure-server";

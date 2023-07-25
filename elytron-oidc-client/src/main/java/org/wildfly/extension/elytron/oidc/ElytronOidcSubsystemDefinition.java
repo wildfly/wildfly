@@ -86,7 +86,7 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
                 throws OperationFailedException {
-            ServiceTarget target = context.getServiceTarget();
+            ServiceTarget target = context.getCapabilityServiceTarget();
             installService(VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new VirtualSecurityDomainCreationService(), target);
         }
     }
