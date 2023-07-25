@@ -60,7 +60,7 @@ import org.wildfly.security.http.oidc.OidcSecurityRealm;
 class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
     static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT), Stability.DEFAULT);
-
+    protected static List<SimpleAttributeDefinition> NON_DEFAULT_ATTRIBUTES = new ArrayList<>();
     protected static final SimpleAttributeDefinition REALM =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REALM, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -164,6 +164,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(PUBLIC_KEY_CACHE_TTL);
         ALL_ATTRIBUTES.add(ADAPTER_STATE_COOKIE_PATH);
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
+        ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
@@ -179,6 +180,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                 .setRemoveHandler(SecureDeploymentRemoveHandler.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
+        NON_DEFAULT_ATTRIBUTES.add(SCOPE);
     }
 
     @Override

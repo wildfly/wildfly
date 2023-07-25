@@ -106,4 +106,3 @@
         <token-signature-algorithm>HS256</token-signature-algorithm>
     </secure-deployment>
 </subsystem>
-

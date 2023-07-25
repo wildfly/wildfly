@@ -18,7 +18,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
-
 /**
  * An {@link Extension} to add support for OpenID Connect.
  *
@@ -49,7 +48,7 @@ public class ElytronOidcExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ElytronOidcClientSubsystemModel.CURRENT.getVersion());
-        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(ElytronOidcSubsystemSchema.CURRENT.get(context.getStability())));
+        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(ElytronOidcSubsystemSchema.CURRENT.get(context.getStability()).getXMLDescription()));
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ElytronOidcSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);

@@ -28,8 +28,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
-        // 3.0.0 (WildFly 32) to 1.0.0 (WildFly 29)
-//        from3(chainedBuilder);
+        // 3.0.0 (WildFly 32) to 2.0.0 (WildFly 29)
+        // from3(chainedBuilder);
         // 2.0.0 (WildFly 29) to 1.0.0 (WildFly 28)
         from2(chainedBuilder);
 
