@@ -121,6 +121,20 @@
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>preferred_username</principal-attribute>
     </secure-deployment>
+    <secure-deployment name="wildfly-with-scope">
+        <provider>keycloak</provider>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-deployment>
+    <secure-server name="wildfly-server-with-scope">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-server>
     <secure-server name="wildfly-console">
         <realm>jboss-infra</realm>
         <resource>wildfly-console</resource>

@@ -96,6 +96,12 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setAlternatives(ElytronOidcDescriptionConstants.RESOURCE)
                     .build();
 
+    protected static final SimpleAttributeDefinition SCOPE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SCOPE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
     protected static final SimpleAttributeDefinition USE_RESOURCE_ROLE_MAPPINGS =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.USE_RESOURCE_ROLE_MAPPINGS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
@@ -166,6 +172,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(PUBLIC_KEY_CACHE_TTL);
         ALL_ATTRIBUTES.add(ADAPTER_STATE_COOKIE_PATH);
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
+        ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);

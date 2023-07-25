@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
+import static org.wildfly.security.http.oidc.Oidc.OIDC_SCOPE;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
 
 import java.io.IOException;
@@ -59,6 +60,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.wildfly.test.integration.elytron.oidc.client.subsystem.SimpleServletWithScope;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -71,7 +73,6 @@ import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.jose.util.JsonSerialization;
 
 import io.restassured.RestAssured;
-
 /**
  * Tests for the OpenID Connect authentication mechanism.
  *
@@ -105,6 +106,10 @@ public abstract class OidcBaseTest {
     static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
     static final String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
     public static final String CORS_CLIENT = "CorsClient";
+    public static final String OPENID_SCOPE_APP = "OpenIDScopeApp";
+    public static final String INVALID_SCOPE_APP = "InvalidScopeApp";
+    public static final String SINGLE_SCOPE_APP = "SingleScopeApp";
+    public static final String MULTIPLE_SCOPE_APP = "MultipleScopeApp";
 
     private enum BearerAuthType {
         BEARER,
@@ -346,6 +351,46 @@ public abstract class OidcBaseTest {
                 SimpleServlet.RESPONSE_BODY, null, CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, false);
     }
 
+    /**
+     * Tests that use different scope values to request access to claims values.
+     */
+
+    @Test
+    @OperateOnDeployment(OPENID_SCOPE_APP)
+    public void testOpenIDScope() throws Exception {
+        String expectedScope = OIDC_SCOPE;
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + OPENID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(SINGLE_SCOPE_APP)
+    public void testSingleScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+profile";
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + SINGLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(MULTIPLE_SCOPE_APP)
+    public void testMultipleScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+phone+profile+email";
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + MULTIPLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(INVALID_SCOPE_APP)
+    public void testInvalidScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+INVALID_SCOPE";
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, false,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + INVALID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, true);
+    }
+
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
         loginToApp(username, password, expectedStatusCode, expectedText, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
@@ -362,6 +407,10 @@ public abstract class OidcBaseTest {
     }
 
     public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri) throws Exception {
+         loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, requestUri, null, false);
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri, String expectedScope, boolean checkInvalidScope) throws Exception {
         CookieStore store = new BasicCookieStore();
         HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
@@ -370,6 +419,7 @@ public abstract class OidcBaseTest {
         HttpGet getMethod = new HttpGet(requestUri);
         HttpContext context = new BasicHttpContext();
         HttpResponse response = httpClient.execute(getMethod, context);
+
         try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (loginToKeycloak) {
@@ -381,7 +431,19 @@ public abstract class OidcBaseTest {
                 if (expectedText != null) {
                     String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
                     assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    if (expectedScope != null) {
+                        assertTrue(context.toString().contains("scope=" + expectedScope));
+                        if (expectedScope.contains("profile")) {
+                            assertTrue(responseString.contains("profile: " + KeycloakConfiguration.ALICE_FIRST_NAME + " " + KeycloakConfiguration.ALICE_LAST_NAME));
+                        }
+                        if (expectedScope.contains("email")) {
+                            assertTrue(responseString.contains("email: " + KeycloakConfiguration.ALICE_EMAIL_VERIFIED));
+                        }
+                    }
                 }
+            } else if (checkInvalidScope) {
+                assertTrue(context.toString().contains("error_description=Invalid+scopes"));
+                assertTrue("Expected code == BAD REQUEST but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_BAD_REQUEST);
             } else {
                 assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
             }

@@ -166,6 +166,7 @@
         <enable-basic-auth>${exp.enable-basic-auth:false}</enable-basic-auth>
         <public-client>${exp.public-client:false}</public-client>
         <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
+        <scope>${exp.scope:profile email phone}</scope>
     </secure-deployment>
     <secure-server name="wildfly-console">
         <realm>${exp.realm:demo}</realm>
@@ -201,6 +202,7 @@
         <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
         <confidential-port>${exp.confidential-port:443}</confidential-port>
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <scope>${exp.scope:profile email phone}</scope>
     </secure-server>
     <secure-server name="another-wildfly-console">
         <provider>${exp.provider:redhat-sso-expressions}</provider>

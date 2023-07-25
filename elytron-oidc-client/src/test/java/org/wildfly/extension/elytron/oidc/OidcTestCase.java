@@ -101,10 +101,24 @@ public class OidcTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testSecureDeploymentWithScopes() throws Exception {
+        String expectedJson =
+                "{\"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"ssl-required\" : \"EXTERNAL\"}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-scope"));
+    }
+
+    @Test
     public void testSecureServerWithRealm() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"jboss-infra\", \"realm-public-key\" : \"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB\", \"auth-server-url\" : \"http://localhost:8180/auth\", \"resource\" : \"wildfly-console\", \"public-client\" : true, \"adapter-state-cookie-path\" : \"/\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"proxy-url\" : \"http://localhost:9000\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-console"));
+    }
+
+    @Test
+    public void testSecureServerWithScopes() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\"}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
     }
 
     private static class DefaultInitializer extends AdditionalInitialization {

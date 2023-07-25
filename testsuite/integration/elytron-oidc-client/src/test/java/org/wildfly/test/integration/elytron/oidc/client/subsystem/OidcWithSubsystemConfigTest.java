@@ -83,6 +83,10 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(CORS_CLIENT, KeycloakConfiguration.ClientAppType.CORS_CLIENT);
+        APP_NAMES.put(SINGLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(MULTIPLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(INVALID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(OPENID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     @Deployment(name = PROVIDER_URL_APP)
@@ -147,6 +151,34 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         return ShrinkWrap.create(WebArchive.class, CORS_PROVIDER_URL_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class);
+    }
+
+    @Deployment(name = SINGLE_SCOPE_APP)
+    public static WebArchive createSingleScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, SINGLE_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = MULTIPLE_SCOPE_APP)
+    public static WebArchive createMultipleScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, MULTIPLE_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = INVALID_SCOPE_APP)
+    public static WebArchive createInvalidScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, INVALID_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = OPENID_SCOPE_APP)
+    public static WebArchive createOpenIdScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, OPENID_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
     }
 
     @Test
@@ -262,6 +294,55 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             operation.get("ssl-required").set("EXTERNAL");
             operation.get("bearer-only").set("true");
             operation.get("enable-cors").set("true");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + MULTIPLE_SCOPE_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(MULTIPLE_SCOPE_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("scope").set("profile email phone");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + MULTIPLE_SCOPE_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + INVALID_SCOPE_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(INVALID_SCOPE_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("scope").set("INVALID_SCOPE");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + INVALID_SCOPE_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + OPENID_SCOPE_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(OPENID_SCOPE_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("scope").set("openid");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + OPENID_SCOPE_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + SINGLE_SCOPE_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(SINGLE_SCOPE_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("scope").set("profile");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + SINGLE_SCOPE_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
             Utils.applyUpdate(operation, client);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);

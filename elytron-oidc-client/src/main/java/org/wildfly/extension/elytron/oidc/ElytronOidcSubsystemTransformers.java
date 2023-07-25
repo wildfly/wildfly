@@ -19,15 +19,19 @@
 package org.wildfly.extension.elytron.oidc;
 
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_1_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_2_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_3_0_0;
+import static org.wildfly.security.http.oidc.Oidc.SCOPE;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 
@@ -52,6 +56,15 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
 
     private static void from3(ChainedTransformationDescriptionBuilder chainedBuilder) {
         ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_3_0_0, VERSION_2_0_0);
+        builder.addChildResource(PathElement.pathElement(SECURE_SERVER))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SCOPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, SCOPE);
+
+        builder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SCOPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, SCOPE);
     }
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {

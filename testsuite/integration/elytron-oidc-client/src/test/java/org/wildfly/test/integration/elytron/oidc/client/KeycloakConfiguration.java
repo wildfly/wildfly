@@ -52,6 +52,9 @@ public class KeycloakConfiguration {
     public static final String CHARLIE = "charlie";
     public static final String CHARLIE_PASSWORD = "charlie123+";
     public static final String ALLOWED_ORIGIN = "http://somehost";
+    public static final String ALICE_FIRST_NAME = "Alice";
+    public static final String ALICE_LAST_NAME = "Smith";
+    public static final boolean ALICE_EMAIL_VERIFIED = true;
 
     public enum ClientAppType {
         OIDC_CLIENT,
@@ -149,7 +152,7 @@ public class KeycloakConfiguration {
             }
         }
 
-        realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
+        realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE), ALICE_FIRST_NAME, ALICE_LAST_NAME, ALICE_EMAIL_VERIFIED));
         realm.getUsers().add(createUser(BOB, BOB_PASSWORD, Arrays.asList(USER_ROLE)));
         realm.getUsers().add(createUser(CHARLIE, CHARLIE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         return realm;
@@ -185,12 +188,19 @@ public class KeycloakConfiguration {
     }
 
     private static UserRepresentation createUser(String username, String password, List<String> realmRoles) {
+        return createUser(username, password, realmRoles, username, null, false);
+    }
+
+    private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, Boolean emailVerified) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setEnabled(true);
         user.setCredentials(new ArrayList<>());
         user.setRealmRoles(realmRoles);
         user.setEmail(username + "@gmail.com");
+        user.setEmailVerified(emailVerified);
 
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
