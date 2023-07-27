@@ -1008,4 +1008,13 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-json\-util@.*$</packageUrl>
         <cve>CVE-2023-34615</cve>
     </suppress>
+
+    <!-- False posititve. CVE is about hamba:avro but WildFly is using org.apache.avro:avro-->
+    <suppress>
+        <notes><![CDATA[
+   file name: avro-1.10.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.avro/avro@.*$</packageUrl>
+        <cve>CVE-2023-37475</cve>
+    </suppress>
 </suppressions>
