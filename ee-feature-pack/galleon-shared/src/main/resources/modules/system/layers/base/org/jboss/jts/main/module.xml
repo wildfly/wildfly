@@ -41,7 +41,20 @@
         <module name="java.transaction.xa"/>
         <module name="java.xml"/>
         <module name="jakarta.transaction.api"/>
+		<!--
+			The jdk.console module is a compile dependency of narayana-jts-idlj
+			but is not a runtime one within WildFly. It's listed here with
+			this comment to prevent it being re-added as a dependency
+			without discussion.
+			
+			Narayana has a 'TxPerfPlugin' JConsolePlugin implementation but 
+			WildFly does not support running JConsole as a modular application.
+			
+			WildFly should not have dependencies on JDK modules that are not 
+			associated with the traditional 'JRE' concept.
+			 
         <module name="jdk.jconsole"/>
+        -->
         <module name="org.omg.api" />
         <module name="org.jboss.logging"/>
         <module name="org.jboss.jts.integration"/>
