@@ -38,7 +38,7 @@
 
     <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
 
-    <name>WildFly: Preview Feature Pack Local Galleon Content</name>
+    <name>WildFly Preview: Feature Pack Local Galleon Content</name>
     <description>
         Content for the wildfly-preview feature pack that can only be used in that feature pack
         and not in the wildfly feature pack

@@ -369,10 +369,10 @@
         <!-- TODO convert this to a bootable jar setup once a release
              of the wildfly jar plugin with transformation support is available -->
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>
@@ -662,10 +662,10 @@
         </profile>
 
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>

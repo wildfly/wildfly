@@ -3593,12 +3593,12 @@
             </build>
         </profile>
 
-        <!-- Test against bootable jar ee9-->
+        <!-- Test against WildFly Preview bootable jar-->
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.bootable.ee9</name>
+                    <name>DISABLED.ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>
@@ -3698,7 +3698,7 @@
                                         which is not sustainable for all tests. -->
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
-                                        <!--EE9 -->
+                                        <!--TODO re-evaluate these exclusions from EE 9 work-->
                                         <exclude>org/jboss/as/test/integration/beanvalidation/hibernate/validator/deprecated/SafeHtmlValidationTestCase</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/DeploymentOverlayCLITestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/deploy/runtime/JaxrsRuntimeNameTestCase.java</exclude><!-- test expects javax strings in mgmt api responses -->
@@ -3745,10 +3745,10 @@
 
         <!-- Test against WildFly Preview -->
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.ee9</name>
+                    <name>DISABLED.ts.preview</name>
                 </property>
             </activation>
             <build>
@@ -3777,6 +3777,7 @@
                                         <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/timeout/MessageDriven*TimeoutTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/management/cli/JmsTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/messaging/**/*TestCase.java</exclude><!-- TODO be more precise about what is excluded -->
+                                        <!--TODO re-evaluate these exclusions from EE 9 work-->
                                         <!-- TODO figure out the problem -->
                                         <exclude>org/jboss/as/test/integration/ejb/management/deployments/*TestCase.java</exclude><!-- probably mdb -->
                                         <exclude>org/jboss/as/test/integration/ejb/pool/lifecycle/PooledEJBLifecycleTestCase.java</exclude><!-- probably mdb -->
@@ -3827,7 +3828,7 @@
                                         <exclude>org/jboss/as/test/integration/weld/context/application/lifecycle/ApplicationContextLifecycleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jaxrs/cfg/**/ResteasyAttributeTestCase.java</exclude>
 
-                                        <!-- Add EE9-specific excludes -->
+                                        <!--TODO re-evaluate these exclusions from EE 9 work-->
                                         <!-- Need to handle addition of JBoss Modules that use EE 8 -->
                                         <exclude>org/jboss/as/test/integration/ee/globalmodules/GlobalModulesTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ejb/interceptor/serverside/**/*TestCase.java</exclude>
@@ -3859,12 +3860,13 @@
                                         <exclude>org/jboss/as/test/integration/weld/ejb/SessionObjectReferenceTestCase.java</exclude>
                                         <exclude>org/wildfly/test/integration/web/annotationsmodule/EarModuleDeploymentTestCase.java</exclude>
 
-                                        <!-- With EE9, we use Hibernate Search 6 instead of 5,
+                                        <!--TODO re-evaluate these exclusions from EE 9 work-->
+                                        <!-- With EE 9, we use Hibernate Search 6 instead of 5,
                                              and Hibernate Search 6 exposes a different (backwards-incompatible) API,
                                              so Hibernate Search 5 tests cannot work.
                                              The testsuite/preview/basic modules contains a copy of each test,
                                              adapted to rely on Hibernate Search 6 APIs,
-                                             so we still test Hibernate Search with EE9. -->
+                                             so we still test Hibernate Search with EE 9. -->
                                         <exclude>org/jboss/as/test/integration/hibernate/search/**</exclude>
                                     </excludes>
                                 </configuration>

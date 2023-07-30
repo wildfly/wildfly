@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.jpa.hibernate.sessionfactorytest;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -41,7 +40,6 @@ import org.jboss.as.test.integration.jpa.hibernate.SFSBHibernateSessionFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,13 +52,6 @@ import org.junit.runner.RunWith;
 public class SessionFactoryTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_sessionfactory";
-
-    // This test needs to be recompiled against Hibernate ORM 6 (WFLY-16178) in order to pass.
-    @BeforeClass
-    public static void beforeClass() {
-
-        assumeTrue(System.getProperty("ts.ee9") == null && System.getProperty("ts.bootable.ee9") == null);
-    }
 
     @Deployment
     public static Archive<?> deploy() {

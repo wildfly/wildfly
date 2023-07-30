@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>wildfly-preview-dist</artifactId>
-    <name>WildFly: EE 9 Preview Distribution</name>
+    <name>WildFly Preview: Distribution</name>
     <packaging>jar</packaging>
     <dependencyManagement>
         <dependencies>
