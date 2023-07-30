@@ -258,10 +258,10 @@
 
         <!-- Test against the ee 9 feature pack -->
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>
@@ -391,12 +391,12 @@
             </build>
         </profile>
         
-        <!-- Test against bootable jar ee9 -->
+        <!-- Test against bootable jar WildFly Preview -->
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>

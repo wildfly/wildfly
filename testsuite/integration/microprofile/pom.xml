@@ -49,8 +49,6 @@
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
-        <!-- By default (i.e. Java EE9+) use the following directory as an additional source -->
-        <ts.microprofile.build-helper.source.dir>src/test/jakarta/java</ts.microprofile.build-helper.source.dir>
 
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
@@ -458,30 +456,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!--
-                    Here because for some tests we need some helper classes which need to access the javax/jakarta
-                    APIs.
-                    In these cases use test/javax/java for the EE8 version, and test/jakarta/java for the EE9+ version.
-                    The latter is set up by the ee9.test.profile which is enabled by -Dts.ee9
-                -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>add-test-source-directory</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${ts.microprofile.build-helper.source.dir}</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -616,16 +590,14 @@
         <!-- TODO convert this to a bootable jar setup once a release
              of the wildfly jar plugin with transformation support is available -->
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.ee9</name>
+                    <name>DISABLED.ts.preview</name>
                 </property>
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
-
-                <ts.microprofile.build-helper.source.dir>src/test/jakarta/java</ts.microprofile.build-helper.source.dir>
 
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
@@ -924,10 +896,10 @@
         </profile>
 
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.bootable.ee9</name>
+                    <name>DISABLED.ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>

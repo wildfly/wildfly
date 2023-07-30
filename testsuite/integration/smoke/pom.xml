@@ -927,10 +927,10 @@
         
         <!-- Test against bootable jar -->
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>
@@ -1011,12 +1011,12 @@
             </build>
         </profile>
 
-        <!-- Test against EE 9 dist -->
+        <!-- Test against WildFly Preview dist -->
         <profile>
-            <id>ee9.profile</id>
+            <id>preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <build>

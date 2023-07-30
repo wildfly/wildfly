@@ -102,12 +102,12 @@
             </properties>
         </profile>
 
-        <!-- Test against EE 9 feature packs -->
+        <!-- Test against WildFly Preview feature packs -->
         <profile>
-            <id>ee9.profile</id>
+            <id>preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>

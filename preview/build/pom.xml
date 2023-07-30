@@ -34,7 +34,7 @@
 
     <artifactId>wildfly-preview-build</artifactId>
 
-    <name>WildFly: EE 9 Preview Thin Server Build</name>
+    <name>WildFly Preview: Thin Server Build</name>
     <packaging>pom</packaging>
 
     <dependencies>
