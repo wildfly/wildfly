@@ -246,7 +246,7 @@ identity for the authorization steps and aggregating the resulting attributes.
 |caching-realm |A realm definition that enables caching to another
 security realm. Caching strategy is Least Recently Used where least
 accessed entries are discarded when maximum number of entries is
-reached.
+reached. When credentials are updated externally, the user's obsolete credential will be removed when the user authenticates with the updated credential.
 
 |custom-modifiable-realm |Custom realm configured as being modifiable
 will be expected to implement the ModifiableSecurityRealm interface. By
