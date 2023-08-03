@@ -53,11 +53,7 @@
         <ts.copy-wildfly.phase>generate-test-resources</ts.copy-wildfly.phase>
         <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
         <ts.bootable-jar-microprofile-tck-packaging.phase>none</ts.bootable-jar-microprofile-tck-packaging.phase>
-        <!-- Child modules override these properties to control what feature packs are used
-             and what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.fp.groupId>${full.maven.groupId}</ts.microprofile-tck-provisioning.fp.groupId>
-        <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-galleon-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-        <ts.microprofile-tck-provisioning.fp.version>${full.maven.version}</ts.microprofile-tck-provisioning.fp.version>
+        <!-- Child modules override these properties to control what layers are provisioned if galleon provisioning occurs -->
         <ts.microprofile-tck-provisioning.base.layer>FIXME-must-override</ts.microprofile-tck-provisioning.base.layer>
         <ts.microprofile-tck-provisioning.decorator.layer>FIXME-must-override</ts.microprofile-tck-provisioning.decorator.layer>
 
@@ -136,10 +132,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <!-- Child modules can set properties to override what feature pack is used -->
-                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                 </feature-pack>
@@ -184,10 +179,9 @@
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <!-- Child modules can set properties to override what feature pack is used -->
-                                    <groupId>${ts.microprofile-tck-provisioning.fp.groupId}</groupId>
-                                    <artifactId>${ts.microprofile-tck-provisioning.fp.artifactId}</artifactId>
-                                    <version>${ts.microprofile-tck-provisioning.fp.version}</version>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
                                 </feature-pack>
                             </feature-packs>
                             <layers>
