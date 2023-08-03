@@ -2,24 +2,6 @@ name: WildFly Build
 
 on:
   pull_request:
-  workflow_dispatch:
-    inputs:
-      os:
-        description: "Runner OS"
-        required: true
-        default: "ubuntu-latest"
-        type: choice
-        options:
-          - "ubuntu-latest"
-          - "windows-latest"
-      javaVersion:
-        description: "Java Version"
-        required: true
-        default: "11"
-        type: choice
-        options:
-          - "11"
-          - "17"
 
 jobs:
   build:
