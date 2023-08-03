@@ -82,11 +82,11 @@
             <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
             <artifactId>jackson-jakarta-rs-base</artifactId>
             <licenses>
-              <license>
-                  <name>Apache License 2.0</name>
-                  <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                  <distribution>repo</distribution>
-              </license>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
             </licenses>
         </dependency>
         <dependency>
@@ -5258,38 +5258,38 @@
                 </license>
             </licenses>
         </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <licenses>
+                <license>
+                    <name>Common Public License 1.0</name>
+                    <url>http://www.eclipse.org/legal/cpl-v10.html</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>xml-resolver</groupId>
+            <artifactId>xml-resolver</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
     </dependencies>
-    <dependency>
-        <groupId>wsdl4j</groupId>
-        <artifactId>wsdl4j</artifactId>
-        <licenses>
-            <license>
-                <name>Common Public License 1.0</name>
-                <url>http://www.eclipse.org/legal/cpl-v10.html</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
-    <dependency>
-        <groupId>xerces</groupId>
-        <artifactId>xercesImpl</artifactId>
-        <licenses>
-            <license>
-                <name>Apache License 2.0</name>
-                <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
-    <dependency>
-        <groupId>xml-resolver</groupId>
-        <artifactId>xml-resolver</artifactId>
-        <licenses>
-            <license>
-                <name>Apache License 2.0</name>
-                <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                <distribution>repo</distribution>
-            </license>
-        </licenses>
-    </dependency>
 </licenseSummary>
