@@ -361,7 +361,7 @@
     <xs:complexType name="clustered-cache" abstract="true">
         <xs:complexContent>
             <xs:extension base="tns:cache">
-                <xs:attribute name="remote-timeout" type="xs:long" default="10000">
+                <xs:attribute name="remote-timeout" type="xs:long">
                     <xs:annotation>
                         <xs:documentation>The timeout (in ms) used to wait for an acknowledgment when making a remote call, after which the call is aborted and an exception is thrown.</xs:documentation>
                     </xs:annotation>
