@@ -2,6 +2,16 @@
 
 version: 2
 updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    ignore:
+       # Only allow for patch release upgrades
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 5
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`
