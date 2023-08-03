@@ -85,7 +85,7 @@ your own skeleton project. Each tutorial is accompanied by a quickstart,
 which contains the source code, deployment descriptors and a Maven based
 build.
 
-* The link:Developer_Guide{outfilesuffix}[Developer Guide] ( _in progress_) takes
+* The link:Developer_Guide{outfilesuffix}[Developer Guide] takes
 you through every deployment descriptor and every annotation offered by
 WildFly.
 
