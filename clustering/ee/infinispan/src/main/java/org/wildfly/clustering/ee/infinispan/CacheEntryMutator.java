@@ -19,7 +19,7 @@ import org.wildfly.clustering.ee.Mutator;
 public class CacheEntryMutator<K, V> implements Mutator {
 
     private final Cache<K, V> cache;
-    private final K id;
+    private final K key;
     private final V value;
     private final AtomicBoolean mutated;
 
@@ -27,9 +27,9 @@ public class CacheEntryMutator<K, V> implements Mutator {
         this(cache, entry.getKey(), entry.getValue());
     }
 
-    public CacheEntryMutator(Cache<K, V> cache, K id, V value) {
+    public CacheEntryMutator(Cache<K, V> cache, K key, V value) {
         this.cache = cache;
-        this.id = id;
+        this.key = key;
         this.value = value;
         this.mutated = cache.getCacheConfiguration().transaction().transactionMode().isTransactional() ? new AtomicBoolean(false) : null;
     }
@@ -39,7 +39,7 @@ public class CacheEntryMutator<K, V> implements Mutator {
         // We only ever have to perform a replace once within a batch
         if ((this.mutated == null) || this.mutated.compareAndSet(false, true)) {
             // Use FAIL_SILENTLY to prevent mutation from failing locally due to remote exceptions
-            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).put(this.id, this.value);
+            this.cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES, Flag.FAIL_SILENTLY).put(this.key, this.value);
         }
     }
 }
