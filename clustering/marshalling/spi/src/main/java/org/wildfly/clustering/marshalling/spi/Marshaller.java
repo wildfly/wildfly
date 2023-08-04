@@ -14,6 +14,25 @@ import java.io.IOException;
  */
 public interface Marshaller<V, S> extends Marshallability {
 
+    static <T> Marshaller<T, T> identity() {
+        return new Marshaller<>() {
+            @Override
+            public boolean isMarshallable(Object object) {
+                return true;
+            }
+
+            @Override
+            public T read(T value) throws IOException {
+                return value;
+            }
+
+            @Override
+            public T write(T value) throws IOException {
+                return value;
+            }
+        };
+    }
+
     /**
      * Reads a value from its marshalled form.
      * @param value the marshalled form
