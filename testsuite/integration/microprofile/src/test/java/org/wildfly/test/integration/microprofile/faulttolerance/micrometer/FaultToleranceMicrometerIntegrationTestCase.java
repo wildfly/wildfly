@@ -33,10 +33,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
@@ -51,6 +53,11 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class FaultToleranceMicrometerIntegrationTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-18080 Regular failures of FaultToleranceMicrometerIntegrationTestCase");
+    }
 
     // Let's use a slightly higher number of invocations, so we can at times differentiate between stale read and or other problems
     private static final int INVOCATION_COUNT = 10;
