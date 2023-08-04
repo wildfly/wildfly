@@ -28,10 +28,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.clustering.cluster.ejb.timer.AbstractTimerServiceTestCase;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
 
@@ -40,11 +38,6 @@ import org.junit.rules.TestRule;
  */
 @ServerSetup({ InfinispanServerSetupTask.class, HotRodPersistentTimerServiceTestCase.TimerManagementSetupTask.class })
 public class HotRodPersistentTimerServiceTestCase extends AbstractTimerServiceTestCase {
-
-    @BeforeClass
-    public static void beforeClass() {
-        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17801 Intermittent failures in HotRodPersistentTimerServiceTestCase");
-    }
 
     @ClassRule
     public static final TestRule INFINISPAN_SERVER_RULE = infinispanServerTestRule();
