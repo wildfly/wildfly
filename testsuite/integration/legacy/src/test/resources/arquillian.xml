@@ -19,6 +19,7 @@
             <!-- AS7-4070 -->
             <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="javaHome">${container.java.home}</property>
         </configuration>
     </container>
 

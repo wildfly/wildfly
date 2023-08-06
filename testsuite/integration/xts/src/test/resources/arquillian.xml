@@ -14,6 +14,7 @@
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -26,6 +27,7 @@
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort1:10090}</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
     </group>

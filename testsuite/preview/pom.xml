@@ -50,6 +50,7 @@
 
         <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
         <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
+        <container.java.home>${java.home}</container.java.home>
     </properties>
 
     <dependencies>
@@ -462,6 +463,7 @@
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
+                        <container.java.home>${container.java.home}</container.java.home>
                     </systemPropertyVariables>
 
                 </configuration>
