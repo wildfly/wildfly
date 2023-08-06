@@ -39,6 +39,7 @@
             <property name="managementPort">${as.managementPort:9990}</property>
             <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="javaHome">${container.java.home}</property>
         </configuration>
     </container>
 
@@ -52,6 +53,7 @@
             <property name="managementPort">${as.managementPort:9990}</property>
             <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
+            <property name="javaHome">${container.java.home}</property>
         </configuration>
     </container>
 
@@ -68,6 +70,7 @@
                 <!-- AS7-4070 Arquillian should wait until a port is free after AS JVM process ends to prevent "port in use" -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
         <container qualifier="node-2" mode="custom">
@@ -80,6 +83,7 @@
                 <property name="managementPort">10090</property>
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
         <container qualifier="node-3" mode="custom">
@@ -92,6 +96,7 @@
                 <property name="managementPort">10190</property>
                 <property name="waitForPorts">${as.debug.port.node2} 10190</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
         <container qualifier="node-4" mode="custom">
@@ -104,6 +109,7 @@
                 <property name="managementPort">10290</property>
                 <property name="waitForPorts">${as.debug.port.node3} 10290</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -116,6 +122,7 @@
                 <property name="managementPort">10490</property>
                 <property name="waitForPorts">10490</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
     </group>

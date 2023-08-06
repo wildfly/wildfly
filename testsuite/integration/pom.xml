@@ -48,6 +48,7 @@
         <ts.skipTests>${skipTests}</ts.skipTests>
 
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+        <container.java.home>${java.home}</container.java.home>
     </properties>
 
     <profiles>
@@ -428,6 +429,7 @@
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
+                        <container.java.home>${container.java.home}</container.java.home>
                     </systemPropertyVariables>
 
                 </configuration>
