@@ -238,6 +238,17 @@ public class ClientCompatibilityUnitTestCase {
         testWF("20.0.2.Final", 9990);
     }
 
+    // Tests WF Core 21.1.0.Final for WildFly 29.0.0.Final
+    @Test
+    public void testCore2110Final() throws Exception {
+        testWF("21.1.0.Final", 9999);
+    }
+
+    @Test
+    public void testCore2110FinalHttp() throws Exception {
+        testWF("21.1.0.Final", 9990);
+    }
+
     @Test
     public void testCurrent() throws Exception {
         test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9999));
