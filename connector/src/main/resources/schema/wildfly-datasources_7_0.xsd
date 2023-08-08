@@ -885,19 +885,20 @@
     </xs:complexContent>
   </xs:complexType>
   <xs:complexType name="dsSecurityType">
-      <xs:sequence>
-        <xs:choice>
-          <xs:sequence>
-            <xs:element name="user-name" type="xs:token" minOccurs="0">
-              <xs:annotation>
-                <xs:documentation>
-                  <![CDATA[[
+    <xs:sequence>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element name="user-name" type="xs:token" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>
+                <![CDATA[[
                     Specify the username used when creating a new connection.
                             Ex: <user-name>sa</user-name>
                   ]]>
-                </xs:documentation>
-              </xs:annotation>
-            </xs:element>
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:choice>
             <xs:element name="password" type="xs:token" minOccurs="0">
               <xs:annotation>
                 <xs:documentation>
@@ -908,14 +909,15 @@
                 </xs:documentation>
               </xs:annotation>
             </xs:element>
+            <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>
+                  Credential to be used by the configuration.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:choice>
         </xs:sequence>
-        <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0">
-            <xs:annotation>
-              <xs:documentation>
-                Credential to be used by the configuration.
-              </xs:documentation>
-            </xs:annotation>
-          </xs:element>
         <xs:element name="security-domain" type="xs:token" minOccurs="0" maxOccurs="1">
           <xs:annotation>
             <xs:documentation>
