@@ -284,7 +284,16 @@ public class AssumeTestGroupUtil {
     }
 
     public static boolean isWildFlyPreview() {
-        return System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null;
+        return System.getProperty("ts.preview") != null || System.getProperty("ts.bootable.preview") != null;
+    }
+
+    public static void assumeBootableJar() {
+        assumeCondition("Some tests require bootable jar packaging",
+                AssumeTestGroupUtil::isBootableJar);
+    }
+
+    public static boolean isBootableJar() {
+        return System.getProperty("ts.bootable") != null || System.getProperty("ts.bootable.preview") != null;
     }
 
     private static int getJavaSpecificationVersion() {

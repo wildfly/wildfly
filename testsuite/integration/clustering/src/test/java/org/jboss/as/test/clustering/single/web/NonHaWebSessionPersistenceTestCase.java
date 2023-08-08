@@ -23,6 +23,7 @@ package org.jboss.as.test.clustering.single.web;
 
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.CONTAINER_SINGLE;
 import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.DEPLOYMENT_1;
+import static org.jboss.as.test.shared.util.AssumeTestGroupUtil.isBootableJar;
 
 import java.net.URI;
 import java.net.URL;
@@ -110,7 +111,7 @@ public class NonHaWebSessionPersistenceTestCase {
 
             NodeUtil.stop(this.controller, CONTAINER_SINGLE);
             NodeUtil.start(this.controller, CONTAINER_SINGLE);
-            if (Boolean.getBoolean("ts.bootable") || Boolean.getBoolean("ts.bootable.ee9")) {
+            if (isBootableJar()) {
                 NodeUtil.deploy(this.deployer, DEPLOYMENT_1);
             }
 

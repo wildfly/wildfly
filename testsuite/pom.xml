@@ -473,8 +473,8 @@
         </profile>
 
         <profile>
-            <id>ee9.profile</id>
-            <activation><property><name>ts.ee9</name></property></activation>
+            <id>preview.profile</id>
+            <activation><property><name>ts.preview</name></property></activation>
             <properties>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
@@ -489,10 +489,10 @@
             </modules>
         </profile>
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <modules>

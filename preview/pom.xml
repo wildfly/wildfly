@@ -33,7 +33,7 @@
     </parent>
 
     <artifactId>wildfly-preview-parent</artifactId>
-    <description>Parent for EE 9 related modules</description>
+    <description>Parent for WildFly Preview related modules</description>
     <packaging>pom</packaging>
 
     <name>WildFly Preview: Parent</name>
