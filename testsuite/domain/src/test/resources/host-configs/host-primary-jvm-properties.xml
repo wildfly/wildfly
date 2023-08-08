@@ -85,6 +85,7 @@
                 <option value="-Dtest.jboss.server.data.dir=${jboss.server.data.dir}"/>
                 <option value="-Dtest.jboss.server.log.dir=${jboss.server.log.dir}"/>
                 <option value="-Dtest.jboss.server.temp.dir=${jboss.server.temp.dir}"/>
+                <option value="-Dtest.jboss.server.name=${jboss.server.name}"/>
             </jvm-options>
         </jvm>
     </jvms>
@@ -123,6 +124,7 @@
                     <option value="-Dtest.jboss.server.data.dir=${jboss.server.data.dir}"/>
                     <option value="-Dtest.jboss.server.log.dir=${jboss.server.log.dir}"/>
                     <option value="-Dtest.jboss.server.temp.dir=${jboss.server.temp.dir}"/>
+                    <option value="-Dtest.jboss.server.name=${jboss.server.name}"/>
                 </jvm-options>
             </jvm>
         </server>
