@@ -28,10 +28,8 @@ import org.wildfly.clustering.ee.expiration.Expiration;
 import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
-import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
-import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -143,9 +141,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
 
     @Override
     public Session<LC> createSession(String id) {
-        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData();
-        creationMetaData.setTimeout(this.expiration.getTimeout());
-        Map.Entry<MV, AV> entry = this.factory.createValue(id, creationMetaData);
+        Map.Entry<MV, AV> entry = this.factory.createValue(id, this.expiration.getTimeout());
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
         return new ValidSession<>(session, this.closeTask);

@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.wildfly.clustering.web.cache.session.SessionCreationMetaData;
 import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
 import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;
+import org.wildfly.clustering.web.cache.session.SimpleSessionCreationMetaData;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -78,8 +80,10 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
     }
 
     @Override
-    public CompositeSessionMetaDataEntry<L> createValue(String id, SessionCreationMetaData creationMetaData) {
+    public CompositeSessionMetaDataEntry<L> createValue(String id, Duration defaultTimeout) {
         Map<Key<String>, Object> entries = new HashMap<>(3);
+        SessionCreationMetaData creationMetaData = new SimpleSessionCreationMetaData();
+        creationMetaData.setTimeout(defaultTimeout);
         SessionCreationMetaDataEntry<L> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(creationMetaData);
         entries.put(new SessionCreationMetaDataKey(id), creationMetaDataEntry);
         SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();

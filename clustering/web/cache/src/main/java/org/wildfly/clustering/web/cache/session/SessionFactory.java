@@ -4,6 +4,7 @@
  */
 package org.wildfly.clustering.web.cache.session;
 
+import java.time.Duration;
 import java.util.Map;
 
 import org.wildfly.clustering.ee.Creator;
@@ -18,7 +19,7 @@ import org.wildfly.clustering.web.session.Session;
  * @param <LC> the local context type
  * @author Paul Ferraro
  */
-public interface SessionFactory<SC, MV, AV, LC> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, SessionCreationMetaData>, Remover<String>, AutoCloseable {
+public interface SessionFactory<SC, MV, AV, LC> extends ImmutableSessionFactory<MV, AV>, Creator<String, Map.Entry<MV, AV>, Duration>, Remover<String>, AutoCloseable {
     @Override
     SessionMetaDataFactory<MV> getMetaDataFactory();
     @Override

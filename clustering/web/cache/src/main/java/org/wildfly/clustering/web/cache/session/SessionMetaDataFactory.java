@@ -5,13 +5,15 @@
 
 package org.wildfly.clustering.web.cache.session;
 
+import java.time.Duration;
+
 import org.wildfly.clustering.ee.Creator;
 import org.wildfly.clustering.ee.Remover;
 
 /**
  * @author Paul Ferraro
  */
-public interface SessionMetaDataFactory<V> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, SessionCreationMetaData>, Remover<String>, AutoCloseable {
+public interface SessionMetaDataFactory<V> extends ImmutableSessionMetaDataFactory<V>, Creator<String, V, Duration>, Remover<String>, AutoCloseable {
     InvalidatableSessionMetaData createSessionMetaData(String id, V value);
 
     @Override

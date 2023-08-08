@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.web.cache.session;
 
+import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 
@@ -34,8 +35,8 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> createValue(String id, SessionCreationMetaData creationMetaData) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.createValue(id, creationMetaData);
+    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> createValue(String id, Duration defaultTimeout) {
+        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.createValue(id, defaultTimeout);
         if (metaDataValue == null) return null;
         V attributesValue = this.attributesFactory.createValue(id, null);
         return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
