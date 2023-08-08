@@ -4,9 +4,10 @@
  */
 package org.wildfly.clustering.web.session;
 
+import java.util.function.Supplier;
+
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.WebDeploymentConfiguration;
 
 /**
@@ -24,7 +25,7 @@ public interface SessionManagerFactoryConfiguration<S, SC, AL, LC> extends WebDe
 
     ByteBufferMarshaller getMarshaller();
 
-    LocalContextFactory<LC> getLocalContextFactory();
+    Supplier<LC> getLocalContextFactory();
 
     Immutability getImmutability();
 

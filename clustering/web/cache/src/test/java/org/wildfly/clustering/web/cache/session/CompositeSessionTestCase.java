@@ -8,10 +8,10 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.Session;
 
 /**
@@ -24,7 +24,7 @@ public class CompositeSessionTestCase {
     private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
     private final SessionAttributes attributes = mock(SessionAttributes.class);
     private final Remover<String> remover = mock(Remover.class);
-    private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
+    private final Supplier<Object> localContextFactory = mock(Supplier.class);
     private final AtomicReference<Object> localContextRef = new AtomicReference<>();
 
     private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.remover);
@@ -95,7 +95,7 @@ public class CompositeSessionTestCase {
     @Test
     public void getLocalContext() {
         Object expected = new Object();
-        when(this.localContextFactory.createLocalContext()).thenReturn(expected);
+        when(this.localContextFactory.get()).thenReturn(expected);
 
         Object result = this.session.getLocalContext();
 

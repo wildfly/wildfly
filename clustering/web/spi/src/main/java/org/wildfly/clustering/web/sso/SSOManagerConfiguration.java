@@ -8,7 +8,6 @@ package org.wildfly.clustering.web.sso;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
  * @author Paul Ferraro
@@ -17,5 +16,5 @@ import org.wildfly.clustering.web.LocalContextFactory;
 public interface SSOManagerConfiguration<L> {
     Supplier<String> getIdentifierFactory();
     ByteBufferMarshaller getMarshaller();
-    LocalContextFactory<L> getLocalContextFactory();
+    Supplier<L> getLocalContextFactory();
 }

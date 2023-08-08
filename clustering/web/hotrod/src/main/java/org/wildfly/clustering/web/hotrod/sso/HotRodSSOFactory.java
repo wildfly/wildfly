@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.sso.AuthenticationEntry;
 import org.wildfly.clustering.web.cache.sso.CompositeSSO;
 import org.wildfly.clustering.web.cache.sso.SSOFactory;
@@ -29,9 +29,9 @@ public class HotRodSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entr
     private final SessionsFactory<SV, D, S> sessionsFactory;
     private final RemoteCache<AuthenticationKey, AuthenticationEntry<AV, L>> cache;
     private final Marshaller<A, AV> marshaller;
-    private final LocalContextFactory<L> localContextFactory;
+    private final Supplier<L> localContextFactory;
 
-    public HotRodSSOFactory(RemoteCache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, Marshaller<A, AV> marshaller, LocalContextFactory<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
+    public HotRodSSOFactory(RemoteCache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, Marshaller<A, AV> marshaller, Supplier<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
         this.cache = cache;
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;

@@ -8,8 +8,8 @@ package org.wildfly.clustering.web.cache.session;
 import java.time.Duration;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -25,9 +25,9 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
 
     private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
     private final SessionAttributesFactory<C, V> attributesFactory;
-    private final LocalContextFactory<L> localContextFactory;
+    private final Supplier<L> localContextFactory;
 
-    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, LocalContextFactory<L> localContextFactory) {
+    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, Supplier<L> localContextFactory) {
         super(metaDataFactory, attributesFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;

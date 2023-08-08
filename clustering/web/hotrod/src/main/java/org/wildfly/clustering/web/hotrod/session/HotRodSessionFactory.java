@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributesFactory;
@@ -66,7 +66,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
      * @param attributesFactory
      * @param localContextFactory
      */
-    public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, LocalContextFactory<LC> localContextFactory) {
+    public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<LC> localContextFactory) {
         super(metaDataFactory, attributesFactory, localContextFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;

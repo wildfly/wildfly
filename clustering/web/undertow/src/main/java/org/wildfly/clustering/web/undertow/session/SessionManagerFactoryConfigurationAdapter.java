@@ -9,6 +9,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
@@ -21,7 +22,6 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
@@ -64,7 +64,7 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
     }
 
     @Override
-    public LocalContextFactory<Map<String, Object>> getLocalContextFactory() {
+    public Supplier<Map<String, Object>> getLocalContextFactory() {
         return LocalSessionContextFactory.INSTANCE;
     }
 

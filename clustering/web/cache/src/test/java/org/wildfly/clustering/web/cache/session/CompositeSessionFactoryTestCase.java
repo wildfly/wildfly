@@ -10,9 +10,9 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.junit.Test;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -26,7 +26,7 @@ import org.wildfly.clustering.web.session.Session;
 public class CompositeSessionFactoryTestCase {
     private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<Object>> metaDataFactory = mock(SessionMetaDataFactory.class);
     private final SessionAttributesFactory<Object, Object> attributesFactory = mock(SessionAttributesFactory.class);
-    private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
+    private final Supplier<Object> localContextFactory = mock(Supplier.class);
 
     private final SessionFactory<Object, CompositeSessionMetaDataEntry<Object>, Object, Object> factory = new CompositeSessionFactory<>(this.metaDataFactory, this.attributesFactory, this.localContextFactory);
 

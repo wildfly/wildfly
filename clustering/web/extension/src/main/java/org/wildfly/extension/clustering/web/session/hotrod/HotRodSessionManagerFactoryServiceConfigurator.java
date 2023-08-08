@@ -34,7 +34,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.hotrod.session.SessionManagerNearCacheFactory;
@@ -116,7 +115,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  exte
     }
 
     @Override
-    public LocalContextFactory<LC> getLocalContextFactory() {
+    public Supplier<LC> getLocalContextFactory() {
         return this.factoryConfiguration.getLocalContextFactory();
     }
 
