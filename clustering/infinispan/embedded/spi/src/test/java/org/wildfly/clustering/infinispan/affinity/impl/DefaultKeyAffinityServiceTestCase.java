@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.IntPredicate;
+import java.util.stream.IntStream;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.affinity.KeyAffinityService;
@@ -107,10 +109,15 @@ public class DefaultKeyAffinityServiceTestCase {
         when(dist.getCacheTopology()).thenReturn(localizedTopology);
 
         // Mock a sufficient number of keys
+        int[] keysPerSegment = new int[3];
+        Arrays.fill(keysPerSegment, 0);
+        int minKeysPerSegment = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE * SEGMENTS;
+        IntPredicate needMoreKeys = keys -> (keys < minKeysPerSegment);
         OngoingStubbing<UUID> stub = when(generator.getKey());
-        for (int i = 0; i < 1000; ++i) {
+        while (IntStream.of(keysPerSegment).anyMatch(needMoreKeys)) {
             UUID key = UUID.randomUUID();
             int segment = getSegment(key);
+            keysPerSegment[segment] += 1;
 
             stub = stub.thenReturn(key);
 
@@ -126,7 +133,8 @@ public class DefaultKeyAffinityServiceTestCase {
         service.start();
 
         try {
-            for (int i = 0; i < 50; ++i) {
+            int iterations = DefaultKeyAffinityService.DEFAULT_QUEUE_SIZE / 2;
+            for (int i = 0; i < iterations; ++i) {
                 UUID key = service.getKeyForAddress(local);
                 int segment = getSegment(key);
                 assertEquals(LOCAL_SEGMENT, segment);
