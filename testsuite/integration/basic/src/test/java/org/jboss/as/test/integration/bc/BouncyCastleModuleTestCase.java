@@ -58,9 +58,7 @@ public class BouncyCastleModuleTestCase {
         archive.addPackage(BouncyCastleModuleTestCase.class.getPackage());
         archive.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"); //needed to load CDI for arquillian
         archive.addAsManifestResource(createPermissionsXmlAsset(
-                new SecurityPermission("insertProvider"),
-                new SecurityPermission("removeProviderProperty.BC"),
-                new SecurityPermission("putProviderProperty.BC")
+                new SecurityPermission("insertProvider")
         ), "permissions.xml");
         archive.setManifest(new StringAsset(""
                 + "Manifest-Version: 1.0\n"
