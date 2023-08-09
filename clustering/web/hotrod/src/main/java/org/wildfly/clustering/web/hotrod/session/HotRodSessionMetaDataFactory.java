@@ -81,21 +81,19 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<C
 
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<C> entry) {
-        boolean newSession = entry.getCreationMetaData().isNew();
+        SessionCreationMetaDataEntry<C> creationMetaDataEntry = entry.getCreationMetaData();
+        SessionCreationMetaData creationMetaData = creationMetaDataEntry.getMetaData();
+        SessionAccessMetaData accessMetaData = entry.getAccessMetaData();
+        boolean newSession = creationMetaData.isNew();
         boolean requireMutator = !this.properties.isTransactional() || !newSession;
 
-        SessionCreationMetaData creationMetaData = entry.getCreationMetaData();
         if (requireMutator) {
-            SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-            SessionCreationMetaDataEntry<C> creationMetaDataEntry = new SessionCreationMetaDataEntry<>(creationMetaData, entry.getLocalContext());
-            Mutator mutator = this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, creationMetaDataEntry);
+            Mutator mutator = this.creationMetaDataMutatorFactory.createMutator(new SessionCreationMetaDataKey(id), creationMetaDataEntry);
             creationMetaData = new MutableSessionCreationMetaData(creationMetaData, mutator);
         }
 
-        SessionAccessMetaData accessMetaData = entry.getAccessMetaData();
         if (requireMutator) {
-            SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
-            Mutator mutator = this.createSessionAccessMetaDataMutator(accessMetaDataKey, accessMetaData, creationMetaData);
+            Mutator mutator = this.createSessionAccessMetaDataMutator(new SessionAccessMetaDataKey(id), accessMetaData, creationMetaData);
             accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), mutator);
         }
 
@@ -104,7 +102,7 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<C
 
     @Override
     public ImmutableSessionMetaData createImmutableSessionMetaData(String id, CompositeSessionMetaDataEntry<C> entry) {
-        return new CompositeSessionMetaData(entry.getCreationMetaData(), entry.getAccessMetaData());
+        return new CompositeSessionMetaData(entry.getCreationMetaData().getMetaData(), entry.getAccessMetaData());
     }
 
     @Override

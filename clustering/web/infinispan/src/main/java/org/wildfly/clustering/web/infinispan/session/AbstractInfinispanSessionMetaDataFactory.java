@@ -104,22 +104,24 @@ public abstract class AbstractInfinispanSessionMetaDataFactory<L> implements Ses
 
     @Override
     public InvalidatableSessionMetaData createSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
-        boolean newSession = entry.getCreationMetaData().isNew();
+        SessionCreationMetaDataEntry<L> creationMetaDataEntry = entry.getCreationMetaData();
+        SessionCreationMetaData creationMetaData = creationMetaDataEntry.getMetaData();
+        boolean newSession = creationMetaData.isNew();
 
         SessionCreationMetaDataKey creationMetaDataKey = new SessionCreationMetaDataKey(id);
-        Mutator creationMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, new SessionCreationMetaDataEntry<>(entry.getCreationMetaData(), entry.getLocalContext()));
-        SessionCreationMetaData creationMetaData = new MutableSessionCreationMetaData(entry.getCreationMetaData(), creationMutator);
+        Mutator creationMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.creationMetaDataMutatorFactory.createMutator(creationMetaDataKey, creationMetaDataEntry);
+        SessionCreationMetaData mutableCreationMetaData = new MutableSessionCreationMetaData(creationMetaData, creationMutator);
 
         SessionAccessMetaDataKey accessMetaDataKey = new SessionAccessMetaDataKey(id);
         Mutator accessMutator = this.properties.isTransactional() && newSession ? Mutator.PASSIVE : this.accessMetaDataMutatorFactory.createMutator(accessMetaDataKey, entry.getAccessMetaData());
-        SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
+        SessionAccessMetaData mutableAccessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaData(), accessMutator);
 
-        return new CompositeSessionMetaData(creationMetaData, accessMetaData);
+        return new CompositeSessionMetaData(mutableCreationMetaData, mutableAccessMetaData);
     }
 
     @Override
     public ImmutableSessionMetaData createImmutableSessionMetaData(String id, CompositeSessionMetaDataEntry<L> entry) {
-        return new CompositeSessionMetaData(entry.getCreationMetaData(), entry.getAccessMetaData());
+        return new CompositeSessionMetaData(entry.getCreationMetaData().getMetaData(), entry.getAccessMetaData());
     }
 
     @Override

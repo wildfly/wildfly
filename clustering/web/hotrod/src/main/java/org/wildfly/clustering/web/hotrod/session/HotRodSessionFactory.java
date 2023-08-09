@@ -49,7 +49,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <LC> the local context type
  */
 @ClientListener
-public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
+public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, CompositeSessionMetaDataEntry<LC>, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;

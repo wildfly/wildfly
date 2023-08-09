@@ -4,32 +4,32 @@
  */
 package org.wildfly.clustering.web.cache.session;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+
+import org.wildfly.clustering.web.cache.Contextual;
 
 /**
  * Cache entry containing the session creation meta data and local context.
  * @author Paul Ferraro
  */
-public class SessionCreationMetaDataEntry<L> {
+public class SessionCreationMetaDataEntry<L> implements Contextual<L> {
 
     private final SessionCreationMetaData metaData;
-    private final AtomicReference<L> localContext;
+    private final AtomicReference<L> context = new AtomicReference<>();
 
     public SessionCreationMetaDataEntry(SessionCreationMetaData metaData) {
-        this(metaData, new AtomicReference<>());
-    }
-
-    public SessionCreationMetaDataEntry(SessionCreationMetaData metaData, AtomicReference<L> localContext) {
         this.metaData = metaData;
-        this.localContext = localContext;
     }
 
     public SessionCreationMetaData getMetaData() {
         return this.metaData;
     }
 
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    @Override
+    public L getContext(Supplier<L> factory) {
+        return this.context.updateAndGet(context -> Optional.ofNullable(context).orElseGet(factory));
     }
 
     @Override

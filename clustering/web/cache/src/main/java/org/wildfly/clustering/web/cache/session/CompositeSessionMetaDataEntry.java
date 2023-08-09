@@ -5,36 +5,33 @@
 
 package org.wildfly.clustering.web.cache.session;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+
+import org.wildfly.clustering.web.cache.Contextual;
 
 /**
  * Wrapper for the components of a sessions's meta-data,
  * @author Paul Ferraro
  */
-public class CompositeSessionMetaDataEntry<L> {
-    private final SessionCreationMetaData creationMetaData;
+public class CompositeSessionMetaDataEntry<L> implements Contextual<L> {
+    private final SessionCreationMetaDataEntry<L> creationMetaDataEntry;
     private final SessionAccessMetaData accessMetaData;
-    private final AtomicReference<L> localContext;
 
     public CompositeSessionMetaDataEntry(SessionCreationMetaDataEntry<L> creationMetaDataEntry, SessionAccessMetaData accessMetaData) {
-        this(creationMetaDataEntry.getMetaData(), accessMetaData, creationMetaDataEntry.getLocalContext());
-    }
-
-    public CompositeSessionMetaDataEntry(SessionCreationMetaData creationMetaData, SessionAccessMetaData accessMetaData, AtomicReference<L> localContext) {
-        this.creationMetaData = creationMetaData;
+        this.creationMetaDataEntry = creationMetaDataEntry;
         this.accessMetaData = accessMetaData;
-        this.localContext = localContext;
     }
 
-    public SessionCreationMetaData getCreationMetaData() {
-        return this.creationMetaData;
+    public SessionCreationMetaDataEntry<L> getCreationMetaData() {
+        return this.creationMetaDataEntry;
     }
 
     public SessionAccessMetaData getAccessMetaData() {
         return this.accessMetaData;
     }
 
-    public AtomicReference<L> getLocalContext() {
-        return this.localContext;
+    @Override
+    public L getContext(Supplier<L> factory) {
+        return this.creationMetaDataEntry.getContext(factory);
     }
 }

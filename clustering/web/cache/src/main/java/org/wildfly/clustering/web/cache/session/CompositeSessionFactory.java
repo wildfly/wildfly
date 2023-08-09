@@ -10,6 +10,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.wildfly.clustering.web.cache.Contextual;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -21,13 +22,13 @@ import org.wildfly.clustering.web.session.Session;
  * @param <L> the local context type
  * @author Paul Ferraro
  */
-public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionFactory<V, L> implements SessionFactory<C, CompositeSessionMetaDataEntry<L>, V, L> {
+public class CompositeSessionFactory<C, MV extends Contextual<L>, AV, L> extends CompositeImmutableSessionFactory<MV, AV> implements SessionFactory<C, MV, AV, L> {
 
-    private final SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
-    private final SessionAttributesFactory<C, V> attributesFactory;
+    private final SessionMetaDataFactory<MV> metaDataFactory;
+    private final SessionAttributesFactory<C, AV> attributesFactory;
     private final Supplier<L> localContextFactory;
 
-    public CompositeSessionFactory(SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, SessionAttributesFactory<C, V> attributesFactory, Supplier<L> localContextFactory) {
+    public CompositeSessionFactory(SessionMetaDataFactory<MV> metaDataFactory, SessionAttributesFactory<C, AV> attributesFactory, Supplier<L> localContextFactory) {
         super(metaDataFactory, attributesFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
@@ -35,20 +36,20 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> createValue(String id, Duration defaultTimeout) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.createValue(id, defaultTimeout);
+    public Map.Entry<MV, AV> createValue(String id, Duration defaultTimeout) {
+        MV metaDataValue = this.metaDataFactory.createValue(id, defaultTimeout);
         if (metaDataValue == null) return null;
-        V attributesValue = this.attributesFactory.createValue(id, null);
+        AV attributesValue = this.attributesFactory.createValue(id, null);
         return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> findValue(String id) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.findValue(id);
+    public Map.Entry<MV, AV> findValue(String id) {
+        MV metaDataValue = this.metaDataFactory.findValue(id);
         if (metaDataValue != null) {
-            V attributesValue = this.attributesFactory.findValue(id);
+            AV attributesValue = this.attributesFactory.findValue(id);
             if (attributesValue != null) {
-                return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
+                return Map.entry(metaDataValue, attributesValue);
             }
             // Purge obsolete meta data
             this.metaDataFactory.purge(id);
@@ -57,12 +58,12 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> tryValue(String id) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.tryValue(id);
+    public Map.Entry<MV, AV> tryValue(String id) {
+        MV metaDataValue = this.metaDataFactory.tryValue(id);
         if (metaDataValue != null) {
-            V attributesValue = this.attributesFactory.tryValue(id);
+            AV attributesValue = this.attributesFactory.tryValue(id);
             if (attributesValue != null) {
-                return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
+                return Map.entry(metaDataValue, attributesValue);
             }
         }
         return null;
@@ -81,21 +82,21 @@ public class CompositeSessionFactory<C, V, L> extends CompositeImmutableSessionF
     }
 
     @Override
-    public SessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> getMetaDataFactory() {
+    public SessionMetaDataFactory<MV> getMetaDataFactory() {
         return this.metaDataFactory;
     }
 
     @Override
-    public SessionAttributesFactory<C, V> getAttributesFactory() {
+    public SessionAttributesFactory<C, AV> getAttributesFactory() {
         return this.attributesFactory;
     }
 
     @Override
-    public Session<L> createSession(String id, Map.Entry<CompositeSessionMetaDataEntry<L>, V> entry, C context) {
-        CompositeSessionMetaDataEntry<L> key = entry.getKey();
-        InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, key);
+    public Session<L> createSession(String id, Map.Entry<MV, AV> entry, C context) {
+        MV metaDataValue = entry.getKey();
+        InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, metaDataValue);
         SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue(), metaData, context);
-        return new CompositeSession<>(id, metaData, attributes, key.getLocalContext(), this.localContextFactory, this);
+        return new CompositeSession<>(id, metaData, attributes, metaDataValue, this.localContextFactory, this);
     }
 
     @Override
