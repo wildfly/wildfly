@@ -42,7 +42,7 @@
         <module name="java.xml"/>
         <module name="jakarta.activation.api"/>
         <module name="jakarta.xml.bind.api"/>
-        <module name="jdk.compiler"/>
+        <module name="jdk.compiler" optional="true"/>
     </dependencies>
 
 </module>
