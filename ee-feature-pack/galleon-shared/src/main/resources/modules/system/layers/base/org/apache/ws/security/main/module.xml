@@ -34,6 +34,7 @@
     </resources>
 
     <dependencies>
+      <module name="jdk.security.jgss"/>
       <module name="java.security.jgss"/>
       <module name="jakarta.xml.bind.api" services="import"/>
       <module name="com.sun.xml.bind" services="import"/>
