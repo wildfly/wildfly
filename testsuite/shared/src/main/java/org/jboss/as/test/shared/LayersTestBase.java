@@ -98,6 +98,7 @@ public class LayersTestBase {
             "org.wildfly.security.elytron-http-oidc",
             "org.wildfly.security.elytron-jose-jwk",
             "org.wildfly.security.elytron-jose-util",
+            "org.wildfly.extension.elytron.jaas-realm",
             // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
             "org.wildfly.reactive.dep.jts",
             // TODO should an undertow layer specify this?
