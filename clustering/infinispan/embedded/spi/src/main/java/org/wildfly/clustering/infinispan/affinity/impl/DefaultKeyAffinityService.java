@@ -73,6 +73,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @Listener(observation = Observation.POST)
 public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supplier<BlockingQueue<K>> {
 
+    static final int DEFAULT_QUEUE_SIZE = 100;
     private static final Logger LOGGER = Logger.getLogger(DefaultKeyAffinityService.class);
 
     private final Cache<? extends K, ?> cache;
@@ -81,7 +82,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
     private final KeyPartitioner partitioner;
     private final Predicate<Address> filter;
 
-    private volatile int queueSize = 100;
+    private volatile int queueSize = DEFAULT_QUEUE_SIZE;
     private volatile Duration timeout = Duration.ofMillis(100L);
     private volatile ExecutorService executor;
 
