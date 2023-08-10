@@ -63,7 +63,7 @@ public class CompositeSessionMetaData implements InvalidatableSessionMetaData {
     }
 
     @Override
-    public void setMaxInactiveInterval(Duration duration) {
+    public void setTimeout(Duration duration) {
         this.creationMetaData.setTimeout(duration.isNegative() ? Duration.ZERO : duration);
     }
 

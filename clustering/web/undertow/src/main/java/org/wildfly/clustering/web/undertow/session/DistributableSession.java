@@ -155,7 +155,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public void setMaxInactiveInterval(int interval) {
         Session<Map<String, Object>> session = this.getSessionEntry().getKey();
         try (BatchContext context = this.resumeBatch()) {
-            session.getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
+            session.getMetaData().setTimeout(Duration.ofSeconds(interval));
         } catch (IllegalStateException e) {
             this.closeIfInvalid(null, session);
             throw e;
@@ -290,7 +290,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 for (String name: oldSession.getAttributes().getAttributeNames()) {
                     newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
                 }
-                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getTimeout());
+                newSession.getMetaData().setTimeout(oldSession.getMetaData().getTimeout());
                 newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
                 newSession.getLocalContext().putAll(oldSession.getLocalContext());
                 oldSession.invalidate();

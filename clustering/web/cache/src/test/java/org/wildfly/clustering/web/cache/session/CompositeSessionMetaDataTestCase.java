@@ -134,7 +134,7 @@ public class CompositeSessionMetaDataTestCase {
     public void setMaxInactiveInterval() {
         Duration duration = Duration.ZERO;
 
-        this.metaData.setMaxInactiveInterval(duration);
+        this.metaData.setTimeout(duration);
 
         verify(this.creationMetaData).setTimeout(duration);
     }

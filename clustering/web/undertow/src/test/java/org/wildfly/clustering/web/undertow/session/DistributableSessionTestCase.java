@@ -334,7 +334,7 @@ public class DistributableSessionTestCase {
 
         session.setMaxInactiveInterval(interval);
 
-        verify(metaData).setMaxInactiveInterval(Duration.ofSeconds(interval));
+        verify(metaData).setTimeout(Duration.ofSeconds(interval));
 
         verify(context).close();
         verify(this.session, never()).close();
@@ -1092,7 +1092,7 @@ public class DistributableSessionTestCase {
         assertSame(newSessionId, result);
 
         verify(newMetaData).setLastAccess(now, now);
-        verify(newMetaData).setMaxInactiveInterval(interval);
+        verify(newMetaData).setTimeout(interval);
         verify(config).setSessionId(exchange, newSessionId);
         assertEquals(oldContext, newContext);
         verify(this.session).invalidate();

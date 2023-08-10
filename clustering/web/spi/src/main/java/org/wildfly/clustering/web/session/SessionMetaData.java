@@ -23,5 +23,5 @@ public interface SessionMetaData extends ImmutableSessionMetaData {
      * Set the time interval as a duration, after which this session will expire.
      * @param duration a time duration
      */
-    void setMaxInactiveInterval(Duration duration);
+    void setTimeout(Duration duration);
 }
