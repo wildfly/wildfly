@@ -1079,7 +1079,7 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
         when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);
@@ -1177,7 +1177,7 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
         when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);

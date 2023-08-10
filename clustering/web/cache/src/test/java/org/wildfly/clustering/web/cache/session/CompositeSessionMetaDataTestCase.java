@@ -80,7 +80,7 @@ public class CompositeSessionMetaDataTestCase {
     }
 
     @Test
-    public void getLastAccessTime() {
+    public void getLastAccessEndTime() {
         Instant now = Instant.now();
         Duration sinceCreation = Duration.ofSeconds(10L);
         Duration lastAccess = Duration.ofSeconds(1L);
@@ -89,7 +89,7 @@ public class CompositeSessionMetaDataTestCase {
         when(this.accessMetaData.getSinceCreationDuration()).thenReturn(sinceCreation);
         when(this.accessMetaData.getLastAccessDuration()).thenReturn(lastAccess);
 
-        Instant result = this.metaData.getLastAccessTime();
+        Instant result = this.metaData.getLastAccessEndTime();
 
         assertEquals(now, result);
     }

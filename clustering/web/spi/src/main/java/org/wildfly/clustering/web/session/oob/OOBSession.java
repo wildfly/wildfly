@@ -121,13 +121,13 @@ public class OOBSession<L, B extends Batch> implements Session<L>, SessionMetaDa
     }
 
     @Override
-    public Instant getLastAccessTime() {
+    public Instant getLastAccessEndTime() {
         try (B batch = this.manager.getBatcher().createBatch()) {
             ImmutableSession session = this.manager.readSession(this.id);
             if (session == null) {
                 throw new IllegalStateException();
             }
-            return session.getMetaData().getLastAccessTime();
+            return session.getMetaData().getLastAccessEndTime();
         }
     }
 

@@ -291,7 +291,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
                     newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
                 }
                 newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getTimeout());
-                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
+                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
                 newSession.getLocalContext().putAll(oldSession.getLocalContext());
                 oldSession.invalidate();
                 config.setSessionId(exchange, id);
