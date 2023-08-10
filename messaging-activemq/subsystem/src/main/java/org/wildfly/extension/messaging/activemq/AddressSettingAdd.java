@@ -84,7 +84,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-
+        settings.setMaxReadPageBytes(-1);
         if (config.hasDefined(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.getName())) {
             final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
             settings.setAddressFullMessagePolicy(addressPolicy);
