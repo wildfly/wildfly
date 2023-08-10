@@ -389,7 +389,7 @@
         <version.org.apache.xalan>2.7.1.jbossorg-6</version.org.apache.xalan>
         <version.org.apache.xerces>2.12.0.SP03</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
-        <version.org.bitbucket.jose4j>0.7.11</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.9.3</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
