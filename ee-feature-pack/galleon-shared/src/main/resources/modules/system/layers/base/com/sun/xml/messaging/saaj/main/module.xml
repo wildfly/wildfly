@@ -40,7 +40,6 @@
         <module name="java.xml"/>
         <module name="jakarta.xml.soap.api"/>
         <module name="jakarta.activation.api"/>
-        <module name="org.apache.xerces" services="import" />
     </dependencies>
 
 </module>
