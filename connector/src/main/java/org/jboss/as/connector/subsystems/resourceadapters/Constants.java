@@ -567,7 +567,7 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING, true)
-            .setXmlName(Credential.Tag.USER_NAME.getLocalName())
+            .setXmlName(Credential.Attribute.USER_NAME.getLocalName())
             .setDefaultValue(new ModelNode())
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
@@ -577,7 +577,7 @@ public class Constants {
             .build();
 
     static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING, true)
-            .setXmlName(Credential.Tag.PASSWORD.getLocalName())
+            .setXmlName(Credential.Attribute.PASSWORD.getLocalName())
             .setDefaultValue(new ModelNode())
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)

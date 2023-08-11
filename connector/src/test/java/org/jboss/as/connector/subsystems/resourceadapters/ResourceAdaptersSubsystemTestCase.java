@@ -52,7 +52,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-resource-adapters_7_0.xsd";
+        return "schema/wildfly-resource-adapters_7_1.xsd";
     }
 
     @Override
@@ -90,6 +90,11 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     public void testExpressionConfigElytron() throws Exception {
         standardSubsystemTest("resource-adapters-pool-elytron-enabled.xml", "resource-adapters-pool-elytron-enabled-expression.xml", true);
     }
+
+        @Test
+        public void testLegacyRecovery() throws Exception {
+            standardSubsystemTest("resource-adapters-legacy-recovery-parsing-7_0.xml", null, false);
+        }
 
 
     protected AdditionalInitialization createAdditionalInitialization() {

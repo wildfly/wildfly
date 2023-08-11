@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
     <resource-adapters>
         <resource-adapter id="myRA" statistics-enabled="false">
             <archive>archive</archive>
@@ -51,9 +51,7 @@
                         <use-fast-fail>false</use-fast-fail>
                     </validation>
                     <recovery no-recovery="false">
-                        <recover-credential>
-                            <user-name>userName</user-name>
-                            <password>pwd</password>
+                        <recover-credential user-name="userName" password="pwd">
                             <security-domain>token</security-domain>
                         </recover-credential>
                         <recover-plugin class-name="aClass">
@@ -105,10 +103,7 @@
                         <use-fast-fail>false</use-fast-fail>
                     </validation>
                     <recovery no-recovery="false">
-                        <recover-credential>
-                            <user-name>userName</user-name>
-                            <password>pwd</password>
-                        </recover-credential>
+                        <recover-credential user-name="userName" password="pwd"/>
                         <recover-plugin class-name="aClass">
                             <config-property name="config3">value</config-property>
                         </recover-plugin>

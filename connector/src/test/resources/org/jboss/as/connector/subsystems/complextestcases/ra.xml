@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
             <resource-adapters>
                 <resource-adapter id="myRA">
                     <archive>some.rar</archive>
@@ -45,14 +45,12 @@
                   <background-validation-millis>5000</background-validation-millis>
                   <use-fast-fail>true</use-fast-fail>
                 </validation>
-              <recovery no-recovery="false">
-                <recover-credential>
-                  <user-name>sa</user-name>
-                   <password>sa-pass</password>
+                <recovery no-recovery="false">
+                  <recover-credential user-name="sa" password="sa-pass">
                     <security-domain>HsqlDbRealm</security-domain>
-                 </recover-credential>
-                    <recover-plugin class-name="someClass2">
-                <config-property name="Property">C</config-property>
+                  </recover-credential>
+                  <recover-plugin class-name="someClass2">
+                    <config-property name="Property">C</config-property>
                   </recover-plugin>
                 </recovery>
 
