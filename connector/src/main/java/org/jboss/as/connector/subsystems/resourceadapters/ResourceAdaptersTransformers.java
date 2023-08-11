@@ -47,6 +47,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 @MetaInfServices(ExtensionTransformerRegistration.class)
 public class ResourceAdaptersTransformers implements ExtensionTransformerRegistration {
 
+    private static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7, 0, 0);
+
     @Override
     public String getSubsystemName() {
         return ResourceAdaptersExtension.SUBSYSTEM_NAME;
@@ -58,7 +60,9 @@ public class ResourceAdaptersTransformers implements ExtensionTransformerRegistr
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(currentModel);
 
-        register700Transformers(chainedBuilder.createBuilder(currentModel, VERSION_6_1_0)); // 7.0.0 to 6.1.0 transformer
+        //no transformation here - just XML parsing change
+        chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), VERSION_7_0_0).build();
+        register700Transformers(chainedBuilder.createBuilder(VERSION_7_0_0, VERSION_6_1_0)); // 7.0.0 to 6.1.0 transformer
         register610Transformers(chainedBuilder.createBuilder(VERSION_6_1_0, VERSION_6_0_0)); // 6.1.0 to 6.0.0 transformer
 
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[] { VERSION_6_1_0, VERSION_6_0_0 });

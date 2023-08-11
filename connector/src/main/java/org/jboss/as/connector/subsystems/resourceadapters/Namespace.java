@@ -49,12 +49,14 @@ public enum Namespace {
 
     RESOURCEADAPTERS_6_1("urn:jboss:domain:resource-adapters:6.1"),
 
-    RESOURCEADAPTERS_7_0("urn:jboss:domain:resource-adapters:7.0");
+    RESOURCEADAPTERS_7_0("urn:jboss:domain:resource-adapters:7.0"),
+
+    RESOURCEADAPTERS_7_1("urn:jboss:domain:resource-adapters:7.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = RESOURCEADAPTERS_7_0;
+    public static final Namespace CURRENT = RESOURCEADAPTERS_7_1;
 
     private final String name;
 
