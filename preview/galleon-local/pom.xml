@@ -48,6 +48,11 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.hibernate.search</groupId>
             <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
         </dependency>
