@@ -20,5 +20,6 @@
         <module name="org.infinispan.commons"/>
         <module name="org.wildfly.clustering.ee.cache"/>
         <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.common"/>
     </dependencies>
 </module>

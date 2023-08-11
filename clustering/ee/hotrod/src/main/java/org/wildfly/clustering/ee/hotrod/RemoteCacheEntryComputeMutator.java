@@ -5,10 +5,14 @@
 
 package org.wildfly.clustering.ee.hotrod;
 
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.common.function.Functions;
 
 /**
  * Mutator for a cache entry using a compute function.
@@ -21,15 +25,27 @@ public class RemoteCacheEntryComputeMutator<K, V> implements Mutator {
     private final RemoteCache<K, V> cache;
     private final K key;
     private final BiFunction<Object, V, V> function;
+    private final Supplier<Duration> maxIdle;
 
     public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function) {
+        this(cache, key, function, Functions.constantSupplier(Duration.ZERO));
+    }
+
+    public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
         this.cache = cache;
         this.key = key;
         this.function = function;
+        this.maxIdle = maxIdle;
     }
 
     @Override
     public void mutate() {
-        this.cache.compute(this.key, this.function);
+        Duration maxIdleDuration = this.maxIdle.get();
+        long seconds = maxIdleDuration.getSeconds();
+        int nanos = maxIdleDuration.getNano();
+        if (nanos > 0) {
+            seconds += 1;
+        }
+        this.cache.compute(this.key, this.function, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS);
     }
 }

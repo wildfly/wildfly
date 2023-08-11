@@ -6,7 +6,6 @@
 package org.wildfly.clustering.ee.hotrod;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -24,16 +23,8 @@ public class RemoteCacheEntryMutator<K, V> implements Mutator {
     private final V value;
     private final Function<V, Duration> maxIdle;
 
-    public RemoteCacheEntryMutator(RemoteCache<K, V> cache, Map.Entry<K, V> entry) {
-        this(cache, entry, null);
-    }
-
     public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value) {
         this(cache, id, value, null);
-    }
-
-    public RemoteCacheEntryMutator(RemoteCache<K, V> cache, Map.Entry<K, V> entry, Function<V, Duration> maxIdle) {
-        this(cache, entry.getKey(), entry.getValue(), maxIdle);
     }
 
     public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value, Function<V, Duration> maxIdle) {
