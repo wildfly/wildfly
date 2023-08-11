@@ -131,6 +131,8 @@ public class LayersTestBase {
             // MicroProfile
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
+            //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
+            "org.apache.xerces",
     };
     private static final String[] NOT_USED;
     // Packages that are not referenced from the module graph but needed.
