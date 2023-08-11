@@ -386,7 +386,7 @@
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
         <version.org.apache.ws.security>2.3.3</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
-        <version.org.apache.xalan>2.7.1.jbossorg-6</version.org.apache.xalan>
+        <version.org.apache.xalan>2.7.3</version.org.apache.xalan>
         <version.org.apache.xerces>2.12.0.SP03</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
         <version.org.bitbucket.jose4j>0.9.3</version.org.bitbucket.jose4j>
