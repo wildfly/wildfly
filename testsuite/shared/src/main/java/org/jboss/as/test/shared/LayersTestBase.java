@@ -234,7 +234,8 @@ public class LayersTestBase {
                     NOT_REFERENCED_COMMON,
                     "org.wildfly.extension.metrics",
                     // Used by the hibernate search that's injected by jpa
-                    "org.hibernate.search.mapper.orm.coordination.outboxpolling"
+                    "org.hibernate.search.mapper.orm.coordination.outboxpolling",
+                    "org.apache.avro"
             );
         } else {
             NOT_USED = ArrayUtils.addAll(
@@ -251,9 +252,7 @@ public class LayersTestBase {
                     "org.jboss.as.jpa.openjpa",
                     "org.apache.openjpa",
                     // TODO WFLY-16583 -- cruft
-                    "javax.management.j2ee.api",
-                    // Used by outboxpolling TODO this doesn't seem right
-                    "org.apache.avro"
+                    "javax.management.j2ee.api"
             );
             NOT_REFERENCED = ArrayUtils.addAll(
                     NOT_REFERENCED_COMMON,
@@ -299,7 +298,6 @@ public class LayersTestBase {
                     "com.google.code.gson",
                     "com.carrotsearch.hppc",
                     "org.apache.lucene",
-                    "org.apache.avro",
                     // Brought by galleon ServerRootResourceDefinition
                     "wildflyee.api"
             );

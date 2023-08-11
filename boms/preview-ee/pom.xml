@@ -64,6 +64,18 @@
             <!-- Bom-specific dependencies. Keep sorted -->
 
             <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${version.org.apache.avro}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
                 <version>${version.org.hibernate.search}</version>
