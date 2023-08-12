@@ -110,7 +110,7 @@ public class SimpleWebTestCase {
                             .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
                             .startBatch()
                             .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=local:add")
-                            .add("/subsystem=distributable-web/routing=local:add")
+                            .add("/subsystem=distributable-web/routing=infinispan:remove")
                             .add("/subsystem=infinispan/cache-container=web/local-cache=routing:remove")
                             .endBatch()
                             .build())
