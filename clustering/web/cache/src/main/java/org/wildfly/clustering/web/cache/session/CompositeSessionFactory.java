@@ -11,6 +11,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -94,8 +98,9 @@ public class CompositeSessionFactory<C, MV extends Contextual<L>, AV, L> extends
     @Override
     public Session<L> createSession(String id, Map.Entry<MV, AV> entry, C context) {
         MV metaDataValue = entry.getKey();
+        AV attributeValue = entry.getValue();
         InvalidatableSessionMetaData metaData = this.metaDataFactory.createSessionMetaData(id, metaDataValue);
-        SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, entry.getValue(), metaData, context);
+        SessionAttributes attributes = this.attributesFactory.createSessionAttributes(id, attributeValue, metaData, context);
         return new CompositeSession<>(id, metaData, attributes, metaDataValue, this.localContextFactory, this);
     }
 

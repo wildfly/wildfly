@@ -7,10 +7,11 @@ package org.wildfly.clustering.ee.hotrod;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.common.function.Functions;
 
 /**
  * Mutates a given cache entry.
@@ -21,13 +22,13 @@ public class RemoteCacheEntryMutator<K, V> implements Mutator {
     private final RemoteCache<K, V> cache;
     private final K id;
     private final V value;
-    private final Function<V, Duration> maxIdle;
+    private final Supplier<Duration> maxIdle;
 
     public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value) {
-        this(cache, id, value, null);
+        this(cache, id, value, Functions.constantSupplier(Duration.ZERO));
     }
 
-    public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value, Function<V, Duration> maxIdle) {
+    public RemoteCacheEntryMutator(RemoteCache<K, V> cache, K id, V value, Supplier<Duration> maxIdle) {
         this.cache = cache;
         this.id = id;
         this.value = value;
@@ -36,7 +37,7 @@ public class RemoteCacheEntryMutator<K, V> implements Mutator {
 
     @Override
     public void mutate() {
-        Duration maxIdleDuration = (this.maxIdle != null) ? this.maxIdle.apply(this.value) : Duration.ZERO;
+        Duration maxIdleDuration = this.maxIdle.get();
         long seconds = maxIdleDuration.getSeconds();
         int nanos = maxIdleDuration.getNano();
         if (nanos > 0) {

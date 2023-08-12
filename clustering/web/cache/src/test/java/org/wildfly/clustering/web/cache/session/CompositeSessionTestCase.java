@@ -12,6 +12,8 @@ import java.util.function.Supplier;
 import org.junit.Test;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 
 /**
@@ -44,6 +46,7 @@ public class CompositeSessionTestCase {
         assertSame(this.metaData, this.session.getMetaData());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
         when(this.metaData.invalidate()).thenReturn(true);

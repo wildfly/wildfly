@@ -50,7 +50,7 @@ import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
@@ -122,7 +122,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
+            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionMetaDataKey.class::isInstance);
         }
     }
 

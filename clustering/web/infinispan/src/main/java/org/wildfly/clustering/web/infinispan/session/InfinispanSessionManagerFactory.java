@@ -38,16 +38,20 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
-import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.ConcurrentSessionManager;
 import org.wildfly.clustering.web.cache.session.DelegatingSessionManagerConfiguration;
-import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
-import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
-import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
-import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionAttributesFactory;
-import org.wildfly.clustering.web.infinispan.session.fine.FineSessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.attributes.MarshalledValueSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.attributes.fine.SessionAttributeActivationNotifier;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.coarse.ContextualSessionMetaDataEntry;
+import org.wildfly.clustering.web.infinispan.session.attributes.CoarseSessionAttributesFactory;
+import org.wildfly.clustering.web.infinispan.session.attributes.FineSessionAttributesFactory;
+import org.wildfly.clustering.web.infinispan.session.attributes.InfinispanSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.infinispan.session.metadata.InfinispanSessionMetaDataFactory;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKeyFilter;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -66,7 +70,7 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
     private final org.wildfly.clustering.ee.Scheduler<String, ExpirationMetaData> scheduler;
     private final SpecificationProvider<S, SC, AL> provider;
     private final KeyAffinityServiceFactory affinityFactory;
-    private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
+    private final SessionFactory<SC, ContextualSessionMetaDataEntry<LC>, ?, LC> factory;
     private final BiConsumer<Locality, Locality> scheduleTask;
     private final ListenerRegistration schedulerListenerRegistration;
     private final InfinispanConfiguration configuration;
@@ -79,16 +83,16 @@ public class InfinispanSessionManagerFactory<S, SC, AL, LC> implements SessionMa
         this.provider = config.getSpecificationProvider();
         this.notifierFactory = new SessionAttributeActivationNotifierFactory<>(this.provider);
         CacheProperties properties = config.getCacheProperties();
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = properties.isLockOnRead() ? new LockOnReadInfinispanSessionMetaDataFactory<>(config) : new BulkReadInfinispanSessionMetaDataFactory<>(config);
+        SessionMetaDataFactory<ContextualSessionMetaDataEntry<LC>> metaDataFactory = new InfinispanSessionMetaDataFactory<>(config);
         this.factory = new CompositeSessionFactory<>(metaDataFactory, this.createSessionAttributesFactory(config), config.getLocalContextFactory());
         this.remover = new ExpiredSessionRemover<>(this.factory);
         Cache<Key<String>, ?> cache = config.getCache();
         CacheEntryScheduler<String, ExpirationMetaData> localScheduler = new SessionExpirationScheduler<>(config.getBatcher(), this.factory.getMetaDataFactory(), this.remover, Duration.ofMillis(cache.getCacheConfiguration().transaction().cacheStopTimeout()));
         CommandDispatcherFactory dispatcherFactory = config.getCommandDispatcherFactory();
         Group group = dispatcherFactory.getGroup();
-        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, cache.getName(), localScheduler, new PrimaryOwnerLocator<>(cache, config.getMemberFactory()), SessionCreationMetaDataKey::new, properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new);
+        this.scheduler = group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(dispatcherFactory, cache.getName(), localScheduler, new PrimaryOwnerLocator<>(cache, config.getMemberFactory()), SessionMetaDataKey::new, properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new);
 
-        this.scheduleTask = new ScheduleLocalKeysTask<>(cache, SessionCreationMetaDataKeyFilter.INSTANCE, localScheduler);
+        this.scheduleTask = new ScheduleLocalKeysTask<>(cache, SessionMetaDataKeyFilter.INSTANCE, localScheduler);
         this.schedulerListenerRegistration = new SchedulerTopologyChangeListener<>(cache, localScheduler, this.scheduleTask).register();
     }
 

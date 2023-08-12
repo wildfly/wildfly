@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.OptionalInt;
 
-import org.infinispan.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
@@ -22,9 +21,7 @@ public enum TestProtoStreamByteBufferMarshaller implements ByteBufferMarshaller 
     private final ByteBufferMarshaller marshaller;
 
     TestProtoStreamByteBufferMarshaller() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        ImmutableSerializationContext context = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader).build();
-        this.marshaller = new ProtoStreamByteBufferMarshaller(context);
+        this.marshaller = new TestProtoStreamByteBufferMarshallerFactory().get();
     }
 
     @Override

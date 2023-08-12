@@ -1,0 +1,20 @@
+package org.wildfly.clustering.web.cache.session.attributes.fine;
+
+import "org.wildfly.clustering.marshalling.spi.proto";
+
+// IDs: 225 - 229
+
+/**
+ * @TypeId(225)
+ */
+message SessionAttributeMapEntry {
+	optional	string	name	= 1;
+	optional	org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue	value	= 2;
+}
+
+/**
+ * @TypeId(226)
+ */
+message SessionAttributeMapComputeFunction {
+	repeated	SessionAttributeMapEntry	entry	= 1;
+}

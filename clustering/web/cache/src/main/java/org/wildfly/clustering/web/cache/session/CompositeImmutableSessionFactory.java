@@ -8,6 +8,8 @@ package org.wildfly.clustering.web.cache.session;
 import java.util.Map;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
+import org.wildfly.clustering.web.cache.session.attributes.ImmutableSessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

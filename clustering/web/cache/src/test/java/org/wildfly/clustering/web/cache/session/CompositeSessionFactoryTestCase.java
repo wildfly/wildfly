@@ -13,6 +13,10 @@ import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

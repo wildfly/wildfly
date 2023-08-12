@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.wildfly.clustering.ee.Creator;
 import org.wildfly.clustering.ee.Remover;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
 import org.wildfly.clustering.web.session.Session;
 
 /**

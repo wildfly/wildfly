@@ -32,6 +32,7 @@ import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKeyFilter;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -97,7 +98,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
             // Don't passivate sessions on stop if we will purge the store on startup
             if (persistence.passivation() && !persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
                 try (Stream<Key<String>> stream = this.cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet().stream()) {
-                    stream.filter(SessionCreationMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
+                    stream.filter(SessionMetaDataKeyFilter.INSTANCE).forEach(this.cache::evict);
                 }
             }
         }
@@ -168,7 +169,7 @@ public class InfinispanSessionManager<SC, MV, AV, LC> implements SessionManager<
     private Set<String> getSessions(Flag... flags) {
         Locality locality = new CacheLocality(this.cache);
         try (Stream<Key<String>> keys = this.cache.getAdvancedCache().withFlags(flags).keySet().stream()) {
-            return keys.filter(SessionCreationMetaDataKeyFilter.INSTANCE.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
+            return keys.filter(SessionMetaDataKeyFilter.INSTANCE.and(key -> locality.isLocal(key))).map(key -> key.getId()).collect(Collectors.toSet());
         }
     }
 

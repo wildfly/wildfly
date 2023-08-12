@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 

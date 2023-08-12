@@ -9,6 +9,8 @@ import java.io.IOException;
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 import org.wildfly.clustering.marshalling.spi.FormatterTester;
+import org.wildfly.clustering.web.infinispan.session.attributes.SessionAttributesKey;
+import org.wildfly.clustering.web.infinispan.session.attributes.SessionAttributesKeyFormatter;
 
 /**
  * Unit test for {@link SessionAttributesKey}.

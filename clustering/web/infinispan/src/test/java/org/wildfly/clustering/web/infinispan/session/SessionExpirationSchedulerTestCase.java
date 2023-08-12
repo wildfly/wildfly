@@ -21,7 +21,7 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**

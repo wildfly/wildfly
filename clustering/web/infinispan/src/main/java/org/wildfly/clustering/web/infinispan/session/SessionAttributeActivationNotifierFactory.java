@@ -13,7 +13,7 @@ import java.util.function.Function;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
+import org.wildfly.clustering.web.cache.session.attributes.fine.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
