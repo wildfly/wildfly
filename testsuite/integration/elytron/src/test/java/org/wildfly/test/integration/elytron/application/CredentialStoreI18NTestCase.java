@@ -31,7 +31,6 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -99,7 +98,7 @@ public class CredentialStoreI18NTestCase extends AbstractCredentialStoreTestCase
             Assert.assertFalse(cli.sendLine("/subsystem=elytron/credential-store=CredentialStoreI18NTestCase:add-alias(alias=LOWER, secret-value=password)", true));
             ModelNode result = ModelNode.fromString(cli.readOutput());
             assertEquals("result " + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(),
-                    ElytronSubsystemMessages.ROOT_LOGGER.credentialAlreadyExists("LOWER", PasswordCredential.class.getName()).getMessage());
+                    String.format("WFLYELY00913: Credential alias '%s' of credential type '%s' already exists in the store", "LOWER", PasswordCredential.class.getName()));
         }
     }
 
