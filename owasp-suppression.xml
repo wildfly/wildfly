@@ -1017,4 +1017,13 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.avro/avro@.*$</packageUrl>
         <cve>CVE-2023-37475</cve>
     </suppress>
+
+    <!-- False posititve. xalan 2.7.3 contains BCEL 6.7.0 which is fixed. -->
+    <suppress>
+        <notes><![CDATA[
+    file name: xalan-2.7.3.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/xalan@.*$</packageUrl>
+        <cve>CVE-2022-42920</cve>
+    </suppress>
 </suppressions>
