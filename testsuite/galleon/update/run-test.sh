@@ -27,7 +27,7 @@ echo "Testing update of ${WILDFLY_PRODUCER} from ${WF_BASE_VERSION} to ${WILDFLY
 wildflyDir="${BASE_DIR}"/target/${WILDFLY_PRODUCER}
 rm -rf "${wildflyDir}"
 
-"${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh install ${WILDFLY_PRODUCER}:current/snapshot#${WF_BASE_VERSION} \
+"${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh install ${WILDFLY_PRODUCER}:${WILDFLY_CHANNEL}/snapshot#${WF_BASE_VERSION} \
 --dir="${wildflyDir}"
 "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh update --yes --dir="${wildflyDir}"
 "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh get-info --type=configs --dir="${wildflyDir}"
@@ -37,7 +37,7 @@ echo "Testing update of ${WILDFLY_PRODUCER} with Galleon layers from ${WF_BASE_V
 # Layers base update
 wildflyLayersDir="${BASE_DIR}"/target/${WILDFLY_PRODUCER}-layers
 rm -rf "${wildflyLayersDir}"
-"${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh install ${WILDFLY_PRODUCER}:current/snapshot#${WF_BASE_VERSION} \
+"${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh install ${WILDFLY_PRODUCER}:${WILDFLY_CHANNEL}/snapshot#${WF_BASE_VERSION} \
 --dir="${wildflyLayersDir}" --layers=${GALLEON_LAYERS}
 "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh update --yes --dir="${wildflyLayersDir}"
 "${BASE_DIR}"/target/galleon/galleon-${GALLEON_VERSION}/bin/galleon.sh get-info --type=configs --dir="${wildflyLayersDir}"
