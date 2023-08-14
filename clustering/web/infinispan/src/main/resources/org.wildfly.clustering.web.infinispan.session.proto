@@ -24,3 +24,10 @@ message SessionAccessMetaDataKey {
 enum SessionCreationMetaDataKeyFilter {
 	INSTANCE	= 0;
 }
+
+/**
+ * @TypeId(203)
+ */
+message SessionAttributesKey {
+	required	bytes	id	= 1;
+}

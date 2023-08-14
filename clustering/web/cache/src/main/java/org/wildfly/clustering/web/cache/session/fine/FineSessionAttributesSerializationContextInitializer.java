@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.web.cache.session.fine;
 
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.web.cache.SessionKeyMarshaller;
 
 /**
+ * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
@@ -19,7 +19,7 @@ public class FineSessionAttributesSerializationContextInitializer extends Abstra
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new SessionKeyMarshaller<>(SessionAttributeNamesKey.class, SessionAttributeNamesKey::new));
-        context.registerMarshaller(new SessionAttributeKeyMarshaller());
+        context.registerMarshaller(new SessionAttributeMapComputeFunctionMarshaller<>());
+        context.registerMarshaller(new SessionAttributeMapEntryMarshaller());
     }
 }

@@ -21,10 +21,11 @@ import org.wildfly.clustering.web.cache.session.ImmutableSessionActivationNotifi
 import org.wildfly.clustering.web.cache.session.SessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
-import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAttributes;
+import org.wildfly.clustering.web.cache.session.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.hotrod.session.SessionAttributesKey;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -89,7 +90,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
-        return new CoarseImmutableSessionAttributes(values);
+        return new SimpleImmutableSessionAttributes(values);
     }
 
     @Override

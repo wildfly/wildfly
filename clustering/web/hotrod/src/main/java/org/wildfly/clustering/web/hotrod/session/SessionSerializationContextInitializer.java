@@ -21,5 +21,6 @@ public class SessionSerializationContextInitializer extends AbstractSerializatio
     public void registerMarshallers(SerializationContext context) {
         context.registerMarshaller(new SessionKeyMarshaller<>(SessionCreationMetaDataKey.class, SessionCreationMetaDataKey::new));
         context.registerMarshaller(new SessionKeyMarshaller<>(SessionAccessMetaDataKey.class, SessionAccessMetaDataKey::new));
+        context.registerMarshaller(new SessionKeyMarshaller<>(SessionAttributesKey.class, SessionAttributesKey::new));
     }
 }

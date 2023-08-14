@@ -14,12 +14,13 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.marshalling.spi.Marshallability;
 import org.wildfly.clustering.web.cache.session.SessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.SimpleImmutableSessionAttributes;
 
 /**
  * Exposes session attributes for a coarse granularity session.
  * @author Paul Ferraro
  */
-public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
+public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes implements SessionAttributes {
     private final Map<String, Object> attributes;
     private final Mutator mutator;
     private final Marshallability marshallability;
