@@ -151,6 +151,11 @@
                                     <groupId>org.apache.kafka</groupId>
                                     <artifactId>kafka-clients</artifactId>
                                 </dependency>
+                                <!-- include reactive-streams -->
+                                <dependency>
+                                    <groupId>org.reactivestreams</groupId>
+                                    <artifactId>reactive-streams</artifactId>
+                                </dependency>
                                 <!-- include SmallRye Kafka API -->
                                 <dependency>
                                     <groupId>io.smallrye.reactive</groupId>
