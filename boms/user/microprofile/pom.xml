@@ -130,6 +130,10 @@
                                 </dependency>
                                 <!-- include jakarta specs APIs -->
                                 <dependency>
+                                    <groupId>jakarta.annotation</groupId>
+                                    <artifactId>jakarta.annotation-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>jakarta.enterprise</groupId>
                                     <artifactId>jakarta.enterprise.cdi-api</artifactId>
                                 </dependency>
