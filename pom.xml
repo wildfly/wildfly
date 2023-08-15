@@ -146,7 +146,9 @@
         <ee.maven.version>${project.version}</ee.maven.version>
         <product.docs.server.version>29</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
-        <verifier.product.release.version>29.0</verifier.product.release.version>
+        <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
+        <!-- The Galleon channel for the minor version with which this branch is associated.  -->
+        <galleon.minor.channel>${product.docs.server.version}.0</galleon.minor.channel>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
