@@ -19,8 +19,7 @@ public class InfinispanBeanSerializationContextInitializer extends AbstractSeria
     @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanCreationMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanCreationMetaDataKey.class, SessionID.class, InfinispanBeanCreationMetaDataKey::getId, InfinispanBeanCreationMetaDataKey::new));
-        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanAccessMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanAccessMetaDataKey.class, SessionID.class, InfinispanBeanAccessMetaDataKey::getId, InfinispanBeanAccessMetaDataKey::new));
+        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanMetaDataKey.class, SessionID.class, InfinispanBeanMetaDataKey::getId, InfinispanBeanMetaDataKey::new));
         context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, SessionID.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
     }
 }

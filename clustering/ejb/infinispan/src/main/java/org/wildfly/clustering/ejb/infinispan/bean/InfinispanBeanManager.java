@@ -34,9 +34,9 @@ import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
+import org.wildfly.clustering.ee.infinispan.expiration.ScheduleWithExpirationMetaDataCommandFactory;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalEntriesTask;
-import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
@@ -92,7 +92,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         this.primaryOwnerLocator = new PrimaryOwnerLocator<>(configuration.getCache(), configuration.getGroup());
         Group group = configuration.getGroup();
         this.strongAffinity = this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(group.getLocalMember().getName());
-        this.filter = new InfinispanBeanCreationMetaDataFilter<>(configuration.getBeanName());
+        this.filter = new InfinispanBeanMetaDataFilter<>(configuration.getBeanName());
     }
 
     @Override
@@ -103,7 +103,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         CacheEntryScheduler<K, ExpirationMetaData> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
-        this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanCreationMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new)) : null;
+        this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanMetaDataKey::new, this.properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new)) : null;
 
         BiConsumer<Locality, Locality> scheduleTask = (localScheduler != null) ? new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler) : null;
         this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register() : null;

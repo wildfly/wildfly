@@ -8,6 +8,7 @@ package org.wildfly.clustering.ejb.cache.bean;
 import java.time.Duration;
 
 import org.infinispan.protostream.SerializationContext;
+import org.wildfly.clustering.ee.cache.offset.Offset;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 
@@ -17,9 +18,10 @@ import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
  */
 public class BeanSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
+    @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new SimpleBeanCreationMetaDataMarshaller());
-        context.registerMarshaller(new FunctionalMarshaller<>(SimpleBeanAccessMetaData.class, Duration.class, SimpleBeanAccessMetaData::getLastAccessDuration, SimpleBeanAccessMetaData::valueOf));
+        context.registerMarshaller(new DefaultBeanMetaDataEntryMarshaller());
+        context.registerMarshaller(new FunctionalMarshaller<>(BeanMetaDataEntryFunction.class, Offset.forInstant(Duration.ZERO).getClass().asSubclass(Offset.class), BeanMetaDataEntryFunction::getOffset, BeanMetaDataEntryFunction::new));
     }
 }

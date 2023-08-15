@@ -8,15 +8,16 @@ import "org.jboss.ejb.client.proto";
 /**
  * @TypeId(320)
  */
-message SimpleBeanCreationMetaData {
-	optional	string	name	 = 1;
-	optional	org.jboss.ejb.client.SessionID	groupId	 = 2;
-	optional	java.time.Instant	creationTime	 = 3;
+message DefaultBeanMetaDataEntry {
+	optional	string	name	= 1;
+	optional	org.jboss.ejb.client.SessionID	groupId	= 2;
+	optional	java.time.Instant	creationTime	= 3;
+	optional	java.time.Duration	lastAccessOffset	= 4;
 }
 
 /**
  * @TypeId(321)
  */
-message SimpleBeanAccessMetaData {
-	optional	java.time.Duration	lastAccessed	 = 1;
+message BeanMetaDataEntryFunction {
+	optional	java.time.Duration	lastAccessOffset	= 1;
 }

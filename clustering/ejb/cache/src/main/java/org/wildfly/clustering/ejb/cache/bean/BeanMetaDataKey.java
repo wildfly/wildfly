@@ -12,6 +12,6 @@ import org.wildfly.clustering.ee.Key;
  * @author Paul Ferraro
  * @param <K> the bean identifier type
  */
-public interface BeanCreationMetaDataKey<K> extends Key<K> {
+public interface BeanMetaDataKey<K> extends Key<K> {
 
 }

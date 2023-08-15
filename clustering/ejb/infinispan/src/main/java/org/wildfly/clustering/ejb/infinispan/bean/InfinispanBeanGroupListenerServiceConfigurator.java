@@ -23,12 +23,10 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
-import org.wildfly.clustering.ejb.cache.bean.BeanCreationMetaDataKey;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
-import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
@@ -74,7 +72,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
             this.executor = this.getBlockingManager().asExecutor(this.getClass().getName());
             this.postActivateListenerRegistration = new PostActivateBlockingListener<>(this.getCache(), this::postActivate).register(BeanGroupKey.class);
             this.prePassivateListenerRegistration = new PrePassivateBlockingListener<>(this.getCache(), this::prePassivate).register(BeanGroupKey.class);
-            this.postPassivateListenerRegistration = new PostPassivateBlockingListener<>(this.getCache(), this::cascadeEvict).register(BeanCreationMetaDataKey.class);
         }
     }
 
@@ -116,7 +113,7 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
                     instance.prePassivate();
                     passivated.add(instance);
                     // Cascade eviction to creation meta data entry
-                    this.executor.execute(() -> cache.evict(new InfinispanBeanCreationMetaDataKey<>(id)));
+                    this.executor.execute(() -> cache.evict(new InfinispanBeanMetaDataKey<>(id)));
                 }
             } catch (RuntimeException | Error e) {
                 // Restore state of pre-passivated beans
@@ -134,11 +131,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
         } catch (IOException e) {
             InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
         }
-    }
-
-    void cascadeEvict(BeanCreationMetaDataKey<K> key) {
-        // Cascade eviction to access meta data entry
-        this.getCache().evict(new InfinispanBeanAccessMetaDataKey<>(key.getId()));
     }
 
     @SuppressWarnings("unchecked")

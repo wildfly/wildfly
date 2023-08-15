@@ -17,11 +17,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  * Unit test for {@link InfinispanBeanCreationMetaDataKey} marshalling.
  * @author Paul Ferraro
  */
-public class InfinispanBeanCreationMetaDataKeyTestCase {
+public class InfinispanBeanMetaDataKeyTestCase {
 
     @Test
     public void test() throws IOException {
-        InfinispanBeanCreationMetaDataKey<SessionID> key = new InfinispanBeanCreationMetaDataKey<>(new UUIDSessionID(UUID.randomUUID()));
+        InfinispanBeanMetaDataKey<SessionID> key = new InfinispanBeanMetaDataKey<>(new UUIDSessionID(UUID.randomUUID()));
 
         ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
     }

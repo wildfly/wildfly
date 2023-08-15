@@ -4,7 +4,6 @@
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
@@ -15,9 +14,8 @@ import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.ejb.bean.BeanManagerConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
-import org.wildfly.clustering.ejb.cache.bean.BeanAccessMetaData;
-import org.wildfly.clustering.ejb.cache.bean.BeanCreationMetaData;
 import org.wildfly.clustering.ejb.cache.bean.BeanFactory;
+import org.wildfly.clustering.ejb.cache.bean.RemappableBeanMetaDataEntry;
 import org.wildfly.clustering.ejb.cache.bean.CompositeBeanFactory;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
@@ -42,10 +40,10 @@ public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implemen
         return new InfinispanBeanManager<>(new DefaultInfinispanBeanManagerConfiguration<>(this.configuration, configuration));
     }
 
-    private static class DefaultInfinispanBeanManagerConfiguration<K, V extends BeanInstance<K>> implements InfinispanBeanManagerConfiguration<K, V, Map.Entry<BeanCreationMetaData<K>, BeanAccessMetaData>> {
+    private static class DefaultInfinispanBeanManagerConfiguration<K, V extends BeanInstance<K>> implements InfinispanBeanManagerConfiguration<K, V, RemappableBeanMetaDataEntry<K>> {
         private final InfinispanBeanManagerFactoryConfiguration<K, V> factoryConfiguration;
         private final BeanManagerConfiguration<K, V> managerConfiguration;
-        private final BeanFactory<K, V, Map.Entry<BeanCreationMetaData<K>, BeanAccessMetaData>> beanFactory;
+        private final BeanFactory<K, V, RemappableBeanMetaDataEntry<K>> beanFactory;
 
         DefaultInfinispanBeanManagerConfiguration(InfinispanBeanManagerFactoryConfiguration<K, V> factoryConfiguration, BeanManagerConfiguration<K, V> managerConfiguration) {
             this.factoryConfiguration = factoryConfiguration;
@@ -69,7 +67,7 @@ public class InfinispanBeanManagerFactory<K, V extends BeanInstance<K>> implemen
         }
 
         @Override
-        public BeanFactory<K, V, Map.Entry<BeanCreationMetaData<K>, BeanAccessMetaData>> getBeanFactory() {
+        public BeanFactory<K, V, RemappableBeanMetaDataEntry<K>> getBeanFactory() {
             return this.beanFactory;
         }
 

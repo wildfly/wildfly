@@ -6,14 +6,15 @@
 package org.wildfly.clustering.ejb.cache.bean;
 
 import java.time.Instant;
+import java.util.function.Supplier;
 
 /**
- * Describes the metadata of a cached bean that does not change between invocations/transactions.
+ * Immutable view of a bean metadata cache entry.
  * @author Paul Ferraro
  * @param <K> the bean group identifier type
  */
-public interface BeanCreationMetaData<K> {
+public interface ImmutableBeanMetaDataEntry<K> {
     String getName();
     K getGroupId();
-    Instant getCreationTime();
+    Supplier<Instant> getLastAccess();
 }
