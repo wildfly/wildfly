@@ -560,7 +560,7 @@
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.0.Final</version.org.wildfly.transaction.client>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
-        <version.software.amazon.awssdk>2.20.77</version.software.amazon.awssdk>
+        <version.software.amazon.awssdk>2.20.126</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
