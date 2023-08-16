@@ -147,6 +147,10 @@
                                     <artifactId>jakarta.enterprise.cdi-api</artifactId>
                                 </dependency>
                                 <dependency>
+                                    <groupId>jakarta.interceptor</groupId>
+                                    <artifactId>jakarta.interceptor-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>jakarta.json</groupId>
                                     <artifactId>jakarta.json-api</artifactId>
                                 </dependency>
