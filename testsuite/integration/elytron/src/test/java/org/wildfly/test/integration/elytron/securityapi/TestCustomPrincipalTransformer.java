@@ -16,19 +16,17 @@
 package org.wildfly.test.integration.elytron.securityapi;
 
 import java.security.Principal;
-
-import org.wildfly.extension.elytron.capabilities.PrincipalTransformer;
+import java.util.function.Function;
 
 /**
- * A simple {@link PrincipalTransformer} that also converts into a {@link TestCustomPrincipal custom principal}.
+ * A simple principal transformer that converts into a {@link TestCustomPrincipal custom principal}.
  *
  * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
  */
-public class TestCustomPrincipalTransformer implements PrincipalTransformer {
+public class TestCustomPrincipalTransformer implements Function<Principal, Principal> {
 
     @Override
     public Principal apply(Principal principal) {
         return new TestCustomPrincipal(principal);
     }
-
 }
