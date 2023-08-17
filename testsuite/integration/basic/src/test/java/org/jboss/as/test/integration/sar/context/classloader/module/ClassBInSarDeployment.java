@@ -20,10 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.sar.context.classloader;
+package org.jboss.as.test.integration.sar.context.classloader.module;
 
 /**
  * @author: Jaikiran Pai
  */
-public class ClassAInSarDeployment {
+public class ClassBInSarDeployment {
 }

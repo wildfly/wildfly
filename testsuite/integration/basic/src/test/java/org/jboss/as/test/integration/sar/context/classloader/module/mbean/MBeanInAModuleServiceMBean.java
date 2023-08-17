@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.sar.context.classloader.mbean;
+package org.jboss.as.test.integration.sar.context.classloader.module.mbean;
 
 /**
  * @author: Jaikiran Pai
