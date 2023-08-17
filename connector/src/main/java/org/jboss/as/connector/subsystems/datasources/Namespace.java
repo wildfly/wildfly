@@ -47,12 +47,14 @@ public enum Namespace {
 
     DATASOURCES_6_0("urn:jboss:domain:datasources:6.0"),
 
-    DATASOURCES_7_0("urn:jboss:domain:datasources:7.0");
+    DATASOURCES_7_0("urn:jboss:domain:datasources:7.0"),
+
+    DATASOURCES_7_1("urn:jboss:domain:datasources:7.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DATASOURCES_7_0;
+    public static final Namespace CURRENT = DATASOURCES_7_1;
 
     private final String name;
 
