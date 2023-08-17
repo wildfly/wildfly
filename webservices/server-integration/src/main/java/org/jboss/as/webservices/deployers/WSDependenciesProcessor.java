@@ -45,7 +45,6 @@ public final class WSDependenciesProcessor implements DeploymentUnitProcessor {
             "jakarta.xml.ws.api",
             "jakarta.xml.soap.api"
     };
-    public static final String XERCES_IMPL = "org.apache.xerces";
 
     private final boolean addJBossWSDependencies;
 
