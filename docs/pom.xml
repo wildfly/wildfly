@@ -71,6 +71,7 @@
                         <sectanchors/>
                         <toc>left</toc>
                     </attributes>
+                    <preserveDirectories>true</preserveDirectories>
                     <backend>html5</backend>
                     <resources>
                         <resource>
