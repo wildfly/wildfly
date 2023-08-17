@@ -23,12 +23,12 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,11 +41,22 @@ import org.jboss.dmr.ModelType;
  *
  */
 public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinition {
+    public static final String DATA_SOURCE_CAPABILITY_NAME = "org.wildfly.data-source";
+
+    public static final SimpleAttributeDefinition DATASOURCE_NAME =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DATASOURCE_NAME, ModelType.STRING, false)
+                    .setAllowExpression(true)
+                    .setAlternatives(EJB3SubsystemModel.DATASOURCE_JNDI_NAME)
+                    .setCapabilityReference(DATA_SOURCE_CAPABILITY_NAME, TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+
     public static final SimpleAttributeDefinition DATASOURCE_JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DATASOURCE_JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
-                    .setValidator(new ModelTypeValidator(ModelType.STRING, true, false))
+                    .setAlternatives(EJB3SubsystemModel.DATASOURCE_NAME)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setDeprecated(ModelVersion.create(10))
                     .build();
 
     public static final SimpleAttributeDefinition DATABASE =
@@ -77,7 +88,8 @@ public class DatabaseDataStoreResourceDefinition extends SimpleResourceDefinitio
                     .setDefaultValue(ModelNode.TRUE)
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATASOURCE_JNDI_NAME, DATABASE, PARTITION, REFRESH_INTERVAL, ALLOW_EXECUTION };
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DATASOURCE_JNDI_NAME, DATASOURCE_NAME,
+            DATABASE, PARTITION, REFRESH_INTERVAL, ALLOW_EXECUTION };
     private static final DatabaseDataStoreAdd ADD_HANDLER = new DatabaseDataStoreAdd(ATTRIBUTES);
 
     DatabaseDataStoreResourceDefinition() {

@@ -52,7 +52,7 @@ class DatabaseTimerServerSetup implements ServerSetupTask {
         op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
         op.get(OP_ADDR).add("service", "timer-service");
         op.get(OP_ADDR).add("database-data-store", "dbstore");
-        op.get("datasource-jndi-name").set("java:jboss/datasources/ExampleDS");
+        op.get("datasource-name").set("ExampleDS");
         op.get("database").set("hsql");
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ManagementOperations.executeOperation(managementClient.getControllerClient(), op);

@@ -48,7 +48,8 @@ public enum EJB3SubsystemNamespace {
     EJB3_7_0("urn:jboss:domain:ejb3:7.0"),
     EJB3_8_0("urn:jboss:domain:ejb3:8.0"),
     EJB3_9_0("urn:jboss:domain:ejb3:9.0"),
-    EJB3_10_0("urn:jboss:domain:ejb3:10.0");
+    EJB3_10_0("urn:jboss:domain:ejb3:10.0"),
+    EJB3_10_1("urn:jboss:domain:ejb3:10.1");
 
 
     private final String name;

@@ -55,6 +55,7 @@ public enum EJB3SubsystemXMLAttribute {
     DEFAULT_TRANSIENT_TIMER_MANAGEMENT(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT),
     DATABASE("database"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
+    DATASOURCE_NAME("datasource-name"),
 
     ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),

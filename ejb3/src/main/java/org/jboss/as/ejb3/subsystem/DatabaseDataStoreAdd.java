@@ -41,6 +41,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
+import javax.sql.DataSource;
+
 /**
  * Adds the timer service file based data store
  *
@@ -57,7 +59,10 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-        final String jndiName = DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.resolveModelAttribute(context, model).asString();
+        final String dsName = model.hasDefined(DatabaseDataStoreResourceDefinition.DATASOURCE_NAME.getName()) ?
+                DatabaseDataStoreResourceDefinition.DATASOURCE_NAME.resolveModelAttribute(context, model).asString() : null;
+        final String jndiName = model.hasDefined(DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.getName()) ?
+                DatabaseDataStoreResourceDefinition.DATASOURCE_JNDI_NAME.resolveModelAttribute(context, model).asString() : null;
 
         final ModelNode dataBaseValue = DatabaseDataStoreResourceDefinition.DATABASE.resolveModelAttribute(context, model);
         final String database;
@@ -77,10 +82,11 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
         final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
         final Consumer<DatabaseTimerPersistence> consumer = builder.provides(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
-        final Supplier<ManagedReferenceFactory> dataSourceSupplier = builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
+        final Supplier<DataSource> dataSourceSupplier = dsName != null ? builder.requires(context.getCapabilityServiceName(DatabaseDataStoreResourceDefinition.DATA_SOURCE_CAPABILITY_NAME, dsName, DataSource.class)) : null;
+        final Supplier<ManagedReferenceFactory> dataSourceReferenceSupplier = jndiName != null ? builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName()) : null;
         final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
         final Supplier<Timer> timerSupplier = builder.requiresCapability(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class);
-        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(consumer, dataSourceSupplier, moduleLoaderSupplier, timerSupplier, database, partition, nodeName, refreshInterval, allowExecution);
+        final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(consumer, dataSourceSupplier, dataSourceReferenceSupplier, moduleLoaderSupplier, timerSupplier, database, partition, nodeName, refreshInterval, allowExecution);
         builder.setInstance(databaseTimerPersistence);
         builder.install();
     }
