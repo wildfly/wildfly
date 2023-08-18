@@ -36,5 +36,6 @@
         <module name="com.github.ben-manes.caffeine"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

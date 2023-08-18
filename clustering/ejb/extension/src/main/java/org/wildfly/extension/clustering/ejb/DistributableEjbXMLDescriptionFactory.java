@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 
 /**
  * Parser description for the distributable-ejb subsystem.
@@ -39,11 +40,16 @@ public enum DistributableEjbXMLDescriptionFactory implements Function<Distributa
 
     @Override
     public PersistentResourceXMLDescription apply(DistributableEjbSubsystemSchema schema) {
-        return builder(DistributableEjbResourceDefinition.PATH, schema.getNamespace()).addAttributes(Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
+        PersistentResourceXMLBuilder builder = builder(DistributableEjbResourceDefinition.PATH, schema.getNamespace()).addAttributes(Attribute.stream(DistributableEjbResourceDefinition.Attribute.class))
                 .addChild(builder(InfinispanBeanManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(InfinispanBeanManagementResourceDefinition.Attribute.class))))
-                .addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
-                .addChild(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-client-mappings-registry"))
-                .addChild(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanTimerManagementResourceDefinition.Attribute.class)).setXmlElementName("infinispan-timer-management"))
-                .build();
+                ;
+        if (schema.since(DistributableEjbSubsystemSchema.VERSION_2_0)) {
+            builder.addChild(builder(HotRodBeanManagementResourceDefinition.WILDCARD_PATH).addAttributes(Stream.concat(Attribute.stream(BeanManagementResourceDefinition.Attribute.class), Attribute.stream(HotRodBeanManagementResourceDefinition.Attribute.class))));
+        }
+        builder.addChild(builder(LocalClientMappingsRegistryProviderResourceDefinition.PATH).setXmlElementName("local-client-mappings-registry"))
+            .addChild(builder(InfinispanClientMappingsRegistryProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanClientMappingsRegistryProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-client-mappings-registry"))
+            .addChild(builder(InfinispanTimerManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanTimerManagementResourceDefinition.Attribute.class)).setXmlElementName("infinispan-timer-management"))
+            ;
+        return builder.build();
     }
 }

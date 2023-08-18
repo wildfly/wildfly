@@ -356,10 +356,15 @@
                    <artifactId>maven-install-plugin</artifactId>
                    <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
                </plugin>
+
+               <plugin>
+                   <groupId>org.wildfly.plugins</groupId>
+                   <artifactId>wildfly-maven-plugin</artifactId>
+                   <version>${version.org.wildfly.plugin}</version>
+               </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
 
     <profiles>
 

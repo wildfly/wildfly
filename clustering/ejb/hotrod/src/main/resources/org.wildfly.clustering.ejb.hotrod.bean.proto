@@ -1,0 +1,26 @@
+package org.wildfly.clustering.ejb.hotrod.bean;
+
+import "org.jboss.ejb.client.proto";
+
+// IDs: 310 - 319
+
+/**
+ * @TypeId(310)
+ */
+message HotRodBeanGroupKey {
+	optional	org.jboss.ejb.client.SessionID	id	 = 1;
+}
+
+/**
+ * @TypeId(311)
+ */
+message HotRodBeanCreationMetaDataKey {
+	optional	org.jboss.ejb.client.SessionID	id	 = 1;
+}
+
+/**
+ * @TypeId(312)
+ */
+message HotRodBeanAccessMetaDataKey {
+	optional	org.jboss.ejb.client.SessionID	id	 = 1;
+}

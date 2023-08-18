@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
 
@@ -66,6 +67,7 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
         return new AdditionalInitialization()
                 .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
                 .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
+                .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
                 ;
     }
 

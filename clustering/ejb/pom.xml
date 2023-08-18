@@ -48,6 +48,7 @@
         <module>client</module>
         <module>spi</module>
         <module>cache</module>
+        <module>hotrod</module>
         <module>infinispan</module>
         <module>extension</module>
     </modules>
