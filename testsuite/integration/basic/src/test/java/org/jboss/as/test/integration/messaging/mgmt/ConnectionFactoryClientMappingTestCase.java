@@ -25,7 +25,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -73,8 +72,6 @@ public class ConnectionFactoryClientMappingTestCase {
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
             ops.addJmsConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode clientMapping(String destAddr, String destPort) {
