@@ -28,6 +28,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreResourceDefiniti
 import java.util.Properties;
 import java.util.function.Consumer;
 
+import org.infinispan.commons.configuration.Combine;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -98,7 +99,7 @@ public abstract class StoreServiceConfigurator<C extends StoreConfiguration, B e
                     .withProperties(this.properties)
                     ;
         this.accept(builder);
-        return builder.async().read(this.async.get()).persistence().create();
+        return builder.async().read(this.async.get(), Combine.DEFAULT).persistence().create();
     }
 
     boolean isPurgeOnStartup() {

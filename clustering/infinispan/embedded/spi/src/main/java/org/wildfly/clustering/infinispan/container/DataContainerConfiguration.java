@@ -49,11 +49,17 @@ public class DataContainerConfiguration implements Matchable<DataContainerConfig
             .immutable()
             .build();
 
+    private final AttributeSet attributes;
     @SuppressWarnings("rawtypes")
     private final Attribute<Predicate> evictable;
 
     DataContainerConfiguration(AttributeSet attributes) {
+        this.attributes = attributes;
         this.evictable = attributes.attribute(EVICTABLE_PREDICATE);
+    }
+
+    public AttributeSet attributes() {
+        return this.attributes;
     }
 
     public <K> Predicate<K> evictable() {
