@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.streams.operators;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
 import java.util.List;

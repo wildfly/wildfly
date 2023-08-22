@@ -37,7 +37,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.security.Security;
 import javax.naming.Context;

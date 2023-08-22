@@ -29,7 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.operations.common.Util.createAddOperation;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.KEYCLOAK_CONTAINER;

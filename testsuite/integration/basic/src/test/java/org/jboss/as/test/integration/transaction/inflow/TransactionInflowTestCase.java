@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.transaction.inflow;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.SocketPermission;
 import java.util.Hashtable;

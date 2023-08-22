@@ -50,7 +50,7 @@ import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests on transaction timeout behavior with SLSB beans

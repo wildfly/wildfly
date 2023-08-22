@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  *

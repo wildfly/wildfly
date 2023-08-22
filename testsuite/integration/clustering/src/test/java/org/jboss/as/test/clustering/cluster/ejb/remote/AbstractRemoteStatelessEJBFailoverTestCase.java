@@ -40,7 +40,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SecureStatelessIncre
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

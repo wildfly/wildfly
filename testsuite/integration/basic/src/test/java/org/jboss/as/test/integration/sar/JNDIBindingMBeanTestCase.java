@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.sar;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;

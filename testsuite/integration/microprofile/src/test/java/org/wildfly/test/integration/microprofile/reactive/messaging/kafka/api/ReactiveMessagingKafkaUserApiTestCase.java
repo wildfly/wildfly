@@ -53,7 +53,7 @@ import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>

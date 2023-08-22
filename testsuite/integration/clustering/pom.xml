@@ -438,11 +438,6 @@
             <artifactId>wildfly-http-transaction-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

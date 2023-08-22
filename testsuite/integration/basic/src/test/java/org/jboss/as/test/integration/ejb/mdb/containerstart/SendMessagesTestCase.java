@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.ejb.mdb.containerstart;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.test.integration.common.jms.JMSOperationsProvider.getInstance;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

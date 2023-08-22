@@ -774,10 +774,6 @@
             <artifactId>wildfly-http-transaction-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-        </dependency>
-        <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
         </dependency>

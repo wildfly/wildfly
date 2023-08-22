@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.simple;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URI;

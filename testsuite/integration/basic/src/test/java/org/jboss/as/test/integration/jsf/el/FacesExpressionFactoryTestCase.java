@@ -20,7 +20,7 @@
 
 package org.jboss.as.test.integration.jsf.el;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.HttpURLConnection;
 import java.net.URL;

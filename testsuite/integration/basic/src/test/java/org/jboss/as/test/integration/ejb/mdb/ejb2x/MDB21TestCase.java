@@ -43,7 +43,7 @@ import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests EJB2.1 MDB deployments.

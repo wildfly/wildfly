@@ -32,7 +32,7 @@ import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServic
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.CLIENT1;
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.RETURN_HANDLE;
 import static org.jboss.as.test.multinode.ejb.timer.database.RefreshIF.Info.SERVER1;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

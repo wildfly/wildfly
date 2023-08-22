@@ -321,11 +321,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>

@@ -55,7 +55,7 @@ import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.hamcrest.CoreMatchers.is;
 
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertAttribute;
 import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertAuthenticationFailed;
 import static org.wildfly.test.integration.elytron.realm.AggregateRealmUtil.assertAuthenticationSuccess;

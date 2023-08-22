@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.multinode.clientinterceptor.multiple;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 import java.security.SecurityPermission;
 import java.util.Arrays;
