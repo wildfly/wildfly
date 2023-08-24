@@ -1056,4 +1056,11 @@
         <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-protobuf\-lite@.*$</packageUrl>
         <cve>CVE-2023-33953</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-stub-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-stub@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+    </suppress>
 </suppressions>
