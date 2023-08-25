@@ -1063,4 +1063,18 @@
         <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-stub@.*$</packageUrl>
         <cve>CVE-2023-33953</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-okhttp-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-okhttp@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-context-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-context@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+    </suppress>
 </suppressions>
