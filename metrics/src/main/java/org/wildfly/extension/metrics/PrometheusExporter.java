@@ -22,7 +22,6 @@
 package org.wildfly.extension.metrics;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.Set;
 
@@ -30,48 +29,54 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.wildfly.extension.metrics.MetricMetadata.MetricTag;
 
 public class PrometheusExporter {
-
+    private final Set<String> alreadyExportedMetrics = new HashSet<>();
+    private final StringBuilder out = new StringBuilder();
     private static final String LF = "\n";
 
     public String export(WildFlyMetricRegistry registry) {
-        Set<String> alreadyExportedMetrics = new HashSet<String>();
-
-        StringBuilder out = new StringBuilder();
-
-        for (Map.Entry<MetricID, Metric> entry : registry.getMetrics().entrySet()) {
-            MetricID metricID = entry.getKey();
-            String metricName = metricID.getMetricName();
-            MetricMetadata metadata = registry.getMetricMetadata().get(metricName);
-            String prometheusMetricName = toPrometheusMetricName(metricID, metadata);
-            OptionalDouble metricValue = entry.getValue().getValue();
-            // if the metric does not return a value, we skip printing the HELP and TYPE
-            if (!metricValue.isPresent()) {
-                continue;
-            }
-            if (!alreadyExportedMetrics.contains(metricName)) {
-                out.append("# HELP " + prometheusMetricName + " " + metadata.getDescription());
-                out.append(LF);
-                out.append("# TYPE " + prometheusMetricName + " " + metadata.getType());
-                out.append(LF);
-                alreadyExportedMetrics.add(metricName);
-            }
-            double scaledValue = scaleToBaseUnit(metricValue.getAsDouble(), metadata.getMeasurementUnit());
-            // I'm pretty sure this is incorrect but that aligns with smallrye-metrics OpenMetricsExporter behaviour
-            if (metadata.getType() == MetricMetadata.Type.COUNTER && metadata.getMeasurementUnit() != MeasurementUnit.NONE) {
-                prometheusMetricName += "_" + metadata.getBaseMetricUnit();
-            }
-            out.append(prometheusMetricName + getTagsAsAString(metricID) + " " + scaledValue);
-            out.append(LF);
-        }
+        // Process server metrics
+        processRegistry(registry);
+        // Process deployment metrics
+        registry.getDeploymentRegistries().forEach((k, deploymentRegistry) -> processRegistry(deploymentRegistry));
 
         return out.toString();
     }
 
-    private static double scaleToBaseUnit(double value, MeasurementUnit unit) {
+    private void processRegistry(WildFlyMetricRegistry registry) {
+        registry.getMetrics().forEach((id, metric) -> {
+            String metricName = id.getMetricName();
+            MetricMetadata metadata = registry.getMetricMetadata().get(metricName);
+            String prometheusMetricName = toPrometheusMetricName(id, metadata);
+            OptionalDouble metricValue = metric.getValue();
+            // if the metric does not return a value, we skip printing the HELP and TYPE
+            if (metricValue.isPresent()) {
+                if (!alreadyExportedMetrics.contains(metricName)) {
+                    out.append("# HELP " + prometheusMetricName + " " + metadata.getDescription());
+                    out.append(LF);
+                    out.append("# TYPE " + prometheusMetricName + " " + metadata.getType());
+                    out.append(LF);
+                    alreadyExportedMetrics.add(metricName);
+                }
+                double scaledValue = scaleToBaseUnit(metricValue.getAsDouble(), metadata.getMeasurementUnit());
+                // I'm pretty sure this is incorrect but that aligns with smallrye-metrics OpenMetricsExporter behaviour
+                if (metadata.getType() == MetricMetadata.Type.COUNTER && metadata.getMeasurementUnit() != MeasurementUnit.NONE) {
+                    prometheusMetricName += "_" + metadata.getBaseMetricUnit();
+                }
+                out.append(prometheusMetricName + getTagsAsAString(id) + " " + scaledValue);
+                out.append(LF);
+            }
+        });
+    }
+
+    public String getResults() {
+        return out.toString();
+    }
+
+    private double scaleToBaseUnit(double value, MeasurementUnit unit) {
         return value * MeasurementUnit.calculateOffset(unit, unit.getBaseUnits());
     }
 
-    private static String toPrometheusMetricName(MetricID metricID, MetricMetadata metadata) {
+    private String toPrometheusMetricName(MetricID metricID, MetricMetadata metadata) {
         String prometheusName = metricID.getMetricName();
         // change the Prometheus name depending on type and measurement unit
         if (metadata.getType() == WildFlyMetricMetadata.Type.COUNTER) {
@@ -86,7 +91,7 @@ public class PrometheusExporter {
         return prometheusName;
     }
 
-    public static String getTagsAsAString(MetricID metricID) {
+    private String getTagsAsAString(MetricID metricID) {
         MetricTag[] tags = metricID.getTags();
         if (tags.length == 0) {
             return "";

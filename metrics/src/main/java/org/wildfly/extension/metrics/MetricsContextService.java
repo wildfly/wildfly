@@ -51,7 +51,6 @@ public class MetricsContextService implements Service {
     private final Supplier<ExtensibleHttpManagement> extensibleHttpManagement;
     private Supplier<WildFlyMetricRegistry> wildflyMetricRegistry;
     private final Supplier<Boolean> securityEnabledSupplier;
-    private final PrometheusExporter prometheusExporter = new PrometheusExporter();
     private HttpHandler overrideableMetricHandler;
 
     static void install(OperationContext context, boolean securityEnabled) {
@@ -96,7 +95,7 @@ public class MetricsContextService implements Service {
                 WildFlyMetricRegistry metricRegistry = wildflyMetricRegistry.get();
                 metricRegistry.readLock();
                 try {
-                    String wildFlyMetrics = prometheusExporter.export(metricRegistry);
+                    String wildFlyMetrics = new PrometheusExporter().export(metricRegistry);
                     exchange.getResponseSender().send(wildFlyMetrics);
                 } finally {
                     metricRegistry.unlock();

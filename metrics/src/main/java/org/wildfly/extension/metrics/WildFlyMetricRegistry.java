@@ -27,6 +27,7 @@ import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -37,6 +38,7 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
     private Map<String, MetricMetadata> metadataMap = new HashMap();
     private Map<MetricID, Metric> metricMap = new TreeMap<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Map<String, WildFlyMetricRegistry> deployments = new ConcurrentHashMap<>();
 
 
     @Override
@@ -94,5 +96,20 @@ public class WildFlyMetricRegistry implements Closeable, MetricRegistry {
     @Override
     public void unlock() {
         lock.readLock().unlock();
+    }
+
+    public MetricRegistry addDeploymentRegistry(String path) {
+        WildFlyMetricRegistry deploymentRegistry = new WildFlyMetricRegistry();
+        deployments.put(path, deploymentRegistry);
+
+        return deploymentRegistry;
+    }
+
+    public void removeDeploymentRegistry(String path) {
+        deployments.remove(path);
+    }
+
+    public Map<String, WildFlyMetricRegistry> getDeploymentRegistries() {
+        return deployments;
     }
 }

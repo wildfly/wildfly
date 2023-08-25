@@ -179,7 +179,6 @@ public class MetricsFromWildFlyManagementModelTestCase {
     private void checkRequestCount(int expectedCount, boolean metricForDeployment) throws IOException {
         String metricName = "wildfly_undertow_request_count_total";
         String metrics = getPrometheusMetrics(managementClient, true);
-        System.out.println(">>> metrics = " + metrics);
         for (String line : metrics.split("\\R")) {
             if (line.startsWith(metricName)) {
                 String[] split = line.split("\\s+");
@@ -188,7 +187,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
                 // we are only interested by the metric for this deployment
                 if (metricForDeployment) {
                     if (labels.contains("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\"")) {
-                        Double value = Double.valueOf(split[1]);
+                        double value = Double.parseDouble(split[1]);
 
                         assertTrue(labels.contains("deployment=\"MetricsFromWildFlyManagementModelTestCase.war\""));
                         assertTrue(labels.contains("subdeployment=\"MetricsFromWildFlyManagementModelTestCase.war\""));
@@ -200,7 +199,7 @@ public class MetricsFromWildFlyManagementModelTestCase {
                 } else {
                     // check the metrics from the http-listener in the undertow subsystem
                     if (labels.contains("http_listener=\"default\"")) {
-                        Double value = Double.valueOf(split[1]);
+                        double value = Double.parseDouble(split[1]);
                         assertTrue(labels.contains("server=\"default-server\""));
                         assertEquals(metrics, Integer.valueOf(expectedCount).doubleValue(), value, 0);
                         return;

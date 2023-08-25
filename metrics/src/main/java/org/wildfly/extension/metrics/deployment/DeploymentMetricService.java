@@ -47,6 +47,7 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.metrics.MetricCollector;
 import org.wildfly.extension.metrics.MetricRegistration;
 import org.wildfly.extension.metrics.MetricRegistry;
+import org.wildfly.extension.metrics.WildFlyMetricRegistry;
 
 public class DeploymentMetricService implements Service {
 
@@ -62,7 +63,9 @@ public class DeploymentMetricService implements Service {
     private final String prefix;
     private MetricRegistration registration;
 
-    public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource, ManagementResourceRegistration managementResourceRegistration, boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
+    public static void install(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit, Resource rootResource,
+                               ManagementResourceRegistration managementResourceRegistration,
+                               boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
         PathAddress deploymentAddress = createDeploymentAddressPrefix(deploymentUnit);
 
         ServiceBuilder<?> sb = serviceTarget.addService(deploymentUnit.getServiceName().append("metrics"));
@@ -75,14 +78,22 @@ public class DeploymentMetricService implements Service {
          * the deployment are collected and registered once the deployment services have all been properly installed.
          */
         sb.requires(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName()));
-        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress, metricCollector, metricRegistry, managementExecutor,
-                exposeAnySubsystem, exposedSubsystems, prefix))
+        sb.setInstance(new DeploymentMetricService(rootResource, managementResourceRegistration, deploymentAddress,
+                        metricCollector, metricRegistry, managementExecutor, exposeAnySubsystem, exposedSubsystems,
+                        prefix))
+
                 .install();
     }
 
-    private DeploymentMetricService(Resource rootResource, ManagementResourceRegistration managementResourceRegistration, PathAddress deploymentAddress,
-                                    Supplier<MetricCollector> metricCollector, Supplier<MetricRegistry> metricRegistry,
-                                    Supplier<Executor> managementExecutor, boolean exposeAnySubsystem, List<String> exposedSubsystems, String prefix) {
+    private DeploymentMetricService(Resource rootResource,
+                                    ManagementResourceRegistration managementResourceRegistration,
+                                    PathAddress deploymentAddress,
+                                    Supplier<MetricCollector> metricCollector,
+                                    Supplier<MetricRegistry> metricRegistry,
+                                    Supplier<Executor> managementExecutor,
+                                    boolean exposeAnySubsystem,
+                                    List<String> exposedSubsystems,
+                                    String prefix) {
         this.rootResource = rootResource;
         this.managementResourceRegistration = managementResourceRegistration;
         this.deploymentAddress = deploymentAddress;
@@ -99,7 +110,10 @@ public class DeploymentMetricService implements Service {
         final Runnable task = new Runnable() {
             @Override
             public void run() {
-                registration = new MetricRegistration(metricRegistry.get());
+                WildFlyMetricRegistry mainRegistry = (WildFlyMetricRegistry) metricRegistry.get();
+                MetricRegistry registry = mainRegistry.addDeploymentRegistry(deploymentAddress.toCLIStyleString());
+
+                registration = new MetricRegistration(registry);
                 metricCollector.get().collectResourceMetrics(rootResource,
                         managementResourceRegistration,
                         // prepend the deployment address to the subsystem resource address
@@ -120,7 +134,7 @@ public class DeploymentMetricService implements Service {
 
     @Override
     public void stop(StopContext stopContext) {
-        registration.unregister();
+        ((WildFlyMetricRegistry) metricRegistry.get()).removeDeploymentRegistry(deploymentAddress.toCLIStyleString());
     }
 
     private static PathAddress createDeploymentAddressPrefix(DeploymentUnit deploymentUnit) {
