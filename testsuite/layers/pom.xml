@@ -2139,6 +2139,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
@@ -2229,6 +2230,7 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2349,6 +2351,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>

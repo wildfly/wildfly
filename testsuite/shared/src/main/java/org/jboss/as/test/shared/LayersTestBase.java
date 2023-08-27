@@ -94,11 +94,6 @@ public abstract class LayersTestBase {
             "org.jboss.narayana.rts",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
-            // TODO we need to add the elytron-oidc-client layer to the config
-            "org.wildfly.extension.elytron-oidc-client",
-            "org.wildfly.security.elytron-http-oidc",
-            "org.wildfly.security.elytron-jose-jwk",
-            "org.wildfly.security.elytron-jose-util",
             // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
             "org.wildfly.reactive.dep.jts",
             // TODO should an undertow layer specify this?
