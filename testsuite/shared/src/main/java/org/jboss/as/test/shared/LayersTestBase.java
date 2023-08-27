@@ -120,9 +120,6 @@ public abstract class LayersTestBase {
             // JGroups external protocols - AWS
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
-            // MicroProfile
-            "org.wildfly.extension.microprofile.metrics-smallrye",
-            "org.wildfly.extension.microprofile.opentracing-smallrye",
             //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
             "org.apache.xerces",
     };
@@ -147,17 +144,17 @@ public abstract class LayersTestBase {
      * when testing provisioning from the wildfly or wildfly-preview feature packs.
      * Use this array for items common between the two feature packs.
      */
-    public static final String[] NO_LAYER_EXPANSION = {};
+    public static final String[] NO_LAYER_EXPANSION = {
+            // Legacy subsystems for which we will not provide layers
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+    };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
      * only when testing provisioning from the wildfly feature pack.
      */
-    public static final String[] NO_LAYER_WILDFLY = {
-            // Legacy subsystems for which we will not provide layers
-            "org.wildfly.extension.microprofile.metrics-smallrye",
-            "org.wildfly.extension.microprofile.opentracing-smallrye",
-    };
+    public static final String[] NO_LAYER_WILDFLY = {};
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
@@ -172,7 +169,7 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
             "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
             // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
-            "org.hibernate.search.mapper.orm.coordination.outboxpolling"
+            "org.hibernate.search.mapper.orm.coordination.outboxpolling",
     };
 
     /**
