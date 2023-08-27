@@ -202,6 +202,8 @@ public abstract class LayersTestBase {
             "org.wildfly.naming",
             // Injected by jaxrs
             "org.jboss.resteasy.resteasy-json-binding-provider",
+            // Injected by jaxrs and also depended upon by narayano-rts, which is part of the non-OOTB rts subsystem
+            "org.jboss.resteasy.resteasy-json-p-provider",
             // The console ui content is not part of the kernel nor is it provided by an extension
             "org.jboss.as.console",
             // tooling
