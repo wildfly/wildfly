@@ -147,8 +147,6 @@ public abstract class LayersTestBase {
             "org.hibernate.jipijapa-hibernate5",
             "org.jboss.as.jpa.openjpa",
             "org.apache.openjpa",
-            // TODO WFLY-16583 -- cruft
-            "javax.management.j2ee.api",
             // In wildfly-ee only referenced by the
             // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
             "io.reactivex.rxjava2.rxjava"
