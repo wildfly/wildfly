@@ -196,6 +196,9 @@ public abstract class LayersTestBase {
      * Packages that are always expected to be included in the return value of {@link #getExpectedUnreferenced()}.
      */
     public static final String[] NOT_REFERENCED_COMMON = {
+            // injected by logging
+            "org.apache.logging.log4j.api",
+            "org.jboss.logmanager.log4j2",
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
@@ -275,10 +278,6 @@ public abstract class LayersTestBase {
             // TODO
             "io.netty.netty-resolver-dns",
             "io.reactivex.rxjava2.rxjava",
-            // injected by logging
-            "org.apache.logging.log4j.api",
-            // injected by logging
-            "org.jboss.logmanager.log4j2",
             // injected by ee
             "jakarta.json.bind.api",
             // injected by jpa
