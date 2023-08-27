@@ -186,8 +186,6 @@ public abstract class LayersTestBase {
             "org.apache.logging.log4j.api",
             "org.jboss.logmanager.log4j2",
             // injected by ee
-            "org.eclipse.yasson",
-            // injected by ee
             "org.wildfly.naming",
             // Injected by jaxrs
             "org.jboss.resteasy.resteasy-json-binding-provider",
