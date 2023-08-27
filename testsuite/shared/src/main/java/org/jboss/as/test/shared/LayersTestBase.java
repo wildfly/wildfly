@@ -211,29 +211,6 @@ public abstract class LayersTestBase {
             "org.wildfly.bootable-jar",
             // Extension not included in the default config
             "org.wildfly.extension.clustering.singleton",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.health-smallrye",
-            "org.eclipse.microprofile.health.api",
-            "io.smallrye.health",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.lra-coordinator",
-            "org.wildfly.extension.microprofile.lra-participant",
-            "org.jboss.narayana.rts.lra-coordinator",
-            "org.jboss.narayana.rts.lra-participant",
-            "org.eclipse.microprofile.lra.api",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.openapi-smallrye",
-            "org.eclipse.microprofile.openapi.api",
-            "io.smallrye.openapi",
-            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.telemetry",
-            // Extension not included in the default config
-            "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
-            "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
-            "io.vertx.client",
             // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
             "org.wildfly.security.jakarta.security",
             // injected by sar
@@ -276,7 +253,31 @@ public abstract class LayersTestBase {
      * when testing provisioning from the wildfly or wildfly-preview feature packs.
      * Use this array for items common between the two feature packs.
      */
-    public static final String[] NOT_REFERENCED_EXPANSION = {};
+    public static final String[] NOT_REFERENCED_EXPANSION = {
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.health-smallrye",
+            "org.eclipse.microprofile.health.api",
+            "io.smallrye.health",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.lra-coordinator",
+            "org.wildfly.extension.microprofile.lra-participant",
+            "org.jboss.narayana.rts.lra-coordinator",
+            "org.jboss.narayana.rts.lra-participant",
+            "org.eclipse.microprofile.lra.api",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.openapi-smallrye",
+            "org.eclipse.microprofile.openapi.api",
+            "io.smallrye.openapi",
+            "com.fasterxml.jackson.dataformat.jackson-dataformat-yaml",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.telemetry",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
+            "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
+            "io.vertx.client",
+    };
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
