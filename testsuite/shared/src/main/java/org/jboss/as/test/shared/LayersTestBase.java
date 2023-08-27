@@ -277,6 +277,8 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
             "io.vertx.client",
+            // Injected by jaxrs subsystem
+            "org.jboss.resteasy.microprofile.config"
     };
 
     /**
