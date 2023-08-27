@@ -58,7 +58,7 @@ public abstract class LayersTestBase {
             "org.keycloak.keycloak-adapter-subsystem",
             "org.jboss.as.security",
             // end legacy subsystems ^^^
-            // TODO nothing references this
+            // Special support feature
             "org.wildfly.security.http.sfbasic",
             // TODO move eclipse link support to an external feature pack
             "org.eclipse.persistence",
@@ -78,9 +78,6 @@ public abstract class LayersTestBase {
             // Perhaps via deployment descriptor? In any case, no layer provides them
             "org.wildfly.security.jakarta.client.resteasy",
             "org.wildfly.security.jakarta.client.webservices",
-            // This is added in the jaxrs subsystem to deployments if the MP config capability is met. The package is
-            // added in the microprofile-rest-client as well.
-            "org.jboss.resteasy.microprofile.config",
             // Alternative messaging protocols besides the std Artemis core protocol
             // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
