@@ -272,7 +272,6 @@ public abstract class LayersTestBase {
             "io.netty.netty-codec-http2",
             // TODO
             "io.netty.netty-resolver-dns",
-            "io.reactivex.rxjava2.rxjava",
             // injected by ee
             "jakarta.json.bind.api",
             // injected by jpa
