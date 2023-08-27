@@ -8,22 +8,38 @@ package org.jboss.as.test.shared;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.jboss.as.test.layers.LayersTest;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class LayersTestBase {
-    // Packages that are provisioned by the test-standalone-reference installation
-    // but not used in the test-all-layers installation.
-    // This is the expected set of not provisioned modules when all layers are provisioned.
-    private static final String[] NOT_USED_COMMON = {
+public abstract class LayersTestBase {
+
+    /**
+     * Gets the expected set of packages that are not referenced from the module graph
+     * but need to be provisioned.
+     * This is the expected set of modules found when scanning the default configuration that are
+     * not referenced directly or transitively from a standalone server's root module or from
+     * one of the extensions used in standalone.xml.
+     */
+    protected abstract Set<String> getExpectedUnreferenced();
+
+    /**
+     * Gets the expected set of packages that are provisioned by the test-standalone-reference installation
+     * but not used in the test-all-layers installation.
+     * This is the expected set of not provisioned modules when all layers are provisioned; i.e.
+     * those that are not associated with any layer included in the test-all-layers installation.
+     */
+    protected abstract Set<String> getExpectedUnusedInAllLayers();
+
+    /**
+     * Packages that are always expected to be included in the return value of {@link #getExpectedUnusedInAllLayers()}.
+     */
+    public static final String[] NO_LAYER_COMMON = {
             // not used
             "ibm.jdk",
             "javax.api",
@@ -119,11 +135,67 @@ public class LayersTestBase {
             //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
             "org.apache.xerces",
     };
-    private static final String[] NOT_USED;
-    // Packages that are not referenced from the module graph but needed.
-    // This is the expected set of un-referenced modules found when scanning
-    // the default configuration.
-    private static final String[] NOT_REFERENCED_COMMON = {
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning directly from the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_WILDFLY_EE = {
+            // Messaging broker not included in the messaging-activemq layer
+            "org.jboss.xnio.netty.netty-xnio-transport",
+            // No patching modules in layers
+            "org.jboss.as.patching",
+            "org.jboss.as.patching.cli",
+            // Misc alternative variants of JPA things that we don't provide via layers
+            "org.jboss.as.jpa.hibernate:4",
+            "org.hibernate:5.0",
+            "org.hibernate.jipijapa-hibernate5",
+            "org.jboss.as.jpa.openjpa",
+            "org.apache.openjpa",
+            // TODO WFLY-16583 -- cruft
+            "javax.management.j2ee.api",
+            // In wildfly-ee only referenced by the
+            // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
+            "io.reactivex.rxjava2.rxjava"
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * when testing provisioning from the wildfly or wildfly-preview feature packs.
+     * Use this array for items common between the two feature packs.
+     */
+    public static final String[] NO_LAYER_EXPANSION = {};
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning from the wildfly feature pack.
+     */
+    public static final String[] NO_LAYER_WILDFLY = {
+            // Legacy subsystems for which we will not provide layers
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
+    };
+
+    /**
+     * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
+     * only when testing provisioning from the wildfly-preview feature pack.
+     */
+    public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
+            // WFP standard config uses Micrometer instead of WF Metrics
+            "org.wildfly.extension.metrics",
+            // MP Fault Tolerance has a dependency on MP Metrics
+            "io.smallrye.fault-tolerance",
+            "org.eclipse.microprofile.fault-tolerance.api",
+            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+            "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
+            // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
+            "org.hibernate.search.mapper.orm.coordination.outboxpolling"
+    };
+
+    /**
+     * Packages that are always expected to be included in the return value of {@link #getExpectedUnreferenced()}.
+     */
+    public static final String[] NOT_REFERENCED_COMMON = {
             // injected by ee
             "org.eclipse.yasson",
             // injected by ee
@@ -188,7 +260,62 @@ public class LayersTestBase {
             // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
             "org.jboss.ws.cxf.sts",
     };
-    private static final String[] NOT_REFERENCED;
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning directly from the wildfly-ee feature pack.
+     */
+    public static final String[] NOT_REFERENCED_WILDFLY_EE = {
+            // WFLY-18386 two io.netty.netty-codec... modules should be moved to wildfly feature pack
+            "io.netty.netty-codec-dns",
+            "io.netty.netty-codec-http2",
+            // TODO
+            "io.netty.netty-resolver-dns",
+            "io.reactivex.rxjava2.rxjava",
+            // injected by logging
+            "org.apache.logging.log4j.api",
+            // injected by logging
+            "org.jboss.logmanager.log4j2",
+            // injected by ee
+            "jakarta.json.bind.api",
+            // injected by jpa
+            "org.hibernate.search.orm",
+            "org.hibernate.search.backend.elasticsearch",
+            "org.hibernate.search.backend.lucene",
+            // Used by the hibernate search that's injected by jpa
+            "org.elasticsearch.client.rest-client",
+            "com.google.code.gson",
+            "com.carrotsearch.hppc",
+            "org.apache.lucene",
+            // Brought by galleon ServerRootResourceDefinition
+            "wildflyee.api"
+    };
+
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * when testing provisioning from the wildfly or wildfly-preview feature packs.
+     * Use this array for items common between the two feature packs.
+     */
+    public static final String[] NOT_REFERENCED_EXPANSION = {};
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning from the wildfly-preview feature pack.
+     */
+    public static final String[] NOT_REFERENCED_WILDFLY = {};
+
+    /**
+     * Included in the return value of {@link #getExpectedUnreferenced()}
+     * only when testing provisioning from the wildfly-preview feature pack.
+     */
+    public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
+            "org.wildfly.extension.metrics",
+            // Used by the hibernate search that's injected by jpa
+            "org.hibernate.search.mapper.orm.coordination.outboxpolling",
+            "org.apache.avro"
+    };
 
     /**
      * A HashMap to configure a banned module.
@@ -198,98 +325,9 @@ public class LayersTestBase {
      * Notice the allowed installation names does not distinguish between different parent names, e.g test-all-layers here means
      * allowing root/test-all-layers and servletRoot/test-all-layers.
      */
-    private static final HashMap<String, List<String>> BANNED_MODULES_CONF = new HashMap<String, List<String>>(){{
+    private static final HashMap<String, List<String>> BANNED_MODULES_CONF = new HashMap<>(){{
         put("org.jboss.as.security", Arrays.asList("test-all-layers-jpa-distributed", "test-all-layers", "legacy-security", "test-standalone-reference"));
     }};
-
-    static {
-        if (AssumeTestGroupUtil.isWildFlyPreview()) {
-            NOT_USED = ArrayUtils.addAll(
-                    NOT_USED_COMMON,
-                    // WFP standard config uses Micrometer instead of WF Metrics
-                    "org.wildfly.extension.metrics",
-                    // MP Fault Tolerance has a dependency on MP Metrics
-                    "io.smallrye.fault-tolerance",
-                    "org.eclipse.microprofile.fault-tolerance.api",
-                    "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
-                    // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
-                    "org.hibernate.search.mapper.orm.coordination.outboxpolling"
-            );
-
-            NOT_REFERENCED = ArrayUtils.addAll(
-                    NOT_REFERENCED_COMMON,
-                    "org.wildfly.extension.metrics",
-                    // Used by the hibernate search that's injected by jpa
-                    "org.hibernate.search.mapper.orm.coordination.outboxpolling",
-                    "org.apache.avro"
-            );
-        } else {
-            NOT_USED = ArrayUtils.addAll(
-                    NOT_USED_COMMON,
-                    // Messaging broker not included in the messaging-activemq layer
-                    "org.jboss.xnio.netty.netty-xnio-transport",
-                    // No patching modules in layers
-                    "org.jboss.as.patching",
-                    "org.jboss.as.patching.cli",
-                    // Misc alternative variants of JPA things that we don't provide via layers
-                    "org.jboss.as.jpa.hibernate:4",
-                    "org.hibernate:5.0",
-                    "org.hibernate.jipijapa-hibernate5",
-                    "org.jboss.as.jpa.openjpa",
-                    "org.apache.openjpa",
-                    // TODO WFLY-16583 -- cruft
-                    "javax.management.j2ee.api"
-            );
-            NOT_REFERENCED = ArrayUtils.addAll(
-                    NOT_REFERENCED_COMMON,
-                    // Standard configs don't include various MP subsystems
-                    "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-                    "io.jaegertracing",
-                    "io.netty.netty-codec-dns",
-                    "io.netty.netty-codec-http2",
-                    "io.netty.netty-resolver-dns",
-                    "io.reactivex.rxjava2.rxjava",
-                    "io.smallrye.common.vertx-context",
-                    "io.smallrye.reactive.messaging",
-                    "io.smallrye.reactive.messaging.connector",
-                    "io.smallrye.reactive.messaging.connector.kafka",
-                    "io.smallrye.reactive.messaging.connector.kafka.api",
-                    "io.smallrye.reactive.mutiny",
-                    "io.smallrye.reactive.mutiny.reactive-streams-operators",
-                    "io.smallrye.reactive.mutiny.vertx-core",
-                    "io.smallrye.reactive.mutiny.vertx-kafka-client",
-                    "io.smallrye.reactive.mutiny.vertx-runtime",
-                    "io.vertx.client.kafka",
-                    "io.vertx.core",
-                    "org.apache.kafka.client",
-                    "org.eclipse.microprofile.reactive-messaging.api",
-                    "org.eclipse.microprofile.reactive-streams-operators.api",
-                    "org.eclipse.microprofile.reactive-streams-operators.core",
-                    "org.wildfly.reactive.messaging.common",
-                    "org.wildfly.reactive.messaging.config",
-                    "org.wildfly.reactive.messaging.kafka",
-                    // injected by logging
-                    "org.apache.logging.log4j.api",
-                    // injected by logging
-                    "org.jboss.logmanager.log4j2",
-//                    "org.jboss.as.product:wildfly-web",
-                    // injected by ee
-                    "javax.json.bind.api",
-                    // injected by jpa
-                    "org.hibernate.search.orm",
-                    "org.hibernate.search.backend.elasticsearch",
-                    "org.hibernate.search.backend.lucene",
-                    // Used by the hibernate search that's injected by jpa
-                    "org.elasticsearch.client.rest-client",
-                    "com.google.code.gson",
-                    "com.carrotsearch.hppc",
-                    "org.apache.lucene",
-                    // Brought by galleon ServerRootResourceDefinition
-                    "wildflyee.api"
-            );
-        }
-    }
 
     public static String root;
     public static String defaultConfigsRoot;
@@ -317,8 +355,7 @@ public class LayersTestBase {
 
     @Test
     public void test() throws Exception {
-        LayersTest.test(root, new HashSet<>(Arrays.asList(NOT_REFERENCED)),
-                new HashSet<>(Arrays.asList(NOT_USED)));
+        LayersTest.test(root, getExpectedUnreferenced(), getExpectedUnusedInAllLayers());
     }
 
     @Test

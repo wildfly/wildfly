@@ -5,6 +5,11 @@
 package org.jboss.as.test.layers.base;
 
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.test.layers.LayersTest;
 import org.jboss.as.test.shared.LayersTestBase;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
@@ -31,5 +36,19 @@ public class LayersTestCase extends LayersTestBase {
         // checks the execution of the layers, do it directly
         AssumeTestGroupUtil.assumeWildFlyPreview();
         LayersTest.testExecution(root);
+    }
+
+    protected Set<String> getExpectedUnreferenced() {
+        return new HashSet<>(List.of(concatArrays(NOT_REFERENCED_COMMON, NOT_REFERENCED_WILDFLY_EE)));
+    }
+
+    protected  Set<String> getExpectedUnusedInAllLayers() {
+        return new HashSet<>(List.of(concatArrays(NO_LAYER_COMMON, NO_LAYER_WILDFLY_EE)));
+    }
+
+    private static String[] concatArrays(String[] common, String[] pack) {
+        String[] result = Arrays.copyOf(common, common.length + pack.length);
+        System.arraycopy(pack, 0, result, common.length, pack.length);
+        return result;
     }
 }
