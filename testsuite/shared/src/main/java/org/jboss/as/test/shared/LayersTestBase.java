@@ -141,12 +141,6 @@ public abstract class LayersTestBase {
             // No patching modules in layers
             "org.jboss.as.patching",
             "org.jboss.as.patching.cli",
-            // Misc alternative variants of JPA things that we don't provide via layers
-            "org.jboss.as.jpa.hibernate:4",
-            "org.hibernate:5.0",
-            "org.hibernate.jipijapa-hibernate5",
-            "org.jboss.as.jpa.openjpa",
-            "org.apache.openjpa",
             // In wildfly-ee only referenced by the
             // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
             "io.reactivex.rxjava2.rxjava"
