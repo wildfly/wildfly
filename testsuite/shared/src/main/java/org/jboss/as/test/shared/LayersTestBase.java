@@ -168,8 +168,6 @@ public abstract class LayersTestBase {
             "org.eclipse.microprofile.fault-tolerance.api",
             "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
             "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
-            // Used by Hibernate Search but only in preview TODO this doesn't seem right; NOT_REFERENCED should suffice
-            "org.hibernate.search.mapper.orm.coordination.outboxpolling",
     };
 
     /**
@@ -293,9 +291,6 @@ public abstract class LayersTestBase {
      */
     public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
             "org.wildfly.extension.metrics",
-            // Used by the hibernate search that's injected by jpa
-            "org.hibernate.search.mapper.orm.coordination.outboxpolling",
-            "org.apache.avro"
     };
 
     /**
