@@ -91,8 +91,6 @@ public abstract class LayersTestBase {
             "org.jboss.narayana.rts",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
-            // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
-            "org.wildfly.reactive.dep.jts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
             // Unreferenced Infinispan modules
@@ -134,6 +132,8 @@ public abstract class LayersTestBase {
             // Legacy subsystems for which we will not provide layers
             "org.wildfly.extension.microprofile.metrics-smallrye",
             "org.wildfly.extension.microprofile.opentracing-smallrye",
+            // TODO WFLY-16586 microprofile-reactive-streams-operators layer should provision this
+            "org.wildfly.reactive.dep.jts",
     };
 
     /**
