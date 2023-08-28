@@ -163,11 +163,6 @@ public abstract class LayersTestBase {
     public static final String[] NO_LAYER_WILDFLY_PREVIEW = {
             // WFP standard config uses Micrometer instead of WF Metrics
             "org.wildfly.extension.metrics",
-            // MP Fault Tolerance has a dependency on MP Metrics
-            "io.smallrye.fault-tolerance",
-            "org.eclipse.microprofile.fault-tolerance.api",
-            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
-            "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
     };
 
     /**
@@ -252,6 +247,11 @@ public abstract class LayersTestBase {
      * Use this array for items common between the two feature packs.
      */
     public static final String[] NOT_REFERENCED_EXPANSION = {
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
+            "org.wildfly.microprofile.fault-tolerance-smallrye.deployment",
+            "io.smallrye.fault-tolerance",
+            "org.eclipse.microprofile.fault-tolerance.api",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.health-smallrye",
             "org.eclipse.microprofile.health.api",
