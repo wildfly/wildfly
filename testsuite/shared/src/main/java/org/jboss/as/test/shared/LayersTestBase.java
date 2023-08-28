@@ -95,20 +95,6 @@ public abstract class LayersTestBase {
             "org.wildfly.reactive.dep.jts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
-            // TODO test-all-layers uses microprofile-opentracing instead of opentelemetry
-            "org.wildfly.extension.opentelemetry",
-            "org.wildfly.extension.opentelemetry-api",
-            "io.opentelemetry.exporter",
-            "io.opentelemetry.sdk",
-            "io.opentelemetry.proto",
-            "io.opentelemetry.otlp",
-            // Micrometer is not included in standard configs
-            "io.micrometer",
-            "org.wildfly.extension.micrometer",
-            "org.wildfly.micrometer.deployment",
-            "com.squareup.okhttp3",
-            "org.jetbrains.kotlin.kotlin-stdlib",
-            "com.google.protobuf",
             // Unreferenced Infinispan modules
             "org.infinispan.cdi.common",
             "org.infinispan.cdi.embedded",
@@ -275,6 +261,12 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
             "io.vertx.client",
+            // Extension not included in the default config
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "io.micrometer",
+            "com.google.protobuf",
+            "io.opentelemetry.proto",
             // Injected by jaxrs subsystem
             "org.jboss.resteasy.microprofile.config"
     };
