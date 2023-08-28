@@ -178,7 +178,6 @@ public abstract class LayersTestBase {
             "org.jboss.as.standalone",
             // injected by logging
             "org.jboss.logging.jul-to-slf4j-stub",
-            "org.jboss.resteasy.resteasy-client-microprofile",
             // Webservices tooling
             "org.jboss.ws.tools.common",
             "org.jboss.ws.tools.wsconsume",
@@ -268,7 +267,8 @@ public abstract class LayersTestBase {
             "com.google.protobuf",
             "io.opentelemetry.proto",
             // Injected by jaxrs subsystem
-            "org.jboss.resteasy.microprofile.config"
+            "org.jboss.resteasy.microprofile.config",
+            "org.jboss.resteasy.resteasy-client-microprofile",
     };
 
     /**
