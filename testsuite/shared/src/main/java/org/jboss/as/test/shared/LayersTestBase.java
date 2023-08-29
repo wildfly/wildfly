@@ -72,7 +72,6 @@ public abstract class LayersTestBase {
             // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
             // for now we should keep this module.
             "org.jboss.resteasy.resteasy-rxjava2",
-            "org.jboss.resteasy.resteasy-tracing-api",
             // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
             // as there is no ref to them in any module.xml nor any in WF java code.
             // Perhaps via deployment descriptor? In any case, no layer provides them
