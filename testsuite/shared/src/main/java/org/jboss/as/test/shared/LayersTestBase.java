@@ -208,7 +208,7 @@ public abstract class LayersTestBase {
             // injected by ee
             "jakarta.json.bind.api",
             // injected by jpa
-            "org.hibernate.search.orm",
+            "org.hibernate.search.mapper.orm",
             "org.hibernate.search.backend.elasticsearch",
             "org.hibernate.search.backend.lucene",
             // Used by the hibernate search that's injected by jpa
