@@ -249,12 +249,6 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
             "io.vertx.client",
-            // Extension not included in the default config
-            "org.wildfly.extension.micrometer",
-            "org.wildfly.micrometer.deployment",
-            "io.micrometer",
-            "com.google.protobuf",
-            "io.opentelemetry.proto",
             // Injected by jaxrs subsystem
             "org.jboss.resteasy.microprofile.config",
             "org.jboss.resteasy.resteasy-client-microprofile",
@@ -264,7 +258,14 @@ public abstract class LayersTestBase {
      * Included in the return value of {@link #getExpectedUnreferenced()}
      * only when testing provisioning from the wildfly-preview feature pack.
      */
-    public static final String[] NOT_REFERENCED_WILDFLY = {};
+    public static final String[] NOT_REFERENCED_WILDFLY = {
+            // Extension not included in the default config
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "io.micrometer",
+            "com.google.protobuf",
+            "io.opentelemetry.proto",
+    };
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
