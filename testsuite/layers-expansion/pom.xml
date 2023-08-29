@@ -769,6 +769,7 @@
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -881,6 +882,7 @@
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -984,6 +986,7 @@
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>

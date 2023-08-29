@@ -92,9 +92,6 @@ public abstract class LayersTestBase {
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
-            // JGroups external protocols - AWS
-            "org.jgroups.aws",
-            "software.amazon.awssdk.s3",
             //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
             "org.apache.xerces",
     };
@@ -191,6 +188,9 @@ public abstract class LayersTestBase {
             "org.infinispan.lock",
             "org.infinispan.query",
             "org.infinispan.query.core",
+            // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
+            "org.jgroups.aws",
+            "software.amazon.awssdk.s3",
     };
 
 
