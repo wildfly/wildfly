@@ -44,6 +44,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.vfs.VirtualFile;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.jboss.as.weld.logging.WeldLogger;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -175,6 +176,9 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(META_INF_PERSISTENCE_XML);
             parse(persistence_xml, listPUHolders, deploymentUnit);
             PersistenceUnitMetadataHolder holder = normalize(listPUHolders);
+            if (!holder.equals(null) && !holder.equals("")) {
+                WeldLogger.ROOT_LOGGER.couldNotLoadPersistenceXmlFromInvalidLocation(persistence_xml.getPathName());
+            }
             deploymentRoot.putAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS, holder);
             addApplicationDependenciesOnProvider( deploymentUnit, holder);
             markDU(holder, deploymentUnit);

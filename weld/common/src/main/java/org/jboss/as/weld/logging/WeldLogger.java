@@ -266,4 +266,10 @@ public interface WeldLogger extends BasicLogger {
 
     @Message(id = 58, value = "Persistence unit '%s' removed.")
     IllegalStateException persistenceUnitRemoved(String scopedPuName);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 59, value = "Persistence units are defined in the '%s' file, " +
+            "which is not a designated location for persistence.xml files in the Jakarta Persistence specification. " +
+            "Support for such non-standard locations may be removed in a future release.")
+    void couldNotLoadPersistenceXmlFromInvalidLocation(Object persistenceXmlPath);
 }
