@@ -2236,6 +2236,7 @@
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
@@ -2359,6 +2360,7 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
@@ -2445,6 +2447,7 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>

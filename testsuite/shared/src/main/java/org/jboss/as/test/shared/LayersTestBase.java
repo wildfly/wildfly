@@ -92,14 +92,6 @@ public abstract class LayersTestBase {
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
-            // Unreferenced Infinispan modules
-            "org.infinispan.cdi.common",
-            "org.infinispan.cdi.embedded",
-            "org.infinispan.cdi.remote",
-            "org.infinispan.counter",
-            "org.infinispan.lock",
-            "org.infinispan.query",
-            "org.infinispan.query.core",
             // JGroups external protocols - AWS
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
@@ -191,6 +183,14 @@ public abstract class LayersTestBase {
             "org.jboss.ws.saaj-impl",
             // TODO just a testsuite utility https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers/topic/org.2Ejboss.2Ews.2Ecxf.2Ests.20module
             "org.jboss.ws.cxf.sts",
+            // WFLY-13520 Unreferenced Infinispan modules available for applications to depend upon
+            "org.infinispan.cdi.common",
+            "org.infinispan.cdi.embedded",
+            "org.infinispan.cdi.remote",
+            "org.infinispan.counter",
+            "org.infinispan.lock",
+            "org.infinispan.query",
+            "org.infinispan.query.core",
     };
 
 
