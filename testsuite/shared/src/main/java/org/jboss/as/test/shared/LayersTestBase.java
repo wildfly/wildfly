@@ -205,11 +205,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // WFLY-18386 two io.netty.netty-codec... modules should be moved to wildfly feature pack
-            "io.netty.netty-codec-dns",
-            "io.netty.netty-codec-http2",
-            // TODO
-            "io.netty.netty-resolver-dns",
             // injected by ee
             "jakarta.json.bind.api",
             // injected by jpa
