@@ -112,8 +112,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NO_LAYER_WILDFLY_EE = {
-            // Messaging broker not included in the messaging-activemq layer
-            "org.jboss.xnio.netty.netty-xnio-transport",
             // In wildfly-ee only referenced by the
             // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
             "io.reactivex.rxjava2.rxjava"
