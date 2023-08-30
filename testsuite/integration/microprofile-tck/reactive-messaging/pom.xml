@@ -141,37 +141,5 @@
             </properties>
         </profile>
 
-        <profile>
-            <id>bootablejar.ee9.profile</id>
-            <activation>
-                <property>
-                    <name>ts.bootable.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- Turn off provisioning since it is enabled by default-->
-                <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-                <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>ee9.test.profile</id>
-            <activation>
-                <property>
-                    <name>ts.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-                <!-- We're still on javax, so set these back to the original versions from the main parent pom -->
-                <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
-                <!--<version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>-->
-
-            </properties>
-        </profile>
-
     </profiles>
 </project>

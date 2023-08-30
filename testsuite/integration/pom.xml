@@ -292,44 +292,6 @@
                 <module>elytron-oidc-client</module>
             </modules>
         </profile>
-        <profile>
-            <id>bootablejar.ee9.profile</id>
-            <activation>
-                <property>
-                    <name>ts.bootable.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-            </properties>
-            <modules>
-                <module>basic</module>
-                <module>clustering</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>elytron-oidc-client</module>
-            </modules>
-        </profile>
-
-        <!-- Test against the EE 9 feature pack -->
-        <profile>
-            <id>ee9.test.profile</id>
-            <activation>
-                <property>
-                    <name>ts.ee9</name>
-                </property>
-            </activation>
-            <modules>
-                <module>basic</module>
-                <module>ws</module>
-                <module>clustering</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
-                <module>elytron-oidc-client</module>
-            </modules>
-        </profile>
-
     </profiles>
 
 

@@ -156,20 +156,6 @@
             </properties>
         </profile>
         
-        <profile>
-            <id>bootablejar.ee9.profile</id>
-            <activation>
-                <property>
-                    <name>ts.bootable.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-                <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
-            </properties>
-        </profile>
-
         <!-- Profile to turn off execution of this module's tests if the testsuite is being run
              against an external dist (i.e. by using the jboss.dist property to point to one)
              and that dist does not include the full set of MP functionality. -->
@@ -195,114 +181,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>ee9.test.profile</id>
-            <activation>
-                <property>
-                    <name>ts.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
-                <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>jakarta.json</groupId>
-                    <artifactId>jakarta.json-api</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish</groupId>
-                    <artifactId>jakarta.json</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
-                    <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>jose-jwt</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-client-api</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-core</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-core-spi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-atom-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-cdi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-crypto</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-jackson2-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-json-binding-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-json-p-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-jaxb-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-jsapi</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-multipart-provider</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-rxjava2</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-validator-provider</artifactId>
-                </dependency>
-                <!--
-                This one ends up pulling in MP Config, and if present fails because no ConfigProviderResolver
-                can be found
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-config</artifactId>
-                </dependency>
-                -->
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.resteasy.microprofile</groupId>
-                    <artifactId>microprofile-rest-client-base</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
 
     </profiles>

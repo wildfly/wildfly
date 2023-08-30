@@ -507,17 +507,6 @@
             <modules><module>scripts</module></modules>
         </profile>
 
-        <profile>
-            <id>ee9.profile</id>
-            <activation><property><name>ts.ee9</name></property></activation>
-            <modules>
-                <module>integration</module>
-                <module>layers</module>
-                <module>scripts</module>
-            </modules>
-        </profile>
-
-
         <!--
           Debugging profiles.
         -->

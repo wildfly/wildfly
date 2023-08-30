@@ -83,33 +83,6 @@
             </properties>
         </profile>
 
-        <!-- Test against EE 9 feature packs -->
-        <profile>
-            <id>ee9.profile</id>
-            <activation>
-                <property>
-                    <name>ts.ee9</name>
-                </property>
-            </activation>
-            <properties>
-                <!-- Turn on normal plugin execution by changing the phase props from 'none'.
-                     Note that we leave 'provisioning.phase.preview.excluded' as 'none' -->
-                <provisioning.phase>compile</provisioning.phase>
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-                <!-- Reset the feature pack GAV props to use wildfly-preview -->
-                <servlet.feature.pack.artifactId>wildfly-preview-feature-pack</servlet.feature.pack.artifactId>
-                <ee.feature.pack.groupId>${project.groupId}</ee.feature.pack.groupId>
-                <ee.feature.pack.artifactId>wildfly-preview-feature-pack</ee.feature.pack.artifactId>
-                <ee.feature.pack.version>${project.version}</ee.feature.pack.version>
-                <full.feature.pack.artifactId>wildfly-preview-feature-pack</full.feature.pack.artifactId>
-                <!-- Use the transformed artifact repo -->
-                <maven.repo.local>${wildfly.transformed.repo.dir}</maven.repo.local>
-                <!-- We don't use a 'servlet feature pack' so don't provision any servers in the dir the servlet test checks -->
-                <servlet.layers.install.dir>${layers.install.dir}</servlet.layers.install.dir>
-                <!-- An empty value for this will disable the servlet test -->
-                <servlet.layers.install.root></servlet.layers.install.root>
-            </properties>
-        </profile>
     </profiles>
     
             <build>

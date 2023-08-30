@@ -91,16 +91,6 @@
                                     <outputDirectory>${basedir}/target/uploads</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>../ee-9/dist/target</directory>
-                                            <includes>
-                                                <include>wildfly-preview-*.tar.gz</include>
-                                                <include>wildfly-preview-*.zip</include>
-                                            </includes>
-                                            <excludes>
-                                                <exclude>*-src.*</exclude>
-                                            </excludes>
-                                        </resource>
-                                        <resource>
                                             <directory>../dist/target</directory>
                                             <includes>
                                                 <include>wildfly-*.tar.gz</include>
