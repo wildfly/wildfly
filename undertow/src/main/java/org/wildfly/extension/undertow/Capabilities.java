@@ -22,7 +22,9 @@ public final class Capabilities {
     public static final String CAPABILITY_ACCESS_LOG = "org.wildfly.undertow.host.access-log";
     public static final String CAPABILITY_CONSOLE_ACCESS_LOG = "org.wildfly.undertow.host.console-access-log";
     public static final String CAPABILITY_HANDLER = "org.wildfly.extension.undertow.handler";
-    public static final String CAPABILITY_MOD_CLUSTER_FILTER = "org.wildfly.undertow.mod_cluster-filter";
+    public static final String CAPABILITY_FILTER = "org.wildfly.extension.undertow.filter";
+    public static final String CAPABILITY_HOST_FILTER_REF = "org.wildfly.extension.undertow.host.filter-ref";
+    public static final String CAPABILITY_LOCATION_FILTER_REF = "org.wildfly.extension.undertow.location.filter-ref";
     public static final String CAPABILITY_SERVLET_CONTAINER = "org.wildfly.undertow.servlet-container";
     public static final String CAPABILITY_WEBSOCKET = "org.wildfly.undertow.servlet-container.websocket";
     public static final String CAPABILITY_HTTP_INVOKER = "org.wildfly.undertow.http-invoker";
