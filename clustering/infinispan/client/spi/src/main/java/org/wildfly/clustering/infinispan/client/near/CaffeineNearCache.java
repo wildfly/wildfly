@@ -43,18 +43,23 @@ public class CaffeineNearCache<K, V> implements NearCache<K, V> {
     }
 
     @Override
-    public void put(K key, MetadataValue<V> value) {
-        this.map.put(key, value);
-    }
-
-    @Override
-    public void putIfAbsent(K key, MetadataValue<V> value) {
-        this.map.putIfAbsent(key, value);
+    public boolean putIfAbsent(K key, MetadataValue<V> value) {
+        return this.map.putIfAbsent(key, value) == null;
     }
 
     @Override
     public boolean remove(K key) {
         return this.map.remove(key) != null;
+    }
+
+    @Override
+    public boolean remove(K key, MetadataValue<V> value) {
+        return this.map.remove(key, value);
+    }
+
+    @Override
+    public boolean replace(K key, MetadataValue<V> prevValue, MetadataValue<V> newValue) {
+        return this.map.replace(key, prevValue, newValue);
     }
 
     @Override

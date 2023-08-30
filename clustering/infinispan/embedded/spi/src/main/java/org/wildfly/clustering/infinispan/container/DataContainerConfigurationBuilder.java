@@ -27,6 +27,7 @@ import static org.wildfly.clustering.infinispan.container.DataContainerConfigura
 import java.util.function.Predicate;
 
 import org.infinispan.commons.configuration.Builder;
+import org.infinispan.commons.configuration.Combine;
 import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 
@@ -56,8 +57,9 @@ public class DataContainerConfigurationBuilder implements Builder<DataContainerC
     }
 
     @Override
-    public DataContainerConfigurationBuilder read(DataContainerConfiguration template) {
-        return this.evictable(template.evictable());
+    public DataContainerConfigurationBuilder read(DataContainerConfiguration template, Combine combine) {
+        this.attributes.read(template.attributes(), combine);
+        return this;
     }
 
     @Override

@@ -27,6 +27,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.CustomStoreResourceDe
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.infinispan.commons.configuration.Combine;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -78,8 +79,7 @@ public class CustomStoreServiceConfigurator extends StoreServiceConfigurator<Cus
             @SuppressWarnings("unchecked")
             Class<StoreConfigurationBuilder<?, ?>> storeClass = (Class<StoreConfigurationBuilder<?, ?>>) loader.loadClass(this.className).asSubclass(StoreConfigurationBuilder.class);
             return new ConfigurationBuilder().persistence().passivation(persistence.passivation()).addStore(storeClass)
-                    .async().read(store.async())
-                    .fetchPersistentState(store.fetchPersistentState())
+                    .async().read(store.async(), Combine.DEFAULT)
                     .preload(store.preload())
                     .purgeOnStartup(store.purgeOnStartup())
                     .shared(store.shared())
