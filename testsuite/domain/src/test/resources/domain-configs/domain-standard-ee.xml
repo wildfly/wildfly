@@ -832,7 +832,7 @@
     <server-groups>
         <server-group name="main-server-group" profile="default">
             <jvm name="default">
-                <heap size="64m" max-size="100m"/>
+                <heap size="64m" max-size="256m"/>
                 <environment-variables>
                     <variable name="DOMAIN_TEST_MAIN_GROUP" value="main_group"/>
                 </environment-variables>
@@ -842,7 +842,7 @@
 
         <server-group name="other-server-group" profile="other">
             <jvm name="default">
-                <heap size="64m" max-size="100m"/>
+                <heap size="64m" max-size="256m"/>
             </jvm>
             <socket-binding-group ref="other-sockets"/>
         </server-group>
