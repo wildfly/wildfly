@@ -76,6 +76,8 @@ that are added to a deployment, by various deployers within WildFly.
 [[which-are-the-implicit-module-dependencies]]
 == Which are the implicit module dependencies?
 
+NOTE: The sun.jdk is no longer added by the Core Server as an implicit dependency.
+
 [cols=",,,",,options="header"]
 |=======================================================================
 |Subsystem responsible for adding the implicit dependency |Dependencies
