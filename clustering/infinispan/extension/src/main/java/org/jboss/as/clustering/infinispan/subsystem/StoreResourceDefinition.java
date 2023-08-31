@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
@@ -125,6 +126,8 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
+    static final Set<PathElement> REQUIRED_SINGLETON_CHILDREN = Set.of(StoreWriteThroughResourceDefinition.PATH);
+
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceConfiguratorFactory factory;
 
@@ -142,7 +145,7 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
+                .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 ;
         ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);

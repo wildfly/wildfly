@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -131,6 +132,9 @@ public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider>
                 ;
     }
 
+    static final Set<PathElement> REQUIRED_CHILDREN = Set.of(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH);
+    static final Set<PathElement> REQUIRED_SINGLETON_CHILDREN = Set.of(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH);
+
     private final UnaryOperator<ResourceDescriptor> configurator;
     private final ResourceServiceHandler handler;
 
@@ -151,8 +155,8 @@ public class CacheResourceDefinition<P extends CacheServiceConfiguratorProvider>
                 .addCapabilities(Capability.class)
                 .addCapabilities(EnumSet.allOf(ClusteringCacheRequirement.class).stream().map(BinaryRequirementCapability::new).collect(Collectors.toList()))
                 .addCapabilities(EnumSet.allOf(SingletonCacheRequirement.class).stream().map(BinaryRequirementCapability::new).collect(Collectors.toList()))
-                .addRequiredChildren(ExpirationResourceDefinition.PATH, LockingResourceDefinition.PATH, TransactionResourceDefinition.PATH)
-                .addRequiredSingletonChildren(HeapMemoryResourceDefinition.PATH, NoStoreResourceDefinition.PATH)
+                .addRequiredChildren(REQUIRED_CHILDREN)
+                .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 ;
         new SimpleResourceRegistrar(descriptor, this.handler).register(registration);
 
