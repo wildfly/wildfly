@@ -118,16 +118,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 deploymentDescriptorEnvironment = new DeploymentDescriptorEnvironment("java:comp/env/", beanMetaData);
 
                 messagingType = beanMetaData.getMessagingType();
-                final ActivationConfigMetaData activationConfigMetaData = beanMetaData.getActivationConfig();
-                if (activationConfigMetaData != null) {
-                    final ActivationConfigPropertiesMetaData propertiesMetaData = activationConfigMetaData
-                            .getActivationConfigProperties();
-                    if (propertiesMetaData != null) {
-                        for (final ActivationConfigPropertyMetaData propertyMetaData : propertiesMetaData) {
-                            activationConfigProperties.put(propertyMetaData.getKey(), propertyMetaData.getValue());
-                        }
-                    }
-                }
+                activationConfigProperties.putAll(getActivationConfigProperties(beanMetaData));
                 messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(compositeIndex, messageBeanAnnotation, deploymentUnit);
 
             } else {
@@ -181,21 +172,33 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         return interfaces.iterator().next().toString();
     }
 
-    private Properties getActivationConfigProperties(final ActivationConfigMetaData activationConfig) {
+    private Properties getActivationConfigProperties(final MessageDrivenBeanMetaData mdb) {
         final Properties activationConfigProps = new Properties();
-        if (activationConfig == null || activationConfig.getActivationConfigProperties() == null) {
-            return activationConfigProps;
+        final ActivationConfigMetaData activationConfig = mdb.getActivationConfig();
+        if (activationConfig != null && activationConfig.getActivationConfigProperties() != null) {
+            final ActivationConfigPropertiesMetaData activationConfigPropertiesMetaData = activationConfig.getActivationConfigProperties();
+            for (ActivationConfigPropertyMetaData activationConfigProp : activationConfigPropertiesMetaData) {
+                if (activationConfigProp == null) {
+                    continue;
+                }
+                final String propName = activationConfigProp.getActivationConfigPropertyName();
+                final String propValue = activationConfigProp.getValue();
+                if (propName != null) {
+                    activationConfigProps.put(propName, propValue);
+                }
+            }
         }
-        final ActivationConfigPropertiesMetaData activationConfigPropertiesMetaData = activationConfig.getActivationConfigProperties();
-        for (ActivationConfigPropertyMetaData activationConfigProp : activationConfigPropertiesMetaData) {
-            if (activationConfigProp == null) {
-                continue;
-            }
-            final String propName = activationConfigProp.getActivationConfigPropertyName();
-            final String propValue = activationConfigProp.getValue();
-            if (propName != null) {
-                activationConfigProps.put(propName, propValue);
-            }
+        if (mdb.getAcknowledgeMode() != null && !mdb.getAcknowledgeMode().isBlank()) {
+            activationConfigProps.put("acknowledgeMode", mdb.getAcknowledgeMode());
+        }
+        if (mdb.getMessageDestinationType() != null && !mdb.getMessageDestinationType().isBlank()) {
+            activationConfigProps.put("destinationType", mdb.getMessageDestinationType());
+        }
+        if (mdb.getMessageSelector() != null && !mdb.getMessageSelector().isBlank()) {
+            activationConfigProps.put("messageSelector", mdb.getMessageSelector());
+        }
+        if (mdb.getSubscriptionDurability() != null) {
+            activationConfigProps.put("subscriptionDurability", mdb.getSubscriptionDurability().toString());
         }
         return activationConfigProps;
     }
@@ -209,7 +212,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             // TODO: This isn't really correct to default to MessageListener
             messageListenerInterface = MessageListener.class.getName();
         }
-        final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
+        final Properties activationConfigProps = getActivationConfigProperties(mdb);
         final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
         final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterface, activationConfigProps, defaultResourceAdapterName, mdb, defaultMdbPoolAvailable);
         mdbComponentDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", mdb));
