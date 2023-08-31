@@ -30,7 +30,10 @@
 
     <resources>
         <artifact name="${com.squareup.okhttp3:okhttp}"/>
-        <artifact name="${com.squareup.okio:okio}"/>
+        <artifact name="${com.squareup.okio:okio-jvm}"/>
+        <artifact name="${org.jetbrains.kotlin:kotlin-stdlib}"/>
+        <artifact name="${org.jetbrains.kotlin:kotlin-stdlib-common}"/>
+        <artifact name="${org.jetbrains.kotlin:kotlin-stdlib-jdk8}"/>
     </resources>
 
     <dependencies>

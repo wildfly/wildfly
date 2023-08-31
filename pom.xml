@@ -285,6 +285,7 @@
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.14.2</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>2.14.2</version.com.fasterxml.jackson.databind>
+        <version.com.fasterxml.jackson.jr.jackson-jr-objects>2.14.2</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>2.9.3</version.com.github.ben-manes.caffeine>
         <version.com.github.fge.btf>1.2</version.com.github.fge.btf>
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
@@ -305,7 +306,7 @@
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
-        <version.com.squareup.okio>1.17.5</version.com.squareup.okio>
+        <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
         <version.com.sun.faces>2.3.17.SP01</version.com.sun.faces>
         <version.com.sun.istack>3.0.12</version.com.sun.istack>
@@ -480,6 +481,7 @@
         <version.org.jboss.ws.spi>3.4.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
+        <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
         <version.org.jgroups>4.2.21.Final</version.org.jgroups>
         <version.org.jgroups.azure>1.3.1.Final</version.org.jgroups.azure>
         <version.org.jgroups.kubernetes>1.0.16.Final</version.org.jgroups.kubernetes>
@@ -515,6 +517,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson.jr</groupId>
+                <artifactId>jackson-jr-objects</artifactId>
+                <version>${version.com.fasterxml.jackson.jr.jackson-jr-objects}</version>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
@@ -1830,8 +1837,8 @@
 
             <dependency>
                 <groupId>com.squareup.okio</groupId>
-                <artifactId>okio</artifactId>
-                <version>${version.com.squareup.okio}</version>
+                <artifactId>okio-jvm</artifactId>
+                <version>${version.com.squareup.okio-jvm}</version>
             </dependency>
 
             <dependency>
@@ -9275,6 +9282,42 @@
                 <groupId>org.jctools</groupId>
                 <artifactId>jctools-core</artifactId>
                 <version>${version.org.jctools.jctools-core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-common</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <version>${version.org.jetbrains.kotlin}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
