@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
@@ -38,6 +39,8 @@ import org.jboss.as.controller.PathElement;
  */
 public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDefinition {
 
+    static final Set<PathElement> REQUIRED_CHILDREN = Set.of(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupsResourceDefinition.PATH);
+
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<ResourceDescriptor> configurator;
 
@@ -47,7 +50,7 @@ public class SharedStateCacheResourceDefinition extends ClusteredCacheResourceDe
 
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addRequiredChildren(PartitionHandlingResourceDefinition.PATH, StateTransferResourceDefinition.PATH, BackupsResourceDefinition.PATH);
+            return this.configurator.apply(descriptor).addRequiredChildren(REQUIRED_CHILDREN);
         }
     }
 

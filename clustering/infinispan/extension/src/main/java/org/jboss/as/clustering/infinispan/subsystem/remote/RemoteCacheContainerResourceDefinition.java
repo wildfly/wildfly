@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
@@ -228,6 +229,8 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
         }
     }
 
+    public static final Set<PathElement> REQUIRED_CHILDREN = Set.of(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH);
+
     public RemoteCacheContainerResourceDefinition() {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
@@ -241,7 +244,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addAttributes(ListAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addRequiredChildren(ConnectionPoolResourceDefinition.PATH, ThreadPoolResourceDefinition.CLIENT.getPathElement(), SecurityResourceDefinition.PATH)
+                .addRequiredChildren(REQUIRED_CHILDREN)
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
         ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();

@@ -179,6 +179,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
+        addRequiredChildOperations(address, CacheContainerResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheContainerResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
@@ -330,6 +333,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             this.parseCacheAttribute(reader, i, address, operations);
         }
 
+        addRequiredChildOperations(address, CacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseCacheElement(reader, address, operations);
         }
@@ -346,12 +352,15 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             this.parseClusteredCacheAttribute(reader, i, address, operations);
         }
 
+        addRequiredChildOperations(address, CacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredChildOperations(address, SharedStateCacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseSharedStateCacheElement(reader, address, operations);
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void parseScatteredCache(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String name = require(reader, XMLAttribute.NAME);
@@ -375,6 +384,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                 }
             }
         }
+
+        addRequiredChildOperations(address, CacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredChildOperations(address, SharedStateCacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseSharedStateCacheElement(reader, address, operations);
@@ -411,6 +424,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
+        addRequiredChildOperations(address, CacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredChildOperations(address, SharedStateCacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseSharedStateCacheElement(reader, address, operations);
         }
@@ -426,6 +443,9 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             this.parseClusteredCacheAttribute(reader, i, address, operations);
         }
+
+        addRequiredChildOperations(address, CacheResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, CacheResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseCacheElement(reader, address, operations);
@@ -692,12 +712,10 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void parsePartitionHandling(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(PartitionHandlingResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -732,8 +750,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseStateTransfer(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(StateTransferResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -764,8 +781,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseBackups(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(BackupsResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -781,7 +796,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
     }
 
-    @SuppressWarnings({ "static-method", "deprecation" })
     private void parseBackup(XMLExtendedStreamReader reader, PathAddress backupsAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String site = require(reader, XMLAttribute.SITE);
@@ -851,8 +865,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseLocking(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(LockingResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -885,10 +898,6 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(TransactionResourceDefinition.PATH);
         ModelNode operation = operations.get(address);
-        if (operation == null) {
-            operation = Util.createAddOperation(address);
-            operations.put(address, operation);
-        }
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -923,7 +932,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(HeapMemoryResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        operations.put(cacheAddress.append(MemoryResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -947,8 +956,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseExpiration(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(ExpirationResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1008,7 +1016,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(HeapMemoryResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        operations.put(cacheAddress.append(MemoryResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1031,7 +1039,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(OffHeapMemoryResourceDefinition.BINARY_PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        operations.put(cacheAddress.append(MemoryResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             this.parseBinaryMemoryAttribute(reader, i, operation);
@@ -1043,7 +1051,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(OffHeapMemoryResourceDefinition.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        operations.put(cacheAddress.append(MemoryResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1111,12 +1119,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseCustomStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(CustomStoreResourceDefinition.PATH);
-        PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(operationKey, operation);
+        operations.put(cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1137,6 +1141,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         this.applyLegacyStoreAttributeDefaults(operation);
 
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
         }
@@ -1145,12 +1151,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseFileStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(FileStoreResourceDefinition.PATH);
-        PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(operationKey, operation);
+        operations.put(cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1171,6 +1173,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         this.applyLegacyStoreAttributeDefaults(operation);
 
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
         }
@@ -1179,12 +1183,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseRemoteStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = cacheAddress.append(RemoteStoreResourceDefinition.PATH);
-        PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(operationKey, operation);
+        operations.put(cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1214,6 +1214,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
         }
 
         this.applyLegacyStoreAttributeDefaults(operation);
+
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -1250,12 +1252,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseHotRodStore(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = cacheAddress.append(HotRodStoreResourceDefinition.PATH);
-        PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(operationKey, operation);
+        operations.put(cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1276,6 +1274,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         this.applyLegacyStoreAttributeDefaults(operation);
 
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseStoreElement(reader, address, operations);
         }
@@ -1285,13 +1285,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(JDBCStoreResourceDefinition.PATH);
         PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
         operations.put(operationKey, operation);
 
         this.parseJDBCStoreAttributes(reader, operationKey, operations);
+
+        addRequiredChildOperations(address, JDBCStoreResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -1311,13 +1311,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(JDBCStoreResourceDefinition.PATH);
         PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
         operations.put(operationKey, operation);
 
         this.parseJDBCStoreAttributes(reader, operationKey, operations);
+
+        addRequiredChildOperations(address, JDBCStoreResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -1337,13 +1337,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(JDBCStoreResourceDefinition.PATH);
         PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
         operations.put(operationKey, operation);
 
         this.parseJDBCStoreAttributes(reader, operationKey, operations);
+
+        addRequiredChildOperations(address, JDBCStoreResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -1363,13 +1363,13 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
         PathAddress address = cacheAddress.append(JDBCStoreResourceDefinition.PATH);
         PathAddress operationKey = cacheAddress.append(StoreResourceDefinition.WILDCARD_PATH);
-        if (operations.containsKey(operationKey)) {
-            throw ParseUtils.unexpectedElement(reader);
-        }
         ModelNode operation = Util.createAddOperation(address);
         operations.put(operationKey, operation);
 
         this.parseJDBCStoreAttributes(reader, operationKey, operations);
+
+        addRequiredChildOperations(address, JDBCStoreResourceDefinition.REQUIRED_CHILDREN, operations);
+        addRequiredSingletonChildOperations(address, StoreResourceDefinition.REQUIRED_SINGLETON_CHILDREN, operations);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -1428,8 +1428,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseJDBCStoreBinaryTable(XMLExtendedStreamReader reader, PathAddress storeAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = storeAddress.append(StringTableResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(storeAddress.getParent().append(StoreResourceDefinition.WILDCARD_PATH).append(StringTableResourceDefinition.PATH), operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1450,8 +1449,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
     private void parseJDBCStoreStringTable(XMLExtendedStreamReader reader, PathAddress storeAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = storeAddress.append(StringTableResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(storeAddress.getParent().append(StoreResourceDefinition.WILDCARD_PATH).append(StringTableResourceDefinition.PATH), operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1664,8 +1662,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private <P extends ThreadPoolDefinition & ResourceDefinitionProvider> void parseThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1701,8 +1698,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private <P extends ScheduledThreadPoolDefinition & ResourceDefinitionProvider> void parseScheduledThreadPool(P pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1827,6 +1823,8 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             }
         }
 
+        addRequiredChildOperations(address, RemoteCacheContainerResourceDefinition.REQUIRED_CHILDREN, operations);
+
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
@@ -1880,8 +1878,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseConnectionPool(XMLExtendedStreamReader reader, PathAddress cacheAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = cacheAddress.append(ConnectionPoolResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -1958,8 +1955,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
 
     private void parseRemoteCacheContainerSecurity(XMLExtendedStreamReader reader, PathAddress containerAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = containerAddress.append(SecurityResourceDefinition.PATH);
-        ModelNode operation = Util.createAddOperation(address);
-        operations.put(address, operation);
+        ModelNode operation = operations.get(address);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
@@ -2000,6 +1996,21 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             parser.parseElement(definition, reader, operation);
         } else {
             parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
+        }
+    }
+
+    private static void addRequiredChildOperations(PathAddress parentAddress, Set<PathElement> children, Map<PathAddress, ModelNode> operations) {
+        // WFLY-18401 Add required children to boot operations
+        for (PathElement child : children) {
+            PathAddress address = parentAddress.append(child);
+            operations.put(address, Util.createAddOperation(address));
+        }
+    }
+
+    private static void addRequiredSingletonChildOperations(PathAddress parentAddress, Set<PathElement> children, Map<PathAddress, ModelNode> operations) {
+        // WFLY-18401 Add required singleton children to boot operations
+        for (PathElement child : children) {
+            operations.put(parentAddress.append(child.getKey()), Util.createAddOperation(parentAddress.append(child)));
         }
     }
 }
