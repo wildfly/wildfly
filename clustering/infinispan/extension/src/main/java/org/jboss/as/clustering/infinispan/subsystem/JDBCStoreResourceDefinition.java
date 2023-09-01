@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.persistence.jdbc.common.DatabaseType;
@@ -78,12 +79,14 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
         }
     }
 
+    static final Set<PathElement> REQUIRED_CHILDREN = Set.of(StringTableResourceDefinition.PATH);
+
     static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
 
         @Override
         public ResourceDescriptor apply(ResourceDescriptor descriptor) {
             return descriptor.addAttributes(Attribute.class)
-                    .addRequiredChildren(StringTableResourceDefinition.PATH)
+                    .addRequiredChildren(REQUIRED_CHILDREN)
                     ;
         }
     }
