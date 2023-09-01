@@ -36,10 +36,11 @@ public enum DistributableWebSubsystemModel implements SubsystemModel {
 
     VERSION_1_0_0(1, 0, 0), // WildFly 17
      */
-    VERSION_2_0_0(2, 0, 0), // WildFly 18-26
-    VERSION_3_0_0(3, 0, 0), // WildFly 27
+    VERSION_2_0_0(2, 0, 0), // WildFly 18-26, EAP 7.4
+    VERSION_3_0_0(3, 0, 0), // WildFly 27-29
+    VERSION_4_0_0(4, 0, 0), // WildFly 30-present, EAP 8.0
     ;
-    public static final DistributableWebSubsystemModel CURRENT = VERSION_3_0_0;
+    public static final DistributableWebSubsystemModel CURRENT = VERSION_4_0_0;
 
     private final ModelVersion version;
 
