@@ -5,7 +5,7 @@
     <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE" marshaller="JBOSS">
         <local-affinity/>
     </infinispan-session-management>
-    <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+    <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" expiration-thread-pool-size="10">
         <no-affinity/>
     </hotrod-session-management>
     <infinispan-single-sign-on-management name="default" cache-container="foo"/>

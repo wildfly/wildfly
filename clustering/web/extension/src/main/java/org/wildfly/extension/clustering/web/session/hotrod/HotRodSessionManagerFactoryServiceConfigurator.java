@@ -160,4 +160,9 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  exte
     public SpecificationProvider<S, SC, AL> getSpecificationProvider() {
         return this.factoryConfiguration.getSpecificationProvider();
     }
+
+    @Override
+    public int getExpirationThreadPoolSize() {
+        return this.configuration.getExpirationThreadPoolSize();
+    }
 }

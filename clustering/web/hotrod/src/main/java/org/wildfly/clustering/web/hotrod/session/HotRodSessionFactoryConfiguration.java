@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,16 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.clustering.web.session.hotrod;
+package org.wildfly.clustering.web.hotrod.session;
 
-import org.wildfly.clustering.ee.hotrod.RemoteCacheConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 
 /**
- * Configuration of an {@link HotRodSessionManagementProvider}.
+ * Encapsulates the configuration of a {@link HotRodSessionFactory}.
  * @author Paul Ferraro
  */
-public interface HotRodSessionManagementConfiguration<M> extends DistributableSessionManagementConfiguration<M>, RemoteCacheConfiguration {
+public interface HotRodSessionFactoryConfiguration extends HotRodConfiguration {
     /**
      * Returns the size of the thread pool used for processing expiration events from the remote Infinispan cluster.
      * @return

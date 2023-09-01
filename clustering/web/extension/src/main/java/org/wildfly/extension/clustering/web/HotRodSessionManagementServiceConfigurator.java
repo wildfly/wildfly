@@ -23,6 +23,7 @@
 package org.wildfly.extension.clustering.web;
 
 import static org.wildfly.extension.clustering.web.HotRodSessionManagementResourceDefinition.Attribute.CACHE_CONFIGURATION;
+import static org.wildfly.extension.clustering.web.HotRodSessionManagementResourceDefinition.Attribute.EXPIRATION_THREAD_POOL_SIZE;
 import static org.wildfly.extension.clustering.web.HotRodSessionManagementResourceDefinition.Attribute.REMOTE_CACHE_CONTAINER;
 
 import org.jboss.as.controller.OperationContext;
@@ -42,6 +43,7 @@ public class HotRodSessionManagementServiceConfigurator extends SessionManagemen
 
     private volatile String containerName;
     private volatile String configurationName;
+    private volatile int expirationThreadPoolSize;
 
     HotRodSessionManagementServiceConfigurator(PathAddress address) {
         super(address);
@@ -51,6 +53,7 @@ public class HotRodSessionManagementServiceConfigurator extends SessionManagemen
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.containerName = REMOTE_CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         this.configurationName = CACHE_CONFIGURATION.resolveModelAttribute(context, model).asStringOrNull();
+        this.expirationThreadPoolSize = EXPIRATION_THREAD_POOL_SIZE.resolveModelAttribute(context, model).asInt();
         return super.configure(context, model);
     }
 
@@ -67,5 +70,10 @@ public class HotRodSessionManagementServiceConfigurator extends SessionManagemen
     @Override
     public String getConfigurationName() {
         return this.configurationName;
+    }
+
+    @Override
+    public int getExpirationThreadPoolSize() {
+        return this.expirationThreadPoolSize;
     }
 }

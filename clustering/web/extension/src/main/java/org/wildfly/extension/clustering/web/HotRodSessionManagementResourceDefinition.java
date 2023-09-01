@@ -30,6 +30,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 
@@ -43,7 +44,7 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
         return PathElement.pathElement("hotrod-session-management", name);
     }
 
-    enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
+    public enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         REMOTE_CACHE_CONTAINER("remote-cache-container", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
@@ -54,7 +55,13 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
             }
         },
         CACHE_CONFIGURATION("cache-configuration", ModelType.STRING),
-         ;
+        EXPIRATION_THREAD_POOL_SIZE("expiration-thread-pool-size", ModelType.INT) {
+            @Override
+            public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
+                return builder.setDefaultValue(new ModelNode(16));
+            }
+        },
+        ;
         private final AttributeDefinition definition;
 
         Attribute(String name, ModelType type) {

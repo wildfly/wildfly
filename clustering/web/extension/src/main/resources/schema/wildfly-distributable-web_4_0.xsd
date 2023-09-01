@@ -165,6 +165,13 @@
                     </xs:element>
                 </xs:choice>
                 <xs:attributeGroup ref="tns:hotrod"/>
+                <xs:attribute name="expiration-thread-pool-size" type="xs:positiveInteger">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Configures the number of threads dedicated to processing expiration events from the remote Infinispan cluster.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
