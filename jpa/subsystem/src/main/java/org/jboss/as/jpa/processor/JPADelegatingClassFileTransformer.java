@@ -73,7 +73,10 @@ class JPADelegatingClassFileTransformer implements ClassTransformer {
                                 // because we won't ever be called to transform already loaded classes.
                                 result = transformer.transform(classLoader, className, null, protectionDomain, transformedBuffer);
                             } catch (Exception e) {
-                                throw JpaLogger.ROOT_LOGGER.invalidClassFormat(e, className);
+                                String message = JpaLogger.ROOT_LOGGER.invalidClassFormat(className);
+                                // ModuleClassLoader.defineClass discards the cause of the exception we throw, so to ensure it is logged we log it here.
+                                ROOT_LOGGER.error(message,e);
+                                throw new IllegalStateException(message);
                             }
                             if (result != null) {
                                 transformedBuffer = result;

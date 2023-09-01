@@ -753,8 +753,8 @@ public interface JpaLogger extends BasicLogger {
 
     // id = 72, value = "Could not obtain TransactionListenerRegistry from transaction manager")
 
-    @Message(id = 73, value = "Transformation of class %s failed")
-    IllegalStateException invalidClassFormat(@Cause Exception cause, String className);
+    @Message(id = 73, value = "Bytecode rewrite (transformation) of class %s failed")
+    String invalidClassFormat(String className);
 
     // @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
 
