@@ -41,7 +41,6 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
@@ -74,7 +73,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     private final ImmutableSessionAttributesFactory<AV> attributesFactory;
     private final Remover<String> attributesRemover;
     private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
-    private final ExecutorService executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
+    private final ExecutorService executor;
     private final boolean nearCacheEnabled;
 
     /**
@@ -84,13 +83,14 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
      * @param attributesFactory
      * @param localContextFactory
      */
-    public HotRodSessionFactory(HotRodConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, LocalContextFactory<LC> localContextFactory) {
+    public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, LocalContextFactory<LC> localContextFactory) {
         super(metaDataFactory, attributesFactory, localContextFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
         this.attributesRemover = attributesFactory;
         this.creationMetaDataCache = config.getCache();
         this.accessMetaDataCache= config.getCache();
+        this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), new DefaultThreadFactory(this.getClass()));
         this.creationMetaDataCache.addClientListener(this);
         this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }

@@ -8,7 +8,7 @@
     <hotrod-session-management name="remote-session" remote-cache-container="foo" cache-configuration="bar" granularity="SESSION">
         <local-affinity/>
     </hotrod-session-management>
-    <hotrod-session-management name="remote-attribute" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" marshaller="PROTOSTREAM">
+    <hotrod-session-management name="remote-attribute" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" marshaller="PROTOSTREAM" expiration-thread-pool-size="10">
         <no-affinity/>
     </hotrod-session-management>
     <infinispan-single-sign-on-management name="default" cache-container="foo"/>
