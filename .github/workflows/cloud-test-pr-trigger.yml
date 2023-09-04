@@ -27,7 +27,7 @@ jobs:
 
       - name: Checkout run-status branch
         if: ${{ env.TOKEN }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.STATUS_BRANCH }}
