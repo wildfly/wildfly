@@ -187,28 +187,49 @@
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
-
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-io</artifactId>
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlet</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-servlets</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-webapp</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-proxy</artifactId>
+                <version>${version.org.eclipse.jetty}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- End requirement -->
 
             <dependency>
                 <groupId>org.hamcrest</groupId>
