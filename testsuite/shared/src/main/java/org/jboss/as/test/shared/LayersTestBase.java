@@ -201,15 +201,6 @@ public abstract class LayersTestBase {
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
             // injected by ee
             "jakarta.json.bind.api",
-            // injected by jpa
-            "org.hibernate.search.mapper.orm",
-            "org.hibernate.search.backend.elasticsearch",
-            "org.hibernate.search.backend.lucene",
-            // Used by the hibernate search that's injected by jpa
-            "org.elasticsearch.client.rest-client",
-            "com.google.code.gson",
-            "com.carrotsearch.hppc",
-            "org.apache.lucene",
             // Brought by galleon ServerRootResourceDefinition
             "wildflyee.api"
     };
