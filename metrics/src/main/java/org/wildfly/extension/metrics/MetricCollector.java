@@ -83,6 +83,13 @@ public class MetricCollector {
             }
         };
         this.processStateNotifier.addPropertyChangeListener(listener);
+        Runnable cleanupTask = new Runnable() {
+            @Override
+            public void run() {
+                processStateNotifier.removePropertyChangeListener(listener);
+            }
+        };
+        registration.addCleanUpTask(cleanupTask);
         // If server is already running, we won't get a change event so register now
         if (ControlledProcessState.State.RUNNING == this.processStateNotifier.getCurrentState()) {
             registration.register();
