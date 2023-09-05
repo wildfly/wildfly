@@ -12,6 +12,7 @@
             <property name="waitForPorts">9990</property>
             <property name="waitForPortsTimeoutInSeconds">10</property>
             <property name="allowConnectingToRunningServer">true</property>
+            <property name="javaHome">${container.java.home}</property>
         </configuration>
     </container>
 </arquillian>
