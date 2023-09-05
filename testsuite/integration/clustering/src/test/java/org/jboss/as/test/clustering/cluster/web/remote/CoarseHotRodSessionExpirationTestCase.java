@@ -49,6 +49,9 @@ public class CoarseHotRodSessionExpirationTestCase extends AbstractHotRodSession
     }
 
     static WebArchive getDeployment() {
-        return getBaseDeployment(MODULE_NAME).addAsWebInfResource(CoarseHotRodSessionExpirationTestCase.class.getPackage(), "jboss-all_coarse_transactional.xml", "jboss-all.xml");
+        return getBaseDeployment(MODULE_NAME)
+                .addAsWebInfResource(CoarseHotRodSessionExpirationTestCase.class.getPackage(), "jboss-all_coarse_transactional.xml", "jboss-all.xml")
+                .addAsWebInfResource(CoarseHotRodSessionExpirationTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
+                ;
     }
 }
