@@ -30,7 +30,7 @@ jobs:
           echo "artifacts=${ARTIFACTS}" >> $GITHUB_OUTPUT
 
       - name: Clone base version
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.prepare.outputs.base }}
           path: base
@@ -51,7 +51,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Clone PR version
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: pr
 
