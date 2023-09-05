@@ -274,12 +274,12 @@ wildfly:
   emails:
     - mstefank@redhat.com
     - pberan@redhat.com
-    - rbudinsk@redhat.com 
+    - rbudinsk@redhat.com
     - brian.stansberry@redhat.com
   
   format:
     description:
       regexes:
-        - pattern: "JIRA:\\s+https://issues.redhat.com/browse/WFLY-\\d+|https://issues.redhat.com/browse/WFLY-\\d+"
-          message: "The description must contain a link to the JIRA issue \n(JIRA: https://issues.redhat.com/browse/WFLY-XYZ or https://issues.redhat.com/browse/WFLY-XYZ)"
+        - pattern: "https://issues.redhat.com/browse/WFLY-\\d+"
+          message: "The description must contain a link to the JIRA issue \n(https://issues.redhat.com/browse/WFLY-XYZ)"
 
