@@ -307,7 +307,7 @@ public class ActiveMQProviderJMSOperations implements JMSOperations {
         ModelNode attributes = new ModelNode();
         attributes.get("socket-binding").set(socketBinding);
         attributes.get("endpoint").set(endpoint);
-        if (parameters != null && parameters.size() > 0) {
+        if (parameters != null && !parameters.isEmpty()) {
             ModelNode params = attributes.get("params").setEmptyList();
             for (Map.Entry<String, String> param : parameters.entrySet()) {
                 params.add(param.getKey(), param.getValue());
