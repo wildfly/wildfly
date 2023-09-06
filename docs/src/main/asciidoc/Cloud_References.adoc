@@ -1,19 +1,19 @@
-# References
+== References
 
-## Helm
+=== Helm
 * https://helm.sh/[Official page]
 * https://helm.sh/docs/intro/install/[Installing Helm]
 * https://github.com/wildfly/wildfly-charts/blob/main/charts/wildfly/README.md[Helm Chart for WildFly]
 ** https://www.wildfly.org/news/2021/05/05/helm-charts-for-wildfly/[Related blog post]
 * https://docs.wildfly.org/wildfly-charts/[Helm Charts for WildFly]
 
-## OpenShift
+=== OpenShift
 * https://access.redhat.com/downloads/content/290/[Download OpenShift]
 * https://developers.redhat.com/products/openshift-local/overview[Red Hat OpenShift Local]
 * https://www.redhat.com/en/technologies/cloud-computing/openshift/try-it[Try Red Hat OpenShift]
 * https://docs.okd.io/latest/cli_reference/openshift_cli/getting-started-cli.html#cli-installing-cli_cli-developer-commands[Getting started with the OpenShift CLI]
 
-## WildFly
+=== WildFly
 * https://docs.wildfly.org/wildfly-maven-plugin/[WildFly Maven Plugin (wildfly-maven-plugin)]
 * https://github.com/wildfly-extras/wildfly-jar-maven-plugin[Bootable Jar GitHub repository]
 * https://docs.wildfly.org/bootablejar/[Bootable Jar Documentation]
