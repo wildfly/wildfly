@@ -70,11 +70,7 @@ public class ConfigValidator {
         final ModelNode securityDomainNode = IIOPRootDefinition.SECURITY_DOMAIN.resolveModelAttribute(context, resourceModel);
         final ModelNode serverSSLContextNode = IIOPRootDefinition.SERVER_SSL_CONTEXT.resolveModelAttribute(context, resourceModel);
         final ModelNode clientSSLContextNode = IIOPRootDefinition.CLIENT_SSL_CONTEXT.resolveModelAttribute(context, resourceModel);
-        if (!securityDomainNode.isDefined() && (!serverSSLContextNode.isDefined() || !clientSSLContextNode.isDefined())){
-            return false;
-        } else {
-            return true;
-        }
+        return securityDomainNode.isDefined() || serverSSLContextNode.isDefined() || clientSSLContextNode.isDefined();
     }
 
     private static void validateSSLConfig(final boolean supportSSL, final boolean sslConfigured,
@@ -83,15 +79,20 @@ public class ConfigValidator {
             if (!sslConfigured) {
                 throw IIOPLogger.ROOT_LOGGER.noSecurityDomainOrSSLContextsSpecified();
             }
-        } else if (serverRequiresSsl || clientRequiresSsl) {
-            // if either the server or the client requires SSL, then SSL support must have been enabled.
-            throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+        } else {
+            if (serverRequiresSsl || clientRequiresSsl) {
+                // if either the server or the client requires SSL, then SSL support must have been enabled.
+                throw IIOPLogger.ROOT_LOGGER.sslNotConfigured();
+            } else if (sslConfigured) {
+                // if SSL is configured, then SSL support must have been enabled.
+                // TODO
+            }
         }
     }
 
     private static void validateSSLSocketBinding(final OperationContext context, final ModelNode resourceModel, final boolean sslConfigured, final List<String> warnings) throws OperationFailedException{
         ModelNode sslSocketBinding = IIOPRootDefinition.SSL_SOCKET_BINDING.resolveModelAttribute(context, resourceModel);
-        if(sslSocketBinding.isDefined() && !sslConfigured){
+        if(sslSocketBinding.isDefined() && !sslConfigured){     //FIXME is sslSocketBinding mandatory if sslConfigured?
             final String warning = IIOPLogger.ROOT_LOGGER.sslPortWithoutSslConfiguration();
             IIOPLogger.ROOT_LOGGER.warn(warning);
             warnings.add(warning);
