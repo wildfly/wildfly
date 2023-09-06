@@ -1510,8 +1510,11 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_4_0:
                                     parseDsSecurity(reader, operation);
                                     break;
-                                default:
+                                case DATASOURCES_7_0:
                                     parseDsSecurity_5_0(reader, operation);
+                                    break;
+                                default:
+                                    parseDsSecurity_7_1(reader, operation);
                                     break;
                             }
                             break;
@@ -1589,6 +1592,85 @@ public class DsParser extends AbstractParser {
                     } else {
                         throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseDsSecurity_7_1(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        for (Credential.Attribute attribute : Credential.Attribute.values()) {
+            switch (attribute) {
+                case USER_NAME: {
+                    String value = rawAttributeText(reader, USERNAME.getXmlName());
+                    if (value != null) {
+                        USERNAME.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case PASSWORD: {
+                    String value = rawAttributeText(reader, PASSWORD.getXmlName());
+                    if (value != null) {
+                        PASSWORD.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        boolean securityDomainMatched = false;
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY) {
+                        //it's fine, do nothing
+                        return;
+                    } else {
+                        if (DsSecurity.Tag.forName(reader.getLocalName()) == DsSecurity.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    DsSecurity.Tag tag = DsSecurity.Tag.forName(reader.getLocalName());
+                    switch (tag) {
+                        case SECURITY_DOMAIN: {
+                            if (securityDomainMatched) {
+                                throw new ParserException(bundle.unexpectedElement(SECURITY_DOMAIN.getXmlName()));
+                            }
+                            String value = rawElementText(reader);
+                            SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            securityDomainMatched = true;
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
+                            ELYTRON_ENABLED.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            String value = rawElementText(reader);
+                            AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case REAUTH_PLUGIN: {
+                            parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                            break;
+                        }
+                        case CREDENTIAL_REFERENCE: {
+                            CREDENTIAL_REFERENCE.getParser().parseElement(CREDENTIAL_REFERENCE, reader, operation);
+                            break;
+                        }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
                 }
             }
         }
@@ -2441,9 +2523,11 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_4_0:
                                     parseDsSecurity(reader, operation);
                                     break;
-                                default:
+                                case DATASOURCES_7_0:
                                     parseDsSecurity_5_0(reader, operation);
                                     break;
+                                default:
+                                    parseDsSecurity_7_1(reader, operation);
                             }
                             break;
                         }
@@ -2733,9 +2817,11 @@ public class DsParser extends AbstractParser {
                                 case DATASOURCES_4_0:
                                     parseCredential(reader, operation);
                                     break;
-                                default:
+                                case DATASOURCES_5_0:
                                     parseCredential_5_0(reader, operation);
                                     break;
+                                default:
+                                    parseCredential_7_1(reader, operation);
                             }
                             break;
                         }
@@ -2787,6 +2873,75 @@ public class DsParser extends AbstractParser {
                             RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
                             break;
                         }
+                        default:
+                            throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ParserException(bundle.unexpectedEndOfDocument());
+    }
+
+    private void parseCredential_7_1(XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException, ParserException,
+            ValidateException {
+
+        for (Credential.Attribute attribute : Credential.Attribute.values()) {
+            switch (attribute) {
+                case USER_NAME: {
+                    String value = rawAttributeText(reader, RECOVERY_USERNAME.getXmlName());
+                    if (value != null) {
+                        RECOVERY_USERNAME.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case PASSWORD: {
+                    String value = rawAttributeText(reader, RECOVERY_PASSWORD.getXmlName());
+                    if (value != null) {
+                        RECOVERY_PASSWORD.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY ||
+                            Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
+
+                        return;
+                    } else {
+                        if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
+                            throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (Credential.Tag.forName(reader.getLocalName())) {
+                        case SECURITY_DOMAIN: {
+                            String value = rawElementText(reader);
+                            RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            String value = rawElementText(reader);
+                            value = value == null ? "true" : value;
+                            RECOVERY_ELYTRON_ENABLED.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            String value = rawElementText(reader);
+                            RECOVERY_AUTHENTICATION_CONTEXT.parseAndSetParameter(value, operation, reader);
+                            break;
+                        }
+                        case CREDENTIAL_REFERENCE:
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseElement(RECOVERY_CREDENTIAL_REFERENCE, reader, operation);
+                            break;
                         default:
                             throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
                     }

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.1">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
                     use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -46,13 +46,7 @@
                     </decrementer>
                 </capacity>
             </pool>
-            <security>
-                <user-name>
-                    sa
-                </user-name>
-                <password>
-                    sa
-                </password>
+            <security user-name="sa" password="sa">
                 <reauth-plugin class-name="someClass1">
                     <config-property name="name">Property1</config-property>
                 </reauth-plugin>
@@ -160,26 +154,13 @@
                 </wrap-xa-resource>
 
             </xa-pool>
-            <security>
-                <user-name>
-                    sa
-                </user-name>
-                <password>
-                    sa
-                </password>
+            <security user-name="sa" password="sa">
                 <reauth-plugin class-name="someClass1">
                     <config-property name="name">Property1</config-property>
                 </reauth-plugin>
             </security>
             <recovery no-recovery="false">
-                <recover-credential>
-                    <user-name>
-                        sa
-                    </user-name>
-                    <password>
-                        sa
-                    </password>
-                </recover-credential>
+                <recover-credential user-name="sa" password="sa"/>
                 <recover-plugin class-name="someClass5">
                     <config-property name="name">Property5</config-property>
                     <config-property name="name1">Property6</config-property>

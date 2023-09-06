@@ -40,6 +40,7 @@ import static org.jboss.as.connector.subsystems.datasources.XaDataSourceDefiniti
 
 public class DataSourcesTransformers implements ExtensionTransformerRegistration {
 
+    private static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7, 0, 0);
     private static final ModelVersion EAP_7_4 = ModelVersion.create(6, 0, 0);
 
     @Override
@@ -50,10 +51,14 @@ public class DataSourcesTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
-        get600TransformationDescription(chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), EAP_7_4));
+
+        //no transformation here - just XML parsing change
+        chainedBuilder.createBuilder(subsystemRegistration.getCurrentSubsystemVersion(), VERSION_7_0_0).build();
+
+        get600TransformationDescription(chainedBuilder.createBuilder(VERSION_7_0_0, EAP_7_4));
 
         chainedBuilder.buildAndRegister(subsystemRegistration, new ModelVersion[]{
-                EAP_7_4
+                VERSION_7_0_0, EAP_7_4
         });
     }
 

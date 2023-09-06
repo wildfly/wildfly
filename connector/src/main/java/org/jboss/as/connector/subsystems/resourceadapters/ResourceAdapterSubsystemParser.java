@@ -438,8 +438,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                     || conDef.hasDefined(RECOVERY_SECURITY_DOMAIN.getName())
                     || conDef.hasDefined(RECOVERY_ELYTRON_ENABLED.getName())) {
                 streamWriter.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
-                RECOVERY_USERNAME.marshallAsElement(conDef, streamWriter);
-                RECOVERY_PASSWORD.marshallAsElement(conDef, streamWriter);
+                RECOVERY_USERNAME.marshallAsAttribute(conDef, streamWriter);
+                RECOVERY_PASSWORD.marshallAsAttribute(conDef, streamWriter);
                 RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(conDef, streamWriter);
                 RECOVERY_SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
                 RECOVERY_ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -84,11 +84,7 @@
           <!--Optional:-->
           <recovery no-recovery="${test.expr:false}">
             <!--Optional:-->
-            <recover-credential>
-              <!--Optional:-->
-              <user-name>${test.expr:userName}</user-name>
-              <!--Optional:-->
-              <password>${test.expr:pwd}</password>
+            <recover-credential user-name="${test.expr:userName}" password="${test.expr:pwd}">
               <!--Optional:-->
               <security-domain>${test.expr:token}</security-domain>
             </recover-credential>
