@@ -66,6 +66,7 @@
         <module>boms/standard-ee</module>
         <module>boms/standard-expansion</module>
         <module>boms/standard-test</module>
+        <module>boms/standard-test-expansion</module>
         <module>build</module>
         <module>client/properties</module>
         <module>client/shade</module>
