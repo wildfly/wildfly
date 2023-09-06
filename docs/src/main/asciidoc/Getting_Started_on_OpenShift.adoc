@@ -2,18 +2,18 @@
 
 This guide is designed to assist you through obtaining an OpenShift instance and installing WildFly, complete with a deployed application. It is not intended to cover all possible configurations, as links to more detailed documentation will be provided.
 
-=== Obtaining an OpenShift Instance
+== Obtaining an OpenShift Instance
 There are many https://www.redhat.com/en/technologies/cloud-computing/openshift/try-it[options] available for running OpenShift. This guide will mention two.
 
-===== Code-ready-containers
+=== Code-ready-containers
 If you wish to run a local development environment, then https://developers.redhat.com/products/openshift-local/overview[CRC] is likely to be a good starting point.
 
-===== Developer sandbox
+=== Developer sandbox
 The Red Hat OpenShift https://developers.redhat.com/developer-sandbox[Developer Sandbox] is a hosted environment, and is free to use for development purposes.
 
 This guide will focus on usage of the hosted developer sandbox environment. The sandbox should be provisioned from the page above before proceeding further.
 
-=== OpenShift
+== OpenShift
 In order to use OpenShift effectively, in addition to a running instance, you will need the OpenShift `web console`. To access this tool, from your OpenShift sandbox click the terminal icon (i.e. `>_`) at the top right of your sandbox portal. A terminal tab will pop up at the bottom of the page.
 
 It is also possible to use the OpenShift command line terminal locally (`oc` command). This may be obtained from your package manager or downloaded from your OpenShift sandbox (in your control panel, clicking on the question mark icon at the top right of the console presents a drop-down menu where `Command line tools` takes you to the latest version of `oc`).
@@ -35,10 +35,10 @@ In the OpenShift sandbox, it is not possible to create a new project but, in cas
 ```
 oc new-project <project name>
 ```
-=== Helm Charts
+== Helm Charts
 https://helm.sh/[Helm] provides an easy way to manage and share applications on Kubernetes and OpenShift. We will use it to deploy our example applications to OpenShift.
 
-===== Install Helm and Helm Charts
+=== Install Helm and Helm Charts
 See the instructions for installing Helm https://helm.sh/docs/intro/install/[here]. Helm is installed on your local system as a command, which we will use to install the WildFly Charts. Once Helm is installed, we can proceed to use it to install the Helm Charts in our OpenShift instance:
 ```
 helm repo add wildfly https://docs.wildfly.org/wildfly-charts/
@@ -154,4 +154,5 @@ If you wish to remove the application when you are done with it, simply run:
 ```
 helm uninstall jaxrs-client-from-chart
 ```
-== link:Cloud_References{outfilesuffix}[References]
+
+include::Cloud_References.adoc[]
