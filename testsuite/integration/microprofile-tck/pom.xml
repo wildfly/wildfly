@@ -70,6 +70,18 @@
         <version.telemetry>${version.org.eclipse.microprofile.telemetry}</version.telemetry>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- TODO confirm if this is needed -->
         <dependency>
