@@ -1,11 +1,11 @@
-<subsystem xmlns="urn:jboss:domain:distributable-web:3.0" default-session-management="session" default-single-sign-on-management="default">
+<subsystem xmlns="urn:jboss:domain:distributable-web:4.0" default-session-management="session" default-single-sign-on-management="default">
     <infinispan-session-management name="session" cache-container="foo" granularity="SESSION">
         <ranked-affinity delimiter=":" max-routes="4"/>
     </infinispan-session-management>
     <infinispan-session-management name="attribute" cache-container="foo" cache="bar" granularity="ATTRIBUTE" marshaller="JBOSS">
         <local-affinity/>
     </infinispan-session-management>
-    <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE">
+    <hotrod-session-management name="remote" remote-cache-container="foo" cache-configuration="bar" granularity="ATTRIBUTE" expiration-thread-pool-size="10">
         <no-affinity/>
     </hotrod-session-management>
     <infinispan-single-sign-on-management name="default" cache-container="foo"/>

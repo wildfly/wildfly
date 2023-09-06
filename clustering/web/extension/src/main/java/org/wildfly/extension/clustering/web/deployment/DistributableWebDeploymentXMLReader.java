@@ -67,6 +67,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String DELIMITER = "delimiter";
     private static final String MAX_ROUTES = "max-routes";
     private static final String IMMUTABLE_CLASS = "immutable-class";
+    private static final String EXPIRATION_THREAD_POOL_SIZE = "expiration-thread-pool-size";
 
     private final DistributableWebDeploymentSchema schema;
 
@@ -252,6 +253,12 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
                 case CACHE_CONFIGURATION: {
                     configuration.setConfigurationName(value);
                     break;
+                }
+                case EXPIRATION_THREAD_POOL_SIZE: {
+                    if (this.schema.since(DistributableWebDeploymentSchema.VERSION_4_0)) {
+                        configuration.setExpirationThreadPoolSize(Integer.parseInt(value));
+                        break;
+                    }
                 }
                 default: {
                     this.readSessionManagementAttribute(reader, i, configuration);

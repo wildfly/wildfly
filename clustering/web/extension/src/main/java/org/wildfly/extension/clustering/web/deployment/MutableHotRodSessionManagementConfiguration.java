@@ -25,6 +25,7 @@ package org.wildfly.extension.clustering.web.deployment;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.wildfly.extension.clustering.web.HotRodSessionManagementResourceDefinition;
 import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementConfiguration;
 
 /**
@@ -34,6 +35,7 @@ public class MutableHotRodSessionManagementConfiguration extends MutableSessionM
 
     private volatile String containerName;
     private volatile String configurationName;
+    private volatile int expirationThreadPoolSize = HotRodSessionManagementResourceDefinition.Attribute.EXPIRATION_THREAD_POOL_SIZE.getDefinition().getDefaultValue().asInt();
 
     /**
      * Constructs a new HotRod session management configuration.
@@ -59,5 +61,14 @@ public class MutableHotRodSessionManagementConfiguration extends MutableSessionM
 
     public void setConfigurationName(String configurationName) {
         this.configurationName = configurationName;
+    }
+
+    @Override
+    public int getExpirationThreadPoolSize() {
+        return this.expirationThreadPoolSize;
+    }
+
+    public void setExpirationThreadPoolSize(int expirationThreadPoolSize) {
+        this.expirationThreadPoolSize = expirationThreadPoolSize;
     }
 }
