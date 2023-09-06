@@ -41,30 +41,20 @@
             </dependency>
 
             <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>rest-assured</artifactId>
                 <version>${version.io.rest-assured}</version>
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>io.smallrye.reactive</groupId>
-                <artifactId>smallrye-reactive-messaging-kafka-test-companion</artifactId>
-                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
-            </dependency>
-            <dependency>
+<!--            TODO: jaxen needed? -->
+            <!--<dependency>
                 <groupId>jaxen</groupId>
                 <artifactId>jaxen</artifactId>
                 <version>${version.jaxen}</version>
                 <scope>test</scope>
                 <exclusions>
-                    <!-- I kid you not -->
+                    &lt;!&ndash; I kid you not &ndash;&gt;
                     <exclusion>
                         <groupId>jaxen</groupId>
                         <artifactId>jaxen</artifactId>
@@ -90,7 +80,7 @@
                         <artifactId>xom</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
+            </dependency>-->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -118,27 +108,6 @@
                 </exclusions>
             </dependency>
 
-            <!--
-                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
-                this in automatically
-            -->
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka_2.13</artifactId>
-                <version>${version.org.apache.kafka}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!--
-                Needed by io.smallrye.reactive:smallrye-reactive-messaging-kafka-test-companion which doesn't pull
-                this in automatically
-            -->
-            <dependency>
-                <groupId>org.apache.kafka</groupId>
-                <artifactId>kafka-server-common</artifactId>
-                <version>${version.org.apache.kafka}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.apache.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
@@ -151,13 +120,6 @@
                 <groupId>org.apache.openjpa</groupId>
                 <artifactId>openjpa-all</artifactId>
                 <version>${version.org.apache.openjpa}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>${version.org.awaitility.awaitility}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -180,68 +142,10 @@
                 </exclusions>
             </dependency>
 
-            <!-- Required by Wiremock for the MicroProfile REST Client TCK -->
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-http</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-io</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-util</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlet</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlets</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-webapp</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-proxy</artifactId>
-                <version>${version.org.eclipse.jetty}</version>
-                <scope>test</scope>
-            </dependency>
-            <!-- End requirement -->
-
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>${version.org.hamcrest}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>${version.org.hamcrest.legacy}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -273,12 +177,6 @@
             <dependency>
                 <groupId>org.jboss.arquillian.junit</groupId>
                 <artifactId>arquillian-junit-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-container</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
                 <scope>test</scope>
             </dependency>
@@ -376,12 +274,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.weld.se</groupId>
-                <artifactId>weld-se-core</artifactId>
-                <version>${version.org.jboss.weld.weld}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
@@ -403,12 +295,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${version.org.mockito}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.reactivestreams</groupId>
-                <artifactId>reactive-streams-tck</artifactId>
-                <version>${version.org.reactivestreams}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -445,13 +331,6 @@
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
                 <version>${version.org.testcontainers}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.testng</groupId>
-                <artifactId>testng</artifactId>
-                <version>${version.org.testng}</version>
                 <scope>test</scope>
             </dependency>
 
