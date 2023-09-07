@@ -12,9 +12,7 @@
     </feature>
 
     <feature-group name="remoting"/>
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
-    </feature>
+    <feature-group name="remote-naming"/>
 
     <feature-group name="batch-jberet"/>
     <feature spec="subsystem.bean-validation"/>
