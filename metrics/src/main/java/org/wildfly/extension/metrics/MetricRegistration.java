@@ -29,6 +29,7 @@ public class MetricRegistration {
     private final List<Runnable> registrationTasks = new ArrayList<>();
     private final List<MetricID> unregistrationTasks = new ArrayList<>();
     private final MetricRegistry registry;
+    private final List<Runnable> cleanUpTasks = new ArrayList<>();
 
     public MetricRegistration(MetricRegistry registry) {
         this.registry = registry;
@@ -52,6 +53,10 @@ public class MetricRegistration {
             }
             unregistrationTasks.clear();
         }
+        for (Runnable cleanupTask : cleanUpTasks) {
+            cleanupTask.run();
+        }
+        cleanUpTasks.clear();
     }
 
     public void registerMetric(WildFlyMetric metric, WildFlyMetricMetadata metadata) {
@@ -64,5 +69,9 @@ public class MetricRegistration {
 
     public void addUnregistrationTask(MetricID metricID) {
         unregistrationTasks.add(metricID);
+    }
+
+    void addCleanUpTask(Runnable task) {
+        cleanUpTasks.add(task);
     }
 }
