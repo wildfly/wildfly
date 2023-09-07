@@ -67,10 +67,5 @@
         </module>
 
         <module name="org.glassfish.jakarta.el" export="true"/>
-
-        <!--TODO remove the WELD dependencies from this module, they should be in implementation module only. See comments on https://github.com/wildfly/wildfly/pull/16155 for possible causes-->
-        <module name="org.jboss.weld.api"/>
-        <module name="org.jboss.weld.core"/>
-        <module name="org.jboss.weld.spi"/>
     </dependencies>
 </module>
