@@ -127,18 +127,6 @@ include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]
 include::Default_Native_Interface_Security.adoc[leveloffset=+1]
 
 
-
-[[command-line-interface]]
-== Command Line Interface
-
-The Command Line Interface (CLI) is a management tool for a managed
-domain or standalone server. It allows a user to connect to the domain
-controller or a standalone server and execute management operations
-available through the de-typed management model.
-
-Details on how to use the CLI can be found in the
-<<Command_Line_Interface,Command Line Interface page>>.
-
 [[configuration-files]]
 == Configuration Files
 
