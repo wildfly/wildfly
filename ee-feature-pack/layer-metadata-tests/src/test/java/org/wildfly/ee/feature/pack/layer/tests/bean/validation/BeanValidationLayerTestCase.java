@@ -10,79 +10,80 @@ import static org.wildfly.ee.feature.pack.layer.tests.AbstractLayerMetaDataTestC
 public class BeanValidationLayerTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testBeanValidationAnnotationInRootPackageUsage() throws Exception {
+    public void testBeanValidationAnnotationInRootPackageUsage() {
         testClass(BeanValidationAnnotationInRootPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationAnnotationInConstraintValidationPackageUsage() throws Exception {
+    public void testBeanValidationAnnotationInConstraintValidationPackageUsage() {
         testClass(BeanValidationAnnotationInConstraintValidationPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationAnnotationInConstraintsPackageUsage() throws Exception {
+    public void testBeanValidationAnnotationInConstraintsPackageUsage() {
         testClass(BeanValidationAnnotationInConstraintsPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationAnnotationInGroupsPackageUsage() throws Exception {
+    public void testBeanValidationAnnotationInGroupsPackageUsage() {
         testClass(BeanValidationAnnotationInGroupsPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationAnnotationInValueExtractionPackageUsage() throws Exception {
+    public void testBeanValidationAnnotationInValueExtractionPackageUsage() {
         testClass(BeanValidationAnnotationInValueExtractionPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationAnnotatonInExecutablePackageUsage() throws Exception {
+    public void testBeanValidationAnnotatonInExecutablePackageUsage() {
         testClass(BeanValidationAnnotatonInExecutablePackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInRootPackageUsage() throws Exception {
+    public void testBeanValidationClassInRootPackageUsage() {
         testClass(BeanValidationClassInRootPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInBootstrapPackageUsage() throws Exception {
+    public void testBeanValidationClassInBootstrapPackageUsage() {
         testClass(BeanValidationClassInBootstrapPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInConstraintValidationPackageUsage() throws Exception {
+    public void testBeanValidationClassInConstraintValidationPackageUsage() {
         testClass(BeanValidationClassInConstraintValidationPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInExecutablePackageUsage() throws Exception {
+    public void testBeanValidationClassInExecutablePackageUsage() {
         testClass(BeanValidationClassInExecutablePackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInGroupsPackageUsage() throws Exception {
+    public void testBeanValidationClassInGroupsPackageUsage() {
         testClass(BeanValidationClassInGroupsPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInMetadataPackageUsage() throws Exception {
+    public void testBeanValidationClassInMetadataPackageUsage() {
         testClass(BeanValidationClassInMetadataPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInSpiPackageUsage() throws Exception {
+    public void testBeanValidationClassInSpiPackageUsage() {
         testClass(BeanValidationClassInSpiPackageUsage.class);
     }
 
     @Test
-    public void testBeanValidationClassInValueExtractionPackageUsage() throws Exception {
+    public void testBeanValidationClassInValueExtractionPackageUsage() {
         testClass(BeanValidationClassInValueExtractionPackageUsage.class);
     }
 
-    private void testClass(Class<?> clazz) throws Exception {
+    private void testClass(Class<?> clazz) {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(clazz)
                 .build();
+        // bean-validation is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
         checkLayersForArchive(p, "bean-validation");
     }
 }

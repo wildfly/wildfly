@@ -53,31 +53,31 @@ public class MicroProfileOpenApiLayerMetaDataTestCase extends AbstractLayerMetaD
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "microprofile-openapi");
+        checkOpenApi(p);
     }
 
     @Test
     public void testConfiguredOasModelReaderMetaInf() throws Exception {
         Path p = createArchive(ArchiveType.JAR, "microprofile-config.properties", "mp.openapi.model.reader=x\n");
-        checkLayersForArchive(p, "microprofile-config", "microprofile-openapi");
+        checkOpenApiAndConfig(p);
     }
 
     @Test
     public void testConfiguredOasModelReaderWebInfClassesMetaInf() throws Exception {
         Path p = createArchive(ArchiveType.WAR, "microprofile-config.properties", "mp.openapi.model.reader=x\n");
-        checkLayersForArchive(p, "microprofile-config", "microprofile-openapi");
+        checkOpenApiAndConfig(p);
     }
 
     @Test
     public void testConfiguredOasFilterMetaInf() throws Exception {
         Path p = createArchive(ArchiveType.JAR, "microprofile-config.properties", "mp.openapi.filter=x\n");
-        checkLayersForArchive(p, "microprofile-config", "microprofile-openapi");
+        checkOpenApiAndConfig(p);
     }
 
     @Test
     public void testConfiguredOasFilterWebInfClassesMetaInf() throws Exception {
         Path p = createArchive(ArchiveType.WAR, "microprofile-config.properties", "mp.openapi.filter=x\n");
-        checkLayersForArchive(p, "microprofile-config", "microprofile-openapi");
+        checkOpenApiAndConfig(p);
     }
 
     @Test
@@ -130,6 +130,17 @@ public class MicroProfileOpenApiLayerMetaDataTestCase extends AbstractLayerMetaD
 
     private void testArchiveWithFile(ArchiveType archiveType, String filename, String contents) throws Exception {
         Path p = createArchive(archiveType, filename, contents);
-        checkLayersForArchive(p, "microprofile-openapi");
+        checkOpenApi(p);
+    }
+
+    private void checkOpenApi(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("microprofile-openapi", "microprofile-openapi"));
+    }
+
+    private void checkOpenApiAndConfig(Path p) {
+        checkLayersForArchive(p,
+                new ExpectedLayers("microprofile-openapi", "microprofile-openapi")
+                        // microprofile-config doesn't show up as a decorator since it is a dependency of microprofile-openapi
+                        .add("microprofile-config"));
     }
 }

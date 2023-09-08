@@ -11,10 +11,10 @@ import static org.wildfly.ee.feature.pack.layer.tests.AbstractLayerMetaDataTestC
 @Indexed
 public class HibernateSearchLayerTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testHibernateSearchDetected() throws Exception {
+    public void testHibernateSearchDetected() {
         Path p = createArchiveBuilder(JAR)
                 .addClasses(this.getClass())
                 .build();
-        checkLayersForArchive(p, "hibernate-search");
+        checkLayersForArchive(p, new ExpectedLayers("hibernate-search", "hibernate-search"));
     }
 }

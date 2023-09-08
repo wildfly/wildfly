@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.wildfly.glow.Arguments;
 import org.wildfly.glow.GlowMessageWriter;
 import org.wildfly.glow.GlowSession;
+import org.wildfly.glow.ScanArguments;
 import org.wildfly.glow.ScanResults;
 import org.wildfly.glow.maven.MavenResolver;
 
@@ -32,7 +33,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class AbstractLayerMetaDataTestCase {
@@ -46,6 +49,96 @@ public class AbstractLayerMetaDataTestCase {
     public static void prepareArchivesDirectory() throws Exception {
         Path glowXmlPath = Path.of("target/test-classes/glow");
         System.setProperty(URL_PROPERTY, glowXmlPath.toUri().toString());
+        if (Files.exists(ARCHIVES_PATH)) {
+            deleteArchivesDirectory();
+        }
+        Files.createDirectories(ARCHIVES_PATH);
+    }
+
+    @Before
+    public void before() {
+        checkMethodCalled = false;
+    }
+
+    @After
+    public void after() {
+        Assert.assertTrue(checkMethodCalled);
+    }
+
+    protected static String createXmlElementWithContent(String content, String... path) {
+        StringBuilder sb = new StringBuilder();
+        Stack<String> stack = new Stack<>();
+        for (String element : path) {
+            sb.append("<" + element + ">");
+            stack.push(element);
+        }
+        if (content != null) {
+            sb.append(content);
+        }
+        while (!stack.empty()) {
+            sb.append("</" + stack.pop() + ">");
+        }
+        return sb.toString();
+    }
+
+
+    protected Set<String> checkLayersForArchive(Path archivePath, String...expectedLayers) {
+        return checkLayersForArchive(archivePath, null, expectedLayers);
+    }
+
+    protected Set<String> checkLayersForArchive(Path archivePath, ExpectedLayers expectedLayers) {
+        return checkLayersForArchive(archivePath, null, expectedLayers);
+    }
+
+    protected Set<String> checkLayersForArchive(Path archivePath, Consumer<ScanArguments.Builder> argumentsAugmenter, String...expectedLayers) {
+        return checkLayersForArchive(archivePath, argumentsAugmenter, new ExpectedLayers(expectedLayers));
+    }
+
+    protected Set<String> checkLayersForArchive(Path archivePath, Consumer<ScanArguments.Builder> argumentsAugmenter, ExpectedLayers expectedLayers) {
+        checkMethodCalled = true;
+        try {
+            checkMethodCalled = true;
+            ScanArguments.Builder argumentsBuilder = Arguments.scanBuilder().setBinaries(Collections.singletonList(archivePath));
+            if (argumentsAugmenter != null) {
+                argumentsAugmenter.accept(argumentsBuilder);
+            }
+            Arguments arguments = argumentsBuilder.build();
+            ScanResults scanResults = GlowSession.scan(MavenResolver.newMavenResolver(), arguments, GlowMessageWriter.DEFAULT);
+
+            Set<String> foundLayers = scanResults.getDiscoveredLayers().stream().map(l -> l.getName()).collect(Collectors.toSet());
+            Set<String> foundDecorators = scanResults.getDecorators().stream().map(l -> l.getName()).collect(Collectors.toSet());
+
+            checkLayers(expectedLayers.getExpectedFoundLayers(), foundLayers);
+            checkLayers(expectedLayers.getExpectedDecorators(), foundDecorators);
+
+            return foundLayers;
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) throw (RuntimeException)e;
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private void checkLayers(Set<String> expectedLayers, Set<String> foundLayers) {
+        //foundLayers.removeAll(standardExpectedLayers);
+
+        Assert.assertEquals("\nExpected:\n" + expectedLayers + "\nActual:\n" + foundLayers,
+                expectedLayers.size(), foundLayers.size());
+
+        for (String expectedLayer : expectedLayers) {
+            Assert.assertTrue(expectedLayer + ": " + foundLayers, foundLayers.contains(expectedLayer));
+        }
+    }
+
+    protected ArchiveBuilder createArchiveBuilder(ArchiveType type) {
+        return new ArchiveBuilder("test-" + System.currentTimeMillis() + "." + type.suffix, type);
+    }
+
+    protected ArchiveBuilder createArchiveBuilder(String name, ArchiveType type) {
+        return new ArchiveBuilder(name, type);
+    }
+
+    private static void deleteArchivesDirectory() throws IOException {
         if (Files.exists(ARCHIVES_PATH)) {
             Files.walkFileTree(ARCHIVES_PATH, new SimpleFileVisitor<>() {
                 @Override
@@ -61,40 +154,6 @@ public class AbstractLayerMetaDataTestCase {
                 }
             });
         }
-        Files.createDirectories(ARCHIVES_PATH);
-    }
-
-    @Before
-    public void before() {
-        checkMethodCalled = false;
-    }
-
-    @After
-    public void after() {
-        Assert.assertTrue(checkMethodCalled);
-    }
-
-    protected Set<String> checkLayersForArchive(Path archivePath, String...expectedLayers) throws Exception {
-        checkMethodCalled = true;
-        Arguments arguments = Arguments.scanBuilder().setBinaries(Collections.singletonList(archivePath)).build();
-        ScanResults scanResults = GlowSession.scan(MavenResolver.newMavenResolver(), arguments, GlowMessageWriter.DEFAULT);
-        Set<String> foundLayers = scanResults.getDiscoveredLayers().stream().map(l -> l.getName()).collect(Collectors.toSet());
-
-        Assert.assertEquals(expectedLayers.length, foundLayers.size());
-
-        for (String expectedLayer : expectedLayers) {
-            Assert.assertTrue(expectedLayer, foundLayers.contains(expectedLayer));
-        }
-
-        return foundLayers;
-    }
-
-    protected ArchiveBuilder createArchiveBuilder(ArchiveType type) {
-        return new ArchiveBuilder("test-" + System.currentTimeMillis() + "." + type.suffix, type);
-    }
-
-    protected ArchiveBuilder createArchiveBuilder(String name, ArchiveType type) {
-        return new ArchiveBuilder(name, type);
     }
 
     public class ArchiveBuilder {
@@ -165,7 +224,7 @@ public class AbstractLayerMetaDataTestCase {
         }
 
         private Path export(Archive<?> archive) {
-            System.out.println(archive.toString(true));
+            //System.out.println(archive.toString(true));
             ZipExporter zipExporter = archive.as(ZipExporter.class);
             Path path = ARCHIVES_PATH.resolve(name);
             zipExporter.exportTo(path.toFile());
@@ -185,4 +244,49 @@ public class AbstractLayerMetaDataTestCase {
             this.suffix = suffix;
         }
     }
+
+
+    public class ExpectedLayers {
+        private Set<String> layers = new HashSet<>();
+        private Set<String> decoratorLayers = new HashSet<>();
+
+        public ExpectedLayers() {
+        }
+
+        public ExpectedLayers(String layer) {
+            add(layer);
+        }
+
+        public ExpectedLayers(String... layers) {
+            this.layers.addAll(Arrays.asList(layers));
+        }
+
+        public ExpectedLayers(String layer, String decorator) {
+            add(layer, decorator);
+        }
+
+        public ExpectedLayers add(String layer) {
+            this.layers.add(layer);
+            return this;
+        }
+
+        public ExpectedLayers add(String layer, String decorator) {
+            layers.add(layer);
+            decoratorLayers.add(decorator);
+            return this;
+        }
+
+        private Set<String> getExpectedFoundLayers() {
+            return layers;
+        }
+
+        private Set<String> getExpectedDecorators() {
+            Set<String> decorators = new HashSet<>();
+            for (String decorator : decoratorLayers) {
+                decorators.add(decorator);
+            }
+            return decorators;
+        }
+    }
 }
+

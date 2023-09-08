@@ -7,31 +7,31 @@ import java.nio.file.Path;
 
 public class MicroProfileLraLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testClassFromRootPackage() throws Exception {
+    public void testClassFromRootPackage() {
         testSingleClassWar(MicroProfileLraClassFromRootPackageUsage.class);
     }
 
 
     @Test
-    public void testAnnotationFromAnnotationPackage() throws Exception {
+    public void testAnnotationFromAnnotationPackage() {
         testSingleClassWar(MicroProfileLraAnnotationFromAnnotationPackageUsage.class);
     }
 
     @Test
-    public void testClassFromAnnotationPackage() throws Exception {
+    public void testClassFromAnnotationPackage() {
         testSingleClassWar(MicroProfileLraClassFromAnnotationPackageUsage.class);
     }
 
     @Test
-    public void testAnnotationFromAnnotationWsRsPackage() throws Exception {
+    public void testAnnotationFromAnnotationWsRsPackage() {
         testSingleClassWar(MicroProfileLraAnnotationFromAnnotationWsRsPackageUsage.class);
     }
 
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(AbstractLayerMetaDataTestCase.ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "microprofile-lra-participant");
+        checkLayersForArchive(p, new ExpectedLayers("microprofile-lra-participant", "microprofile-lra-participant"));
     }
 }

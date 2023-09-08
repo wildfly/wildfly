@@ -6,52 +6,50 @@ import org.wildfly.ee.feature.pack.layer.tests.AbstractLayerMetaDataTestCase;
 import java.nio.file.Path;
 
 public class JpaLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
-    /*
-<prop name="org.wildfly.rule.expected-file" value="[/META-INF/persistence.xml,/WEB-INF/classes/META-INF/persistence.xml]"/>
-<prop name="org.wildfly.rule.annotations" value="jakarta.persistence"/>
-<prop name="org.wildfly.rule.class" value="jakarta.persistence"/>
-
-     */
     @Test
-    public void testMetaInfPersistenceXml() throws Exception {
+    public void testMetaInfPersistenceXml() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addXml("persistence.xml", "")
                 .build();
-        checkLayersForArchive(p, "jpa");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testWebInfClassesMetaInfPersistenceXml() throws Exception {
+    public void testWebInfClassesMetaInfPersistenceXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("persistence.xml", "", true)
                 .build();
-        checkLayersForArchive(p, "jpa");
+        checkLayersForArchive(p);
     }
 
 
     @Test
-    public void testAnnotationFromRootPackage() throws Exception {
+    public void testAnnotationFromRootPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JpaAnnotationFromRootPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "jpa");
+        checkLayersForArchive(p);
     }
 
 
     @Test
-    public void testClassFromRootPackage() throws Exception {
+    public void testClassFromRootPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JpaClassFromRootPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "jpa");
+        checkLayersForArchive(p);
     }
 
 
     @Test
-    public void testClassFromCriteriaPackage() throws Exception {
+    public void testClassFromCriteriaPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JpaClassFromCriteriaPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "jpa");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("jpa", "jpa"));
     }
 }

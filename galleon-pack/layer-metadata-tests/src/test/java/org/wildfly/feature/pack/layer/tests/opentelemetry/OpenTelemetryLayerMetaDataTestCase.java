@@ -8,134 +8,134 @@ import java.nio.file.Path;
 public class OpenTelemetryLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testAnnotationInInstrumentationAnnotationsPackage() throws Exception {
+    public void testAnnotationInInstrumentationAnnotationsPackage() {
         testSingleClassWar(OpenTelemetryAnnotationInInstrumentationAnnotationsPackageUsage.class);
     }
 
     @Test
-    public void testClassInApiBaggagePackage() throws Exception {
+    public void testClassInApiBaggagePackage() {
         testSingleClassWar(OpenTelemetryClassInApiBaggagePackageUsage.class);
     }
 
     @Test
-    public void testClassInApiBaggagePropagationPackage() throws Exception {
+    public void testClassInApiBaggagePropagationPackage() {
         testSingleClassWar(OpenTelemetryClassInApiBaggagePropagationPackageUsage.class);
     }
 
     @Test
-    public void testClassInApiCommonPackage() throws Exception {
+    public void testClassInApiCommonPackage() {
         testSingleClassWar(OpenTelemetryClassInApiCommonPackageUsage.class);
     }
 
     @Test
-    public void testClassInApiMetricsPackage() throws Exception {
+    public void testClassInApiMetricsPackage() {
         testSingleClassWar(OpenTelemetryClassInApiMetricsPackageUsage.class);
     }
 
     @Test
-    public void testClassInApiTracePackage() throws Exception {
+    public void testClassInApiTracePackage() {
         testSingleClassWar(OpenTelemetryClassInApiTracePackageUsage.class);
     }
 
     @Test
-    public void testClassInApiTracePropagationPackage() throws Exception {
+    public void testClassInApiTracePropagationPackage() {
         testSingleClassWar(OpenTelemetryClassInApiTracePropagationPackageUsage.class);
     }
 
     @Test
-    public void testClassInApiLogsPackage() throws Exception {
+    public void testClassInApiLogsPackage() {
         testSingleClassWar(OpenTelemetryClassInApiLogsPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkPackage() throws Exception {
+    public void testClassInSdkPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkCommonPackage() throws Exception {
+    public void testClassInSdkCommonPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkCommonPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkAutoConfigurePackage() throws Exception {
+    public void testClassInSdkAutoConfigurePackage() {
         testSingleClassWar(OpenTelemetryClassInSdkAutoConfigurePackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkAutoConfigureSpiPackage() throws Exception {
+    public void testClassInSdkAutoConfigureSpiPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkAutoConfigureSpiPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkAutoConfigureSpiLogsPackage() throws Exception {
+    public void testClassInSdkAutoConfigureSpiLogsPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkAutoConfigureSpiLogsPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkAutoConfigureSpiMetricsPackage() throws Exception {
+    public void testClassInSdkAutoConfigureSpiMetricsPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkAutoConfigureSpiMetricsPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkAutoConfigureSpiTracesPackage() throws Exception {
+    public void testClassInSdkAutoConfigureSpiTracesPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkAutoConfigureSpiTracesPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkLogsPackage() throws Exception {
+    public void testClassInSdkLogsPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkLogsPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkLogsDataPackage() throws Exception {
+    public void testClassInSdkLogsDataPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkLogsDataPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkLogsExportPackage() throws Exception {
+    public void testClassInSdkLogsExportPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkLogsExportPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkMetricsPackage() throws Exception {
+    public void testClassInSdkMetricsPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkMetricsPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkMetricsDataPackage() throws Exception {
+    public void testClassInSdkMetricsDataPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkMetricsDataPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkMetricsExportPackage() throws Exception {
+    public void testClassInSdkMetricsExportPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkMetricsExportPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkTracePackage() throws Exception {
+    public void testClassInSdkTracePackage() {
         testSingleClassWar(OpenTelemetryClassInSdkTracePackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkTraceDataPackage() throws Exception {
+    public void testClassInSdkTraceDataPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkTraceDataPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkTraceExportPackage() throws Exception {
+    public void testClassInSdkTraceExportPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkTraceExportPackageUsage.class);
     }
 
     @Test
-    public void testClassInSdkTraceSamplersPackage() throws Exception {
+    public void testClassInSdkTraceSamplersPackage() {
         testSingleClassWar(OpenTelemetryClassInSdkTraceSamplersPackageUsage.class);
     }
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "opentelemetry");
+        checkLayersForArchive(p, new ExpectedLayers("opentelemetry", "opentelemetry"));
     }
 }

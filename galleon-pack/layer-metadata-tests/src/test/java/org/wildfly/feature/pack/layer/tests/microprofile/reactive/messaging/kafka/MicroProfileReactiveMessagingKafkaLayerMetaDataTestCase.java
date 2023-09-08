@@ -6,48 +6,41 @@ import org.wildfly.feature.pack.layer.tests.AbstractLayerMetaDataTestCase;
 import java.nio.file.Path;
 
 public class MicroProfileReactiveMessagingKafkaLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
-    /*
-    <prop name="org.wildfly.rule.properties-file-match-mp-kafka-property" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.connector.smallrye-kafka.*"/>
-    <prop name="org.wildfly.rule.properties-file-match-mp-kafka-outgoing" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.outgoing.*.connector,smallrye-kafka"/>
-    <prop name="org.wildfly.rule.properties-file-match-mp-kafka-incoming" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.incoming.*.connector,smallrye-kafka"/>
-
-     */
-
     @Test
-    public void testGlobalPropertyInWebInfClassesMetaInf() throws Exception {
+    public void testGlobalPropertyInWebInfClassesMetaInf() {
         testArchiveWithFile(ArchiveType.WAR, "mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN");
     }
 
     @Test
-    public void testGlobalPropertyInWebInf() throws Exception {
+    public void testGlobalPropertyInWebInf() {
         testArchiveWithFile(ArchiveType.JAR, "mp.messaging.connector.smallrye-kafka.sasl.mechanism=PLAIN");
     }
 
     @Test
-    public void testOutgoingInWebInfClassesMetaInf() throws Exception {
+    public void testOutgoingInWebInfClassesMetaInf() {
         testArchiveWithFile(ArchiveType.WAR, "mp.messaging.outgoing.name.connector=smallrye-kafka");
     }
 
 
     @Test
-    public void testOutgoingInWebInf() throws Exception {
+    public void testOutgoingInWebInf() {
         testArchiveWithFile(ArchiveType.JAR, "mp.messaging.outgoing.name.connector=smallrye-kafka");
     }
 
 
     @Test
-    public void testIncomingInWebInfClassesMetaInf() throws Exception {
+    public void testIncomingInWebInfClassesMetaInf() {
         testArchiveWithFile(ArchiveType.WAR, "mp.messaging.incoming.name.connector=smallrye-kafka");
     }
 
 
     @Test
-    public void testIncomingInWebInf() throws Exception {
+    public void testIncomingInWebInf() {
         testArchiveWithFile(ArchiveType.JAR, "mp.messaging.incoming.name.connector=smallrye-kafka");
     }
 
 
-    private void testArchiveWithFile(ArchiveType archiveType, String contents) throws Exception {
+    private void testArchiveWithFile(ArchiveType archiveType, String contents) {
         ArchiveBuilder builder = createArchiveBuilder(archiveType);
         if (contents == null) {
             contents = "";
@@ -62,6 +55,9 @@ public class MicroProfileReactiveMessagingKafkaLayerMetaDataTestCase extends Abs
             throw new IllegalStateException("Unhandled archiveType " + archiveType);
         }
         Path p = builder.build();
-        checkLayersForArchive(p, "microprofile-config", "microprofile-reactive-messaging-kafka");
+        checkLayersForArchive(p,
+                // microprofile-config doesn't show up as a decorator since it is a dependency of microprofile-reactive-messaging-kafka
+                new ExpectedLayers("microprofile-config")
+                        .add("microprofile-reactive-messaging-kafka", "microprofile-reactive-messaging-kafka"));
     }
 }

@@ -7,26 +7,26 @@ import java.nio.file.Path;
 
 public class MicroProfileFaultToleranceLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testAnnotationUsage() throws Exception {
+    public void testAnnotationUsage() {
         // Only package containing annotations
         testSingleClassWar(MicroProfileFaultToleranceAnnotationUsage.class);
     }
 
     @Test
-    public void testClassFromRootPackageUsage() throws Exception {
+    public void testClassFromRootPackageUsage() {
         testSingleClassWar(MicroProfileFaultToleranceClassFromRootPackageUsage.class);
     }
 
     @Test
-    public void testClassFromExceptionsPackageUsage() throws Exception {
+    public void testClassFromExceptionsPackageUsage() {
         testSingleClassWar(MicroProfileFaultToleranceClassFromExceptionsPackageUsage.class);
     }
 
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "microprofile-fault-tolerance");
+        checkLayersForArchive(p, new ExpectedLayers("microprofile-fault-tolerance", "microprofile-fault-tolerance"));
     }
 }

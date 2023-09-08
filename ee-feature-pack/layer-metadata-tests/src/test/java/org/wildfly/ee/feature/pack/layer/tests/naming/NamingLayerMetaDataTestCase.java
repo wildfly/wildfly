@@ -10,10 +10,11 @@ public class NamingLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     javax.naming.Context context;
 
     @Test
-    public void testNamingClassUsage() throws Exception {
+    public void testNamingClassUsage() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(this.getClass())
                 .build();
+        // naming is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
         checkLayersForArchive(p, "naming");
     }
 

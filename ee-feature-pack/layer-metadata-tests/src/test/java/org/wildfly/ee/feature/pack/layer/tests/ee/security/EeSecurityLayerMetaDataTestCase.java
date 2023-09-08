@@ -10,46 +10,46 @@ public class EeSecurityLayerMetaDataTestCase extends AbstractLayerMetaDataTestCa
     // jakarta.security.enterprise-api annotations/classes
 
     @Test
-    public void testSecurityEnterpriseRootPackageClass() throws Exception {
+    public void testSecurityEnterpriseRootPackageClass() {
         addClassAndCheck(SecurityEnterpriseRootPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseHttpPackageAnnotation() throws Exception {
+    public void testSecurityEnterpriseHttpPackageAnnotation() {
         addClassAndCheck(SecurityEnterpriseHttpPackageAnnotationUsage.class);
     }
 
-    @Test public void testSecurityEnterpriseHttpPackageClass() throws Exception {
+    @Test public void testSecurityEnterpriseHttpPackageClass() {
         addClassAndCheck(SecurityEnterpriseHttpPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseHttpOpenIdPackageAnnotation() throws Exception {
+    public void testSecurityEnterpriseHttpOpenIdPackageAnnotation() {
         addClassAndCheck(SecurityEnterpriseHttpOpenIdPackageAnnotationUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseHttpOpenIdPackageClass() throws Exception {
+    public void testSecurityEnterpriseHttpOpenIdPackageClass() {
         addClassAndCheck(SecurityEnterpriseHttpOpenIdPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseCredentialPackageClass() throws Exception {
+    public void testSecurityEnterpriseCredentialPackageClass() {
         addClassAndCheck(SecurityEnterpriseCredentialPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseIdentityStoreAnnotation() throws Exception {
+    public void testSecurityEnterpriseIdentityStoreAnnotation() {
         addClassAndCheck(SecurityEnterpriseIdentityStoreAnnotationUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseIdentityStoreClass() throws Exception {
+    public void testSecurityEnterpriseIdentityStoreClass() {
         addClassAndCheck(SecurityEnterpriseIdentityStoreClassUsage.class);
     }
 
     @Test
-    public void testSecurityEnterpriseIdentityStoreOpenIdClass() throws Exception {
+    public void testSecurityEnterpriseIdentityStoreOpenIdClass() {
         addClassAndCheck(SecurityEnterpriseIdentityStoreOpenIdClassUsage.class);
     }
 
@@ -57,37 +57,37 @@ public class EeSecurityLayerMetaDataTestCase extends AbstractLayerMetaDataTestCa
     // jakarta-authentication-api classes
 
     @Test
-    public void testSecurityAuthMessageRootPackageClass() throws Exception {
+    public void testSecurityAuthMessageRootPackageClass() {
         addClassAndCheck(SecurityAuthMessageRootPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityAuthMessageCallbackPackageClass() throws Exception {
+    public void testSecurityAuthMessageCallbackPackageClass() {
         addClassAndCheck(SecurityAuthMessageCallbackPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityAuthMessageConfigPackageClass() throws Exception {
+    public void testSecurityAuthMessageConfigPackageClass() {
         addClassAndCheck(SecurityAuthMessageConfigPackageClassUsage.class);
     }
 
     @Test
-    public void testSecurityAuthMessageModulePackageClass() throws Exception {
+    public void testSecurityAuthMessageModulePackageClass() {
         addClassAndCheck(SecurityAuthMessageModulePackageClassUsage.class);
     }
 
     //////////////////////////////////////////////////////////////////////
     // jakarta-authorization-api classes
     @Test
-    public void testSecurityJaccClass() throws Exception {
+    public void testSecurityJaccClass() {
         addClassAndCheck(SecurityJaccClassUsage.class);
     }
 
-    private void addClassAndCheck(Class<?> clazz) throws Exception {
+    private void addClassAndCheck(Class<?> clazz) {
         Path p =
                 createArchiveBuilder(ArchiveType.WAR)
                         .addClasses(clazz)
                         .build();
-        checkLayersForArchive(p, "ee-security");
+        checkLayersForArchive(p, new ExpectedLayers("ee-security", "ee-security"));
     }
 }

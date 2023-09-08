@@ -7,26 +7,30 @@ import java.nio.file.Path;
 
 public class EjbLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testMessageDrivenAnnotation() throws Exception {
+    public void testMessageDrivenAnnotation() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(MessageDrivenAnnotationUsage.class)
                 .build();
-        checkLayersForArchive(p, "ejb");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testRemoteAnnotation() throws Exception {
+    public void testRemoteAnnotation() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(RemoteAnnotationUsage.class)
                 .build();
-        checkLayersForArchive(p, "ejb");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testMessageDrivenContextClass() throws Exception {
+    public void testMessageDrivenContextClass() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(MessageDrivenContextClassUsage.class)
                 .build();
-        checkLayersForArchive(p, "ejb");
+        checkLayersForArchive(p);
+    }
+
+    public void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("ejb", "ejb"));
     }
 }

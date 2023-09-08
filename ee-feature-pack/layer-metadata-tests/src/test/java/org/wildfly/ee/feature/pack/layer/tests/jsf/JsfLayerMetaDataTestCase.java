@@ -6,53 +6,52 @@ import org.wildfly.ee.feature.pack.layer.tests.AbstractLayerMetaDataTestCase;
 import java.nio.file.Path;
 
 public class JsfLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
-    /*
-<prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/servlet/servlet-class,jakarta.faces.webapp.FacesServlet"/>
-<prop name="org.wildfly.rule.expected-file" value="/WEB-INF/faces-config.xml"/>
-<prop name="org.wildfly.rule.annotations" value="jakarta.faces.annotation"/>
-<prop name="org.wildfly.rule.class" value="jakarta.faces.*"/>
-     */
-
     @Test
-    public void testFacesServletInWebXml() throws Exception {
+    public void testFacesServletInWebXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml(
                         "web.xml",
                         createXmlElementWithContent("jakarta.faces.webapp.FacesServlet", "web-app", "servlet", "servlet-class"))
                 .build();
-        checkLayersForArchive(p, "jsf", "servlet");
+        checkLayersForArchive(p,
+                new ExpectedLayers("jsf", "jsf")
+                        // servlet is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
+                        .add("servlet"));
     }
 
     @Test
-    public void testFacesConfigXml() throws Exception {
+    public void testFacesConfigXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("faces-config.xml", "")
                 .build();
-        checkLayersForArchive(p, "jsf");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testAnnotation() throws Exception {
+    public void testAnnotation() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JsfAnnotationUsage.class)
                 .build();
-        checkLayersForArchive(p, "jsf");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testClassFromRootPackage() throws Exception {
+    public void testClassFromRootPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JsfClassFromRootPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "jsf");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testClassFromNestedPackage() throws Exception {
+    public void testClassFromNestedPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JsfClassFromNestedPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "jsf");
+        checkLayersForArchive(p);
+    }
 
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("jsf", "jsf"));
     }
 }

@@ -14,47 +14,51 @@ public class BatchJBeretLayerTestCase extends AbstractLayerMetaDataTestCase {
         // Not sure how to add an empty folder with shrinkwrap so do this manually
         Path p = ARCHIVES_PATH.resolve("batch-jberet-file.war");
         Files.createDirectories(p.resolve("WEB-INF/classes/META-INF/batch-jobs"));
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testBatchJBeretClassInRootPackage() throws Exception {
+    public void testBatchJBeretClassInRootPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(BatchClassFromApiPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testBatchJBeretClassInChunkPackage() throws Exception {
+    public void testBatchJBeretClassInChunkPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(BatchClassInApiChunkPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testBatchJBeretInChunkListenerPackage() throws Exception {
+    public void testBatchJBeretInChunkListenerPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(BatchClassInApiChunkListenerPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testBatchJBeretInListenerPackage() throws Exception {
+    public void testBatchJBeretInListenerPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(BatchClassInApiListenerPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testBatchJBeretInPartitionPackage() throws Exception {
+    public void testBatchJBeretInPartitionPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(BatchClassInApiPartitionPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "batch-jberet");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("batch-jberet", "batch-jberet"));
     }
 
 }

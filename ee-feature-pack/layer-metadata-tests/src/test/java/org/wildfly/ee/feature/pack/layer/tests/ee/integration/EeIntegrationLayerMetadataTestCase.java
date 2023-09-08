@@ -22,51 +22,52 @@ public class EeIntegrationLayerMetadataTestCase extends AbstractLayerMetaDataTes
     }
 
     @Test
-    public void testJakartaXmlBindAnnotationAdaptersPackageAnnotationUsage() throws Exception {
+    public void testJakartaXmlBindAnnotationAdaptersPackageAnnotationUsage() {
         testWarWithClass(JakartaXmlBindAnnotationAdaptersPackageAnnotationUsage.class);
     }
 
     @Test
-    public void testJakartaXmlBindAnnotationPackageAnnotationUsage() throws Exception {
+    public void testJakartaXmlBindAnnotationPackageAnnotationUsage() {
         testWarWithClass(JakartaXmlBindAnnotationPackageAnnotationUsage.class);
     }
 
 
     @Test
-    public void testJakartaXmlBindRootPackageClassUsage() throws Exception {
+    public void testJakartaXmlBindRootPackageClassUsage() {
         testWarWithClass(JakartaXmlBindRootPackageClassUsage.class);
     }
 
     @Test
-    public void testJakartaXmlAnnotationPackageClassUsage() throws Exception {
+    public void testJakartaXmlAnnotationPackageClassUsage() {
         testWarWithClass(JakartaXmlAnnotationPackageClassUsage.class);
     }
 
     @Test
-    public void testJakartaXmlAnnotationAdaptersPackageClassUsage() throws Exception {
+    public void testJakartaXmlAnnotationAdaptersPackageClassUsage() {
         testWarWithClass(JakartaXmlAnnotationAdaptersPackageClassUsage.class);
     }
 
     @Test
-    public void testJakartaXmlBindAttachmentPackageClassUsage() throws Exception {
+    public void testJakartaXmlBindAttachmentPackageClassUsage() {
         testWarWithClass(JakartaXmlBindAttachmentPackageClassUsage.class);
     }
 
     @Test
-    public void testJakartaXmlBindHelpersPackageClassUsage() throws Exception {
+    public void testJakartaXmlBindHelpersPackageClassUsage() {
         // jakarta.xml.bind.helpers.AbstractMarshallerImpl
         testWarWithClass(JakartaXmlBindHelpersPackageClassUsage.class);
     }
 
     @Test
-    public void testJakartaXmlBindUtilPackageClassUsage() throws Exception {
+    public void testJakartaXmlBindUtilPackageClassUsage() {
         testWarWithClass(JakartaXmlBindUtilPackageClassUsage.class);
     }
 
-    private void testWarWithClass(Class<?> clazz) throws Exception {
+    private void testWarWithClass(Class<?> clazz) {
         Path p= createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
+        // ee-integration is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
         checkLayersForArchive(p, "ee-integration");
     }
 }

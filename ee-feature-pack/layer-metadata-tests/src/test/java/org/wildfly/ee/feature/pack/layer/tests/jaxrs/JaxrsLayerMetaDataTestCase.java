@@ -7,39 +7,43 @@ import java.nio.file.Path;
 
 public class JaxrsLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testJaxrsAnnotationFromRootPackage() throws Exception {
+    public void testJaxrsAnnotationFromRootPackage() {
         testOneClassInWar(JaxrsRootPackageAnnotationUsage.class);
     }
 
     @Test
-    public void testJaxrsClassFromRootPackage() throws Exception {
+    public void testJaxrsClassFromRootPackage() {
         testOneClassInWar(JaxrsRootPackageClassUsage.class);
     }
 
     @Test
-    public void testJaxrsAnnotationFromCorePackage() throws Exception {
+    public void testJaxrsAnnotationFromCorePackage() {
         testOneClassInWar(JaxrsCorePackageAnnotationUsage.class);
     }
 
     @Test
-    public void testJaxrsClassFromCorePackage() throws Exception {
+    public void testJaxrsClassFromCorePackage() {
         testOneClassInWar(JaxrsCorePackageClassUsage.class);
     }
 
     @Test
-    public void testApplicationInWebXml() throws Exception {
+    public void testApplicationInWebXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml(
                         "web.xml",
                         createXmlElementWithContent("jakarta.ws.rs.core.Application", "web-app", "servlet", "servlet-class"))
                 .build();
-        checkLayersForArchive(p, "jaxrs", "servlet");
+        checkLayersForArchive(p,
+                new ExpectedLayers("jaxrs", "jaxrs")
+                        // servlet is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
+                        .add("servlet"));
     }
 
-    private void testOneClassInWar(Class<?> clazz) throws Exception {
+    private void testOneClassInWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "jaxrs");
+        checkLayersForArchive(p, new ExpectedLayers("jaxrs", "jaxrs"));
     }
+
 }
