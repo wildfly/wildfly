@@ -22,6 +22,7 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.TimerHandleImpl;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
@@ -88,11 +89,9 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public void invoke() throws Exception {
         Predicate<Method> matcher = this.timer.getMetaData().getTimeoutMatcher();
-        if (matcher != null) {
-            this.invoker.callTimeout(this, this.invoker.getComponent().getComponentDescription().getScheduleMethods().keySet().stream().filter(matcher).findFirst().get());
-        } else {
-            this.invoker.callTimeout(this);
-        }
+        EJBComponentDescription description = this.invoker.getComponent().getComponentDescription();
+        Method method = description.getScheduleMethods().keySet().stream().filter(matcher).findFirst().orElse(description.getTimeoutMethod());
+        this.invoker.callTimeout(this, method);
     }
 
     @Override
@@ -126,10 +125,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     public long getTimeRemaining() {
         this.validateInvocationContext();
         try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
-            Instant next = this.timer.getMetaData().getNextTimeout();
-            if (next == null) {
-                throw new NoMoreTimeoutsException();
-            }
+            Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Duration.between(Instant.now(), next).toMillis();
         }
     }
@@ -138,10 +134,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     public Date getNextTimeout() {
         this.validateInvocationContext();
         try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
-            Instant next = this.timer.getMetaData().getNextTimeout();
-            if (next == null) {
-                throw new NoMoreTimeoutsException();
-            }
+            Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Date.from(next);
         }
     }

@@ -17,11 +17,12 @@ import org.wildfly.clustering.ejb.timer.TimerType;
  * @author Paul Ferraro
  */
 public interface TimerCreationMetaData<V> extends TimerConfiguration, UnaryOperator<Instant> {
+    final Predicate<Method> DEFAULT_TIMEOUT_MATCHER = method -> false;
 
     TimerType getType();
     V getContext();
 
     default Predicate<Method> getTimeoutMatcher() {
-        return null;
+        return DEFAULT_TIMEOUT_MATCHER;
     }
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
@@ -53,14 +54,14 @@ public class CompositeImmutableTimerMetaData<V> implements ImmutableTimerMetaDat
     }
 
     @Override
-    public Instant getLastTimout() {
+    public Optional<Instant> getLastTimout() {
         Duration lastTimeout = this.accessMetaData.getLastTimout();
-        return (lastTimeout != null) ? this.creationMetaData.getStart().plus(lastTimeout) : null;
+        return (lastTimeout != null) ? Optional.of(this.creationMetaData.getStart().plus(lastTimeout)) : Optional.empty();
     }
 
     @Override
-    public Instant getNextTimeout() {
-        return this.creationMetaData.apply(this.getLastTimout());
+    public Optional<Instant> getNextTimeout() {
+        return Optional.ofNullable(this.creationMetaData.apply(this.getLastTimout().orElse(null)));
     }
 
     @Override

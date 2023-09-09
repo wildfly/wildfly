@@ -7,6 +7,7 @@ package org.wildfly.clustering.ejb.timer;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -28,8 +29,8 @@ public interface ImmutableTimerMetaData {
     Object getContext();
 
     /**
-     * Returns the timeout matcher, or null if the timer has no associated timeout matcher
-     * @return an optional timeout matcher
+     * Returns the timeout matcher, used to locate the timeout method within the associated component.
+     * @return an timeout matcher
      */
     Predicate<Method> getTimeoutMatcher();
 
@@ -48,14 +49,14 @@ public interface ImmutableTimerMetaData {
     <C extends TimerConfiguration> C getConfiguration(Class<C> configurationClass);
 
     /**
-     * Returns the time of the next timeout event, or null if there are no future timeout events.
-     * @return the optional time of the next timeout event
-     */
-    Instant getNextTimeout();
-
-    /**
      * Returns the time of the most recent timeout event of this timer, or null if there are no previous timeout events
      * @return the optional time of the last timeout event
      */
-    Instant getLastTimout();
+    Optional<Instant> getLastTimout();
+
+    /**
+     * Returns the time of the next timeout event, or null if there are no future timeout events.
+     * @return the optional time of the next timeout event
+     */
+    Optional<Instant> getNextTimeout();
 }

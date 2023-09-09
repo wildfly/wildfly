@@ -8,6 +8,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -132,9 +133,14 @@ public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, Immutab
                         }
 
                         TimerMetaData metaData = metaDataFactory.createTimerMetaData(id, entry);
-                        Instant currentTimeout = metaData.getNextTimeout();
+                        Optional<Instant> currentTimeoutReference = metaData.getNextTimeout();
 
                         // Safeguard : ensure timeout was not already triggered elsewhere
+                        if (currentTimeoutReference.isEmpty()) {
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Unexpected timeout event triggered.", id);
+                            return false;
+                        }
+                        Instant currentTimeout = currentTimeoutReference.get();
                         if (currentTimeout.isAfter(Instant.now())) {
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("Timeout for timer %s initiated prematurely.", id);
                             return false;
@@ -145,7 +151,7 @@ public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, Immutab
                         InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s [%s]", id, timer.getMetaData().getContext());
 
                         // In case we need to reset the last timeout
-                        Instant lastTimeout = metaData.getLastTimout();
+                        Optional<Instant> lastTimeout = metaData.getLastTimout();
                         // Record last timeout - expected to be set prior to triggering timeout
                         metaData.setLastTimout(currentTimeout);
 
@@ -158,7 +164,7 @@ public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, Immutab
                             // Component is not started or is suspended
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("EJB component is suspended - could not invoke timeout for timer %s", id);
                             // Reset last timeout
-                            metaData.setLastTimout(lastTimeout);
+                            metaData.setLastTimout(lastTimeout.orElse(null));
                             return false;
                         }
 
@@ -169,8 +175,8 @@ public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, Immutab
                         }
 
                         // Determine next timeout
-                        Instant nextTimeout = metaData.getNextTimeout();
-                        if (nextTimeout == null) {
+                        Optional<Instant> nextTimeout = metaData.getNextTimeout();
+                        if (nextTimeout.isEmpty()) {
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("Timer %s has expired", id);
                             registry.unregister(id);
                             factory.getMetaDataFactory().remove(id);
@@ -185,7 +191,7 @@ public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, Immutab
 
                         // Reschedule using next timeout
                         InfinispanEjbLogger.ROOT_LOGGER.debugf("Rescheduling timer %s for next timeout %s", id, nextTimeout);
-                        entries.add(id, nextTimeout);
+                        entries.add(id, nextTimeout.get());
                         return false;
                     }
                 }
