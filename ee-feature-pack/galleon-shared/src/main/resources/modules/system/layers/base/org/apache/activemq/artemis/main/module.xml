@@ -78,6 +78,7 @@
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.jms.api" />
+        <module name="com.github.ben-manes.caffeine" />
         <module name="com.google.guava"/>
         <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />
