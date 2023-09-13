@@ -19,4 +19,5 @@
     <feature-group name="embedded-activemq"/>
     <feature-group name="application-http-basic"/>
     <feature-group name="undertow-http-invoker"/>
+    <feature-group name="remote-naming"/>
 </layer-spec>

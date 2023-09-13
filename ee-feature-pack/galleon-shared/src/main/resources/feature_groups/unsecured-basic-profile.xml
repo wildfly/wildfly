@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="unsecured-basic-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
 
-    <feature-group name="remoting">
-        <feature spec="subsystem.remoting">
-            <feature spec="subsystem.remoting.configuration.endpoint">
-                <unset param="worker"/>
-            </feature>
-        </feature>
-    </feature-group>
-
     <feature-group name="servlet-unsecured-basic-profile"/>
 
     <feature spec="subsystem.discovery"/>
@@ -19,9 +11,8 @@
         </feature>
     </feature>
 
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
-    </feature>
+    <feature-group name="remoting"/>
+    <feature-group name="remote-naming"/>
 
     <feature-group name="batch-jberet"/>
     <feature spec="subsystem.bean-validation"/>

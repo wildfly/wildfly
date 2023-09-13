@@ -84,8 +84,4 @@
             <param name="jms-connection-factory" value="java:jboss/DefaultJMSConnectionFactory"/>
         </feature>
     </feature>
-    <!-- remote naming -->
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
-    </feature>
 </feature-group-spec>
