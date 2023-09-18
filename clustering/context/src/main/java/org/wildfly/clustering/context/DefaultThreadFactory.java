@@ -23,6 +23,7 @@
 package org.wildfly.clustering.context;
 
 import java.util.concurrent.ThreadFactory;
+import java.util.function.Supplier;
 
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.ParametricPrivilegedAction;
@@ -34,24 +35,33 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
 
-    private enum ThreadPoolFactory implements ParametricPrivilegedAction<ThreadFactory, Class<?>> {
+    private enum ThreadPoolFactory implements ParametricPrivilegedAction<ThreadFactory, Supplier<ThreadGroup>> {
         INSTANCE;
 
         @Override
-        public ThreadFactory run(Class<?> targetClass) {
-            return new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
+        public ThreadFactory run(Supplier<ThreadGroup> group) {
+            return new JBossThreadFactory(group.get(), Boolean.FALSE, null, "%G - %t", null, null);
         }
     }
 
     public DefaultThreadFactory(Class<?> targetClass) {
-        this(WildFlySecurityManager.doUnchecked(targetClass, ThreadPoolFactory.INSTANCE), targetClass);
+        this(targetClass, new Supplier<>() {
+            @Override
+            public ThreadGroup get() {
+                return new ThreadGroup(targetClass.getSimpleName());
+            }
+        });
+    }
+
+    DefaultThreadFactory(Class<?> targetClass, Supplier<ThreadGroup> group) {
+        this(WildFlySecurityManager.doUnchecked(group, ThreadPoolFactory.INSTANCE), targetClass);
     }
 
     public DefaultThreadFactory(ThreadFactory factory) {
         this(factory, factory.getClass());
     }
 
-    public DefaultThreadFactory(ThreadFactory factory, Class<?> targetClass) {
+    private DefaultThreadFactory(ThreadFactory factory, Class<?> targetClass) {
         super(factory, WildFlySecurityManager.getClassLoaderPrivileged(targetClass), ContextClassLoaderReference.INSTANCE);
     }
 }

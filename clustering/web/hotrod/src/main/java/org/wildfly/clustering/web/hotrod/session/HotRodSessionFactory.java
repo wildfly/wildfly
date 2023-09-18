@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -66,6 +67,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 @ClientListener
 public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;
     private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
@@ -90,7 +92,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
         this.attributesRemover = attributesFactory;
         this.creationMetaDataCache = config.getCache();
         this.accessMetaDataCache= config.getCache();
-        this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), new DefaultThreadFactory(this.getClass()));
+        this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), THREAD_FACTORY);
         this.creationMetaDataCache.addClientListener(this);
         this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }
