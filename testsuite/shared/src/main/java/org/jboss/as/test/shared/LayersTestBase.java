@@ -8,8 +8,11 @@ package org.jboss.as.test.shared;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.as.test.layers.LayersTest;
 import org.junit.AfterClass;
@@ -40,43 +43,6 @@ public abstract class LayersTestBase {
      * Packages that are always expected to be included in the return value of {@link #getExpectedUnusedInAllLayers()}.
      */
     public static final String[] NO_LAYER_COMMON = {
-            // not used
-            "ibm.jdk",
-            "javax.api",
-            "javax.sql.api",
-            "javax.xml.stream.api",
-            "sun.jdk",
-            "sun.scripting",
-            // test-all-layers installation is non-ha and does not include layers that provide jgroups
-            "org.jboss.as.clustering.jgroups",
-            // TODO we need to add an agroal layer
-            "org.wildfly.extension.datasources-agroal",
-            "io.agroal",
-            // Legacy subsystems for which we will not provide layers
-            "org.wildfly.extension.picketlink",
-            "org.jboss.as.jsr77",
-            "org.keycloak.keycloak-adapter-subsystem",
-            "org.jboss.as.security",
-            // end legacy subsystems ^^^
-            // Special support feature
-            "org.wildfly.security.http.sfbasic",
-            // TODO move eclipse link support to an external feature pack
-            "org.eclipse.persistence",
-            // RA not associated with any layer
-            "org.jboss.genericjms",
-            // Appclient support is not provided by a layer
-            "org.jboss.as.appclient",
-            "org.jboss.metadata.appclient",
-            // TODO WFLY-16576 -- cruft?
-            "org.bouncycastle",
-            // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
-            // for now we should keep this module.
-            "org.jboss.resteasy.resteasy-rxjava2",
-            // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
-            // as there is no ref to them in any module.xml nor any in WF java code.
-            // Perhaps via deployment descriptor? In any case, no layer provides them
-            "org.wildfly.security.jakarta.client.resteasy",
-            "org.wildfly.security.jakarta.client.webservices",
             // Alternative messaging protocols besides the std Artemis core protocol
             // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
@@ -85,26 +51,17 @@ public abstract class LayersTestBase {
             "org.apache.activemq.artemis.protocol.stomp",
             // Legacy client not associated with any layer
             "org.hornetq.client",
-            // TODO we need to add an rts layer
-            "org.wildfly.extension.rts",
-            "org.jboss.narayana.rts",
             // TODO we need to add an xts layer
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
-            //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
-            "org.apache.xerces",
     };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
-    public static final String[] NO_LAYER_WILDFLY_EE = {
-            // In wildfly-ee only referenced by the
-            // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
-            "io.reactivex.rxjava2.rxjava"
-    };
+    public static final String[] NO_LAYER_WILDFLY_EE = {};
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
@@ -191,6 +148,8 @@ public abstract class LayersTestBase {
             // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
+            // TODO Move this to NO_LAYER_OR_REFERENCE_COMMON as part of the WFLY-18519 fix
+            "org.jboss.as.security",
     };
 
 
@@ -265,6 +224,87 @@ public abstract class LayersTestBase {
     public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
             "org.wildfly.extension.metrics",
     };
+
+    /**
+     * Packages that are always expected to be included in the return value of both
+     * {@link #getExpectedUnusedInAllLayers()} and {@link #getExpectedUnreferenced()}.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_COMMON = {
+            // deprecated and unused
+            "ibm.jdk",
+            "javax.api",
+            "javax.sql.api",
+            "javax.xml.stream.api",
+            "sun.jdk",
+            "sun.scripting",
+            // Special support status -- wildfly-elytron-http-stateful-basic
+            "org.wildfly.security.http.sfbasic",
+            // test-all-layers installation is non-ha and does not include layers that provide jgroups
+            "org.jboss.as.clustering.jgroups",
+            // TODO we need to add an agroal layer
+            "org.wildfly.extension.datasources-agroal",
+            "io.agroal",
+            // Legacy subsystems for which we will not provide layers
+            "org.wildfly.extension.picketlink",
+            "org.jboss.as.jsr77",
+            "org.keycloak.keycloak-adapter-subsystem",
+            // end legacy subsystems ^^^
+            // TODO move eclipse link support to an external feature pack
+            "org.eclipse.persistence",
+            // RA not associated with any layer
+            "org.jboss.genericjms",
+            // Appclient support is not provided by a layer
+            "org.jboss.as.appclient",
+            "org.jboss.metadata.appclient",
+            // TODO WFLY-16576 -- cruft?
+            "org.bouncycastle",
+            // This was brought in as part an RFE, WFLY-10632 & WFLY-10636. While the module is currently marked as private,
+            // for now we should keep this module.
+            "org.jboss.resteasy.resteasy-rxjava2",
+            // TODO these implement SPIs from RESTEasy or JBoss WS but I don't know how they integrate
+            // as there is no ref to them in any module.xml nor any in WF java code.
+            // Perhaps via deployment descriptor? In any case, no layer provides them
+            "org.wildfly.security.jakarta.client.resteasy",
+            "org.wildfly.security.jakarta.client.webservices",
+            // TODO we need to add an rts layer
+            "org.wildfly.extension.rts",
+            "org.jboss.narayana.rts",
+            //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
+            "org.apache.xerces",
+    };
+
+    /**
+     * Included in the return value of both {@link #getExpectedUnusedInAllLayers()}
+     * and {@link #getExpectedUnreferenced()}, but only when testing provisioning
+     * directly from the wildfly-ee feature pack.
+     */
+    public static final String[] NO_LAYER_OR_REFERENCE_WILDFLY_EE = {
+            // In wildfly-ee only referenced by the
+            // unused-in-all-layers org.jboss.resteasy.resteasy-rxjava2
+            "io.reactivex.rxjava2.rxjava"
+    };
+
+    /**
+     * Utility method to combine various module name arrays into sets for use
+     * as parameters to this class' methods.
+     *
+     * @param first the first array to combine. Cannot be {@code null}
+     * @param others other arrays to combine. Can be {@code null}
+     * @return a set containing all of the elements in the arrays
+     */
+    @SuppressWarnings("SameParameterValue")
+    protected static Set<String> concatArrays(String[] first, String[]... others) {
+        // TODO Delegate to LayersTest.concatArrays once WFCORE-6481 is integrated
+        if (others == null || others.length == 0) {
+            return new HashSet<>(Arrays.asList(first));
+        } else {
+            Stream<String> stream = Arrays.stream(first);
+            for (String[] array : others) {
+                stream = Stream.concat(stream, Arrays.stream(array));
+            }
+            return stream.collect(Collectors.toSet());
+        }
+    }
 
     /**
      * A HashMap to configure a banned module.

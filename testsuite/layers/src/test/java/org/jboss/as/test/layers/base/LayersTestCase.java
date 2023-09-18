@@ -4,10 +4,6 @@
  */
 package org.jboss.as.test.layers.base;
 
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.test.layers.LayersTest;
@@ -39,16 +35,10 @@ public class LayersTestCase extends LayersTestBase {
     }
 
     protected Set<String> getExpectedUnreferenced() {
-        return new HashSet<>(List.of(concatArrays(NOT_REFERENCED_COMMON, NOT_REFERENCED_WILDFLY_EE)));
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NOT_REFERENCED_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NOT_REFERENCED_WILDFLY_EE);
     }
 
     protected  Set<String> getExpectedUnusedInAllLayers() {
-        return new HashSet<>(List.of(concatArrays(NO_LAYER_COMMON, NO_LAYER_WILDFLY_EE)));
-    }
-
-    private static String[] concatArrays(String[] common, String[] pack) {
-        String[] result = Arrays.copyOf(common, common.length + pack.length);
-        System.arraycopy(pack, 0, result, common.length, pack.length);
-        return result;
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NO_LAYER_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NO_LAYER_WILDFLY_EE);
     }
 }
