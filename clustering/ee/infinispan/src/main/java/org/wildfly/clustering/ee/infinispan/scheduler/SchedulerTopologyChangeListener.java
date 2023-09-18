@@ -58,8 +58,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 @Listener
 public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
 
+    // Reuse this static thread group instead of creating new group every time this class is initialized.
+    private static final ThreadGroup THREAD_GROUP = new ThreadGroup(SchedulerTopologyChangeListener.class.getSimpleName());
+
     private final Cache<K, V> cache;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(SchedulerTopologyChangeListener.class));
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(SchedulerTopologyChangeListener.class, THREAD_GROUP));
     private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
     private final Consumer<Locality> cancelTask;
     private final BiConsumer<Locality, Locality> scheduleTask;

@@ -46,6 +46,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
 
+    // Reuse this static thread group instead of creating new group every time this class is initialized.
+    private static final ThreadGroup THREAD_GROUP = new ThreadGroup(LocalScheduler.class.getSimpleName());
+
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
     private final Predicate<T> task;
@@ -54,7 +57,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
     private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task, Duration closeTimeout) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass(), THREAD_GROUP));
         executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
         executor.allowCoreThreadTimeOut(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);

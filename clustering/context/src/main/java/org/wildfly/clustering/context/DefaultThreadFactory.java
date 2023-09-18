@@ -43,8 +43,21 @@ public class DefaultThreadFactory extends ContextualThreadFactory<ClassLoader> {
         }
     }
 
+    private enum ThreadGroupThreadPoolFactory implements ParametricPrivilegedAction<ThreadFactory, ThreadGroup> {
+        INSTANCE;
+
+        @Override
+        public ThreadFactory run(ThreadGroup threadGroup) {
+            return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, "%G - %t", null, null);
+        }
+    }
+
     public DefaultThreadFactory(Class<?> targetClass) {
         this(WildFlySecurityManager.doUnchecked(targetClass, ThreadPoolFactory.INSTANCE), targetClass);
+    }
+
+    public DefaultThreadFactory(Class<?> targetClass, ThreadGroup threadGroup) {
+        this(WildFlySecurityManager.doUnchecked(threadGroup, ThreadGroupThreadPoolFactory.INSTANCE), targetClass);
     }
 
     public DefaultThreadFactory(ThreadFactory factory) {
