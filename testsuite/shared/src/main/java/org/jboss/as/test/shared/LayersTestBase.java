@@ -158,8 +158,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // injected by ee
-            "jakarta.json.bind.api",
             // Brought by galleon ServerRootResourceDefinition
             "wildflyee.api"
     };
