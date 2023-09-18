@@ -47,7 +47,7 @@ import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

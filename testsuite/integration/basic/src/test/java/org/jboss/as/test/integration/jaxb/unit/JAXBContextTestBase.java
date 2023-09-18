@@ -39,7 +39,7 @@ import org.jboss.as.test.integration.jaxb.bindings.Items;
 import org.jboss.as.test.integration.jaxb.bindings.ObjectFactory;
 import org.jboss.as.test.integration.jaxb.bindings.PurchaseOrderType;
 import org.jboss.as.test.integration.jaxb.bindings.USAddress;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;

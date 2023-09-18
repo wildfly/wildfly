@@ -21,7 +21,7 @@
  */
 package org.wildfly.extension.microprofile.faulttolerance.tck;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;

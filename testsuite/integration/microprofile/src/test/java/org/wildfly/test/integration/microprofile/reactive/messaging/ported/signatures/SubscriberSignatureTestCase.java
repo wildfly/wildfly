@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.ported.signatures;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.await;
 import static org.wildfly.test.integration.microprofile.reactive.messaging.ported.utils.ReactiveMessagingTestUtils.checkList;
 

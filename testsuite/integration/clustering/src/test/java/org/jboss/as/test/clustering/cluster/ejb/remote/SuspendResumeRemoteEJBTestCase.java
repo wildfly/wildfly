@@ -37,7 +37,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.HeartbeatBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;

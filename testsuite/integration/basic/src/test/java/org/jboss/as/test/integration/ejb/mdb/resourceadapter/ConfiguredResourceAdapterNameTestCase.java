@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 @RunWith(Arquillian.class)
 @ServerSetup({ConfiguredResourceAdapterNameTestCase.JmsQueueSetup.class})

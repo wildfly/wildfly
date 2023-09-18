@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.io.FilePermission;

@@ -41,7 +41,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.singleton.service.ValueServiceActivator;
 import org.jboss.as.test.clustering.cluster.singleton.service.ValueServiceServlet;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;

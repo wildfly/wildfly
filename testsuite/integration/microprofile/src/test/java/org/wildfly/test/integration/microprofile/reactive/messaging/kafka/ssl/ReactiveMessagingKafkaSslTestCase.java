@@ -22,7 +22,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.ssl;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.Arrays;
 import java.util.HashSet;

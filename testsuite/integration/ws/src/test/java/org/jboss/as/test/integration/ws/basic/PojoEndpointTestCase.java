@@ -36,7 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * @author <a href="mailto:rsvoboda@redhat.com">Rostislav Svoboda</a>

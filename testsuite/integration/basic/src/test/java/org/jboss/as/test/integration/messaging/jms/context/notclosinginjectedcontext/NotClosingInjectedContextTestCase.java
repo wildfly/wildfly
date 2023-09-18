@@ -66,7 +66,7 @@ import static org.jboss.as.test.shared.TimeoutUtil.adjust;
 import java.io.File;
 import java.io.FilePermission;
 import java.net.SocketPermission;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.remoting3.security.RemotingPermission;
 
 

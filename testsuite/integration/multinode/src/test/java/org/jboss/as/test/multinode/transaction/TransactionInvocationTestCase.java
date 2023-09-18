@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A simple Jakarta Enterprise Beans Remoting transaction context propagation in JTS style from one AS7 server to another.

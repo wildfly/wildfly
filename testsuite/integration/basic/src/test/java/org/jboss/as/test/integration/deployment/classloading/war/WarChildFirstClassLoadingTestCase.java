@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.war;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import jakarta.ejb.Stateless;
 

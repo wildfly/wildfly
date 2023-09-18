@@ -369,7 +369,6 @@
         <version.org.wildfly.arquillian>5.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
-        <version.xom>1.3.8</version.xom>
 
         <!--
             *Non-plugin* PRODUCTION CODE dependency versions. Please keep alphabetical.

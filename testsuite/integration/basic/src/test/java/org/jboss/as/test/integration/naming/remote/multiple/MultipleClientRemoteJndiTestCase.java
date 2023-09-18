@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import org.jboss.as.test.integration.security.common.Utils;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import org.jboss.remoting3.security.RemotingPermission;
 import static org.junit.Assert.assertEquals;
 

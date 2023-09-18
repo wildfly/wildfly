@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.security.jacc.context;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;

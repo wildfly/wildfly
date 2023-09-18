@@ -46,7 +46,7 @@ import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl;
 import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.jca.rar.MultipleResourceAdapter3;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;

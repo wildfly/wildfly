@@ -41,7 +41,7 @@ import javax.naming.InitialContext;
 import java.net.SocketPermission;
 import java.util.Arrays;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 
 /**

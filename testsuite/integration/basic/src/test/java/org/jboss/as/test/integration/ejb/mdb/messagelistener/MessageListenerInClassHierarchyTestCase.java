@@ -46,7 +46,7 @@ import jakarta.jms.TextMessage;
 
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that if a message listener interface is implemented by the base class of a message driven bean, then

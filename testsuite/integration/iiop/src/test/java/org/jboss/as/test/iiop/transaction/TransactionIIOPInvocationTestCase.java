@@ -40,7 +40,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.PropertiesValueResolver;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;

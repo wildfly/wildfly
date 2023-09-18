@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.naming.java.permission.JndiPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Test MBeans which implement {@link ServiceMBean} and extend {@link ServiceMBeanSupport}.

@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.remote.client.api.interceptor;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.HashMap;
 import java.util.Hashtable;

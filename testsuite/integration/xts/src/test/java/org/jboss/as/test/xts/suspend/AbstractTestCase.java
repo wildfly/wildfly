@@ -41,7 +41,7 @@ import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.jboss.as.test.xts.suspend.Helpers.getExecutorService;
 import static org.jboss.as.test.xts.suspend.Helpers.getRemoteService;
 

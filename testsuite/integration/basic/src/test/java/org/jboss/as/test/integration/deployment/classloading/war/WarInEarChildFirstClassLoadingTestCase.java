@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.jboss.as.test.integration.common.WebInfLibClass;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 @RunWith(Arquillian.class)
 public class WarInEarChildFirstClassLoadingTestCase {

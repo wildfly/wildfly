@@ -255,11 +255,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-        </dependency>
-
     </dependencies>
 
     <build>
