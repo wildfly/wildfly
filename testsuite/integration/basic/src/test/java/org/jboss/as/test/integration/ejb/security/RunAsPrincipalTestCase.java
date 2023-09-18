@@ -64,7 +64,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Migration of test from EJB3 testsuite [JBQA-5451] Testing calling with runasprincipal annotation (ejbthree1945)

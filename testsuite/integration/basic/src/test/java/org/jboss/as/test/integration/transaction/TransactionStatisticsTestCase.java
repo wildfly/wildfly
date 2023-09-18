@@ -55,7 +55,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_GROUP_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 @RunWith(Arquillian.class)
 @ServerSetup({TransactionStatisticsTestCase.TransactionEnabledSetup.class})

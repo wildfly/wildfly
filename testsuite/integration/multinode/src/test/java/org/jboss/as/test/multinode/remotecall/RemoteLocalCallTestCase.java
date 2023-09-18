@@ -23,7 +23,7 @@
 package org.jboss.as.test.multinode.remotecall;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.security.SecurityPermission;
 import java.util.Arrays;

@@ -25,7 +25,7 @@ package org.jboss.as.test.integration.messaging.jms.context;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.PropertyPermission;

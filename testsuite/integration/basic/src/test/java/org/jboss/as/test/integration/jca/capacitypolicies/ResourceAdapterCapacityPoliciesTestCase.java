@@ -25,7 +25,7 @@
 package org.jboss.as.test.integration.jca.capacitypolicies;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.ReflectPermission;

@@ -416,12 +416,6 @@
             <artifactId>wsdl4j</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

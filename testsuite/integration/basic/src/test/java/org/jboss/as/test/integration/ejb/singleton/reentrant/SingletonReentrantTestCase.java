@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.singleton.reentrant;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;

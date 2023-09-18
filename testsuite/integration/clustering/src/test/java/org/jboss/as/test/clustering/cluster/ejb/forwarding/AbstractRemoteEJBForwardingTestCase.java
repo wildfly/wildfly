@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 
 import java.net.SocketPermission;

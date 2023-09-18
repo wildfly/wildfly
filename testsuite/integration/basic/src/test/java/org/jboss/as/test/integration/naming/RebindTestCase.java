@@ -40,7 +40,7 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REBIND;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
 import java.net.URL;

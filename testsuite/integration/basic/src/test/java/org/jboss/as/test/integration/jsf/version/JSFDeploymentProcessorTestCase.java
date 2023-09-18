@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.jsf.version;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
 import java.io.IOException;

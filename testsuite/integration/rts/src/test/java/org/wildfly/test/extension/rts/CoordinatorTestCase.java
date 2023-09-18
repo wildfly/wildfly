@@ -31,7 +31,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.jbossts.star.util.TxMediaType;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.jbossts.star.util.TxSupport;

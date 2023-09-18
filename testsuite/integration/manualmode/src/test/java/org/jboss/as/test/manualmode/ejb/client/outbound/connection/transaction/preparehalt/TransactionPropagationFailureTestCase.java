@@ -62,7 +62,7 @@ import java.util.Arrays;
 import java.util.PropertyPermission;
 
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Testing transaction recovery on cases where WildFly calls remote Jakarta Enterprise Beans on the other WildFly instance.

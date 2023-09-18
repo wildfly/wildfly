@@ -34,7 +34,7 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.HeartbeatBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.ejb.client.ClusterNodeSelector;
 import org.jboss.ejb.client.EJBClientConnection;
 import org.jboss.ejb.client.EJBClientContext;

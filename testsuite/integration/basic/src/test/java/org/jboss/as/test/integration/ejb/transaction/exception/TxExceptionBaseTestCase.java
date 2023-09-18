@@ -32,7 +32,7 @@ import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.NONE;
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.ROLLBACK_CAUSED_BY_RM_SPECIFIC_XA_EXCEPTION;
 import static org.jboss.as.test.integration.ejb.transaction.exception.TestConfig.TxManagerException.ROLLBACK_CAUSED_BY_XA_EXCEPTION;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.rmi.RemoteException;
 import java.security.AllPermission;

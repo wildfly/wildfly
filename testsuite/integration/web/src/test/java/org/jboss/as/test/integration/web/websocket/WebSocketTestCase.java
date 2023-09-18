@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.web.websocket;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.IOException;
 import java.net.SocketPermission;

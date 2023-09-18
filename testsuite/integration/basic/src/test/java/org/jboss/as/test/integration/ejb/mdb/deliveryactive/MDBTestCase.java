@@ -29,7 +29,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

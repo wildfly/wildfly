@@ -133,11 +133,6 @@
             <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

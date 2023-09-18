@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.manualmode.ejb.client.outbound.connection;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.io.FilePermission;
