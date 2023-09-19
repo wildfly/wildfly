@@ -16,7 +16,7 @@ public class JsfLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
         checkLayersForArchive(p,
                 new ExpectedLayers("jsf", "jsf")
                         // servlet is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
-                        .add("servlet"));
+                        .addLayer("servlet"));
     }
 
     @Test

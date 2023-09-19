@@ -58,6 +58,6 @@ public class MicroProfileReactiveMessagingKafkaLayerMetaDataTestCase extends Abs
         checkLayersForArchive(p,
                 // microprofile-config doesn't show up as a decorator since it is a dependency of microprofile-reactive-messaging-kafka
                 new ExpectedLayers("microprofile-config")
-                        .add("microprofile-reactive-messaging-kafka", "microprofile-reactive-messaging-kafka"));
+                        .addLayerAndDecorator("microprofile-reactive-messaging-kafka", "microprofile-reactive-messaging-kafka"));
     }
 }

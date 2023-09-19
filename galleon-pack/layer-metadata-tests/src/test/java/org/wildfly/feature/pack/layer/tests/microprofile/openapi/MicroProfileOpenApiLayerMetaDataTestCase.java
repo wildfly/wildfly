@@ -141,6 +141,6 @@ public class MicroProfileOpenApiLayerMetaDataTestCase extends AbstractLayerMetaD
         checkLayersForArchive(p,
                 new ExpectedLayers("microprofile-openapi", "microprofile-openapi")
                         // microprofile-config doesn't show up as a decorator since it is a dependency of microprofile-openapi
-                        .add("microprofile-config"));
+                        .addLayer("microprofile-config"));
     }
 }

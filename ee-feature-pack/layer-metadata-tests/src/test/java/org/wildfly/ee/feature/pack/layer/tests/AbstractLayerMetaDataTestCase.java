@@ -249,12 +249,13 @@ public class AbstractLayerMetaDataTestCase {
     public class ExpectedLayers {
         private Set<String> layers = new HashSet<>();
         private Set<String> decoratorLayers = new HashSet<>();
+        private Set<String> excludedLayers = new HashSet<>();
 
         public ExpectedLayers() {
         }
 
         public ExpectedLayers(String layer) {
-            add(layer);
+            addLayer(layer);
         }
 
         public ExpectedLayers(String... layers) {
@@ -262,17 +263,27 @@ public class AbstractLayerMetaDataTestCase {
         }
 
         public ExpectedLayers(String layer, String decorator) {
-            add(layer, decorator);
+            addLayerAndDecorator(layer, decorator);
         }
 
-        public ExpectedLayers add(String layer) {
+        public ExpectedLayers addLayer(String layer) {
             this.layers.add(layer);
             return this;
         }
 
-        public ExpectedLayers add(String layer, String decorator) {
+        public ExpectedLayers addLayerAndDecorator(String layer, String decorator) {
             layers.add(layer);
             decoratorLayers.add(decorator);
+            return this;
+        }
+
+        public ExpectedLayers addDecorator(String decorator) {
+            decoratorLayers.add(decorator);
+            return this;
+        }
+
+        public ExpectedLayers excludedLayers(String...excludedDecorators) {
+            excludedLayers.addAll(Arrays.asList(excludedDecorators));
             return this;
         }
 

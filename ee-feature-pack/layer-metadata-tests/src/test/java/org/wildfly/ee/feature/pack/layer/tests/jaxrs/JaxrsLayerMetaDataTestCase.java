@@ -36,7 +36,7 @@ public class JaxrsLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
         checkLayersForArchive(p,
                 new ExpectedLayers("jaxrs", "jaxrs")
                         // servlet is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
-                        .add("servlet"));
+                        .addLayer("servlet"));
     }
 
     private void testOneClassInWar(Class<?> clazz) {

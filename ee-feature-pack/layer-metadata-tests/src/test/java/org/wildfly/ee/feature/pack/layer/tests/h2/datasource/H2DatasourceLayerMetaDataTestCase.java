@@ -27,7 +27,7 @@ public class H2DatasourceLayerMetaDataTestCase extends AbstractLayerMetaDataTest
     private void checkLayersForArchive(Path p) {
         checkLayersForArchive(p,
                 new ExpectedLayers("h2-datasource", "h2-datasource")
-                        .add("jpa", "jpa"));
+                        .addLayerAndDecorator("jpa", "jpa"));
 
     }
 }
