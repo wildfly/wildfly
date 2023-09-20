@@ -84,7 +84,7 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         eventHandler.start(this.server);
         for (Engine engine : this.server.getEngines()) {
             for (org.jboss.modcluster.container.Host host : engine.getHosts()) {
-                host.getContexts().forEach(c->contexts.add(c));
+                host.getContexts().forEach(contexts::add);
             }
         }
 
@@ -120,13 +120,15 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     private synchronized void onStart(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
 
-        handler.add(context);
-
         State state = this.configuration.getSuspendController().getState();
 
-        // TODO break into onDeploymentAdd once implemented in Undertow
-        if(state == State.RUNNING) {
+        if (state == State.RUNNING) {
+            // Normal operation - trigger ENABLE-APP
             handler.start(context);
+        } else {
+            // Suspended mode - trigger STOP-APP without request nor session draining;
+            // n.b. contexts will be started by UndertowEventHandlerAdapterService#resume()
+            handler.add(context);
         }
 
         this.contexts.add(context);
@@ -134,10 +136,13 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
 
     private synchronized void onStop(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+
+        // Trigger STOP-APP with possible session draining
         handler.stop(context);
 
-        // TODO break into onDeploymentRemove once implemented in Undertow
+        // Trigger REMOVE-APP
         handler.remove(context);
+
         this.contexts.remove(context);
     }
 
