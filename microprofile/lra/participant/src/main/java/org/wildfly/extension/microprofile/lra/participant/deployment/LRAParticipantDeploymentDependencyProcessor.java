@@ -62,7 +62,7 @@ public class LRAParticipantDeploymentDependencyProcessor implements DeploymentUn
         ModuleDependency lraParticipantDependency = new ModuleDependency(moduleLoader, "org.jboss.narayana.rts.lra-participant", false, false, true, false);
         lraParticipantDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(lraParticipantDependency);
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.jandex", false, false, true, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.jandex", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.as.weld.common", false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.jboss.resteasy.resteasy-cdi", false, false, true, false));
 

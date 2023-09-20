@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="jakarta.persistence.api"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="org.hibernate.search.mapper.orm"/>
     </dependencies>

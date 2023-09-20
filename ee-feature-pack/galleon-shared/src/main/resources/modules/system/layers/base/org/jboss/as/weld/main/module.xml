@@ -57,8 +57,8 @@
         <module name="jakarta.servlet.jsp.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>
-        <module name="org.glassfish.jakarta.el" />
-        <module name="org.jboss.jandex"/>
+        <module name="org.glassfish.expressly" />
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <!-- Only needed if capability 'org.wildfly.legacy-security.server-security-manager' is present -->

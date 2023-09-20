@@ -40,6 +40,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.security.elytron-jwt" />
         <module name="jakarta.enterprise.api" />
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
     </dependencies>
 </module>

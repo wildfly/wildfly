@@ -63,7 +63,7 @@
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.jdbcadapters"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.jts.integration"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="org.jboss.logging"/>
@@ -81,7 +81,7 @@
         <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
-        <module name="org.glassfish.jakarta.el"/>
+        <module name="org.glassfish.expressly"/>
     </dependencies>
 
 </module>
