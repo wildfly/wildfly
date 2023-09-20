@@ -47,6 +47,6 @@
         <module name="org.glassfish.soteria" />
         <module name="jakarta.security.enterprise.api" />
         <module name="jakarta.enterprise.api" />
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
     </dependencies>
 </module>
