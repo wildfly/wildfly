@@ -47,7 +47,7 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <module name="org.glassfish.jakarta.el"/>
+        <module name="org.glassfish.expressly"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
 

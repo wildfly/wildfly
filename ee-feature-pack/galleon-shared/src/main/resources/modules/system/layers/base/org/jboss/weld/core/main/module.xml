@@ -44,7 +44,7 @@
     <module name="jakarta.servlet.api"/>
     <module name="jakarta.transaction.api"/>
     <module name="jakarta.validation.api"/>
-    <module name="org.glassfish.jakarta.el" />
+    <module name="org.glassfish.expressly" />
     <module name="org.jboss.classfilewriter"/>
     <module name="org.jboss.weld.api" export="true"/>
     <module name="org.jboss.weld.spi" export="true"/>

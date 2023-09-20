@@ -81,7 +81,7 @@
         <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.common"/>
-        <module name="org.glassfish.jakarta.el"/>
+        <module name="org.glassfish.expressly"/>
     </dependencies>
 
 </module>

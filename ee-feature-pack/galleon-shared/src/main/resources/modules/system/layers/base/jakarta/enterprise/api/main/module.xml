@@ -30,7 +30,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.glassfish.jakarta.el" export="true"/>
+        <module name="org.glassfish.expressly" export="true"/>
         <module name="jakarta.inject.api" export="true"/>
         <module name="jakarta.interceptor.api" export="true"/>
         <!-- This is so that all modules depending on CDI automatically get access to annotations such as @PreDestroy -->
