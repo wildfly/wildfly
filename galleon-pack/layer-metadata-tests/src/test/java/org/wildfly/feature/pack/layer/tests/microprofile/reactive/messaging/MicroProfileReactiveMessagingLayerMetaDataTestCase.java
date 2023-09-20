@@ -7,29 +7,29 @@ import java.nio.file.Path;
 
 public class MicroProfileReactiveMessagingLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testAnnotationFromRootPackage() throws Exception {
+    public void testAnnotationFromRootPackage() {
         testSingleClassWar(MicroProfileReactiveMessagingAnnotationFromRootPackage.class);
     }
 
     @Test
-    public void testClassFromRootPackage() throws Exception {
+    public void testClassFromRootPackage() {
         testSingleClassWar(MicroProfileReactiveMessagingClassFromRootPackage.class);
     }
 
     @Test
-    public void testAnnotationFromSpiPackage() throws Exception {
+    public void testAnnotationFromSpiPackage() {
         testSingleClassWar(MicroProfileReactiveMessagingAnnotationFromSpiPackage.class);
     }
 
     @Test
-    public void testClassFromSpiPackage() throws Exception {
+    public void testClassFromSpiPackage() {
         testSingleClassWar(MicroProfileReactiveMessagingClassFromSpiPackage.class);
     }
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "microprofile-reactive-messaging");
+        checkLayersForArchive(p, new ExpectedLayers("microprofile-reactive-messaging", "microprofile-reactive-messaging"));
     }
 }

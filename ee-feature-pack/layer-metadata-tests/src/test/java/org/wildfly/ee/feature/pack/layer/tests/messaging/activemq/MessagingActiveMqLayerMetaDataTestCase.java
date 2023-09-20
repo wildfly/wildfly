@@ -8,18 +8,22 @@ import java.nio.file.Path;
 public class MessagingActiveMqLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testAnnotationUsage() throws Exception {
+    public void testAnnotationUsage() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(MessagingActiveMqAnnotationUsage.class)
                 .build();
-        checkLayersForArchive(p,"messaging-activemq");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testClassUsage() throws Exception {
+    public void testClassUsage() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(MessagingActiveMqClassUsage.class)
                 .build();
-        checkLayersForArchive(p,"messaging-activemq");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("messaging-activemq", "messaging-activemq"));
     }
 }

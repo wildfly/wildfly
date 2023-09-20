@@ -7,18 +7,22 @@ import java.nio.file.Path;
 
 public class DatasourcesLayerMetadataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testJavaSqlUsageDetected() throws Exception {
+    public void testJavaSqlUsageDetected() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JavaSqlUsage.class)
                 .build();
-        checkLayersForArchive(p, "datasources");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testJavaxSqlUsageDetected() throws Exception {
+    public void testJavaxSqlUsageDetected() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(JavaxSqlUsage.class)
                 .build();
-        checkLayersForArchive(p, "datasources");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("datasources", "datasources"));
     }
 }

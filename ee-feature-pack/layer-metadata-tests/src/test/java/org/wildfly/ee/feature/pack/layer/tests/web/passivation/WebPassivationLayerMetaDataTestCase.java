@@ -8,10 +8,10 @@ import java.nio.file.Path;
 public class WebPassivationLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testDistributableInWebXml() throws Exception {
+    public void testDistributableInWebXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("web.xml", createXmlElementWithContent("", "web-app", "distributable"))
                 .build();
-        checkLayersForArchive(p, "web-passivation");
+        checkLayersForArchive(p, new ExpectedLayers("web-passivation", "web-passivation"));
     }
 }

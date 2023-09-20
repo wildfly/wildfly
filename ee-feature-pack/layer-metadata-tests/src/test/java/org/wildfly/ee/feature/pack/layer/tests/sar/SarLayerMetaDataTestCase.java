@@ -7,10 +7,10 @@ import java.nio.file.Path;
 
 public class SarLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testMetaInfJbossServiceXml() throws Exception {
+    public void testMetaInfJbossServiceXml() {
         Path p = createArchiveBuilder(ArchiveType.SAR)
                 .addXml("jboss-service.xml", "")
                 .build();
-        checkLayersForArchive(p, "sar");
+        checkLayersForArchive(p, new ExpectedLayers("sar", "sar"));
     }
 }

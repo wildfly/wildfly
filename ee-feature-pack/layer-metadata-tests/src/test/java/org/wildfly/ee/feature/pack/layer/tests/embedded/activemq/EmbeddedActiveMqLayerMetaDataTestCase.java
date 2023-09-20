@@ -7,23 +7,26 @@ import java.nio.file.Path;
 
 public class EmbeddedActiveMqLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testJmsDestinationsInJmxXmlInWar() throws Exception {
+    public void testJmsDestinationsInJmxXmlInWar() {
         String xml = createXml();
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("test-jms.xml", xml)
                 .build();
-        checkLayersForArchive(p, "embedded-activemq");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testJmsDestinationsInJmxXmlInJar() throws Exception {
+    public void testJmsDestinationsInJmxXmlInJar() {
         String xml = createXml();
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addXml("test-jms.xml", xml)
                 .build();
-        checkLayersForArchive(p, "embedded-activemq");
+        checkLayersForArchive(p);
     }
 
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("embedded-activemq", "embedded-activemq"));
+    }
 
     private String createXml() {
         return createXmlElementWithContent(null, "messaging-deployment", "server", "jms-destinations");

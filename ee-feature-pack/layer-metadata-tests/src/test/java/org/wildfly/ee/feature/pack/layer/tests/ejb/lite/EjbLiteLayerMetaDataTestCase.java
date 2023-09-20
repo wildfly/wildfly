@@ -8,19 +8,22 @@ import java.nio.file.Path;
 public class EjbLiteLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testEjbLiteAnnotationUsage() throws Exception {
+    public void testEjbLiteAnnotationUsage() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(EjbLiteAnnotationUsage.class)
                 .build();
-        checkLayersForArchive(p,"ejb-lite");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testEjbLiteClassUsage() throws Exception {
+    public void testEjbLiteClassUsage() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(EjbLiteClassUsage.class)
                 .build();
-        checkLayersForArchive(p,"ejb-lite");
+        checkLayersForArchive(p);
     }
 
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p,new ExpectedLayers("ejb-lite", "ejb-lite"));
+    }
 }

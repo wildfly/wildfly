@@ -7,26 +7,30 @@ import java.nio.file.Path;
 
 public class PojoLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testJarMetaInfBeansXml() throws Exception {
+    public void testJarMetaInfBeansXml() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addXml("one-jboss-beans.xml", "")
                 .build();
-        checkLayersForArchive(p, "pojo");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testWarWebInfBeansXml() throws Exception {
+    public void testWarWebInfBeansXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("xjboss-beans.xml", "")
                 .build();
-        checkLayersForArchive(p, "pojo");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testWarWebInfClassesMetaInfBeansXml() throws Exception {
+    public void testWarWebInfClassesMetaInfBeansXml() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("jboss-beans.xml", "", true)
                 .build();
-        checkLayersForArchive(p, "pojo");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("pojo", "pojo"));
     }
 }

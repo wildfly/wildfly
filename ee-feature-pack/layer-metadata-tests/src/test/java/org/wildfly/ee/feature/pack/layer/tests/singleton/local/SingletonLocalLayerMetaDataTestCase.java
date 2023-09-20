@@ -7,42 +7,46 @@ import java.nio.file.Path;
 
 public class SingletonLocalLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testSingletonDeploymentXmlInMetaInf() throws Exception {
+    public void testSingletonDeploymentXmlInMetaInf() {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addXml("singleton-deployment.xml", "")
                 .build();
-        checkLayersForArchive(p, "singleton-local");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testSingletonDeploymentXmlInWebInfClassesMetaInf() throws Exception {
+    public void testSingletonDeploymentXmlInWebInfClassesMetaInf() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addXml("singleton-deployment.xml", "", true)
                 .build();
-        checkLayersForArchive(p, "singleton-local");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testSingletonDeploymentClassUsageFromRootPackage() throws Exception {
+    public void testSingletonDeploymentClassUsageFromRootPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(SingletonLocalClassFromRootPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "singleton-local");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testSingletonDeploymentClassUsageFromElectionPackage() throws Exception {
+    public void testSingletonDeploymentClassUsageFromElectionPackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(SingletonLocalClassFromElectionPackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "singleton-local");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testSingletonDeploymentClassUsageFromServicePackage() throws Exception {
+    public void testSingletonDeploymentClassUsageFromServicePackage() {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(SingletonLocalClassFromServicePackageUsage.class)
                 .build();
-        checkLayersForArchive(p, "singleton-local");
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        checkLayersForArchive(p, new ExpectedLayers("singleton-local", "singleton-local"));
     }
 }

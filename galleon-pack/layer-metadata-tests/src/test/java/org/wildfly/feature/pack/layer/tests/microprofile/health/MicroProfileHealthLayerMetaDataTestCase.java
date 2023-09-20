@@ -8,23 +8,23 @@ import java.nio.file.Path;
 public class MicroProfileHealthLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testMicroProfileHealthAnnotationUsage() throws Exception {
+    public void testMicroProfileHealthAnnotationUsage() {
         // There is only one package with annotations
         testSingleClassWar(MicroProfileHealthAnnotationUsage.class);
     }
 
     @Test
-    public void testMicroProfileHealthClassUsage() throws Exception {
+    public void testMicroProfileHealthClassUsage() {
         // There is only one package with classes (the .spi child package is for implementors only)
         // There is only one package with annotations
         testSingleClassWar(MicroProfileHealthClassUsage.class);
     }
 
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(AbstractLayerMetaDataTestCase.ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "microprofile-health");
+        checkLayersForArchive(p, new ExpectedLayers("microprofile-health", "microprofile-health"));
     }
 }

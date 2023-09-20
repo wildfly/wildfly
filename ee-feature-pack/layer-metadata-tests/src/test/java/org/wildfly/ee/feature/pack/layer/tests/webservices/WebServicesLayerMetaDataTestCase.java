@@ -7,59 +7,60 @@ import java.nio.file.Path;
 
 public class WebServicesLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testAnnotationInRootJwsPackage() throws Exception {
+    public void testAnnotationInRootJwsPackage() {
         testSingleWar(AnnotationInRootJwsPackageUsage.class);
     }
 
     @Test
-    public void testAnnotationInJwsSoapPackage() throws Exception {
+    public void testAnnotationInJwsSoapPackage() {
         testSingleWar(AnnotationInJwsSoapPackageUsage.class);
     }
 
     @Test
-    public void testAnnotationInRootXmlPackage() throws Exception {
+    public void testAnnotationInRootXmlPackage() {
         testSingleWar(AnnotationInRootXmlPackageUsage.class);
     }
 
     @Test
-    public void testAnnotationInXmlChildPackage() throws Exception {
+    public void testAnnotationInXmlChildPackage() {
         testSingleWar(AnnotationInXmlChildPackageUsage.class);
     }
 
     @Test
-    public void testClassInRootXmlPackage() throws Exception {
+    public void testClassInRootXmlPackage() {
         testSingleWar(ClassInRootXmlPackageUsage.class);
     }
 
     @Test
-    public void testClassInXmlHandlerSoapPackage() throws Exception {
+    public void testClassInXmlHandlerSoapPackage() {
         testSingleWar(ClassInXmlHandlerSoapPackageUsage.class);
     }
 
     @Test
-    public void testClassInXmlHandlerPackage() throws Exception {
+    public void testClassInXmlHandlerPackage() {
         testSingleWar(ClassInXmlHandlerPackageUsage.class);
     }
 
     @Test
-    public void testClassInXmlHttpPackage() throws Exception {
+    public void testClassInXmlHttpPackage() {
         testSingleWar(ClassInXmlHttpPackageUsage.class);
     }
 
     @Test
-    public void testClassInXmlSoapPackage() throws Exception {
+    public void testClassInXmlSoapPackage() {
         testSingleWar(ClassInXmlSoapPackageUsage.class);
     }
 
     @Test
-    public void testClassInXmlWsaddressingPackage() throws Exception {
+    public void testClassInXmlWsaddressingPackage() {
         testSingleWar(ClassInXmlWsaddressingPackageUsage.class);
     }
 
-    private void testSingleWar(Class<?> clazz) throws Exception {
+    private void testSingleWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.WAR)
                 .addClasses(clazz)
                 .build();
-        checkLayersForArchive(p, "webservices");
+        checkLayersForArchive(p, new ExpectedLayers("webservices", "webservices"));
     }
+
 }

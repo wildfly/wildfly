@@ -9,41 +9,43 @@ import java.util.Set;
 
 public class JsonbLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase {
     @Test
-    public void testAnnotationUsage() throws Exception {
+    public void testAnnotationUsage() {
         testSingleClassWar(JsonbAnnotationUsage.class);
     }
 
     @Test
-    public void testClassFromRootPackageUsage() throws Exception {
+    public void testClassFromRootPackageUsage() {
         testSingleClassWar(JsonbClassFromRootPackageUsage.class);
     }
 
     @Test
-    public void testClassFromAdapterPackageUsage() throws Exception {
+    public void testClassFromAdapterPackageUsage() {
         testSingleClassWar(JsonbClassFromAdapterPackageUsage.class);
     }
 
     @Test
-    public void testClassFromConfigPackageUsage() throws Exception {
+    public void testClassFromConfigPackageUsage() {
         testSingleClassWar(JsonbClassFromConfigPackageUsage.class);
     }
 
     @Test
-    public void testClassFromSerializerPackageUsage() throws Exception {
+    public void testClassFromSerializerPackageUsage() {
         testSingleClassWar(JsonbClassFromSerializerPackageUsage.class);
     }
 
-    private void testSingleClassWar(Class<?> clazz) throws Exception {
+    private void testSingleClassWar(Class<?> clazz) {
         Path p = createArchiveBuilder(ArchiveType.JAR)
                 .addClasses(clazz)
                 .build();
         checkLayersForArchiveDontContainJsonp(p);
     }
 
-    private void checkLayersForArchiveDontContainJsonp(Path p) throws Exception {
+    private void checkLayersForArchiveDontContainJsonp(Path p) {
         // Some extra checks here, since jsonp has the jakarta.json package
         // while jsonb uses jakarta.json.bind. We want to make sure the rule
         // for jsonp is tight enough to not inadvertently recommending jsonb as well
+
+        //jsonb is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
         Set<String> set = checkLayersForArchive(p, "jsonb");
         Assert.assertFalse(set.contains("jsonp"));
     }

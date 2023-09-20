@@ -11,35 +11,41 @@ import static org.wildfly.ee.feature.pack.layer.tests.AbstractLayerMetaDataTestC
 public class CdiLayerTestCase extends AbstractLayerMetaDataTestCase {
 
     @Test
-    public void testCdiDetectedFileInWar() throws Exception {
+    public void testCdiDetectedFileInWar() {
         Path p = createArchiveBuilder(WAR)
                 .addXml("beans.xml", "")
                 .build();
-        checkLayersForArchive(p, "cdi");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testCdiDetectedFileInJar() throws Exception {
+    public void testCdiDetectedFileInJar() {
         Path p = createArchiveBuilder(JAR)
                 .addXml("beans.xml", "")
                 .build();
-        checkLayersForArchive(p, "cdi");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testInjectPackage() throws Exception {
+    public void testInjectPackage() {
         Path p = createArchiveBuilder(WAR)
                 .addClasses(CdiInjectClass.class)
                 .build();
-        checkLayersForArchive(p, "cdi");
+        checkLayersForArchive(p);
     }
 
     @Test
-    public void testEnterpriseContext() throws Exception {
+    public void testEnterpriseContext() {
         //This is in a sub-package of jakarta.enterprise.context
         Path p = createArchiveBuilder(WAR)
                 .addClasses(CdiEnterpriseContextClass.class)
                 .build();
+        // cdi is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
+        checkLayersForArchive(p);
+    }
+
+    private void checkLayersForArchive(Path p) {
+        // cdi is a dependency of the ee-core-profile-server so it doesn't show up as a decorator
         checkLayersForArchive(p, "cdi");
     }
 
