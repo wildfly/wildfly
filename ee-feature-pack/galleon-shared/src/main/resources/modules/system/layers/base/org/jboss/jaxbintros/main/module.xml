@@ -34,7 +34,7 @@
 
     <dependencies>
         <module name="jakarta.xml.bind.api"/>
-        <module name="com.sun.xml.bind" services="import"/>
+        <module name="org.glassfish.jaxb" services="import"/>
         <module name="org.apache.commons.logging"/>
         <module name="org.apache.commons.beanutils"/>
         <module name="java.xml"/>

@@ -40,7 +40,7 @@
       <module name="org.apache.commons.codec"/>
       <module name="org.slf4j"/>
       <module name="jakarta.xml.bind.api" services="import"/>
-      <module name="com.sun.xml.bind" services="import"/>
+      <module name="org.glassfish.jaxb" services="import"/>
       <module name="java.xml"/>
       <module name="java.xml.crypto"/>
     </dependencies>
