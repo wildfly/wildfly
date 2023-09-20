@@ -51,6 +51,7 @@ public class DefaultExecutorService extends ContextualExecutorService {
     };
 
     public DefaultExecutorService(Class<?> targetClass, Function<ThreadFactory, ExecutorService> factory) {
-        super(factory.apply(new DefaultThreadFactory(targetClass)), DefaultContextualizerFactory.INSTANCE.createContextualizer(targetClass));
+        // Use thread group of current thread
+        super(factory.apply(new DefaultThreadFactory(targetClass, Thread.currentThread()::getThreadGroup)), DefaultContextualizerFactory.INSTANCE.createContextualizer(targetClass));
     }
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -57,9 +58,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 @Listener
 public class SchedulerTopologyChangeListener<I, K extends Key<I>, V> implements ListenerRegistrar {
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(SchedulerTopologyChangeListener.class);
 
     private final Cache<K, V> cache;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor(new DefaultThreadFactory(SchedulerTopologyChangeListener.class));
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(THREAD_FACTORY);
     private final AtomicReference<Future<?>> scheduleTaskFuture = new AtomicReference<>();
     private final Consumer<Locality> cancelTask;
     private final BiConsumer<Locality, Locality> scheduleTask;

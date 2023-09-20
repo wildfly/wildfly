@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -85,10 +86,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     static final Optional<Object> NO_SUCH_SERVICE = Optional.of(NoSuchService.INSTANCE);
     static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(NoSuchService.INSTANCE);
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(ChannelCommandDispatcherFactory.class);
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
     private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
+    private final ExecutorService executorService = Executors.newCachedThreadPool(THREAD_FACTORY);
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();

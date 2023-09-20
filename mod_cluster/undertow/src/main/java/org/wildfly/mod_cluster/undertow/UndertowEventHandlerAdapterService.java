@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.suspend.ServerActivity;
@@ -56,6 +57,7 @@ import io.undertow.servlet.api.Deployment;
 public class UndertowEventHandlerAdapterService implements UndertowEventListener, Service, Runnable, ServerActivity {
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(UndertowEventHandlerAdapterService.class);
 
     private final UndertowEventHandlerAdapterConfiguration configuration;
     private final Set<Context> contexts = new HashSet<>();
@@ -89,7 +91,7 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         }
 
         // Start the periodic STATUS thread
-        this.executor = Executors.newScheduledThreadPool(1, new DefaultThreadFactory(UndertowEventHandlerAdapterService.class));
+        this.executor = Executors.newScheduledThreadPool(1, THREAD_FACTORY);
         this.executor.scheduleWithFixedDelay(this, 0, this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
         this.configuration.getSuspendController().registerActivity(this);
     }
