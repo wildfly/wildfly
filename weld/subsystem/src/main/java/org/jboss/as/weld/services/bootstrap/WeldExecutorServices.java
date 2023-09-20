@@ -71,8 +71,7 @@ public class WeldExecutorServices extends AbstractExecutorServices implements Se
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final ThreadGroup threadGroup = new ThreadGroup("Weld ThreadGroup");
-        final ThreadFactory factory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, THREAD_NAME_PATTERN, null, null);
+        final ThreadFactory factory = new JBossThreadFactory(null, Boolean.FALSE, null, THREAD_NAME_PATTERN, null, null);
         // set TCCL to null for new threads to make sure no deployment classloader leaks through this executor's TCCL
         // Weld does not mind having null TCCL in this executor
         this.executor = new WeldExecutor(bound, runnable -> {
