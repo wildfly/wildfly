@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source
+  ~ Copyright 2022, Red Hat, Inc., and individual contributors as indicated
+  ~ by the @authors tag.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom</groupId>
+        <artifactId>wildfly-ee-builder</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>30.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>wildfly-ee-with-tools-builder</artifactId>
+
+    <name>WildFly BOMs: EE with Tools Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly EE with Deployment and Testing Tools</description>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <version.org.arquillian>1.7.0.Final</version.org.arquillian>
+        <version.org.jboss.arquillian.extension.drone>2.5.2</version.org.jboss.arquillian.extension.drone>
+        <version.org.jboss.arquillian.graphene>2.3.2</version.org.jboss.arquillian.graphene>
+        <version.org.jboss.shrinkwrap.resolver>2.2.7</version.org.jboss.shrinkwrap.resolver>
+        <version.org.shrinkwrap.bom>1.2.6</version.org.shrinkwrap.bom>
+        <version.org.shrinkwrap.descriptors>2.0.0</version.org.shrinkwrap.descriptors>
+        <version.org.testng>7.7.0</version.org.testng>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- imports the related server's test BOM -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${version.server}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.arquillian}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Recommended TestNG version -->
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${version.org.testng}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-bom</artifactId>
+                <version>${version.org.shrinkwrap.bom}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+                <artifactId>shrinkwrap-descriptors-bom</artifactId>
+                <version>${version.org.shrinkwrap.descriptors}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- ShrinkWrap Resolvers project provides a Java API to obtain
+                artifacts from a repository system. -->
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap.resolver}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Arquillian Drone adds support for visual testing of your
+                application -->
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-bom</artifactId>
+                <version>${version.org.jboss.arquillian.extension.drone}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Arquillian Drone bindings for WebDriver based browsers -->
+            <dependency>
+                <groupId>org.jboss.arquillian.extension</groupId>
+                <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+                <version>${version.org.jboss.arquillian.extension.drone}</version>
+                <type>pom</type>
+            </dependency>
+
+            <!-- Arquillian Graphene is an enhanced tool based on Selenium
+                allowing you to test AJAX more easily -->
+            <dependency>
+                <groupId>org.jboss.arquillian.graphene</groupId>
+                <artifactId>graphene-webdriver</artifactId>
+                <version>${version.org.jboss.arquillian.graphene}</version>
+                <type>pom</type>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- The WildFly plugin deploys your war to a local WildFly container -->
+                <!-- To use, set the JBOSS_HOME environment variable and
+                    run: mvn package wildfly:deploy -->
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>${project.groupId}</groupId>
+                                <artifactId>wildfly-ee</artifactId>
+                                <version>${project.version}</version>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${project.groupId}</bomGroupId>
+                            <bomArtifactId>wildfly-ee-with-tools</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>WildFly BOMs: EE with Tools</bomName>
+                            <bomDescription>Dependency Management for WildFly EE with Deployment and Testing Tools.</bomDescription>
+                            <licenses>true</licenses>
+                            <inheritExclusions>NONE</inheritExclusions>
+                            <includeTransitives>false</includeTransitives>
+                            <includeDependencies>
+                                <dependency>
+                                    <groupId>com.h2database</groupId>
+                                    <artifactId>h2</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>junit</groupId>
+                                    <artifactId>junit</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.apache.httpcomponents</groupId>
+                                    <artifactId>httpclient</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.testng</groupId>
+                                    <artifactId>testng</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.extension</groupId>
+                                    <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.graphene</groupId>
+                                    <artifactId>graphene-webdriver</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- Arquillian support for JBoss WildFly container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-common</artifactId>
+                                </dependency>
+                                <!-- Note: Managed version of container allows Arquillian to control startup and shutdown of the container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-managed</artifactId>
+                                </dependency>
+                                <!-- Note: Remote version of container allows Arquillian to connect to already running container -->
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-remote</artifactId>
+                                </dependency>
+                                <!-- Note: Contents of arquillian-bom without shrinkwrap-resolver-bom which is included separately -->
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.core</groupId>
+                                    <artifactId>arquillian-core-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.core</groupId>
+                                    <artifactId>arquillian-core-spi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.core</groupId>
+                                    <artifactId>arquillian-core-impl-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.config</groupId>
+                                    <artifactId>arquillian-config-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.config</groupId>
+                                    <artifactId>arquillian-config-spi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.config</groupId>
+                                    <artifactId>arquillian-config-impl-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.test</groupId>
+                                    <artifactId>arquillian-test-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.test</groupId>
+                                    <artifactId>arquillian-test-spi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.test</groupId>
+                                    <artifactId>arquillian-test-impl-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.container</groupId>
+                                    <artifactId>arquillian-container-spi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.container</groupId>
+                                    <artifactId>arquillian-container-impl-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.container</groupId>
+                                    <artifactId>arquillian-container-test-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.container</groupId>
+                                    <artifactId>arquillian-container-test-spi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.container</groupId>
+                                    <artifactId>arquillian-container-test-impl-base</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.junit</groupId>
+                                    <artifactId>arquillian-junit-core</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.junit</groupId>
+                                    <artifactId>arquillian-junit-container</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.junit</groupId>
+                                    <artifactId>arquillian-junit-standalone</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.junit5</groupId>
+                                    <artifactId>arquillian-junit5-core</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.junit5</groupId>
+                                    <artifactId>arquillian-junit5-container</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testng</groupId>
+                                    <artifactId>arquillian-testng-core</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testng</groupId>
+                                    <artifactId>arquillian-testng-container</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testng</groupId>
+                                    <artifactId>arquillian-testng-standalone</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.protocol</groupId>
+                                    <artifactId>arquillian-protocol-servlet</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.protocol</groupId>
+                                    <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.protocol</groupId>
+                                    <artifactId>arquillian-protocol-jmx</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.protocol</groupId>
+                                    <artifactId>arquillian-protocol-rest-jakarta</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-cdi</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-ejb</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-resource</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-initialcontext</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-ejb-jakarta</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.testenricher</groupId>
+                                    <artifactId>arquillian-testenricher-resource-jakarta</artifactId>
+                                </dependency>
+                            </includeDependencies>
+                            <importDependencies>
+                                <dependency>
+                                    <groupId>org.jboss.shrinkwrap</groupId>
+                                    <artifactId>shrinkwrap-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+                                    <artifactId>shrinkwrap-descriptors-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- ShrinkWrap Resolvers project provides a Java API to obtain artifacts from a repository system. -->
+                                <dependency>
+                                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                                    <artifactId>shrinkwrap-resolver-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                                <!-- Arquillian Drone adds support for visual testing of your application -->
+                                <dependency>
+                                    <groupId>org.jboss.arquillian.extension</groupId>
+                                    <artifactId>arquillian-drone-bom</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                            </importDependencies>
+                            <versionRefDependencies>
+                                <dependency>
+                                    <groupId>org.wildfly.arquillian</groupId>
+                                    <artifactId>wildfly-arquillian-container-remote</artifactId>
+                                    <version>org.wildfly.arquillian:wildfly-arquillian-container-managed:jar</version>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.arquillian</groupId>
+                                    <artifactId>arquillian-bom</artifactId>
+                                    <type>pom</type>
+                                    <version>org.jboss.arquillian.container:arquillian-container-test-spi:jar</version>
+                                </dependency>
+                            </versionRefDependencies>
+                            <includePlugins>
+                                <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
+                            </includePlugins>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
