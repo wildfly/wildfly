@@ -41,7 +41,7 @@ import javax.naming.NamingException;
 import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests possible deployment scenarios for CDI ApplicationScoped events, and usage of other EE technologies in such event handlers.

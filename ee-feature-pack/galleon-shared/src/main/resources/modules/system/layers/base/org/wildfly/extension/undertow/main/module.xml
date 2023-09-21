@@ -52,7 +52,7 @@
         <module name="jakarta.servlet.api"/>
         <module name="jakarta.servlet.jsp.api"/>
         <module name="jakarta.websocket.api"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.wildfly.clustering.service"/>

@@ -1,6 +1,6 @@
 package org.jboss.as.test.integration.deployment.structure.jar;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import jakarta.ejb.EJB;

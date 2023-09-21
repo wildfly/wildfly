@@ -49,7 +49,7 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.jts"/>
         <module name="jakarta.servlet.api"/>
         <module name="io.undertow.core"/>

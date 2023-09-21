@@ -38,7 +38,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test case which verifies proper release of shared binds, i.e., automated unbind only after every deployment that shares the bind is undeployed.

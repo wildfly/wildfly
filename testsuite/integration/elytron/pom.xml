@@ -140,11 +140,6 @@
             <artifactId>jboss-ejb-client</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- This is not ideal, however the BatchPermission is used which does indicate this might be an issue -->
         <dependency>
             <groupId>${project.groupId}</groupId>

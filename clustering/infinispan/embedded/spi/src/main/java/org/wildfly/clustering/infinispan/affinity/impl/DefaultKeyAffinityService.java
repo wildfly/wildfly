@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -75,6 +76,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     static final int DEFAULT_QUEUE_SIZE = 100;
     private static final Logger LOGGER = Logger.getLogger(DefaultKeyAffinityService.class);
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class);
 
     private final Cache<? extends K, ?> cache;
     private final KeyGenerator<? extends K> generator;
@@ -139,7 +141,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     @Override
     public void start() {
-        this.executor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
+        this.executor = Executors.newCachedThreadPool(THREAD_FACTORY);
         this.accept(this.cache.getAdvancedCache().getDistributionManager().getCacheTopology().getWriteConsistentHash());
         this.cache.addListener(this);
     }

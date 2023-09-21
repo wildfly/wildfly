@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="webservices">
     <props>
-        <prop name="org.wildfly.rule.annotations" value="jakarta.jws,jakarta.jws.soap,jakarta.xml.ws.soap"/>
-        <prop name="org.wildfly.rule.class" value="jakarta.jws.*,jakarta.xml.ws.*"/>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.jws,jakarta.jws.soap,jakarta.xml.ws.*"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.xml.ws.*"/>
     </props>
     <dependencies>
         <layer name="web-server"/>

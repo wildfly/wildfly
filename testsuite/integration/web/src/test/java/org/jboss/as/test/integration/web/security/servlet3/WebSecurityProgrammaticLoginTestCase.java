@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.web.security.servlet3;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

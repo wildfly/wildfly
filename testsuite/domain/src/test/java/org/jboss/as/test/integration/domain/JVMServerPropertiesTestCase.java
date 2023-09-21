@@ -35,7 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.safeClose;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -179,6 +179,7 @@ public class JVMServerPropertiesTestCase {
         Assert.assertEquals(serverLogDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.log.dir"));
         Assert.assertEquals(serverDataDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.data.dir"));
         Assert.assertEquals(serverTmpDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.temp.dir"));
+        Assert.assertEquals(server, p.getProperty("test.jboss.server.name"));
     }
 
     private static String performHttpCall(String host, int port, String context) throws IOException {

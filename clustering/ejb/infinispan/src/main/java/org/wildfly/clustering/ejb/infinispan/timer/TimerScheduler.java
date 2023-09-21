@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -55,11 +56,12 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
  * @author Paul Ferraro
  */
 public class TimerScheduler<I, C> extends AbstractCacheEntryScheduler<I, ImmutableTimerMetaData> {
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(TimerScheduler.class);
 
     private final TimerFactory<I, C> factory;
 
     public TimerScheduler(TimerFactory<I, C> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
-        this(factory, manager, locality, closeTimeout, registry, new SortedScheduledEntries<>(), Executors.newSingleThreadExecutor(new DefaultThreadFactory(TimerScheduler.class)));
+        this(factory, manager, locality, closeTimeout, registry, new SortedScheduledEntries<>(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
     private TimerScheduler(TimerFactory<I, C> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {

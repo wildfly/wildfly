@@ -40,7 +40,7 @@ import java.io.FilePermission;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * A test case for testing the feature introduced in https://issues.jboss.org/browse/EJBCLIENT-34 which

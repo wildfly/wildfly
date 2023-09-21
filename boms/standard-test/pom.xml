@@ -47,40 +47,6 @@
                 <scope>test</scope>
             </dependency>
 
-<!--            TODO: jaxen needed? -->
-            <!--<dependency>
-                <groupId>jaxen</groupId>
-                <artifactId>jaxen</artifactId>
-                <version>${version.jaxen}</version>
-                <scope>test</scope>
-                <exclusions>
-                    &lt;!&ndash; I kid you not &ndash;&gt;
-                    <exclusion>
-                        <groupId>jaxen</groupId>
-                        <artifactId>jaxen</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jdom</groupId>
-                        <artifactId>jdom</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-cobertura-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>maven-plugins</groupId>
-                        <artifactId>maven-findbugs-plugin</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xom</groupId>
-                        <artifactId>xom</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>-->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -299,22 +265,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.springframework.kafka</groupId>
-                <artifactId>spring-kafka-test</artifactId>
-                <version>${version.org.springframework.kafka}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        This version pulls in a different version of Kafka from
-                        our version of Kafka Clients
-                    -->
-                    <exclusion>
-                        <groupId>org.apache.kafka</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.syslog4j</groupId>
                 <artifactId>syslog4j</artifactId>
                 <version>${version.org.syslog4j}</version>
@@ -403,15 +353,15 @@
             </dependency>
 
             <dependency>
-                <groupId>xom</groupId>
-                <artifactId>xom</artifactId>
-                <version>${version.xom}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-core</artifactId>
+                <version>${version.org.wildfly.glow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-maven-resolver</artifactId>
+                <version>${version.org.wildfly.glow}</version>
             </dependency>
         </dependencies>
 

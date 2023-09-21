@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that the {@link jakarta.ejb.MessageDrivenBean#setMessageDrivenContext(jakarta.ejb.MessageDrivenContext)}

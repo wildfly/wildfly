@@ -113,6 +113,12 @@ This ability is useful when you need to configure JVM settings without specifyin
 }
 ----
 
+=== Other server properties that can be resolved as JVM options on domain mode
+
+In addition to the aforementioned server properties, the Host Controller can resolve the following `jboss.server-xyz` properties as JVM options:
+
+* jboss.server.name
+
 
 == Standalone Server
 

@@ -87,7 +87,7 @@
         <module name="org.jboss.iiop-client"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.ironjacamar.api"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <!-- For recovery manager (com.arjuna.ats.jbossatx.jta.RecoveryManagerService) -->
         <module name="org.jboss.jts.integration"/>
         <module name="org.jboss.logging"/>

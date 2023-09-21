@@ -17,7 +17,7 @@
 package org.wildfly.test.integration.elytron.realm;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;

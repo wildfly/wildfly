@@ -26,7 +26,7 @@ import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
+import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

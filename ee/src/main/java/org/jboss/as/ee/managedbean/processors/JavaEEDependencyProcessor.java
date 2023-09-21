@@ -59,7 +59,7 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             "javax.rmi.api",
             "jakarta.xml.bind.api",
             GLASSFISH_EL,
-            "org.glassfish.javax.enterprise.concurrent"
+            "org.glassfish.jakarta.enterprise.concurrent"
     };
 
 

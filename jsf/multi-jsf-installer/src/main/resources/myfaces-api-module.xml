@@ -33,7 +33,7 @@
         <module name="java.logging"/>
         <module name="java.sql"/>
         <module name="java.xml"/>
-        <module name="org.glassfish.jakarta.el" export="true"/>
+        <module name="org.glassfish.expressly" export="true"/>
 
         <!-- extra dependencies for MyFaces 1.1
         <module name="org.apache.commons.logging"/>

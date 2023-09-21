@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.messaging.jms.context;
 
 import static jakarta.jms.DeliveryMode.NON_PERSISTENT;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

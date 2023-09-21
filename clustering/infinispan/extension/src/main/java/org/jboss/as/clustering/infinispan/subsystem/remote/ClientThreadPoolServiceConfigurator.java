@@ -53,6 +53,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  * @author Radoslav Husar
  */
 public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigurator<ExecutorFactoryConfiguration> {
+    private static final ThreadFactory THREAD_FACTORY = new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME);
 
     private final ThreadPoolDefinition definition;
 
@@ -75,7 +76,7 @@ public class ClientThreadPoolServiceConfigurator extends ComponentServiceConfigu
             @Override
             public ExecutorService getExecutor(Properties property) {
                 BlockingQueue<Runnable> queue = queueLength == 0 ? new SynchronousQueue<>() : new LinkedBlockingQueue<>(queueLength);
-                ThreadFactory factory = new DefaultThreadFactory(new DaemonThreadFactory(DefaultAsyncExecutorFactory.THREAD_NAME));
+                ThreadFactory factory = new DefaultThreadFactory(THREAD_FACTORY);
                 if (nonBlocking) {
                     factory = new DefaultNonBlockingThreadFactory(factory);
                 }

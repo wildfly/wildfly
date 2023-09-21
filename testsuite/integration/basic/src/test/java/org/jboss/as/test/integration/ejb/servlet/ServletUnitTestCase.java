@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.servlet;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;

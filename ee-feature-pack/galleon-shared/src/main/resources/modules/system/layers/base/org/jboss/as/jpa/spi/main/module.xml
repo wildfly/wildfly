@@ -36,7 +36,7 @@
         <module name="java.sql"/>
         <module name="jakarta.persistence.api"/>
         <module name="jakarta.transaction.api"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

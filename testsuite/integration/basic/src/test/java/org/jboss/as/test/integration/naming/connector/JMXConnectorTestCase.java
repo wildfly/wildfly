@@ -41,7 +41,7 @@ import java.net.SocketPermission;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that JMX Connector work properly from container.

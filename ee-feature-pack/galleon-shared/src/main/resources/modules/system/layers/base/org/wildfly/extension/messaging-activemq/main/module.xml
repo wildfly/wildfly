@@ -81,7 +81,7 @@
         <module name="org.jboss.as.server"/>
         <!-- Only used if capability org.wildfly.weld is available -->
         <module name="org.jboss.as.weld.common" optional="true"/>
-        <module name="org.jboss.jandex"/>
+        <module name="io.smallrye.jandex"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
@@ -89,8 +89,6 @@
         <module name="org.jboss.ironjacamar.impl"/>
         <module name="org.jboss.ironjacamar.api"/>
         <module name="org.jboss.as.connector"/>
-        <!-- Use of legacy security domain ends up using this module's class loader. -->
-        <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.jboss-transaction-spi"/>

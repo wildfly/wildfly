@@ -81,7 +81,7 @@
         <module name="jakarta.servlet.api"/>
         <module name="javax.wsdl4j.api"/>
         <module name="jakarta.xml.bind.api" services="import"/>
-        <module name="com.sun.xml.bind" services="import"/>
+        <module name="org.glassfish.jaxb" services="import"/>
         <module name="jakarta.xml.soap.api"/>
         <module name="jakarta.xml.ws.api"/>
         <module name="org.apache.commons.lang3"/>

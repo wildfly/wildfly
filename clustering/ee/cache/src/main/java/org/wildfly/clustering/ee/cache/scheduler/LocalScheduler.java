@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -45,6 +46,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(LocalScheduler.class);
 
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
@@ -54,7 +56,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
     private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task, Duration closeTimeout) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, THREAD_FACTORY);
         executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
         executor.allowCoreThreadTimeOut(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
