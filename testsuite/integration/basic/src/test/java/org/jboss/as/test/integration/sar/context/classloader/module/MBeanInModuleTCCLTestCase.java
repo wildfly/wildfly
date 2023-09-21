@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.sar.context.classloader;
+package org.jboss.as.test.integration.sar.context.classloader.module;
 
 import java.io.IOException;
 
@@ -14,8 +14,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.DefaultConfiguration;
-import org.jboss.as.test.integration.sar.context.classloader.mbean.MBeanInAModuleService;
-import org.jboss.as.test.integration.sar.context.classloader.mbean.MBeanInAModuleServiceMBean;
+import org.jboss.as.test.integration.sar.context.classloader.module.mbean.MBeanInAModuleService;
+import org.jboss.as.test.integration.sar.context.classloader.module.mbean.MBeanInAModuleServiceMBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
@@ -36,7 +36,7 @@ import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class MBeanTCCLTestCase {
+public class MBeanInModuleTCCLTestCase {
 
     private static final String EAR_NAME = "tccl-mbean-test-app";
     private static final String SAR_NAME = "tccl-mbean-test-sar";
@@ -82,7 +82,7 @@ public class MBeanTCCLTestCase {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_NAME + ".ear");
         ear.addAsModule(sar);
         ear.addAsModule(jar);
-        ear.addAsManifestResource(MBeanTCCLTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        ear.addAsManifestResource(MBeanInModuleTCCLTestCase.class.getPackage(), "jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
 
         ear.addAsManifestResource(createPermissionsXmlAsset(
                 // mbean [wildfly:name=tccl-test-mbean] needs the following permission

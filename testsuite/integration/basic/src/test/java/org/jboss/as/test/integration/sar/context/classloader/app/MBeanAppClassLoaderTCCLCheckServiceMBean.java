@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -18,12 +18,17 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
+ */package org.jboss.as.test.integration.sar.context.classloader.app;
 
-package org.jboss.as.test.integration.sar.context.classloader;
-
-/**
- * @author: Jaikiran Pai
- */
-public class ClassCInSarDeployment {
+public interface MBeanAppClassLoaderTCCLCheckServiceMBean {
+    // Service lifecycle methods
+    void create() throws Exception;
+    void start() throws Exception;
+    void stop();
+    void destroy();
+    // Attribute
+    void setFile(String path) throws Exception;
+    String getFile();
+    // A method
+    void method();
 }

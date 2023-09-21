@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.sar.context.classloader.mbean;
+package org.jboss.as.test.integration.sar.context.classloader.module.mbean;
 
 import org.jboss.logging.Logger;
 
@@ -14,13 +14,13 @@ public class MBeanInAModuleService implements MBeanInAModuleServiceMBean {
     static {
         logger.trace("Static block of " + MBeanInAModuleService.class.getName() + " being loaded");
         // test TCCL in static block
-        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassAInSarDeployment");
+        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.module.ClassAInSarDeployment");
     }
 
     public MBeanInAModuleService() {
         logger.trace("Constructing " + this);
         // test TCCL in constructor
-        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassBInSarDeployment");
+        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.module.ClassBInSarDeployment");
     }
 
     @Override
@@ -31,13 +31,13 @@ public class MBeanInAModuleService implements MBeanInAModuleServiceMBean {
     public void start() {
         logger.trace("Starting " + this);
         // test TCCL in lifecycle method
-        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassCInSarDeployment");
+        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.module.ClassCInSarDeployment");
     }
 
     public void stop() {
         logger.trace("Stopping " + this);
         // test TCCL in lifecycle method
-        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.ClassDInSarDeployment");
+        testClassLoadByTCCL("org.jboss.as.test.integration.sar.context.classloader.module.ClassDInSarDeployment");
     }
 
     private static void testClassLoadByTCCL(final String className) {
