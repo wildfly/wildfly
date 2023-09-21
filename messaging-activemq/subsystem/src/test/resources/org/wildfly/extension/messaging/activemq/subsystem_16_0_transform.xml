@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:messaging-activemq:15.0">
+<subsystem xmlns="urn:jboss:domain:messaging-activemq:16.0">
     <server name="default"
             persistence-enabled="${persistence.enabled:false}"
             persist-id-cache="${persist.id.cache:false}"
@@ -9,8 +9,7 @@
             thread-pool-max-size="${messaging.thread.pool.max.size:5}"
             wild-card-routing-enabled="${wild.card.routing.enabled:false}"
             connection-ttl-override="${connection.ttl.override:5432}"
-            async-connection-execution-enabled="${async.connection.execution.enabled:false}"
-            address-queue-scan-period="30000">
+            async-connection-execution-enabled="${async.connection.execution.enabled:false}">
 
         <security
                 enabled="${security.enabled:false}"
