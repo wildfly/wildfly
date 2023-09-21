@@ -38,24 +38,13 @@
     <name>WildFly BOMs: EE Builder</name>
     <description>This artifact builds a bill of materials (BOM) for WildFly EE Dependency Management</description>
 
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <properties>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <!-- base import of server's dep management -->
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-feature-pack-parent</artifactId>
-                <version>${version.server}</version>
+                <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

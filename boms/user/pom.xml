@@ -24,24 +24,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>jboss-parent</artifactId>
-        <groupId>org.jboss</groupId>
-        <version>37</version>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>30.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>org.wildfly.bom</groupId>
     <artifactId>wildfly</artifactId>
-    <!--
-    Maintain separation between the artifact id and the version to help prevent
-    merge conflicts between commits changing the GA and those changing the V.
-    -->
-    <version>30.0.0.Beta1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <name>WildFly BOMs: Parent Aggregator</name>
-
-    <url>http://www.wildfly.org</url>
 
     <licenses>
         <license>
@@ -51,112 +49,16 @@
         </license>
     </licenses>
 
-    <scm>
-        <connection>scm:git:https://github.com/wildfly/boms.git</connection>
-        <developerConnection>scm:git:https://github.com/wildfly/boms.git</developerConnection>
-        <url>http://github.com/wildfly/boms</url>
-    </scm>
-
-    <developers>
-        <developer>
-            <id>wildfly.org</id>
-            <name>WildFly.org Community</name>
-            <organization>WildFly.org</organization>
-            <organizationUrl>http://www.wildfly.org</organizationUrl>
-        </developer>
-    </developers>
-
-    <issueManagement>
-        <system>JIRA</system>
-        <url>https://issues.redhat.com/browse/WFLY</url>
-    </issueManagement>
-
-    <properties>
-        <!-- Version of WildFly
-        note: a SNAPSHOT version *requires* checkout of WildFly at https://github.com/wildfly/wildfly and build through "mvn clean install"
-        -->
-        <version.server>29.0.0.Final</version.server>
-        <!-- Version of the maven plugin used to build BOMs -->
-        <version.bom-builder-plugin>2.0.6.Final</version.bom-builder-plugin>
-        <!-- Protocol to use for communication with remote maven repositories.
-             You can set to 'http' if you are using a maven proxy and 'https'
-             interferes with that. Use 'https' for builds that will be released
-             to non-snapshot public maven repos -->
-        <maven.repository.protocol>https</maven.repository.protocol>
-        <!-- The full remote maven repo URL; can be overridden via -D for special use cases -->
-        <maven.repository.url>${maven.repository.protocol}://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
-        <!-- https://access.redhat.com/maven-repository -->
-        <maven.redhat.repository.url>${maven.repository.protocol}://maven.repository.redhat.com/ga/</maven.redhat.repository.url>
-
-    </properties>
-
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-public-repository-group</id>
-            <name>JBoss Public Repository Group</name>
-            <url>${maven.repository.url}</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-enterprise-maven-repository</id>
-            <name>JBoss Enterprise Maven Repository</name>
-            <url>${maven.redhat.repository.url}</url>
-            <layout>default</layout>
-        </repository>        
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>jboss-public-repository-group</id>
-            <name>JBoss Public Repository Group</name>
-            <url>${maven.repository.url}</url>
-        </pluginRepository>
-        <pluginRepository>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>jboss-enterprise-maven-repository</id>
-            <name>JBoss Enterprise Maven Repository</name>
-            <url>${maven.redhat.repository.url}</url>
-        </pluginRepository>        
-    </pluginRepositories>
-
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-bom-builder-plugin</artifactId>
-                    <version>${version.bom-builder-plugin}</version>
+                    <version>${version.org.wildfly.bom-builder-plugin}</version>
                     <configuration>
                         <includeRepositories>
                             <id>jboss-public-repository-group</id>
-                            <id>jboss-enterprise-maven-repository</id>
                         </includeRepositories>
                     </configuration>
                 </plugin>

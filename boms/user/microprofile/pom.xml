@@ -38,21 +38,13 @@
     <name>WildFly BOMs: MicroProfile Builder</name>
     <description>This artifact builds a bill of materials (BOM) for MicroProfile Dependency Management</description>
 
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
     <dependencyManagement>
         <dependencies>
             <!-- base import of server's dep management -->
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-feature-pack-parent</artifactId>
-                <version>${version.server}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
