@@ -7,6 +7,7 @@ package org.jboss.as.test.xts.util;
 import java.io.File;
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
+import java.net.NetPermission;
 import java.util.PropertyPermission;
 
 import org.jboss.as.test.shared.PermissionUtils;
@@ -73,7 +74,10 @@ public class DeploymentHelper {
                 // Permissions for port access
                 new PropertyPermission("management.address", "read"),
                 new PropertyPermission("node0", "read"),
-                new PropertyPermission("jboss.http.port", "read")
+                new PropertyPermission("jboss.http.port", "read"),
+                //Required by the ProxySelector in the new HttpClientHTTPConduit
+                //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
+                new NetPermission("getProxySelector")
         );
     }
 

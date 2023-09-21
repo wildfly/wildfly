@@ -24,4 +24,8 @@
         <name>java.net.preferIPv6Addresses</name>
         <actions>read</actions>
     </permission>
+    <permission>
+        <class-name>java.net.NetPermission</class-name>
+        <name>getProxySelector</name>
+    </permission>
 </permissions>

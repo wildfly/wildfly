@@ -41,4 +41,8 @@
         <class-name>java.lang.RuntimePermission</class-name>
         <name>createClassLoader</name>
     </permission>
+    <permission>
+        <class-name>java.net.NetPermission</class-name>
+        <name>getProxySelector</name>
+    </permission>
 </permissions>

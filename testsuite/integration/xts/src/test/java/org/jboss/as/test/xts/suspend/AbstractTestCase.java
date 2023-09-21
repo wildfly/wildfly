@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FilePermission;
 import java.io.IOException;
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.net.URL;
 import java.util.List;
@@ -65,6 +66,9 @@ public abstract class AbstractTestCase {
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new SocketPermission("127.0.0.1:8180", "connect,resolve"),
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
+                        //Required by the ProxySelector in the new HttpClientHTTPConduit
+                        //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
+                        new NetPermission("getProxySelector"),
                         // WSDLFactory#L243 from wsdl4j library needs the following
                         new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read")
                         ), "permissions.xml");

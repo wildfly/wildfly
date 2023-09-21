@@ -6,6 +6,7 @@
 package org.jboss.as.test.integration.ws.serviceref;
 
 import java.io.FilePermission;
+import java.net.NetPermission;
 import java.net.SocketPermission;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -79,6 +80,9 @@ public class ServiceRefTestCase {
                         new RuntimePermission("org.apache.cxf.permission", "resolveUri"),
                         new RuntimePermission("createClassLoader"),
                         new RuntimePermission("accessDeclaredMembers"),
+                        //Required by the ProxySelector in the new HttpClientHTTPConduit
+                        //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
+                        new NetPermission("getProxySelector"),
                         new SocketPermission(node0 + ":8080", "connect,resolve")
                 ), "jboss-permissions.xml");
     }
