@@ -1,0 +1,31 @@
+= WildFly BOMs
+
+The WildFly BOMs project provides Maven BOM files, which includes dependency management compatible with (same version) WildFly. These files manage the version of the dependencies you may need to build, test or debug your project, ensuring you always get a compatible stack.
+
+The following BOMs are available:
+
+* EJB Client (Maven coordinates "org.wildfly:wildfly-ejb-client-bom", built by ./client/ejb-client/pom.xml)
+* JAXWS Client (Maven coordinates "org.wildfly:wildfly-jaxws-client-bom", built by ./client/jaxws-client/pom.xml)
+* JMS Client (Maven coordinates "org.wildfly:wildfly-jms-client-bom", built by ./client/jms-client/pom.xml)
+* EE (Maven coordinates "org.wildfly.bom:wildfly-ee", built by ./ee/pom.xml)
+* EE with Tools (Maven coordinates "org.wildfly.bom:wildfly-ee-with-tools", built by ./ee/ee-with-tools/pom.xml)
+* MicroProfile (Maven coordinates "org.wildfly.bom:wildfly-microprofile", built by ./microprofile/pom.xml)
+
+== Usage
+
+To use a BOM, import into your dependency management. For example, if you want to import the traditional server's dependency management with tools, provided by the "EE With Tools" BOM, use:
+
+[source, xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.bom</groupId>
+            <artifactId>wildfly-ee-with-tools</artifactId>
+            <version>${wildfly.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement> 
+----
