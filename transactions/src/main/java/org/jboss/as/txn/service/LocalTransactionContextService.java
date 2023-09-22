@@ -50,6 +50,7 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     private final InjectedValue<XAResourceRecoveryRegistry> xaResourceRecoveryRegistryInjector = new InjectedValue<>();
     private final InjectedValue<ServerEnvironment> serverEnvironmentInjector = new InjectedValue<>();
     private final int staleTransactionTime;
+    private JBossLocalTransactionProvider provider;
 
     public LocalTransactionContextService(final int staleTransactionTime) {
         this.staleTransactionTime = staleTransactionTime;
@@ -62,7 +63,8 @@ public final class LocalTransactionContextService implements Service<LocalTransa
         builder.setXAResourceRecoveryRegistry(xaResourceRecoveryRegistryInjector.getValue());
         builder.setXARecoveryLogDirRelativeToPath(serverEnvironmentInjector.getValue().getServerDataDir().toPath());
         builder.setStaleTransactionTime(staleTransactionTime);
-        final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(builder.build());
+        this.provider = builder.build();
+        final LocalTransactionContext transactionContext = this.context = new LocalTransactionContext(this.provider);
         // TODO: replace this with per-CL settings for embedded use and to support remote UserTransaction
         doPrivileged((PrivilegedAction<Void>) () -> {
             LocalTransactionContext.getContextManager().setGlobalDefault(transactionContext);
@@ -78,6 +80,7 @@ public final class LocalTransactionContextService implements Service<LocalTransa
     }
 
     public void stop(final StopContext context) {
+        this.provider.removeXAResourceRecovery(xaResourceRecoveryRegistryInjector.getValue());
         this.context = null;
         // TODO: replace this with per-CL settings for embedded use and to support remote UserTransaction
         doPrivileged((PrivilegedAction<Void>) () -> {
