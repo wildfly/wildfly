@@ -9,7 +9,7 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-api}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-api-logs}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-api-events}"/>
         <artifact name="${io.opentelemetry:opentelemetry-semconv}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv}"/>
