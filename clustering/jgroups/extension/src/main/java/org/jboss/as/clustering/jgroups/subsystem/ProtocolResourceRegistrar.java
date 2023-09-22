@@ -35,6 +35,7 @@ import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.Global;
 import org.jgroups.PhysicalAddress;
+import org.jgroups.protocols.FD_ALL2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 
@@ -94,6 +95,7 @@ public class ProtocolResourceRegistrar implements ManagementRegistrar<Management
     }
 
     enum LegacyProtocol {
+        FD(FD_ALL2.class, JGroupsSubsystemModel.VERSION_10_0_0),
         ;
         final String name;
         final String targetName;

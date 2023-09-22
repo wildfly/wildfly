@@ -42,9 +42,10 @@ public enum JGroupsSubsystemModel implements SubsystemModel {
     VERSION_7_0_0(7, 0, 0), // WildFly 17-19, EAP 7.3
 */
     VERSION_8_0_0(8, 0, 0), // WildFly 20-26, EAP 7.4
-    VERSION_9_0_0(9, 0, 0), // WildFly 27-present
+    VERSION_9_0_0(9, 0, 0), // WildFly 27-29
+    VERSION_10_0_0(10, 0, 0), // WildFly 30-present, EAP 8.0
     ;
-    static final JGroupsSubsystemModel CURRENT = VERSION_9_0_0;
+    static final JGroupsSubsystemModel CURRENT = VERSION_10_0_0;
 
     private final ModelVersion version;
 
