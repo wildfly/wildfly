@@ -55,6 +55,10 @@ public abstract class LayersTestBase {
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
+            // Legacy extension not in ootb standalone.xml extension list
+            // and not in test-all-layers as it is admin-only
+            // TODO move to NO_LAYER_OR_REFERENCE_COMMON when the WFCORE-6591 is integrated
+            "org.jboss.as.security",
     };
 
     /**
@@ -148,8 +152,6 @@ public abstract class LayersTestBase {
             // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
-            // TODO Move this to NO_LAYER_OR_REFERENCE_COMMON as part of the WFLY-18519 fix
-            "org.jboss.as.security",
     };
 
 
@@ -242,7 +244,8 @@ public abstract class LayersTestBase {
             // TODO we need to add an agroal layer
             "org.wildfly.extension.datasources-agroal",
             "io.agroal",
-            // Legacy subsystems for which we will not provide layers
+            // Legacy subsystems for which we will not provide layers.
+            // Not in the ootb standalone.xml extension list
             "org.wildfly.extension.picketlink",
             "org.jboss.as.jsr77",
             "org.keycloak.keycloak-adapter-subsystem",
