@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.sar.context.classloader.app;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,7 +78,9 @@ public class MBeanAppClassLoaderTCCLCheckService implements MBeanAppClassLoaderT
         storeTccl(ATTR_WRITE_TCCL);
         if (file == null) {
             file = Path.of(path);
-            properties.store(new BufferedOutputStream(new FileOutputStream(file.toFile())), "Test");
+            try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file.toFile()))) {
+                properties.store(out, "Test");
+            }
         } else {
             throw new IllegalStateException("Only called once");
         }
