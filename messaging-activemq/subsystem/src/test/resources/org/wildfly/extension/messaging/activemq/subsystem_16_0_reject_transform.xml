@@ -147,7 +147,8 @@
                          auto-create-queues="true"
                          auto-delete-queues="true"
                          auto-create-addresses="false"
-                         auto-delete-addresses="false" />
+                         auto-delete-addresses="false"
+                         max-read-page-bytes="${max.read.page.bytes:5}" />
 
         <remote-connector name="netty"
                           socket-binding="messaging-throughput"

@@ -84,7 +84,6 @@ class AddressSettingAdd extends AbstractAddStepHandler {
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-        settings.setMaxReadPageBytes(-1);
         if (config.hasDefined(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.getName())) {
             final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
             settings.setAddressFullMessagePolicy(addressPolicy);
@@ -97,6 +96,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteCreatedQueues(AddressSettingDefinition.AUTO_DELETE_CREATED_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setMaxReadPageBytes(AddressSettingDefinition.MAX_READ_PAGE_BYTES.resolveModelAttribute(context, config).asInt());
         if (config.hasDefined(DEAD_LETTER_ADDRESS.getName())) {
             settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
         }

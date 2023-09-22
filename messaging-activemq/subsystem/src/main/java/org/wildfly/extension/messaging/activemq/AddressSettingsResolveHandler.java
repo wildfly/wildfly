@@ -35,6 +35,7 @@ import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.EXPIRY_DELAY;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.LAST_VALUE_QUEUE;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS;
+import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_READ_PAGE_BYTES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_REDELIVERY_DELAY;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MAX_SIZE_BYTES;
 import static org.wildfly.extension.messaging.activemq.AddressSettingDefinition.MESSAGE_COUNTER_HISTORY_DAY_LIMIT;
@@ -122,6 +123,7 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         result.get(EXPIRY_DELAY.getName()).set(settings.getExpiryDelay());
         result.get(LAST_VALUE_QUEUE.getName()).set(settings.isDefaultLastValueQueue());
         result.get(MAX_DELIVERY_ATTEMPTS.getName()).set(settings.getMaxDeliveryAttempts());
+        result.get(MAX_READ_PAGE_BYTES.getName()).set(settings.getMaxReadPageBytes());
         result.get(MAX_REDELIVERY_DELAY.getName()).set(settings.getMaxRedeliveryDelay());
         result.get(MAX_SIZE_BYTES.getName()).set(settings.getMaxSizeBytes());
         result.get(MESSAGE_COUNTER_HISTORY_DAY_LIMIT.getName()).set(settings.getMessageCounterHistoryDayLimit());
