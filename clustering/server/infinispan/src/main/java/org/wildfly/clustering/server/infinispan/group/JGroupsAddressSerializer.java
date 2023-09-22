@@ -5,15 +5,13 @@
 
 package org.wildfly.clustering.server.infinispan.group;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.jgroups.Address;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.BinaryFormatter;
 import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.marshalling.spi.FunctionalSerializer;
 import org.wildfly.clustering.marshalling.spi.Serializer;
 import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
 
@@ -21,17 +19,11 @@ import org.wildfly.clustering.marshalling.spi.SerializerExternalizer;
  * Serializer for an Infinispan JGroups-based address.
  * @author Paul Ferraro
  */
-public enum JGroupsAddressSerializer implements Serializer<JGroupsAddress> {
-    INSTANCE;
+public class JGroupsAddressSerializer extends FunctionalSerializer<JGroupsAddress, Address> {
+    static final Serializer<JGroupsAddress> INSTANCE = new JGroupsAddressSerializer();
 
-    @Override
-    public void write(DataOutput output, JGroupsAddress address) throws IOException {
-        AddressSerializer.INSTANCE.write(output, address.getJGroupsAddress());
-    }
-
-    @Override
-    public JGroupsAddress read(DataInput input) throws IOException {
-        return new JGroupsAddress(AddressSerializer.INSTANCE.read(input));
+    private JGroupsAddressSerializer() {
+        super(AddressSerializer.INSTANCE, JGroupsAddress::getJGroupsAddress, JGroupsAddress::new);
     }
 
     @MetaInfServices(Externalizer.class)
