@@ -9,12 +9,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.protostream.ProtobufTagMarshaller.ReadContext;
 import org.infinispan.protostream.TagReader;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * {@link ProtoStreamWriter} implementation that reads from a {@link TagReader}.
@@ -34,6 +37,8 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
     private final TagReader reader;
     private final ProtoStreamReaderContext context;
 
+    private int currentTag = 0;
+
     public DefaultProtoStreamReader(ReadContext context) {
         this(context, new DefaultProtoStreamReaderContext());
     }
@@ -42,6 +47,47 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
         super(context);
         this.reader = context.getReader();
         this.context = readerContext;
+    }
+
+    @Override
+    public Context getContext() {
+        return this.context;
+    }
+
+    @Override
+    public TagReader getReader() {
+        return this.reader;
+    }
+
+    @Override
+    public int pushLimit(int limit) throws IOException {
+        return this.reader.pushLimit(limit);
+    }
+
+    @Override
+    public void popLimit(int oldLimit) {
+        this.reader.popLimit(oldLimit);
+    }
+
+    @Override
+    public int readTag() throws IOException {
+        return this.currentTag = this.reader.readTag();
+    }
+
+    @Override
+    public void checkLastTagWas(int tag) throws IOException {
+        this.reader.checkLastTagWas(tag);
+    }
+
+    @Override
+    public boolean skipField(int tag) throws IOException {
+        this.currentTag = 0;
+        return this.reader.skipField(tag);
+    }
+
+    @Override
+    public boolean isAtEnd() throws IOException {
+        return this.reader.isAtEnd();
     }
 
     @Override
@@ -57,17 +103,8 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
     }
 
     @Override
-    public Context getContext() {
-        return this.context;
-    }
-
-    @Override
-    public TagReader getReader() {
-        return this.reader;
-    }
-
-    @Override
     public <T> T readObject(Class<T> targetClass) throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
         int limit = this.reader.readUInt32();
         int oldLimit = this.reader.pushLimit(limit);
         try {
@@ -82,137 +119,157 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
     }
 
     @Override
-    public int pushLimit(int limit) throws IOException {
-        return this.reader.pushLimit(limit);
-    }
-
-    @Override
-    public void popLimit(int oldLimit) {
-        this.reader.popLimit(oldLimit);
-    }
-
-    @Override
-    public boolean isAtEnd() throws IOException {
-        return this.reader.isAtEnd();
-    }
-
-    @Override
-    public int readTag() throws IOException {
-        return this.reader.readTag();
-    }
-
-    @Override
-    public void checkLastTagWas(int tag) throws IOException {
-        this.reader.checkLastTagWas(tag);
-    }
-
-    @Override
-    public boolean skipField(int tag) throws IOException {
-        return this.reader.skipField(tag);
-    }
-
-    @Override
     public boolean readBool() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readBool();
     }
 
     @Override
     public int readEnum() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readEnum();
     }
 
     @Deprecated
     @Override
     public int readInt32() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readInt32();
     }
 
     @Deprecated
     @Override
     public int readFixed32() throws IOException {
+        this.verifyWireType(WireType.FIXED32);
+        this.currentTag = 0;
         return this.reader.readFixed32();
     }
 
     @Override
     public int readUInt32() throws IOException {
+        // Used with unsigned byte/short/int or length records
+        this.verifyWireType(EnumSet.of(WireType.VARINT, WireType.LENGTH_DELIMITED));
+        this.currentTag = 0;
         return this.reader.readUInt32();
     }
 
     @Override
     public int readSInt32() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readSInt32();
     }
 
     @Override
     public int readSFixed32() throws IOException {
+        this.verifyWireType(WireType.FIXED32);
+        this.currentTag = 0;
         return this.reader.readSFixed32();
     }
 
     @Deprecated
     @Override
     public long readInt64() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readInt64();
     }
 
     @Deprecated
     @Override
     public long readFixed64() throws IOException {
+        this.verifyWireType(WireType.FIXED64);
+        this.currentTag = 0;
         return this.reader.readFixed64();
     }
 
     @Override
     public long readUInt64() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readUInt64();
     }
 
     @Override
     public long readSInt64() throws IOException {
+        this.verifyWireType(WireType.VARINT);
+        this.currentTag = 0;
         return this.reader.readSInt64();
     }
 
     @Override
     public long readSFixed64() throws IOException {
+        this.verifyWireType(WireType.FIXED64);
+        this.currentTag = 0;
         return this.reader.readSFixed64();
     }
 
     @Override
     public float readFloat() throws IOException {
+        // Used with float and packed float arrays
+        this.verifyWireType(EnumSet.of(WireType.FIXED32, WireType.VARINT));
+        this.currentTag = 0;
         return this.reader.readFloat();
     }
 
     @Override
     public double readDouble() throws IOException {
+        // Used with double and packed double arrays
+        this.verifyWireType(EnumSet.of(WireType.FIXED64, WireType.VARINT));
+        this.currentTag = 0;
         return this.reader.readDouble();
     }
 
     @Override
     public byte[] readByteArray() throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
+        this.currentTag = 0;
         return this.reader.readByteArray();
     }
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
+        this.currentTag = 0;
         return this.reader.readByteBuffer();
     }
 
     @Override
     public String readString() throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
+        this.currentTag = 0;
         return this.reader.readString();
     }
 
     @Override
     public byte[] fullBufferArray() throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
         return this.reader.fullBufferArray();
     }
 
     @Override
     public InputStream fullBufferInputStream() throws IOException {
+        this.verifyWireType(WireType.LENGTH_DELIMITED);
         return this.reader.fullBufferInputStream();
     }
 
     @Override
     public boolean isInputStream() {
         return this.reader.isInputStream();
+    }
+
+    private void verifyWireType(WireType type) throws IOException {
+        this.verifyWireType(EnumSet.of(type));
+    }
+
+    private void verifyWireType(Set<WireType> types) throws IOException {
+        WireType currentType = WireType.fromTag(this.currentTag);
+        if (!types.contains(currentType)) {
+            throw new IllegalStateException(currentType.name());
+        }
     }
 
     private static class DefaultProtoStreamReaderContext implements ProtoStreamReaderContext {
