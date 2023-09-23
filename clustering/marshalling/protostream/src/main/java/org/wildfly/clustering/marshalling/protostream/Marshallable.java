@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.marshalling.protostream;
 
-import java.io.IOException;
 import java.util.OptionalInt;
 
 /**
@@ -13,23 +12,7 @@ import java.util.OptionalInt;
  * @author Paul Ferraro
  * @param <T> the type of this marshaller
  */
-public interface Marshallable<T> {
-
-    /**
-     * Reads an object from the specified reader.
-     * @param reader a ProtoStream reader
-     * @return the read object
-     * @throws IOException if the object could not be read
-     */
-    T readFrom(ProtoStreamReader reader) throws IOException;
-
-    /**
-     * Writes the specified object to the specified writer.
-     * @param writer a ProtoStream writer
-     * @param value the object to be written
-     * @throws IOException if the object could not be written
-     */
-    void writeTo(ProtoStreamWriter writer, T value) throws IOException;
+public interface Marshallable<T> extends Readable<T>, Writable<T> {
 
     /**
      * Computes the size of the specified object.
