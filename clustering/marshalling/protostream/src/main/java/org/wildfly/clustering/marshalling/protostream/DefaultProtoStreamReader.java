@@ -60,6 +60,26 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
     }
 
     @Override
+    public <T> FieldSetReader<T> createFieldSetReader(FieldReadable<T> reader, int startIndex) {
+        int endIndex = reader.nextIndex(startIndex);
+        ProtoStreamReader offsetReader = new OffsetProtoStreamReader(this, startIndex);
+        return new FieldSetReader<>() {
+            @Override
+            public T readField(T current) throws IOException {
+                int tag = offsetReader.getCurrentTag();
+                // Determine index relative to this field set
+                int relativeIndex = WireType.getTagFieldNumber(tag) - startIndex;
+                return reader.readFrom(offsetReader, relativeIndex, WireType.fromTag(tag), current);
+            }
+
+            @Override
+            public boolean contains(int index) {
+                return (index >= startIndex) && (index < endIndex);
+            }
+        };
+    }
+
+    @Override
     public int pushLimit(int limit) throws IOException {
         return this.reader.pushLimit(limit);
     }
@@ -72,6 +92,11 @@ public class DefaultProtoStreamReader extends AbstractProtoStreamOperation imple
     @Override
     public int readTag() throws IOException {
         return this.currentTag = this.reader.readTag();
+    }
+
+    @Override
+    public int getCurrentTag() {
+        return this.currentTag;
     }
 
     @Override

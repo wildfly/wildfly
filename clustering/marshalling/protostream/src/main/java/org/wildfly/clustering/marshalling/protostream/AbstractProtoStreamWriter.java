@@ -73,6 +73,17 @@ public abstract class AbstractProtoStreamWriter extends AbstractProtoStreamOpera
     }
 
     @Override
+    public <T> FieldSetWriter<T> createFieldSetWriter(Writable<T> writer, int startIndex) {
+        ProtoStreamWriter offsetWriter = new OffsetProtoStreamWriter(this, startIndex);
+        return new FieldSetWriter<>() {
+            @Override
+            public void writeFields(T value) throws IOException {
+                writer.writeTo(offsetWriter, value);
+            }
+        };
+    }
+
+    @Override
     public void writeAnyNoTag(Object value) throws IOException {
         Reference reference = this.context.getReference(value);
         Any any = new Any((reference != null) ? reference : value);
