@@ -11,7 +11,7 @@
         <cve>CVE-2017-15089</cve>
         <cve>CVE-2019-10174</cve>
     </suppress>
-    
+
     <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
     <suppress>
         <notes><![CDATA[
@@ -93,7 +93,7 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly.*@.*$</packageUrl>
         <cve>CVE-2020-25640</cve>
     </suppress>
-	
+
     <!-- [wildfly] Used only in tests, not deployed  -->
     <suppress>
         <notes><![CDATA[
@@ -170,7 +170,7 @@
         <cve>CVE-2020-10719</cve>
         <cve>CVE-2020-1745</cve>
     </suppress>
-    
+
     <!-- [wildfly] This is a false positive because wildfly itself does not use commons-compress. Commons-compress comes with org.testcontainers and it is used only for test purposes  -->
     <suppress>
         <notes><![CDATA[
@@ -201,7 +201,7 @@
         <packageUrl regex="true">^pkg:maven/org\.apache\.velocity/velocity\-engine\-scripting@.*$</packageUrl>
         <cve>CVE-2020-13936</cve>
     </suppress>
-	
+
 	<!-- CVE-2019-0231 False positive - Apacheds-all is only used in tests -->
 	<suppress>
 		<notes><![CDATA[
@@ -210,8 +210,8 @@
 		<packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
 		<cve>CVE-2019-0231</cve>
 	</suppress>
-	
-	<!-- CVE-2017-12629 False positive - JBoss EAP7 is not affected by this flaw -->
+
+    <!-- CVE-2017-12629 False positive - JBoss EAP7 is not affected by this flaw -->
 	<suppress>
 		<notes><![CDATA[
 		file name: lucene-queryparser-5.5.5.jar
@@ -219,7 +219,7 @@
 		<packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene\-queryparser@.*$</packageUrl>
 		<cve>CVE-2017-12629</cve>
 	</suppress>
-	
+
     <!-- This is a false positive because wildfly-core itself does not use mockserver libraries. Mockserver is used only for test purposes (wildfly-core-testsuite-shared module). -->
     <suppress>
         <notes><![CDATA[
@@ -295,7 +295,7 @@
         <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
         <cve>CVE-2021-42392</cve>
     </suppress>
-    
+
     <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
     <suppress>
         <notes><![CDATA[
@@ -582,7 +582,7 @@
         <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
         <cve>CVE-2022-24785</cve>
     </suppress>
-    
+
     <!-- False-positive, vulnerability detected in Async javascript library https://github.com/caolan/async but Wildfly uses a different lib: https://github.com/IBM/java-async-util -->
     <suppress>
        <notes><![CDATA[
@@ -590,8 +590,8 @@
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/com\.ibm\.async/asyncutil@.*$</packageUrl>
        <cve>CVE-2021-43138</cve>
-    </suppress>    
-    
+    </suppress>
+
     <!-- Wildfly uses jboss.resteasy 4.x which is higher than vulnerable ones (before 3.1.2). Mocroprofile comes with appropriate exclusions. -->
     <suppress>
        <notes><![CDATA[
@@ -599,7 +599,7 @@
        ]]></notes>
        <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.microprofile/microprofile\-.*@.*$</packageUrl>
        <cve>CVE-2016-9606</cve>
-    </suppress>    
+    </suppress>
 
     <!-- According to RedHat this is fixed in the current version https://issues.redhat.com/browse/WFLY-16229, see also: https://github.com/advisories/GHSA-57j2-w4cx-62h2, https://bugzilla.redhat.com/show_bug.cgi?id=2064698 -->
     <!-- I've double checked with dependency tree and there is only com.fasterxml.jackson.core:jackson-databind:jar:2.12.6.1 used -->
@@ -641,8 +641,8 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
         <cve>CVE-2021-3717</cve>
     </suppress>
-    
-    <!-- According to author of okhttp this vulnerability can only be exploited when the vulnerable method is called directly, which it isn't in WF. See https://github.com/square/okhttp/issues/6724#issuecomment-866701186  -->   
+
+    <!-- According to author of okhttp this vulnerability can only be exploited when the vulnerable method is called directly, which it isn't in WF. See https://github.com/square/okhttp/issues/6724#issuecomment-866701186  -->
 	<suppress>
         <notes><![CDATA[
         file name: okhttp-3.14.9.jar
@@ -650,7 +650,7 @@
         <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
         <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
     </suppress>
-	
+
     <!-- This issue touches artifact provisioned in Amazon Linux (https://alas.aws.amazon.com/ALAS-2022-1601.html). Also log4j-cve-2021-44228-hotpatch-1.3.5 is not present in PSI WildFly. -->
     <suppress>
        <notes><![CDATA[
@@ -700,8 +700,8 @@
         <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.jwt/microprofile\-jwt\-auth\-api@.*$</packageUrl>
         <cve>CVE-2022-37422</cve>
     </suppress>
-	
-	<!-- Vulnerability fixed in undertow 2.2.18 -->
+
+    <!-- Vulnerability fixed in undertow 2.2.18 -->
     <suppress>
         <notes><![CDATA[
    file name: undertow-core-2.2.19.Final.jar
@@ -730,8 +730,8 @@
         <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet@.*$</packageUrl>
         <cve>CVE-2022-1319</cve>
     </suppress>
-	
-	<!--  Vulnerability fixed in Undertow 2.2.15 -->
+
+    <!--  Vulnerability fixed in Undertow 2.2.15 -->
     <suppress>
         <notes><![CDATA[
    file name: undertow-server-1.10.1.Final.jar
@@ -746,8 +746,8 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
         <cve>CVE-2021-3859</cve>
     </suppress>
-	
-	<!-- CVE-2022-1259 is directly related to undertow-core -->
+
+    <!-- CVE-2022-1259 is directly related to undertow-core -->
     <suppress>
         <notes><![CDATA[
    file name: undertow-server-1.10.1.Final.jar
@@ -1083,5 +1083,19 @@
         <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-context@.*$</packageUrl>
         <cve>CVE-2023-33953</cve>
         <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-servlet-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
     </suppress>
 </suppressions>
