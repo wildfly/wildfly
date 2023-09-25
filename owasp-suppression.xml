@@ -43,7 +43,7 @@
         <packageUrl regex="true">^pkg:maven/org\.hibernate/hibernate\-.*$</packageUrl>
         <cve>CVE-2020-25638</cve>
     </suppress>
-	
+
     <!-- [wildfly] Applies to versions prior to wildfly 21.0.0 -->
     <suppress>
         <notes><![CDATA[
@@ -849,7 +849,7 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
         <cve>CVE-2020-36518</cve>
-    </suppress> 
+    </suppress>
 
     <!-- The io.undertow system is vulnerable, but not org.wildfly.security.elytron-web:undertow-server which integrates Elytron with Undertow -->
     <!-- The io.undertow is in version 2.2.17 which is higher then vulnerable prior to 2.2.11.Final -->
@@ -923,7 +923,7 @@
         <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-jsr@.*$</packageUrl>
         <cve>CVE-2022-1319</cve>
     </suppress>
-	
+
 	<!-- Vulnerable class is not used in wildfly-core (Wildfly inherits "vulnerable" modules from wildfly-core) -->
 	<suppress>
 		<notes><![CDATA[
@@ -1308,5 +1308,20 @@
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit\.ssh\.apache@.*$</packageUrl>
         <cve>CVE-2023-4759</cve>
+    </suppress>
+<!--    Fixed since undertow 2.2.24.Final   -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-servlet-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
     </suppress>
 </suppressions>
