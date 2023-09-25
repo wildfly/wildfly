@@ -5,16 +5,9 @@
 
 package org.wildfly.extension.elytron.oidc;
 
-import static org.wildfly.extension.elytron.oidc.ElytronOidcSubsystemDefinition.ELYTRON_CAPABILITY_NAME;
-
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,25 +35,10 @@ public class ExpressionsTestCase extends AbstractSubsystemTest {
     public void testExpressions() throws Throwable {
         if (services != null) return;
         String subsystemXml = "oidc-expressions.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXmlResource(subsystemXml).build();
+        services = super.createKernelServicesBuilder(new OidcTestCase.DefaultInitializer(Stability.COMMUNITY)).setSubsystemXmlResource(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
-    }
-
-    private static class DefaultInitializer extends AdditionalInitialization {
-
-        @Override
-        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
-            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
-            registerCapabilities(capabilityRegistry, ELYTRON_CAPABILITY_NAME);
-        }
-
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.NORMAL;
-        }
-
     }
 
 }

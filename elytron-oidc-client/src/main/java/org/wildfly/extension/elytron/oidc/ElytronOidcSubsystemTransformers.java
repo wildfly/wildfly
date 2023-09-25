@@ -10,9 +10,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-
 
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_1_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_2_0_0;
@@ -56,8 +57,7 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {
         ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion());
         builder.rejectChildResource(PathElement.pathElement(SECURE_SERVER));
-<<<<<<< HEAD
-=======
+
     }
 
     private static void from3(ChainedTransformationDescriptionBuilder chainedBuilder) {
@@ -169,7 +169,6 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_PASSWORD)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_PASSWORD)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_PASSWORD);
->>>>>>> f1cde2e1a2 ([squash] back to 3.0 subsystem version)
     }
 
 }

@@ -321,6 +321,7 @@
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.13.Final</legacy.version.io.netty>
         <version.io.rest-assured>3.0.7</version.io.rest-assured>
+        <version.org.keycloak.keycloak-services>3.1.0.Final</version.org.keycloak.keycloak-services>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jaxen>1.1.6</version.jaxen>
@@ -546,6 +547,7 @@
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
+        <version.org.wildfly.security.elytron-tests-common>2.3.2.CR1-SNAPSHOT</version.org.wildfly.security.elytron-tests-common>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
@@ -848,6 +850,12 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-services</artifactId>
+                <version>${version.org.keycloak.keycloak-services}</version>
+                <scope>test</scope>
             </dependency>
 
         </dependencies>

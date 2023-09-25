@@ -11,11 +11,17 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.security.http.oidc.Oidc;
 
 import java.util.EnumSet;
+
+import static org.jose4j.jws.AlgorithmIdentifiers.NONE;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.OAUTH2;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_URI;
 
 /**
  * The common attribute definitions for OpenID Connect provider attributes.
@@ -218,10 +224,84 @@ class ProviderAttributeDefinitions {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = { REALM_PUBLIC_KEY, AUTH_SERVER_URL, PROVIDER_URL, TRUSTSTORE, TRUSTSTORE_PASSWORD,
-            SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER, CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE,
-            CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD, CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS,
-            EXPOSE_TOKEN, ALWAYS_REFRESH_TOKEN, REGISTER_NODE_AT_STARTUP, REGISTER_NODE_PERIOD, TOKEN_STORE, PRINCIPAL_ATTRIBUTE, AUTODETECT_BEARER_ONLY,
-            IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS, CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM};
+    protected static final SimpleAttributeDefinition AUTHENTICATION_REQUEST_FORMAT =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(OAUTH2))
+                    .setAllowedValues(OAUTH2, REQUEST, REQUEST_URI)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_ENCRYPTION_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setRequires(ElytronOidcDescriptionConstants.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setRequires(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(NONE)) // plaintext jwt to be sent
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_FILE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEY_PASSWORD =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_PASSWORD, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEY_ALIAS =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_ALIAS, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.COMMUNITY)
+                    .build();
+
+
+    protected static final SimpleAttributeDefinition[] ATTRIBUTES = { REALM_PUBLIC_KEY, AUTH_SERVER_URL, PROVIDER_URL,
+            TRUSTSTORE, TRUSTSTORE_PASSWORD, SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER,
+            CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE, CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD,
+            CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS, EXPOSE_TOKEN,
+            ALWAYS_REFRESH_TOKEN, REGISTER_NODE_AT_STARTUP, REGISTER_NODE_PERIOD, TOKEN_STORE, PRINCIPAL_ATTRIBUTE,
+            AUTODETECT_BEARER_ONLY, IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS,
+            CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM, AUTHENTICATION_REQUEST_FORMAT,
+            REQUEST_OBJECT_SIGNING_ALGORITHM, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, REQUEST_OBJECT_ENCRYPTION_ALGORITHM,
+            REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
+            REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
 }

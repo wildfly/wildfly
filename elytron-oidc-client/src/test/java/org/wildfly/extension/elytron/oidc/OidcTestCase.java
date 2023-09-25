@@ -16,6 +16,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class OidcTestCase extends AbstractSubsystemTest {
     public void prepare() throws Throwable {
         if (services != null) return;
         String subsystemXml = "oidc.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXmlResource(subsystemXml).build();
+        services = super.createKernelServicesBuilder(new DefaultInitializer(Stability.COMMUNITY)).setSubsystemXmlResource(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
@@ -102,7 +103,41 @@ public class OidcTestCase extends AbstractSubsystemTest {
         assertEquals(expectedJson, configService.getJSON("wildfly-console"));
     }
 
-    private static class DefaultInitializer extends AdditionalInitialization {
+    @Test
+    public void testSecureServerWithRequest() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request"));
+    }
+
+    @Test
+    public void testSecureServerWithRequestUri() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request-uri"));
+    }
+
+    @Test
+    public void testSecureDeploymentWithRequest() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-request"));
+    }
+
+    @Test
+    public void testSecureDeploymentWithRequestUri() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"request-object-signing-keystore-file\" : \"jwt.keystore\", \"request-object-signing-keystore-password\" : \"password\", \"request-object-signing-key-alias\" : \"alias\", \"request-object-signing-key-password\" : \"password\", \"request-object-signing-keystore-type\" : \"JKS\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-request-uri"));
+    }
+
+    protected static class DefaultInitializer extends AdditionalInitialization {
+
+        private final Stability stability;
+
+        public DefaultInitializer(Stability stability) {
+            this.stability = stability;
+        }
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
@@ -113,6 +148,11 @@ public class OidcTestCase extends AbstractSubsystemTest {
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.NORMAL;
+        }
+
+        @Override
+        public Stability getStability() {
+            return stability;
         }
 
     }
