@@ -172,6 +172,15 @@
         <public-client>${exp.public-client:false}</public-client>
         <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
         <scope>${exp.scope:profile email phone}</scope>
+        <authentication-request-format>${exp.authentication-request-format:request}</authentication-request-format>
+        <request-object-signing-algorithm>${exp.request-object-signing-algorithm:RS-256}</request-object-signing-algorithm>
+        <request-object-encryption-alg-value>${exp.request-object-encryption-alg-value:RSA-OAEP}</request-object-encryption-alg-value>
+        <request-object-encryption-enc-value>${exp.request-object-encryption-enc-value:A128CBC-HS256}</request-object-encryption-enc-value>
+        <request-object-signing-keystore-file>${exp.request-object-signing-keystore-file:jwt.keystore}</request-object-signing-keystore-file>
+        <request-object-signing-key-alias>${exp.request-object-signing-key-alias:alias}</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>${exp.request-object-signing-keystore-type:JKS}</request-object-signing-keystore-type>
+        <request-object-signing-keystore-password>${exp.request-object-signing-keystore-password:secret}</request-object-signing-keystore-password>
+        <request-object-signing-key-password>${exp.request-object-signing-key-password:secret}</request-object-signing-key-password>
     </secure-deployment>
     <secure-server name="wildfly-console">
         <realm>${exp.realm:demo}</realm>
@@ -208,6 +217,15 @@
         <confidential-port>${exp.confidential-port:443}</confidential-port>
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
         <scope>${exp.scope:profile email phone}</scope>
+        <authentication-request-format>${exp.authentication-request-format:request}</authentication-request-format>
+        <request-object-signing-algorithm>${exp.request-object-signing-algorithm:RS-256}</request-object-signing-algorithm>
+        <request-object-encryption-alg-value>${exp.request-object-encryption-alg-value:RSA-OAEP}</request-object-encryption-alg-value>
+        <request-object-encryption-enc-value>${exp.request-object-encryption-enc-value:A128CBC-HS256}</request-object-encryption-enc-value>
+        <request-object-signing-keystore-file>${exp.request-object-signing-keystore-file:jwt.keystore}</request-object-signing-keystore-file>
+        <request-object-signing-key-alias>${exp.request-object-signing-key-alias:alias}</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>${exp.request-object-signing-keystore-type:JKS}</request-object-signing-keystore-type>
+        <request-object-signing-keystore-password>${exp.request-object-signing-keystore-password:secret}</request-object-signing-keystore-password>
+        <request-object-signing-key-password>${exp.request-object-signing-key-password:secret}</request-object-signing-key-password>
     </secure-server>
     <secure-server name="another-wildfly-console">
         <provider>${exp.provider:redhat-sso-expressions}</provider>

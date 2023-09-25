@@ -173,6 +173,135 @@ It is also possible to configure the scope values that would be used via the sco
 
 NOTE: If both the deployment and subsystem configuration is present, then the subsystem configuration will override the deployment values.
 
+== Sending a Request Object as a JWT
+
+NOTE: Sending the request object as a JWT is a preview level feature, meaning the WildFly server's stability level must
+be set to `preview` or lower to enable the ability to add `request` or `request_uri` to authentication requests. The
+stability level must not be changed to community or higher after configuring the attributes related to this feature.
+For more information about the stability levels of the WildFly server, please refer to the
+link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
+
+When securing an application using OpenID Connect, the `request` or `request_uri` parameters enable Authentication
+Requests to be signed and optionally encrypted and sent as a Json Web Token (JWT). The `elytron-oidc-client` subsystem
+allows you to specify if you want to enable this using the `authentication-request-format` attribute.
+
+The `authentication-request-format` attribute has values of type `String` and has 3 allowed values:
+
+* `oauth2`: This sends the authentication request as usual following the oauth2 syntax. Parameters, such as,
+`state` are added to the authentication request directly.
+* `request`: This sends the authentication request as a signed and optionally encrypted JWT, which the OpenID provider
+can verify and/or decrypt. The OpenID provider must support request parameters, which is indicated using the
+`request_parameter_supported` field inside the OpenID metadata. Using `request`, the request object is sent by value.
+* `request_uri`: This also sends the authentication request as a signed and optionally encrypted JWT, but `request_uri`
+sends the JWT by reference, as opposed to by value. The OpenID provider must support the `request_uri` parameter, indicated
+using the `request_uri_parameter_supported` field inside the OpenID metadata. Using `request_uri`, the request object is
+sent by reference using a URL which is obtained through a push request to the Pushed Authentication Request Endpoint of
+the OpenID provider.
+
+NOTE: The default value for `authentication-request-format` is `oauth2`. If the OpenID provider does not support request
+parameters, then the request will be sent following the OAuth2 format and a warning will appear on the log messages.
+
+=== Signing Configuration
+The JWT containing the Request Object can be signed using one of the algorithms supported by the OpenID Provider, or can be sent as
+plaintext, indicated by the `none` algorithm in the JWS Header. The signature algorithm for the request object can be
+specified using the `request-object-signing-algorithm` attribute. This attribute is of type string and the default value
+is `none`, indicating that the request object will be sent as plaintext. In a production environment, you should
+configure the signature algorithm for the request object to be signed.
+
+If any asymmetric signing algorithm is specified as the signing algorithm for the request object, then keystore attributes
+should be configured. This is done using the following attributes:
+
+* `request-object-signing-keystore-file`: The absolute path to the client keystore file.
+* `request-object-signing-keystore-password`: The password to access the keystore file.
+* `request-object-signing-key-password`: The password to access the key within the keystore file.
+* `request-object-signing-key-alias`: The alias by which the key identified with within the keystore file.
+* `request-object-signing-keystore-type`: The keystore type for the file. This can be either "PKCS12" or "JKS".
+
+When `request-object-signing-algorithm` is set to `none`, the JWT won't be signed so there's no need to configure a
+keystore in this case. Similarly, for HMAC algorithms, the client secret will be used to sign the JWT, so, there is no
+need to configure a keystore.
+
+NOTE: Although the default value for the request-object-signing-algorithm is `none`, indicating an unsigned JWT, this may not
+be allowed by all OpenID providers. Please refer to the metadata for your OpenID Provider, specifically the
+`request_object_signing_alg_values_supported` section to determine which algorithms are supported.
+
+The keystore file can be created using `keytool` on the terminal using the following commands:
+```
+keytool -genkeypair -alias <keystore_alias> -keyalg <algorithm> -keysize <key_size> -validity <validity_in_days>
+-keystore <keystore_name> -dname "<distinguished_name>" -keypass <private_key_password> -storepass <keystore_password>
+```
+An example for this is:
+```
+$ keytool -genkeypair -alias exampleClientKeyStore -keyalg RSA -keysize 2048 -validity 365 -keystore
+exampleclient.keystore.pkcs12 -dname "CN=client" -keypass secret -storepass secret
+```
+
+Alternatively, the keystore file can also be created using the Elytron subsystem.
+
+NOTE: For elliptical curve keys, if you are using a keystore of type JKS, then keysize may not matter. However, if you are
+using PKCS12, you cannot specify keysize using the `keysize` argument. Instead, you must use `-groupname` and set it to
+"secp256r1" if you are planning on using the "ES256" algorithm, "secp384r1" for "ES384" and so on. However, for RSA keys,
+keys of size 2048 would be applicable for the supported RSXXX and PSXXX algorithms regardless of the SHA value.
+
+=== Encryption Configuration
+
+Request Objects can be optionally encrypted using one of the encryption and content encryption algorithms supported
+by the OpenID provider. In order to specify these algorithms when configuring the server, the
+`request-object-encryption-alg-value` and the `request-object-encryption-enc-value` attributes must be
+specified. If only one is specified, then both will remain undefined and the JWT will not be
+encrypted. These two attributes are of type string and their default value is undefined.
+
+No additional keys need to be configured for this, since the JWT will be encrypted using the public realm key that the
+OpenID provider will share. The JWT will be signed first and then encrypted as a nested JWT. It is possible to mix and
+match between the types of algorithms for signing and encrypting. For example, a JWT can be signed using elliptical
+algorithms and encrypted using RSA algorithms.
+
+NOTE: Not all OpenID providers will support encrypted request objects. Please refer to the metadata for your OpenID
+provider, specifically `request_object_encryption_alg_values_supported` and `request_object_encryption_enc-values_supported`
+sections for supported algorithms. If this section is not present, the OpenID provider does not support encrypted
+request objects.
+
+All the attributes mentioned above are available under the `secure-server`, `secure-deployment`, `realm` or `provider`
+resources. When securing applications with OIDC using `elytron-oidc-client` subsystem configuration, if you want all
+requests within a realm to be sent following the same format, you can configure it inside the `realm` settings.
+Otherwise, if you want each deployment to have different authentication formats, you can configure that using the
+`secure-server` or the `secure-deployment` resources.
+
+==== Example Configuration
+
+The WildFly server can be configured to send the authentication request using `request` as follows:
+
+* Subsystem configuration:
+```
+/subsystem=elytron-oidc-client/secure-deployment=oidc.war:add(client-id=myclient,
+provider-url=http://localhost:8080/realms/myrealm, authentication-request-format=request,
+request-object-signing-algorithm=RS256, request-object-encryption-alg-value=RSA-OAEP,
+request-object-encryption-enc-value=A256GCM, request-object-signing-keystore-file="path/to/jwt.keystore",
+request-object-signing-key-password=password, request-object-signing-keystore-password=password,
+request-object-signing-key-alias=rsaKey, request-object-signing-keystore-type=JKS, public-client=false)
+```
+
+* Deployment Configuration:
+```
+    "client-id" : "wildfly",
+    "provider-url" : "${env.OIDC_PROVIDER_URL:http://localhost:8080}/realms/myrealm",
+    "public-client" : "false",
+    "authentication-request-format" : "request",
+    "request-object-signing-algorithm" : "ES384",
+    "request-object-encryption-alg-value" : "RSA-OAEP",
+    "request-object-encryption-enc-value" : "A256GCM",
+    "request-object-signing-keystore-file" : "/path/to/keycloak.keystore.pkcs12",
+    "request-object-signing-keystore-password" : "password",
+    "request-object-signing-key-password" : "password",
+    "request-object-signing-key-alias" : "ec384key",
+    "request-object-signing-keystore-type" : "PKCS12",
+    "ssl-required" : "EXTERNAL"
+    "credentials" : {
+        "secret" : "client_secret"
+    }
+```
+
 == Virtual Security
 
 The purpose of using OpenID Connect is to verify a user's identity based on the authentication that's been

@@ -5,6 +5,47 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ALLOW_ANY_HOSTNAME;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ALWAYS_REFRESH_TOKEN;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTH_SERVER_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTODETECT_BEARER_ONLY;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CLIENT_KEYSTORE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CLIENT_KEY_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CLIENT_KEYSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONFIDENTIAL_PORT;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_POOL_SIZE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_TIMEOUT_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_TTL_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_ALLOWED_HEADERS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_ALLOWED_METHODS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_EXPOSED_HEADERS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_MAX_AGE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ENABLE_CORS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.EXPOSE_TOKEN;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.IGNORE_OAUTH_QUERY_PARAMETER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PRINCIPAL_ATTRIBUTE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROXY_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REALM_PUBLIC_KEY;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REGISTER_NODE_AT_STARTUP;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REGISTER_NODE_PERIOD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_ALIAS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.SOCKET_TIMEOUT_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.SSL_REQUIRED;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TOKEN_SIGNATURE_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TOKEN_STORE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TRUSTSTORE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TRUSTSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.VERIFY_TOKEN_AUDIENCE;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ADAPTER_STATE_COOKIE_PATH;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEARER_ONLY;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
@@ -87,14 +128,33 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         SimpleAttributeDefinition[] secureDeploymentDefaultAttributes = {ADAPTER_STATE_COOKIE_PATH, BEARER_ONLY, CLIENT_ID, ENABLE_BASIC_AUTH, MIN_TIME_BETWEEN_JWKS_REQUESTS,
         PROVIDER, PUBLIC_CLIENT, PUBLIC_KEY_CACHE_TTL, REALM, RESOURCE, TOKEN_MINIMUM_TIME_TO_LIVE, TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN, USE_RESOURCE_ROLE_MAPPINGS};
 
+        SimpleAttributeDefinition[] providerDefaultAttributes = { REALM_PUBLIC_KEY, AUTH_SERVER_URL, PROVIDER_URL,
+                TRUSTSTORE, TRUSTSTORE_PASSWORD, SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER,
+                CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE, CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD,
+                CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS, EXPOSE_TOKEN,
+                ALWAYS_REFRESH_TOKEN, REGISTER_NODE_AT_STARTUP, REGISTER_NODE_PERIOD, TOKEN_STORE, PRINCIPAL_ATTRIBUTE,
+                AUTODETECT_BEARER_ONLY, IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS,
+                CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM};
+        SimpleAttributeDefinition[] requestObjectAttributes = {AUTHENTICATION_REQUEST_FORMAT,
+                REQUEST_OBJECT_SIGNING_ALGORITHM, REQUEST_OBJECT_ENCRYPTION_ALG_VALUE, REQUEST_OBJECT_ENCRYPTION_ENC_VALUE,
+                REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
+                REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
+
         redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(providerDefaultAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(providerDefaultAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+
+        if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
+            Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(requestObjectAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        }
 
         if (this.since(VERSION_2_0_PREVIEW) && this.enables(SCOPE)) {
             secureDeploymentDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
