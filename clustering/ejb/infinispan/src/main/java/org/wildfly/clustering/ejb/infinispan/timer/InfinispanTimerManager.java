@@ -8,8 +8,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Map;
+import java.util.AbstractMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -30,6 +29,13 @@ import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalKeysTask;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
+import org.wildfly.clustering.ejb.cache.timer.ImmutableTimerMetaDataFactory;
+import org.wildfly.clustering.ejb.cache.timer.IntervalTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.RemappableTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.ScheduleTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.TimerFactory;
+import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
@@ -48,12 +54,12 @@ import org.wildfly.clustering.server.group.Group;
  * A timer manager backed by an Infinispan cache.
  * @author Paul Ferraro
  */
-public class InfinispanTimerManager<I, V> implements TimerManager<I, TransactionBatch> {
+public class InfinispanTimerManager<I, C> implements TimerManager<I, TransactionBatch> {
 
     private final Cache<Key<I>, ?> cache;
     private final CacheProperties properties;
-    private final TimerFactory<I, V> factory;
-    private final Marshaller<Object, V> marshaller;
+    private final TimerFactory<I, RemappableTimerMetaDataEntry<C>, C> factory;
+    private final Marshaller<Object, C> marshaller;
     private final IdentifierFactory<I> identifierFactory;
     private final Batcher<TransactionBatch> batcher;
     private final CommandDispatcherFactory dispatcherFactory;
@@ -64,7 +70,7 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     private volatile Scheduler<I, ImmutableTimerMetaData> scheduler;
     private volatile ListenerRegistration schedulerListenerRegistration;
 
-    public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, V> config) {
+    public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
         this.cache = config.getCache();
         this.properties = config.getCacheProperties();
         this.marshaller = config.getMarshaller();
@@ -80,13 +86,13 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     public void start() {
         Supplier<Locality> locality = () -> new CacheLocality(this.cache);
 
-        TimerScheduler<I, V> localScheduler = new TimerScheduler<>(this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
+        TimerScheduler<I, RemappableTimerMetaDataEntry<C>, C> localScheduler = new TimerScheduler<>(this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
         this.scheduledTimers = localScheduler;
 
-        this.scheduler = this.group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, this.group), TimerCreationMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new);
+        this.scheduler = this.group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, this.group), InfinispanTimerMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new);
 
         TimerRegistry<I> registry = this.registry;
-        BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalKeysTask<>(this.cache, TimerCreationMetaDataKeyFilter.INSTANCE, new Consumer<I>() {
+        BiConsumer<Locality, Locality> scheduleTask = new ScheduleLocalKeysTask<>(this.cache, TimerMetaDataKeyFilter.INSTANCE, new Consumer<I>() {
             @Override
             public void accept(I id) {
                 localScheduler.schedule(id);
@@ -119,8 +125,8 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     @Override
     public Timer<I> createTimer(I id, IntervalTimerConfiguration config, Object context) {
         try {
-            TimerCreationMetaData<V> creationMetaData = new IntervalTimerCreationMetaDataEntry<>(this.marshaller.write(context), config);
-            return this.createTimer(id, creationMetaData, (TimerIndex) null);
+            RemappableTimerMetaDataEntry<C> entry = new IntervalTimerMetaDataEntry<>(this.marshaller.write(context), config);
+            return this.createTimer(id, entry, (TimerIndex) null);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -129,8 +135,8 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     @Override
     public Timer<I> createTimer(I id, ScheduleTimerConfiguration config, Object context) {
         try {
-            TimerCreationMetaData<V> creationMetaData = new ScheduleTimerCreationMetaDataEntry<>(this.marshaller.write(context), config, null);
-            return this.createTimer(id, creationMetaData, (TimerIndex) null);
+            RemappableTimerMetaDataEntry<C> entry = new ScheduleTimerMetaDataEntry<>(this.marshaller.write(context), config);
+            return this.createTimer(id, entry, (TimerIndex) null);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -139,17 +145,16 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     @Override
     public Timer<I> createTimer(I id, ScheduleTimerConfiguration config, Object context, Method method, int index) {
         try {
-            TimerCreationMetaData<V> creationMetaData = new ScheduleTimerCreationMetaDataEntry<>(this.marshaller.write(context), config, method);
-            return this.createTimer(id, creationMetaData, new TimerIndex(method, index));
+            RemappableTimerMetaDataEntry<C> entry = new ScheduleTimerMetaDataEntry<>(this.marshaller.write(context), config, method);
+            return this.createTimer(id, entry, new TimerIndex(method, index));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    private Timer<I> createTimer(I id, TimerCreationMetaData<V> creationMetaData, TimerIndex index) {
-        TimerMetaDataFactory<I, V> metaDataFactory = this.factory.getMetaDataFactory();
-        Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> entry = metaDataFactory.createValue(id, new SimpleImmutableEntry<>(creationMetaData, index));
-        if (entry == null) return null; // Timer with index already exists
+    private Timer<I> createTimer(I id, RemappableTimerMetaDataEntry<C> entry, TimerIndex index) {
+        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> metaDataFactory = this.factory.getMetaDataFactory();
+        if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
         Timer<I> timer = this.factory.createTimer(id, metaData, this, this.scheduledTimers);
@@ -158,8 +163,8 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
 
     @Override
     public Timer<I> getTimer(I id) {
-        ImmutableTimerMetaDataFactory<I, V> metaDataFactory = this.factory.getMetaDataFactory();
-        Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> entry = metaDataFactory.findValue(id);
+        ImmutableTimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> metaDataFactory = this.factory.getMetaDataFactory();
+        RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
             return this.factory.createTimer(id, metaData, this, this.scheduledTimers);
@@ -170,7 +175,7 @@ public class InfinispanTimerManager<I, V> implements TimerManager<I, Transaction
     @Override
     public Stream<I> getActiveTimers() {
         // The primary owner scheduler can miss entries, if called during a concurrent topology change event
-        return this.group.isSingleton() ? this.scheduledTimers.stream() : this.cache.keySet().stream().filter(TimerCreationMetaDataKeyFilter.INSTANCE).map(Key::getId);
+        return this.group.isSingleton() ? this.scheduledTimers.stream() : this.cache.keySet().stream().filter(TimerMetaDataKeyFilter.INSTANCE).map(Key::getId);
     }
 
     @Override

@@ -6,7 +6,6 @@
 package org.wildfly.clustering.ejb.timer;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 /**
  * Encapsulates the configuration of a schedule timer.
@@ -18,6 +17,6 @@ public interface ScheduleTimerConfiguration extends TimerConfiguration {
 
     @Override
     default Instant getStart() {
-        return Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        return this.getScheduleExpression().getStart();
     }
 }

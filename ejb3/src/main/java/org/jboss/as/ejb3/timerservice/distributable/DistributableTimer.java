@@ -22,6 +22,7 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.TimerHandleImpl;
@@ -89,8 +90,9 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public void invoke() throws Exception {
         Predicate<Method> matcher = this.timer.getMetaData().getTimeoutMatcher();
-        EJBComponentDescription description = this.invoker.getComponent().getComponentDescription();
-        Method method = description.getScheduleMethods().keySet().stream().filter(matcher).findFirst().orElse(description.getTimeoutMethod());
+        EJBComponent component = this.invoker.getComponent();
+        EJBComponentDescription description = component.getComponentDescription();
+        Method method = description.getScheduleMethods().keySet().stream().filter(matcher).findFirst().orElse(component.getTimeoutMethod());
         this.invoker.callTimeout(this, method);
     }
 
