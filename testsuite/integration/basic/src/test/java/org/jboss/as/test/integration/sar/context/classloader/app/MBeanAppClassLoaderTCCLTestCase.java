@@ -97,7 +97,6 @@ public class MBeanAppClassLoaderTCCLTestCase {
         final MBeanServerConnection mBeanServerConnection = this.getMBeanServerConnection();
         final ObjectName mbeanObjectName = new ObjectName("wildfly:name=tccl-app-test-mbean");
 
-        //Path tmp = Path.of("target/app-cl" + System.currentTimeMillis() + "/tccl.properties");
         try {
             Files.createDirectories(outputPath.getParent());
             Files.createFile(outputPath);
@@ -109,20 +108,21 @@ public class MBeanAppClassLoaderTCCLTestCase {
             ModelNode removeOp = Util.createRemoveOperation(PathAddress.pathAddress("deployment", SAR_NAME));
             managementClient.getControllerClient().execute(removeOp);
 
-            Properties props = new Properties();
-            props.load(new BufferedReader(new FileReader(outputPath.toFile())));
-            String appCl = props.getProperty(MBeanAppClassLoaderTCCLCheckService.APP_CL);
-            Assert.assertNotNull(MBeanAppClassLoaderTCCLCheckService.APP_CL, appCl);
+            try (BufferedReader br = new BufferedReader(new FileReader(outputPath.toFile()))) {
+                Properties props = new Properties();
+                props.load(br);
+                String appCl = props.getProperty(MBeanAppClassLoaderTCCLCheckService.APP_CL);
+                Assert.assertNotNull(MBeanAppClassLoaderTCCLCheckService.APP_CL, appCl);
 
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CONSTRUCTOR_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CREATE_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.START_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.ATTR_WRITE_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.ATTR_READ_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.INVOKE_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.STOP_TCCL, appCl);
-            checkProperty(props, MBeanAppClassLoaderTCCLCheckService.DESTROY_TCCL, appCl);
-
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CONSTRUCTOR_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.CREATE_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.START_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.ATTR_WRITE_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.ATTR_READ_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.INVOKE_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.STOP_TCCL, appCl);
+                checkProperty(props, MBeanAppClassLoaderTCCLCheckService.DESTROY_TCCL, appCl);
+            }
         } finally {
             Files.delete(outputPath);
             Files.delete(outputPath.getParent());
