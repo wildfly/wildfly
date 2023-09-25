@@ -1,0 +1,11 @@
+{
+  "client-id" : "PlainTextRequestUriApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "authentication-request-format" : "request_uri",
+  "request-object-signing-algorithm" : "none",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

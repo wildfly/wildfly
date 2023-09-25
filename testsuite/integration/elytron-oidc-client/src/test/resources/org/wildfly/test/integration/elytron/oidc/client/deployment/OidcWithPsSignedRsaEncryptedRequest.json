@@ -1,0 +1,18 @@
+{
+  "client-id" : "PsSignedAndRsaEncryptedRequestApp",
+  "provider-url" : "${oidc.provider.url}",
+  "public-client" : "false",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "PS256",
+  "request-object-encryption-algorithm" : "RSA1_5",
+  "request-object-content-encryption-algorithm" : "A192GCM",
+  "client-keystore-file" : "classpath:jwt.keystore",
+  "client-keystore-password" : "password",
+  "client-key-password" : "password",
+  "client-key-alias" : "jwtKeystore",
+  "client-keystore-type" : "JKS",
+  "ssl-required" : "EXTERNAL",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

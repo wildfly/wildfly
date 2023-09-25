@@ -1,0 +1,17 @@
+{
+  "client-id" : "EcSignedRequestApp",
+  "provider-url" : "${oidc.provider.url}",
+  "public-client" : "false",
+  "scope" : "email profile",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "ES256",
+  "client-keystore-file" : "jwt.keystore",
+  "client-keystore-password" : "password",
+  "client-key-password" : "password",
+  "client-key-alias" : "jwtEcKey",
+  "client-keystore-type" : "JKS",
+  "ssl-required" : "EXTERNAL",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

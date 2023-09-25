@@ -135,6 +135,74 @@
         <ssl-required>EXTERNAL</ssl-required>
         <scope>profile email phone</scope>
     </secure-server>
+    <secure-server name="wildfly-server-with-request">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>request</authentication-request-format>
+        <request-object-content-encryption-algorithm>A128CBC-HS256</request-object-content-encryption-algorithm>
+        <request-object-encryption-algorithm>RSA-OAEP</request-object-encryption-algorithm>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <client-keystore-file>jwt.keystore</client-keystore-file>
+        <client-keystore-password>password</client-keystore-password>
+        <client-key-password>password</client-key-password>
+        <client-key-alias>alias</client-key-alias>
+        <client-keystore-type>JKS</client-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-server>
+    <secure-server name="wildfly-server-with-request-uri">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>request_uri</authentication-request-format>
+        <request-object-content-encryption-algorithm>A128CBC-HS256</request-object-content-encryption-algorithm>
+        <request-object-encryption-algorithm>RSA-OAEP</request-object-encryption-algorithm>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <client-keystore-file>jwt.keystore</client-keystore-file>
+        <client-keystore-password>password</client-keystore-password>
+        <client-key-password>password</client-key-password>
+        <client-key-alias>alias</client-key-alias>
+        <client-keystore-type>JKS</client-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-server>
+    <secure-deployment name="wildfly-with-request">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>request</authentication-request-format>
+        <request-object-content-encryption-algorithm>A128CBC-HS256</request-object-content-encryption-algorithm>
+        <request-object-encryption-algorithm>RSA-OAEP</request-object-encryption-algorithm>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <client-keystore-file>jwt.keystore</client-keystore-file>
+        <client-keystore-password>password</client-keystore-password>
+        <client-key-password>password</client-key-password>
+        <client-key-alias>alias</client-key-alias>
+        <client-keystore-type>JKS</client-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
+    <secure-deployment name="wildfly-with-request-uri">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>request_uri</authentication-request-format>
+        <request-object-content-encryption-algorithm>A128CBC-HS256</request-object-content-encryption-algorithm>
+        <request-object-encryption-algorithm>RSA-OAEP</request-object-encryption-algorithm>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <client-keystore-file>jwt.keystore</client-keystore-file>
+        <client-keystore-password>password</client-keystore-password>
+        <client-key-password>password</client-key-password>
+        <client-key-alias>alias</client-key-alias>
+        <client-keystore-type>JKS</client-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
     <secure-server name="wildfly-console">
         <realm>jboss-infra</realm>
         <resource>wildfly-console</resource>

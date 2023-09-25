@@ -18,20 +18,52 @@
 
 package org.wildfly.extension.elytron.oidc;
 
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ADAPTER_STATE_COOKIE_PATH;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEARER_ONLY;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ENABLE_BASIC_AUTH;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.MIN_TIME_BETWEEN_JWKS_REQUESTS;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_CLIENT;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_KEY_CACHE_TTL;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.RESOURCE;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.SCOPE;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TOKEN_MINIMUM_TIME_TO_LIVE;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN;
-import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.USE_RESOURCE_ROLE_MAPPINGS;
-
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
+
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REALM_PUBLIC_KEY;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTH_SERVER_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TRUSTSTORE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TRUSTSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.SSL_REQUIRED;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONFIDENTIAL_PORT;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ALLOW_ANY_HOSTNAME;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_POOL_SIZE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ENABLE_CORS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_MAX_AGE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_ALLOWED_HEADERS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_ALLOWED_METHODS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CORS_EXPOSED_HEADERS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.EXPOSE_TOKEN;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ALWAYS_REFRESH_TOKEN;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REGISTER_NODE_AT_STARTUP;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REGISTER_NODE_PERIOD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TOKEN_STORE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PRINCIPAL_ATTRIBUTE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTODETECT_BEARER_ONLY;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.IGNORE_OAUTH_QUERY_PARAMETER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROXY_URL;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.VERIFY_TOKEN_AUDIENCE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.SOCKET_TIMEOUT_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_TTL_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.CONNECTION_TIMEOUT_MILLIS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.TOKEN_SIGNATURE_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.RESOURCE;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEARER_ONLY;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ENABLE_BASIC_AUTH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_CLIENT;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TOKEN_MINIMUM_TIME_TO_LIVE;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.MIN_TIME_BETWEEN_JWKS_REQUESTS;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_KEY_CACHE_TTL;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ADAPTER_STATE_COOKIE_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.SCOPE;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.USE_RESOURCE_ROLE_MAPPINGS;
 
 /**
  * Subsystem parser for the Elytron OpenID Connect subsystem.
@@ -65,6 +97,15 @@ public class ElytronOidcSubsystemParser_3_0 extends ElytronOidcSubsystemParser_2
             .addAttribute(PUBLIC_KEY_CACHE_TTL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
             .addAttribute(ADAPTER_STATE_COOKIE_PATH, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
             .addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER) // new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_FILE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_ALIAS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_TYPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
             .addChild(redirectRewriteRuleParser)
             .addChild(credentialParser)
             .setUseElementsForGroups(true)
@@ -85,9 +126,102 @@ public class ElytronOidcSubsystemParser_3_0 extends ElytronOidcSubsystemParser_2
             .addAttribute(PUBLIC_KEY_CACHE_TTL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER )
             .addAttribute(ADAPTER_STATE_COOKIE_PATH, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER )
             .addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER) //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_FILE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_ALIAS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_TYPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
             .addChild(redirectRewriteRuleParser)
             .addChild(credentialParser)
             .setUseElementsForGroups(true)
+            .build();
+
+    final PersistentResourceXMLDescription realmParser = PersistentResourceXMLDescription.builder(PathElement.pathElement(REALM))
+            .addAttribute(REALM_PUBLIC_KEY, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(AUTH_SERVER_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PROVIDER_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TRUSTSTORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TRUSTSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(SSL_REQUIRED, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONFIDENTIAL_PORT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ALLOW_ANY_HOSTNAME, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(DISABLE_TRUST_MANAGER, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_POOL_SIZE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ENABLE_CORS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_FILE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //added in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //added in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)    //added in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_ALIAS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //added in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_TYPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //added in 3.0
+            .addAttribute(CORS_MAX_AGE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_ALLOWED_HEADERS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_ALLOWED_METHODS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_EXPOSED_HEADERS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(EXPOSE_TOKEN, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ALWAYS_REFRESH_TOKEN, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(REGISTER_NODE_AT_STARTUP, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(REGISTER_NODE_PERIOD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TOKEN_STORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PRINCIPAL_ATTRIBUTE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(AUTODETECT_BEARER_ONLY, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(IGNORE_OAUTH_QUERY_PARAMETER, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PROXY_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(VERIFY_TOKEN_AUDIENCE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(SOCKET_TIMEOUT_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_TTL_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_TIMEOUT_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TOKEN_SIGNATURE_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .build();
+
+    final PersistentResourceXMLDescription providerParser = PersistentResourceXMLDescription.builder(PathElement.pathElement(PROVIDER))
+            .addAttribute(REALM_PUBLIC_KEY, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(AUTH_SERVER_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PROVIDER_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TRUSTSTORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TRUSTSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(SSL_REQUIRED, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONFIDENTIAL_PORT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ALLOW_ANY_HOSTNAME, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(DISABLE_TRUST_MANAGER, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_POOL_SIZE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ENABLE_CORS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_FILE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_PASSWORD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)    //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEYSTORE_TYPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.CLIENT_KEY_ALIAS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)   //new in 3.0
+            .addAttribute(CORS_MAX_AGE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_ALLOWED_HEADERS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_ALLOWED_METHODS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CORS_EXPOSED_HEADERS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(EXPOSE_TOKEN, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ALWAYS_REFRESH_TOKEN, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(REGISTER_NODE_AT_STARTUP, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(REGISTER_NODE_PERIOD, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TOKEN_STORE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PRINCIPAL_ATTRIBUTE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(AUTODETECT_BEARER_ONLY, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(IGNORE_OAUTH_QUERY_PARAMETER, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(PROXY_URL, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(VERIFY_TOKEN_AUDIENCE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(SOCKET_TIMEOUT_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_TTL_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(CONNECTION_TIMEOUT_MILLIS, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(TOKEN_SIGNATURE_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)
+            .addAttribute(ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
+            .addAttribute(ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER)  //new in 3.0
             .build();
 
     @Override
@@ -101,12 +235,22 @@ public class ElytronOidcSubsystemParser_3_0 extends ElytronOidcSubsystemParser_2
     }
 
     @Override
+    public PersistentResourceXMLDescription getRealmParser() {
+        return realmParser;
+    }
+
+    @Override
+    public PersistentResourceXMLDescription getProviderParser() {
+        return providerParser;
+    }
+
+    @Override
     public PersistentResourceXMLDescription getParserDescription() {
         return PersistentResourceXMLDescription.builder(ElytronOidcExtension.SUBSYSTEM_PATH, getNameSpace())
-                .addChild(getRealmParser())
-                .addChild(getProviderParser())
-                .addChild(getSecureDeploymentParser()) //new scope attribute in 3.0
-                .addChild(getSecureServerParser()) //new scope attribute in 3.0
+                .addChild(getSecureDeploymentParser()) //new attributes in 3.0
+                .addChild(getSecureServerParser()) //new attributes in 3.0
+                .addChild(getRealmParser()) //new attributes in 3.0
+                .addChild(getProviderParser()) //new attributes in 3.0
                 .build();
     }
 }

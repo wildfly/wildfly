@@ -30,6 +30,7 @@ interface ElytronOidcDescriptionConstants {
     String ALLOW_ANY_HOSTNAME = "allow-any-hostname";
     String ALWAYS_REFRESH_TOKEN = "always-refresh-token";
     String AUTH_SERVER_URL = "auth-server-url";
+    String AUTHENTICATION_REQUEST_FORMAT = "authentication-request-format";
     String AUTODETECT_BEARER_ONLY = "autodetect-bearer-only";
     String BEARER_ONLY = "bearer-only";
     String CLIENT_ID = "client-id";
@@ -68,6 +69,9 @@ interface ElytronOidcDescriptionConstants {
     String REGISTER_NODE_AT_STARTUP = "register-node-at-startup";
     String REGISTER_NODE_PERIOD = "register-node-period";
     String REPLACEMENT = "replacement";
+    String REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM = "request-object-content-encryption-algorithm";
+    String REQUEST_OBJECT_ENCRYPTION_ALGORITHM = "request-object-encryption-algorithm";
+    String REQUEST_OBJECT_SIGNING_ALGORITHM = "request-object-signing-algorithm";
     String RESOURCE = "resource";
     String SCOPE = "scope";
     String SECRET = "secret";

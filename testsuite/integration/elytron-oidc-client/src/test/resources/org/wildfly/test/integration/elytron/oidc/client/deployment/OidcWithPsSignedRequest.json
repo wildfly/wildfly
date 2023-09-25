@@ -1,0 +1,16 @@
+{
+  "client-id" : "PsSignedRequestUriApp",
+  "provider-url" : "${oidc.provider.url}",
+  "public-client" : "false",
+  "authentication-request-format" : "request_uri",
+  "request-object-signing-algorithm" : "PS256",
+  "client-keystore-file" : "classpath:jwt.keystore",
+  "client-keystore-password" : "password",
+  "client-key-password" : "password",
+  "client-key-alias" : "jwtKeystore",
+  "client-keystore-type" : "JKS",
+  "ssl-required" : "EXTERNAL",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

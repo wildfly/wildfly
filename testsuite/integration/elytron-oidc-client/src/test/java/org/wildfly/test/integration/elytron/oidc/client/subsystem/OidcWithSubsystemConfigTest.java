@@ -23,6 +23,7 @@
 package org.wildfly.test.integration.elytron.oidc.client.subsystem;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.wildfly.security.http.oidc.Oidc.*;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 
 import java.net.HttpURLConnection;
@@ -87,6 +88,16 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(MULTIPLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(OPENID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(OAUTH2_REQUEST_METHOD_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(RSA_SIGNED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     @Deployment(name = PROVIDER_URL_APP)
@@ -177,6 +188,75 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
     @Deployment(name = OPENID_SCOPE_APP)
     public static WebArchive createOpenIdScopeDeployment() {
         return ShrinkWrap.create(WebArchive.class, OPENID_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = OAUTH2_REQUEST_METHOD_APP)
+    public static WebArchive createOpenIDWithOAuth2Request() {
+        return ShrinkWrap.create(WebArchive.class, OAUTH2_REQUEST_METHOD_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = PLAINTEXT_REQUEST_APP)
+    public static WebArchive createOpenIDWithPLainTextRequest() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+    @Deployment(name = PLAINTEXT_REQUEST_URI_APP)
+    public static WebArchive createOpenIDWithPLainTextRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = PLAINTEXT_ENCRYPTED_REQUEST_APP)
+    public static WebArchive createOpenIDWithPLainTextEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = PLAINTEXT_ENCRYPTED_REQUEST_URI_APP)
+    public static WebArchive createOpenIDWithPLainTextEncryptedRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = RSA_SIGNED_REQUEST_APP)
+    public static WebArchive createOpenIDWithRsaSignedRequest() {
+        return ShrinkWrap.create(WebArchive.class, RSA_SIGNED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP)
+    public static WebArchive createOpenIDWithRsaSignedAndEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = SIGNED_AND_ENCRYPTED_REQUEST_URI_APP)
+    public static WebArchive createOpenIDWithSignedAndEncryptedRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP)
+    public static WebArchive createOpenIDWithPsSignedAndRsaEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class);
+    }
+
+    @Deployment(name = PS_SIGNED_REQUEST_URI_APP)
+    public static WebArchive createOpenIDWithPsSignedARequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PS_SIGNED_REQUEST_URI_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleServletWithScope.class);
     }
@@ -345,6 +425,169 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             operation.get("secret").set("secret");
             Utils.applyUpdate(operation, client);
 
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + OAUTH2_REQUEST_METHOD_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(OAUTH2_REQUEST_METHOD_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set("oauth2");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + OAUTH2_REQUEST_METHOD_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_REQUEST_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PLAINTEXT_REQUEST_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST);
+            operation.get("request-object-signing-algorithm").set(NONE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_REQUEST_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_REQUEST_URI_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PLAINTEXT_REQUEST_URI_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST_URI);
+            operation.get("request-object-signing-algorithm").set(NONE);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_REQUEST_URI_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_ENCRYPTED_REQUEST_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PLAINTEXT_ENCRYPTED_REQUEST_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST);
+            operation.get("request-object-signing-algorithm").set(NONE);
+            operation.get("request-object-encryption-algorithm").set(RSA_OAEP);
+            operation.get("request-object-content-encryption-algorithm").set(A128CBC_HS256);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_ENCRYPTED_REQUEST_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST_URI);
+            operation.get("request-object-signing-algorithm").set(NONE);
+            operation.get("request-object-encryption-algorithm").set(RSA_OAEP);
+            operation.get("request-object-content-encryption-algorithm").set(A128CBC_HS256);
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + RSA_SIGNED_REQUEST_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(RSA_SIGNED_REQUEST_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST);
+            operation.get("request-object-signing-algorithm").set(RS_256);
+            operation.get("client-keystore-file").set(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
+            operation.get("client-keystore-password").set(KEYSTORE_PASS);
+            operation.get("client-key-password").set(KEYSTORE_PASS);
+            operation.get("client-key-alias").set(KEYSTORE_ALIAS);
+            operation.get("client-keystore-type").set("JKS");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + RSA_SIGNED_REQUEST_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST);
+            operation.get("request-object-signing-algorithm").set(RS_256);
+            operation.get("request-object-encryption-algorithm").set(RSA_OAEP_256);
+            operation.get("request-object-content-encryption-algorithm").set(A192CBC_HS384);
+            operation.get("client-keystore-file").set(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
+            operation.get("client-keystore-password").set(KEYSTORE_PASS);
+            operation.get("client-key-password").set(KEYSTORE_PASS);
+            operation.get("client-key-alias").set(KEYSTORE_ALIAS);
+            operation.get("client-keystore-type").set("JKS");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST_URI);
+            operation.get("request-object-signing-algorithm").set(RS_512);
+            operation.get("request-object-encryption-algorithm").set(RSA_OAEP_256);
+            operation.get("request-object-content-encryption-algorithm").set(A192CBC_HS384);
+            operation.get("client-keystore-file").set(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
+            operation.get("client-keystore-password").set(KEYSTORE_PASS);
+            operation.get("client-key-password").set(KEYSTORE_PASS);
+            operation.get("client-key-alias").set(KEYSTORE_ALIAS);
+            operation.get("client-keystore-type").set("JKS");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST);
+            operation.get("request-object-signing-algorithm").set(PS_256);
+            operation.get("request-object-encryption-algorithm").set(RSA1_5);
+            operation.get("request-object-content-encryption-algorithm").set(A192GCM);
+            operation.get("client-keystore-file").set(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
+            operation.get("client-keystore-password").set(KEYSTORE_PASS);
+            operation.get("client-key-password").set(KEYSTORE_PASS);
+            operation.get("client-key-alias").set(KEYSTORE_ALIAS);
+            operation.get("client-keystore-type").set("JKS");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PS_SIGNED_REQUEST_URI_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(PS_SIGNED_REQUEST_URI_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
+            operation.get("ssl-required").set("EXTERNAL");
+            operation.get("authentication-request-format").set(REQUEST_TYPE_REQUEST_URI);
+            operation.get("request-object-signing-algorithm").set(PS_256);
+            operation.get("client-keystore-file").set(KEYSTORE_CLASSPATH + KEYSTORE_FILE_NAME);
+            operation.get("client-keystore-password").set(KEYSTORE_PASS);
+            operation.get("client-key-password").set(KEYSTORE_PASS);
+            operation.get("client-key-alias").set(KEYSTORE_ALIAS);
+            operation.get("client-keystore-type").set("JKS");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + PS_SIGNED_REQUEST_URI_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set("secret");
+            Utils.applyUpdate(operation, client);
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 

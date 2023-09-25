@@ -85,6 +85,16 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
     private static final String MULTI_SCOPE_FILE = "OidcWithMultipleScopes.json";
     private static final String INVALID_SCOPE_FILE = "OidcWithInvalidScope.json";
     private static final String OPENID_SCOPE_FILE = "OidcWithOpenIDScope.json";
+    private static final String OAUTH2_REQUEST_FILE = "OidcWithOauth2Request.json";
+    private static final String PLAIN_TEXT_REQUEST_FILE = "OidcWithPlainTextRequest.json";
+    private static final String PLAIN_TEXT_REQUEST_URI_FILE = "OidcWIthPlainTextRequestUri.json";
+    private static final String PLAIN_TEXT_ENCRYPTED_REQUEST_FILE = "OidcWithPlainTextEncryptedRequest.json";
+    private static final String PLAIN_TEXT_ENCRYPTED_REQUEST_URI_FILE = "OidcWithPlainTextEncryptedRequestUri.json";
+    private static final String RSA_SIGNED_REQUEST_FILE = "OidcWIthRsaSignedRequest.json";
+    private static final String RSA_SIGNED_AND_ENCRYPTED_REQUEST_FILE = "OidcWithRsaSignedAndEncryptedRequest.json";
+    private static final String SIGNED_AND_ENCRYPTED_REQUEST_URI_FILE = "OidcWithSignedAndEncryptedRequestUri.json";
+    private static final String PS_SIGNED_RSA_ENCRYPTED_REQUEST_FILE = "OidcWithPsSignedRsaEncryptedRequest.json";
+    private static final String PS_SIGNED_REQUEST_URI_FILE = "OidcWithPsSignedRequest.json";
 
     private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
     static {
@@ -104,6 +114,16 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
         APP_NAMES.put(MULTIPLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(OPENID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(OAUTH2_REQUEST_METHOD_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(RSA_SIGNED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     @ArquillianResource
@@ -224,6 +244,97 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addClasses(SimpleServletWithScope.class)
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OPENID_SCOPE_FILE, "oidc.json");
+    }
+
+    @Deployment(name = OAUTH2_REQUEST_METHOD_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithOAuth2Request() {
+        return ShrinkWrap.create(WebArchive.class, OAUTH2_REQUEST_METHOD_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OAUTH2_REQUEST_FILE, "oidc.json");
+    }
+
+    @Deployment(name = PLAINTEXT_REQUEST_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPlainTextRequest() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PLAIN_TEXT_REQUEST_FILE, "oidc.json");
+    }
+
+
+    @Deployment(name = PLAINTEXT_REQUEST_URI_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPlainTextRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PLAIN_TEXT_REQUEST_URI_FILE, "oidc.json");
+    }
+
+    @Deployment(name = PLAINTEXT_ENCRYPTED_REQUEST_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPlainTextEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PLAIN_TEXT_ENCRYPTED_REQUEST_FILE, "oidc.json");
+    }
+
+    @Deployment(name = PLAINTEXT_ENCRYPTED_REQUEST_URI_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPlainTextEncryptedRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PLAIN_TEXT_ENCRYPTED_REQUEST_URI_FILE, "oidc.json");
+    }
+
+    @Deployment(name = RSA_SIGNED_REQUEST_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithRsaSignedRequest() {
+        return ShrinkWrap.create(WebArchive.class, RSA_SIGNED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), RSA_SIGNED_REQUEST_FILE, "oidc.json");
+    }
+
+    @Deployment(name = RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithRsaSignedAndEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), RSA_SIGNED_AND_ENCRYPTED_REQUEST_FILE, "oidc.json");
+    }
+
+    @Deployment(name = SIGNED_AND_ENCRYPTED_REQUEST_URI_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithSignedAndEncryptedRequestUri() {
+        return ShrinkWrap.create(WebArchive.class, SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), SIGNED_AND_ENCRYPTED_REQUEST_URI_FILE, "oidc.json");
+    }
+
+    @Deployment(name = PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPsSignedAndRsaEncryptedRequest() {
+        return ShrinkWrap.create(WebArchive.class, PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PS_SIGNED_RSA_ENCRYPTED_REQUEST_FILE, "oidc.json");
+    }
+
+    @Deployment(name = PS_SIGNED_REQUEST_URI_APP, managed = false, testable = false)
+    public static WebArchive createOpenIDWithPsSignedARequestUri() {
+        return ShrinkWrap.create(WebArchive.class, PS_SIGNED_REQUEST_URI_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), PS_SIGNED_REQUEST_URI_FILE, "oidc.json");
     }
 
     @Test
@@ -480,6 +591,107 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
             super.testInvalidScope();
         } finally {
             deployer.undeploy(INVALID_SCOPE_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithOauth2Request() throws Exception {
+        try {
+            deployer.deploy(OAUTH2_REQUEST_METHOD_APP);
+            super.testOpenIDWithOauth2Request();
+        } finally {
+            deployer.undeploy(OAUTH2_REQUEST_METHOD_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithPlainTextRequest() throws Exception {
+        try {
+            deployer.deploy(PLAINTEXT_REQUEST_APP);
+            super.testOpenIDWithPlainTextRequest();
+        } finally {
+            deployer.undeploy(PLAINTEXT_REQUEST_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithPlainTextRequestUri() throws Exception {
+        try {
+            deployer.deploy(PLAINTEXT_REQUEST_URI_APP);
+            super.testOpenIDWithPlainTextRequestUri();
+        } finally {
+            deployer.undeploy(PLAINTEXT_REQUEST_URI_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithPlainTextEncryptedRequest() throws Exception {
+        try {
+            deployer.deploy(PLAINTEXT_ENCRYPTED_REQUEST_APP);
+            super.testOpenIDWithPlainTextEncryptedRequest();
+        } finally {
+            deployer.undeploy(PLAINTEXT_ENCRYPTED_REQUEST_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithPlainTextEncryptedRequestUri() throws Exception {
+        try {
+            deployer.deploy(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP);
+            super.testOpenIDWithPlainTextEncryptedRequestUri();
+        } finally {
+            deployer.undeploy(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithRsaSignedRequest() throws Exception {
+        try {
+            deployer.deploy(RSA_SIGNED_REQUEST_APP);
+            super.testOpenIDWithRsaSignedRequest();
+        } finally {
+            deployer.undeploy(RSA_SIGNED_REQUEST_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithRsaSignedAndEncryptedRequest() throws Exception {
+        try {
+            deployer.deploy(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP);
+            super.testOpenIDWithRsaSignedAndEncryptedRequest();
+        } finally {
+            deployer.undeploy(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithSignedAndEncryptedRequestUri() throws Exception {
+        try {
+            deployer.deploy(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP);
+            super.testOpenIDWithSignedAndEncryptedRequestUri();
+        } finally {
+            deployer.undeploy(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP);
+        }
+    }
+
+
+    @Test
+    public void testOpenIDWithPsSignedARequestUri() throws Exception {
+        try {
+            deployer.deploy(PS_SIGNED_REQUEST_URI_APP);
+            super.testOpenIDWithPsSignedARequestUri();
+        } finally {
+            deployer.undeploy(PS_SIGNED_REQUEST_URI_APP);
+        }
+    }
+
+    @Test
+    public void testOpenIDWithPsSignedAndRsaEncryptedRequest() throws Exception {
+        try {
+            deployer.deploy(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP);
+            super.testOpenIDWithPsSignedAndRsaEncryptedRequest();
+        } finally {
+            deployer.undeploy(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP);
         }
     }
 

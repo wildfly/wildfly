@@ -1,0 +1,10 @@
+{
+  "client-id" : "OAuth2RequestApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "authentication-request-format" : "oauth2",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

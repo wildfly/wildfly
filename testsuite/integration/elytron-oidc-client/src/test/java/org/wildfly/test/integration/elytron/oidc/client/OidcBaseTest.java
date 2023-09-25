@@ -27,6 +27,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.security.http.oidc.Oidc.OIDC_SCOPE;
+import static org.wildfly.security.http.oidc.Oidc.REQUEST_TYPE_REQUEST_URI;
+import static org.wildfly.security.http.oidc.Oidc.REQUEST_TYPE_REQUEST;
+import static org.wildfly.security.http.oidc.Oidc.REQUEST_TYPE_OAUTH2;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
 
 import java.io.IOException;
@@ -110,6 +113,21 @@ public abstract class OidcBaseTest {
     public static final String INVALID_SCOPE_APP = "InvalidScopeApp";
     public static final String SINGLE_SCOPE_APP = "SingleScopeApp";
     public static final String MULTIPLE_SCOPE_APP = "MultipleScopeApp";
+    public static final String OAUTH2_REQUEST_METHOD_APP = "OAuth2RequestApp";
+    public static final String PLAINTEXT_REQUEST_APP = "PlainTextRequestApp";
+    public static final String PLAINTEXT_REQUEST_URI_APP = "PlainTextRequestUriApp";
+    public static final String PLAINTEXT_ENCRYPTED_REQUEST_APP = "PlainTextEncryptedRequestApp";
+    public static final String PLAINTEXT_ENCRYPTED_REQUEST_URI_APP = "PlainTextEncryptedRequestUriApp";
+    public static final String RSA_SIGNED_REQUEST_APP = "RsaSignedRequestApp";
+    public static final String RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP = "RSASignedAndEncryptedRequestApp";
+    public static final String SIGNED_AND_ENCRYPTED_REQUEST_URI_APP = "SignedAndEncryptedRequestUriApp";
+    public static final String PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP = "PsSignedAndRsaEncryptedRequestApp";
+    public static final String INVALID_SIGNATURE_ALGORITHM_APP = "InvalidSignatureAlgorithmApp";
+    public static final String PS_SIGNED_REQUEST_URI_APP = "PsSignedRequestUriApp";
+    public static final String INVALID_ENCRYPTION_ALGORITHM_APP = "InvalidEncryptionAlgorithmApp";
+    public static final String KEYSTORE_FILE_NAME = "jwt.keystore";
+    public static final String KEYSTORE_ALIAS = "jwtKeystore";
+    public static String KEYSTORE_CLASSPATH;
 
     private enum BearerAuthType {
         BEARER,
@@ -390,6 +408,85 @@ public abstract class OidcBaseTest {
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + INVALID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, true);
     }
+    @Test
+    @OperateOnDeployment(OAUTH2_REQUEST_METHOD_APP)
+    public void testOpenIDWithOauth2Request() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + OAUTH2_REQUEST_METHOD_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_OAUTH2, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
+    public void testOpenIDWithPlainTextRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_REQUEST_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
+    public void testOpenIDWithPlainTextRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_REQUEST_URI_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST_URI, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithPlainTextEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_ENCRYPTED_REQUEST_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP)
+    public void testOpenIDWithPlainTextEncryptedRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST_URI, false);
+    }
+
+    @Test
+    @OperateOnDeployment(RSA_SIGNED_REQUEST_APP)
+    public void testOpenIDWithRsaSignedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + RSA_SIGNED_REQUEST_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST, false);
+    }
+
+    @Test
+    @OperateOnDeployment(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithRsaSignedAndEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST, false);
+    }
+
+    @Test
+    @OperateOnDeployment(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP)
+    public void testOpenIDWithSignedAndEncryptedRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST_URI, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PS_SIGNED_REQUEST_URI_APP)
+    public void testOpenIDWithPsSignedARequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PS_SIGNED_REQUEST_URI_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST_URI, false);
+    }
+
+    @Test
+    @OperateOnDeployment(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithPsSignedAndRsaEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), null, false, REQUEST_TYPE_REQUEST, false);
+    }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
         loginToApp(username, password, expectedStatusCode, expectedText, true,
@@ -411,6 +508,10 @@ public abstract class OidcBaseTest {
     }
 
     public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri, String expectedScope, boolean checkInvalidScope) throws Exception {
+        loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, requestUri, expectedScope, checkInvalidScope, null,false);
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri, String expectedScope, boolean checkInvalidScope, String requestMethod, boolean checkInvalidRequestAlgorithm) throws Exception {
         CookieStore store = new BasicCookieStore();
         HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
@@ -440,6 +541,13 @@ public abstract class OidcBaseTest {
                             assertTrue(responseString.contains("email: " + KeycloakConfiguration.ALICE_EMAIL_VERIFIED));
                         }
                     }
+                }
+                if (requestMethod != null && requestMethod.equals(REQUEST_TYPE_REQUEST_URI)) {
+                    assertTrue(context.toString().contains("scope=" + OIDC_SCOPE));
+                    assertTrue(context.toString().contains("request_uri="));
+                } else if (requestMethod != null && requestMethod.equals(REQUEST_TYPE_REQUEST)) {
+                    assertTrue(context.toString().contains("scope=" + OIDC_SCOPE));
+                    assertTrue(context.toString().contains("request="));
                 }
             } else if (checkInvalidScope) {
                 assertTrue(context.toString().contains("error_description=Invalid+scopes"));

@@ -1,0 +1,18 @@
+{
+  "client-id" : "RSASignedAndEncryptedRequestApp",
+  "provider-url" : "${oidc.provider.url}",
+  "public-client" : "false",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "RS256",
+  "request-object-encryption-algorithm" : "RSA-OAEP-256",
+  "request-object-content-encryption-algorithm" : "A192CBC-HS384",
+  "client-keystore-file" : "classpath:jwt.keystore",
+  "client-keystore-password" : "password",
+  "client-key-password" : "password",
+  "client-key-alias" : "jwtKeystore",
+  "client-keystore-type" : "JKS",
+  "ssl-required" : "EXTERNAL",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

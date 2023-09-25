@@ -18,8 +18,19 @@
 
 package org.wildfly.extension.elytron.oidc;
 
-import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_KEY_ALIAS;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_KEY_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_FILE;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_TYPE;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_1_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_2_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcExtension.VERSION_3_0_0;
@@ -58,13 +69,91 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
         ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_3_0_0, VERSION_2_0_0);
         builder.addChildResource(PathElement.pathElement(SECURE_SERVER))
                 .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_FILE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_FILE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_TYPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_TYPE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_ALIAS)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_ALIAS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SCOPE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, SCOPE);
 
         builder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT))
                 .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_FILE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_FILE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_TYPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_TYPE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_ALIAS)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_ALIAS)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SCOPE)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, SCOPE);
+
+        builder.addChildResource(PathElement.pathElement(REALM))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_FILE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_FILE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_TYPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_TYPE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_ALIAS)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_ALIAS);
+
+        builder.addChildResource(PathElement.pathElement(PROVIDER))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, AUTHENTICATION_REQUEST_FORMAT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_ENCRYPTION_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, REQUEST_OBJECT_SIGNING_ALGORITHM)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_FILE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_FILE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_PASSWORD)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_PASSWORD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEYSTORE_TYPE)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEYSTORE_TYPE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CLIENT_KEY_ALIAS)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, CLIENT_KEY_ALIAS);
     }
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {

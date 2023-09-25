@@ -106,6 +106,12 @@ class ProviderAttributeDefinitions {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition CLIENT_KEYSTORE_FILE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_FILE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
     protected static final SimpleAttributeDefinition CLIENT_KEYSTORE_PASSWORD =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -114,6 +120,18 @@ class ProviderAttributeDefinitions {
 
     protected static final SimpleAttributeDefinition CLIENT_KEY_PASSWORD =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.CLIENT_KEY_PASSWORD, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+    protected static final SimpleAttributeDefinition CLIENT_KEY_ALIAS =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.CLIENT_KEY_ALIAS, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+    protected static final SimpleAttributeDefinition CLIENT_KEYSTORE_TYPE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.CLIENT_KEYSTORE_TYPE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
@@ -231,10 +249,39 @@ class ProviderAttributeDefinitions {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition AUTHENTICATION_REQUEST_FORMAT =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode("oauth2"))
+                    .setAllowedValues("oauth2", "request", "request_uri")
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_ENCRYPTION_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+    protected static final SimpleAttributeDefinition REQUEST_OBJECT_SIGNING_ALGORITHM =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode("none")) // plaintext jwt to be sent
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .build();
+
+
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = { REALM_PUBLIC_KEY, AUTH_SERVER_URL, PROVIDER_URL, TRUSTSTORE, TRUSTSTORE_PASSWORD,
-            SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER, CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE,
-            CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD, CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS,
+            SSL_REQUIRED, CONFIDENTIAL_PORT, ALLOW_ANY_HOSTNAME, DISABLE_TRUST_MANAGER, CONNECTION_POOL_SIZE, ENABLE_CORS, CLIENT_KEYSTORE, CLIENT_KEYSTORE_FILE,
+            CLIENT_KEYSTORE_PASSWORD, CLIENT_KEY_PASSWORD, CLIENT_KEY_ALIAS, CLIENT_KEYSTORE_TYPE, CORS_MAX_AGE, CORS_ALLOWED_HEADERS, CORS_ALLOWED_METHODS, CORS_EXPOSED_HEADERS,
             EXPOSE_TOKEN, ALWAYS_REFRESH_TOKEN, REGISTER_NODE_AT_STARTUP, REGISTER_NODE_PERIOD, TOKEN_STORE, PRINCIPAL_ATTRIBUTE, AUTODETECT_BEARER_ONLY,
-            IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS, CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM};
+            IGNORE_OAUTH_QUERY_PARAMETER, PROXY_URL, VERIFY_TOKEN_AUDIENCE, SOCKET_TIMEOUT_MILLIS, CONNECTION_TTL_MILLIS, CONNECTION_TIMEOUT_MILLIS, TOKEN_SIGNATURE_ALGORITHM,
+            AUTHENTICATION_REQUEST_FORMAT, REQUEST_OBJECT_SIGNING_ALGORITHM, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, REQUEST_OBJECT_ENCRYPTION_ALGORITHM};
 
 }

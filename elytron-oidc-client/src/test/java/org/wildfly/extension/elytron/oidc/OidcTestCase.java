@@ -121,6 +121,34 @@ public class OidcTestCase extends AbstractSubsystemTest {
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
     }
 
+    @Test
+    public void testSecureServerWithRequest() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"client-keystore-file\" : \"jwt.keystore\", \"client-keystore-password\" : \"password\", \"client-key-password\" : \"password\", \"client-key-alias\" : \"alias\", \"client-keystore-type\" : \"JKS\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request"));
+    }
+
+    @Test
+    public void testSecureServerWithRequestUri() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"client-keystore-file\" : \"jwt.keystore\", \"client-keystore-password\" : \"password\", \"client-key-password\" : \"password\", \"client-key-alias\" : \"alias\", \"client-keystore-type\" : \"JKS\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-request-uri"));
+    }
+
+    @Test
+    public void testSecureDeploymentWithRequest() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"client-keystore-file\" : \"jwt.keystore\", \"client-keystore-password\" : \"password\", \"client-key-password\" : \"password\", \"client-key-alias\" : \"alias\", \"client-keystore-type\" : \"JKS\", \"authentication-request-format\" : \"request\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-request"));
+    }
+
+    @Test
+    public void testSecureDeploymentWithRequestUri() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : false, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\", \"client-keystore-file\" : \"jwt.keystore\", \"client-keystore-password\" : \"password\", \"client-key-password\" : \"password\", \"client-key-alias\" : \"alias\", \"client-keystore-type\" : \"JKS\", \"authentication-request-format\" : \"request_uri\", \"request-object-signing-algorithm\" : \"RS-256\", \"request-object-content-encryption-algorithm\" : \"A128CBC-HS256\", \"request-object-encryption-algorithm\" : \"RSA-OAEP\", \"credentials\" : {\"secret\" : \"password\"}}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-request-uri"));
+    }
+
     private static class DefaultInitializer extends AdditionalInitialization {
 
         @Override
