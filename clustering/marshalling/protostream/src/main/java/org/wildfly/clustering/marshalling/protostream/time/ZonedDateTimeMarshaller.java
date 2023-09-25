@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -28,24 +29,27 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 public class ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateTime> {
 
     private static final int DATE_INDEX = 1;
-    private static final int TIME_INDEX = DATE_INDEX + LocalDateMarshaller.INSTANCE.getFields();
-    private static final int OFFSET_INDEX = TIME_INDEX + LocalTimeMarshaller.INSTANCE.getFields();
-    private static final int ZONE_INDEX = OFFSET_INDEX + ZoneOffsetMarshaller.INSTANCE.getFields();
+    private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);
+    private static final int OFFSET_INDEX = LocalTimeMarshaller.INSTANCE.nextIndex(TIME_INDEX);
+    private static final int ZONE_INDEX = ZoneOffsetMarshaller.INSTANCE.nextIndex(OFFSET_INDEX);
 
     @Override
     public ZonedDateTime readFrom(ProtoStreamReader reader) throws IOException {
-        LocalDate date = LocalDateMarshaller.INSTANCE.getBuilder();
-        LocalTime time = LocalTimeMarshaller.INSTANCE.getBuilder();
-        ZoneId zone = ZoneOffsetMarshaller.INSTANCE.getBuilder();
+        FieldSetReader<LocalDate> dateReader = reader.createFieldSetReader(LocalDateMarshaller.INSTANCE, DATE_INDEX);
+        FieldSetReader<LocalTime> timeReader = reader.createFieldSetReader(LocalTimeMarshaller.INSTANCE, TIME_INDEX);
+        FieldSetReader<ZoneOffset> offsetReader = reader.createFieldSetReader(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX);
+        LocalDate date = LocalDateMarshaller.INSTANCE.createInitialValue();
+        LocalTime time = LocalTimeMarshaller.INSTANCE.createInitialValue();
+        ZoneId zone = ZoneOffsetMarshaller.INSTANCE.createInitialValue();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if (index >= DATE_INDEX && index < TIME_INDEX) {
-                date = LocalDateMarshaller.INSTANCE.readField(reader, index - DATE_INDEX, date);
-            } else if (index >= TIME_INDEX && index < OFFSET_INDEX) {
-                time = LocalTimeMarshaller.INSTANCE.readField(reader, index - TIME_INDEX, time);
-            } else if (index >= OFFSET_INDEX && index < ZONE_INDEX) {
-                zone = ZoneOffsetMarshaller.INSTANCE.readField(reader, index - OFFSET_INDEX, (ZoneOffset) zone);
+            if (dateReader.contains(index)) {
+                date = dateReader.readField(date);
+            } else if (timeReader.contains(index)) {
+                time = timeReader.readField(time);
+            } else if (offsetReader.contains(index)) {
+                zone = offsetReader.readField((ZoneOffset) zone);
             } else if (index == ZONE_INDEX) {
                 zone = ZoneId.of(reader.readString());
             } else {
@@ -57,11 +61,11 @@ public class ZonedDateTimeMarshaller implements ProtoStreamMarshaller<ZonedDateT
 
     @Override
     public void writeTo(ProtoStreamWriter writer, ZonedDateTime value) throws IOException {
-        LocalDateMarshaller.INSTANCE.writeFields(writer, DATE_INDEX, value.toLocalDate());
-        LocalTimeMarshaller.INSTANCE.writeFields(writer, TIME_INDEX, value.toLocalTime());
+        writer.createFieldSetWriter(LocalDateMarshaller.INSTANCE, DATE_INDEX).writeFields(value.toLocalDate());
+        writer.createFieldSetWriter(LocalTimeMarshaller.INSTANCE, TIME_INDEX).writeFields(value.toLocalTime());
         ZoneId zone = value.getZone();
         if (zone instanceof ZoneOffset) {
-            ZoneOffsetMarshaller.INSTANCE.writeFields(writer, OFFSET_INDEX, (ZoneOffset) zone);
+            writer.createFieldSetWriter(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX).writeFields((ZoneOffset) zone);
         } else {
             writer.writeString(ZONE_INDEX, zone.getId());
         }

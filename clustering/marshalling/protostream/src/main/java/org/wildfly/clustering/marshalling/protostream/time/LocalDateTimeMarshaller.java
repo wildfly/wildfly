@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -26,19 +27,21 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 public class LocalDateTimeMarshaller implements ProtoStreamMarshaller<LocalDateTime> {
 
     private static final int DATE_INDEX = 1;
-    private static final int TIME_INDEX = DATE_INDEX + LocalDateMarshaller.INSTANCE.getFields();
+    private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);
 
     @Override
     public LocalDateTime readFrom(ProtoStreamReader reader) throws IOException {
-        LocalDate date = LocalDateMarshaller.INSTANCE.getBuilder();
-        LocalTime time = LocalTimeMarshaller.INSTANCE.getBuilder();
+        FieldSetReader<LocalDate> dateReader = reader.createFieldSetReader(LocalDateMarshaller.INSTANCE, DATE_INDEX);
+        FieldSetReader<LocalTime> timeReader = reader.createFieldSetReader(LocalTimeMarshaller.INSTANCE, TIME_INDEX);
+        LocalDate date = LocalDateMarshaller.INSTANCE.createInitialValue();
+        LocalTime time = LocalTimeMarshaller.INSTANCE.createInitialValue();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if (index >= DATE_INDEX && index < TIME_INDEX) {
-                date = LocalDateMarshaller.INSTANCE.readField(reader, index - DATE_INDEX, date);
-            } else if (index >= TIME_INDEX && index < TIME_INDEX + LocalTimeMarshaller.INSTANCE.getFields()) {
-                time = LocalTimeMarshaller.INSTANCE.readField(reader, index - TIME_INDEX, time);
+            if (dateReader.contains(index)) {
+                date = dateReader.readField(date);
+            } else if (timeReader.contains(index)) {
+                time = timeReader.readField(time);
             } else {
                 reader.skipField(tag);
             }
@@ -48,8 +51,8 @@ public class LocalDateTimeMarshaller implements ProtoStreamMarshaller<LocalDateT
 
     @Override
     public void writeTo(ProtoStreamWriter writer, LocalDateTime value) throws IOException {
-        LocalDateMarshaller.INSTANCE.writeFields(writer, DATE_INDEX, value.toLocalDate());
-        LocalTimeMarshaller.INSTANCE.writeFields(writer, TIME_INDEX, value.toLocalTime());
+        writer.createFieldSetWriter(LocalDateMarshaller.INSTANCE, DATE_INDEX).writeFields(value.toLocalDate());
+        writer.createFieldSetWriter(LocalTimeMarshaller.INSTANCE, TIME_INDEX).writeFields(value.toLocalTime());
     }
 
     @Override

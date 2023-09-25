@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -16,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshaller for a {@link UUID} using fixed size longs.
  * @author Paul Ferraro
  */
-public enum UUIDMarshaller implements FieldSetMarshaller<UUID, UUIDBuilder> {
+public enum UUIDMarshaller implements FieldSetMarshaller.Supplied<UUID, UUIDBuilder> {
     INSTANCE;
 
     private static final long DEFAULT_SIGNIFICANT_BITS = 0;
@@ -26,7 +27,7 @@ public enum UUIDMarshaller implements FieldSetMarshaller<UUID, UUIDBuilder> {
     private static final int FIELDS = 2;
 
     @Override
-    public UUIDBuilder getBuilder() {
+    public UUIDBuilder createInitialValue() {
         return new DefaultUUIDBuilder();
     }
 
@@ -36,26 +37,27 @@ public enum UUIDMarshaller implements FieldSetMarshaller<UUID, UUIDBuilder> {
     }
 
     @Override
-    public UUIDBuilder readField(ProtoStreamReader reader, int index, UUIDBuilder builder) throws IOException {
+    public UUIDBuilder readFrom(ProtoStreamReader reader, int index, WireType type, UUIDBuilder builder) throws IOException {
         switch (index) {
             case MOST_SIGNIFICANT_BITS_INDEX:
                 return builder.setMostSignificantBits(reader.readSFixed64());
             case LEAST_SIGNIFICANT_BITS_INDEX:
                 return builder.setLeastSignificantBits(reader.readSFixed64());
             default:
+                reader.skipField(type);
                 return builder;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, UUID uuid) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, UUID uuid) throws IOException {
         long mostSignificantBits = uuid.getMostSignificantBits();
         if (mostSignificantBits != DEFAULT_SIGNIFICANT_BITS) {
-            writer.writeSFixed64(startIndex + MOST_SIGNIFICANT_BITS_INDEX, mostSignificantBits);
+            writer.writeSFixed64(MOST_SIGNIFICANT_BITS_INDEX, mostSignificantBits);
         }
         long leastSignificantBits = uuid.getLeastSignificantBits();
         if (leastSignificantBits != DEFAULT_SIGNIFICANT_BITS) {
-            writer.writeSFixed64(startIndex + LEAST_SIGNIFICANT_BITS_INDEX, leastSignificantBits);
+            writer.writeSFixed64(LEAST_SIGNIFICANT_BITS_INDEX, leastSignificantBits);
         }
     }
 
@@ -76,7 +78,7 @@ public enum UUIDMarshaller implements FieldSetMarshaller<UUID, UUIDBuilder> {
         }
 
         @Override
-        public UUID build() {
+        public UUID get() {
             return new UUID(this.mostSignificantBits, this.leastSignificantBits);
         }
     }

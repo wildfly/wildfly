@@ -7,6 +7,8 @@ package org.wildfly.clustering.marshalling.protostream;
 
 import java.io.IOException;
 
+import org.infinispan.protostream.descriptors.WireType;
+
 /**
  * @author Paul Ferraro
  */
@@ -19,7 +21,7 @@ public class SimpleClassLoaderMarshaller implements ClassLoaderMarshaller {
     }
 
     @Override
-    public ClassLoader getBuilder() {
+    public ClassLoader createInitialValue() {
         return this.loader;
     }
 
@@ -29,11 +31,11 @@ public class SimpleClassLoaderMarshaller implements ClassLoaderMarshaller {
     }
 
     @Override
-    public ClassLoader readField(ProtoStreamReader reader, int index, ClassLoader loader) throws IOException {
+    public ClassLoader readFrom(ProtoStreamReader reader, int index, WireType type, ClassLoader loader) throws IOException {
         return loader;
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader value) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, ClassLoader value) throws IOException {
     }
 }

@@ -6,13 +6,12 @@
 package org.wildfly.clustering.marshalling.protostream.util;
 
 import java.util.UUID;
-
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
+import java.util.function.Supplier;
 
 /**
  * @author Paul Ferraro
  */
-public interface UUIDBuilder extends ProtoStreamBuilder<UUID> {
+public interface UUIDBuilder extends Supplier<UUID> {
 
     UUIDBuilder setMostSignificantBits(long bits);
 

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.infinispan.group;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 
@@ -14,7 +14,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  * @author Paul Ferraro
  */
 public enum JGroupsStackMarshallerProvider implements ProtoStreamMarshallerProvider {
-    IP_ADDRESS(new ProtoStreamBuilderFieldSetMarshaller<>(IpAddressMarshaller.INSTANCE)),
+    IP_ADDRESS(new FieldSetProtoStreamMarshaller<>(IpAddressMarshaller.INSTANCE)),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

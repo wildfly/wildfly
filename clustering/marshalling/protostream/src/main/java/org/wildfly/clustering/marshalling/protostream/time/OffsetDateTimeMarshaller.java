@@ -12,6 +12,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import org.infinispan.protostream.descriptors.WireType;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -28,23 +29,26 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDateTime> {
 
     private static final int DATE_INDEX = 1;
-    private static final int TIME_INDEX = DATE_INDEX + LocalDateMarshaller.INSTANCE.getFields();
-    private static final int OFFSET_INDEX = TIME_INDEX + LocalTimeMarshaller.INSTANCE.getFields();
+    private static final int TIME_INDEX = LocalDateMarshaller.INSTANCE.nextIndex(DATE_INDEX);
+    private static final int OFFSET_INDEX = LocalTimeMarshaller.INSTANCE.nextIndex(TIME_INDEX);
 
     @Override
     public OffsetDateTime readFrom(ProtoStreamReader reader) throws IOException {
-        LocalDate date = LocalDateMarshaller.INSTANCE.getBuilder();
-        LocalTime time = LocalTimeMarshaller.INSTANCE.getBuilder();
-        ZoneOffset offset = ZoneOffsetMarshaller.INSTANCE.getBuilder();
+        FieldSetReader<LocalDate> dateReader = reader.createFieldSetReader(LocalDateMarshaller.INSTANCE, DATE_INDEX);
+        FieldSetReader<LocalTime> timeReader = reader.createFieldSetReader(LocalTimeMarshaller.INSTANCE, TIME_INDEX);
+        FieldSetReader<ZoneOffset> offsetReader = reader.createFieldSetReader(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX);
+        LocalDate date = LocalDateMarshaller.INSTANCE.createInitialValue();
+        LocalTime time = LocalTimeMarshaller.INSTANCE.createInitialValue();
+        ZoneOffset offset = ZoneOffsetMarshaller.INSTANCE.createInitialValue();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if (index >= DATE_INDEX && index < TIME_INDEX) {
-                date = LocalDateMarshaller.INSTANCE.readField(reader, index - DATE_INDEX, date);
-            } else if (index >= TIME_INDEX && index < OFFSET_INDEX) {
-                time = LocalTimeMarshaller.INSTANCE.readField(reader, index - TIME_INDEX, time);
-            } else if (index >= OFFSET_INDEX && index < OFFSET_INDEX + ZoneOffsetMarshaller.INSTANCE.getFields()) {
-                offset = ZoneOffsetMarshaller.INSTANCE.readField(reader, index - OFFSET_INDEX, offset);
+            if (dateReader.contains(index)) {
+                date = dateReader.readField(date);
+            } else if (timeReader.contains(index)) {
+                time = timeReader.readField(time);
+            } else if (offsetReader.contains(index)) {
+                offset = offsetReader.readField(offset);
             } else {
                 reader.skipField(tag);
             }
@@ -54,9 +58,9 @@ public class OffsetDateTimeMarshaller implements ProtoStreamMarshaller<OffsetDat
 
     @Override
     public void writeTo(ProtoStreamWriter writer, OffsetDateTime value) throws IOException {
-        LocalDateMarshaller.INSTANCE.writeFields(writer, DATE_INDEX, value.toLocalDate());
-        LocalTimeMarshaller.INSTANCE.writeFields(writer, TIME_INDEX, value.toLocalTime());
-        ZoneOffsetMarshaller.INSTANCE.writeFields(writer, OFFSET_INDEX, value.getOffset());
+        writer.createFieldSetWriter(LocalDateMarshaller.INSTANCE, DATE_INDEX).writeFields(value.toLocalDate());
+        writer.createFieldSetWriter(LocalTimeMarshaller.INSTANCE, TIME_INDEX).writeFields(value.toLocalTime());
+        writer.createFieldSetWriter(ZoneOffsetMarshaller.INSTANCE, OFFSET_INDEX).writeFields(value.getOffset());
     }
 
     @Override

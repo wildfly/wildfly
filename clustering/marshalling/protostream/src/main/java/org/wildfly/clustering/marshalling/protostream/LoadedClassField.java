@@ -35,12 +35,13 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
     @Override
     public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
         String className = Scalar.STRING.cast(String.class).readFrom(reader);
-        ClassLoader loader = this.loaderMarshaller.getBuilder();
+        FieldSetReader<ClassLoader> loaderReader = reader.createFieldSetReader(this.loaderMarshaller, this.loaderIndex);
+        ClassLoader loader = this.loaderMarshaller.createInitialValue();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if ((index >= this.loaderIndex) && (index < this.loaderIndex + this.loaderMarshaller.getFields())) {
-                loader = this.loaderMarshaller.readField(reader, index - this.loaderIndex, loader);
+            if (loaderReader.contains(index)) {
+                loader = loaderReader.readField(loader);
             } else {
                 reader.skipField(tag);
             }
@@ -57,7 +58,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
     @Override
     public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
         Scalar.STRING.writeTo(writer, targetClass.getName());
-        this.loaderMarshaller.writeFields(writer, this.loaderIndex, WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
+        writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 
     @Override

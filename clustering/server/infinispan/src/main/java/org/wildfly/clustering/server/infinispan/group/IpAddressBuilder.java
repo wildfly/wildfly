@@ -6,14 +6,14 @@
 package org.wildfly.clustering.server.infinispan.group;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import org.jgroups.stack.IpAddress;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
 
 /**
  * @author Paul Ferraro
  */
-public interface IpAddressBuilder extends ProtoStreamBuilder<IpAddress> {
+public interface IpAddressBuilder extends Supplier<IpAddress> {
 
     IpAddressBuilder setAddress(byte[] address) throws IOException;
 

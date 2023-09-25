@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -38,7 +39,7 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
     }
 
     @Override
-    public ClassLoader getBuilder() {
+    public ClassLoader createInitialValue() {
         return this.defaultModule.getClassLoader();
     }
 
@@ -48,7 +49,7 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
     }
 
     @Override
-    public ClassLoader readField(ProtoStreamReader reader, int index, ClassLoader loader) throws IOException {
+    public ClassLoader readFrom(ProtoStreamReader reader, int index, WireType type, ClassLoader loader) throws IOException {
         switch (index) {
             case MODULE_INDEX:
                 String moduleName = reader.readAny(String.class);
@@ -61,15 +62,16 @@ public class ModuleClassLoaderMarshaller implements ClassLoaderMarshaller {
                     throw exception;
                 }
             default:
+                reader.skipField(type);
                 return loader;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, ClassLoader loader) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, ClassLoader loader) throws IOException {
         Module module = Module.forClassLoader(loader, false);
         if (module != null && !this.defaultModule.equals(module)) {
-            writer.writeAny(startIndex + MODULE_INDEX, module.getName());
+            writer.writeAny(MODULE_INDEX, module.getName());
         }
     }
 }
