@@ -1,1 +1,6 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 org.wildfly.test.integration.mp.tck.reactive.messaging.WildFlyArchiveExtender

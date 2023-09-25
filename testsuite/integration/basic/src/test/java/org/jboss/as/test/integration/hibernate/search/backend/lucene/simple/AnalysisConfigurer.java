@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.integration.hibernate.search.backend.lucene.simple;
 
 import org.hibernate.search.backend.lucene.analysis.LuceneAnalysisConfigurationContext;

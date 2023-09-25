@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 set -e
 
 if [ -z "${WF_BASE_VERSION}" ]; then

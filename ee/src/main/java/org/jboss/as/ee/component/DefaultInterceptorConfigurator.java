@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.ee.component;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;

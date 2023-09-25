@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.wildfly.clustering.server.infinispan.group;
 
 import org.wildfly.clustering.server.group.Group;

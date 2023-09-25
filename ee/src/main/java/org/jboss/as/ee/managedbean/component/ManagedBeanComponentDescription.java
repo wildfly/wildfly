@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.ee.managedbean.component;
 
 import org.jboss.as.ee.component.ComponentDescription;

@@ -1,3 +1,8 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 ###
 ###  Creates a list of Maven artifacts to be included in Public JBoss AS 7 API aggregated JavaDoc.
 ###
