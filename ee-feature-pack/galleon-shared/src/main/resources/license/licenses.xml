@@ -3827,8 +3827,8 @@
             <artifactId>jboss-ejb3-ext-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v3.0 only</name>
-                    <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
