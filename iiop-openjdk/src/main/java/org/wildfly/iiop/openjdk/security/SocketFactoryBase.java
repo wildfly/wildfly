@@ -25,6 +25,7 @@
 
 package org.wildfly.iiop.openjdk.security;
 
+import static org.wildfly.security.manager.WildFlySecurityManager.getPropertyPrivileged;
 import com.sun.corba.se.impl.orbutil.ORBConstants;
 import com.sun.corba.se.pept.transport.Acceptor;
 import com.sun.corba.se.spi.orb.ORB;
@@ -39,7 +40,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public abstract class SocketFactoryBase implements ORBSocketFactory {
+
     protected ORB orb;
+    // Use an instance field for this so it gets recalculated following a reload
+    private final boolean enableTcpKeepAlive = !"false".equalsIgnoreCase(getPropertyPrivileged("com.sun.CORBA.transport.enableTcpKeepAlive", "false"));
 
     @Override
     public void setORB(ORB orb) {
@@ -74,6 +78,11 @@ public abstract class SocketFactoryBase implements ORBSocketFactory {
 
         // Disable Nagle's algorithm (i.e., always send immediately).
         socket.setTcpNoDelay(true);
+
+        if (enableTcpKeepAlive) {
+            socket.setKeepAlive(true);
+        }
+
         return socket;
     }
 
