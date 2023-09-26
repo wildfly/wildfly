@@ -472,8 +472,4 @@
         </plugins>
     </build>
 
-    <modules>
-        <module>ee-with-tools</module>
-    </modules>
-
 </project>
