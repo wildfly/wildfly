@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # Shell script to run the integration tests
 BASH_INTERPRETER=${BASH_INTERPRETER:-${SHELL}}
 
