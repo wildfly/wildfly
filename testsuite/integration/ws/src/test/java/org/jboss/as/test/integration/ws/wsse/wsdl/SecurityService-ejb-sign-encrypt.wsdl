@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <definitions targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy" name="EJBEncryptSecurityService"
              xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wssecuritypolicy"
              xmlns:xsd="http://www.w3.org/2001/XMLSchema"

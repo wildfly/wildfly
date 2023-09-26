@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # JBoss Diagnostic Reporter (JDR)
 #
 # This script creates a JDR report containing useful information for

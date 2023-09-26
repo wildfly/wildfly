@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:3.0"
            security-enabled="${security-enabled:true}"
            empty-liveness-checks-status="DOWN"

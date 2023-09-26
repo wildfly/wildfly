@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <shared-session-config xmlns="urn:jboss:shared-session-config:2.0">
     <distributable/>
     <max-active-sessions>10</max-active-sessions>

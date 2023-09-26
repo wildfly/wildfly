@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-lite">
     <!-- Aggregates the functionality roughly associated with the EJB Lite concept.
          Note that the timer-service feature provides persistent timers which goes beyond EJB Lite requirements. -->

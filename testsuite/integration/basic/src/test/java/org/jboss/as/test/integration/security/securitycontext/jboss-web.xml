@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!DOCTYPE jboss-web PUBLIC
         "-//JBoss//DTD Web Application 5.0//EN"
         "http://www.jboss.org/j2ee/dtd/jboss-web_5_0.dtd">

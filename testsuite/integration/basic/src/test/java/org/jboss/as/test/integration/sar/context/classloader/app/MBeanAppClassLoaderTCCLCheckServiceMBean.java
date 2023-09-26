@@ -1,7 +1,9 @@
 /*
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
- */package org.jboss.as.test.integration.sar.context.classloader.app;
+ */
+
+package org.jboss.as.test.integration.sar.context.classloader.app;
 
 public interface MBeanAppClassLoaderTCCLCheckServiceMBean {
     // Service lifecycle methods

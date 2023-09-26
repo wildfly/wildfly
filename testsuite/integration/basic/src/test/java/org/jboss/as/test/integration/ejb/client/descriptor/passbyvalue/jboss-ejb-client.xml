@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <jboss-ejb-client xmlns="urn:jboss:ejb-client:1.2">
     <client-context>
         <ejb-receivers></ejb-receivers>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!-- XML Schema schema for XML Schemas: Part 1: Structures -->
 <!-- Note this schema is NOT the normative structures schema. -->
 <!-- The prose copy in the structures REC is the normative -->

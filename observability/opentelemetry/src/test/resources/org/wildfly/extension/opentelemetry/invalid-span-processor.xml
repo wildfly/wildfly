@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:wildfly:opentelemetry:1.0" service-name="foo">
     <span-processor type="bad"></span-processor>
 </subsystem>

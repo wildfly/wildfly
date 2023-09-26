@@ -1,5 +1,10 @@
 <?xml version="1.0" ?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <config xmlns="urn:jboss:galleon:config:1.0" name="host-secondary.xml" model="host">
     <feature-group name="host-secondary"/>
 </config>

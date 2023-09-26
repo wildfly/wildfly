@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!-- This file can be an empty text file (0 bytes) -->
 <!-- We're declaring the schema to save you time if you do have to configure 
    this in the future -->
