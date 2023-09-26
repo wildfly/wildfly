@@ -124,6 +124,13 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    public static final SimpleAttributeDefinition MAX_READ_PAGE_BYTES = create("max-read-page-bytes", ModelType.INT)
+            .setDefaultValue(new ModelNode(-1))
+            .setMeasurementUnit(BYTES)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .build();
+
     public static final SimpleAttributeDefinition MAX_REDELIVERY_DELAY = create("max-redelivery-delay", ModelType.LONG)
             .setDefaultValue(ModelNode.ZERO_LONG)
             .setMeasurementUnit(MILLISECONDS)
@@ -215,6 +222,7 @@ public class AddressSettingDefinition extends PersistentResourceDefinition {
             REDELIVERY_DELAY,
             REDELIVERY_MULTIPLIER,
             MAX_DELIVERY_ATTEMPTS,
+            MAX_READ_PAGE_BYTES,
             MAX_REDELIVERY_DELAY,
             MAX_SIZE_BYTES,
             PAGE_SIZE_BYTES,

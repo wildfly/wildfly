@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ee.injection.resource.enventry;
 
 import jakarta.jms.Connection;
@@ -49,9 +48,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Migration test from EJB Testsuite (ejbthree-985 + enventry) to AS7 [JIRA JBQA-5483].
- * Test to see if optional env-entry-value works (16.4.1.3).
- * Testing of behaviour of environment variables in ejb-jar.xml.
+ * Migration test from EJB Testsuite (ejbthree-985 + enventry) to AS7 [JIRA
+ * JBQA-5483]. Test to see if optional env-entry-value works (16.4.1.3). Testing
+ * of behaviour of environment variables in ejb-jar.xml.
  *
  * @author Carlo de Wolf, William DeCoste, Ondrej Chaloupka
  */
@@ -94,8 +93,8 @@ public class EnvEntryTestCase {
                         TestEnvEntryMDBean.class,
                         EnvEntryTestCase.class,
                         JmsQueueSetup.class)
-                .addPackage(JMSOperations.class.getPackage());
-        jar.addAsManifestResource(EnvEntryTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+                .addPackage(JMSOperations.class.getPackage())
+                .addAsManifestResource(EnvEntryTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
     }
 

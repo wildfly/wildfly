@@ -25,6 +25,7 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.SUBSYSTE
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getActiveMQDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getJGroupsDependencies;
 import static org.wildfly.extension.messaging.activemq.MessagingDependencies.getMessagingActiveMQGAV;
+import static org.wildfly.extension.messaging.activemq.MessagingExtension.ADDRESS_SETTING_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.BRIDGE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_QUEUE_PATH;
 import static org.wildfly.extension.messaging.activemq.MessagingExtension.EXTERNAL_JMS_TOPIC_PATH;
@@ -55,20 +56,20 @@ import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes;
 
-public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemBaseTest {
+public class MessagingActiveMQSubsystem_16_0_TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingActiveMQSubsystem_15_0_TestCase() {
+    public MessagingActiveMQSubsystem_16_0_TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_15_0.xml");
+        return readResource("subsystem_16_0.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/wildfly-messaging-activemq_15_0.xsd";
+        return "schema/wildfly-messaging-activemq_16_0.xsd";
     }
 
     @Override
@@ -77,11 +78,6 @@ public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemB
         properties.put("messaging.cluster.user.name", "myClusterUser");
         properties.put("messaging.cluster.user.password", "myClusterPassword");
         return properties;
-    }
-
-    @Override
-    protected KernelServices standardSubsystemTest(String configId, boolean compareXml) throws Exception {
-        return super.standardSubsystemTest(configId, false);
     }
 
     @Test
@@ -116,12 +112,17 @@ public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemB
     /////////////////////////////////////////
     @Test
     public void testHAPolicyConfiguration() throws Exception {
-        standardSubsystemTest("subsystem_15_0_ha-policy.xml");
+        standardSubsystemTest("subsystem_16_0_ha-policy.xml");
     }
 
     ///////////////////////
     // Transformers test //
     ///////////////////////
+    @Test
+    public void testTransformersWildfly28() throws Exception {
+        testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_15_0_0);
+    }
+
     @Test
     public void testTransformersWildfly27() throws Exception {
         testTransformers(ModelTestControllerVersion.MASTER, MessagingExtension.VERSION_14_0_0);
@@ -150,7 +151,7 @@ public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemB
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion) throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXmlResource("subsystem_15_0_transform.xml");
+                .setSubsystemXmlResource("subsystem_16_0_transform.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
                 .addMavenResourceURL(getMessagingActiveMQGAV(controllerVersion))
                 .addMavenResourceURL(getActiveMQDependencies(controllerVersion))
@@ -187,7 +188,7 @@ public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemB
         assertTrue(mainServices.isSuccessfulBoot());
         assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("subsystem_15_0_reject_transform.xml");
+        List<ModelNode> ops = builder.parseXmlResource("subsystem_16_0_reject_transform.xml");
 //        System.out.println("ops = " + ops);
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 
@@ -205,6 +206,7 @@ public class MessagingActiveMQSubsystem_15_0_TestCase extends AbstractSubsystemB
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.REMOTE_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
         config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)), new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.SSL_CONTEXT));
+        config.addFailedAttribute(subsystemAddress.append(SERVER_PATH, ADDRESS_SETTING_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(AddressSettingDefinition.MAX_READ_PAGE_BYTES));
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, messagingVersion, ops, config);
         mainServices.shutdown();
     }

@@ -109,6 +109,7 @@
         <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" optional="true"/>
+        <module name="org.slf4j"/>
 
         <module name="java.xml"/>
     </dependencies>
