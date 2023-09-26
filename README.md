@@ -115,5 +115,5 @@ Using Eclipse
 
 License
 -------
-* [GNU Lesser General Public License Version 2.1](http://www.gnu.org/licenses/lgpl-2.1-standalone.html)
+* [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
