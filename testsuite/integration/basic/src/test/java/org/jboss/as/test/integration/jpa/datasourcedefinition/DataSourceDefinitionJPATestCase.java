@@ -39,6 +39,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
  * @author Scott Marlow and Zbynek Roubalik
  */
 @RunWith(Arquillian.class)
+@Ignore  // WFLY-18556 Enable org.jboss.as.test.integration.jpa.datasourcedefinition.DataSourceDefinitionJPATestCase after upgrade to ORM 6.3.2.Final
 public class DataSourceDefinitionJPATestCase {
 
     private static final String ARCHIVE_NAME = "jpa_datasourcedefinition";
