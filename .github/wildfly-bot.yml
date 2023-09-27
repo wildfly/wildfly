@@ -261,11 +261,6 @@ wildfly:
       directories: [ webservices ]
       notify: [ jimma ]
 
-    - id: weld
-      titleBody: "weld"
-      directories: [ weld ]
-      notify: [ manovotn ]
-
     - id: xts
       titleBody: "xts"
       directories: [ xts ]
