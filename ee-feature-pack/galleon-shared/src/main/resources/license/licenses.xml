@@ -4025,8 +4025,8 @@
             <artifactId>jbosstxbridge</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4036,8 +4036,8 @@
             <artifactId>compensations</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4047,8 +4047,8 @@
             <artifactId>narayana-jts-idlj</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4058,8 +4058,8 @@
             <artifactId>narayana-jts-integration</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4069,8 +4069,8 @@
             <artifactId>restat-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4080,8 +4080,8 @@
             <artifactId>restat-bridge</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4091,8 +4091,8 @@
             <artifactId>restat-integration</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4102,8 +4102,8 @@
             <artifactId>restat-util</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -4113,8 +4113,8 @@
             <artifactId>jbossxts</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 only</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
