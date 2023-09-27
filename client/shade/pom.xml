@@ -336,6 +336,10 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-sasl-localuser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-mechanism-oauth2</artifactId>
         </dependency>
         <dependency>
