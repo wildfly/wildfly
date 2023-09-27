@@ -1,29 +1,24 @@
 wildfly:
   rules:
     - id: appclient
-      titleBody: "appclient"
       directories: [ appclient ]
       notify: [ bstansberry ]
 
     - id: batch-jberet
-      titleBody: "batch|batch-jberet"
       directories: [ batch-jberet ]
       notify: [ chengfang ]
 
     - id: bean-validation
-      titleBody: "bean-validation|bean validation"
       directories: [ bean-validation ]
       notify: [ jasondlee ]
 
     - id: clustering
-      titleBody: "clustering"
       directories: 
         - clustering
         - testsuite/integration/clustering
       notify: [ pferraro ]
 
     - id: connector
-      titleBody: "connector"
       directories: [ connector ]
       notify: [ tadamski ]
 
@@ -32,12 +27,10 @@ wildfly:
       notify: [ bstansberry ]
 
     - id: ejb3
-      titleBody: "ejb3|ejb"
       directories: [ ejb3 ]
       notify: [ chengfang ]
 
     - id: elytron
-      titleBody: "elytron|oidc"
       directories: 
         - elytron-oidc-client
         - testsuite/integration/elytron
@@ -45,7 +38,6 @@ wildfly:
       notify: [ fjuma ]
 
     - id: health
-      titleBody: "health"
       directories:
         - health
         - microprofile/health-smallrye
@@ -53,54 +45,44 @@ wildfly:
       notify: [ xstefank ]
 
     - id: iiop
-      titleBody: "iiop"
       directories: [ iiop-openjdk ]
       notify: [ tadamski ]
 
     - id: jaxrs
-      titleBody: "jaxrs"
       directories: [ jaxrs ]
       notify: [ jamezp ]
 
     - id: jdr
-      titleBody: "jdr"
       directories: [ jdr ]
       notify: [ bmaxwell ]
 
     - id: jpa
-      titleBody: "jpa"
       directories: [ jpa ]
       notify: [ scottmarlow ]
 
     - id: jsf
-      titleBody: "jsf"
       directories: [ jsf ]
       notify: [ jasondlee ]
 
     - id: mail
-      titleBody: "mail"
       directories: [ mail ]
       notify: [ yersan ]
 
     - id: messaging-activemq
-      titleBody: "activemq|messaging"
       directories: [ messaging-activemq ]
       notify: [ ehsavoie ]
 
     - id: metrics
-      titleBody: "metrics"
       directories: [ metrics ]
       notify: [ jasondlee ]
       
     - id: micrometer
-      titleBody: "micrometer"
       directories:
         - observability/micrometer
         - observability/micrometer-api
       notify: [ jasondlee ]
       
     - id: opentelemtry
-      titleBody: "telemetry"
       directories:
         - observability/opentelemetry
         - observability/opentelemetry-api
@@ -109,87 +91,72 @@ wildfly:
       notify: [ jasondlee ]
 
     - id: mod_cluster
-      titleBody: "mod_cluster"
       directories: [ mod_cluster ]
       notify: [ rhusar ]
 
     - id: naming
-      titleBody: "naming"
       directories: [ naming ]
       notify: [ ropalka ]
 
     - id: picketlink
-      titleBody: "picketlink"
       directories: [ picketlink ]
       notify: [ fjuma ]
 
     - id: pojo
-      titleBody: "pojo"
       directories: [ pojo ]
       notify: [ bstansberry ]
 
     - id: rts
-      titleBody: "rts"
       directories: [ rts ]
       notify: [ mmusgrove ]
 
     - id: sar
-      titleBody: "sar"
       directories: [ sar ]
       notify: [ kabir ]
 
     - id: security
-      titleBody: "security"
       directories: [ security ]
       notify: [ fjuma ]
 
     - id: spec-api
-      titleBody: "spec-api"
       directories: [ spec-api ]
       notify: [ bstansberry ]
 
     - id: system-jmx
-      titleBody: "system-jmx|jmx"
       directories: [ system-jmx ]
       notify: [ kabir ]
 
     - id: microprofile-config
-      titleBody: "config"
       directories:
         - microprofile/config-smallrye
         - testsuite/integration/microprofile-tck/config
       notify: [ kabir ]
       
     - id: microprofile-fault-tolerance
-      titleBody: "fault-tolerance|fault tolerance"
       directories:
         - microprofile/fault-tolerance-smallrye
         - testsuite/integration/microprofile-tck/fault-tolerance
       notify: [ rhusar ]
       
     - id: microprofile-jwt
-      titleBody: "jwt"
       directories:
         - microprofile/jwt-smallrye
         - testsuite/integration/microprofile-tck/jwt
       notify: [ fjuma ]
       
     - id: microprofile-lra
-      titleBody: "lra"
       directories:
         - microprofile/lra
         - testsuite/integration/microprofile-tck/lra
       notify: [ xstefank ]
       
     - id: microprofile-openapi
-      titleBody: "openapi|Open API"
       directories:
         - microprofile/openapi-smallrye
         - testsuite/integration/microprofile-tck/openapi
       notify: [ pferraro ]
       
     - id: microprofile-reactive
-      titleBody: "reactive"
       directories:
         - microprofile/reactive-messaging-smallrye
         - microprofile/reactive-streams-operators-smallrye
@@ -198,7 +165,6 @@ wildfly:
       notify: [ kabir ]
       
     - id: microprofile-rest-client
-      titleBody: "rest-client|REST client"
       directories:
         - testsuite/integration/microprofile-tck/rest-client
       notify: [ jamezp ]
@@ -239,7 +205,6 @@ wildfly:
       notify: [ yersan ]
 
     - id: transactions
-      titleBody: "transactions"
       directories: 
         - transactions
         - testsuite/integration/rts
@@ -247,27 +212,22 @@ wildfly:
       notify: [ mmusgrov ]
 
     - id: undertow
-      titleBody: "undertow"
       directories: [ undertow ]
       notify: [ fl4via ]
 
     - id: web-common
-      titleBody: "web-common|web common"
       directories: [ web-common ]
       notify: [ pferraro, fl4via ]
 
     - id: webservices
-      titleBody: "webservices"
       directories: [ webservices ]
       notify: [ jimma ]
 
     - id: weld
-      titleBody: "weld"
       directories: [ weld ]
       notify: [ manovotn ]
 
     - id: xts
-      titleBody: "xts"
       directories: [ xts ]
       notify: [ mmusgrov ]
 
