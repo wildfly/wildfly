@@ -1,4 +1,9 @@
 <?xml version="1.0" ?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <package-spec xmlns="urn:jboss:galleon:package:2.0" name="product.conf">
 </package-spec>

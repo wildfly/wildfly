@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.manualmode.ejb.client.outbound.connection.security;
 
 import org.jboss.ejb3.annotation.SecurityDomain;

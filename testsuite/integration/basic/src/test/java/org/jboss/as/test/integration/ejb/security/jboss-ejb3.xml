@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jboss:ejb-jar 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<jboss:ejb-jar
         xmlns="https://jakarta.ee/xml/ns/jakartaee"
         xmlns:jboss="urn:jboss:jakartaee:1.0"
         xmlns:s="urn:security:2.0"

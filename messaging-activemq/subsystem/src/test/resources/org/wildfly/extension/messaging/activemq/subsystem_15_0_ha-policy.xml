@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:jboss:domain:messaging-activemq:15.0">
     <server name="ha-policy-live-only-scale-down-discovery-group">
         <live-only>

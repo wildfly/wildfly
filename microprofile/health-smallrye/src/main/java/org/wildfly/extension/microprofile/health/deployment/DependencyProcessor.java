@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.wildfly.extension.microprofile.health.deployment;
 
 import org.jboss.as.server.deployment.Attachments;

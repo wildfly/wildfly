@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <datasources xmlns="http://www.jboss.org/ironjacamar/schema">
     <xa-datasource jndi-name="java:/JPADS" pool-name="JPADS">
         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>

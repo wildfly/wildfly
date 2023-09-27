@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 readonly MP_VERSION=${1}
 readonly BASE_DIR=${2:-$PWD}
 readonly JDK_VERSION=$(mvn -v | grep "Java version" | sed "s/Java version: //" | sed "s/,.*//")

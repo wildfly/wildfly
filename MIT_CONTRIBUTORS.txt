@@ -1,0 +1,159 @@
+MIT License Contributions
+
+
+The following authors have made contributions under the terms
+of the MIT License, a copy of which is available below.
+
+Adrián Boimvaser
+Alexander Yerenkow
+Alexandro Sansan
+Alexey Makhmutov
+Andi Rustandi Djunaedi
+Andreit Retyakov
+Andrej Golovnin
+Antti Laisi
+Arcadiy Ivanov
+Ariel Küchler
+Barnabas Bodnar
+Benjamin J. Thompson
+Bernado Roubach
+Bernard Tison
+Bernd Eckenfels
+Bilal Soidik
+Boris Unckel
+Brandon Gaisford
+Brent Douglas
+Bruno Litman
+Bryan Brouckaert
+Carl Harris
+Carlos Alexandro Becker
+Carlos Guedes
+Carmelo Aprile
+Carter Kozak
+Christian Beikov
+Christoph Böhme
+Clara Fang
+Claudio Miranda
+Craig Ringer
+Daniel Straub
+Danil Arefyev
+Darryl Miles
+Dave Heath
+David Le Borgne
+David Salter
+Dmitriy Sukharev
+Dmitry Lisovsky
+Donovan Muller
+Eduardo Sant'Ana da Silva
+Enrique Gonzalez Martinez
+Eric van der Maarel
+Fabio Nascimento Brandao
+Felipe Saab
+Filipe Ferraz
+Filippe Spolti
+Flemming Harms
+Fragkiskos Chatziasimidis
+Frank Langelage
+Gregory Ramsperger
+Guillaume Grossetie
+Hana Kaspříková
+Harald Wellmann
+Harsha Ramesh
+Heinz Wilming
+Istvan Toth
+Jaikiran Pai
+Jan Stourac
+Jason Tedor
+Jens De Temmerman
+Jeroen van der Vegt
+Jim Cheesman
+Johan Björk
+Jonathan Leitschuh
+Jorge Solórzano
+Jose Vicente N. da Costa Junior
+Juan Manuel Cabrera
+Jurrie Overgoor
+Kohei Nozaki
+Konstantin Bulanov
+Krzysztof Rzymkowski
+kudrevatykh (GitHub id)
+Lionel Orellana
+Maas van den Berg
+Marcel Šebek
+Marcus (GitHub id marcus-nl)
+Marcus Klimstra
+Mark Paluch
+Markus Domdey
+Markus Gaisbauer
+Markus Lindström
+Matthew King
+Matthieu Brouillard
+Mattias Nilsson Grip
+Maxim Karavaev
+Michael Pellegrini
+Michael Reynolds
+Michael Wermeester
+Min-Wook Park
+Nick Williams
+Nicky Moelholm
+Nuno Godinho de Matos
+Oleksandr Vengrovskyi
+Ondřej Fibich
+OrDTesters
+Peter van Zettens
+Peter Weldon
+Philippe Marschall
+Pieter Bos
+Przemek Krol
+Rafał Osiecki
+Rainer Schamm
+ramsrib (GitHub id)
+randomnaja (GitHub id)
+Ricardo Arguello
+Rich DiCroce
+Rico Neubauer
+Robert Panzer
+Ryan Ralph
+Santos Zatarain Vera
+sdirbach (GitHub id)
+Sergei Egorov
+Seth Miller
+Simone Gotti
+Sławomir Wojtasiak
+Slobodan Lazarevski
+Stephen Coy
+Steve Moyer
+Teresa Miyar Gil
+The-Alchemist (GitHub id)
+Thomas Darimont
+Tobias Stadler
+Viacheslav Kabanovich
+Vidishab18 (GitHub id)
+Ville Skyttä
+Vlad Arkhipov
+Winfried Wasser
+Wisen Tanasa
+Yaguo Zhou
+Yeray Borges
+
+
+The MIT License
+
+Copyright (c) The MIT License Authors as listed above
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.weld.deployment.processors;
 
 import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;

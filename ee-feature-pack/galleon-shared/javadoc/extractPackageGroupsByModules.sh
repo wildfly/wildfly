@@ -1,4 +1,9 @@
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 ###
 ###  Creates a groups definition of Java packages for Public JBoss AS 7 API aggregated JavaDoc.
 ###

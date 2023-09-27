@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!-- This file overwrites given pom.xml's dependencySourceIncludes and dependencySourceExcludes
      with those from from dependencySourceInclExcl.xml. -->
 

@@ -1,4 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <wsdl:definitions name="AnotherService" targetNamespace="http://jbossws.org/SchemaLocationsRewrite/anotherservice"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                   xmlns:tns="http://jbossws.org/SchemaLocationsRewrite/anotherservice"

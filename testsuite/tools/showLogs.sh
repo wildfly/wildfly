@@ -1,6 +1,11 @@
 #!/bin/bash
 
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 ##  Determine this script's location ("Tools" home dir).
 scriptPath="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 # For the case when called through a symlink

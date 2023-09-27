@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <feature-group-spec name="ejb3-elytron-security" xmlns="urn:jboss:galleon:feature-group:1.0">
     <!-- Map legacy security-domain 'other' to the Elytron ApplicationDomain -->
     <feature spec="subsystem.ejb3">

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # Extract the directory and the program name
 # takes care of symlinks
 PRG="$0"

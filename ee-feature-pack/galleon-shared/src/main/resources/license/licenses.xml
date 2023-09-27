@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <licenseSummary>
     <dependencies>
         <dependency>
@@ -2705,8 +2710,8 @@
             <artifactId>jipijapa-eclipselink</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2716,8 +2721,8 @@
             <artifactId>jipijapa-hibernate6</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2727,8 +2732,8 @@
             <artifactId>jipijapa-hibernatesearch</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2738,8 +2743,8 @@
             <artifactId>jipijapa-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2749,8 +2754,8 @@
             <artifactId>wildfly-appclient</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2760,8 +2765,8 @@
             <artifactId>wildfly-batch-jberet</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2771,8 +2776,8 @@
             <artifactId>wildfly-bean-validation</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2782,8 +2787,8 @@
             <artifactId>wildfly-client-all</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2793,8 +2798,8 @@
             <artifactId>wildfly-clustering-common</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2804,8 +2809,8 @@
             <artifactId>wildfly-clustering-context</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2815,8 +2820,8 @@
             <artifactId>wildfly-clustering-ee-cache</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2826,8 +2831,8 @@
             <artifactId>wildfly-clustering-ee-hotrod</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2837,8 +2842,8 @@
             <artifactId>wildfly-clustering-ee-infinispan</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2848,8 +2853,8 @@
             <artifactId>wildfly-clustering-ee-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2859,8 +2864,8 @@
             <artifactId>wildfly-clustering-ejb-cache</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2870,8 +2875,8 @@
             <artifactId>wildfly-clustering-ejb-client</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2881,8 +2886,8 @@
             <artifactId>wildfly-clustering-ejb-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2892,8 +2897,8 @@
             <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2903,8 +2908,8 @@
             <artifactId>wildfly-clustering-ejb-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2914,8 +2919,8 @@
             <artifactId>wildfly-clustering-el-expressly</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2925,8 +2930,8 @@
             <artifactId>wildfly-clustering-faces-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2936,8 +2941,8 @@
             <artifactId>wildfly-clustering-faces-mojarra</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2947,8 +2952,8 @@
             <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2958,8 +2963,8 @@
             <artifactId>wildfly-clustering-infinispan-client-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2969,8 +2974,8 @@
             <artifactId>wildfly-clustering-infinispan-client-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2980,8 +2985,8 @@
             <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -2991,8 +2996,8 @@
             <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3002,8 +3007,8 @@
             <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3013,8 +3018,8 @@
             <artifactId>wildfly-clustering-infinispan-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3024,8 +3029,8 @@
             <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3035,8 +3040,8 @@
             <artifactId>wildfly-clustering-jgroups-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3046,8 +3051,8 @@
             <artifactId>wildfly-clustering-jgroups-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3057,8 +3062,8 @@
             <artifactId>wildfly-clustering-jgroups-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3068,8 +3073,8 @@
             <artifactId>wildfly-clustering-marshalling-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3079,8 +3084,8 @@
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3090,8 +3095,8 @@
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3101,8 +3106,8 @@
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3112,8 +3117,8 @@
             <artifactId>wildfly-clustering-server-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3123,8 +3128,8 @@
             <artifactId>wildfly-clustering-server-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3134,8 +3139,8 @@
             <artifactId>wildfly-clustering-server-infinispan</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3145,8 +3150,8 @@
             <artifactId>wildfly-clustering-server-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3156,8 +3161,8 @@
             <artifactId>wildfly-clustering-server-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3167,8 +3172,8 @@
             <artifactId>wildfly-clustering-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3178,8 +3183,8 @@
             <artifactId>wildfly-clustering-singleton-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3189,8 +3194,8 @@
             <artifactId>wildfly-clustering-singleton-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3200,8 +3205,8 @@
             <artifactId>wildfly-clustering-singleton-server</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3211,8 +3216,8 @@
             <artifactId>wildfly-clustering-singleton-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3222,8 +3227,8 @@
             <artifactId>wildfly-clustering-web-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3233,8 +3238,8 @@
             <artifactId>wildfly-clustering-web-cache</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3244,8 +3249,8 @@
             <artifactId>wildfly-clustering-web-container</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3255,8 +3260,8 @@
             <artifactId>wildfly-clustering-web-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3266,8 +3271,8 @@
             <artifactId>wildfly-clustering-web-hotrod</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3277,8 +3282,8 @@
             <artifactId>wildfly-clustering-web-infinispan</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3288,8 +3293,8 @@
             <artifactId>wildfly-clustering-web-service</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3299,8 +3304,8 @@
             <artifactId>wildfly-clustering-web-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3310,8 +3315,8 @@
             <artifactId>wildfly-clustering-web-undertow</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3321,8 +3326,8 @@
             <artifactId>wildfly-clustering-weld-core</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3332,8 +3337,8 @@
             <artifactId>wildfly-clustering-weld-ejb</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3343,8 +3348,8 @@
             <artifactId>wildfly-clustering-weld-web</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3354,8 +3359,8 @@
             <artifactId>wildfly-connector</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3365,8 +3370,8 @@
             <artifactId>wildfly-datasources-agroal</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3376,8 +3381,8 @@
             <artifactId>wildfly-ee</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3387,8 +3392,8 @@
             <artifactId>wildfly-ee-security</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3398,8 +3403,8 @@
             <artifactId>wildfly-ejb3</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3409,8 +3414,8 @@
             <artifactId>wildfly-health</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3420,8 +3425,8 @@
             <artifactId>wildfly-iiop-openjdk</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3431,8 +3436,8 @@
             <artifactId>wildfly-jacorb</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3442,8 +3447,8 @@
             <artifactId>wildfly-jaxrs</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3453,8 +3458,8 @@
             <artifactId>wildfly-jdr</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3464,8 +3469,8 @@
             <artifactId>wildfly-jpa</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3475,8 +3480,8 @@
             <artifactId>wildfly-jsf</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3486,8 +3491,8 @@
             <artifactId>wildfly-jsf-injection</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3497,8 +3502,8 @@
             <artifactId>wildfly-jsr77</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3508,8 +3513,8 @@
             <artifactId>wildfly-keycloak</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3519,8 +3524,8 @@
             <artifactId>wildfly-mail</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3530,8 +3535,8 @@
             <artifactId>wildfly-messaging</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3541,8 +3546,8 @@
             <artifactId>wildfly-messaging-activemq-injection</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3552,8 +3557,8 @@
             <artifactId>wildfly-messaging-activemq-subsystem</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3563,8 +3568,8 @@
             <artifactId>wildfly-metrics</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3574,8 +3579,8 @@
             <artifactId>wildfly-mod_cluster-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3585,8 +3590,8 @@
             <artifactId>wildfly-mod_cluster-undertow</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3596,8 +3601,8 @@
             <artifactId>wildfly-naming</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3607,8 +3612,8 @@
             <artifactId>wildfly-picketlink</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3618,8 +3623,8 @@
             <artifactId>wildfly-pojo</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3629,8 +3634,8 @@
             <artifactId>wildfly-rts</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3640,8 +3645,8 @@
             <artifactId>wildfly-sar</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3651,8 +3656,8 @@
             <artifactId>wildfly-security</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3662,8 +3667,8 @@
             <artifactId>wildfly-system-jmx</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3673,8 +3678,8 @@
             <artifactId>wildfly-transactions</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3684,8 +3689,8 @@
             <artifactId>wildfly-undertow</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3695,8 +3700,8 @@
             <artifactId>wildfly-webservices-server-integration</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3706,8 +3711,8 @@
             <artifactId>wildfly-web-common</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3717,8 +3722,8 @@
             <artifactId>wildfly-weld-bean-validation</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3728,8 +3733,8 @@
             <artifactId>wildfly-weld-common</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3739,8 +3744,8 @@
             <artifactId>wildfly-weld-ejb</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3750,8 +3755,8 @@
             <artifactId>wildfly-weld</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3761,8 +3766,8 @@
             <artifactId>wildfly-weld-jpa</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3772,8 +3777,8 @@
             <artifactId>wildfly-weld-spi</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3783,8 +3788,8 @@
             <artifactId>wildfly-weld-transactions</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3794,8 +3799,8 @@
             <artifactId>wildfly-weld-webservices</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -3805,8 +3810,8 @@
             <artifactId>wildfly-xts</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>

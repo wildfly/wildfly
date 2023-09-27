@@ -1,4 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <wsdl:definitions name="ReliableService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsrm" xmlns:ns1="http://schemas.xmlsoap.org/soap/http"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsrm"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsp="http://www.w3.org/2006/07/ws-policy">

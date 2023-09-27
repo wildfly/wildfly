@@ -1,4 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <xs:schema elementFormDefault="unqualified" targetNamespace="http://jbossws.org/SchemaLocationsRewrite/imported"
            version="1.0" xmlns:tns="http://jbossws.org/SchemaLocationsRewrite/imported"
            xmlns:xs="http://www.w3.org/2001/XMLSchema">

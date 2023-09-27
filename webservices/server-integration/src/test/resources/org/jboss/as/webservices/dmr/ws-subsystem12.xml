@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:jboss:domain:webservices:1.2">
     <modify-wsdl-address>${ws.modify-wsdl-address:true}</modify-wsdl-address>
     <wsdl-host>${jboss.bind.address:localhost}</wsdl-host>

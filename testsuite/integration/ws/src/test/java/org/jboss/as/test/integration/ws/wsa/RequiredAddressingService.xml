@@ -1,4 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <wsdl:definitions name="AddressingService" targetNamespace="http://www.jboss.org/jbossws/ws-extensions/wsaddressing" xmlns:ns1="http://schemas.xmlsoap.org/soap/http"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.jboss.org/jbossws/ws-extensions/wsaddressing"
                   xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://www.w3.org/ns/ws-policy"

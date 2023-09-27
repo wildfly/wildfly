@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <licenseSummary>
     <dependencies>
         <dependency>
@@ -961,8 +966,8 @@
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -972,8 +977,8 @@
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-deployment</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -983,8 +988,8 @@
             <artifactId>wildfly-microprofile-fault-tolerance-smallrye-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -994,8 +999,8 @@
             <artifactId>wildfly-microprofile-health-smallrye</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1005,8 +1010,8 @@
             <artifactId>wildfly-microprofile-jwt-smallrye</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1016,8 +1021,8 @@
             <artifactId>wildfly-microprofile-metrics-smallrye</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1027,8 +1032,8 @@
             <artifactId>wildfly-microprofile-openapi-smallrye</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1038,8 +1043,8 @@
             <artifactId>wildfly-microprofile-opentracing-extension</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1049,8 +1054,8 @@
             <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1060,8 +1065,8 @@
             <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1071,8 +1076,8 @@
             <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1082,8 +1087,8 @@
             <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1093,8 +1098,8 @@
             <artifactId>wildfly-microprofile-reactive-streams-operators</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1104,8 +1109,8 @@
             <artifactId>wildfly-microprofile-reactive-streams-operators-cdi-provider</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1115,8 +1120,8 @@
             <artifactId>wildfly-opentelemetry</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>
@@ -1126,8 +1131,8 @@
             <artifactId>wildfly-opentelemetry-api</artifactId>
             <licenses>
                 <license>
-                    <name>GNU Lesser General Public License v2.1 or later</name>
-                    <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html</url>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                     <distribution>repo</distribution>
                 </license>
             </licenses>

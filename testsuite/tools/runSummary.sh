@@ -1,3 +1,8 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 ##  Cat the file or stdin if no args,
 ##  filter only interesting lines - plugin executions and modules separators,
 ##  plus Test runs summaries,

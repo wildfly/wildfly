@@ -1,5 +1,10 @@
 
 
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 ##  Definitions of test groups; used in build and test scripts.
 
 #API_TESTS="-Dapi.module"
