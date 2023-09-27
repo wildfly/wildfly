@@ -37,6 +37,8 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="com.fasterxml.classmate"/>
+        <module name="com.fasterxml.jackson.core.jackson-core" optional="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind" optional="true"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
@@ -45,6 +47,7 @@
         <module name="jakarta.xml.bind.api"/>
         <module name="org.glassfish.jaxb"/>
         <module name="org.antlr"/>
+        <module name="org.eclipse.yasson" optional="true"/>
         <module name="org.jboss.as.jpa.spi"/>
         <module name="io.smallrye.jandex"/>
         <module name="org.jboss.logging"/>
