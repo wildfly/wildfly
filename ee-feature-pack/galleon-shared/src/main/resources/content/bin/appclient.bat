@@ -116,6 +116,9 @@ if "x%JBOSS_MODULEPATH%" == "x" (
   set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
+call "!DIRNAME!common.bat" :setSecurityManagerDefault
+set "JAVA_OPTS=!JAVA_OPTS! !SECURITY_MANAGER_CONFIG_OPTION!"
+
 rem Set the module options
 set "MODULE_OPTS="
 if "%SECMGR%" == "true" (
