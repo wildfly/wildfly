@@ -10,8 +10,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.DefaultTemplate;
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfiguration;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -136,7 +138,10 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  exte
 
     @Override
     public <K, V> RemoteCache<K, V> getCache() {
-        return this.cache.get();
+        RemoteCache<K, V> cache = this.cache.get();
+        RemoteCacheConfiguration configuration = cache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(cache.getName());
+        // Disable cache operation client events if near cache is disabled
+        return configuration.nearCacheMode().enabled() ? cache : cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION);
     }
 
     @Override
