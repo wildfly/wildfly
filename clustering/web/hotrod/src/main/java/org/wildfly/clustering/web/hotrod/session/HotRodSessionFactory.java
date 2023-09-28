@@ -53,13 +53,11 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;
-    private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache;
     private final ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory;
     private final ImmutableSessionAttributesFactory<AV> attributesFactory;
     private final Remover<String> attributesRemover;
     private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
     private final ExecutorService executor;
-    private final boolean nearCacheEnabled;
 
     /**
      * Constructs a new session factory
@@ -74,10 +72,8 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
         this.attributesFactory = attributesFactory;
         this.attributesRemover = attributesFactory;
         this.creationMetaDataCache = config.getCache();
-        this.accessMetaDataCache= config.getCache();
         this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), THREAD_FACTORY);
         this.creationMetaDataCache.addClientListener(this);
-        this.nearCacheEnabled = this.creationMetaDataCache.getRemoteCacheContainer().getConfiguration().remoteCaches().get(this.creationMetaDataCache.getName()).nearCacheMode().enabled();
     }
 
     @Override
@@ -94,22 +90,16 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     @ClientCacheEntryExpired
     public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
         RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache = this.creationMetaDataCache;
-        RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaData> accessMetaDataCache = this.accessMetaDataCache;
         ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = this.metaDataFactory;
         ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
         Remover<String> attributesRemover = this.attributesRemover;
         Collection<Consumer<ImmutableSession>> listeners = this.listeners;
-        boolean nearCacheEnabled = this.nearCacheEnabled;
         String id = event.getKey().getId();
         Runnable task = new Runnable() {
             @Override
             public void run() {
                 SessionCreationMetaDataEntry<LC> creationMetaDataEntry = creationMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionCreationMetaDataKey(id));
                 if (creationMetaDataEntry != null) {
-                    // Ensure access metadata entry is removed from near cache
-                    if (nearCacheEnabled) {
-                        accessMetaDataCache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).remove(new SessionAccessMetaDataKey(id));
-                    }
                     AV attributesValue = attributesFactory.findValue(id);
                     if (attributesValue != null) {
                         // Fabricate a reasonable SessionAccessMetaData
