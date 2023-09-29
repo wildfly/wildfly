@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.LocalModelControllerClient;
@@ -50,8 +51,8 @@ import org.jboss.dmr.ModelType;
 
 public class MetricCollector {
     private static final String RUNTIME_QUEUE_KEY = "runtime-queue";
-    private static final String UUID_SIMPLE_REGEX =
-        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+    private static final Pattern UUID_SIMPLE_REGEX_PATTERN =
+        Pattern.compile( "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" );
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
 
@@ -146,14 +147,11 @@ public class MetricCollector {
     }
 
     private boolean isRuntimeQueueWithUuidValue( PathAddress aResourceAddress ) {
-        if( aResourceAddress == null )
-        {
-            return false;
-        }
         PathElement pathElement = aResourceAddress.getLastElement();
         String key = pathElement.getKey();
         String value = pathElement.getValue();
-        return RUNTIME_QUEUE_KEY.equals( key ) && value != null && value.matches( UUID_SIMPLE_REGEX );
+        return RUNTIME_QUEUE_KEY.equals( key ) && UUID_SIMPLE_REGEX_PATTERN.matcher( value )
+            .matches();
     }
 
     private boolean isExposingMetrics(PathAddress address, boolean exposeAnySubsystem, List<String> exposedSubsystems) {
