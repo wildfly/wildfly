@@ -1,7 +1,5 @@
 package org.wildfly.clustering.server.infinispan.provider;
 
-import "org.jgroups.stack.proto";
-import "org.jgroups.util.proto";
 import "org.infinispan.remoting.transport.jgroups.proto";
 
 // IDs: 140 -144
@@ -15,20 +13,6 @@ message AddressSetAddFunction {
 
 /**
  * @TypeId(141)
- */
-message AddressSetRemoveFunction {
-	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
-}
-
-/**
- * @TypeId(145)
- */
-message AddressSetAddFunction {
-	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
-}
-
-/**
- * @TypeId(146)
  */
 message AddressSetRemoveFunction {
 	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;

@@ -6,7 +6,6 @@
 package org.wildfly.clustering.ee.cache.function;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -17,7 +16,7 @@ import java.util.Set;
 public class SetAddFunction<V> extends CollectionAddFunction<V, Set<V>> {
 
     public SetAddFunction(V value) {
-        this(Collections.singleton(value));
+        this(Set.of(value));
     }
 
     public SetAddFunction(Collection<V> values) {

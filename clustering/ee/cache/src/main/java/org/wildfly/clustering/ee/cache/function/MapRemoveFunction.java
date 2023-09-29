@@ -18,8 +18,4 @@ public class MapRemoveFunction<K, V> extends MapComputeFunction<K, V> {
     public MapRemoveFunction(K key) {
         super(Collections.singletonMap(key, null));
     }
-
-    public K getKey() {
-        return this.getOperand().keySet().iterator().next();
-    }
 }
