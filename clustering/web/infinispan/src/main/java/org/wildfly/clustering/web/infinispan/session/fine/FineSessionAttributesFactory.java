@@ -6,21 +6,18 @@
 package org.wildfly.clustering.web.infinispan.session.fine;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
@@ -47,16 +44,16 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * A separate cache entry stores the activate attribute names for the session.
  * @author Paul Ferraro
  */
-public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, AtomicReference<Map<String, UUID>>> {
+public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map.Entry<Map<String, UUID>, Map<UUID, Object>>> {
 
     private final Cache<SessionAttributeNamesKey, Map<String, UUID>> namesCache;
+    private final Cache<SessionAttributeNamesKey, Map<String, UUID>> writeOnlyNamesCache;
     private final Cache<SessionAttributeKey, V> attributeCache;
-    private final Cache<Key<String>, Object> writeCache;
-    private final Cache<Key<String>, Object> silentCache;
+    private final Cache<SessionAttributeKey, V> writeOnlyAttributeCache;
+    private final Cache<SessionAttributeKey, V> silentAttributeCache;
     private final Marshaller<Object, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
-    private final MutatorFactory<SessionAttributeKey, V> mutatorFactory;
     private final HttpSessionActivationListenerProvider<S, C, L> provider;
     private final Function<String, SessionAttributeActivationNotifier> notifierFactory;
     private final Executor executor;
@@ -67,13 +64,13 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     public FineSessionAttributesFactory(InfinispanSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.namesCache = configuration.getCache();
+        this.writeOnlyNamesCache = configuration.getWriteOnlyCache();
         this.attributeCache = configuration.getCache();
-        this.writeCache = configuration.getWriteOnlyCache();
-        this.silentCache = configuration.getSilentWriteCache();
+        this.writeOnlyAttributeCache = configuration.getWriteOnlyCache();
+        this.silentAttributeCache = configuration.getSilentWriteCache();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
-        this.mutatorFactory = new InfinispanMutatorFactory<>(this.attributeCache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
         this.executor = configuration.getBlockingManager().asExecutor(this.getClass().getName());
@@ -96,82 +93,84 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
     }
 
     @Override
-    public AtomicReference<Map<String, UUID>> createValue(String id, Void context) {
-        return new AtomicReference<>(Collections.emptyMap());
+    public Map.Entry<Map<String, UUID>, Map<UUID, Object>> createValue(String id, Void context) {
+        return new AbstractMap.SimpleImmutableEntry<>(new ConcurrentHashMap<>(), new ConcurrentHashMap<>());
     }
 
     @Override
-    public AtomicReference<Map<String, UUID>> findValue(String id) {
+    public Map.Entry<Map<String, UUID>, Map<UUID, Object>> findValue(String id) {
         return this.getValue(id, true);
     }
 
     @Override
-    public AtomicReference<Map<String, UUID>> tryValue(String id) {
+    public Map.Entry<Map<String, UUID>, Map<UUID, Object>> tryValue(String id) {
         return this.getValue(id, false);
     }
 
-    private AtomicReference<Map<String, UUID>> getValue(String id, boolean purgeIfInvalid) {
+    private Map.Entry<Map<String, UUID>, Map<UUID, Object>> getValue(String id, boolean purgeIfInvalid) {
         Map<String, UUID> names = this.namesCache.get(new SessionAttributeNamesKey(id));
-        if (names != null) {
-            // Validate all attributes
-            Map<SessionAttributeKey, String> attributes = new TreeMap<>();
-            for (Map.Entry<String, UUID> entry : names.entrySet()) {
-                attributes.put(new SessionAttributeKey(id, entry.getValue()), entry.getKey());
-            }
-            Map<SessionAttributeKey, V> entries = this.attributeCache.getAdvancedCache().getAll(attributes.keySet());
-            for (Map.Entry<SessionAttributeKey, String> attribute : attributes.entrySet()) {
-                V value = entries.get(attribute.getKey());
-                if (value != null) {
-                    try {
-                        this.marshaller.read(value);
-                        continue;
-                    } catch (IOException e) {
-                        InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, attribute.getValue());
-                    }
-                } else {
-                    InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, attribute.getValue());
-                }
-                if (purgeIfInvalid) {
-                    this.purge(id);
-                }
-                return null;
-            }
-            return new AtomicReference<>(names);
+        if (names == null) {
+            return this.createValue(id, null);
         }
-        return new AtomicReference<>(Collections.emptyMap());
+        // Validate all attributes
+        Map<SessionAttributeKey, String> keys = new TreeMap<>();
+        for (Map.Entry<String, UUID> entry : names.entrySet()) {
+            keys.put(new SessionAttributeKey(id, entry.getValue()), entry.getKey());
+        }
+        Map<SessionAttributeKey, V> values = this.attributeCache.getAdvancedCache().getAll(keys.keySet());
+        // Validate attributes
+        Map<UUID, Object> attributes = new ConcurrentHashMap<>();
+        for (Map.Entry<SessionAttributeKey, String> entry : keys.entrySet()) {
+            SessionAttributeKey key = entry.getKey();
+            V value = values.get(key);
+            if (value != null) {
+                try {
+                    attributes.put(key.getAttributeId(), this.marshaller.read(value));
+                    continue;
+                } catch (IOException e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToActivateSessionAttribute(e, id, entry.getValue());
+                }
+            } else {
+                InfinispanWebLogger.ROOT_LOGGER.missingSessionAttributeCacheEntry(id, entry.getValue());
+            }
+            if (purgeIfInvalid) {
+                this.purge(id);
+            }
+            return null;
+        }
+        return new AbstractMap.SimpleImmutableEntry<>(new ConcurrentHashMap<>(names), attributes);
     }
 
     @Override
     public boolean remove(String id) {
-        return this.delete(this.writeCache, id);
+        return this.delete(this.writeOnlyAttributeCache, id);
     }
 
     @Override
     public boolean purge(String id) {
-        return this.delete(this.silentCache, id);
+        return this.delete(this.silentAttributeCache, id);
     }
 
-    private boolean delete(Cache<Key<String>, Object> cache, String id) {
+    private boolean delete(Cache<SessionAttributeKey, V> cache, String id) {
         SessionAttributeNamesKey key = new SessionAttributeNamesKey(id);
-        Map<String, UUID> names = this.namesCache.get(key);
+        Map<String, UUID> names = this.namesCache.remove(key);
         if (names != null) {
             for (UUID attributeId : names.values()) {
                 cache.remove(new SessionAttributeKey(id, attributeId));
             }
-            cache.remove(key);
         }
         return true;
     }
 
     @Override
-    public SessionAttributes createSessionAttributes(String id, AtomicReference<Map<String, UUID>> names, ImmutableSessionMetaData metaData, C context) {
-        SessionAttributeActivationNotifier notifier = new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, names)), context);
-        return new FineSessionAttributes<>(new SessionAttributeNamesKey(id), names, this.namesCache, getKeyFactory(id), this.attributeCache, this.marshaller, this.mutatorFactory, this.immutability, this.properties, notifier);
+    public SessionAttributes createSessionAttributes(String id, Map.Entry<Map<String, UUID>, Map<UUID, Object>> entry, ImmutableSessionMetaData metaData, C context) {
+        SessionAttributeActivationNotifier notifier = this.properties.isPersistent() ? new ImmutableSessionAttributeActivationNotifier<>(this.provider, new CompositeImmutableSession(id, metaData, this.createImmutableSessionAttributes(id, entry)), context) : null;
+        return new FineSessionAttributes<>(this.writeOnlyNamesCache, new SessionAttributeNamesKey(id), entry.getKey(), this.writeOnlyAttributeCache, getKeyFactory(id), entry.getValue(), this.marshaller, this.immutability, this.properties, notifier);
     }
 
     @Override
-    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, AtomicReference<Map<String, UUID>> names) {
-        return new FineImmutableSessionAttributes<>(names, getKeyFactory(id), this.attributeCache, this.marshaller);
+    public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map.Entry<Map<String, UUID>, Map<UUID, Object>> entry) {
+        return new FineImmutableSessionAttributes(entry.getKey(), entry.getValue());
     }
 
     private static Function<UUID, SessionAttributeKey> getKeyFactory(String id) {
