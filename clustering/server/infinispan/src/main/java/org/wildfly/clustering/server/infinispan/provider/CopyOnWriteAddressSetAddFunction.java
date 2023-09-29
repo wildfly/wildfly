@@ -11,7 +11,9 @@ import org.wildfly.clustering.ee.cache.function.CopyOnWriteSetAddFunction;
 /**
  * Copy-on-write {@link java.util.Set#add(Object)} function for an {@link Address}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link AddressSetAddFunction}.
  */
+@Deprecated(forRemoval = true)
 public class CopyOnWriteAddressSetAddFunction extends CopyOnWriteSetAddFunction<Address> {
 
     public CopyOnWriteAddressSetAddFunction(Address address) {

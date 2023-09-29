@@ -21,6 +21,9 @@ public class ServiceProviderRegistrySerializationContextInitializer extends Abst
 
     @Override
     public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new AddressSetFunctionMarshaller<>(AddressSetAddFunction.class, AddressSetAddFunction::new));
+        context.registerMarshaller(new AddressSetFunctionMarshaller<>(AddressSetRemoveFunction.class, AddressSetRemoveFunction::new));
+        // Deprecated functions to be removed
         ProtoStreamMarshaller<Address> addressMarshaller = new SimpleFieldSetMarshaller<>(Address.class, InfinispanAddressMarshaller.INSTANCE);
         context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetAddFunction.class, addressMarshaller, ConcurrentAddressSetAddFunction::getValue, ConcurrentAddressSetAddFunction::new));
         context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetRemoveFunction.class, addressMarshaller, ConcurrentAddressSetRemoveFunction::getValue, ConcurrentAddressSetRemoveFunction::new));

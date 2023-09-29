@@ -11,7 +11,9 @@ import org.wildfly.clustering.ee.cache.function.ConcurrentSetAddFunction;
 /**
  * Concurrent {@link java.util.Set#add(Object)} function for an {@link Address}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link AddressSetAddFunction}.
  */
+@Deprecated(forRemoval = true)
 public class ConcurrentAddressSetAddFunction extends ConcurrentSetAddFunction<Address> {
 
     public ConcurrentAddressSetAddFunction(Address address) {

@@ -11,7 +11,9 @@ import org.wildfly.clustering.ee.cache.function.ConcurrentSetRemoveFunction;
 /**
  * Concurrent {@link java.util.Set#remove(Object)} function for an {@link Address}.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link AddressSetRemoveFunction}.
  */
+@Deprecated(forRemoval = true)
 public class ConcurrentAddressSetRemoveFunction extends ConcurrentSetRemoveFunction<Address> {
 
     public ConcurrentAddressSetRemoveFunction(Address address) {
