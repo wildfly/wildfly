@@ -45,7 +45,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(observation = Observation.POST)
-public class CacheGroup implements AutoCloseableGroup<Address>, AutoCloseable, Function<GroupListener, ExecutorService> {
+public class CacheGroup implements AutoCloseableGroup<Address>, Function<GroupListener, ExecutorService> {
 
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final Cache<?, ?> cache;

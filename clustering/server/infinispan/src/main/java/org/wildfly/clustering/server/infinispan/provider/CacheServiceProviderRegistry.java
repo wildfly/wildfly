@@ -61,7 +61,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <T> the service identifier type
  */
 @org.infinispan.notifications.Listener(observation = Observation.POST)
-public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProviderRegistry<T>, AutoCloseable {
+public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProviderRegistry<T> {
 
     private final Batcher<? extends Batch> batcher;
     private final ConcurrentMap<T, Map.Entry<Listener, ExecutorService>> listeners = new ConcurrentHashMap<>();
