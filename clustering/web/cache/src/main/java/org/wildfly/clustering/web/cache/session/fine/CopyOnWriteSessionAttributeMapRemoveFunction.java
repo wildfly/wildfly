@@ -12,7 +12,9 @@ import org.wildfly.clustering.ee.cache.function.CopyOnWriteMapRemoveFunction;
 /**
  * Copy-on-write {@link java.util.Map#remove(Object)} function for a session attribute.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.clustering.ee.cache.function.MapComputeFunction}.
  */
+@Deprecated(forRemoval = true)
 public class CopyOnWriteSessionAttributeMapRemoveFunction extends CopyOnWriteMapRemoveFunction<String, UUID> {
 
     public CopyOnWriteSessionAttributeMapRemoveFunction(String attributeName) {

@@ -13,7 +13,9 @@ import org.wildfly.clustering.ee.cache.function.ConcurrentMapPutFunction;
 /**
  * Concurrent {@link Map#put(Object, Object)} function for a session attribute.
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.clustering.ee.cache.function.MapComputeFunction}.
  */
+@Deprecated(forRemoval = true)
 public class ConcurrentSessionAttributeMapPutFunction extends ConcurrentMapPutFunction<String, UUID> {
 
     public ConcurrentSessionAttributeMapPutFunction(String attributeName, UUID attributeId) {

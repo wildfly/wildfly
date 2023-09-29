@@ -22,6 +22,7 @@ public class FineSessionAttributesSerializationContextInitializer extends Abstra
 
     @Override
     public void registerMarshallers(SerializationContext context) {
+        // Deprecated functions to be removed
         context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, ConcurrentSessionAttributeMapPutFunction::getEntry, ConcurrentSessionAttributeMapPutFunction::new));
         context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), ConcurrentSessionAttributeMapRemoveFunction::getKey, ConcurrentSessionAttributeMapRemoveFunction::new));
         context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, CopyOnWriteSessionAttributeMapPutFunction::getEntry, CopyOnWriteSessionAttributeMapPutFunction::new));

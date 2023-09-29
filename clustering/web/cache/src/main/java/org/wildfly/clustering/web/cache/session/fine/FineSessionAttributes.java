@@ -19,6 +19,8 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.UUIDFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
+import org.wildfly.clustering.ee.cache.function.MapPutFunction;
+import org.wildfly.clustering.ee.cache.function.MapRemoveFunction;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
@@ -59,7 +61,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         if (attributeId == null) return null;
 
         synchronized (this.mutations) {
-            this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapRemoveFunction(name) : new ConcurrentSessionAttributeMapRemoveFunction(name)));
+            this.setNames(this.namesCache.compute(this.key, new MapRemoveFunction<>(name)));
 
             K key = this.keyFactory.apply(attributeId);
 
@@ -89,7 +91,7 @@ public class FineSessionAttributes<NK, K, V> implements SessionAttributes {
         synchronized (this.mutations) {
             if (attributeId == null) {
                 UUID newAttributeId = UUIDFactory.INSECURE.get();
-                this.setNames(this.namesCache.compute(this.key, this.properties.isTransactional() ? new CopyOnWriteSessionAttributeMapPutFunction(name, newAttributeId) : new ConcurrentSessionAttributeMapPutFunction(name, newAttributeId)));
+                this.setNames(this.namesCache.compute(this.key, new MapPutFunction<>(name, newAttributeId)));
                 attributeId = this.names.get().get(name);
             }
 
