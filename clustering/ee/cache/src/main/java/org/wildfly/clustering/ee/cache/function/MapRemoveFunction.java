@@ -6,7 +6,6 @@
 package org.wildfly.clustering.ee.cache.function;
 
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * Function that removes an entry from a map.
@@ -14,14 +13,13 @@ import java.util.Map;
  * @param <K> the map key type
  * @param <V> the map value type
  */
-public class MapRemoveFunction<K, V> extends MapFunction<K, V, K> {
+public class MapRemoveFunction<K, V> extends MapComputeFunction<K, V> {
 
-    public MapRemoveFunction(K operand, Operations<Map<K, V>> operations) {
-        super(operand, operations, Collections::emptyMap);
+    public MapRemoveFunction(K key) {
+        super(Collections.singletonMap(key, null));
     }
 
-    @Override
-    public void accept(Map<K, V> map, K key) {
-        map.remove(key);
+    public K getKey() {
+        return this.getOperand().keySet().iterator().next();
     }
 }

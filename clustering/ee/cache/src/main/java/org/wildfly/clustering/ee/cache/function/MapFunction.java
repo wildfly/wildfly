@@ -6,8 +6,6 @@
 package org.wildfly.clustering.ee.cache.function;
 
 import java.util.Map;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
  * Function that operates on a map.
@@ -17,7 +15,7 @@ import java.util.function.UnaryOperator;
  */
 public abstract class MapFunction<K, V, T> extends AbstractFunction<T, Map<K, V>> {
 
-    public MapFunction(T operand, UnaryOperator<Map<K, V>> copier, Supplier<Map<K, V>> factory) {
-        super(operand, copier, factory, Map::isEmpty);
+    public MapFunction(T operand, Operations<Map<K, V>> operations) {
+        super(operand, operations.getCopier(), operations.getFactory(), operations.isEmpty());
     }
 }

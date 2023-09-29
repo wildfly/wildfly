@@ -22,9 +22,9 @@ public class FineSessionAttributesSerializationContextInitializer extends Abstra
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, ConcurrentSessionAttributeMapPutFunction::getOperand, ConcurrentSessionAttributeMapPutFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), ConcurrentSessionAttributeMapRemoveFunction::getOperand, ConcurrentSessionAttributeMapRemoveFunction::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, CopyOnWriteSessionAttributeMapPutFunction::getOperand, CopyOnWriteSessionAttributeMapPutFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), CopyOnWriteSessionAttributeMapRemoveFunction::getOperand, CopyOnWriteSessionAttributeMapRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, ConcurrentSessionAttributeMapPutFunction::getEntry, ConcurrentSessionAttributeMapPutFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), ConcurrentSessionAttributeMapRemoveFunction::getKey, ConcurrentSessionAttributeMapRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteSessionAttributeMapPutFunction.class, SessionAttributeMapEntryMarshaller.INSTANCE, CopyOnWriteSessionAttributeMapPutFunction::getEntry, CopyOnWriteSessionAttributeMapPutFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSessionAttributeMapRemoveFunction.class, Scalar.STRING.cast(String.class), CopyOnWriteSessionAttributeMapRemoveFunction::getKey, CopyOnWriteSessionAttributeMapRemoveFunction::new));
     }
 }

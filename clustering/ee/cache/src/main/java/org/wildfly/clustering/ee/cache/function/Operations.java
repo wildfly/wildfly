@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.ee.cache.function;
 
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -13,6 +14,11 @@ import java.util.function.UnaryOperator;
  * @author Paul Ferraro
  * @param <T> the operable object type
  */
-public interface Operations<T> extends UnaryOperator<T>, Supplier<T> {
+public interface Operations<T> {
 
+    UnaryOperator<T> getCopier();
+
+    Supplier<T> getFactory();
+
+    Predicate<T> isEmpty();
 }

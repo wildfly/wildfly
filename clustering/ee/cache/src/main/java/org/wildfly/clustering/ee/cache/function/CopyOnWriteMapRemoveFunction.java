@@ -10,10 +10,12 @@ package org.wildfly.clustering.ee.cache.function;
  * @author Paul Ferraro
  * @param <K> the map key type
  * @param <V> the map value type
+ * @deprecated Superseded by {@link MapRemoveFunction}.
  */
+@Deprecated(forRemoval = true)
 public class CopyOnWriteMapRemoveFunction<K, V> extends MapRemoveFunction<K, V> {
 
     public CopyOnWriteMapRemoveFunction(K key) {
-        super(key, new CopyOnWriteMapOperations<>());
+        super(key);
     }
 }

@@ -22,9 +22,9 @@ public class ServiceProviderRegistrySerializationContextInitializer extends Abst
     @Override
     public void registerMarshallers(SerializationContext context) {
         ProtoStreamMarshaller<Address> addressMarshaller = new SimpleFieldSetMarshaller<>(Address.class, InfinispanAddressMarshaller.INSTANCE);
-        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetAddFunction.class, addressMarshaller, ConcurrentAddressSetAddFunction::getOperand, ConcurrentAddressSetAddFunction::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetRemoveFunction.class, addressMarshaller, ConcurrentAddressSetRemoveFunction::getOperand, ConcurrentAddressSetRemoveFunction::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteAddressSetAddFunction.class, addressMarshaller, CopyOnWriteAddressSetAddFunction::getOperand, CopyOnWriteAddressSetAddFunction::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteAddressSetRemoveFunction.class, addressMarshaller, CopyOnWriteAddressSetRemoveFunction::getOperand, CopyOnWriteAddressSetRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetAddFunction.class, addressMarshaller, ConcurrentAddressSetAddFunction::getValue, ConcurrentAddressSetAddFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentAddressSetRemoveFunction.class, addressMarshaller, ConcurrentAddressSetRemoveFunction::getValue, ConcurrentAddressSetRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteAddressSetAddFunction.class, addressMarshaller, CopyOnWriteAddressSetAddFunction::getValue, CopyOnWriteAddressSetAddFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteAddressSetRemoveFunction.class, addressMarshaller, CopyOnWriteAddressSetRemoveFunction::getValue, CopyOnWriteAddressSetRemoveFunction::new));
     }
 }

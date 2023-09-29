@@ -25,13 +25,17 @@ public class FunctionSerializationContextInitializer extends AbstractSerializati
     @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentMapPutFunction.class, (Class<Map.Entry<Object, Object>>) (Class<?>) SimpleImmutableEntry.class, ConcurrentMapPutFunction<Object, Object>::getOperand, ConcurrentMapPutFunction<Object, Object>::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentMapRemoveFunction.class, Scalar.ANY, ConcurrentMapRemoveFunction::getOperand, ConcurrentMapRemoveFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSetAddFunction.class, Scalar.ANY, ConcurrentSetAddFunction::getOperand, ConcurrentSetAddFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSetRemoveFunction.class, Scalar.ANY, ConcurrentSetRemoveFunction::getOperand, ConcurrentSetRemoveFunction::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteMapPutFunction.class, (Class<Map.Entry<Object, Object>>) (Class<?>) SimpleImmutableEntry.class, CopyOnWriteMapPutFunction<Object, Object>::getOperand, CopyOnWriteMapPutFunction<Object, Object>::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteMapRemoveFunction.class, Scalar.ANY, CopyOnWriteMapRemoveFunction::getOperand, CopyOnWriteMapRemoveFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSetAddFunction.class, Scalar.ANY, CopyOnWriteSetAddFunction::getOperand, CopyOnWriteSetAddFunction::new));
-        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSetRemoveFunction.class, Scalar.ANY, CopyOnWriteSetRemoveFunction::getOperand, CopyOnWriteSetRemoveFunction::new));
+        context.registerMarshaller(new MapComputeFunctionMarshaller());
+        context.registerMarshaller(new CollectionFunctionMarshaller<>(SetAddFunction.class, SetAddFunction::new));
+        context.registerMarshaller(new CollectionFunctionMarshaller<>(SetRemoveFunction.class, SetRemoveFunction::new));
+        // Deprecated functions, to be removed
+        context.registerMarshaller(new FunctionalMarshaller<>(ConcurrentMapPutFunction.class, (Class<Map.Entry<Object, Object>>) (Class<?>) SimpleImmutableEntry.class, ConcurrentMapPutFunction<Object, Object>::getEntry, ConcurrentMapPutFunction<Object, Object>::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentMapRemoveFunction.class, Scalar.ANY, ConcurrentMapRemoveFunction::getKey, ConcurrentMapRemoveFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSetAddFunction.class, Scalar.ANY, ConcurrentSetAddFunction::getValue, ConcurrentSetAddFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(ConcurrentSetRemoveFunction.class, Scalar.ANY, ConcurrentSetRemoveFunction::getValue, ConcurrentSetRemoveFunction::new));
+        context.registerMarshaller(new FunctionalMarshaller<>(CopyOnWriteMapPutFunction.class, (Class<Map.Entry<Object, Object>>) (Class<?>) SimpleImmutableEntry.class, CopyOnWriteMapPutFunction<Object, Object>::getEntry, CopyOnWriteMapPutFunction<Object, Object>::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteMapRemoveFunction.class, Scalar.ANY, CopyOnWriteMapRemoveFunction::getKey, CopyOnWriteMapRemoveFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSetAddFunction.class, Scalar.ANY, CopyOnWriteSetAddFunction::getValue, CopyOnWriteSetAddFunction::new));
+        context.registerMarshaller(new FunctionalScalarMarshaller<>(CopyOnWriteSetRemoveFunction.class, Scalar.ANY, CopyOnWriteSetRemoveFunction::getValue, CopyOnWriteSetRemoveFunction::new));
     }
 }
