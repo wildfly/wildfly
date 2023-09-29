@@ -7,85 +7,19 @@ import "java.util.proto";
 /**
  * @TypeId(160)
  */
-// Deprecated for removal
-message ConcurrentMapPutFunction {
-	required	bytes	key	= 1;
-	required	bytes	value	= 2;
-}
-
-/**
- * @TypeId(161)
- */
-// Deprecated for removal
-message ConcurrentMapRemoveFunction {
-	required	bytes	key	= 1;
-}
-
-/**
- * @TypeId(162)
- */
-// Deprecated for removal
-message ConcurrentSetAddFunction {
-	required	bytes	value	= 1;
-}
-
-/**
- * @TypeId(163)
- */
-// Deprecated for removal
-message ConcurrentSetRemoveFunction {
-	required	bytes	value	= 1;
-}
-
-/**
- * @TypeId(164)
- */
-// Deprecated for removal
-message CopyOnWriteMapPutFunction {
-	required	bytes	key	= 1;
-	required	bytes	value	= 2;
-}
-
-/**
- * @TypeId(165)
- */
-// Deprecated for removal
-message CopyOnWriteMapRemoveFunction {
-	required	bytes	key	= 1;
-}
-
-/**
- * @TypeId(166)
- */
-// Deprecated for removal
-message CopyOnWriteSetAddFunction {
-	required	bytes	value	= 1;
-}
-
-/**
- * @TypeId(167)
- */
-// Deprecated for removal
-message CopyOnWriteSetRemoveFunction {
-	required	bytes	value	= 1;
-}
-
-/**
- * @TypeId(168)
- */
 message MapComputeFunction {
 	repeated	java.util.SimpleImmutableEntry	entry	= 1;
 }
 
 /**
- * @TypeId(169)
+ * @TypeId(161)
  */
 message SetAddFunction {
 	repeated	bytes	value	= 1;
 }
 
 /**
- * @TypeId(170)
+ * @TypeId(162)
  */
 message SetRemoveFunction {
 	repeated	bytes	value	= 1;

@@ -7,46 +7,14 @@ import "org.infinispan.remoting.transport.jgroups.proto";
 // IDs: 140 -144
 
 /**
- * @TypeId(141)
- */
-message ConcurrentAddressSetAddFunction {
-	optional	org.jgroups.util.UUID	uuidAddress	= 1;
-	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
-}
-
-/**
- * @TypeId(142)
- */
-message ConcurrentAddressSetRemoveFunction {
-	optional	org.jgroups.util.UUID	uuidAddress	= 1;
-	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
-}
-
-/**
- * @TypeId(143)
- */
-message CopyOnWriteAddressSetAddFunction {
-	optional	org.jgroups.util.UUID	uuidAddress	= 1;
-	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
-}
-
-/**
- * @TypeId(144)
- */
-message CopyOnWriteAddressSetRemoveFunction {
-	optional	org.jgroups.util.UUID	uuidAddress	= 1;
-	optional	org.jgroups.stack.IpAddress	ipAddress	= 2;
-}
-
-/**
- * @TypeId(145)
+ * @TypeId(140)
  */
 message AddressSetAddFunction {
 	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
 }
 
 /**
- * @TypeId(146)
+ * @TypeId(141)
  */
 message AddressSetRemoveFunction {
 	repeated	org.infinispan.remoting.transport.jgroups.JGroupsAddress	address	= 1;
