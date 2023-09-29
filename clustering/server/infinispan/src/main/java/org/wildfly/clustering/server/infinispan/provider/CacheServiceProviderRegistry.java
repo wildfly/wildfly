@@ -203,13 +203,9 @@ public class CacheServiceProviderRegistry<T> implements AutoCloseableServiceProv
                 this.executor.execute(() -> {
                     if (!leftMembers.isEmpty()) {
                         try (Batch batch = batcher.createBatch()) {
-                            try (CloseableIterator<Map.Entry<T, Set<Address>>> entries = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).entrySet().iterator()) {
-                                while (entries.hasNext()) {
-                                    Map.Entry<T, Set<Address>> entry = entries.next();
-                                    Set<Address> addresses = entry.getValue();
-                                    if (addresses.removeAll(leftMembers)) {
-                                        entry.setValue(addresses);
-                                    }
+                            try (CloseableIterator<T> keys = cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).keySet().iterator()) {
+                                while (keys.hasNext()) {
+                                    cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS, Flag.IGNORE_RETURN_VALUES).compute(keys.next(), new AddressSetRemoveFunction(leftMembers));
                                 }
                             }
                         }
