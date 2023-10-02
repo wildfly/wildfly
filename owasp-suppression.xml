@@ -1090,6 +1090,7 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
         <cve>CVE-2023-1108</cve>
+        <cve>CVE-2023-3223</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -1097,5 +1098,6 @@
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
         <cve>CVE-2023-1108</cve>
+        <cve>CVE-2023-3223</cve>
     </suppress>
 </suppressions>
