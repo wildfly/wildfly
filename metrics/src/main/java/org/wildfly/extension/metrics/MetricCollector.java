@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.LocalModelControllerClient;
@@ -49,6 +50,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 public class MetricCollector {
+    private static final String RUNTIME_QUEUE_KEY = "runtime-queue";
+    private static final Pattern UUID_SIMPLE_REGEX_PATTERN =
+        Pattern.compile( "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" );
     private final LocalModelControllerClient modelControllerClient;
     private final ProcessStateNotifier processStateNotifier;
 
@@ -117,15 +121,20 @@ public class MetricCollector {
                 resourceDescription = modelDescription.getModelDescription(Locale.getDefault());
             }
             PathAddress resourceAddress = resourceAddressResolver.apply(address);
-            MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
-            boolean isCounter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
-            String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
+            // Workaround for PJFCB-5155
+            // We do not register metrics for runtime-queues with UUID values as they are sometimes not
+            // properly unregistered - such unregistered queues generate huge unnecessary logs amounts.
+            if( !isRuntimeQueueWithUuidValue( resourceAddress ) ) {
+                MeasurementUnit unit = attributeAccess.getAttributeDefinition().getMeasurementUnit();
+                boolean isCounter = attributeAccess.getFlags().contains(AttributeAccess.Flag.COUNTER_METRIC);
+                String attributeDescription = resourceDescription.get(ATTRIBUTES, attributeName, DESCRIPTION).asStringOrNull();
 
-            WildFlyMetric metric = new WildFlyMetric(modelControllerClient, resourceAddress, attributeName);
-            WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit, isCounter ? COUNTER : GAUGE);
+                WildFlyMetric metric = new WildFlyMetric(modelControllerClient, resourceAddress, attributeName);
+                WildFlyMetricMetadata metadata = new WildFlyMetricMetadata(attributeName, resourceAddress, prefix, attributeDescription, unit, isCounter ? COUNTER : GAUGE);
 
-            registration.addRegistrationTask(() -> registration.registerMetric(metric, metadata));
-            registration.addUnregistrationTask(metadata.getMetricID());
+                registration.addRegistrationTask(() -> registration.registerMetric(metric, metadata));
+                registration.addUnregistrationTask(metadata.getMetricID());
+            }
         }
 
         for (String type : current.getChildTypes()) {
@@ -135,6 +144,14 @@ public class MetricCollector {
                 collectResourceMetrics0(entry, managementResourceRegistration, childAddress, resourceAddressResolver, registration, exposeAnySubsystem, exposedSubsystems, prefix);
             }
         }
+    }
+
+    private boolean isRuntimeQueueWithUuidValue( PathAddress aResourceAddress ) {
+        PathElement pathElement = aResourceAddress.getLastElement();
+        String key = pathElement.getKey();
+        String value = pathElement.getValue();
+        return RUNTIME_QUEUE_KEY.equals( key ) && UUID_SIMPLE_REGEX_PATTERN.matcher( value )
+            .matches();
     }
 
     private boolean isExposingMetrics(PathAddress address, boolean exposeAnySubsystem, List<String> exposedSubsystems) {
