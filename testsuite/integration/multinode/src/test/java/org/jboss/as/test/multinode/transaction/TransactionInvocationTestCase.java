@@ -25,7 +25,7 @@ import jakarta.transaction.SystemException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
