@@ -275,11 +275,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
         if (result == null) {
             // We added injection of the server executor late in WF 8, so in case some
             // add-on projects don't know to inject it....
-            final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
+
             final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
             final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
                 public JBossThreadFactory run() {
-                    return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+                    return new JBossThreadFactory(ThreadGroupHolder.THREAD_GROUP, Boolean.FALSE, null, namePattern, null, null);
                 }
             });
             result = Executors.newSingleThreadExecutor(threadFactory);
@@ -742,5 +742,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         public String getJndiViewInstanceValue() {
             return String.valueOf(getReference().getInstance());
         }
+    }
+
+    // Wrapper class to delay thread group creation until when it's needed.
+    private static class ThreadGroupHolder {
+        private static final ThreadGroup THREAD_GROUP = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
     }
 }

@@ -42,7 +42,7 @@ public class NamingEventCoordinator {
 
     private final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
         public JBossThreadFactory run() {
-            return new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null);
+            return new JBossThreadFactory(ThreadGroupHolder.THREAD_GROUP, Boolean.FALSE, null, "%G - %t", null, null);
         }
     });
 
@@ -244,5 +244,9 @@ public class NamingEventCoordinator {
             result = 31 * result + scope;
             return result;
         }
+    }
+
+    private static class ThreadGroupHolder {
+        private static final ThreadGroup THREAD_GROUP = new ThreadGroup("NamingEventCoordinator-threads");
     }
 }
