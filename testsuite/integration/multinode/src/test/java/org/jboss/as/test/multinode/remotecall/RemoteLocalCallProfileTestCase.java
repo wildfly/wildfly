@@ -10,7 +10,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.Arrays;

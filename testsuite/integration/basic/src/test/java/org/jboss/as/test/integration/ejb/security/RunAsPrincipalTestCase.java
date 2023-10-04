@@ -32,7 +32,6 @@ import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.Sing
 import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
-import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.logging.Logger;
@@ -47,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
 import org.wildfly.security.permission.ElytronPermission;
 
+import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
@@ -104,7 +104,7 @@ public class RunAsPrincipalTestCase  {
                // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
                 .addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
                         new PropertyPermission("jboss.server.log.dir", "read"),
-                        PermissionUtils.createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
+                        createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
                         new ElytronPermission("authenticate"),
                         new ElytronPermission("getIdentity"),
                         new ElytronPermission("createAdHocIdentity"),

@@ -44,7 +44,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
