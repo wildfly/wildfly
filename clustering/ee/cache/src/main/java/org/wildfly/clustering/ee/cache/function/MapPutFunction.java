@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.ee.cache.function;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -13,19 +14,17 @@ import java.util.Map;
  * @param <K> the map key type
  * @param <V> the map value type
  */
-public class MapPutFunction<K, V> extends MapFunction<K, V, Map.Entry<K, V>> {
+public class MapPutFunction<K, V> extends MapComputeFunction<K, V> {
 
-    public MapPutFunction(Map.Entry<K, V> operand, Operations<Map<K, V>> operations) {
-        super(operand, operations, operations);
+    public MapPutFunction(K key, V value) {
+        super(Collections.singletonMap(key, value));
     }
 
-    @Override
-    public Map.Entry<K, V> getOperand() {
-        return super.getOperand();
+    MapPutFunction(Map.Entry<K, V> entry) {
+        this(entry.getKey(), entry.getValue());
     }
 
-    @Override
-    public void accept(Map<K, V> map, Map.Entry<K, V> entry) {
-        map.put(entry.getKey(), entry.getValue());
+    public Map.Entry<K, V> getEntry() {
+        return this.getOperand().entrySet().iterator().next();
     }
 }

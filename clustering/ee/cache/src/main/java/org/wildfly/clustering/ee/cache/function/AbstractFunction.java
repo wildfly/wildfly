@@ -7,7 +7,7 @@ package org.wildfly.clustering.ee.cache.function;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -21,9 +21,9 @@ public abstract class AbstractFunction<T, O> implements BiFunction<Object, O, O>
     private final T operand;
     private final UnaryOperator<O> copier;
     private final Supplier<O> factory;
-    private final Function<O, Boolean> empty;
+    private final Predicate<O> empty;
 
-    public AbstractFunction(T operand, UnaryOperator<O> copier, Supplier<O> factory, Function<O, Boolean> empty) {
+    public AbstractFunction(T operand, UnaryOperator<O> copier, Supplier<O> factory, Predicate<O> empty) {
         this.operand = operand;
         this.copier = copier;
         this.factory = factory;
@@ -32,13 +32,28 @@ public abstract class AbstractFunction<T, O> implements BiFunction<Object, O, O>
 
     @Override
     public O apply(Object key, O operable) {
-        // Transactional caches must operate on a copy of the operable object
         O result = (operable != null) ? this.copier.apply(operable) : this.factory.get();
         this.accept(result, this.operand);
-        return !this.empty.apply(result) ? result : null;
+        return !this.empty.test(result) ? result : null;
     }
 
     public T getOperand() {
         return this.operand;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.operand.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!this.getClass().isInstance(object)) return false;
+        return this.operand.equals(((AbstractFunction<?, ?>) object).operand);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s[%s]", this.getClass().getSimpleName(), this.operand);
     }
 }

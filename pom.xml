@@ -378,7 +378,7 @@
         <version.com.google.guava>32.1.1-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.google.protobuf>3.19.6</version.com.google.protobuf>
-        <version.com.h2database>2.1.214</version.com.h2database>
+        <version.com.h2database>2.2.220</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>9.31</version.com.nimbus.jose-jwt>
@@ -408,7 +408,7 @@
         <version.io.smallrye.smallrye-config>3.3.4</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.2.6</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.2</version.io.smallrye.smallrye-health>
-        <version.io.smallrye.smallrye-jwt>4.2.1</version.io.smallrye.smallrye-jwt>
+        <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-mutiny>2.1.0</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.3.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
@@ -481,7 +481,7 @@
         <version.org.eclipse.microprofile.rest.client.api>3.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>1.0</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
-        <version.org.eclipse.yasson>3.0.2</version.org.eclipse.yasson>
+        <version.org.eclipse.yasson>3.0.3</version.org.eclipse.yasson>
         <version.org.elasticsearch.client.rest-client>8.10.2</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
