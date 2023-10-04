@@ -6,8 +6,6 @@
 package org.wildfly.clustering.ee.cache.function;
 
 import java.util.Collection;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
  * Function that removes an item from a collection.
@@ -17,12 +15,12 @@ import java.util.function.UnaryOperator;
  */
 public class CollectionRemoveFunction<V, C extends Collection<V>> extends CollectionFunction<V, C> {
 
-    public CollectionRemoveFunction(V value, UnaryOperator<C> copier, Supplier<C> factory) {
-        super(value, copier, factory);
+    public CollectionRemoveFunction(Collection<V> operand, Operations<C> operations) {
+        super(operand, operations);
     }
 
     @Override
-    public void accept(C collection, V value) {
-        collection.remove(value);
+    public void accept(C collection, Collection<V> operand) {
+        collection.removeAll(operand);
     }
 }
