@@ -32,7 +32,6 @@ import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.UndertowExtension;
 
 import io.smallrye.openapi.api.OpenApiConfig;
-import io.smallrye.openapi.api.OpenApiConfigImpl;
 import io.smallrye.openapi.runtime.io.Format;
 
 /**
@@ -130,7 +129,7 @@ public class OpenAPIDocumentProcessor implements DeploymentUnitProcessor {
 
         DeploymentOpenAPIConfiguration(DeploymentUnit unit) {
             this.config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
-            this.openApiConfig = OpenApiConfigImpl.fromConfig(this.config);
+            this.openApiConfig = OpenApiConfig.fromConfig(this.config);
             this.staticFile = findStaticFile(unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot());
             // Fetch server/host as determined by Undertow DUP
             ModelNode model = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
