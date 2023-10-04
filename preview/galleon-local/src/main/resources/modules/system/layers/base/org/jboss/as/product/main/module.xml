@@ -12,10 +12,6 @@
     </properties>
 
     <resources>
-        <resource-root path="dir"/>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-preview-feature-pack-product-conf}"/>
     </resources>
-
-    <dependencies>
-    </dependencies>
 </module>

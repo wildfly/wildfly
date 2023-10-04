@@ -103,6 +103,7 @@
                 <module>dist</module>
                 <module>feature-pack</module>
                 <module>galleon-local</module>
+                <module>product-conf</module>
             </modules>
         </profile>
     </profiles>

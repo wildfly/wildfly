@@ -32,6 +32,7 @@
         <module>galleon-local</module>
         <module>galleon-shared</module>
         <module>layer-metadata-tests</module>
+        <module>product-conf</module>
     </modules>
 
     <dependencyManagement>

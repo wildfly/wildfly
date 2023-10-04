@@ -50,6 +50,11 @@
             <artifactId>transformer</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
