@@ -130,6 +130,8 @@ public interface Constants {
     String CERTIFICATE_FORWARDING = "certificate-forwarding";
     String OPTIONS = "options";
     String IGNORE_FLUSH = "ignore-flush";
+    String REUSE_X_FORWARDED_HEADER="reuse-x-forwarded-header";
+    String REWRITE_HOST_HEADER="rewrite-host-header";
 
     String WEBSOCKETS = "websockets";
     //mod_cluster
