@@ -13,7 +13,7 @@ import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
-import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.ee.infinispan.CacheMutatorFactory;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
@@ -34,7 +34,7 @@ public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> impleme
     public InfinispanBeanGroupManager(InfinispanConfiguration configuration) {
         this.cache = configuration.getCache();
         this.removeCache = configuration.getWriteOnlyCache();
-        this.mutatorFactory = new InfinispanMutatorFactory<>(configuration.getCache());
+        this.mutatorFactory = new CacheMutatorFactory<>(configuration.getCache());
     }
 
     @Override

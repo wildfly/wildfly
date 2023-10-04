@@ -11,7 +11,7 @@ import org.infinispan.Cache;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
-import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.ee.infinispan.CacheMutatorFactory;
 import org.wildfly.clustering.ejb.bean.BeanExpiration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
@@ -50,7 +50,7 @@ public class InfinispanBeanMetaDataFactory<K> implements BeanMetaDataFactory<K, 
         this.expiration = configuration.getExpiration();
         boolean scheduledExpiration = (this.expiration != null) && !this.expiration.getTimeout().isZero();
         this.accessMetaDataCache = scheduledExpiration ? configuration.getCache() : null;
-        this.mutatorFactory = (this.accessMetaDataCache != null) ? new InfinispanMutatorFactory<>(this.accessMetaDataCache) : null;
+        this.mutatorFactory = (this.accessMetaDataCache != null) ? new CacheMutatorFactory<>(this.accessMetaDataCache) : null;
         this.beanName = configuration.getBeanName();
     }
 
