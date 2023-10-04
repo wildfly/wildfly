@@ -91,6 +91,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
