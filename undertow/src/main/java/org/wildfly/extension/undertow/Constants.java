@@ -131,6 +131,8 @@ public interface Constants {
     String OPTIONS = "options";
     String IGNORE_FLUSH = "ignore-flush";
     String ALLOWED_REQUEST_ATTRIBUTES_PATTERN = "allowed-request-attributes-pattern";
+    String REUSE_X_FORWARDED_HEADER="reuse-x-forwarded-header";
+    String REWRITE_HOST_HEADER="rewrite-host-header";
 
     String WEBSOCKETS = "websockets";
     //mod_cluster
