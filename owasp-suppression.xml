@@ -1100,4 +1100,18 @@
         <cve>CVE-2023-1108</cve>
         <cve>CVE-2023-3223</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: plexus-component-annotations-1.7.1.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-component\-annotations@.*$</packageUrl>
+        <cve>CVE-2022-4244</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: plexus-interpolation-1.24.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-interpolation@.*$</packageUrl>
+        <cve>CVE-2022-4244</cve>
+    </suppress>
 </suppressions>
