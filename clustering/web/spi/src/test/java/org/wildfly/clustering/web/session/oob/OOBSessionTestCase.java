@@ -244,7 +244,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.readSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessTime);
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessEndTime);
 
         verify(batch).close();
         reset(batch);
@@ -255,9 +255,9 @@ public class OOBSessionTestCase {
 
         when(this.manager.readSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.getLastAccessTime()).thenReturn(expected);
+        when(metaData.getLastAccessEndTime()).thenReturn(expected);
 
-        Instant result = this.session.getMetaData().getLastAccessTime();
+        Instant result = this.session.getMetaData().getLastAccessEndTime();
 
         Assert.assertSame(expected, result);
 
@@ -299,7 +299,7 @@ public class OOBSessionTestCase {
     }
 
     @Test
-    public void setMaxInactiveInterval() {
+    public void setTimeout() {
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Duration duration = Duration.ZERO;
@@ -308,7 +308,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setMaxInactiveInterval(duration));
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setTimeout(duration));
 
         verify(batch).close();
         reset(batch);
@@ -319,9 +319,9 @@ public class OOBSessionTestCase {
         when(this.manager.findSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
 
-        this.session.getMetaData().setMaxInactiveInterval(duration);
+        this.session.getMetaData().setTimeout(duration);
 
-        verify(metaData).setMaxInactiveInterval(duration);
+        verify(metaData).setTimeout(duration);
         verify(session).close();
         verify(batch).close();
     }

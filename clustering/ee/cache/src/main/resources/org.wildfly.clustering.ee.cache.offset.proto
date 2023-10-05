@@ -1,0 +1,19 @@
+package org.wildfly.clustering.ee.cache.offset;
+
+import "java.time.proto";
+
+// IDs: 170 - 179
+
+/**
+ * @TypeId(170)
+ */
+message DurationOffset {
+	optional	java.time.Duration	value	= 1;
+}
+
+/**
+ * @TypeId(171)
+ */
+message InstantOffset {
+	optional	java.time.Duration	value	= 1;
+}

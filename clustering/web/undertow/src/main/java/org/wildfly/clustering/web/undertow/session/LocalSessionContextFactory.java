@@ -6,14 +6,13 @@ package org.wildfly.clustering.web.undertow.session;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.web.LocalContextFactory;
-
-public enum LocalSessionContextFactory implements LocalContextFactory<Map<String, Object>> {
+public enum LocalSessionContextFactory implements Supplier<Map<String, Object>> {
     INSTANCE;
 
     @Override
-    public Map<String, Object> createLocalContext() {
+    public Map<String, Object> get() {
         return new ConcurrentHashMap<>();
     }
 }

@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -25,17 +26,19 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.cache.session.CompositeSessionFactory;
-import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributesFactory;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
-import org.wildfly.clustering.web.cache.session.SessionAccessMetaData;
-import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
-import org.wildfly.clustering.web.cache.session.SessionCreationMetaDataEntry;
-import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
-import org.wildfly.clustering.web.cache.session.SimpleSessionAccessMetaData;
+import org.wildfly.clustering.web.cache.session.attributes.ImmutableSessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.fine.SessionAccessMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.metadata.fine.SessionCreationMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.metadata.fine.SessionMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.metadata.fine.DefaultSessionMetaDataEntry;
+import org.wildfly.clustering.web.cache.session.metadata.fine.DefaultSessionAccessMetaDataEntry;
 import org.wildfly.clustering.web.hotrod.logging.Logger;
+import org.wildfly.clustering.web.hotrod.session.metadata.SessionAccessMetaDataKey;
+import org.wildfly.clustering.web.hotrod.session.metadata.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -49,11 +52,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @param <LC> the local context type
  */
 @ClientListener
-public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
+public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC, SessionMetaDataEntry<LC>, AV, LC> implements Registrar<Consumer<ImmutableSession>> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;
-    private final ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory;
+    private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory;
     private final ImmutableSessionAttributesFactory<AV> attributesFactory;
     private final Remover<String> attributesRemover;
     private final Collection<Consumer<ImmutableSession>> listeners = new CopyOnWriteArraySet<>();
@@ -66,7 +69,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
      * @param attributesFactory
      * @param localContextFactory
      */
-    public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, LocalContextFactory<LC> localContextFactory) {
+    public HotRodSessionFactory(HotRodSessionFactoryConfiguration config, SessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory, SessionAttributesFactory<MC, AV> attributesFactory, Supplier<LC> localContextFactory) {
         super(metaDataFactory, attributesFactory, localContextFactory);
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
@@ -90,7 +93,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     @ClientCacheEntryExpired
     public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
         RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache = this.creationMetaDataCache;
-        ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = this.metaDataFactory;
+        ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory = this.metaDataFactory;
         ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
         Remover<String> attributesRemover = this.attributesRemover;
         Collection<Consumer<ImmutableSession>> listeners = this.listeners;
@@ -103,13 +106,13 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
                     AV attributesValue = attributesFactory.findValue(id);
                     if (attributesValue != null) {
                         // Fabricate a reasonable SessionAccessMetaData
-                        SessionAccessMetaData accessMetaData = new SimpleSessionAccessMetaData();
+                        SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
                         Duration lastAccess = Duration.ofSeconds(1);
-                        Duration sinceCreation = Duration.between(creationMetaDataEntry.getMetaData().getCreationTime(), Instant.now()).minus(lastAccess);
+                        Duration sinceCreation = Duration.between(creationMetaDataEntry.getCreationTime(), Instant.now()).minus(lastAccess);
                         accessMetaData.setLastAccessDuration(sinceCreation, lastAccess);
 
                         // Notify session expiration listeners
-                        ImmutableSessionMetaData metaData = metaDataFactory.createImmutableSessionMetaData(id, new CompositeSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData));
+                        ImmutableSessionMetaData metaData = metaDataFactory.createImmutableSessionMetaData(id, new DefaultSessionMetaDataEntry<>(creationMetaDataEntry, accessMetaData));
                         ImmutableSessionAttributes attributes = attributesFactory.createImmutableSessionAttributes(id, attributesValue);
                         ImmutableSession session = HotRodSessionFactory.this.createImmutableSession(id, metaData, attributes);
                         Logger.ROOT_LOGGER.tracef("Session %s has expired.", id);

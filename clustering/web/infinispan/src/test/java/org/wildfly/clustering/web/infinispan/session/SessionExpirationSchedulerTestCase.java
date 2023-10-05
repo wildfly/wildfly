@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -19,7 +21,7 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -50,8 +52,10 @@ public class SessionExpirationSchedulerTestCase {
         when(canceledSessionMetaData.getTimeout()).thenReturn(Duration.ofSeconds(100L));
 
         Instant now = Instant.now();
-        when(expiringSessionMetaData.getLastAccessTime()).thenReturn(now);
-        when(canceledSessionMetaData.getLastAccessTime()).thenReturn(now);
+        doCallRealMethod().when(expiringSessionMetaData).getLastAccessTime();
+        doReturn(now).when(expiringSessionMetaData).getLastAccessEndTime();
+        doCallRealMethod().when(canceledSessionMetaData).getLastAccessTime();
+        doReturn(now).when(canceledSessionMetaData).getLastAccessEndTime();
         when(remover.remove(expiringSessionId)).thenReturn(true);
 
         try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {

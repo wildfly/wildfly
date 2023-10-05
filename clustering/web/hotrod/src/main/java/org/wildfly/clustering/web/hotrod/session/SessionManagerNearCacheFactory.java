@@ -17,6 +17,9 @@ import org.infinispan.client.hotrod.near.NearCacheFactory;
 import org.wildfly.clustering.infinispan.client.near.CaffeineNearCache;
 import org.wildfly.clustering.infinispan.client.near.EvictionListener;
 import org.wildfly.clustering.infinispan.client.near.SimpleKeyWeigher;
+import org.wildfly.clustering.web.hotrod.session.attributes.SessionAttributesKey;
+import org.wildfly.clustering.web.hotrod.session.metadata.SessionAccessMetaDataKey;
+import org.wildfly.clustering.web.hotrod.session.metadata.SessionCreationMetaDataKey;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

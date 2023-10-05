@@ -14,15 +14,16 @@ import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
-import org.wildfly.clustering.web.cache.session.CompositeSessionMetaDataEntry;
 import org.wildfly.clustering.web.cache.session.ConcurrentSessionManager;
 import org.wildfly.clustering.web.cache.session.DelegatingSessionManagerConfiguration;
-import org.wildfly.clustering.web.cache.session.MarshalledValueSessionAttributesFactoryConfiguration;
-import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
-import org.wildfly.clustering.web.cache.session.SessionMetaDataFactory;
-import org.wildfly.clustering.web.hotrod.session.coarse.CoarseSessionAttributesFactory;
-import org.wildfly.clustering.web.hotrod.session.fine.FineSessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.attributes.MarshalledValueSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.SessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.fine.SessionMetaDataEntry;
+import org.wildfly.clustering.web.hotrod.session.attributes.CoarseSessionAttributesFactory;
+import org.wildfly.clustering.web.hotrod.session.attributes.FineSessionAttributesFactory;
+import org.wildfly.clustering.web.hotrod.session.metadata.HotRodSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
@@ -40,11 +41,11 @@ public class HotRodSessionManagerFactory<S, SC, AL, LC> implements SessionManage
 
     private final HotRodConfiguration configuration;
     private final Registrar<Consumer<ImmutableSession>> expirationListenerRegistrar;
-    private final SessionFactory<SC, CompositeSessionMetaDataEntry<LC>, ?, LC> factory;
+    private final SessionFactory<SC, SessionMetaDataEntry<LC>, ?, LC> factory;
 
     public HotRodSessionManagerFactory(HotRodSessionManagerFactoryConfiguration<S, SC, AL, LC> configuration) {
         this.configuration = configuration;
-        SessionMetaDataFactory<CompositeSessionMetaDataEntry<LC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(configuration);
+        SessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory = new HotRodSessionMetaDataFactory<>(configuration);
         HotRodSessionFactory<SC, ?, LC> sessionFactory = new HotRodSessionFactory<>(configuration, metaDataFactory, this.createSessionAttributesFactory(configuration), configuration.getLocalContextFactory());
         this.factory = sessionFactory;
         this.expirationListenerRegistrar = sessionFactory;

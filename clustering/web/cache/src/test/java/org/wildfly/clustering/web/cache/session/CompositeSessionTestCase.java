@@ -7,11 +7,13 @@ package org.wildfly.clustering.web.cache.session;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 
 /**
@@ -24,10 +26,10 @@ public class CompositeSessionTestCase {
     private final InvalidatableSessionMetaData metaData = mock(InvalidatableSessionMetaData.class);
     private final SessionAttributes attributes = mock(SessionAttributes.class);
     private final Remover<String> remover = mock(Remover.class);
-    private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
-    private final AtomicReference<Object> localContextRef = new AtomicReference<>();
+    private final Supplier<Object> contextFactory = mock(Supplier.class);
+    private final Contextual<Object> contextual = mock(Contextual.class);
 
-    private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.localContextRef, this.localContextFactory, this.remover);
+    private final Session<Object> session = new CompositeSession<>(this.id, this.metaData, this.attributes, this.contextual, this.contextFactory, this.remover);
 
     @Test
     public void getId() {
@@ -44,6 +46,7 @@ public class CompositeSessionTestCase {
         assertSame(this.metaData, this.session.getMetaData());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void invalidate() {
         when(this.metaData.invalidate()).thenReturn(true);
@@ -91,21 +94,12 @@ public class CompositeSessionTestCase {
         verify(this.metaData, never()).close();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void getLocalContext() {
         Object expected = new Object();
-        when(this.localContextFactory.createLocalContext()).thenReturn(expected);
+        doReturn(expected).when(this.contextual).getContext(this.contextFactory);
 
         Object result = this.session.getLocalContext();
-
-        assertSame(expected, result);
-
-        reset(this.localContextFactory);
-
-        result = this.session.getLocalContext();
-
-        verifyNoInteractions(this.localContextFactory);
 
         assertSame(expected, result);
     }

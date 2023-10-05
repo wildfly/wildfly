@@ -4,6 +4,8 @@
  */
 package org.wildfly.clustering.web.cache.session;
 
+import org.wildfly.clustering.web.cache.session.attributes.SimpleImmutableSessionAttributes;
+import org.wildfly.clustering.web.cache.session.metadata.SimpleImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;

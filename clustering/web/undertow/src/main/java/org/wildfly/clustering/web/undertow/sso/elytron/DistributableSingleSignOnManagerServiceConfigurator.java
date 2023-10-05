@@ -85,7 +85,7 @@ public class DistributableSingleSignOnManagerServiceConfigurator extends SimpleS
 
                 SupplierDependency<SSOManagerFactory<CachedIdentity, String, Map.Entry<String, URI>, Batch>> factoryDependency = new ServiceSupplierDependency<>(factoryConfigurator);
                 SupplierDependency<SessionIdGenerator> generatorDependency = new SimpleSupplierDependency<>(new SessionIdGeneratorAdapter(generator));
-                new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, new LocalSSOContextFactory()).configure(support).build(target).install();
+                new SSOManagerServiceConfigurator<>(managerServiceName, factoryDependency, generatorDependency, LocalSSOContextFactory.INSTANCE).configure(support).build(target).install();
             }
         };
         return this;

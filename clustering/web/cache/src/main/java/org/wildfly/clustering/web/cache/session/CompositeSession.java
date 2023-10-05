@@ -4,10 +4,12 @@
  */
 package org.wildfly.clustering.web.cache.session;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.cache.Contextual;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.metadata.InvalidatableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
@@ -19,16 +21,16 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
 
     private final InvalidatableSessionMetaData metaData;
     private final SessionAttributes attributes;
-    private final AtomicReference<L> localContext;
-    private final LocalContextFactory<L> localContextFactory;
+    private final Contextual<L> contextual;
+    private final Supplier<L> contextFactory;
     private final Remover<String> remover;
 
-    public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+    public CompositeSession(String id, InvalidatableSessionMetaData metaData, SessionAttributes attributes, Contextual<L> contextual, Supplier<L> contextFactory, Remover<String> remover) {
         super(id, metaData, attributes);
         this.metaData = metaData;
         this.attributes = attributes;
-        this.localContext = localContext;
-        this.localContextFactory = localContextFactory;
+        this.contextual = contextual;
+        this.contextFactory = contextFactory;
         this.remover = remover;
     }
 
@@ -64,14 +66,6 @@ public class CompositeSession<L> extends CompositeImmutableSession implements Se
 
     @Override
     public L getLocalContext() {
-        if (this.localContextFactory == null) return null;
-        L localContext = this.localContext.get();
-        if (localContext == null) {
-            localContext = this.localContextFactory.createLocalContext();
-            if (!this.localContext.compareAndSet(null, localContext)) {
-                return this.localContext.get();
-            }
-        }
-        return localContext;
+        return this.contextual.getContext(this.contextFactory);
     }
 }

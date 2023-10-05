@@ -8,6 +8,8 @@ package org.wildfly.clustering.web.cache.session;
 import java.util.Map;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
+import org.wildfly.clustering.web.cache.session.attributes.ImmutableSessionAttributesFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
@@ -16,21 +18,21 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  * Generic immutable session factory implementation - independent of cache mapping strategy.
  * @author Paul Ferraro
  */
-public class CompositeImmutableSessionFactory<V, L> implements ImmutableSessionFactory<CompositeSessionMetaDataEntry<L>, V> {
+public class CompositeImmutableSessionFactory<MV, AV> implements ImmutableSessionFactory<MV, AV> {
 
-    private final ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory;
-    private final ImmutableSessionAttributesFactory<V> attributesFactory;
+    private final ImmutableSessionMetaDataFactory<MV> metaDataFactory;
+    private final ImmutableSessionAttributesFactory<AV> attributesFactory;
 
-    public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> metaDataFactory, ImmutableSessionAttributesFactory<V> attributesFactory) {
+    public CompositeImmutableSessionFactory(ImmutableSessionMetaDataFactory<MV> metaDataFactory, ImmutableSessionAttributesFactory<AV> attributesFactory) {
         this.metaDataFactory = metaDataFactory;
         this.attributesFactory = attributesFactory;
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> findValue(String id) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.findValue(id);
+    public Map.Entry<MV, AV> findValue(String id) {
+        MV metaDataValue = this.metaDataFactory.findValue(id);
         if (metaDataValue != null) {
-            V attributesValue = this.attributesFactory.findValue(id);
+            AV attributesValue = this.attributesFactory.findValue(id);
             if (attributesValue != null) {
                 return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
             }
@@ -39,10 +41,10 @@ public class CompositeImmutableSessionFactory<V, L> implements ImmutableSessionF
     }
 
     @Override
-    public Map.Entry<CompositeSessionMetaDataEntry<L>, V> tryValue(String id) {
-        CompositeSessionMetaDataEntry<L> metaDataValue = this.metaDataFactory.tryValue(id);
+    public Map.Entry<MV, AV> tryValue(String id) {
+        MV metaDataValue = this.metaDataFactory.tryValue(id);
         if (metaDataValue != null) {
-            V attributesValue = this.attributesFactory.tryValue(id);
+            AV attributesValue = this.attributesFactory.tryValue(id);
             if (attributesValue != null) {
                 return new SimpleImmutableEntry<>(metaDataValue, attributesValue);
             }
@@ -51,12 +53,12 @@ public class CompositeImmutableSessionFactory<V, L> implements ImmutableSessionF
     }
 
     @Override
-    public ImmutableSessionMetaDataFactory<CompositeSessionMetaDataEntry<L>> getMetaDataFactory() {
+    public ImmutableSessionMetaDataFactory<MV> getMetaDataFactory() {
         return this.metaDataFactory;
     }
 
     @Override
-    public ImmutableSessionAttributesFactory<V> getAttributesFactory() {
+    public ImmutableSessionAttributesFactory<AV> getAttributesFactory() {
         return this.attributesFactory;
     }
 

@@ -1,0 +1,19 @@
+package org.wildfly.clustering.web.infinispan.session.metadata;
+
+import "java.time.proto";
+
+// IDs: 200 - 203
+
+/**
+ * @TypeId(200)
+ */
+message SessionMetaDataKey {
+	required	bytes	id	= 1;
+}
+
+/**
+ * @TypeId(202)
+ */
+enum SessionMetaDataKeyFilter {
+	INSTANCE	= 0;
+}

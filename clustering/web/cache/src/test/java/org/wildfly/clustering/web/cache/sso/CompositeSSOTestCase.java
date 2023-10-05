@@ -8,10 +8,10 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -20,7 +20,7 @@ public class CompositeSSOTestCase {
     private final String authentication = "auth";
     private final Sessions<String, String> sessions = mock(Sessions.class);
     private final AtomicReference<Object> localContext = new AtomicReference<>();
-    private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
+    private final Supplier<Object> localContextFactory = mock(Supplier.class);
     private final Remover<String> remover = mock(Remover.class);
 
     private final SSO<String, String, String, Object> sso = new CompositeSSO<>(this.id, this.authentication, this.sessions, this.localContext, this.localContextFactory, this.remover);
@@ -51,7 +51,7 @@ public class CompositeSSOTestCase {
     @Test
     public void getLocalContext() {
         Object expected = new Object();
-        when(this.localContextFactory.createLocalContext()).thenReturn(expected);
+        when(this.localContextFactory.get()).thenReturn(expected);
 
         Object result = this.sso.getLocalContext();
 

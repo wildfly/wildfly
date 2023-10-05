@@ -275,7 +275,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         if (!IDENTIFIER_MARSHALLER.validate(sessionId)) {
             return null;
         }
-        Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.createLocalContext());
+        Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.get());
         return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), null, Functions.discardingConsumer(), null) : null;
     }
 

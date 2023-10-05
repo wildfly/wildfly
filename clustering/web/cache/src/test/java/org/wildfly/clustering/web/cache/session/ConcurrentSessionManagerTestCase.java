@@ -18,6 +18,7 @@ import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.ConcurrentManager;
 import org.wildfly.clustering.ee.cache.SimpleManager;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributes;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;

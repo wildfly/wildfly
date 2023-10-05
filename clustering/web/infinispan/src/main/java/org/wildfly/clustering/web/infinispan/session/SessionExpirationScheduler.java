@@ -14,7 +14,7 @@ import org.wildfly.clustering.ee.cache.scheduler.LocalScheduler;
 import org.wildfly.clustering.ee.cache.scheduler.SortedScheduledEntries;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.infinispan.expiration.AbstractExpirationScheduler;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
@@ -53,6 +53,7 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 
         @Override
         public boolean test(String sessionId) {
+            System.out.println(String.format("Expiring web session %s", sessionId));
             InfinispanWebLogger.ROOT_LOGGER.debugf("Expiring web session %s", sessionId);
             try (Batch batch = this.batcher.createBatch()) {
                 try {

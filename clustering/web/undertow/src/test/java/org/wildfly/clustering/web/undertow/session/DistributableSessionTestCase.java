@@ -334,7 +334,7 @@ public class DistributableSessionTestCase {
 
         session.setMaxInactiveInterval(interval);
 
-        verify(metaData).setMaxInactiveInterval(Duration.ofSeconds(interval));
+        verify(metaData).setTimeout(Duration.ofSeconds(interval));
 
         verify(context).close();
         verify(this.session, never()).close();
@@ -1079,7 +1079,7 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
         when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);
@@ -1092,7 +1092,7 @@ public class DistributableSessionTestCase {
         assertSame(newSessionId, result);
 
         verify(newMetaData).setLastAccess(now, now);
-        verify(newMetaData).setMaxInactiveInterval(interval);
+        verify(newMetaData).setTimeout(interval);
         verify(config).setSessionId(exchange, newSessionId);
         assertEquals(oldContext, newContext);
         verify(this.session).invalidate();
@@ -1177,7 +1177,7 @@ public class DistributableSessionTestCase {
         when(oldAttributes.getAttribute(name)).thenReturn(value);
         when(newAttributes.setAttribute(name, value)).thenReturn(null);
         when(oldMetaData.getLastAccessStartTime()).thenReturn(now);
-        when(oldMetaData.getLastAccessTime()).thenReturn(now);
+        when(oldMetaData.getLastAccessEndTime()).thenReturn(now);
         when(oldMetaData.getTimeout()).thenReturn(interval);
         when(this.session.getId()).thenReturn(oldSessionId);
         when(newSession.getId()).thenReturn(newSessionId);

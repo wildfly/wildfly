@@ -22,6 +22,8 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
 import java.util.Random;
 
 import org.junit.Test;
@@ -50,6 +52,9 @@ public abstract class AbstractTimeTestCase {
         tester.test(Duration.ofMillis(1234567890));
         tester.test(Duration.ofSeconds(100));
         tester.test(Duration.ZERO);
+        for (ChronoUnit unit : EnumSet.of(ChronoUnit.NANOS, ChronoUnit.MICROS, ChronoUnit.MILLIS, ChronoUnit.SECONDS, ChronoUnit.MINUTES, ChronoUnit.HOURS, ChronoUnit.DAYS)) {
+            tester.test(unit.getDuration());
+        }
     }
 
     @Test

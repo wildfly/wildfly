@@ -5,16 +5,18 @@
 
 package org.wildfly.clustering.web.undertow.sso.elytron;
 
-import org.wildfly.clustering.web.LocalContextFactory;
+import java.util.function.Supplier;
+
 import org.wildfly.security.auth.server.SecurityIdentity;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalSSOContextFactory implements LocalContextFactory<LocalSSOContext> {
+public enum LocalSSOContextFactory implements Supplier<LocalSSOContext> {
+    INSTANCE;
 
     @Override
-    public LocalSSOContext createLocalContext() {
+    public LocalSSOContext get() {
         return new LocalSSOContext() {
             private volatile SecurityIdentity identity;
 

@@ -38,7 +38,7 @@
         <!-- Make sure galleon includes this module -->
         <module name="org.wildfly.clustering.server.infinispan" optional="true"/>
         <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.clustering.web.cache" services="import"/>
+        <module name="org.wildfly.clustering.web.cache"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>

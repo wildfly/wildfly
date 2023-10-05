@@ -35,7 +35,7 @@
         <module name="org.wildfly.clustering.marshalling.protostream"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
-        <module name="org.wildfly.clustering.web.cache" services="import"/>
+        <module name="org.wildfly.clustering.web.cache"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>

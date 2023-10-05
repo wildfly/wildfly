@@ -6,8 +6,6 @@
 package org.wildfly.clustering.web.cache.sso.coarse;
 
 import org.infinispan.protostream.SerializationContext;
-import org.infinispan.protostream.SerializationContextInitializer;
-import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -15,7 +13,6 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(SerializationContextInitializer.class)
 public class CoarseSSOSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override

@@ -19,7 +19,7 @@ public interface ImmutableSessionMetaData extends ExpirationMetaData {
      * @return true, if this session is new, false otherwise
      */
     default boolean isNew() {
-        return this.getCreationTime().equals(this.getLastAccessStartTime());
+        return this.getLastAccessStartTime().equals(this.getLastAccessEndTime());
     }
 
     /**
@@ -33,4 +33,15 @@ public interface ImmutableSessionMetaData extends ExpirationMetaData {
      * @return the start time of the last request to access this session.
      */
     Instant getLastAccessStartTime();
+
+    /**
+     * Returns the start time of the last request to access this session.
+     * @return the start time of the last request to access this session.
+     */
+    Instant getLastAccessEndTime();
+
+    @Override
+    default Instant getLastAccessTime() {
+        return this.getLastAccessEndTime();
+    }
 }

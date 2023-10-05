@@ -7,9 +7,8 @@ package org.wildfly.clustering.web.infinispan;
 
 import org.junit.Test;
 import org.wildfly.clustering.infinispan.persistence.KeyMapperTester;
-import org.wildfly.clustering.web.infinispan.session.SessionAccessMetaDataKey;
-import org.wildfly.clustering.web.infinispan.session.SessionAttributesKey;
-import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.attributes.SessionAttributesKey;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.web.infinispan.sso.AuthenticationKey;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKey;
 
@@ -23,8 +22,7 @@ public class KeyMapperTestCase {
 
         String id = "ABC123";
 
-        tester.test(new SessionCreationMetaDataKey(id));
-        tester.test(new SessionAccessMetaDataKey(id));
+        tester.test(new SessionMetaDataKey(id));
         tester.test(new SessionAttributesKey(id));
 
         tester.test(new AuthenticationKey(id));

@@ -27,7 +27,6 @@ import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
@@ -44,11 +43,11 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     private final SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory;
     private final SupplierDependency<SessionIdGenerator> generator;
     private final SupplierDependency<ModuleLoader> loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
-    private final LocalContextFactory<L> localContextFactory;
+    private final Supplier<L> localContextFactory;
 
     private volatile ByteBufferMarshaller marshaller;
 
-    public SSOManagerServiceConfigurator(ServiceName name, SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory, SupplierDependency<SessionIdGenerator> generator, LocalContextFactory<L> localContextFactory) {
+    public SSOManagerServiceConfigurator(ServiceName name, SupplierDependency<SSOManagerFactory<A, D, S, Batch>> factory, SupplierDependency<SessionIdGenerator> generator, Supplier<L> localContextFactory) {
         super(name);
         this.factory = factory;
         this.generator = generator;
@@ -83,7 +82,7 @@ public class SSOManagerServiceConfigurator<A, D, S, L> extends SimpleServiceName
     }
 
     @Override
-    public LocalContextFactory<L> getLocalContextFactory() {
+    public Supplier<L> getLocalContextFactory() {
         return this.localContextFactory;
     }
 

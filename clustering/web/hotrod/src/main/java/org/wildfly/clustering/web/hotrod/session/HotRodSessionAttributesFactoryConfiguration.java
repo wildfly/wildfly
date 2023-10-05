@@ -6,7 +6,7 @@
 package org.wildfly.clustering.web.hotrod.session;
 
 import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
-import org.wildfly.clustering.web.cache.session.SessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.cache.session.attributes.SessionAttributesFactoryConfiguration;
 
 /**
  * @author Paul Ferraro
