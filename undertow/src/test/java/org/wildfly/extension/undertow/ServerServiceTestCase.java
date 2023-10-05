@@ -44,7 +44,6 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
 
     public ServerServiceTestCase(UndertowSubsystemSchema schema) {
         super(schema);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
