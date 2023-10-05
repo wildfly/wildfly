@@ -362,7 +362,7 @@
             Properties for dependencies that solely relate to maven plugins go in the plugin section above.
             Properties for dependencies that solely relate to tests go in the test code section above.
          -->
-        <version.antlr>4.10</version.antlr>
+        <version.antlr>4.10.1</version.antlr>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.15.2</version.com.fasterxml.jackson>
