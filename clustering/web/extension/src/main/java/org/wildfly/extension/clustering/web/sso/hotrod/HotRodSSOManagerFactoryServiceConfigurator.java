@@ -20,19 +20,19 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
-import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSSOManagerFactoryConfiguration {
+public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodConfiguration {
 
     private final String name;
     private final HotRodSSOManagementConfiguration config;
@@ -73,7 +73,7 @@ public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleS
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K, V> RemoteCache<K, V> getRemoteCache() {
+    public <K, V> RemoteCache<K, V> getCache() {
         return (RemoteCache<K, V>) this.cache.get();
     }
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.common.function.Functions;
@@ -23,16 +24,18 @@ import org.wildfly.common.function.Functions;
 public class RemoteCacheEntryComputeMutator<K, V> implements Mutator {
 
     private final RemoteCache<K, V> cache;
+    private final Flag[] flags;
     private final K key;
     private final BiFunction<Object, V, V> function;
     private final Supplier<Duration> maxIdle;
 
-    public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function) {
-        this(cache, key, function, Functions.constantSupplier(Duration.ZERO));
+    public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function) {
+        this(cache, flags, key, function, Functions.constantSupplier(Duration.ZERO));
     }
 
-    public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
+    public RemoteCacheEntryComputeMutator(RemoteCache<K, V> cache, Flag[] flags, K key, BiFunction<Object, V, V> function, Supplier<Duration> maxIdle) {
         this.cache = cache;
+        this.flags = flags;
         this.key = key;
         this.function = function;
         this.maxIdle = maxIdle;
@@ -46,6 +49,6 @@ public class RemoteCacheEntryComputeMutator<K, V> implements Mutator {
         if (nanos > 0) {
             seconds += 1;
         }
-        this.cache.compute(this.key, this.function, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS);
+        this.cache.withFlags(this.flags).compute(this.key, this.function, 0, TimeUnit.SECONDS, seconds, TimeUnit.SECONDS);
     }
 }

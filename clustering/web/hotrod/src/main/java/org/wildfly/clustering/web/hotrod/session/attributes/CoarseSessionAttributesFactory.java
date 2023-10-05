@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
@@ -35,6 +36,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final RemoteCache<SessionAttributesKey, V> cache;
+    private final Flag[] ignoreReturnFlags;
     private final Marshaller<Map<String, Object>, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
@@ -43,10 +45,11 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     public CoarseSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Map<String, Object>, V> configuration) {
         this.cache = configuration.getCache();
+        this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
-        this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache);
+        this.mutatorFactory = new RemoteCacheMutatorFactory<>(this.cache, this.ignoreReturnFlags);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
@@ -55,7 +58,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         Map<String, Object> attributes = new ConcurrentHashMap<>();
         try {
             V value = this.marshaller.write(attributes);
-            this.cache.put(new SessionAttributesKey(id), value);
+            this.cache.withFlags(this.ignoreReturnFlags).put(new SessionAttributesKey(id), value);
             return attributes;
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -94,7 +97,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public boolean remove(String id) {
-        this.cache.remove(new SessionAttributesKey(id));
+        this.cache.withFlags(this.ignoreReturnFlags).remove(new SessionAttributesKey(id));
         return true;
     }
 }

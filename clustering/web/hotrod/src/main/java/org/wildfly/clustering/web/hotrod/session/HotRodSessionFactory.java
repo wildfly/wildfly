@@ -56,6 +56,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(HotRodSessionFactory.class);
 
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache;
+    private final Flag[] forceReturnFlags;
     private final ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory;
     private final ImmutableSessionAttributesFactory<AV> attributesFactory;
     private final Remover<String> attributesRemover;
@@ -75,6 +76,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
         this.attributesFactory = attributesFactory;
         this.attributesRemover = attributesFactory;
         this.creationMetaDataCache = config.getCache();
+        this.forceReturnFlags = config.getForceReturnFlags();
         this.executor = Executors.newFixedThreadPool(config.getExpirationThreadPoolSize(), THREAD_FACTORY);
         this.creationMetaDataCache.addClientListener(this);
     }
@@ -93,6 +95,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
     @ClientCacheEntryExpired
     public void expired(ClientCacheEntryExpiredEvent<SessionAccessMetaDataKey> event) {
         RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<LC>> creationMetaDataCache = this.creationMetaDataCache;
+        Flag[] forceReturnFlags = this.forceReturnFlags;
         ImmutableSessionMetaDataFactory<SessionMetaDataEntry<LC>> metaDataFactory = this.metaDataFactory;
         ImmutableSessionAttributesFactory<AV> attributesFactory = this.attributesFactory;
         Remover<String> attributesRemover = this.attributesRemover;
@@ -101,7 +104,7 @@ public class HotRodSessionFactory<MC, AV, LC> extends CompositeSessionFactory<MC
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                SessionCreationMetaDataEntry<LC> creationMetaDataEntry = creationMetaDataCache.withFlags(Flag.FORCE_RETURN_VALUE).remove(new SessionCreationMetaDataKey(id));
+                SessionCreationMetaDataEntry<LC> creationMetaDataEntry = creationMetaDataCache.withFlags(forceReturnFlags).remove(new SessionCreationMetaDataKey(id));
                 if (creationMetaDataEntry != null) {
                     AV attributesValue = attributesFactory.findValue(id);
                     if (attributesValue != null) {

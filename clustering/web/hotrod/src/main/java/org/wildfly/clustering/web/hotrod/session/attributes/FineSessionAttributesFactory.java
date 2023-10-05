@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.MutatorFactory;
@@ -38,6 +39,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttributesFactory<C, Map<String, Object>> {
 
     private final RemoteCache<SessionAttributesKey, Map<String, V>> cache;
+    private final Flag[] ignoreReturnFlags;
     private final Marshaller<Object, V> marshaller;
     private final Immutability immutability;
     private final CacheProperties properties;
@@ -46,10 +48,11 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     public FineSessionAttributesFactory(HotRodSessionAttributesFactoryConfiguration<S, C, L, Object, V> configuration) {
         this.cache = configuration.getCache();
+        this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
-        this.mutatorFactory = new RemoteCacheComputeMutatorFactory<>(this.cache, SessionAttributeMapComputeFunction::new);
+        this.mutatorFactory = new RemoteCacheComputeMutatorFactory<>(this.cache, this.ignoreReturnFlags, SessionAttributeMapComputeFunction::new);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
     }
 
@@ -90,7 +93,7 @@ public class FineSessionAttributesFactory<S, C, L, V> implements SessionAttribut
 
     @Override
     public boolean remove(String id) {
-        this.cache.remove(new SessionAttributesKey(id));
+        this.cache.withFlags(this.ignoreReturnFlags).remove(new SessionAttributesKey(id));
         return true;
     }
 

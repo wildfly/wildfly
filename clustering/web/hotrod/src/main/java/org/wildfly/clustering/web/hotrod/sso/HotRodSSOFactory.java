@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.sso.AuthenticationEntry;
 import org.wildfly.clustering.web.cache.sso.CompositeSSO;
@@ -28,11 +30,13 @@ public class HotRodSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entr
 
     private final SessionsFactory<SV, D, S> sessionsFactory;
     private final RemoteCache<AuthenticationKey, AuthenticationEntry<AV, L>> cache;
+    private final Flag[] ignoreReturnFlags;
     private final Marshaller<A, AV> marshaller;
     private final Supplier<L> localContextFactory;
 
-    public HotRodSSOFactory(RemoteCache<AuthenticationKey, AuthenticationEntry<AV, L>> cache, Marshaller<A, AV> marshaller, Supplier<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
-        this.cache = cache;
+    public HotRodSSOFactory(HotRodConfiguration configuration, Marshaller<A, AV> marshaller, Supplier<L> localContextFactory, SessionsFactory<SV, D, S> sessionsFactory) {
+        this.cache = configuration.getCache();
+        this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
         this.marshaller = marshaller;
         this.localContextFactory = localContextFactory;
         this.sessionsFactory = sessionsFactory;
@@ -49,7 +53,7 @@ public class HotRodSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entr
     public Map.Entry<Map.Entry<A, AtomicReference<L>>, SV> createValue(String id, A authentication) {
         try {
             AuthenticationEntry<AV, L> entry = new AuthenticationEntry<>(this.marshaller.write(authentication));
-            this.cache.put(new AuthenticationKey(id), entry);
+            this.cache.withFlags(this.ignoreReturnFlags).put(new AuthenticationKey(id), entry);
             SV sessions = this.sessionsFactory.createValue(id, null);
             return new AbstractMap.SimpleImmutableEntry<>(new AbstractMap.SimpleImmutableEntry<>(authentication, entry.getLocalContext()), sessions);
         } catch (IOException e) {
@@ -77,7 +81,7 @@ public class HotRodSSOFactory<AV, SV, A, D, S, L> implements SSOFactory<Map.Entr
 
     @Override
     public boolean remove(String id) {
-        this.cache.remove(new AuthenticationKey(id));
+        this.cache.withFlags(this.ignoreReturnFlags).remove(new AuthenticationKey(id));
         this.sessionsFactory.remove(id);
         return true;
     }
