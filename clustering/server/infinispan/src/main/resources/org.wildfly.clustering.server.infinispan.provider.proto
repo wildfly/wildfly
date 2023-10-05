@@ -1,7 +1,5 @@
 package org.wildfly.clustering.server.infinispan.provider;
 
-import "org.jgroups.stack.proto";
-import "org.jgroups.util.proto";
 import "org.infinispan.remoting.transport.jgroups.proto";
 
 // IDs: 140 -144

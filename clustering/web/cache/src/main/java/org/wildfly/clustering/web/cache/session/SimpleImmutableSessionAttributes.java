@@ -5,9 +5,10 @@
 package org.wildfly.clustering.web.cache.session;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
@@ -20,11 +21,11 @@ public class SimpleImmutableSessionAttributes implements ImmutableSessionAttribu
     private final Map<String, Object> attributes;
 
     public SimpleImmutableSessionAttributes(ImmutableSessionAttributes attributes) {
-        Map<String, Object> map = new HashMap<>();
-        for (String name: attributes.getAttributeNames()) {
-            map.put(name, attributes.getAttribute(name));
-        }
-        this.attributes = Collections.unmodifiableMap(map);
+        this(attributes.getAttributeNames().stream().collect(Collectors.toMap(Function.identity(), attributes::getAttribute)));
+    }
+
+    public SimpleImmutableSessionAttributes(Map<String, Object> attributes) {
+        this.attributes = Collections.unmodifiableMap(attributes);
     }
 
     @Override

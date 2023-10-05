@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.clustering.web.infinispan.session.coarse;
+package org.wildfly.clustering.web.infinispan.session;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.spi.Formatter;

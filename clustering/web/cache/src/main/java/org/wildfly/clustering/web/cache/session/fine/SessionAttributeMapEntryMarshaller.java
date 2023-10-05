@@ -6,52 +6,56 @@
 package org.wildfly.clustering.web.cache.session.fine;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.clustering.marshalling.protostream.util.UUIDBuilder;
-import org.wildfly.clustering.marshalling.protostream.util.UUIDMarshaller;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
 
 /**
- * {@link ProtoStreamMarshaller} for a session attribute map entry.
  * @author Paul Ferraro
  */
-public enum SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<Map.Entry<String, UUID>> {
-    INSTANCE;
+public class SessionAttributeMapEntryMarshaller implements ProtoStreamMarshaller<SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>>> {
 
-    private static final int ATTRIBUTE_NAME_INDEX = 1;
-    private static final int ATTRIBUTE_ID_INDEX = 2;
+    private static final int NAME_INDEX = 1;
+    private static final int VALUE_INDEX = 2;
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>>> getJavaClass() {
+        return (Class<SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>>>) (Class<?>) SessionAttributeMapEntry.class;
+    }
 
     @Override
-    public Map.Entry<String, UUID> readFrom(ProtoStreamReader reader) throws IOException {
-        String attributeName = null;
-        UUIDBuilder attributeIdBuilder = UUIDMarshaller.INSTANCE.getBuilder();
+    public SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>> readFrom(ProtoStreamReader reader) throws IOException {
+        String name = null;
+        ByteBufferMarshalledValue<Object> value = null;
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireType.getTagFieldNumber(tag);
-            if (index == ATTRIBUTE_NAME_INDEX) {
-                attributeName = reader.readString();
-            } else if (index >= ATTRIBUTE_ID_INDEX && index < ATTRIBUTE_ID_INDEX + UUIDMarshaller.INSTANCE.getFields()) {
-                attributeIdBuilder = UUIDMarshaller.INSTANCE.readField(reader, index - ATTRIBUTE_ID_INDEX, attributeIdBuilder);
-            } else {
-                reader.skipField(tag);
+            switch (WireType.getTagFieldNumber(tag)) {
+                case NAME_INDEX:
+                    name = reader.readString();
+                    break;
+                case VALUE_INDEX:
+                    value = reader.readObject(ByteBufferMarshalledValue.class);
+                    break;
+                default:
+                    reader.skipField(tag);
             }
         }
-        return new SessionAttributeMapEntry(attributeName, attributeIdBuilder.build());
+        return new SessionAttributeMapEntry<>(name, value);
     }
 
     @Override
-    public void writeTo(ProtoStreamWriter writer, Map.Entry<String, UUID> entry) throws IOException {
-        writer.writeString(ATTRIBUTE_NAME_INDEX, entry.getKey());
-        UUIDMarshaller.INSTANCE.writeFields(writer, ATTRIBUTE_ID_INDEX, entry.getValue());
-    }
-
-    @Override
-    public Class<? extends SessionAttributeMapEntry> getJavaClass() {
-        return SessionAttributeMapEntry.class;
+    public void writeTo(ProtoStreamWriter writer, SessionAttributeMapEntry<ByteBufferMarshalledValue<Object>> entry) throws IOException {
+        String name = entry.getKey();
+        if (name != null) {
+            writer.writeString(NAME_INDEX, name);
+        }
+        ByteBufferMarshalledValue<Object> value = entry.getValue();
+        if (value != null) {
+            writer.writeObject(VALUE_INDEX, value);
+        }
     }
 }

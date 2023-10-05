@@ -3,17 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.clustering.web.hotrod.session.coarse;
+package org.wildfly.clustering.web.hotrod.session;
 
 import java.io.IOException;
 
 import org.junit.Test;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
-/**
- * Unit test for {@link SessionAttributesKeyExternalizer}.
- * @author Paul Ferraro
- */
 public class SessionAttributesKeyMarshallerTestCase {
 
     @Test

@@ -14,16 +14,16 @@ import org.wildfly.clustering.ee.cache.CacheProperties;
  * Factory for creating {@link Mutator} objects for an Infinispan cache.
  * @author Paul Ferraro
  */
-public class InfinispanMutatorFactory<K, V> implements MutatorFactory<K, V> {
+public class CacheMutatorFactory<K, V> implements MutatorFactory<K, V> {
 
     private final Cache<K, V> cache;
     private final CacheProperties properties;
 
-    public InfinispanMutatorFactory(Cache<K, V> cache) {
+    public CacheMutatorFactory(Cache<K, V> cache) {
         this(cache, new InfinispanCacheProperties(cache.getCacheConfiguration()));
     }
 
-    public InfinispanMutatorFactory(Cache<K, V> cache, CacheProperties properties) {
+    public CacheMutatorFactory(Cache<K, V> cache, CacheProperties properties) {
         this.cache = cache;
         this.properties = properties;
     }

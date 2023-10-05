@@ -16,7 +16,7 @@ import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.infinispan.InfinispanMutatorFactory;
+import org.wildfly.clustering.ee.infinispan.CacheMutatorFactory;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
@@ -28,10 +28,11 @@ import org.wildfly.clustering.web.cache.session.SessionActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFactory;
-import org.wildfly.clustering.web.cache.session.coarse.CoarseImmutableSessionAttributes;
+import org.wildfly.clustering.web.cache.session.SimpleImmutableSessionAttributes;
 import org.wildfly.clustering.web.cache.session.coarse.CoarseSessionAttributes;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionAttributesFactoryConfiguration;
+import org.wildfly.clustering.web.infinispan.session.SessionAttributesKey;
 import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.session.HttpSessionActivationListenerProvider;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
@@ -63,7 +64,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
         this.marshaller = configuration.getMarshaller();
         this.immutability = configuration.getImmutability();
         this.properties = configuration.getCacheProperties();
-        this.mutatorFactory = new InfinispanMutatorFactory<>(this.cache, this.properties);
+        this.mutatorFactory = new CacheMutatorFactory<>(this.cache, this.properties);
         this.provider = configuration.getHttpSessionActivationListenerProvider();
         this.notifierFactory = configuration.getActivationNotifierFactory();
         this.prePassivateListenerRegistration = !this.properties.isPersistent() ? new PrePassivateBlockingListener<>(this.cache, this::prePassivate).register(SessionAttributesKey.class) : null;
@@ -147,7 +148,7 @@ public class CoarseSessionAttributesFactory<S, C, L, V> implements SessionAttrib
 
     @Override
     public ImmutableSessionAttributes createImmutableSessionAttributes(String id, Map<String, Object> values) {
-        return new CoarseImmutableSessionAttributes(values);
+        return new SimpleImmutableSessionAttributes(values);
     }
 
     private void cascadeEvict(SessionCreationMetaDataKey key) {

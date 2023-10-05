@@ -72,13 +72,12 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  exte
         NearCacheMode mode = (maxActiveSessions != null) && (maxActiveSessions > 0) ? NearCacheMode.INVALIDATED : NearCacheMode.DISABLED;
         String configurationName = this.configuration.getConfigurationName();
         String templateName = (configurationName != null) ? configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
-        SessionAttributePersistenceStrategy strategy = this.getAttributePersistenceStrategy();
         this.cacheConfigurator = new RemoteCacheServiceConfigurator<>(this.getServiceName().append("cache"), this.configuration.getContainerName(), this.getDeploymentName(), new Consumer<RemoteCacheConfigurationBuilder>() {
             @Override
             public void accept(RemoteCacheConfigurationBuilder builder) {
                 builder.forceReturnValues(false).nearCacheMode(mode).templateName(templateName).transactionMode(TransactionMode.NONE);
                 if (mode.invalidated()) {
-                    builder.nearCacheFactory(new SessionManagerNearCacheFactory(maxActiveSessions, strategy));
+                    builder.nearCacheFactory(new SessionManagerNearCacheFactory(maxActiveSessions));
                 }
             }
         }).configure(support);

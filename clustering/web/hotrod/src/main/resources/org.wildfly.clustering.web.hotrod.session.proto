@@ -15,3 +15,10 @@ message SessionCreationMetaDataKey {
 message SessionAccessMetaDataKey {
 	required	bytes	id	= 1;
 }
+
+/**
+ * @TypeId(202)
+ */
+message SessionAttributesKey {
+	required	bytes	id	= 1;
+}

@@ -2,52 +2,42 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package org.wildfly.clustering.web.cache.session.fine;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.function.Function;
 
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.UUIDFactory;
+import org.wildfly.clustering.ee.MutatorFactory;
 import org.wildfly.clustering.ee.cache.CacheProperties;
-import org.wildfly.clustering.ee.cache.function.MapComputeFunction;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
 import org.wildfly.clustering.web.cache.session.SessionAttributeActivationNotifier;
 import org.wildfly.clustering.web.cache.session.SessionAttributes;
+import org.wildfly.clustering.web.cache.session.SimpleImmutableSessionAttributes;
 
 /**
- * Exposes session attributes for fine granularity sessions.
+ * Exposes session attributes for a fine granularity sessions.
  * @author Paul Ferraro
  */
-public class FineSessionAttributes<NK, AK, AV> extends FineImmutableSessionAttributes implements SessionAttributes {
+public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttributes implements SessionAttributes {
 
-    private final Map<NK, Map<String, UUID>> namesCache;
-    private final Map<AK, AV> attributeCache;
-    private final NK namesKey;
-    private final Map<String, UUID> names;
-    private final Map<UUID, Object> attributes;
-    private final Marshaller<Object, AV> marshaller;
-    private final Function<UUID, AK> keyFactory;
+    private final K key;
+    private final Map<String, Object> attributes;
+    private final Marshaller<Object, V> marshaller;
+    private final MutatorFactory<K, Map<String, V>> mutatorFactory;
     private final Immutability immutability;
     private final CacheProperties properties;
     private final SessionAttributeActivationNotifier notifier;
-    private final Map<String, UUID> nameUpdates = new TreeMap<>();
-    private final Map<UUID, Object> updates = new TreeMap<>();
+    private final Map<String, Object> updates = new TreeMap<>();
 
-    public FineSessionAttributes(Map<NK, Map<String, UUID>> namesCache, NK namesKey, Map<String, UUID> names, Map<AK, AV> attributeCache, Function<UUID, AK> keyFactory, Map<UUID, Object> attributes, Marshaller<Object, AV> marshaller, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
-        super(names, attributes);
-        this.namesCache = namesCache;
-        this.namesKey = namesKey;
-        this.names = names;
-        this.attributeCache = attributeCache;
-        this.keyFactory = keyFactory;
+    public FineSessionAttributes(K key, Map<String, Object> attributes, MutatorFactory<K, Map<String, V>> mutatorFactory, Marshaller<Object, V> marshaller, Immutability immutability, CacheProperties properties, SessionAttributeActivationNotifier notifier) {
+        super(attributes);
+        this.key = key;
         this.attributes = attributes;
+        this.mutatorFactory = mutatorFactory;
         this.marshaller = marshaller;
         this.immutability = immutability;
         this.properties = properties;
@@ -62,14 +52,13 @@ public class FineSessionAttributes<NK, AK, AV> extends FineImmutableSessionAttri
 
     @Override
     public Object getAttribute(String name) {
-        UUID id = this.names.get(name);
-        Object value = (id != null) ? this.attributes.get(id) : null;
+        Object value = this.attributes.get(name);
 
         if (value != null) {
             // If the object is mutable, we need to mutate this value on close
             if (!this.immutability.test(value)) {
                 synchronized (this.updates) {
-                    this.updates.put(id, value);
+                    this.updates.put(name, value);
                 }
             }
         }
@@ -79,19 +68,11 @@ public class FineSessionAttributes<NK, AK, AV> extends FineImmutableSessionAttri
 
     @Override
     public Object removeAttribute(String name) {
-        UUID id = this.names.remove(name);
-
-        if (id != null) {
-            synchronized (this.nameUpdates) {
-                this.nameUpdates.put(name, null);
-            }
-        }
-
-        Object result = (id != null) ? this.attributes.remove(id) : null;
+        Object result = this.attributes.remove(name);
 
         if (result != null) {
             synchronized (this.updates) {
-                this.updates.put(id, null);
+                this.updates.put(name, null);
             }
         }
 
@@ -108,21 +89,11 @@ public class FineSessionAttributes<NK, AK, AV> extends FineImmutableSessionAttri
             throw new IllegalArgumentException(new NotSerializableException(value.getClass().getName()));
         }
 
-        UUID id = UUIDFactory.INSECURE.get();
-        UUID existing = this.names.putIfAbsent(name, id);
-        if (existing == null) {
-            synchronized (this.nameUpdates) {
-                this.nameUpdates.put(name, id);
-            }
-        } else {
-            id = existing;
-        }
-
-        Object result = this.attributes.put(id, value);
+        Object result = this.attributes.put(name, value);
 
         if (value != result) {
             synchronized (this.updates) {
-                this.updates.put(id, value);
+                this.updates.put(name, value);
             }
         }
 
@@ -136,35 +107,21 @@ public class FineSessionAttributes<NK, AK, AV> extends FineImmutableSessionAttri
                 this.notifier.prePassivate(value);
             }
         }
-        Set<AK> removals = new TreeSet<>();
         synchronized (this.updates) {
             if (!this.updates.isEmpty()) {
-                Map<AK, AV> updates = new TreeMap<>();
-                for (Map.Entry<UUID, Object> entry : this.updates.entrySet()) {
-                    AK key = this.keyFactory.apply(entry.getKey());
+                Map<String, V> updates = new TreeMap<>();
+                for (Map.Entry<String, Object> entry : this.updates.entrySet()) {
+                    String name = entry.getKey();
                     Object value = entry.getValue();
-                    if (value != null) {
-                        updates.put(key, this.write(value));
-                    } else {
-                        removals.add(key);
-                    }
+                    updates.put(name, (value != null) ? this.write(value) : null);
                 }
-                if (!updates.isEmpty()) {
-                    this.attributeCache.putAll(updates);
-                }
+
+                this.mutatorFactory.createMutator(this.key, updates).mutate();
             }
-        }
-        synchronized (this.nameUpdates) {
-            if (!this.nameUpdates.isEmpty()) {
-                this.namesCache.compute(this.namesKey, new MapComputeFunction<>(this.nameUpdates));
-            }
-        }
-        for (AK key : removals) {
-            this.attributeCache.remove(key);
         }
     }
 
-    private AV write(Object value) {
+    private V write(Object value) {
         try {
             return this.marshaller.write(value);
         } catch (IOException e) {

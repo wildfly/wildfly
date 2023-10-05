@@ -5,18 +5,54 @@
 
 package org.wildfly.clustering.web.cache.session.fine;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.UUID;
+import java.util.Map;
 
 /**
- * {@link java.util.Map.Entry} for a session attribute.
- * Used to optimize the marshalling of {@link java.util.Map#put(Object, Object)} functions.
  * @author Paul Ferraro
  */
-public class SessionAttributeMapEntry extends SimpleImmutableEntry<String, UUID> {
-    private static final long serialVersionUID = -6446474741366055972L;
+public class SessionAttributeMapEntry<V> implements Map.Entry<String, V> {
 
-    public SessionAttributeMapEntry(String key, UUID value) {
-        super(key, value);
+    private final String name;
+    private final V value;
+
+    public SessionAttributeMapEntry(Map.Entry<String, V> entry) {
+        this(entry.getKey(), entry.getValue());
+    }
+
+    public SessionAttributeMapEntry(String name, V value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    @Override
+    public String getKey() {
+        return this.name;
+    }
+
+    @Override
+    public V getValue() {
+        return this.value;
+    }
+
+    @Override
+    public V setValue(V value) {
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof Map.Entry)) return false;
+        Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+        return this.name.equals(entry.getKey()) && this.value.equals(entry.getValue());
+    }
+
+    @Override
+    public String toString() {
+        return Map.entry(this.name, this.value).toString();
     }
 }
