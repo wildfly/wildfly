@@ -994,8 +994,6 @@
                                     <systemPropertyVariables>
                                         <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                                     </systemPropertyVariables>
-                                    <!-- These include a module to be used which currently uses javax and is not transformed -->
-                                    <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
                                 </configuration>
                             </execution>
                             <execution>
