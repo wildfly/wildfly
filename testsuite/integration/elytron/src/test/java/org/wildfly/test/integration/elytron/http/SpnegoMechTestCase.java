@@ -24,35 +24,25 @@ import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.directory.api.ldap.model.entry.DefaultEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifReader;
-import org.apache.directory.api.ldap.model.schema.SchemaManager;
-import org.apache.directory.server.annotations.CreateKdcServer;
-import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ContextEntry;
-import org.apache.directory.server.core.annotations.CreateDS;
-import org.apache.directory.server.core.annotations.CreatePartition;
-import org.apache.directory.server.core.api.DirectoryService;
-import org.apache.directory.server.core.factory.DSAnnotationProcessor;
-import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
-import org.apache.directory.server.kerberos.kdc.KdcServer;
-import org.apache.directory.server.kerberos.shared.crypto.encryption.KerberosKeyFactory;
-import org.apache.directory.server.kerberos.shared.keytab.Keytab;
-import org.apache.directory.server.kerberos.shared.keytab.KeytabEntry;
-import org.apache.directory.shared.kerberos.KerberosTime;
-import org.apache.directory.shared.kerberos.codec.types.EncryptionType;
-import org.apache.directory.shared.kerberos.components.EncryptionKey;
+import org.apache.kerby.kerberos.kerb.KrbException;
+import org.apache.kerby.kerberos.kerb.client.KrbConfig;
+import org.apache.kerby.kerberos.kerb.common.EncryptionUtil;
+import org.apache.kerby.kerberos.kerb.keytab.Keytab;
+import org.apache.kerby.kerberos.kerb.keytab.KeytabEntry;
+import org.apache.kerby.kerberos.kerb.type.KerberosTime;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.kerby.kerberos.kerb.server.SimpleKdcServer;
+import org.apache.kerby.kerberos.kerb.server.impl.DefaultInternalKdcServerImpl;
+import org.apache.kerby.kerberos.kerb.type.base.EncryptionKey;
+import org.apache.kerby.kerberos.kerb.type.base.PrincipalName;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSManager;
@@ -66,7 +56,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
-import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
@@ -101,6 +90,9 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
     private static final String CHALLENGE_PREFIX = "Negotiate ";
     private static final File KRB5_CONF = new File(SpnegoMechTestCase.class.getResource(NAME + "-krb5.conf").getFile());
     private static final boolean DEBUG = false;
+    private static final String SERVER_PRINCIPAL = "HTTP/localhost@WILDFLY.ORG";
+    private static final String PRINCIPAL = "user1@WILDFLY.ORG";
+    private static final String PRINCIPAL_PASSWORD = "password1";
 
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
@@ -125,7 +117,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
         final Krb5LoginConfiguration krb5Configuration = new Krb5LoginConfiguration(Utils.getLoginConfiguration());
         Configuration.setConfiguration(krb5Configuration);
 
-        LoginContext lc = Utils.loginWithKerberos(krb5Configuration, "user1@WILDFLY.ORG", "password1");
+        LoginContext lc = Utils.loginWithKerberos(krb5Configuration, PRINCIPAL, PRINCIPAL_PASSWORD);
         Subject.doAs(lc.getSubject(), (PrivilegedExceptionAction<Void>) () -> {
             try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
@@ -174,49 +166,33 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
     /**
      * A setup task which configures and starts Kerberos KDC server.
      */
-    @CreateDS(
-            name = "JBossDS-SpnegoMechTestCase",
-            factory = org.jboss.as.test.integration.ldap.InMemoryDirectoryServiceFactory.class,
-            partitions = {
-                    @CreatePartition(
-                            name = "wildfly",
-                            suffix = "dc=wildfly,dc=org",
-                            contextEntry = @ContextEntry(
-                                    entryLdif = "dn: dc=wildfly,dc=org\n" +
-                                                "dc: wildfly\n" +
-                                                "objectClass: top\n" +
-                                                "objectClass: domain\n\n"))
-            },
-            additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateKdcServer(
-            primaryRealm = "WILDFLY.ORG",
-            kdcPrincipal = "krbtgt/WILDFLY.ORG@WILDFLY.ORG",
-            searchBaseDn = "dc=wildfly,dc=org",
-            transports = {
-                    @CreateTransport(protocol = "UDP", port = 6088)
-            })
     static class KDCServerSetupTask implements ServerSetupTask {
 
-        private DirectoryService directoryService;
-        private KdcServer kdcServer;
+        private SimpleKdcServer simpleKdcServer;
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            directoryService = DSAnnotationProcessor.getDirectoryService();
-            final SchemaManager schemaManager = directoryService.getSchemaManager();
-            for (LdifEntry ldifEntry : new LdifReader(SpnegoMechTestCase.class.getResourceAsStream(NAME + ".ldif"))) {
-                directoryService.getAdminSession().add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
-            }
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, "localhost");
+
+            simpleKdcServer = new SimpleKdcServer();
+            simpleKdcServer.setKdcHost("localhost");
+            simpleKdcServer.setKdcRealm("WILDFLY.ORG");
+            simpleKdcServer.setAllowUdp(true);
+            simpleKdcServer.setKdcUdpPort(6088);
+            simpleKdcServer.setInnerKdcImpl(new DefaultInternalKdcServerImpl(simpleKdcServer.getKdcSetting()));
+
+            simpleKdcServer.init();
+
+            simpleKdcServer.createPrincipal(SERVER_PRINCIPAL,"httppwd");
+            simpleKdcServer.createPrincipal(PRINCIPAL, PRINCIPAL_PASSWORD);
+
             System.out.println("Starting kerberos");
+            simpleKdcServer.start();
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            System.out.println("Stopping kerberos");
-            kdcServer.stop();
-            directoryService.shutdown();
-            FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
+            System.out.println("Stopping kerby");
+            simpleKdcServer.stop();
         }
     }
 
@@ -226,13 +202,12 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
      */
     static class ServerSetup extends AbstractMechTestBase.ServerSetup {
 
-        private static final String SERVER_PRINCIPAL = "HTTP/localhost@WILDFLY.ORG";
         private static final String SERVER_KEY_TAB = NAME + ".keytab";
         private static final File WORK_DIR = new File("target" + File.separatorChar + NAME);
 
         private final File SERVER_KEY_TAB_FILE = new File(WORK_DIR, SERVER_KEY_TAB);
 
-        public ServerSetup() throws IOException {
+        public ServerSetup() throws IOException, KrbException {
             FileUtils.deleteDirectory(WORK_DIR);
             WORK_DIR.mkdirs();
             generateKeyTab(SERVER_KEY_TAB_FILE, SERVER_PRINCIPAL, "httppwd");
@@ -270,7 +245,7 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
 
             // create properties-realm
             elements.add(PropertiesRealm.builder().withName(NAME)
-                    .withUser("user1@WILDFLY.ORG", "", "Role1")
+                    .withUser(PRINCIPAL, "", "Role1")
                     .build());
 
             // create security-domain
@@ -295,23 +270,23 @@ public class SpnegoMechTestCase extends AbstractMechTestBase {
                     .build();
         }
 
-        private void generateKeyTab(File keyTabFile, String... credentials) throws IOException {
+        private void generateKeyTab(File keyTabFile, String... credentials) throws IOException, KrbException {
             List<KeytabEntry> entries = new ArrayList<>();
             KerberosTime ktm = new KerberosTime();
+            KrbConfig krbConfig = new KrbConfig();
 
             for (int i = 0; i < credentials.length;) {
                 String principal = credentials[i++];
                 String password = credentials[i++];
 
-                for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principal, password).entrySet()) {
-                    EncryptionKey key = keyEntry.getValue();
-                    entries.add(new KeytabEntry(principal, KerberosPrincipal.KRB_NT_PRINCIPAL, ktm, (byte) key.getKeyVersion(), key));
+                for (EncryptionKey key : EncryptionUtil.generateKeys(principal, password, krbConfig.getEncryptionTypes())) {
+                    entries.add(new KeytabEntry(new PrincipalName(principal), ktm, key.getKvno(), key));
                 }
             }
 
-            Keytab keyTab = Keytab.getInstance();
-            keyTab.setEntries(entries);
-            keyTab.write(keyTabFile);
+            Keytab keyTab = new Keytab();
+            keyTab.addKeytabEntries(entries);
+            keyTab.store(keyTabFile);
         }
     }
 
