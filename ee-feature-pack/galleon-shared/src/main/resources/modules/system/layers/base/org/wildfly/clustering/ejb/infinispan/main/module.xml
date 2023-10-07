@@ -34,7 +34,7 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.context"/>
-        <module name="org.wildfly.clustering.ee.cache"/>
+        <module name="org.wildfly.clustering.ee.cache" services="import"/>
         <module name="org.wildfly.clustering.ee.infinispan" services="import"/>
         <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.ejb.cache"/>

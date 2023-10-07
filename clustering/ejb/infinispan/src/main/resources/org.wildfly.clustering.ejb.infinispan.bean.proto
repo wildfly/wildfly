@@ -9,19 +9,12 @@ import "org.jboss.ejb.client.proto";
  * @TypeId(310)
  */
 message InfinispanBeanGroupKey {
-	optional	org.jboss.ejb.client.SessionID	id	 = 1;
+	optional	org.jboss.ejb.client.SessionID	id	= 1;
 }
 
 /**
  * @TypeId(311)
  */
-message InfinispanBeanCreationMetaDataKey {
-	optional	org.jboss.ejb.client.SessionID	id	 = 1;
-}
-
-/**
- * @TypeId(312)
- */
-message InfinispanBeanAccessMetaDataKey {
-	optional	org.jboss.ejb.client.SessionID	id	 = 1;
+message InfinispanBeanMetaDataKey {
+	optional	org.jboss.ejb.client.SessionID	id	= 1;
 }

@@ -12,7 +12,10 @@ import java.time.Instant;
  * @author Paul Ferraro
  * @param <K> the bean identifier type
  */
-public interface BeanMetaData<K> extends ImmutableBeanMetaData<K> {
+public interface BeanMetaData<K> extends ImmutableBeanMetaData<K>, AutoCloseable {
 
     void setLastAccessTime(Instant lastAccessTime);
+
+    @Override
+    void close();
 }

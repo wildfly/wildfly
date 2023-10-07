@@ -42,18 +42,10 @@ public class SessionIDKeySerializer<K extends Key<SessionID>> implements Seriali
     }
 
     @MetaInfServices(Formatter.class)
-    public static class InfinispanBeanCreationMetaDataKeyFormatter extends BinaryFormatter<InfinispanBeanCreationMetaDataKey<SessionID>> {
+    public static class InfinispanBeanMetaDataKeyFormatter extends BinaryFormatter<InfinispanBeanMetaDataKey<SessionID>> {
         @SuppressWarnings("unchecked")
-        public InfinispanBeanCreationMetaDataKeyFormatter() {
-            super((Class<InfinispanBeanCreationMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanCreationMetaDataKey.class, new SessionIDKeySerializer<>(InfinispanBeanCreationMetaDataKey::new));
-        }
-    }
-
-    @MetaInfServices(Formatter.class)
-    public static class InfinispanBeanAccessMetaDataKeyFormatter extends BinaryFormatter<InfinispanBeanAccessMetaDataKey<SessionID>> {
-        @SuppressWarnings("unchecked")
-        public InfinispanBeanAccessMetaDataKeyFormatter() {
-            super((Class<InfinispanBeanAccessMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanAccessMetaDataKey.class, new SessionIDKeySerializer<>(InfinispanBeanAccessMetaDataKey::new));
+        public InfinispanBeanMetaDataKeyFormatter() {
+            super((Class<InfinispanBeanMetaDataKey<SessionID>>) (Class<?>) InfinispanBeanMetaDataKey.class, new SessionIDKeySerializer<>(InfinispanBeanMetaDataKey::new));
         }
     }
 
