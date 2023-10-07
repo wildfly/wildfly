@@ -13,5 +13,9 @@ import java.time.Instant;
  */
 public interface TimerMetaData extends ImmutableTimerMetaData {
 
+    /**
+     * Updates the time of the last timeout event for this timer
+     * @param timeout the time of the timeout event
+     */
     void setLastTimout(Instant timeout);
 }

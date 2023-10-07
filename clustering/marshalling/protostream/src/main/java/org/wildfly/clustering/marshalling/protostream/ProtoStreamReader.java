@@ -8,12 +8,37 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 
 import org.infinispan.protostream.TagReader;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * A {@link TagReader} with the additional ability to read an arbitrary embedded object.
  * @author Paul Ferraro
  */
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
+
+    /**
+     * Returns the tag of the current field, or optional if {@link #readTag()} was not yet called for the next field.
+     * @return
+     */
+    int getCurrentTag();
+
+    /**
+     * Skips over the field of the specified wire type.
+     * @return true, if the current tag is a normal field, false otherwise
+     * @throws IOException if the stream does not conform to the wire type of the skipped field.
+     */
+    default boolean skipField(WireType type) throws IOException {
+        return this.skipField(WireType.makeTag(0, type));
+    }
+
+    /**
+     * Returns a reader for a field set whose fields start at the specified index.
+     * @param <T> the field builder type
+     * @param reader a field reader
+     * @param startIndex the start index for the field set
+     * @return a field set reader
+     */
+    <T> FieldSetReader<T> createFieldSetReader(FieldReadable<T> reader, int startIndex);
 
     /**
      * Reads an object of an arbitrary type from this reader.

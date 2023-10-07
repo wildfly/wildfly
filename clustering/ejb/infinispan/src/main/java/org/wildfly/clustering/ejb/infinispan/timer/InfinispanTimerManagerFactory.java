@@ -12,6 +12,9 @@ import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ejb.cache.timer.RemappableTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.TimerFactory;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerManagerConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
@@ -41,7 +44,7 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I, 
         InfinispanTimerManagerFactoryConfiguration<I> factoryConfiguration = this.configuration;
         Marshaller<Object, MarshalledValue<Object, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(this.configuration.getMarshaller()));
 
-        TimerMetaDataConfiguration<MarshalledValue<Object, ByteBufferMarshaller>> metaDataFactoryConfig = new TimerMetaDataConfiguration<>() {
+        InfinispanTimerMetaDataConfiguration<MarshalledValue<Object, ByteBufferMarshaller>> metaDataFactoryConfig = new InfinispanTimerMetaDataConfiguration<>() {
             @Override
             public Marshaller<Object, MarshalledValue<Object, ByteBufferMarshaller>> getMarshaller() {
                 return marshaller;
@@ -57,8 +60,8 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I, 
                 return factoryConfiguration.getCache();
             }
         };
-        TimerMetaDataFactory<I, MarshalledValue<Object, ByteBufferMarshaller>> metaDataFactory = new InfinispanTimerMetaDataFactory<>(metaDataFactoryConfig);
-        TimerFactory<I, MarshalledValue<Object, ByteBufferMarshaller>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener(), this.configuration.getRegistry());
+        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> metaDataFactory = new InfinispanTimerMetaDataFactory<>(metaDataFactoryConfig);
+        TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener(), this.configuration.getRegistry());
 
         return new InfinispanTimerManager<>(new InfinispanTimerManagerConfiguration<I, MarshalledValue<Object, ByteBufferMarshaller>>() {
             @Override
@@ -72,7 +75,7 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I, 
             }
 
             @Override
-            public TimerFactory<I, MarshalledValue<Object, ByteBufferMarshaller>> getTimerFactory() {
+            public TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> getTimerFactory() {
                 return factory;
             }
 

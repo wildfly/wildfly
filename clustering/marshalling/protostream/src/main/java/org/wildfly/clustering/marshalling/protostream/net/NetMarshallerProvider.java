@@ -7,9 +7,9 @@ package org.wildfly.clustering.marshalling.protostream.net;
 
 import java.net.InetAddress;
 
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
-import org.wildfly.clustering.marshalling.protostream.SimpleFieldSetMarshaller;
 
 /**
  * Provider for java.net marshallers.
@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.SimpleFieldSetMarshaller;
  */
 public enum NetMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    INET_ADDRESS(new SimpleFieldSetMarshaller<>(InetAddress.class, InetAddressMarshaller.INSTANCE)),
+    INET_ADDRESS(new FieldSetProtoStreamMarshaller<>(InetAddress.class, InetAddressMarshaller.INSTANCE)),
     INET_SOCKET_ADDRESS(new InetSocketAddressMarshaller()),
     URI(new URIMarshaller()),
     URL(new URLMarshaller()),

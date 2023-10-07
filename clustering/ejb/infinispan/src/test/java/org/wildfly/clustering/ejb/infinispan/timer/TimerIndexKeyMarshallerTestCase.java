@@ -8,6 +8,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
 import org.wildfly.clustering.marshalling.Tester;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
 
@@ -18,9 +19,9 @@ public class TimerIndexKeyMarshallerTestCase {
 
     @Test
     public void test() throws IOException, NoSuchMethodException, SecurityException {
-        Tester<TimerIndexKey> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new TimerIndexKey(new TimerIndex(this.getClass().getDeclaredMethod("test"), 0)));
-        tester.test(new TimerIndexKey(new TimerIndex(this.getClass().getDeclaredMethod("ejbTimeout", Object.class), 0)));
+        Tester<InfinispanTimerIndexKey> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+        tester.test(new InfinispanTimerIndexKey(new TimerIndex(this.getClass().getDeclaredMethod("test"), 0)));
+        tester.test(new InfinispanTimerIndexKey(new TimerIndex(this.getClass().getDeclaredMethod("ejbTimeout", Object.class), 0)));
     }
 
     void ejbTimeout(Object timer) {

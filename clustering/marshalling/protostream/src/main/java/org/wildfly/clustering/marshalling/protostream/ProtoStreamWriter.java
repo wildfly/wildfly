@@ -16,6 +16,8 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
+    <T> FieldSetWriter<T> createFieldSetWriter(Writable<T> writer, int startIndex);
+
     /**
      * Writes the specified object of an abitrary type using the specified index.
      * Object will be read via {@link ProtoStreamReader#readAny()}.

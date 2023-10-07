@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -30,9 +31,9 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -60,7 +61,8 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     EMPTY_SORTED_MAP(new ValueMarshaller<>(Collections.emptySortedMap())),
     EMPTY_SORTED_SET(new ValueMarshaller<>(Collections.emptySortedSet())),
     ENUM_MAP(new EnumMapMarshaller<>()),
-    ENUM_SET(new EnumSetMarshaller<>()),
+    @SuppressWarnings("unchecked")
+    ENUM_SET(new FieldSetProtoStreamMarshaller<>((Class<EnumSet<UtilMarshallerProvider>>) (Class<?>) EnumSet.class, new EnumSetFieldSetMarshaller<>())),
     HASH_MAP(new MapMarshaller<>(HashMap::new)),
     HASH_SET(new CollectionMarshaller<>(HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
@@ -103,7 +105,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     UNMODIFIABLE_SET(new DecoratorMarshaller<>(Set.class, Collections::unmodifiableSet, Collections.emptySet())),
     UNMODIFIABLE_SORTED_MAP(new DecoratorMarshaller<>(SortedMap.class, Collections::unmodifiableSortedMap, Collections.emptySortedMap())),
     UNMODIFIABLE_SORTED_SET(new DecoratorMarshaller<>(SortedSet.class, Collections::unmodifiableSortedSet, Collections.emptySortedSet())),
-    UUID(new ProtoStreamBuilderFieldSetMarshaller<>(UUIDMarshaller.INSTANCE)),
+    UUID(new FieldSetProtoStreamMarshaller<>(UUIDMarshaller.INSTANCE)),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

@@ -11,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -24,7 +25,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration> {
+public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
     INSTANCE;
 
     private static final int NANOS_PER_MILLI = ChronoUnit.MILLIS.getDuration().getNano();
@@ -38,7 +39,7 @@ public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration>
     private static final int FIELDS = 4;
 
     @Override
-    public Duration getBuilder() {
+    public Duration createInitialValue() {
         return Duration.ZERO;
     }
 
@@ -48,7 +49,7 @@ public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration>
     }
 
     @Override
-    public Duration readField(ProtoStreamReader reader, int index, Duration duration) throws IOException {
+    public Duration readFrom(ProtoStreamReader reader, int index, WireType type, Duration duration) throws IOException {
         switch (index) {
             case POSITIVE_SECONDS_INDEX:
                 long seconds = reader.readUInt64();
@@ -78,26 +79,27 @@ public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration>
                 }
                 return duration.withNanos(nanos);
             default:
+                reader.skipField(type);
                 return duration;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, Duration duration) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, Duration duration) throws IOException {
         long seconds = duration.getSeconds();
         // Optimize for positive values
         if (seconds > 0) {
-            writer.writeUInt64(startIndex + POSITIVE_SECONDS_INDEX, seconds);
+            writer.writeUInt64(POSITIVE_SECONDS_INDEX, seconds);
         } else if (seconds < 0) {
-            writer.writeUInt64(startIndex + NEGATIVE_SECONDS_INDEX, 0 - seconds);
+            writer.writeUInt64(NEGATIVE_SECONDS_INDEX, 0 - seconds);
         }
         int nanos = duration.getNano();
         if (nanos > 0) {
             // Optimize for ms precision, if possible
             if (nanos % NANOS_PER_MILLI == 0) {
-                writer.writeUInt32(startIndex + MILLIS_INDEX, nanos / NANOS_PER_MILLI);
+                writer.writeUInt32(MILLIS_INDEX, nanos / NANOS_PER_MILLI);
             } else {
-                writer.writeUInt32(startIndex + NANOS_INDEX, nanos);
+                writer.writeUInt32(NANOS_INDEX, nanos);
             }
         }
     }

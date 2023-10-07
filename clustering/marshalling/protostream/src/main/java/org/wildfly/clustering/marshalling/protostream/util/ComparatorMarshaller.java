@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream.util;
 import java.io.IOException;
 import java.util.Comparator;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -16,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * Marshaller for the fields of a {@link Comparator}.
  * @author Paul Ferraro
  */
-public enum ComparatorMarshaller implements FieldSetMarshaller<Comparator<?>, Comparator<?>> {
+public enum ComparatorMarshaller implements FieldSetMarshaller.Simple<Comparator<?>> {
     INSTANCE;
 
     private static final int REVERSE_INDEX = 0;
@@ -24,7 +25,7 @@ public enum ComparatorMarshaller implements FieldSetMarshaller<Comparator<?>, Co
     private static final int FIELDS = 2;
 
     @Override
-    public Comparator<?> getBuilder() {
+    public Comparator<?> createInitialValue() {
         return Comparator.naturalOrder();
     }
 
@@ -34,25 +35,26 @@ public enum ComparatorMarshaller implements FieldSetMarshaller<Comparator<?>, Co
     }
 
     @Override
-    public Comparator<?> readField(ProtoStreamReader reader, int index, Comparator<?> comparator) throws IOException {
+    public Comparator<?> readFrom(ProtoStreamReader reader, int index, WireType type, Comparator<?> comparator) throws IOException {
         switch (index) {
             case REVERSE_INDEX:
                 return reader.readBool() ? Comparator.reverseOrder() : Comparator.naturalOrder();
             case COMPARATOR_INDEX:
                 return reader.readAny(Comparator.class);
             default:
+                reader.skipField(type);
                 throw new IllegalArgumentException(Integer.toString(index));
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, Comparator<?> comparator) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, Comparator<?> comparator) throws IOException {
         boolean natural = comparator == Comparator.naturalOrder();
         boolean reverse = comparator == Comparator.reverseOrder();
         if (natural || reverse) {
-            writer.writeBool(startIndex + REVERSE_INDEX, reverse);
+            writer.writeBool(REVERSE_INDEX, reverse);
         } else {
-            writer.writeAny(startIndex + COMPARATOR_INDEX, comparator);
+            writer.writeAny(COMPARATOR_INDEX, comparator);
         }
     }
 }

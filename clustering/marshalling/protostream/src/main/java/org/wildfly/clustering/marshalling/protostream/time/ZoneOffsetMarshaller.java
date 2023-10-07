@@ -8,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream.time;
 import java.io.IOException;
 import java.time.ZoneOffset;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -22,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public enum ZoneOffsetMarshaller implements FieldSetMarshaller<ZoneOffset, ZoneOffset> {
+public enum ZoneOffsetMarshaller implements FieldSetMarshaller.Simple<ZoneOffset> {
     INSTANCE;
 
     private static final int HOURS_INDEX = 0;
@@ -31,7 +32,7 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller<ZoneOffset, ZoneO
     private static final int FIELDS = 3;
 
     @Override
-    public ZoneOffset getBuilder() {
+    public ZoneOffset createInitialValue() {
         return ZoneOffset.UTC;
     }
 
@@ -41,7 +42,7 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller<ZoneOffset, ZoneO
     }
 
     @Override
-    public ZoneOffset readField(ProtoStreamReader reader, int index, ZoneOffset offset) throws IOException {
+    public ZoneOffset readFrom(ProtoStreamReader reader, int index, WireType type, ZoneOffset offset) throws IOException {
         switch (index) {
             case HOURS_INDEX:
                 return ZoneOffset.ofHours(reader.readSInt32());
@@ -50,12 +51,13 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller<ZoneOffset, ZoneO
             case SECONDS_INDEX:
                 return ZoneOffset.ofTotalSeconds(reader.readSInt32());
             default:
+                reader.skipField(type);
                 return offset;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, ZoneOffset offset) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, ZoneOffset offset) throws IOException {
         int seconds = offset.getTotalSeconds();
         if (seconds != 0) {
             if (seconds % 60 == 0) {
@@ -63,14 +65,14 @@ public enum ZoneOffsetMarshaller implements FieldSetMarshaller<ZoneOffset, ZoneO
                 if (minutes % 60 == 0) {
                     int hours = minutes / 60;
                     // Typical offsets
-                    writer.writeSInt32(startIndex + HOURS_INDEX, hours);
+                    writer.writeSInt32(HOURS_INDEX, hours);
                 } else {
                     // Uncommon fractional hour offsets
-                    writer.writeSInt32(startIndex + MINUTES_INDEX, minutes);
+                    writer.writeSInt32(MINUTES_INDEX, minutes);
                 }
             } else {
                 // Synthetic offsets
-                writer.writeSInt32(startIndex + SECONDS_INDEX, seconds);
+                writer.writeSInt32(SECONDS_INDEX, seconds);
             }
         }
     }

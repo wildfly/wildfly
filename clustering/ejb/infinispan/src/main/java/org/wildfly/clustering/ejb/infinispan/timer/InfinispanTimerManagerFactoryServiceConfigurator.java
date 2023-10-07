@@ -30,6 +30,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactory;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
@@ -129,7 +130,7 @@ public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends Simp
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(TimerCreationMetaDataKey.class::isInstance);
+            builder.addModule(DataContainerConfigurationBuilder.class).evictable(TimerMetaDataKey.class::isInstance);
         }
 
         builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(() -> EmbeddedTransactionManager.getInstance()).lockingMode(LockingMode.PESSIMISTIC).locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
