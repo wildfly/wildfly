@@ -165,7 +165,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         if (cache == null) return CompletableFuture.completedStage(null);
         Metadata metadata = entry.getMetadata();
         try {
-            return cache.putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue()), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS)
+            return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue()), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS)
                     .thenAcceptAsync(Functions.discardingConsumer(), this.executor);
         } catch (PersistenceException e) {
             return CompletableFuture.failedStage(e);
@@ -177,7 +177,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         RemoteCache<ByteBuffer, ByteBuffer> cache = this.segmentCache(segment);
         if (cache == null) return CompletableFuture.completedStage(null);
         try {
-            return cache.withFlags(Flag.FORCE_RETURN_VALUE).removeAsync(this.marshalKey(key))
+            return cache.withFlags(Flag.FORCE_RETURN_VALUE, Flag.SKIP_LISTENER_NOTIFICATION).removeAsync(this.marshalKey(key))
                     .thenApplyAsync(Objects::nonNull, this.executor);
         } catch (PersistenceException e) {
             return CompletableFuture.failedStage(e);
@@ -253,7 +253,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         for (int i = 0; i < this.caches.length(); ++i) {
             RemoteCache<ByteBuffer, ByteBuffer> cache = this.caches.get(i);
             if (cache != null) {
-                result = CompletableFuture.allOf(result, cache.clearAsync().thenApplyAsync(Function.identity(), this.executor));
+                result = CompletableFuture.allOf(result, cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).clearAsync().thenApplyAsync(Function.identity(), this.executor));
             }
         }
         return result;
@@ -305,7 +305,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
                 cache.start();
 
-                this.caches.set(index, cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).withDataFormat(BINARY_DATA_FORMAT));
+                this.caches.set(index, cache.withDataFormat(BINARY_DATA_FORMAT));
             }, "hotrod-store-add-segments").toCompletableFuture());
         }
         return result;
