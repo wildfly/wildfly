@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 
+import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Mutator;
@@ -44,11 +45,13 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<SessionMetaDataEntry<C>> {
 
     private final RemoteCache<Key<String>, Object> cache;
+    private final Flag[] ignoreReturnFlags;
     private final RemoteCache<SessionCreationMetaDataKey, SessionCreationMetaDataEntry<C>> creationMetaDataCache;
     private final RemoteCache<SessionAccessMetaDataKey, SessionAccessMetaDataEntry> accessMetaDataCache;
 
     public HotRodSessionMetaDataFactory(HotRodConfiguration configuration) {
         this.cache = configuration.getCache();
+        this.ignoreReturnFlags = configuration.getIgnoreReturnFlags();
         this.creationMetaDataCache = configuration.getCache();
         this.accessMetaDataCache = configuration.getCache();
     }
@@ -58,8 +61,8 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
         SessionCreationMetaDataEntry<C> creationMetaData = new DefaultSessionCreationMetaDataEntry<>();
         creationMetaData.setTimeout(defaultTimeout);
         SessionAccessMetaDataEntry accessMetaData = new DefaultSessionAccessMetaDataEntry();
-        this.creationMetaDataCache.put(new SessionCreationMetaDataKey(id), creationMetaData);
-        new RemoteCacheEntryMutator<>(this.accessMetaDataCache, new SessionAccessMetaDataKey(id), accessMetaData, creationMetaData::getTimeout).mutate();
+        this.creationMetaDataCache.withFlags(this.ignoreReturnFlags).put(new SessionCreationMetaDataKey(id), creationMetaData);
+        new RemoteCacheEntryMutator<>(this.accessMetaDataCache, this.ignoreReturnFlags, new SessionAccessMetaDataKey(id), accessMetaData, creationMetaData::getTimeout).mutate();
         return new DefaultSessionMetaDataEntry<>(creationMetaData, accessMetaData);
     }
 
@@ -84,8 +87,8 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
         MutableSessionAccessMetaDataOffsetValues values = MutableSessionAccessMetaDataOffsetValues.from(entry.getAccessMetaDataEntry());
         SessionAccessMetaData accessMetaData = new MutableSessionAccessMetaData(entry.getAccessMetaDataEntry(), values);
 
-        Mutator creationMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.creationMetaDataCache, new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntryFunction<>(timeoutOffset));
-        Mutator accessMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.accessMetaDataCache, new SessionAccessMetaDataKey(id), new SessionAccessMetaDataEntryFunction(values), creationMetaData::getTimeout);
+        Mutator creationMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.creationMetaDataCache, this.ignoreReturnFlags, new SessionCreationMetaDataKey(id), new SessionCreationMetaDataEntryFunction<>(timeoutOffset));
+        Mutator accessMetaDataMutator = new RemoteCacheEntryComputeMutator<>(this.accessMetaDataCache, this.ignoreReturnFlags, new SessionAccessMetaDataKey(id), new SessionAccessMetaDataEntryFunction(values), creationMetaData::getTimeout);
         Mutator mutator = new Mutator() {
             @Override
             public void mutate() {
@@ -106,8 +109,8 @@ public class HotRodSessionMetaDataFactory<C> implements SessionMetaDataFactory<S
 
     @Override
     public boolean remove(String id) {
-        this.accessMetaDataCache.remove(new SessionAccessMetaDataKey(id));
-        this.creationMetaDataCache.remove(new SessionCreationMetaDataKey(id));
+        this.accessMetaDataCache.withFlags(this.ignoreReturnFlags).remove(new SessionAccessMetaDataKey(id));
+        this.creationMetaDataCache.withFlags(this.ignoreReturnFlags).remove(new SessionCreationMetaDataKey(id));
         return true;
     }
 }
