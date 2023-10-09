@@ -5,10 +5,14 @@
 
 package org.wildfly.extension.picketlink.subsystem;
 
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.hamcrest.MatcherAssert;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -38,9 +42,13 @@ public class InvalidAttributeManagerDeclarationUnitTestCase extends AbstractSubs
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml());
 
-        KernelServices mainServices = builder.build();
-
-        assertFalse(mainServices.isSuccessfulBoot());
+        try {
+            KernelServices mainServices = builder.build();
+            fail("Expected boot failed");
+        } catch (OperationFailedException ex) {
+            final String failureDescription = ex.getFailureDescription().asString();
+            MatcherAssert.assertThat(failureDescription, allOf(containsString("WFLYPL0013:"), containsString("attribute-manager")));
+        }
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
