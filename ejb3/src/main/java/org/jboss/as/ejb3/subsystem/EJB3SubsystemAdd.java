@@ -43,6 +43,8 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
@@ -153,6 +155,9 @@ import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 import io.undertow.server.handlers.PathHandler;
+import org.wildfly.transaction.client.naming.txn.TxnNamingContextFactory;
+
+import javax.naming.NamingException;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -528,6 +533,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                         .install();
             }
         }
+
+        TxnNamingContextFactory.setAccessChecker(new TxnNamingContextFactory.AccessChecker() {
+            @Override
+            public void checkAccessAllowed() throws NamingException {
+                try {
+                    AllowedMethodsInformation.checkAllowed(MethodType.GET_USER_TRANSACTION);
+                } catch (IllegalStateException e) {
+                    throw new NamingException(e.getMessage());
+                }
+            }
+        });
     }
 
     private static void addRemoteInvocationServices(final OperationContext context,
