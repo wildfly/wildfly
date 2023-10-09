@@ -132,6 +132,15 @@ public abstract class ScriptTestCase {
         }
     }
 
+    /**
+     * Returns the currently running JVM version.
+     *
+     * @return the JVM version
+     */
+    int jvmVersion() {
+        return Integer.parseInt(System.getProperty("java.vm.specification.version"));
+    }
+
     private void executeTests(final Shell shell) throws InterruptedException, IOException, TimeoutException {
         for (Path path : ServerConfigurator.PATHS) {
             try (ScriptProcess script = new ScriptProcess(path, scriptBaseName, shell, ServerHelper.TIMEOUT)) {

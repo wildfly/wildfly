@@ -142,11 +142,18 @@ if $cygwin; then
     JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
+# Set default Security Manager configuration value
+setSecurityManagerDefault
+JAVA_OPTS="$JAVA_OPTS $SECURITY_MANAGER_CONFIG_OPTION"
+
 # Process the JAVA_OPTS failing if the java.security.manager is set.
 SECURITY_MANAGER_SET=`echo $JAVA_OPTS | $GREP "java\.security\.manager"`
 if [ "x$SECURITY_MANAGER_SET" != "x" ]; then
-    echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
-    exit 1
+    SECURITY_MANAGER_SET_TO_ALLOW=`echo $JAVA_OPTS | $GREP "java\.security\.manager=allow"`
+    if [ "x$SECURITY_MANAGER_SET_TO_ALLOW" = "x" ]; then
+        echo "ERROR: The use of -Djava.security.manager has been removed. Please use the -secmgr command line argument or SECMGR=true environment variable."
+        exit 1
+    fi
 fi
 
 # Set up the module arguments

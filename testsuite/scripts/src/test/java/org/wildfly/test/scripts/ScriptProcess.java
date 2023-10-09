@@ -6,8 +6,6 @@
 package org.wildfly.test.scripts;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,7 +18,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -38,7 +39,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ScriptProcess extends Process implements AutoCloseable {
+public class ScriptProcess implements AutoCloseable, ProcessHandle {
     private static final Logger LOGGER = Logger.getLogger(ScriptProcess.class);
 
     private static final Path PROC_DIR;
@@ -59,6 +60,7 @@ public class ScriptProcess extends Process implements AutoCloseable {
     private final long timeout;
     private final Collection<String> prefixCmds;
     private Process delegate;
+    private ProcessHandle handleDelegate;
     private Path stdoutLog;
     private String lastExecutedCmd;
 
@@ -107,6 +109,7 @@ public class ScriptProcess extends Process implements AutoCloseable {
             waitFor(process, check);
         }
         this.delegate = process;
+        this.handleDelegate = process.toHandle();
     }
 
     @SuppressWarnings("unused")
@@ -170,62 +173,87 @@ public class ScriptProcess extends Process implements AutoCloseable {
     }
 
     @Override
-    public OutputStream getOutputStream() {
+    public long pid() {
         checkStatus();
-        return delegate.getOutputStream();
+        return handleDelegate.pid();
     }
 
     @Override
-    public InputStream getInputStream() {
+    public Optional<ProcessHandle> parent() {
         checkStatus();
-        return delegate.getInputStream();
+        return handleDelegate.parent();
     }
 
     @Override
-    public InputStream getErrorStream() {
+    public Stream<ProcessHandle> children() {
         checkStatus();
-        return delegate.getErrorStream();
+        return handleDelegate.children();
     }
 
     @Override
-    public int waitFor() throws InterruptedException {
+    public Stream<ProcessHandle> descendants() {
         checkStatus();
-        return delegate.waitFor();
+        return handleDelegate.children();
     }
 
     @Override
-    public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+    public Info info() {
         checkStatus();
-        return delegate.waitFor(timeout, unit);
+        return handleDelegate.info();
     }
 
     @Override
-    public int exitValue() {
+    public CompletableFuture<ProcessHandle> onExit() {
         checkStatus();
-        return delegate.exitValue();
+        return handleDelegate.onExit();
     }
 
     @Override
-    public void destroy() {
+    public boolean supportsNormalTermination() {
         checkStatus();
-        delegate.destroy();
+        return handleDelegate.supportsNormalTermination();
     }
 
     @Override
-    public Process destroyForcibly() {
+    public boolean destroy() {
+        if (handleDelegate != null) {
+            return handleDelegate.destroy();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean destroyForcibly() {
+        if (handleDelegate != null) {
+            return handleDelegate.destroyForcibly();
+        }
+        return false;
+    }
+
+    @Override
+    public int compareTo(final ProcessHandle other) {
         checkStatus();
-        return delegate.destroyForcibly();
+        return handleDelegate.compareTo(other);
     }
 
     @Override
     public boolean isAlive() {
-        checkStatus();
-        return delegate.isAlive();
+        return delegate != null && delegate.isAlive();
     }
 
     @Override
     public String toString() {
         return getCommandString(Collections.emptyList());
+    }
+
+    boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+        checkStatus();
+        return delegate.waitFor(timeout, unit);
+    }
+
+    int exitValue() {
+        checkStatus();
+        return delegate.exitValue();
     }
 
     private String getCommandString(final Collection<String> arguments) {
@@ -242,7 +270,7 @@ public class ScriptProcess extends Process implements AutoCloseable {
     }
 
     private void checkStatus() {
-        if (delegate == null) {
+        if (delegate == null || handleDelegate == null) {
             throw new IllegalStateException("The script has not yet been started.");
         }
     }

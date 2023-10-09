@@ -22,20 +22,29 @@ public class AppClientScriptTestCase extends ScriptTestCase {
 
     @Override
     void testScript(final ScriptProcess script) throws InterruptedException, TimeoutException, IOException {
+        // First check the standard script
         script.start(MAVEN_JAVA_OPTS, "-v");
-        Assert.assertNotNull("The process is null and may have failed to start.", script);
+        testScript(script, 0);
 
-        validateProcess(script);
+        // Test with the security manager enabled
+        script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
+        testScript(script, jvmVersion() >= 17 ? 4 : 0);
+    }
 
-        final List<String> lines = script.getStdout();
-        int count = 2;
-        for (String stdout : lines) {
-            if (stdout.startsWith("Picked up")) {
-                count += 1;
+    private void testScript(final ScriptProcess script, final int additionalLines) throws InterruptedException, IOException {
+        try (script) {
+            validateProcess(script);
+
+            final List<String> lines = script.getStdout();
+            int count = 2 + additionalLines;
+            for (String stdout : lines) {
+                if (stdout.startsWith("Picked up")) {
+                    count += 1;
+                }
             }
+            final int expectedLines = (script.getShell() == Shell.BATCH ? 3 + additionalLines : count);
+            Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
+                    lines.size());
         }
-        final int expectedLines = (script.getShell() == Shell.BATCH ? 3 : count );
-        Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
-                lines.size());
     }
 }
