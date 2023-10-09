@@ -1,6 +1,1 @@
-#
-# Copyright The WildFly Authors
-# SPDX-License-Identifier: Apache-2.0
-#
-
 org.jboss.as.jsf.injection.JSFInjectionProvider:org.jboss.as.jsf.injection.JSFInjectionProvider
