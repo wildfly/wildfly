@@ -1,7 +1,2 @@
-#
-# Copyright The WildFly Authors
-# SPDX-License-Identifier: Apache-2.0
-#
-
 org.jboss.as.weld.deployment.processor.CdiBeanValidationFactoryProcessorProvider
 org.jboss.as.weld.deployment.processor.WeldBeanValidationDependencyProcessorProvider

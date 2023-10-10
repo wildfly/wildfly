@@ -1,8 +1,3 @@
-#
-# Copyright The WildFly Authors
-# SPDX-License-Identifier: Apache-2.0
-#
-
 org.wildfly.extension.messaging.activemq.jms.cli.ConnectionFactoryHandlerProvider
 org.wildfly.extension.messaging.activemq.jms.cli.CreateJMSResourceHandlerProvider
 org.wildfly.extension.messaging.activemq.jms.cli.DeleteJMSResourceHandlerProvider
