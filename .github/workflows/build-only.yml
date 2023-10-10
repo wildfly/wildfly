@@ -7,7 +7,7 @@ jobs:
   build:
     name: WildFly Build
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -32,7 +32,7 @@ jobs:
   quick-build:
     name: WildFly Build -Dquickly
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
