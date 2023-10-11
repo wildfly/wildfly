@@ -1292,4 +1292,21 @@
         <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-component\-annotations@.*$</packageUrl>
         <cve>CVE-2022-4244</cve>
     </suppress>
+
+    <!-- False positive, JGit in version 6.6.1.202309021850-r already contains a fix -->
+    <!-- False positive result caused by https://github.com/jeremylong/DependencyCheck/issues/5943 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: org.eclipse.jgit-6.6.1.202309021850-r.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit@.*$</packageUrl>
+        <cve>CVE-2023-4759</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: org.eclipse.jgit.ssh.apache-6.6.1.202309021850-r.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit\.ssh\.apache@.*$</packageUrl>
+        <cve>CVE-2023-4759</cve>
+    </suppress>
 </suppressions>
