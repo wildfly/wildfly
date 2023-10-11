@@ -33,7 +33,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Radoslav Husar
  * @author Paul Ferraro
- *
  */
 public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
@@ -116,6 +115,11 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     @Override
     public boolean switchToDefaultCluster() {
         return this.container.switchToDefaultCluster();
+    }
+
+    @Override
+    public String getCurrentClusterName() {
+        return this.container.getCurrentClusterName();
     }
 
     @Override
