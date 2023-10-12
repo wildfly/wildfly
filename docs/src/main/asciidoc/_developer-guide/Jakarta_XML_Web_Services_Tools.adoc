@@ -406,7 +406,7 @@ public class EchoClient
  
       EchoService service = new EchoService();
       Echo echo = service.getEchoPort();
-      System.out.println("Server said: " + echo.echo(args0));
+      System.out.println("Server said: " + echo.echo(args[0]));
    }
 }
 ----
