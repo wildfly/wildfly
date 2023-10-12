@@ -10,6 +10,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -48,7 +50,9 @@ public class DecoratorExternalizer<T> implements Externalizer<T>, ParametricPriv
     }
 
     static Field findDecoratedField(Class<?> decoratorClass, Class<?> decoratedClass) {
-        for (Field field : decoratorClass.getDeclaredFields()) {
+        Field[] declaredFields = decoratorClass.getDeclaredFields();
+        Arrays.sort(declaredFields, Comparator.comparing(Field::getName));
+        for (Field field : declaredFields) {
             if (field.getType().isAssignableFrom(decoratedClass)) {
                 return field;
             }
