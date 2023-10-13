@@ -326,7 +326,7 @@
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
         <version.jaxen>1.1.6</version.jaxen>
-        <version.jsoup>1.15.3</version.jsoup>
+        <version.jsoup>1.15.4</version.jsoup>
         <version.junit>4.13.1</version.junit>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
