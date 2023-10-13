@@ -378,7 +378,7 @@
         <version.com.google.guava>32.1.2-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.google.protobuf>3.19.6</version.com.google.protobuf>
-        <version.com.h2database>2.2.220</version.com.h2database>
+        <version.com.h2database>2.2.224</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>9.31</version.com.nimbus.jose-jwt>
