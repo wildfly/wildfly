@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.security.PrivilegedAction;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -48,14 +51,23 @@ public class DecoratorExternalizer<T> implements Externalizer<T>, ParametricPriv
     }
 
     static Field findDecoratedField(Class<?> decoratorClass, Class<?> decoratedClass) {
+        List<Field> assignableFields = new LinkedList<>();
         for (Field field : decoratorClass.getDeclaredFields()) {
-            if (field.getType().isAssignableFrom(decoratedClass)) {
-                return field;
+            Class<?> type = field.getType();
+            if (!Modifier.isStatic(field.getModifiers()) && (type != Object.class) && type.isAssignableFrom(decoratedClass)) {
+                assignableFields.add(field);
             }
+        }
+        // We should not have matched more than 1 field
+        if (assignableFields.size() > 1) {
+            throw new IllegalStateException(assignableFields.toString());
+        }
+        if (!assignableFields.isEmpty()) {
+            return assignableFields.get(0);
         }
         Class<?> superClass = decoratorClass.getSuperclass();
         if (superClass == null) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(decoratorClass.getName());
         }
         return findDecoratedField(superClass, decoratedClass);
     }
