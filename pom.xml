@@ -520,12 +520,12 @@
         <version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.ws.api_4.0_spec>
         <version.org.jboss.weld.weld>5.1.2.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>5.0.SP3</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>2.0.0.Final</version.org.jboss.ws.api>
-        <version.org.jboss.ws.common>4.0.0.Final</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.4.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>6.2.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
+        <version.org.jboss.ws.common>5.0.0.Final</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>2.1.0.Final</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>7.0.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
-        <version.org.jboss.ws.spi>4.1.0.Final</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.9.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jctools.jctools-core>2.1.2</version.org.jctools.jctools-core>
         <version.org.jetbrains.kotlin>1.7.10</version.org.jetbrains.kotlin>
