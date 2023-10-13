@@ -320,7 +320,7 @@
             <modules>
                 <!--<module>basic</module>-->
                 <!--<module>clustering</module>-->
-                <!--<module>microprofile</module>-->
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>elytron-oidc-client</module>
             </modules>
@@ -339,7 +339,7 @@
                 <module>legacy</module>
                 <module>ws</module>
                 <!--<module>clustering</module>-->
-                <!--<module>microprofile</module>-->
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>secman</module>
                 <module>elytron</module>
