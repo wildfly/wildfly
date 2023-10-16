@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: ['11', '17', '21-ea']
+        java: ['11', '17', '21']
 
     steps:
       - name: Checkout code
