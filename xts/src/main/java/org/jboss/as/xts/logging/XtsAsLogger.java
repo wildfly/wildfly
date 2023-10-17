@@ -8,6 +8,8 @@ package org.jboss.as.xts.logging;
 import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.ERROR;
 
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.xts.XTSException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -100,4 +102,9 @@ public interface XtsAsLogger extends BasicLogger {
     @Message(id = 10, value = "Cannot get transaction status on handling context %s")
     void cannotGetTransactionStatus(jakarta.xml.ws.handler.MessageContext ctx, @Cause Throwable cause);
 
+    @Message(id = 11, value = "Unexpected bridge type: '%s'")
+    XTSException unexpectedBridgeType(String bridgeType);
+
+    @Message(id = 12, value = "Error processing endpoint '%s'")
+    DeploymentUnitProcessingException errorProcessingEndpoint(String endpoint, @Cause Throwable cause);
 }

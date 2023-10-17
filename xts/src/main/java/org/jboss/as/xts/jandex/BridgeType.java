@@ -5,6 +5,7 @@
 package org.jboss.as.xts.jandex;
 
 import org.jboss.as.xts.XTSException;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.jandex.AnnotationInstance;
 
 /**
@@ -29,7 +30,7 @@ public enum BridgeType {
         } else if (bridgeType.equals("JTA")) {
             return JTA;
         } else {
-            throw new XTSException("Unexpected bridge type: '" + bridgeType + "'");
+            throw XtsAsLogger.ROOT_LOGGER.unexpectedBridgeType(bridgeType);
         }
     }
 }
