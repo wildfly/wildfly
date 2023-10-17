@@ -11,6 +11,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 
 import javax.management.AttributeList;
@@ -146,9 +147,9 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             return resource;
 
         } catch (JMException e) {
-            throw new OperationFailedException("Transaction discovery error: ", e);
+            throw TransactionLogger.ROOT_LOGGER.transactionDiscoveryError(e);
         } catch (IOException e) {
-            throw new OperationFailedException("Transaction discovery error: ", e);
+            throw TransactionLogger.ROOT_LOGGER.transactionDiscoveryError(e);
         }
     }
 

@@ -10,6 +10,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 
 import javax.management.AttributeList;
@@ -44,7 +45,7 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
             // Replace the model
             resource.writeModel(model);
         } catch (Exception e) {
-            throw new OperationFailedException("JMX error: " + e.getMessage());
+            throw TransactionLogger.ROOT_LOGGER.jmxError(e.getMessage());
         }
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
