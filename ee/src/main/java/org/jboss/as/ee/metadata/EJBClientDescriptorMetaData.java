@@ -5,6 +5,8 @@
 
 package org.jboss.as.ee.metadata;
 
+import org.jboss.as.ee.logging.EeLogger;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +45,7 @@ public class EJBClientDescriptorMetaData {
      */
     public RemotingReceiverConfiguration addRemotingReceiverConnectionRef(final String outboundConnectionRef) {
         if (outboundConnectionRef == null || outboundConnectionRef.trim().isEmpty()) {
-            throw new IllegalArgumentException("Cannot add a remoting receiver which references a null/empty outbound connection");
+            throw EeLogger.ROOT_LOGGER.cannotAddRemotingReceiver();
         }
         final RemotingReceiverConfiguration remotingReceiverConfiguration = new RemotingReceiverConfiguration(outboundConnectionRef);
         this.remotingReceiverConfigurations.put(outboundConnectionRef, remotingReceiverConfiguration);
@@ -58,7 +60,7 @@ public class EJBClientDescriptorMetaData {
      */
     public HttpConnectionConfiguration addHttpConnectionRef(final String uri) {
         if (uri == null || uri.trim().isEmpty()) {
-            throw new IllegalArgumentException("Cannot add a HTTP connection which references a null/empty URI");
+            throw EeLogger.ROOT_LOGGER.cannotAddHTTPConnection();
         }
         final HttpConnectionConfiguration httpConnectionConfiguration = new HttpConnectionConfiguration(uri);
         this.httpConnectionConfigurations.add(httpConnectionConfiguration);

@@ -96,7 +96,7 @@ public class MessageDestinationInjectionSource extends InjectionSource {
             throw new RuntimeException(error);
         }
         if (resolvedLookupName == null) {
-            throw new RuntimeException("Error equals() cannot be called before resolve()");
+            throw EeLogger.ROOT_LOGGER.errorEqualsCannotBeCalledBeforeResolve();
         }
 
         final MessageDestinationInjectionSource other = (MessageDestinationInjectionSource) o;

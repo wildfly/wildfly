@@ -1213,4 +1213,15 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 136, value = "Failed to run scheduled task: %s")
     RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
 
+    @Message(id = 137, value = "Error equals() cannot be called before resolve()")
+    RuntimeException errorEqualsCannotBeCalledBeforeResolve();
+
+    @Message(id = 138, value = "hungTaskTerminationPeriod is not > 0")
+    IllegalArgumentException hungTaskTerminationPeriodIsNotBiggerThanZero();
+
+    @Message(id = 139, value = "Cannot add a remoting receiver which references a null/empty outbound connection")
+    IllegalArgumentException cannotAddRemotingReceiver();
+
+    @Message(id = 140, value="Cannot add a HTTP connection which references a null/empty URI")
+    IllegalArgumentException cannotAddHTTPConnection();
 }
