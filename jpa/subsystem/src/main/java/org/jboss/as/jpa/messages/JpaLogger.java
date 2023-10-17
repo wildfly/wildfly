@@ -752,4 +752,7 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 74, value = "Persistence provider integrator module load error for %s")
     DeploymentUnitProcessingException cannotLoadPersistenceProviderIntegratorModule(@Cause Throwable cause, String persistenceProviderModule);
 
+    @Message(id = 75, value="Illegal to call this method from injected, managed EntityManager")
+    IllegalStateException illegalCallOnCloseMethod();
+
 }

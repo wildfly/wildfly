@@ -7,7 +7,6 @@ package org.jboss.as.jpa.hibernate;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.hibernate.boot.archive.spi.ArchiveException;
 import org.hibernate.boot.archive.spi.InputStreamAccess;
 import org.jboss.vfs.VirtualFile;
 
@@ -36,9 +35,8 @@ public class VirtualFileInputStreamAccess implements InputStreamAccess {
     public InputStream accessInputStream() {
         try {
             return virtualFile.openStream();
-        }
-        catch (IOException e) {
-            throw new ArchiveException( "Unable to open VirtualFile-based InputStream", e );
+        } catch (IOException e) {
+            throw JpaLogger.JPA_LOGGER.unableOpenInputStream(e);
         }
     }
 
