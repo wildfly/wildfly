@@ -39,7 +39,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 
-        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL, true);
+        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL, false);
     }
 
     @Override
