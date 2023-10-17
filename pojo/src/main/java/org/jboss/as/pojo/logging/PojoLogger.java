@@ -378,4 +378,7 @@ public interface PojoLogger extends BasicLogger {
      */
     @Message(id = 38, value = "Exception while parsing POJO descriptor file: %s")
     DeploymentUnitProcessingException parsingException(VirtualFile beansXml, @Cause Throwable cause);
+
+    @Message(id = 39, value = "Cannot determine type - insufficient info on configuration!")
+    IllegalArgumentException cannotDetermineType();
 }
