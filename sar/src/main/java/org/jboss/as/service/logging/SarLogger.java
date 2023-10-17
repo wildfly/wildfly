@@ -221,4 +221,15 @@ public interface SarLogger extends BasicLogger {
     @Message(id = 17, value = "Failed to unregister [%s]")
     void unregistrationFailure(@Cause Throwable cause, ObjectName name);
 
+    @Message(id = 18, value = "Object supplier not available")
+    IllegalStateException objectSupplierNotAvailable();
+
+    @Message(id = 19, value="Object not available")
+    IllegalStateException objectNotAvailable();
+
+    @Message(id = 20, value="Method is not accessible")
+    IllegalStateException methodIsNotAccessible(@Cause Throwable cause);
+
+    @Message(id = 21, value="Failed to invoke method")
+    IllegalStateException failedToInvokeMethod(@Cause Throwable cause);
 }
