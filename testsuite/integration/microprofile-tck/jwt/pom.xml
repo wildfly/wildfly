@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ-mp</artifactId>
-        <version>26.1.2-10-PSI-SNAPSHOT</version>
+        <version>26.1.2-10-PSI</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-jwt</artifactId>
