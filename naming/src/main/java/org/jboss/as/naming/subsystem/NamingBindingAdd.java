@@ -5,12 +5,17 @@
 package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.NAME;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 
 import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
@@ -88,9 +93,39 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             installLookup(context, name, model);
         } else if (type == BindingType.EXTERNAL_CONTEXT) {
             installExternalContext(context, name, model);
+        } else if (type == BindingType.PROPERTIES) {
+            installProperties(context, name, model);
         } else {
             throw NamingLogger.ROOT_LOGGER.unknownBindingType(type.toString());
         }
+    }
+
+    private void installProperties(OperationContext context, String name, ModelNode model) throws OperationFailedException {
+        Object bindValue = createPropertiesBinding(context, model);
+
+        ValueManagedReferenceFactory referenceFactory = new ValueManagedReferenceFactory(bindValue);
+        final BinderService binderService = new BinderService(name, bindValue);
+        binderService.getManagedObjectInjector().inject(new MutableManagedReferenceFactory(referenceFactory));
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
+
+        builder.install();
+
+    }
+
+    private Object createPropertiesBinding(OperationContext context, ModelNode model) throws OperationFailedException {
+        final List<ModelNode> properties = NamingBindingResourceDefinition.PROPERTIES.resolveModelAttribute(context, model).asList();
+        Map<String, Object> props = new HashMap<>();
+        for (ModelNode prop : properties) {
+            String key = prop.get(NAME).asString();
+            String type = prop.get(TYPE).asString(); // or default to string if type is not set
+            Object value = coerceToType(prop.get(VALUE).asString(), type);
+            props.put(key, value);
+        }
+        return Collections.unmodifiableMap(props);
     }
 
     void installSimpleBinding(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
@@ -253,7 +288,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
     }
 
     private Object coerceToType(final String value, final String type) throws OperationFailedException {
-        if (type == null || type.isEmpty() || type.equals(String.class.getName())) {
+        if (type == null || type.isEmpty() || type.equals(String.class.getName()) || type.equalsIgnoreCase("string")) {
             return value;
         } else if (type.equals("char") || type.equals("java.lang.Character")) {
             return value.charAt(0);
@@ -298,7 +333,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     void doRebind(OperationContext context, ModelNode model, BinderService service) throws OperationFailedException {
         ManagedReferenceFactory ref = service.getManagedObjectInjector().getValue();
-        if(ref instanceof MutableManagedReferenceFactory) {
+        if (ref instanceof MutableManagedReferenceFactory) {
             MutableManagedReferenceFactory factory = (MutableManagedReferenceFactory) ref;
             final BindingType type = BindingType.forName(NamingBindingResourceDefinition.BINDING_TYPE.resolveModelAttribute(context, model).asString());
             if (type == BindingType.SIMPLE) {
@@ -349,7 +384,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         @Override
         public String getInstanceClassName() {
-            if(factory instanceof ContextListManagedReferenceFactory) {
+            if (factory instanceof ContextListManagedReferenceFactory) {
                 return ((ContextListManagedReferenceFactory) factory).getInstanceClassName();
             }
             ManagedReference ref = getReference();
@@ -363,7 +398,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
         @Override
         public String getJndiViewInstanceValue() {
-            if(factory instanceof ContextListAndJndiViewManagedReferenceFactory) {
+            if (factory instanceof ContextListAndJndiViewManagedReferenceFactory) {
                 return ((ContextListAndJndiViewManagedReferenceFactory) factory).getJndiViewInstanceValue();
             }
             ManagedReference reference = getReference();

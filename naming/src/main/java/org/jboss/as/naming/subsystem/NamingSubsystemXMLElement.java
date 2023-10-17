@@ -28,6 +28,10 @@ public enum NamingSubsystemXMLElement {
     ENVIRONMENT_PROPERTY("property"),
 
     EXTERNAL_CONTEXT("external-context"),
+    PROPERTIES("properties"),
+    NAME("name"),
+    VALUE("value"),
+    TYPE("type"),
     ;
 
     private final String name;

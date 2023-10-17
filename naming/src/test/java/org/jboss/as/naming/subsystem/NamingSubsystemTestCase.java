@@ -36,7 +36,7 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws IOException {
-        return "schema/jboss-as-naming_2_0.xsd";
+        return "schema/jboss-as-naming_3_0.xsd";
     }
 
     @Test
@@ -136,6 +136,12 @@ public class NamingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         final String lookup = attribute.get(NamingSubsystemModel.LOOKUP).asString();
         assertEquals("java:global/b", lookup);
+
+        attribute = result.get(NamingSubsystemModel.BINDING).get("java:global/d");
+
+        String properties = attribute.get(NamingSubsystemModel.PROPERTIES).asString();
+        assertEquals(true, properties.contains("100"));
+        assertEquals(true, properties.contains("int"));
     }
 
     @Override

@@ -578,4 +578,5 @@ public interface NamingLogger extends BasicLogger {
 
     @Message(id = 65, value = "Could not load module %s - the module or one of its dependencies is missing [%s]")
     OperationFailedException moduleNotFound(ModuleIdentifier moduleID, String missingModule);
+
 }

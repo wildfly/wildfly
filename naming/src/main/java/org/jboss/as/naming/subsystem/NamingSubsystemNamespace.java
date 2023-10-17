@@ -23,6 +23,7 @@ public enum NamingSubsystemNamespace {
     NAMING_1_3("urn:jboss:domain:naming:1.3"),
     NAMING_1_4("urn:jboss:domain:naming:1.4"),
     NAMING_2_0("urn:jboss:domain:naming:2.0"),
+    NAMING_3_0("urn:jboss:domain:naming:3.0"),
     ;
 
 

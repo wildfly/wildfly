@@ -39,8 +39,9 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
     private static final String NAMESPACE_1_4 = "urn:jboss:domain:naming:1.4";
     static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
+    static final String NAMESPACE_3_0 = "urn:jboss:domain:naming:3.0";
     //2.1 introduced in WildFly 10.1
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(2, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3);
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
@@ -91,6 +92,7 @@ public class NamingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, NamingSubsystem13Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_4, NamingSubsystem14Parser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_2_0, NamingSubsystem20Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_3_0, NamingSubsystem30Parser::new);
     }
 
 

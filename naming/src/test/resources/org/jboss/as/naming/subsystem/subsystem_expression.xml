@@ -2,7 +2,7 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<subsystem xmlns="urn:jboss:domain:naming:2.0">
+<subsystem xmlns="urn:jboss:domain:naming:3.0">
     <bindings>
         <simple name="java:global/a" value="${simple.value:100}" type="${simple.type:int}"/>
         <object-factory name="java:global/b" module="${object.module:org.jboss.as.naming}"
@@ -12,6 +12,9 @@
             </environment>
         </object-factory>
         <lookup name="java:global/c" lookup="${lookup.name:java:global/b}"/>
+        <properties name="java:global/d">
+            <property name="newBinding1" value="${simple.value:100}" type="${simple.type:int}"></property>
+        </properties>
     </bindings>
     <remote-naming/>
 </subsystem>

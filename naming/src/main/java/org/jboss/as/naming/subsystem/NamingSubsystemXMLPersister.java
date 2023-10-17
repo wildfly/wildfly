@@ -20,7 +20,9 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REMOTE_NAMING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SERVICE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.PROPERTIES;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+
 
 /**
  * @author Eduardo Martins
@@ -38,7 +40,7 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
 
-        context.startSubsystemElement(NamingExtension.NAMESPACE_2_0, false);
+        context.startSubsystemElement(NamingExtension.NAMESPACE_3_0, false);
 
         ModelNode model = context.getModelNode();
 
@@ -72,6 +74,8 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
                 writeLookupBinding(binding, writer);
             } else if (type.equals(EXTERNAL_CONTEXT)) {
                 writeExternalContext(binding, writer);
+            } else if (type.equals(PROPERTIES)) {
+                writePropertyBinding(writer, binding);
             } else {
                 throw new XMLStreamException("Unknown binding type " + type);
             }
@@ -116,6 +120,21 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
         writer.writeAttribute(NamingSubsystemXMLAttribute.NAME.getLocalName(), binding.getName());
         NamingBindingResourceDefinition.LOOKUP.marshallAsAttribute(binding.getValue(), writer);
         writer.writeEndElement();
+    }
+
+    private void writePropertyBinding(final XMLExtendedStreamWriter writer, Property binding) throws XMLStreamException {
+        writer.writeStartElement(NamingSubsystemXMLElement.PROPERTIES.getLocalName());
+        writer.writeAttribute(NamingSubsystemXMLElement.NAME.getLocalName(), binding.getName());
+        for (final ModelNode properties : binding.getValue().get(PROPERTIES).asList()) {
+            writer.writeStartElement(NamingSubsystemXMLElement.ENVIRONMENT_PROPERTY.getLocalName());
+            writer.writeAttribute(NamingSubsystemXMLElement.NAME.getLocalName(), properties.get(NamingSubsystemXMLElement.NAME.getLocalName()).asString());
+            writer.writeAttribute(NamingSubsystemXMLElement.VALUE.getLocalName(), properties.get(NamingSubsystemXMLElement.VALUE.getLocalName()).asString());
+            writer.writeAttribute(NamingSubsystemXMLElement.TYPE.getLocalName(), properties.get(NamingSubsystemXMLElement.TYPE.getLocalName()).asString());
+
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+
     }
 
 }

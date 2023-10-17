@@ -19,6 +19,7 @@ public enum BindingType {
     OBJECT_FACTORY(NamingSubsystemModel.OBJECT_FACTORY),
     LOOKUP(NamingSubsystemModel.LOOKUP),
     EXTERNAL_CONTEXT(NamingSubsystemModel.EXTERNAL_CONTEXT),
+    PROPERTIES(NamingSubsystemModel.PROPERTIES)
     ;
 
 
