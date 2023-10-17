@@ -7,6 +7,7 @@
 package org.jboss.as.ejb3.remote;
 
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBReceiver;
 import org.jboss.ejb.client.EJBReceiverContext;
 import org.jboss.ejb.client.EJBTransportProvider;
@@ -68,7 +69,7 @@ public class LocalTransportProvider implements EJBTransportProvider, Service<Loc
                 break;
             }
             default: {
-                throw new IllegalArgumentException("Unsupported EJB receiver protocol " + uriScheme);
+                throw EjbLogger.ROOT_LOGGER.unsupportedEJBReceiverProtocol(uriScheme);
             }
         }
         return receiver;

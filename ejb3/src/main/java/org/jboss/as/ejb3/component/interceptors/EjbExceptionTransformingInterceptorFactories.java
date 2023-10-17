@@ -5,7 +5,6 @@
 package org.jboss.as.ejb3.component.interceptors;
 
 import java.rmi.NoSuchObjectException;
-import java.rmi.RemoteException;
 
 import jakarta.ejb.CreateException;
 import jakarta.ejb.EJBException;
@@ -20,6 +19,7 @@ import jakarta.transaction.TransactionRequiredException;
 import jakarta.transaction.TransactionRolledbackException;
 
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -83,7 +83,7 @@ public class EjbExceptionTransformingInterceptorFactories {
                 if (createException != null) {
                     throw createException;
                 }
-                throw new RemoteException("Invocation failed", e);
+                throw EjbLogger.ROOT_LOGGER.invocationFailed(e);
             }
         }
     });
