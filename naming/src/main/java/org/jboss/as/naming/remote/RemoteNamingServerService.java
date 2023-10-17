@@ -11,6 +11,7 @@ import java.util.function.Function;
 import javax.naming.Context;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -39,7 +40,7 @@ public class RemoteNamingServerService implements Service<RemoteNamingService> {
             remoteNamingService = new RemoteNamingService(namingContext, NAME_ONLY_CLASS_RESOLUTION_FILTER);
             remoteNamingService.start(endpoint.getValue());
         } catch (Exception e) {
-            throw new StartException("Failed to start remote naming service", e);
+            throw NamingLogger.ROOT_LOGGER.failedToStartRemoteNamingService(e);
         }
     }
 
@@ -47,7 +48,7 @@ public class RemoteNamingServerService implements Service<RemoteNamingService> {
         try {
             remoteNamingService.stop();
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to stop remote naming service", e);
+            throw NamingLogger.ROOT_LOGGER.failedToStopRemoteNamingService(e);
         }
     }
 

@@ -31,6 +31,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 17.06.2011
@@ -578,4 +579,10 @@ public interface NamingLogger extends BasicLogger {
 
     @Message(id = 65, value = "Could not load module %s - the module or one of its dependencies is missing [%s]")
     OperationFailedException moduleNotFound(ModuleIdentifier moduleID, String missingModule);
+
+    @Message(id = 66, value = "Failed to start remote naming service")
+    StartException failedToStartRemoteNamingService(@Cause Throwable cause);
+
+    @Message(id = 67, value = "Failed to stop remote naming service")
+    IllegalStateException failedToStopRemoteNamingService(@Cause Throwable cause);
 }
