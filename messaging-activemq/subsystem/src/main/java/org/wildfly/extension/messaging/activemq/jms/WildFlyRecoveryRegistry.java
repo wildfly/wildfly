@@ -12,6 +12,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -25,7 +26,7 @@ public class WildFlyRecoveryRegistry extends WildFlyActiveMQRegistry {
     public WildFlyRecoveryRegistry() {
        registry = getXAResourceRecoveryRegistry();
        if (registry == null) {
-          throw new IllegalStateException("Unable to find Recovery Registry");
+           throw MessagingLogger.ROOT_LOGGER.unableToFindRecoveryRegistry();
        }
     }
 

@@ -51,6 +51,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
@@ -110,7 +111,7 @@ public class HAPolicyConfigurationBuilder {
                 break;
             }
             default: {
-                throw new OperationFailedException("unknown ha policy type");
+                throw MessagingLogger.ROOT_LOGGER.unknownHAPolicyType();
             }
         }
         configuration.setHAPolicyConfiguration(haPolicyConfiguration);

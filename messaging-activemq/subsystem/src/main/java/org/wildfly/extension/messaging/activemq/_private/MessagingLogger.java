@@ -3,20 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.messaging.activemq.logging;
+package org.wildfly.extension.messaging.activemq._private;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import jakarta.jms.IllegalStateRuntimeException;
-
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -35,6 +24,16 @@ import org.jboss.modules.ModuleNotFoundException;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 10.06.2011
@@ -469,7 +468,7 @@ public interface MessagingLogger extends BasicLogger {
 
 //    /**
 //     * A message indicating the value, represented by the {@code value} parameter, is invalid for the parameter,
-//     * represented by the {@code name} parameter. The value must must be one of the values defined in the
+//     * represented by the {@code name} parameter. The value must be one of the values defined in the
 //     * {@code allowedValues} parameter.
 //     *
 //     * @param value         the invalid value.
@@ -635,7 +634,7 @@ public interface MessagingLogger extends BasicLogger {
     IllegalStateException securityDomainContextNotSet();
 
 //    /**
-//     * A message indicating only of of {@code obj1} or {@code obj2} is allowed.
+//     * A message indicating only of {@code obj1} or {@code obj2} is allowed.
 //     *
 //     * @param obj1 the first option.
 //     * @param obj2 the second option.
@@ -705,14 +704,14 @@ public interface MessagingLogger extends BasicLogger {
     OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
 
 
-    /**
-     * Create an exception when calling a method not allowed on injected JMSContext.
-     *
-     * @return an {@link IllegalStateRuntimeException} for the error.
-     */
-    @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see Jakarta Messaging 2.0 spec, §12.4.5).")
-    IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
-
+//    /**
+//     * Create an exception when calling a method not allowed on injected JMSContext.
+//     *
+//     * @return an {@link IllegalStateRuntimeException} for the error.
+//     */
+//    @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see Jakarta Messaging 2.0 spec, §12.4.5).")
+//    IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
+//
 //    /**
 //     * A message indicating the alternative attribute represented by the {@code name} parameter can not be undefined as the resource
 //     * has not defined any other alternative .
@@ -801,7 +800,7 @@ public interface MessagingLogger extends BasicLogger {
     OperationFailedException unableToLoadModule(String moduleName, @Cause ModuleLoadException cause);
 
     @Message(id = 87, value = "Unable to load connector service factory class: %s")
-    OperationFailedException unableToLoadConnectorServiceFactoryClass(String factroyClass);
+    OperationFailedException unableToLoadConnectorServiceFactoryClass(String factoryClass);
 
     @Message(id = 88, value = "%s is an invalid value for parameter %s, it should be multiple of %s")
     OperationFailedException invalidModularParameterValue(long size, String parameterName, long modular);
@@ -867,9 +866,42 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 106, value = "The bridge %s didn't deploy.")
     OperationFailedException failedBridgeDeployment(String bridgeName);
 
-    @Message(id = 107, value = "You must define a elytron security doman when security is enabled.")
+    @Message(id = 107, value = "You must define a elytron security domain when security is enabled.")
     IllegalStateException securityEnabledWithoutDomain();
 
     @Message(id = 108, value = "Either socket-binding or jgroups-cluster attribute is required.")
     OperationFailedException socketBindingOrJGroupsClusterRequired();
+
+    @Message(id = 109, value = "Unknown ha policy type.")
+    OperationFailedException unknownHAPolicyType();
+
+    @Message(id = 110, value = "Unable to find Recovery Registry")
+    IllegalStateException unableToFindRecoveryRegistry();
+
+    @Message(id = 111, value = "No subscriptions with name %s for clientID %s")
+    IllegalArgumentException noSubscriptionError(String queueName, String clientID);
+
+    @Message(id = 112, value = "No subscriptions with name %s")
+    IllegalArgumentException noSubscriptionWithQueueName(String queueName);
+
+    @Message(id = 113, value = "Arguments are missing")
+    OperationFormatException missingArguments();
+
+    @Message(id = 114, value = "Required parameter --restype is missing.")
+    OperationFormatException missingRestype();
+
+    @Message(id = 115, value = "JNDI name is missing.")
+    OperationFormatException missingJNDIName();
+
+    @Message(id = 116, value = "Failed to parse property '%s' ")
+    OperationFormatException failedToParseProperty(String prop);
+
+    @Message(id = 117, value = "Resource type %s isn't supported.")
+    OperationFormatException unsupportedResourceType(String restype);
+
+    @Message(id = 118, value = "name is missing.")
+    OperationFormatException missingName();
+
+    @Message(id = 119, value = "'%s' wasn't found among existing JMS resources.")
+    OperationFormatException jndiWasNotFound(String jndiName);
 }

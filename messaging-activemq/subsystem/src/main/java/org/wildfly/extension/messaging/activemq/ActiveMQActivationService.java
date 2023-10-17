@@ -11,7 +11,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -20,6 +19,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * A service that can be dependent on to ensure the ActiveMQ server is active.

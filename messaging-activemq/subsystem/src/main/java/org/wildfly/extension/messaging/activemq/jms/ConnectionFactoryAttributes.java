@@ -50,7 +50,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 public interface ConnectionFactoryAttributes {
 

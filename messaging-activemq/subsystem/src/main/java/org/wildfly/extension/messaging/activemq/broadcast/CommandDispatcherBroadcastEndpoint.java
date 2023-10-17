@@ -14,7 +14,7 @@ import org.apache.activemq.artemis.api.core.BroadcastEndpoint;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * A {@link BroadcastEndpoint} based on a {@link CommandDispatcher}.

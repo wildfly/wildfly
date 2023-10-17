@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq.jms;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;

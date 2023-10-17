@@ -10,7 +10,8 @@ import jakarta.transaction.Synchronization;
 import jakarta.transaction.TransactionScoped;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
+
 
 /**
  * Injection of JMSContext in the @TransactionScoped scope.

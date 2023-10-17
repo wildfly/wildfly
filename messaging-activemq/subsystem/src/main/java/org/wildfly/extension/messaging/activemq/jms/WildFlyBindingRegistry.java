@@ -7,7 +7,7 @@ package org.wildfly.extension.messaging.activemq.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installBinderService;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.Locale;
@@ -15,7 +15,6 @@ import java.util.Locale;
 import org.apache.activemq.artemis.spi.core.naming.BindingRegistry;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceContainer;
@@ -54,7 +53,7 @@ public class WildFlyBindingRegistry implements BindingRegistry {
     @Override
     public boolean bind(String name, Object obj) {
         if (name == null || name.isEmpty()) {
-            throw MessagingLogger.ROOT_LOGGER.cannotBindJndiName();
+            throw ROOT_LOGGER.cannotBindJndiName();
         }
         installBinderService(container, name, obj);
         ROOT_LOGGER.boundJndiName(name);
@@ -67,7 +66,7 @@ public class WildFlyBindingRegistry implements BindingRegistry {
     @Override
     public void unbind(String name) {
         if (name == null || name.isEmpty()) {
-            throw MessagingLogger.ROOT_LOGGER.cannotUnbindJndiName();
+            throw ROOT_LOGGER.cannotUnbindJndiName();
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());

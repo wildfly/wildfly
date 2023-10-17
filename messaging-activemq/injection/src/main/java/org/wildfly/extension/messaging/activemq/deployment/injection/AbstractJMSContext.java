@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.io.Serializable;
 import java.util.Map;
