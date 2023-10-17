@@ -39,6 +39,11 @@ on:
         default: 120
         type: number
 
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build and Test
