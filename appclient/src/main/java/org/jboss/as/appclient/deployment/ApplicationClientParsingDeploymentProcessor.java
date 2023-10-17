@@ -96,7 +96,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
+                throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor);
             } finally {
                 try {
                     if (is != null) {
