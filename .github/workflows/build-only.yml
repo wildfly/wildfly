@@ -2,6 +2,10 @@ name: WildFly Build
 
 on:
   pull_request:
+    branches:
+      - '**'
+    paths:
+      - "**/pom.xml"
 
 # Only run the latest job
 concurrency:

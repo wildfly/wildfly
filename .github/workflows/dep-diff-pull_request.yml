@@ -5,7 +5,9 @@ name: Dependency Tree Input Builder
 on:
   pull_request:
     branches:
-    - main
+      - main
+    paths:
+      - "**/pom.xml"
 env:
   # The modules to check for dependencies. If there is more than one they are comma separated
   MODULES_TO_CHECK: ee-feature-pack/galleon-shared,ee-feature-pack/galleon-local,galleon-pack/galleon-shared,galleon-pack/galleon-local,galleon-pack,ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common,elytron-oidc-client/galleon-common

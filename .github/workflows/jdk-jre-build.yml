@@ -4,7 +4,51 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - ".mvn/**"
+      - "docs/**"
+      - ".github/workflows/build-manual.yml"
+      - ".github/workflows/shared-wildfly-build.yml"
+      - '.gitattributes'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'build.bat'
+      - 'build.sh'
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "integration-tests.bat"
+      - "integration-tests.sh"
+      - "LICENSE.txt"
+      - "mvnw"
+      - "mvnw.cmd"
+      - "README.md"
+      - "SECURITY.md"
+      - "**/README.md"
+      - "**/README.adoc"
   pull_request:
+    branches:
+      - '**'
+    paths-ignore:
+      - ".mvn/**"
+      - "docs/**"
+      - ".github/workflows/build-manual.yml"
+      - ".github/workflows/shared-wildfly-build.yml"
+      - '.gitattributes'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'build.bat'
+      - 'build.sh'
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "integration-tests.bat"
+      - "integration-tests.sh"
+      - "LICENSE.txt"
+      - "mvnw"
+      - "mvnw.cmd"
+      - "README.md"
+      - "SECURITY.md"
+      - "**/README.md"
+      - "**/README.adoc"
 
 # Only run the latest job
 concurrency:
