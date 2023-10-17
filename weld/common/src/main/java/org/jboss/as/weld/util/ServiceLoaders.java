@@ -16,13 +16,13 @@ import java.util.Set;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.spi.BeanDeploymentArchiveServicesProvider;
 import org.jboss.as.weld.spi.ModuleServicesProvider;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.BootstrapService;
 import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.exceptions.IllegalStateException;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -45,7 +45,7 @@ public final class ServiceLoaders {
         T service = null;
         while (iterator.hasNext()) {
             if (service != null) {
-                throw new IllegalStateException("Exactly one service provider is required for: " + serviceClass);
+                WeldLogger.ROOT_LOGGER.missingService(serviceClass);
             }
             service = iterator.next();
         }

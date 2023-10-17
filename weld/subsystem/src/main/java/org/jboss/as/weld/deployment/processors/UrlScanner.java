@@ -126,7 +126,7 @@ class UrlScanner {
                 }
             }
         } catch (ZipException e) {
-            throw new RuntimeException("Error handling file " + file, e);
+            throw WeldLogger.DEPLOYMENT_LOGGER.errorHandlingFile(file, e);
         }
     }
 
