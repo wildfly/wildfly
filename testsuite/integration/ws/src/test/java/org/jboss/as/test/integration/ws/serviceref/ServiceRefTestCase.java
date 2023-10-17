@@ -8,6 +8,7 @@ package org.jboss.as.test.integration.ws.serviceref;
 import java.io.FilePermission;
 import java.net.NetPermission;
 import java.net.SocketPermission;
+import java.net.URLPermission;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.PropertyPermission;
@@ -83,6 +84,8 @@ public class ServiceRefTestCase {
                         //Required by the ProxySelector in the new HttpClientHTTPConduit
                         //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
                         new NetPermission("getProxySelector"),
+                        //Removed this after https://issues.apache.org/jira/browse/CXF-8935 is fxied
+                        new URLPermission("http:*", "POST:*"),
                         new SocketPermission(node0 + ":8080", "connect,resolve")
                 ), "jboss-permissions.xml");
     }

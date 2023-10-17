@@ -5,6 +5,7 @@
 
 package org.jboss.as.test.xts.suspend;
 
+import java.net.URLPermission;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -69,6 +70,8 @@ public abstract class AbstractTestCase {
                         //Required by the ProxySelector in the new HttpClientHTTPConduit
                         //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
                         new NetPermission("getProxySelector"),
+                        //Removed this after https://issues.apache.org/jira/browse/CXF-8935 is fxied
+                        new URLPermission("http:*", "POST:*"),
                         // WSDLFactory#L243 from wsdl4j library needs the following
                         new FilePermission(System.getProperty("java.home") + File.separator + "lib" + File.separator + "wsdl.properties", "read")
                         ), "permissions.xml");

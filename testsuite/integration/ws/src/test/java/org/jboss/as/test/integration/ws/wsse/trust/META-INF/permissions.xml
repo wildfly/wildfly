@@ -45,4 +45,14 @@
         <class-name>java.net.NetPermission</class-name>
         <name>getProxySelector</name>
     </permission>
+    <permission>
+        <class-name>java.net.URLPermission</class-name>
+        <name>http:*</name>
+        <actions>POST:*</actions>
+    </permission>
+    <permission>
+        <class-name>java.net.URLPermission</class-name>
+        <name>http:*</name>
+        <actions>GET:*</actions>
+    </permission>
 </permissions>

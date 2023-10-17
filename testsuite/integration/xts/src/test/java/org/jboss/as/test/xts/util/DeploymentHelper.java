@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
 import java.net.NetPermission;
+import java.net.URLPermission;
 import java.util.PropertyPermission;
 
 import org.jboss.as.test.shared.PermissionUtils;
@@ -77,7 +78,10 @@ public class DeploymentHelper {
                 new PropertyPermission("jboss.http.port", "read"),
                 //Required by the ProxySelector in the new HttpClientHTTPConduit
                 //This can be removed after the https://issues.apache.org/jira/browse/CXF-8933 is included
-                new NetPermission("getProxySelector")
+                new NetPermission("getProxySelector"),
+                //Removed this after https://issues.apache.org/jira/browse/CXF-8935 is fxied
+                new URLPermission("http:*", "POST:*"),
+                new URLPermission("http:*", "GET:*")
         );
     }
 
