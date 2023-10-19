@@ -74,34 +74,33 @@ public class ForwardedHandlerTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    @Deployment(name = FORWARDED_HANDLER_NO_UT_HANDLERS)
-    public static WebArchive deployWithoutUndertowHandlers() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_HANDLER_NO_UT_HANDLERS + ".war")
-                .addPackage(ForwardedHandlerTestCase.class.getPackage())
+    private static WebArchive createBaseDeployment(String name) {
+        return ShrinkWrap.create(WebArchive.class, name + ".war")
                 .addClass(TestSuiteEnvironment.class)
-                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml")
                 .addAsWebResource(new StringAsset("A file"), "index.html")
                 .addAsManifestResource(
-                    createPermissionsXmlAsset(
-                       new SocketPermission("*:0", "listen,resolve")),
-                    "permissions.xml");
+                        createPermissionsXmlAsset(new SocketPermission("*:0", "listen,resolve")),
+                        "permissions.xml");
+    }
+
+    @Deployment(name = FORWARDED_HANDLER_NO_UT_HANDLERS)
+    public static WebArchive deployWithoutUndertowHandlers() {
+        return createBaseDeployment(FORWARDED_HANDLER_NO_UT_HANDLERS)
+                .addPackage(ForwardedHandlerTestCase.class.getPackage())
+                .addAsWebInfResource(new StringAsset(JBOSS_WEB_TEXT), "jboss-web.xml");
     }
 
     @Deployment(name = FORWARDED_SERVLET)
     public static WebArchive deploy_servlet() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET + ".war")
+        return createBaseDeployment(FORWARDED_SERVLET)
                 .addClass(ForwardedTestHelperServlet.class)
-                .addClass(TestSuiteEnvironment.class)
-                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf")
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+                .addAsWebInfResource(new StringAsset(FORWARDER_HANDLER_NAME), "undertow-handlers.conf");
     }
 
     @Deployment(name = FORWARDED_SERVLET_NO_UT_HANDLERS)
     public static WebArchive deployWithoutUndertowHandlers_servlet() {
-        return ShrinkWrap.create(WebArchive.class, FORWARDED_SERVLET_NO_UT_HANDLERS + ".war")
-                .addClass(ForwardedTestHelperServlet.class)
-                .addClass(TestSuiteEnvironment.class)
-                .addAsWebResource(new StringAsset("A file"), "index.html");
+        return createBaseDeployment(FORWARDED_SERVLET_NO_UT_HANDLERS)
+                .addClass(ForwardedTestHelperServlet.class);
     }
 
     @Test
