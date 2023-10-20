@@ -77,7 +77,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build WildFly
-        run: mvn clean install -DskipTests -Dcheckstyle.skip=true -Denforcer.skip=true
+        run: mvn -B clean install -DskipTests -Dcheckstyle.skip=true -Denforcer.skip=true
       - id: version
         run: echo "wildfly-version=$(mvn -B help:evaluate -Dexpression=project.version -DforceStdout -q)" >> $GITHUB_OUTPUT
       - name: Archive the repository
