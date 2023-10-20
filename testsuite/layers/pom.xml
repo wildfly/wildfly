@@ -129,6 +129,20 @@
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
             </properties>
         </profile>
+
+        <profile>
+            <id>skip-tests-and-provisioning-profile</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <provisioning.phase>none</provisioning.phase>
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+            </properties>
+        </profile>
     </profiles>
 
             <build>
