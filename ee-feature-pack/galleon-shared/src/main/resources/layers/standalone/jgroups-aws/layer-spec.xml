@@ -8,6 +8,7 @@
     <props>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:jgroups"/>
         <prop name="org.wildfly.rule.add-on" value="clustering,jgroups-aws"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Brings in JBoss Modules modules required to configure the 'aws.S3_PING' discovery protocol."/>
     </props>
     <!--
     This layer only brings in modules required to configure the 'aws.S3_PING' discovery protocol:

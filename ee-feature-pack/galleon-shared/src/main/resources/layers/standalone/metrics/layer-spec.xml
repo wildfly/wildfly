@@ -9,6 +9,7 @@
     <props>
         <prop name="org.wildfly.rule.add-on" value="observability,metrics"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for base metrics from the WildFly Management Model and JVM MBeans."/>
     </props>
     <dependencies>
         <layer name="management"/>

@@ -10,6 +10,7 @@
         <prop name="org.wildfly.rule.properties-file-match-mp-kafka-property" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.connector.smallrye-kafka.*"/>
         <prop name="org.wildfly.rule.properties-file-match-mp-kafka-outgoing" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.outgoing.*.connector,smallrye-kafka"/>
         <prop name="org.wildfly.rule.properties-file-match-mp-kafka-incoming" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.incoming.*.connector,smallrye-kafka"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for the MicroProfile Reactive Messaging Kafka connector."/>
     </props>
     <dependencies>
         <layer name="microprofile-reactive-messaging"/>

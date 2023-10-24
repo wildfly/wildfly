@@ -9,6 +9,7 @@
     <props>
         <prop name="org.wildfly.rule.add-on" value="observability,health"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for runtime health checks."/>
     </props>
     <dependencies>
         <layer name="management"/>

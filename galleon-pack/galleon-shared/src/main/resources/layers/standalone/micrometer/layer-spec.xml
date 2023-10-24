@@ -7,6 +7,7 @@
     <props>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:cdi"/>
         <prop name="org.wildfly.rule.add-on" value="observability,micrometer"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for Micrometer."/>
     </props>
     <dependencies>
         <layer name="cdi"/>
