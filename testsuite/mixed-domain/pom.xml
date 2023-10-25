@@ -70,13 +70,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.build</groupId>
-            <artifactId>wildfly-server-provisioning-standalone</artifactId>
-            <!-- Set in root pom.xml -->
-            <version>${version.org.wildfly.build-tools}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <exclusions>
