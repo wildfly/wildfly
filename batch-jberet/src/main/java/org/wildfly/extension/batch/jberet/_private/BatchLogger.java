@@ -21,6 +21,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Log messages for WildFly batch module
@@ -198,4 +199,7 @@ public interface BatchLogger extends BasicLogger {
      */
     @Message(id = 20, value = "Permission denied. User %s does not have %s permissions.")
     JobSecurityException unauthorized(String user, Permission permission);
+
+    @Message(id = 21, value = "Duplicate virtual file %s.")
+    IllegalStateException duplicateVirtualFile(VirtualFile file);
 }
