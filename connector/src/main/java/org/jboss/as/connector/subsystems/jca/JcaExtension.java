@@ -478,7 +478,7 @@ public class JcaExtension implements Extension {
                     name = DEFAULT_NAME;
                     workManagerOperation.get(NAME).set(name);
                 } else {
-                    throw new XMLStreamException("name attribute is mandatory for workmanager element");
+                    throw ROOT_LOGGER.nameAttributeIsMandatory();
                 }
             }
 
@@ -877,7 +877,7 @@ public class JcaExtension implements Extension {
                             if (DEFAULT_NAME.equals(wmName)) {
                                 name = DEFAULT_NAME;
                             } else {
-                                throw new XMLStreamException("name attribute is mandatory for workmanager element");
+                                throw ROOT_LOGGER.nameAttributeIsMandatory();
                             }
                         }
 

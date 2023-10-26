@@ -206,11 +206,11 @@ public class ElytronCallbackHandler implements CallbackHandler, Serializable {
                     return context.getAuthorizedIdentity();
                 } else {
                     context.fail();
-                    throw new SecurityException("Authorization failed");
+                    throw SUBSYSTEM_RA_LOGGER.authorizationFailed();
                 }
             } else {
                 context.fail();
-                throw new SecurityException("Authentication failed");
+                throw SUBSYSTEM_RA_LOGGER.authorizationFailed();
             }
         } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
             context.fail();

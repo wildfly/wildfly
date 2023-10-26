@@ -14,6 +14,7 @@ import java.sql.Driver;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -966,4 +967,10 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 132, value = "Legacy security is no longer supported. Please use Elytron configuration instead")
     String legacySecurityNotSupported();
+
+    @Message(id = 133, value = "Authorization failed")
+    SecurityException authorizationFailed();
+
+    @Message(id = 134, value = "name attribute is mandatory for workmanager element")
+    XMLStreamException nameAttributeIsMandatory();
 }
