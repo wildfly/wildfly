@@ -1335,4 +1335,12 @@
         <packageUrl regex="true">^pkg:maven/io\.netty/netty\-.*@.*$</packageUrl>
         <cve>CVE-2023-4586</cve>
     </suppress>
+    <!--  False-positive - The problem isn't with dom4j but in underlaying saxreader -->
+    <suppress>
+        <notes><![CDATA[
+   file name: dom4j-2.1.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-45960</vulnerabilityName>
+    </suppress>
 </suppressions>
