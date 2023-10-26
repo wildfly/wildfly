@@ -9,6 +9,7 @@ import static org.jboss.as.ee.structure.Attachments.DEPLOYMENT_TYPE;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.bootstrap.spi.EEModuleDescriptor;
 import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
 
@@ -38,7 +39,7 @@ public class WeldEEModuleDescriptor extends EEModuleDescriptorImpl implements EE
             case APPLICATION_CLIENT:
                 return new WeldEEModuleDescriptor(id, ModuleType.APPLICATION_CLIENT);
             default:
-                throw new IllegalArgumentException("Unknown deployment type " + deploymentType);
+                throw WeldLogger.DEPLOYMENT_LOGGER.unknownDeploymentType(deploymentType);
         }
 
     }
