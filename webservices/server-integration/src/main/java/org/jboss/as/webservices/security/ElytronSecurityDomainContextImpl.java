@@ -59,7 +59,7 @@ public class ElytronSecurityDomainContextImpl implements SecurityDomainContext {
         }
         String username = principal.getName();
         if (!(password instanceof String)) {
-            throw new java.lang.IllegalArgumentException("only string password accepted");
+            throw WSLogger.ROOT_LOGGER.onlyStringPasswordAccepted();
         }
         SecurityIdentity identity = authenticate(username, (String) password);
         if (identity == null) {
