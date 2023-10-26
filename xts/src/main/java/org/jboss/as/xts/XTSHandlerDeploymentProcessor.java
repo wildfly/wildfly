@@ -13,6 +13,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.xts.jandex.CompensatableAnnotation;
 import org.jboss.as.xts.jandex.EndpointMetaData;
 import org.jboss.as.xts.jandex.TransactionalAnnotation;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.as.xts.txnclient.WildflyTransactionClientTxBridgeIntegrationHandler;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.util.ASHelper;
@@ -60,7 +61,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
                     modifiedWSMeta = modifiedWSMeta || result;
                 }
             } catch (XTSException e) {
-                throw new DeploymentUnitProcessingException("Error processing endpoint '" + endpoint + "'", e);
+                throw XtsAsLogger.ROOT_LOGGER.errorProcessingEndpoint(endpoint, e);
             }
         }
 
