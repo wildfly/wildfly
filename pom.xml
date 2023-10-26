@@ -413,7 +413,7 @@
         <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.3.2</version.io.smallrye.smallrye-opentelemetry>
         <version.io.smallrye.smallrye-reactive-messaging>4.9.0</version.io.smallrye.smallrye-reactive-messaging>
-        <version.io.undertow.jastow>2.2.6.Final</version.io.undertow.jastow>
+        <version.io.undertow.jastow>2.2.7.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.4.6</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.6</version.io.vertx.vertx-kafka-client>
         <version.jakarta.activation.jakarta.activation-api>2.1.2</version.jakarta.activation.jakarta.activation-api>
@@ -466,7 +466,7 @@
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.eclipse.angus.angus-activation>2.0.1</version.org.eclipse.angus.angus-activation>
         <version.org.eclipse.angus.angus-mail>2.0.2</version.org.eclipse.angus.angus-mail>
-        <version.org.eclipse.jdt>3.31.0</version.org.eclipse.jdt>
+        <version.org.eclipse.jdt>3.32.0</version.org.eclipse.jdt>
         <version.org.eclipse.microprofile>6.0</version.org.eclipse.microprofile>
         <version.org.eclipse.microprofile.config.api>3.0.2</version.org.eclipse.microprofile.config.api>
         <version.org.eclipse.microprofile.fault-tolerance.api>4.0.2</version.org.eclipse.microprofile.fault-tolerance.api>
