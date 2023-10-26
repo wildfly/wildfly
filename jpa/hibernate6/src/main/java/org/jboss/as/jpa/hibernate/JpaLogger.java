@@ -7,8 +7,10 @@ package org.jboss.as.jpa.hibernate;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import org.hibernate.boot.archive.spi.ArchiveException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -54,5 +56,8 @@ public interface JpaLogger extends BasicLogger {
             ", remove the setting or set to true.  "+
             "Refer to Hibernate ORM migration documentation for how to update the next id state in the application database.")
     IllegalStateException failOnIncompatibleSetting();
+
+    @Message(id = 20264, value = "Unable to open VirtualFile-based InputStream")
+    ArchiveException unableOpenInputStream(@Cause Throwable cause);
 
 }
