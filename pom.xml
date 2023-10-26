@@ -293,7 +293,7 @@
             This is not limited to plugin versions. Other artifacts that those plugins depend upon can go here
             if they are not otherwise used.
          -->
-        <version.ant.junit>1.10.13</version.ant.junit>
+        <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.10</version.org.jacoco>
         <version.org.jboss.galleon>5.2.1.Final</version.org.jboss.galleon>
