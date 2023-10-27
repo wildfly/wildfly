@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import io.smallrye.config.SmallRyeConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -76,6 +77,11 @@ class ReactiveMessagingSslConfigProcessor implements DeploymentUnitProcessor {
             ReactiveMessagingConfigSource.addProperties(config, addedProperties);
             for (ServiceName svcName : mscDependencies) {
                 phaseContext.addDeploymentDependency(svcName, DEPLOYMENT_ATTACHMENT_KEY);
+            }
+            if (config instanceof SmallRyeConfig) {
+                // Refresh the cached property names so our new entries show up elsewhere
+                // SmallRye Config 3.4 introduced caching of the property names
+                ((SmallRyeConfig) config).getLatestPropertyNames();
             }
         }
     }
