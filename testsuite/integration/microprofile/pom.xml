@@ -389,8 +389,6 @@
                                 <!--Dependencies for lra specs -->
                                 <layer>microprofile-lra-coordinator</layer>
                                 <layer>microprofile-lra-participant</layer>
-                                <!-- ts.bootable.preview tests require this -->
-                                <layer>microprofile-rest-client</layer>
                             </layers>
                         </configuration>
                     </execution>
