@@ -5,7 +5,7 @@
 package org.jboss.as.appclient.deployment;
 
 import java.util.HashSet;
-import java.util.ListIterator;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -58,7 +58,7 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
             moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER));
         }
 
-        final ListIterator<ModuleDependency> iterator = moduleSpecification.getMutableUserDependencies().listIterator();
+        final Iterator<ModuleDependency> iterator = moduleSpecification.getMutableUserDependencies().iterator();
         while (iterator.hasNext()) {
             final ModuleDependency dep = iterator.next();
             final ModuleIdentifier identifier = dep.getIdentifier();
