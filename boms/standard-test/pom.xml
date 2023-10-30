@@ -81,10 +81,15 @@
 
             <dependency>
                 <groupId>org.apache.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <version>${version.groovy-all}</version>
-                <type>pom</type>
+                <artifactId>groovy</artifactId>
+                <version>${version.org.apache.groovy}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
