@@ -28,7 +28,7 @@
         <surefire.forked.process.timeout>5400</surefire.forked.process.timeout>
         <test-group>org/jboss/as/test/clustering/cluster</test-group>
         <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
-        <version.org.infinispan.server.driver>${version.org.infinispan}</version.org.infinispan.server.driver>
+        <version.org.infinispan.server.driver>14.0.19.Final</version.org.infinispan.server.driver>
         <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
