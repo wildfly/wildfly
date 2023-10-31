@@ -10,6 +10,7 @@ import java.util.List;
 
 import jakarta.faces.application.ViewHandler;
 import org.jboss.as.jsf.logging.JSFLogger;
+import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -18,7 +19,10 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.MultipartConfigMetaData;
+
+import com.sun.faces.config.ConfigureListener;
 
 /**
  * @author Stuart Douglas
@@ -66,11 +70,12 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         if(JsfVersionMarker.isJsfDisabled(deploymentUnit)) {
             return;
         }
-        if(metaData == null || metaData.getMergedJBossWebMetaData() == null || metaData.getMergedJBossWebMetaData().getServlets() == null) {
+        JBossWebMetaData webMetaData = (metaData != null) ? metaData.getMergedJBossWebMetaData() : null;
+        if (webMetaData == null || webMetaData.getServlets() == null) {
             return;
         }
         JBossServletMetaData jsf = null;
-        for(JBossServletMetaData servlet : metaData.getMergedJBossWebMetaData().getServlets()) {
+        for(JBossServletMetaData servlet : webMetaData.getServlets()) {
             if(JAVAX_FACES_WEBAPP_FACES_SERVLET.equals(servlet.getServletClass())) {
                 jsf = servlet;
             }
@@ -81,22 +86,34 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         }
         if (disallowDoctypeDecl != null) {
             // Add the disallowDoctypeDecl context param if it's not already present
-            setContextParameterIfAbsent(metaData.getMergedJBossWebMetaData(), DISALLOW_DOCTYPE_DECL, disallowDoctypeDecl.toString());
+            setContextParameterIfAbsent(webMetaData, DISALLOW_DOCTYPE_DECL, disallowDoctypeDecl.toString());
         }
-        // Auto-disable lazy bean validation for distributable web application.
-        // This can otherwise cause missing @PreDestroy events.
-        if (metaData.getMergedJBossWebMetaData().getDistributable() != null) {
+        if (webMetaData.getDistributable() != null) {
+            // Auto-disable lazy bean validation for distributable web application.
+            // This can otherwise cause missing @PreDestroy events.
             String disabled = Boolean.toString(false);
-            if (!setContextParameterIfAbsent(metaData.getMergedJBossWebMetaData(), LAZY_BEAN_VALIDATION_PARAM, disabled).equals(disabled)) {
+            if (!setContextParameterIfAbsent(webMetaData, LAZY_BEAN_VALIDATION_PARAM, disabled).equals(disabled)) {
                 JSFLogger.ROOT_LOGGER.lazyBeanValidationEnabled();
+            }
+
+            String version = JsfVersionMarker.getVersion(deploymentUnit);
+            // Disable counter-productive "distributable" logic in Mojarra implementation
+            if (version.equals(JsfVersionMarker.JSF_4_0) && JSFModuleIdFactory.getInstance().getImplModId(version).getSlot().equals(JSFResourceDefinition.DEFAULT_SLOT)) {
+                ListenerMetaData mojarraListenerMetaData = new ListenerMetaData();
+                mojarraListenerMetaData.setListenerClass(ConfigureListener.class.getName());
+                ListenerMetaData workaroundListenerMetaData = new ListenerMetaData();
+                workaroundListenerMetaData.setListenerClass(NonDistributableServletContextListener.class.getName());
+
+                webMetaData.getListeners().add(mojarraListenerMetaData);
+                // Ensure workaround listener runs after Mojarra's bootstrap listener
+                webMetaData.getListeners().add(workaroundListenerMetaData);
             }
         }
         // Set a default buffer size as 1024 is too small
-        final JBossWebMetaData webMetaData = metaData.getMergedJBossWebMetaData();
         // First check the legacy facelets.BUFFER_SIZE property which is required for backwards compatibility
         if (!hasContextParam(webMetaData, "facelets.BUFFER_SIZE")) {
             // The legacy parameter has not been set, set a default buffer if the current parameter name has not been set.
-            setContextParameterIfAbsent(metaData.getMergedJBossWebMetaData(), ViewHandler.FACELETS_BUFFER_SIZE_PARAM_NAME, Integer.toString(defaultBufferSize));
+            setContextParameterIfAbsent(webMetaData, ViewHandler.FACELETS_BUFFER_SIZE_PARAM_NAME, Integer.toString(defaultBufferSize));
         }
     }
 
