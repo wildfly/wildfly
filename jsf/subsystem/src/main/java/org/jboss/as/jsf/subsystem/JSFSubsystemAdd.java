@@ -5,15 +5,11 @@
 
 package org.jboss.as.jsf.subsystem;
 
-import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 import org.jboss.as.jsf.deployment.JSFBeanValidationFactoryProcessor;
-import org.jboss.as.jsf.deployment.JSFCdiExtensionDeploymentProcessor;
 import org.jboss.as.jsf.deployment.JSFComponentProcessor;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.as.jsf.deployment.JSFMetadataProcessor;
@@ -51,11 +47,6 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_METADATA, new JSFMetadataProcessor(disallowDoctypeDecl));
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JSF, new JSFDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFComponentProcessor());
-
-                CapabilityServiceSupport capabilities = context.getCapabilityServiceSupport();
-                if (capabilities.hasCapability(WELD_CAPABILITY_NAME)) {
-                    processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_CDI_EXTENSIONS, new JSFCdiExtensionDeploymentProcessor());
-                }
 
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JSFAnnotationProcessor());
                 if (context.hasOptionalCapability("org.wildfly.bean-validation", null, null)) {
