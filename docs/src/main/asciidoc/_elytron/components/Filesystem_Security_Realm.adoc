@@ -282,3 +282,45 @@ $JBOSS_HOME/bin/elytron-tool.sh filesystem-realm-encrypt -i ./standalone/configu
 This command creates a new filesystem realm by taking the existing filesystem realm from the specified input location, `./standalone/configuration/fs-realm-plain`, and encrypting its contents using the secret key with alias `key` from the specified credential store, `./mycredstore.cs`. The new filesystem realm is stored in the specified output location, `./standalone/configuration/fs-realm-enc`.
 
 A `.cli` script will also be generated at the root of the filesystem realm. The script contains WildFly CLI commands that can be used to configure a `secret-key-credential-store` resource and a `filesystem-realm` resource in the Elytron subsystem that makes use of the newly encrypted realm content.
+
+== Adding Integrity Checking for an Existing Filesystem Realm
+
+Integrity checking can also be added to an existing filesystem realm using the WildFly Elytron Tool. This takes an existing filesystem realm and creates a new filesystem realm with integrity checking support. The integrity checking uses a public and private key pair. The key pair will be used to create a new filesystem realm where each identity will be signed using the private key. This makes it possible to verify that identities in the realm haven't been tampered with. 
+
+The feature also creates a CLI script that can be used to add a key-store resource and a filesystem-realm resource in the Elytron subsystem that makes use of the newly signed realm content.
+
+In order to use this feature, we can make use of the `elytron-tool.sh` (or .bat for windows) script. The format for the command to add integrity checking is as follows:
+```
+$ WILDFLY_HOME/bin/elytron-tool.sh filesystem-realm-integrity --input-location <existing_path> --output-location <new_path> --keystore <ks_path> --password <ks_password> --summary
+```
+
+The required options include: 
+* input-location: This is the path for the existing filesystem realm that does not have an integrity checking. This must be the path to the directory containing the filesystem. This can also be specified using `-i`. This must be an existing path. 
+* output-location: This attribute will be the path for the new filesystem realm. This filesystem realm will include integrity checking. This can also be specified using `-o`. This path is also a path to a directory.
+* keystore: Path for the keystore that holds the key pair for integrity checking. Can also be specified using `-k`. 
+* password: This is the password for the keystore. This can also be specified using `-p`. 
+
+The elytron tool also allows for the conversion to be done in bulk, as in multiple filesystems can be converted all at once. This can be done using the following command: 
+```
+$ WILDFLY_HOME/bin/elytron-tool.sh filesystem-realm-integrity --bulk-convert <descriptor> 
+```
+In this case `<descriptor>` is a file, which contains the instructions for bulk conversion. An example of a descriptor file is shown below. Notice that each block contains the options to use for converting a single realm. Additionally, in addition to specifying the `input-location`, we have specified the `realm-name` as well. 
+```
+input-location:standalone/configuration/unsigned-realm-one
+output-location:standalone/configuration/signed
+keystore:myKeyStore
+password:myPassword
+key-pair:myKeyPair
+realm-name:realm-one
+
+input-location:standalone/configuration/unsigned-realm-two
+output-location:standalone/configuration/signed
+keystore:myKeyStore
+password:myPassword
+key-pair:myKeyPair
+realm-name:realm-two
+```
+
+There are other options that can be specified for converting a filesystem realm, the details of which can be found using the `./bin/elytron-tool.sh filesystem-realm-integrity -h` command. 
+
+
