@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:3.1">
+    <append-file
+            target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/index.txt"
+            ignore="true">
+        <line>wildfly-ee-feature-pack.txt</line>
+    </append-file>
+    <copy-path src="wildfly-ee-feature-pack.txt" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.txt"/>
+
+</tasks>
