@@ -29,6 +29,17 @@
             </licenses>
         </dependency>
         <dependency>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <licenses>
+                <license>
+                    <name>The BSD License</name>
+                    <url>http://repository.jboss.org/licenses/bsd.txt</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-common-protos</artifactId>
             <licenses>
@@ -962,6 +973,17 @@
             </licenses>
         </dependency>
         <dependency>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-microprofile-config-smallrye</artifactId>
             <licenses>
@@ -1228,6 +1250,17 @@
         <dependency>
             <groupId>org.wildfly.security.mp</groupId>
             <artifactId>wildfly-elytron-jwt</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                    <distribution>repo</distribution>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
             <licenses>
                 <license>
                     <name>Apache License 2.0</name>

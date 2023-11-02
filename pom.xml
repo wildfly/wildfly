@@ -372,6 +372,7 @@
         <version.com.github.fge.jackson-coreutils>1.8</version.com.github.fge.jackson-coreutils>
         <version.com.github.fge.json-patch>1.9</version.com.github.fge.json-patch>
         <version.com.github.fge.msg-simple>1.1</version.com.github.fge.msg-simple>
+        <version.com.github.luben.zstd-jni>1.5.2-1</version.com.github.luben.zstd-jni>
         <version.com.google.api.grpc>2.0.1</version.com.google.api.grpc>
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
         <version.com.google.guava>32.1.2-jre</version.com.google.guava>
@@ -535,6 +536,7 @@
         <version.org.jvnet.staxex>2.1.0</version.org.jvnet.staxex>
         <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
+        <version.org.lz4.lz4-java>1.8.0</version.org.lz4.lz4-java>
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.5</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
@@ -546,6 +548,7 @@
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.software.amazon.awssdk>2.20.126</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
+        <version.org.xerial.snappy.snappy-java>1.1.8.4</version.org.xerial.snappy.snappy-java>
         <version.sun.jaxb>${version.org.glassfish.jaxb}</version.sun.jaxb>
         <version.wsdl4j>1.6.3</version.wsdl4j>
         <version.xml-resolver>1.2</version.xml-resolver>
