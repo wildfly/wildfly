@@ -296,7 +296,7 @@
         <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.2</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.10</version.org.jacoco>
-        <version.org.jboss.galleon>5.2.1.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>5.2.2.Final</version.org.jboss.galleon>
         <version.org.wildfly.glow>1.0.0.Alpha6</version.org.wildfly.glow>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
