@@ -10,6 +10,7 @@
         <prop name="org.wildfly.rule.class" value="io.opentelemetry.api.*,io.opentelemetry.sdk.*"/>
         <prop name="org.wildfly.rule.add-on-depends-on" value="only:cdi"/>
         <prop name="org.wildfly.rule.add-on" value="observability,opentelemetry"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for OpenTelemetry."/>
     </props>
     <dependencies>
         <layer name="cdi"/>

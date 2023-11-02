@@ -10,6 +10,7 @@
         <prop name="org.wildfly.rule.add-on" value="messaging,embedded-activemq"/>
         <prop name="org.wildfly.rule.add-on-cardinality" value="1"/>
         <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*-jms.xml,/META-INF/*-jms.xml],/messaging-deployment/server/jms-destinations"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for an embedded Apache Activemq Artemis Jakarta Messaging broker."/>
     </props>
     <dependencies>
         <layer name="messaging-activemq"/>
