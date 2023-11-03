@@ -12,6 +12,7 @@ import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArch
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -30,7 +31,9 @@ public class DeploymentProcessor implements ApplicationArchiveProcessor {
             extensionsJar.addAsServiceProvider(Providers.class, ExceptionMapper.class);
 
             WebArchive war = WebArchive.class.cast(archive);
-            war.addAsLibraries(extensionsJar);
+            war
+                    .addAsLibraries(extensionsJar)
+                    .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"/>"), "beans.xml");
 
             final File archiveDir = new File("target/archives");
             archiveDir.mkdirs();

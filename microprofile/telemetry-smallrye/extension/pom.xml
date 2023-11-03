@@ -55,6 +55,10 @@
             <artifactId>smallrye-opentelemetry-cdi</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-propagation</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
         </dependency>

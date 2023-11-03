@@ -5,6 +5,12 @@
 
 <suite name="MicroProfile TCKs" verbose="1" preserve-order="true" configfailurepolicy="continue">
     <test name="microprofile-telemetry">
+        <groups>
+            <run>
+                <exclude name="optional-tests"/>
+                <exclude name="optional-jaxrs-tests"/>
+            </run>
+        </groups>
         <packages>
             <package name="org.eclipse.microprofile.telemetry.tracing.tck.*"/>
         </packages>
