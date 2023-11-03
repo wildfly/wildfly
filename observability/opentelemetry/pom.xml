@@ -40,7 +40,7 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Jakarata-native Deps -->
+        <!-- Jakarta-native Deps -->
 
         <dependency>
             <groupId>jakarta.ws.rs</groupId>

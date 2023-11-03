@@ -22,6 +22,10 @@
         <module name="io.opentelemetry.context" />
         <module name="io.opentelemetry.exporter" />
         <module name="io.smallrye.opentelemetry" />
+<!--
+        <module name="io.vertx.core" />
+        <module name="io.vertx.grpc-client" />
+-->
 
         <module name="java.logging"/>
         <module name="jakarta.enterprise.api" />

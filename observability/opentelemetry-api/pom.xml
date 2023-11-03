@@ -90,5 +90,6 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 </project>

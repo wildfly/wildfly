@@ -364,6 +364,17 @@
             </dependency>
 
             <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${version.io.grpc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-core</artifactId>
                 <version>${version.io.micrometer}</version>
@@ -477,19 +488,8 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <artifactId>opentelemetry-exporter-sender-jdk</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -621,6 +621,17 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-java-http-client</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
@@ -849,6 +860,17 @@
             </dependency>
             <dependency>
                 <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-exporters</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
                 <artifactId>smallrye-opentelemetry-rest</artifactId>
                 <version>${version.io.smallrye.smallrye-opentelemetry}</version>
                 <exclusions>
@@ -1042,6 +1064,28 @@
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>
                         <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-client</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-common</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

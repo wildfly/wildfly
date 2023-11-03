@@ -42,6 +42,7 @@ class OpenTelemetrySubsystemAdd extends AbstractBoottimeAddStepHandler {
                 OpenTelemetrySubsystemDefinition.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
                 OpenTelemetrySubsystemDefinition.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
                 OpenTelemetrySubsystemDefinition.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemDefinition.SPAN_PROCESSOR_TYPE.resolveModelAttribute(context, model).asStringOrNull(),
                 OpenTelemetrySubsystemDefinition.SAMPLER.resolveModelAttribute(context, model).asStringOrNull(),
                 OpenTelemetrySubsystemDefinition.RATIO.resolveModelAttribute(context, model).asDoubleOrNull()
         );
