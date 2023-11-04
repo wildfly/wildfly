@@ -109,6 +109,11 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
     }
 
     @Override
+    public String getCurrentClusterName() {
+        return this.container.getCurrentClusterName();
+    }
+
+    @Override
     public boolean switchToCluster(String clusterName) {
         return this.container.switchToCluster(clusterName);
     }
