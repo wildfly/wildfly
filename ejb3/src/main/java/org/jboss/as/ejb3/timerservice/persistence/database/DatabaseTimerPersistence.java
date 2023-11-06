@@ -136,6 +136,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
     private static final String CREATE_AUTO_TIMER = "create-auto-timer";
     private static final String UPDATE_TIMER = "update-timer";
     private static final String LOAD_ALL_TIMERS = "load-all-timers";
+    private static final String LOAD_ALL_TIMERS_BY_EXTERNAL_ID = "load-all-timers-external-id";
     private static final String LOAD_TIMER = "load-timer";
     private static final String DELETE_TIMER = "delete-timer";
     private static final String UPDATE_RUNNING = "update-running";
@@ -661,6 +662,69 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
     }
 
     @Override
+    public List<TimerImpl> loadActiveTimersByExternalId(final String externalId, final TimerServiceImpl timerService) {
+        String loadTimer = sql.getProperty(LOAD_ALL_TIMERS_BY_EXTERNAL_ID);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = dataSource.getConnection();
+            statement = connection.prepareStatement(loadTimer);
+            statement.setString(1, externalId);
+            statement.setString(2, partition);
+            resultSet = statement.executeQuery();
+            final List<Holder> timers = new ArrayList<>();
+            while (resultSet.next()) {
+                String timerId = null;
+                try {
+                    timerId = resultSet.getString(1);
+                    final Holder timerImpl = timerFromResult(resultSet, timerService, timerId, null);
+                    if (timerImpl != null) {
+                        timers.add(timerImpl);
+                    } else {
+                        final String deleteTimer = sql.getProperty(DELETE_TIMER);
+                        try (PreparedStatement deleteStatement = connection.prepareStatement(deleteTimer)) {
+                            deleteStatement.setString(1, resultSet.getString(2));
+                            deleteStatement.setString(2, timerId);
+                            deleteStatement.setString(3, partition);
+                            deleteStatement.execute();
+                        }
+                    }
+                } catch (Exception e) {
+                    EjbLogger.EJB3_TIMER_LOGGER.timerReinstatementFailed(resultSet.getString(2), timerId, e);
+                }
+            }
+            synchronized (this) {
+
+                for(Holder timer : timers) {
+                    if(timer.requiresReset) {
+                        TimerImpl ret = timer.timer;
+                        EjbLogger.DEPLOYMENT_LOGGER.loadedPersistentTimerInTimeout(ret.getId(), ret.getTimedObjectId());
+                        if(ret.getNextExpiration() == null) {
+                            ret.setTimerState(TimerState.CANCELED, null);
+                            persistTimer(ret);
+                        } else {
+                            ret.setTimerState(TimerState.ACTIVE, null);
+                            persistTimer(ret);
+                        }
+                    }
+                }
+            }
+            List<TimerImpl> ret = new ArrayList<>();
+            for(Holder timer : timers) {
+                ret.add(timer.timer);
+            }
+            return ret;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            safeClose(resultSet);
+            safeClose(statement);
+            safeClose(connection);
+        }
+    }
+
+    @Override
     public Closeable registerChangeListener(final String timedObjectId, TimerChangeListener listener) {
         changeListeners.put(timedObjectId, listener);
         return new Closeable() {
@@ -761,54 +825,55 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
     private void statementParameters(final TimerImpl timerEntity, final PreparedStatement statement) throws SQLException {
         statement.setString(1, timerEntity.getId());
         statement.setString(2, timerEntity.getTimedObjectId());
-        statement.setTimestamp(3, timestamp(timerEntity.getInitialExpiration()));
-        statement.setLong(4, timerEntity.getInterval());
-        statement.setTimestamp(5, timestamp(timerEntity.getNextExpiration()));
-        statement.setTimestamp(6, timestamp(timerEntity.getPreviousRun()));
-        statement.setString(7, null);
-        statement.setString(8, serialize(timerEntity.getTimerInfo()));
-        statement.setString(9, timerEntity.getState().name());
+        statement.setString(3, timerEntity.getExternalId());
+        statement.setTimestamp(4, timestamp(timerEntity.getInitialExpiration()));
+        statement.setLong(5, timerEntity.getInterval());
+        statement.setTimestamp(6, timestamp(timerEntity.getNextExpiration()));
+        statement.setTimestamp(7, timestamp(timerEntity.getPreviousRun()));
+        statement.setString(8, null);
+        statement.setString(9, serialize(timerEntity.getTimerInfo()));
+        statement.setString(10, timerEntity.getState().name());
 
         if (timerEntity instanceof CalendarTimer) {
             final CalendarTimer c = (CalendarTimer) timerEntity;
-            statement.setString(10, c.getScheduleExpression().getSecond());
-            statement.setString(11, c.getScheduleExpression().getMinute());
-            statement.setString(12, c.getScheduleExpression().getHour());
-            statement.setString(13, c.getScheduleExpression().getDayOfWeek());
-            statement.setString(14, c.getScheduleExpression().getDayOfMonth());
-            statement.setString(15, c.getScheduleExpression().getMonth());
-            statement.setString(16, c.getScheduleExpression().getYear());
+            statement.setString(11, c.getScheduleExpression().getSecond());
+            statement.setString(12, c.getScheduleExpression().getMinute());
+            statement.setString(13, c.getScheduleExpression().getHour());
+            statement.setString(14, c.getScheduleExpression().getDayOfWeek());
+            statement.setString(15, c.getScheduleExpression().getDayOfMonth());
+            statement.setString(16, c.getScheduleExpression().getMonth());
+            statement.setString(17, c.getScheduleExpression().getYear());
             // WFLY-9054: Oracle ojdbc6/7 store a timestamp as '06-JUL-17 01.54.00.269000000 PM'
             //            but expect 'YYYY-MM-DD hh:mm:ss.fffffffff' as all other DB
-            statement.setString(17, schedulerDateAsString(c.getScheduleExpression().getStart()));
-            statement.setString(18, schedulerDateAsString(c.getScheduleExpression().getEnd()));
-            statement.setString(19, c.getScheduleExpression().getTimezone());
-            statement.setBoolean(20, false);
+            statement.setString(18, schedulerDateAsString(c.getScheduleExpression().getStart()));
+            statement.setString(19, schedulerDateAsString(c.getScheduleExpression().getEnd()));
+            statement.setString(20, c.getScheduleExpression().getTimezone());
+            statement.setBoolean(21, false);
 
-            statement.setString(21, null);
             statement.setString(22, null);
             statement.setString(23, null);
+            statement.setString(24, null);
 
-            statement.setBoolean(24, true);
+            statement.setBoolean(25, true);
         } else {
-            statement.setString(10, null);
             statement.setString(11, null);
             statement.setString(12, null);
             statement.setString(13, null);
             statement.setString(14, null);
             statement.setString(15, null);
             statement.setString(16, null);
-            statement.setTimestamp(17, null);
+            statement.setString(17, null);
             statement.setTimestamp(18, null);
-            statement.setString(19, null);
-            statement.setBoolean(20, false);
-            statement.setString(21, null);
+            statement.setTimestamp(19, null);
+            statement.setString(20, null);
+            statement.setBoolean(21, false);
             statement.setString(22, null);
             statement.setString(23, null);
-            statement.setBoolean(24, false);
+            statement.setString(24, null);
+            statement.setBoolean(25, false);
         }
-        statement.setString(25, partition);
-        setNodeName(timerEntity.getState(), statement, 26);
+        statement.setString(26, partition);
+        setNodeName(timerEntity.getState(), statement, 27);
     }
 
     private void addAutoTimer(final CalendarTimer timer) {
@@ -829,51 +894,52 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service {
             // insert values
             statement.setString(1, timer.getId());
             statement.setString(2, timer.getTimedObjectId());
-            statement.setTimestamp(3, timestamp(timer.getNextExpiration()));
-            statement.setString(4, timerInfoString);
-            statement.setString(5, exp.getSecond());
-            statement.setString(6, exp.getMinute());
-            statement.setString(7, exp.getHour());
-            statement.setString(8, exp.getDayOfWeek());
-            statement.setString(9, exp.getDayOfMonth());
-            statement.setString(10, exp.getMonth());
-            statement.setString(11, exp.getYear());
-            statement.setString(12, startDateString);
-            statement.setString(13, endDateString);
-            statement.setString(14, exp.getTimezone());
-            statement.setBoolean(15, true);
-            statement.setString(16, timeoutMethodClassName);
-            statement.setString(17, timeoutMethod.getName());
-            statement.setString(18, timeoutMethodParam);
-            statement.setBoolean(19, true);
-            statement.setString(20, partition);
+            statement.setString(3, timer.getExternalId());
+            statement.setTimestamp(4, timestamp(timer.getNextExpiration()));
+            statement.setString(5, timerInfoString);
+            statement.setString(6, exp.getSecond());
+            statement.setString(7, exp.getMinute());
+            statement.setString(8, exp.getHour());
+            statement.setString(9, exp.getDayOfWeek());
+            statement.setString(10, exp.getDayOfMonth());
+            statement.setString(11, exp.getMonth());
+            statement.setString(12, exp.getYear());
+            statement.setString(13, startDateString);
+            statement.setString(14, endDateString);
+            statement.setString(15, exp.getTimezone());
+            statement.setBoolean(16, true);
+            statement.setString(17, timeoutMethodClassName);
+            statement.setString(18, timeoutMethod.getName());
+            statement.setString(19, timeoutMethodParam);
+            statement.setBoolean(20, true);
+            statement.setString(21, partition);
 
             // where clause
-            statement.setString(21, timer.getTimedObjectId());
-            statement.setString(22, exp.getSecond());
-            statement.setString(23, exp.getMinute());
-            statement.setString(24, exp.getHour());
-            statement.setString(25, exp.getDayOfWeek());
-            statement.setString(26, exp.getDayOfMonth());
-            statement.setString(27, exp.getMonth());
-            statement.setString(28, exp.getYear());
+            statement.setString(22, timer.getTimedObjectId());
+            statement.setString(23, exp.getSecond());
+            statement.setString(24, exp.getMinute());
+            statement.setString(25, exp.getHour());
+            statement.setString(26, exp.getDayOfWeek());
+            statement.setString(27, exp.getDayOfMonth());
+            statement.setString(28, exp.getMonth());
+            statement.setString(29, exp.getYear());
 
-            statement.setString(29, startDateString);
             statement.setString(30, startDateString);
+            statement.setString(31, startDateString);
 
-            statement.setString(31, endDateString);
             statement.setString(32, endDateString);
+            statement.setString(33, endDateString);
 
-            statement.setString(33, exp.getTimezone());
             statement.setString(34, exp.getTimezone());
+            statement.setString(35, exp.getTimezone());
 
-            statement.setString(35, timeoutMethodClassName);
-            statement.setString(36, timeoutMethod.getName());
+            statement.setString(36, timeoutMethodClassName);
+            statement.setString(37, timeoutMethod.getName());
 
-            statement.setString(37, timeoutMethodParam);
             statement.setString(38, timeoutMethodParam);
+            statement.setString(39, timeoutMethodParam);
 
-            statement.setString(39, partition);
+            statement.setString(40, partition);
 
             int affectedRows = statement.executeUpdate();
             if (affectedRows < 1) {
