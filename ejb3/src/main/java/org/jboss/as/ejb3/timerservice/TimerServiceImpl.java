@@ -205,7 +205,7 @@ public class TimerServiceImpl implements ManagedTimerService {
         if (expiration.getTime() < 0) {
             throw EJB3_TIMER_LOGGER.invalidTimerParameter("expiration.getTime", Long.toString(expiration.getTime()));
         }
-        return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent());
+        return this.createTimer(expiration, 0, timerConfig.getInfo(), timerConfig.isPersistent(), timerConfig.getExternalId());
     }
 
     public TimerImpl loadAutoTimer(ScheduleExpression schedule,TimerConfig timerConfig, Method timeoutMethod) {
@@ -276,6 +276,24 @@ public class TimerServiceImpl implements ManagedTimerService {
      * @return Returns the newly created timer
      */
     private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent) {
+        return createTimer(initialExpiration, intervalDuration, info, persistent, null);
+    }
+
+    /**
+     * Create a {@link jakarta.ejb.Timer}. Caller of this method should already have checked for allowed operations,
+     * and validated parameters.
+     *
+     * @param initialExpiration The {@link java.util.Date} at which the first timeout should occur.
+     *                          <p>If the date is in the past, then the timeout is triggered immediately
+     *                          when the timer moves to {@link TimerState#ACTIVE}</p>
+     * @param intervalDuration  The interval (in milliseconds) between consecutive timeouts for the newly created timer.
+     *                          <p>Cannot be a negative value. A value of 0 indicates a single timeout action</p>
+     * @param info              {@link java.io.Serializable} info that will be made available through the newly created timer's {@link jakarta.ejb.Timer#getInfo()} method
+     * @param persistent        True if the newly created timer has to be persistent
+     * @param externalId        External identifier from app creating timer
+     * @return Returns the newly created timer
+     */
+    private Timer createTimer(Date initialExpiration, long intervalDuration, Serializable info, boolean persistent, String externalId) {
         // allowed method check and parameter validation are already done in all code paths before reaching here.
         // create an id for the new timer instance
         UUID uuid = UUID.randomUUID();
@@ -290,6 +308,7 @@ public class TimerServiceImpl implements ManagedTimerService {
                 .setPersistent(persistent)
                 .setTimerState(TimerState.CREATED)
                 .setTimedObjectId(getInvoker().getTimedObjectId())
+                .setExternalId(externalId)
                 .build(this);
 
         // now "start" the timer. This involves, moving the timer to an ACTIVE state
@@ -326,6 +345,7 @@ public class TimerServiceImpl implements ManagedTimerService {
                 .setTimedObjectId(getInvoker().getTimedObjectId())
                 .setInfo(info)
                 .setNewTimer(true)
+                .setExternalId(null)
                 .build(this);
 
         this.persistTimer(timer, true);
