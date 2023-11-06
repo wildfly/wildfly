@@ -318,7 +318,7 @@
         <version.com.beust>1.78</version.com.beust>
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.dom4j>2.1.3</version.dom4j>
-        <version.httpunit>1.7.2</version.httpunit>
+        <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.13.Final</legacy.version.io.netty>
         <version.io.rest-assured>3.0.6</version.io.rest-assured>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
