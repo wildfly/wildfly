@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -27,6 +26,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
@@ -53,7 +53,7 @@ public abstract class AbstractJSFFailoverTestCase extends AbstractClusteringTest
         Matcher matcher;
 
         NumberGuessState state = new NumberGuessState();
-        String responseString = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+        String responseString = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
         Map.Entry<String, String> sessionRouteEntry = parseSessionRoute(response);
         state.sessionId = (sessionRouteEntry != null) ? sessionRouteEntry.getKey() : sessionId;
