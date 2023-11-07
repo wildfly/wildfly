@@ -152,6 +152,12 @@ public abstract class LayersTestBase {
             // WFLY-8770 jgroups-aws layer modules needed to configure the aws.S3_PING protocol are not referenced
             "org.jgroups.aws",
             "software.amazon.awssdk.s3",
+            // Extension not included in the default config
+            "org.jboss.mod_cluster.container.spi",
+            "org.jboss.mod_cluster.core",
+            "org.jboss.mod_cluster.load.spi",
+            "org.wildfly.extension.mod_cluster",
+            "org.wildfly.mod_cluster.undertow"
     };
 
 
