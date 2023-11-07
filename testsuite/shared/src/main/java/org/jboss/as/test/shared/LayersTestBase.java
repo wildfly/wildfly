@@ -205,6 +205,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
             "org.wildfly.reactive.mutiny.reactive-streams-operators.cdi-provider",
             "io.vertx.client",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.metrics-smallrye",
+            // Extension not included in the default config
+            "org.wildfly.extension.microprofile.opentracing-smallrye",
             // Injected by jaxrs subsystem
             "org.jboss.resteasy.microprofile.config",
             "org.jboss.resteasy.resteasy-client-microprofile",
