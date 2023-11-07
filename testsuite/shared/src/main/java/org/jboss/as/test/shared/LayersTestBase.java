@@ -157,7 +157,9 @@ public abstract class LayersTestBase {
             "org.jboss.mod_cluster.core",
             "org.jboss.mod_cluster.load.spi",
             "org.wildfly.extension.mod_cluster",
-            "org.wildfly.mod_cluster.undertow"
+            "org.wildfly.mod_cluster.undertow",
+            // Brought by galleon ServerRootResourceDefinition
+            "wildflyee.api"
     };
 
 
@@ -166,8 +168,6 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
-            // Brought by galleon ServerRootResourceDefinition
-            "wildflyee.api"
     };
 
 
