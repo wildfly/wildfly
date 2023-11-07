@@ -270,8 +270,6 @@ public abstract class LayersTestBase {
             // TODO we need to add an rts layer
             "org.wildfly.extension.rts",
             "org.jboss.narayana.rts",
-            //xerces dependency is eliminated from different subsystems and use JDK JAXP instead
-            "org.apache.xerces",
     };
 
     /**
