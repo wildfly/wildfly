@@ -4,9 +4,12 @@
  */
 package org.jboss.as.test.layers.base;
 
+import java.util.Set;
 
+import org.jboss.as.test.layers.LayersTest;
 import org.jboss.as.test.shared.LayersTestBase;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.junit.Test;
 
 public class LayersTestCase extends LayersTestBase {
 
@@ -21,5 +24,21 @@ public class LayersTestCase extends LayersTestBase {
         AssumeTestGroupUtil.assumeNotWildFlyPreview();
 
         super.test();
+    }
+
+    @Test
+    public void testLayers() throws Exception {
+        // Since we don't run 'test()' with WFP, which among other things
+        // checks the execution of the layers, do it directly
+        AssumeTestGroupUtil.assumeWildFlyPreview();
+        LayersTest.testExecution(root);
+    }
+
+    protected Set<String> getExpectedUnreferenced() {
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NOT_REFERENCED_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NOT_REFERENCED_WILDFLY_EE);
+    }
+
+    protected  Set<String> getExpectedUnusedInAllLayers() {
+        return concatArrays(NO_LAYER_OR_REFERENCE_COMMON, NO_LAYER_COMMON, NO_LAYER_OR_REFERENCE_WILDFLY_EE, NO_LAYER_WILDFLY_EE);
     }
 }

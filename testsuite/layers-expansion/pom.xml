@@ -649,6 +649,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
@@ -672,6 +673,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
@@ -692,7 +694,7 @@
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
                                                 <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
+                                                    Galleon layers defined only in the wildfly feature-pack
                                                  -->
                                                 <layer>microprofile-config</layer>
                                                 <layer>microprofile-fault-tolerance</layer>
@@ -756,15 +758,18 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -776,6 +781,7 @@
                                                 <layer>mail</layer>
                                                 <layer>management</layer>
                                                 <layer>messaging-activemq</layer>
+                                                <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
@@ -797,13 +803,18 @@
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
                                                 <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
+                                                    Galleon layers defined only in the wildfly feature-pack
                                                  -->
                                                 <layer>microprofile-config</layer>
                                                 <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
+                                                <layer>microprofile-lra-coordinator</layer>
+                                                <layer>microprofile-lra-participant</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
+                                                <layer>microprofile-reactive-streams-operators</layer>
+                                                <layer>microprofile-reactive-messaging</layer>
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
                                             </layers>
@@ -857,6 +868,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
@@ -864,10 +876,13 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -898,9 +913,10 @@
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
                                                 <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
+                                                    Galleon layers defined only in the wildfly feature-pack
                                                  -->
                                                 <layer>microprofile-config</layer>
+                                                <layer>microprofile-fault-tolerance</layer>
                                                 <layer>microprofile-health</layer>
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-lra-coordinator</layer>
@@ -911,6 +927,7 @@
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-rest-client</layer>
                                                 <layer>microprofile-telemetry</layer>
+                                                <layer>microprofile-platform</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -964,10 +981,12 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>

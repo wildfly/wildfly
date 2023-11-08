@@ -70,9 +70,12 @@
         <jbossas.project.dir>${jbossas.ts.dir}/../..</jbossas.project.dir>
 
         <!-- GAVs to use for feature packs. Profiles can reset to trigger provisioning
-             using alternative feature packs. -->
+             using alternative feature packs.
+             By default we test the wildfly-ee feature pack as all the layers we test
+             in this module are from that feature pack.
+        -->
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
-        <ee.feature.pack.artifactId>${testsuite.ee.galleon.pack.artifactId}</ee.feature.pack.artifactId>
+        <ee.feature.pack.artifactId>wildfly-ee-galleon-pack</ee.feature.pack.artifactId>
         <ee.feature.pack.version>${testsuite.ee.galleon.pack.version}</ee.feature.pack.version>
 
         <!-- Where to look for artifacts when provisioning and running. -->
@@ -790,7 +793,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase}</phase>
+                                <phase>${provisioning.phase.preview.excluded}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/test-standalone-reference</install-dir>
                                     <feature-packs>
@@ -1838,34 +1841,6 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>opentelemetry-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provisioning.phase}</phase>
-                                <configuration>
-                                    <install-dir>${layers.install.dir}/opentelemetry</install-dir>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.feature.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>opentelemetry</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>pojo-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
@@ -2164,6 +2139,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
@@ -2190,7 +2166,6 @@
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
-                                                <layer>opentelemetry</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
                                                 <layer>request-controller</layer>
@@ -2206,22 +2181,6 @@
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-lra-coordinator</layer>
-                                                <layer>microprofile-lra-participant</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-reactive-streams-operators</layer>
-                                                <layer>microprofile-reactive-messaging</layer>
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>microprofile-rest-client</layer>
-                                                <layer>microprofile-telemetry</layer>
-                                                <layer>microprofile-platform</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -2271,15 +2230,18 @@
                                                 <layer>ejb-http-invoker</layer>
                                                 <layer>ejb-lite</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -2294,7 +2256,6 @@
                                                 <layer>mod_cluster</layer>
                                                 <layer>naming</layer>
                                                 <layer>observability</layer>
-                                                <layer>opentelemetry</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>
                                                 <layer>remoting</layer>
@@ -2311,16 +2272,6 @@
                                                 <layer>web-console</layer>
                                                 <layer>web-server</layer>
                                                 <layer>webservices</layer>
-                                                <!--
-                                                    Galleon layers defined only in the wildfly-galleon-pack
-                                                 -->
-                                                <layer>microprofile-config</layer>
-                                                <layer>microprofile-fault-tolerance</layer>
-                                                <layer>microprofile-health</layer>
-                                                <layer>microprofile-jwt</layer>
-                                                <layer>microprofile-openapi</layer>
-                                                <layer>microprofile-telemetry</layer>
-                                                <layer>microprofile-platform</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
@@ -2402,6 +2353,7 @@
                                                 <layer>ejb-lite</layer>
                                                 <layer>ejb-local-cache</layer>
                                                 <layer>elytron</layer>
+                                                <layer>elytron-oidc-client</layer>
                                                 <layer>embedded-activemq</layer>
                                                 <layer>hibernate-search</layer>
                                                 <layer>h2-datasource</layer>
@@ -2409,10 +2361,12 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
@@ -2495,10 +2449,12 @@
                                                 <layer>h2-driver</layer>
                                                 <layer>health</layer>
                                                 <layer>iiop-openjdk</layer>
+                                                <layer>infinispan</layer>
                                                 <layer>io</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jdr</layer>
+                                                <layer>jgroups-aws</layer>
                                                 <layer>jms-activemq</layer>
                                                 <layer>jmx</layer>
                                                 <layer>jmx-remoting</layer>
