@@ -70,7 +70,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         //we need to add these from all deployments, as they could be using the Jakarta RESTful Web Services client
 
         addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM, true, false);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CLIENT, true, deploymentBundlesClientBuilder);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CLIENT_API, true, deploymentBundlesClientBuilder);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CORE, true, deploymentBundlesClientBuilder);
@@ -96,6 +95,11 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         if (support.hasCapability("org.wildfly.microprofile.config")) {
             addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
             addDependency(moduleSpecification, moduleLoader, "org.jboss.resteasy.microprofile.config", true, false);
+        }
+        // If bean-validation is available, add the support for the resteasy-validator
+        if (support.hasCapability("org.wildfly.bean-validation")) {
+            final ModuleDependency dep = new ModuleDependency(moduleLoader, RESTEASY_VALIDATOR, true, true, true, false);
+            moduleSpecification.addSystemDependency(dep);
         }
     }
 
