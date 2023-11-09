@@ -304,7 +304,7 @@
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>6.5.3.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>10.0.0.Final</version.org.wildfly.jar.plugin>
-        <version.org.wildfly.maven.plugins>2.3.1.Final</version.org.wildfly.maven.plugins>
+        <version.org.wildfly.licenses.plugin>2.4.0.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>4.1.0.Final</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
@@ -1279,7 +1279,7 @@
                 <plugin>
                     <groupId>org.wildfly.maven.plugins</groupId>
                     <artifactId>licenses-plugin</artifactId>
-                    <version>${version.org.wildfly.maven.plugins}</version>
+                    <version>${version.org.wildfly.licenses.plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.asciidoctor</groupId>
@@ -1404,7 +1404,7 @@
                 <surefire.default-test.phase>none</surefire.default-test.phase>
             </properties>
         </profile>
-        
+
         <profile>
             <id>bootable.preview.test.profile</id>
             <activation>
