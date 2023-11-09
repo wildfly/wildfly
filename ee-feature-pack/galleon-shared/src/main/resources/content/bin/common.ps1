@@ -112,13 +112,9 @@ Function Get-Java-Opts {
 }
 
 Function SetPackageAvailable($packageName) {
-    $PACKAGE_AVAILABLE = $true
     # java -version actually writes what we all read in our terminals to stderr, not stdout!
     # So we redirect it to stdout with 2>&1 before piping to Out-String and Select-String
-    & $JAVA "--add-opens=$packageName=ALL-UNNAMED" -version 2>&1 | Out-String -Stream | Select-String 'WARNING' -SimpleMatch -Quiet >$null 2>&1
-    if ($LastExitCode -eq 0){
-        $PACKAGE_AVAILABLE = $false
-    }
+    $PACKAGE_AVAILABLE = !(& $JAVA "--add-opens=$packageName=ALL-UNNAMED" -version 2>&1 | Out-String -Stream | Select-String 'WARNING' -SimpleMatch -Quiet)
     return $PACKAGE_AVAILABLE
 }
 
