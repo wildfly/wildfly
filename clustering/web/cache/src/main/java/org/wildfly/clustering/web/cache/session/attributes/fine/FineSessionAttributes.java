@@ -90,10 +90,9 @@ public class FineSessionAttributes<K, V> extends SimpleImmutableSessionAttribute
 
         Object result = this.attributes.put(name, value);
 
-        if (value != result) {
-            synchronized (this.updates) {
-                this.updates.put(name, value);
-            }
+        // Always trigger attribute update, even if called with an existing reference
+        synchronized (this.updates) {
+            this.updates.put(name, value);
         }
 
         return result;
