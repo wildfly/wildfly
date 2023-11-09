@@ -58,7 +58,7 @@ import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyPr
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Add handler for the messaging subsystem.

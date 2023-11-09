@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -23,6 +22,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.transaction.Status;
 import jakarta.transaction.TransactionSynchronizationRegistry;
+
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2016 Red Hat inc.

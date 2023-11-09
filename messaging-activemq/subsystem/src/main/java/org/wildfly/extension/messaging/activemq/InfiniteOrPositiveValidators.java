@@ -10,7 +10,7 @@ import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Validates a given parameter is a legal value (-1 or > 0) where -1 means "forever".

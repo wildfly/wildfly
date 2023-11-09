@@ -15,6 +15,7 @@ import org.jboss.as.cli.handlers.BatchModeCommandHandler;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  *
@@ -32,7 +33,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
 
         try {
             if(!ctx.getParsedCommandLine().hasProperties()) {
-                throw new OperationFormatException("Arguments are missing");
+                throw MessagingLogger.ROOT_LOGGER.missingArguments();
             }
         } catch (CommandFormatException e) {
             throw new OperationFormatException(e.getLocalizedMessage());
@@ -75,11 +76,11 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
         }
 
         if(restype == null) {
-            throw new OperationFormatException("Required parameter --restype is missing.");
+            throw MessagingLogger.ROOT_LOGGER.missingRestype();
         }
 
         if(jndiName == null) {
-            throw new OperationFormatException("JNDI name is missing.");
+            throw MessagingLogger.ROOT_LOGGER.missingJNDIName();
         }
 
         String name = null;
@@ -91,13 +92,13 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             for(String prop : propsArr) {
                 int equalsIndex = prop.indexOf('=');
                 if(equalsIndex < 0 || equalsIndex == prop.length() - 1) {
-                    throw new OperationFormatException("Failed to parse property '" + prop + "'");
+                    throw MessagingLogger.ROOT_LOGGER.failedToParseProperty(prop);
                 }
 
                 String propName = prop.substring(0, equalsIndex).trim();
                 String propValue = prop.substring(equalsIndex + 1).trim();
                 if(propName.isEmpty()) {
-                    throw new OperationFormatException("Failed to parse property '" + prop + "'");
+                    throw MessagingLogger.ROOT_LOGGER.failedToParseProperty(prop);
                 }
 
                 if(propName.equals("imqDestinationName") ||propName.equalsIgnoreCase("name")) {
@@ -156,7 +157,7 @@ class CreateJMSResourceHandler extends BatchModeCommandHandler {
             return builder.buildRequest();
 
         } else {
-            throw new OperationFormatException("Resource type " + restype + " isn't supported.");
+            throw MessagingLogger.ROOT_LOGGER.unsupportedResourceType(restype);
         }
     }
 

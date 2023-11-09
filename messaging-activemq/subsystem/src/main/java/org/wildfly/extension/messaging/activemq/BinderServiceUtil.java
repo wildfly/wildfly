@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 
 import javax.naming.InitialContext;

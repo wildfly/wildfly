@@ -24,7 +24,6 @@
         <module name="jakarta.jms.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
-
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.server"/>

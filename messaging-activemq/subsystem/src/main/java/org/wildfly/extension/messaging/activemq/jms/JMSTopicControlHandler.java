@@ -59,7 +59,7 @@ import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicReadAttributeHandler.DurabilityType;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Handler for runtime operations that invoke on a ActiveMQ Topic.
@@ -284,7 +284,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         SimpleString queueName = ActiveMQDestination.createQueueNameForSubscription(true, clientID, subscriptionName);
         QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
-            throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
+            throw MessagingLogger.ROOT_LOGGER.noSubscriptionError(queueName.toString(), clientID);
         }
         String filter = createFilterFromJMSSelector(filterStr);
         return coreQueueControl.countMessages(filter);
@@ -306,7 +306,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         SimpleString queueName = ActiveMQDestination.createQueueNameForSubscription(true, clientID, subscriptionName);
         QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
-            throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
+            throw MessagingLogger.ROOT_LOGGER.noSubscriptionError(queueName.toString(), clientID);
         }
         ActiveMQServerControl serverControl = (ActiveMQServerControl) managementService.getResource(ResourceNames.BROKER);
         serverControl.destroyQueue(queueName.toString(), true);
@@ -331,7 +331,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
     private Map<String, Object>[] listMessagesForSubscription(final String queueName, ManagementService managementService) throws Exception {
         QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
-            throw new IllegalArgumentException("No subscriptions with name " + queueName);
+            throw MessagingLogger.ROOT_LOGGER.noSubscriptionWithQueueName(queueName);
         }
 
         Map<String, Object>[] coreMessages = coreQueueControl.listMessages(null);

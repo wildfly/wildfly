@@ -27,7 +27,7 @@ import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  *

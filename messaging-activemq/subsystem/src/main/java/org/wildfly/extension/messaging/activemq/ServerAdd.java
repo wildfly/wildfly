@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -164,7 +164,7 @@ import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.source.CredentialSource;
 

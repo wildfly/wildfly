@@ -12,6 +12,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  *
@@ -30,7 +31,7 @@ class DeleteJMSResourceHandler extends BatchModeCommandHandler {
 
         try {
             if(!ctx.getParsedCommandLine().hasProperties()) {
-                throw new OperationFormatException("Arguments are missing");
+                throw MessagingLogger.ROOT_LOGGER.missingArguments();
             }
         } catch (CommandFormatException e) {
             throw new OperationFormatException(e.getLocalizedMessage());
@@ -54,7 +55,7 @@ class DeleteJMSResourceHandler extends BatchModeCommandHandler {
         }
 
         if(jndiName == null) {
-            throw new OperationFormatException("name is missing.");
+            throw MessagingLogger.ROOT_LOGGER.missingName();
         }
 
         ModelControllerClient client = ctx.getModelControllerClient();
@@ -66,7 +67,7 @@ class DeleteJMSResourceHandler extends BatchModeCommandHandler {
         } else if(Util.isConnectionFactory(client, jndiName)) {
             resource = "connection-factory";
         } else {
-            throw new OperationFormatException("'" + jndiName +"' wasn't found among existing JMS resources.");
+            throw MessagingLogger.ROOT_LOGGER.jndiWasNotFound(jndiName);
         }
 
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
