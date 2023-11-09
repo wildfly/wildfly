@@ -541,7 +541,7 @@
         <version.org.ow2.asm>9.5</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.core>23.0.0.Beta1</version.org.wildfly.core>
-        <version.org.wildfly.http-client>2.0.5.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>2.0.6.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.2.Final</version.org.wildfly.transaction.client>
