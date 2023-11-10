@@ -18,7 +18,7 @@ updates:
       - dependency-name: '*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
     rebase-strategy: "disabled"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 8
     registries:
       - maven-central
       - jboss-public-repository-group
