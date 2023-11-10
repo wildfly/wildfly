@@ -9,7 +9,6 @@
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-sender-okhttp}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
     </resources>
 
