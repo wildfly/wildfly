@@ -8,11 +8,9 @@
     </properties>
 
     <resources>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-jaeger}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-sender-okhttp}"/>
         <artifact name="${com.fasterxml.jackson.jr:jackson-jr-objects}"/>
     </resources>
 
@@ -22,11 +20,11 @@
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.otlp"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
-        <module name="com.squareup.okhttp3"/>
-        <module name="io.smallrye.opentelemetry"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
         <module name="org.slf4j"/>
 
         <module name="java.logging"/>
+        <module name="java.net.http"/>
         <module name="jdk.unsupported"/>
     </dependencies>
 </module>

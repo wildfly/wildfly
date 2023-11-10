@@ -13,7 +13,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
@@ -37,11 +36,12 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
     }
 
     public SubsystemParsingTestCase(OpenTelemetrySubsystemSchema schema) {
-        super(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(), schema, OpenTelemetrySubsystemSchema.CURRENT);
+        super(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(), schema,
+                OpenTelemetrySubsystemSchema.CURRENT);
     }
 
     @Test
-    public void testInvalidExporter() throws Exception {
+    public void testInvalidExporter() {
         Assert.assertThrows(XMLStreamException.class, () -> this.parse(readResource("invalid-exporter.xml")));
     }
 
@@ -67,8 +67,8 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
         Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
         Map<String, String> values = new HashMap<>();
         values.put("service-name", "test-service");
-        values.put("exporter-type", "jaeger");
-        values.put("endpoint", "http://localhost:14250");
+        values.put("exporter-type", "otlp");
+        values.put("endpoint", "http://localhost:4317");
         values.put("span-processor-type", "batch");
         values.put("batch-delay", "5000");
         values.put("max-queue-size", "2048");
@@ -82,7 +82,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
             String value = entry.getValue();
 
             ModelNode node = addSubsystem.get(key);
-            Assert.assertTrue(node.getType().equals(ModelType.EXPRESSION));
+            Assert.assertEquals(node.getType(), ModelType.EXPRESSION);
             Assert.assertEquals("${test." + key + ":" + value + "}", node.asString());
             Assert.assertEquals(value, node.asExpression().resolveString());
         }

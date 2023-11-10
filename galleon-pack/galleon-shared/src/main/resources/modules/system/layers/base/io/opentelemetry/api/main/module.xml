@@ -19,7 +19,8 @@
 
     <dependencies>
         <module name="io.opentelemetry.context"/>
-        <module name="io.smallrye.opentelemetry"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
+
         <module name="java.logging"/>
         <module name="jakarta.interceptor.api" />
     </dependencies>

@@ -4,9 +4,9 @@
  */
 package org.wildfly.extension.micrometer.registry;
 
-import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
+import org.wildfly.extension.micrometer.WildFlyMicrometerConfig;
 
 public class WildFlyOtlpRegistry extends OtlpMeterRegistry implements WildFlyRegistry {
 
