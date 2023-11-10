@@ -411,7 +411,7 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-api-logs</artifactId>
+                <artifactId>opentelemetry-api-events</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
@@ -477,6 +477,28 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-sender-okhttp</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
@@ -500,7 +522,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -522,7 +544,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-logs</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -806,6 +828,17 @@
             <dependency>
                 <groupId>io.smallrye.opentelemetry</groupId>
                 <artifactId>smallrye-opentelemetry-cdi</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-propagation</artifactId>
                 <version>${version.io.smallrye.smallrye-opentelemetry}</version>
                 <exclusions>
                     <exclusion>

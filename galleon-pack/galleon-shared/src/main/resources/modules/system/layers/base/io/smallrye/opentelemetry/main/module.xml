@@ -9,6 +9,7 @@
     <resources>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-api}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-cdi}"/>
+        <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-propagation}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-rest}"/>
     </resources>
 
@@ -18,6 +19,8 @@
         <module name="io.opentelemetry.exporter"/>
         <module name="io.opentelemetry.sdk"/>
 
+        <module name="org.jboss.resteasy.resteasy-core"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.jboss.weld.api"/>

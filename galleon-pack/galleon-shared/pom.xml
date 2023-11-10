@@ -70,7 +70,7 @@
         </dependency>
 
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-logs</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-events</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-jaeger</artifactId></dependency>
@@ -83,6 +83,7 @@
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-trace</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-sender-okhttp</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-semconv</artifactId></dependency>
@@ -315,6 +316,7 @@
 
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-api</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-cdi</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-propagation</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-rest</artifactId></dependency>
 
         <dependency>

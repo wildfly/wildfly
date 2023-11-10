@@ -102,6 +102,10 @@
             <groupId>io.smallrye.opentelemetry</groupId>
             <artifactId>smallrye-opentelemetry-cdi</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.smallrye.opentelemetry</groupId>
+            <artifactId>smallrye-opentelemetry-propagation</artifactId>
+        </dependency>
 
         <!-- ======================================================= -->
 
