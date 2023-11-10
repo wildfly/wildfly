@@ -18,7 +18,7 @@ public class OpenTelemetryCollectorContainer extends GenericContainer<OpenTeleme
     public static final int HEALTH_CHECK_PORT = 13133;
     public static final String OTEL_COLLECTOR_CONFIG_YAML = "/etc/otel-collector-config.yaml";
     private static final String imageName = "otel/opentelemetry-collector";
-    private static final String imageVersion = "0.74.0";
+    private static final String imageVersion = "0.87.0";
     private static final int STARTUP_ATTEMPTS = Integer.parseInt(
             System.getProperty("testsuite.integration.otelcollector.container.startup.attempts", "5"));
     private static final Duration ATTEMPT_DURATION = Duration.parse(

@@ -9,7 +9,6 @@
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-sender-okhttp}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
     </resources>
 
@@ -17,7 +16,6 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.sdk"/>
-        <module name="com.squareup.okhttp3"/>
         <module name="org.slf4j"/>
 
         <module name="java.logging"/>

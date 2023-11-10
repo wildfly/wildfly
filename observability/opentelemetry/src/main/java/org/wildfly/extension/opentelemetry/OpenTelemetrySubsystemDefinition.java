@@ -6,10 +6,16 @@
 package org.wildfly.extension.opentelemetry;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_BATCH_DELAY;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_EXPORT_TIMEOUT;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_MAX_EXPORT_BATCH_SIZE;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_MAX_QUEUE_SIZE;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_EXPORTER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_SAMPLER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_SPAN_PROCESSOR;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.OPENTELEMETRY_CAPABILITY_NAME;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.SPAN_PROCESSOR_BATCH;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,18 +41,16 @@ import org.jboss.dmr.ModelType;
 
 class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
     static final String OPENTELEMETRY_MODULE = "org.wildfly.extension.opentelemetry";
-    private static final String[] ALLOWED_EXPORTERS = {"jaeger", "otlp"};
-    private static final String[] ALLOWED_SAMPLERS = {"on", "off", "ratio"};
-    private static final String[] ALLOWED_SPAN_PROCESSORS = {"batch", "simple"};
-
-    public static final String DEFAULT_ENDPOINT = "http://localhost:14250";
     public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
             "io.opentelemetry.context",
             "io.opentelemetry.exporter",
             "io.opentelemetry.sdk",
-            "io.smallrye.opentelemetry"
+            "io.smallrye.opentelemetry",
+            "io.vertx.core",
+            "io.vertx.grpc-client",
+            "io.netty.netty-buffer"
     };
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
@@ -69,8 +73,8 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_EXPORTER)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
-            .setDefaultValue(new ModelNode("jaeger"))
-            .setValidator(new StringAllowedValuesValidator(ALLOWED_EXPORTERS))
+            .setDefaultValue(new ModelNode(EXPORTER_OTLP))
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_EXPORTERS))
             .setRestartAllServices()
             .build();
 
@@ -79,7 +83,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_EXPORTER)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(DEFAULT_ENDPOINT))
+            .setDefaultValue(new ModelNode(OpenTelemetryConfigurationConstants.DEFAULT_OTLP_ENDPOINT))
             .build();
 
     @Deprecated
@@ -89,8 +93,8 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode("batch"))
-            .setValidator(new StringAllowedValuesValidator(ALLOWED_SPAN_PROCESSORS))
+            .setDefaultValue(new ModelNode(SPAN_PROCESSOR_BATCH))
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_SPAN_PROCESSORS))
             .build();
 
     public static final SimpleAttributeDefinition BATCH_DELAY = SimpleAttributeDefinitionBuilder
@@ -98,7 +102,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(5000))
+            .setDefaultValue(new ModelNode(DEFAULT_BATCH_DELAY))
             .build();
 
     public static final SimpleAttributeDefinition MAX_QUEUE_SIZE = SimpleAttributeDefinitionBuilder
@@ -106,7 +110,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(2048))
+            .setDefaultValue(new ModelNode(DEFAULT_MAX_QUEUE_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition MAX_EXPORT_BATCH_SIZE = SimpleAttributeDefinitionBuilder
@@ -114,7 +118,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(512))
+            .setDefaultValue(new ModelNode(DEFAULT_MAX_EXPORT_BATCH_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition EXPORT_TIMEOUT = SimpleAttributeDefinitionBuilder
@@ -122,7 +126,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(DEFAULT_EXPORT_TIMEOUT))
             .build();
 
     public static final SimpleAttributeDefinition SAMPLER = SimpleAttributeDefinitionBuilder
@@ -130,12 +134,12 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SAMPLER)
-            .setValidator(new StringAllowedValuesValidator(ALLOWED_SAMPLERS))
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_SAMPLERS))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RATIO = SimpleAttributeDefinitionBuilder
-            .create(OpenTelemetryConfigurationConstants.RATIO, ModelType.DOUBLE, true)
+            .create(OpenTelemetryConfigurationConstants.SAMPLER_RATIO, ModelType.DOUBLE, true)
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SAMPLER)
             .setValidator((parameterName, value) -> {
