@@ -47,6 +47,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
 
     private static final String EJB = "shared-client-context-ejb";
     private static final String FRONTEND = "shared-client-context-frontend";
+    private static final String CLIENT_NAME_BASE = "shared-client-context-client-%02d";
     private static final int CLIENTS_NUMBER = 50;
     private static List<File> clientWarFiles = new ArrayList<>();
 
@@ -76,7 +77,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
     public static void beforeClass() throws Exception {
         File clientWarFile = null;
         for (int i = 0; i < CLIENTS_NUMBER; i++){
-            String clientWarFileName = String.format("shared-client-context-client-%02d", i);
+            String clientWarFileName = String.format(CLIENT_NAME_BASE, i);
             clientWarFile = exportClientWar(clientWarFileName + ".war");
             clientWarFiles.add(clientWarFile);
         }
@@ -97,7 +98,7 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
     @Before
     public void before() throws MalformedURLException {
         for (int i = 0; i < clientWarFiles.size(); i++) {
-            String clientWarFileName = String.format("shared-client-context-client-%02d", i);
+            String clientWarFileName = String.format(CLIENT_NAME_BASE, i);
             cli.sendLine("deploy --url=" + clientWarFiles.get(i).toURI().toURL().toExternalForm() + " --name=" + clientWarFileName + ".war --runtime-name=" + clientWarFileName + ".war");
         }
     }
@@ -105,7 +106,8 @@ public class SharedClientContextTestCase extends AbstractCliTestBase {
     @AfterClass
     public static void closeCli() throws Exception {
         for (int i = 0; i < clientWarFiles.size(); i++) {
-            clientWarFiles.get(i).delete();
+            String clientWarFileName = String.format(CLIENT_NAME_BASE, i);
+            cli.sendLine("undeploy --name=" + clientWarFileName + ".war");
         }
 
         AbstractCliTestBase.closeCLI();
