@@ -402,7 +402,7 @@
         <version.io.opentelemetry.opentelemetry-semconv>1.21.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.perfmark>0.23.0</version.io.perfmark>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
-        <version.io.reactivex.rxjava3>3.1.6</version.io.reactivex.rxjava3>
+        <version.io.reactivex.rxjava3>3.1.8</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>3.6.2</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>2.2.0</version.io.smallrye.smallrye-common>
