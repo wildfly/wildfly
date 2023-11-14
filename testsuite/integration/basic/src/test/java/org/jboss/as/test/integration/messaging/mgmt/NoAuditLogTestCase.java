@@ -9,7 +9,7 @@ import static org.jboss.shrinkwrap.api.ArchivePaths.create;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,7 +50,7 @@ public class NoAuditLogTestCase {
 
     @Test
     public void testNoAuditMessagesLogged() throws Exception {
-        try (BufferedReader reader = Files.newBufferedReader(getLogFile(), StandardCharsets.UTF_8)) {
+        try (BufferedReader reader = Files.newBufferedReader(getLogFile(), Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 Assert.assertFalse(String.format("Log contains ActiveMQ audit log messages: %n%s", line), line.contains("org.apache.activemq.audit"));
