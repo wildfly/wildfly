@@ -395,7 +395,7 @@
         <version.commons-io>2.11.0</version.commons-io>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.agroal>2.0</version.io.agroal>
-        <version.io.micrometer>1.9.13</version.io.micrometer>
+        <version.io.micrometer>1.9.17</version.io.micrometer>
         <version.io.netty>4.1.100.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.29.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentelemetry.proto>0.20.0-alpha</version.io.opentelemetry.proto>
