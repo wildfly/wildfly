@@ -53,6 +53,8 @@ include::Messaging.adoc[]
 
 include::Load_Balancing.adoc[]
 
+include::Cloud.adoc[]
+
 include::HA_Singleton_Features.adoc[]
 
 include::Clustering_API.adoc[]
