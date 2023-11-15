@@ -1,0 +1,230 @@
+= Kubernetes
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+Kubernetes is an ideal environment for deploying and running highly available services.
+This section describes the specifics of deploying HA applications built on WildFly in this cloud environment.
+
+== Role of the Distributed Cache Mode
+
+WildFly uses <<Infinispan>> to provide high-availability of server-side state.
+While there are multiple cache modes available, the 'distributed-cache' cache is optimal for cloud environments.
+This cache mode stores data in a configurable number of cluster members (defaults to `2`),
+and thus allows users to elect the desired balance between availability and capacity.
+The higher the number of owners, the greater availability (i.e. tolerance to failures), but reduces the effective heap capacity of the cluster.
+There is a marginal network cost associated with more owners, but this is a secondary concern.
+
+This cache mode relies on consistent hashing to determine the 'primary owner' and the 'backup owners' of given cache entries.
+In order to achieve optimal performance, the load balancer deployed in front of the application server cluster:
+
+1. should route HTTP requests for a given session to the current primary owner,
+2. as the cluster topology changes, in response to scaling or failures, Infinispan will rebalance its distributed session state in response.
+   To ensure optimal performance, the application server must be able to influence the session affinity decisions made by the load balancer such that subsequent requests for a given are routed to the preferred pod.
+
+This can be achieved by configuring HAProxy Ingress Controller described below.
+
+=== Changing Cache Mode in Deployment Image
+
+// TODO - update the wording when we make 'dist' the actual cloud default - https://issues.redhat.com/browse/CLOUD-4211
+Presently, the default configuration currently uses replicated caches.
+This effectively fixes the heap capability of the cluster such that it cannot be increased by scaling up.
+Thus, existing applications need to update the default cache mode to optimize scalability.
+
+Applications built using Maven with https://docs.wildfly.org/wildfly-maven-plugin/releases/4.2/package-mojo.html#packagingScripts[WildFly Maven Plugin]
+to create an image can be easily configured to update the default cache mode.
+This can be done by configuring a set of commands in the packaging step to reconfigure the bundled server.
+The following `infinispan.cli` configuration script will reconfigure the `infinispan` subsystem to use the distributed cache for web sessions:
+
+// n.b. regarding the recommended configuration:
+// we are intentionally leave out the file store (spin a new instance when needed) + leave out locking and transactions.
+// The provided expiration configuration saves unnecessary 1 expiration thread that would otherwise run.
+
+[source,cli,title=infinispan.cli]
+----
+/subsystem=infinispan/cache-container=web/distributed-cache=sessions:add
+/subsystem=infinispan/cache-container=web/distributed-cache=sessions/component=expiration:add(interval=0)
+/subsystem=infinispan/cache-container=web:write-attribute(name=default-cache,value=sessions)
+----
+
+The Maven plugin configuration can then be updated to update the generated container image:
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.wildfly.plugins</groupId>
+    <artifactId>wildfly-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <!-- ... -->
+            <configuration>
+                <!-- ... -->
+                <packaging-scripts>
+                    <packaging-script>
+                        <scripts>
+                            <script>infinispan.cli</script>
+                        </scripts>
+                    </packaging-script>
+                </packaging-scripts>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+== Ingress Configuration
+
+A https://kubernetes.io/docs/concepts/services-networking/ingress/[Kubernetes Ingress] is an object that manages external access to the services in a cluster, typically via HTTP.
+It provides load balancing, SSL termination and name-based virtual hosting.
+In order to support the affinity requirements described above, an Ingress Controller implementation, supporting L7 load balancing and exposes the requisite annotations for configuring session affinity, will need to be configured.
+The following sections will configure an https://haproxy-ingress.github.io/[HAProxy Ingress Controller] for optimal routing.
+
+=== Configuring Affinity in Deployment Image
+
+// TODO - update this section as we make this the default - https://issues.redhat.com/browse/CLOUD-4174
+
+First, we will need to reconfigure the application server to store the affinity information in a separate cookie.
+By default, WildFly encodes session affinity information in the `JSESSIONID` cookie value, which is already used to uniquely identify a session.
+While this works well with the httpd family of load balancer modules (e.g. mod_cluster, mod_proxy_balancer, mod_jk) for which this mechanism was designed,
+the current set of load balancers used in the cloud rely on a separate cookie for implementing sticky sessions (e.g. HAProxy),
+and thus the default WildFly configuration lacks the ability to allow WildFly to guide requests for a given session to the server that can most efficiently handle it.
+To resolve this, we need to configure the Undertow subsystem to use a separate cookie to send affinity information.
+For configured distribution or replication mode caches, the load balancer needs to be made aware of the affinity.
+As the topology of the cluster changes, the affinity will need to be updated.
+
+The following `undertow.cli` configuration script will reconfigure the `undertow` subsystem to use a separate cookie named `INGRESSCOOKIE` to store the affinity information:
+
+[source,cli,title=undertow.cli]
+----
+/subsystem=undertow/servlet-container=default/setting=affinity-cookie:add(name=INGRESSCOOKIE)
+----
+
+=== Installing HAProxy Ingress Controller
+
+The HAProxy Ingress Controller can be installed using https://helm.sh/[Helm]. First add the required repository:
+
+[source,shell]
+----
+$ helm repo add haproxy-ingress https://haproxy-ingress.github.io/charts
+"haproxy-ingress" has been added to your repositories
+----
+
+Now, the Ingress Controller can be installed to the Kubernetes cluster.
+
+[source,shell]
+----
+$ helm install haproxy-ingress haproxy-ingress/haproxy-ingress --create-namespace --namespace=ingress-controller
+NAME: haproxy-ingress
+LAST DEPLOYED: Tue Nov 14 16:18:10 2023
+NAMESPACE: ingress-controller
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+HAProxy Ingress has been installed!
+
+HAProxy is exposed as a `LoadBalancer` type service.
+It may take a few minutes for the LoadBalancer IP to be available.
+You can watch the status by running:
+
+    kubectl --namespace ingress-controller get services haproxy-ingress -o wide -w
+----
+
+Once the controller is available in the Kubernetes cluster, we can configure an Ingress object.
+
+=== Configuring an Ingress
+
+The following Ingress configuration can be used for optimal handling of session affinity.
+Note that the name of the ingress, hosts, and the service name needs to be updated to actual values.
+
+[source,yaml]
+----
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  namespace: default
+  annotations:
+    haproxy-ingress.github.io/affinity: cookie # <1>
+    haproxy-ingress.github.io/backend-server-naming: pod # <2>
+    haproxy-ingress.github.io/session-cookie-dynamic: "false" # <3>
+    haproxy-ingress.github.io/session-cookie-keywords: preserve # <4>
+    haproxy-ingress.github.io/session-cookie-preserve: "true" # <5>
+spec:
+  ingressClassName: haproxy
+  tls:
+    - hosts:
+        - example.com
+  rules:
+    - host: example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: example-service
+                port:
+                  number: 8080
+----
+<1> Use a cookie to store the affinity.
+<2> Use the pod's unique name as the backend server identity. This allows WildFly to update the existing affinity.
+<3> Instructs the proxy to use a predictable backend server name.
+<4> Configures preserving cookies as additional options for handling cookies.
+<5> Prevent HAProxy from overwriting the `Set-Cookie` header written by the backend server.
+
+== Verifying Session Affinity
+
+Verifying session affinity has proven to be notoriously challenging for users.
+This is primarily because, even if the affinity handling is not set up optimally,
+the tester will not observe any data loss in a distributed HA application.
+If a request for a given HTTP session is routed to a pod that does not contain the requested session data locally,
+it will remotely fetch the session data from another pod.
+While this does not affect functionality per se, this has implications for performance, response time, concurrency, consistency, etc.
+
+The following is a simple guide how to verify correctly functioning session affinity.
+
+First, configure the Undertow web server to attach information about which cluster node actually processed the request.
+This can be done by creating a `filter` that adds a header (called `JBoss-Node-Name` in this example) with a value of the `jboss.node.name` expression.
+This value is equal to the Kubernetes pod ID.
+
+[source,cli,title=undertow-filter.cli]
+----
+/subsystem=undertow/configuration=filter/response-header=node-name-header:add(header-name="JBoss-Node-Name",header-value=${jboss.node.name})
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=node-name-header:add()
+----
+
+Secondly, after deploying any distributable application, query any URL that creates an HTTP session.
+
+[source,cli,title=undertow-filter.cli]
+----
+$ curl http://example.com:8080/clusterbench/session --verbose --insecure --cookie-jar cookies.txt --cookie cookies.txt
+*   Trying 127.0.0.1:8080...
+* Connected to localhost (127.0.0.1) port 8080 (#0)
+> GET /clusterbench/session HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.1.2
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Connection: keep-alive
+< JBoss-Node-Name: de551585-8c99-4791-bcdb-45fdac253d87 # <1>
+< Set-Cookie: INGRESSCOOKIE=de551585-8c99-4791-bcdb-45fdac253d87; path=/ # <2>
+< Set-Cookie: JSESSIONID=EgxQStQ8zJ60lmDDO0VeY2H2OiLH3fdHRn2rqh5g; path=/clusterbench
+< X-JBoss-Node-Name: ribera
+< Content-Type: text/plain;charset=ISO-8859-1
+< Content-Length: 1
+< Date: Tue, 21 Nov 2023 14:58:48 GMT
+<
+* Connection #0 to host localhost left intact
+5
+----
+<1> This is the identity of the pod that actually processed the request.
+<2> This is the affinity supplied by the application server.
+
+If the affinity is working correctly, these two value will match when the cluster topology is stable.
