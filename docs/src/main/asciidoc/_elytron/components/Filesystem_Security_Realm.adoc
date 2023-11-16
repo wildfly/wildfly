@@ -294,7 +294,8 @@ In order to use this feature, we can make use of the `elytron-tool.sh` (or .bat 
 $ WILDFLY_HOME/bin/elytron-tool.sh filesystem-realm-integrity --input-location <existing_path> --output-location <new_path> --keystore <ks_path> --password <ks_password> --summary
 ```
 
-The required options include: 
+The required options include:
+
 * input-location: This is the path for the existing filesystem realm that does not have an integrity checking. This must be the path to the directory containing the filesystem. This can also be specified using `-i`. This must be an existing path. 
 * output-location: This attribute will be the path for the new filesystem realm. This filesystem realm will include integrity checking. This can also be specified using `-o`. This path is also a path to a directory.
 * keystore: Path for the keystore that holds the key pair for integrity checking. Can also be specified using `-k`. 
@@ -323,4 +324,26 @@ realm-name:realm-two
 
 There are other options that can be specified for converting a filesystem realm, the details of which can be found using the `./bin/elytron-tool.sh filesystem-realm-integrity -h` command. 
 
+== Updating WildFly Elytron Tool Generated CLI Scripts for Domain Mode
+As mentioned above, some of the WildFly Elytron Tool commands create a CLI script that can be used to add resources to
+the Elytron subsystem. Some examples of these CLI scripts include:
 
+. The <FILESYSTEM-REALM-NAME>.cli script generated when the `filesystem-realm-encrypt` command is used to encrypt an existing filesystem realm.
+. The <FILESYSTEM-REALM-NAME>.cli script generated when the `filesystem-realm-integrity` command is used to add integrity checking to existing filesystem realms.
+. The <FILESYSTEM-REALM-NAME>.sh script generated when the `filesystem-realm` command is used to create a filesystem realm from a legacy properties file.
+
+However, the generated CLI script can only be used directly if the server is running in Standalone mode. For Domain mode
+the script needs to be updated. The steps for updating the script are as follows:
+
+* Update the file contents to add a /profile=<PROFILE_NAME> in front of all occurrences of the
+/subsystem=... strings as found in the file (so in front of /subsystem=elytron...); where <PROFILE_NAME> is the profile
+name that you are using in your WildFly domain.xml (Hence, <PROFILE_NAME> can be either default, ha, full, full-ha, or
+any other profile-name defined and used in the domain.xml.)
+
+* Save and Exit the file editor.
+
+Now you can use the CLI script to update server configurations in domain mode.
+
+Please note that this same basic procedure can also apply to a Host Controller configuration (i.e. host.xml content).
+However, in that case, instead of specifying `profile=<PROFILE_NAME>`, we would use `host=<HC_NAME>` to specify the Host
+Controller name.
