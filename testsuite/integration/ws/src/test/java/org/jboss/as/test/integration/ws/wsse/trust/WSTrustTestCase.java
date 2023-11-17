@@ -4,6 +4,7 @@
  */
 package org.jboss.as.test.integration.ws.wsse.trust;
 
+import java.util.PropertyPermission;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -25,6 +26,7 @@ import org.jboss.as.test.integration.ws.wsse.trust.service.ServiceIface;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -48,6 +50,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -76,8 +79,23 @@ public class WSTrustTestCase {
     @ArquillianResource
     private URL serviceURL;
 
+    public static Asset PERMISSIONS = createPermissionsXmlAsset(
+            new PropertyPermission("node0", "read"),
+            new PropertyPermission("java.net.preferIPv4Stack", "read"),
+            new PropertyPermission("java.net.preferIPv6Addresses", "read"));
+
+    public static Asset EXTRA_PERMISSIONS = createPermissionsXmlAsset(
+            new PropertyPermission("node0", "read"),
+            new PropertyPermission("java.net.preferIPv4Stack", "read"),
+            new PropertyPermission("java.net.preferIPv6Addresses", "read"),
+            new RuntimePermission("accessDeclaredMembers"),
+            new RuntimePermission("getClassLoader"),
+            new PropertyPermission("user.dir", "read"),
+            new RuntimePermission("createClassLoader"));
+
     @Deployment(name = STS_DEP, testable = false)
     public static WebArchive createSTSDeployment() {
+
         WebArchive archive = ShrinkWrap.create(WebArchive.class, STS_DEP + ".war");
         archive
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"
@@ -90,7 +108,7 @@ public class WSTrustTestCase {
 
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsstore.jks", "classes/stsstore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsKeystore.properties", "classes/stsKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "WEB-INF/permissions.xml", "permissions.xml")
+                .addAsManifestResource(PERMISSIONS, "permissions.xml")
                 .setWebXML(WSTrustTestCase.class.getPackage(), "WEB-INF/web.xml");
         return archive;
     }
@@ -110,7 +128,7 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(createFilteredAsset("WEB-INF/wsdl/SecurityService_schema1.xsd"), "wsdl/SecurityService_schema1.xsd")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/servicestore.jks", "classes/servicestore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/serviceKeystore.properties", "classes/serviceKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "WEB-INF/permissions.xml", "permissions.xml");
+                .addAsManifestResource(PERMISSIONS, "permissions.xml");
         return archive;
     }
 
@@ -132,7 +150,7 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/actasKeystore.properties", "classes/actasKeystore.properties")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientstore.jks", "clientstore.jks")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientKeystore.properties", "clientKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/permissions.xml", "permissions.xml");
+                .addAsManifestResource(EXTRA_PERMISSIONS, "permissions.xml");
         return archive;
     }
 
@@ -154,7 +172,7 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/actasKeystore.properties", "classes/actasKeystore.properties")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientstore.jks", "clientstore.jks")
                 .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/clientKeystore.properties", "clientKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/permissions.xml", "permissions.xml");
+                .addAsManifestResource(EXTRA_PERMISSIONS, "permissions.xml");
         return archive;
     }
 
@@ -171,7 +189,7 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(createFilteredAsset("WEB-INF/wsdl/holderofkey-ws-trust-1.4-service.wsdl"), "wsdl/holderofkey-ws-trust-1.4-service.wsdl")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsstore.jks", "classes/stsstore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsKeystore.properties", "classes/stsKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "WEB-INF/permissions.xml", "permissions.xml")
+                .addAsManifestResource(PERMISSIONS, "permissions.xml")
                 .setWebXML(WSTrustTestCase.class.getPackage(), "WEB-INF/holderofkey/web.xml");
         return archive;
     }
@@ -207,7 +225,7 @@ public class WSTrustTestCase {
                 .addAsWebInfResource(createFilteredAsset("WEB-INF/wsdl/bearer-ws-trust-1.4-service.wsdl"), "wsdl/bearer-ws-trust-1.4-service.wsdl")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsstore.jks", "classes/stsstore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsKeystore.properties", "classes/stsKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/permissions.xml", "permissions.xml")
+                .addAsManifestResource(EXTRA_PERMISSIONS, "permissions.xml")
                 .setWebXML(WSTrustTestCase.class.getPackage(), "WEB-INF/bearer/web.xml");
         return archive;
     }
