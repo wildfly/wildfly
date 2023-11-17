@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "30.";
+    private static final String MAJOR = "31.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -197,7 +197,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.messaging",
                 "org.jboss.as.web"
                 ), true),
-        CURRENT(MAJOR, WILDFLY_29_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_30_0("WildFly30.0", WILDFLY_29_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_30_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
