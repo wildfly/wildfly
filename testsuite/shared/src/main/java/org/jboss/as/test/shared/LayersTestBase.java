@@ -98,6 +98,7 @@ public abstract class LayersTestBase {
      * Packages that are always expected to be included in the return value of {@link #getExpectedUnreferenced()}.
      */
     public static final String[] NOT_REFERENCED_COMMON = {
+            "javax.xml.stream.api",
             // injected by ee
             "org.wildfly.naming",
             // Injected by jaxrs
@@ -152,6 +153,7 @@ public abstract class LayersTestBase {
             "org.jboss.mod_cluster.container.spi",
             "org.jboss.mod_cluster.core",
             "org.jboss.mod_cluster.load.spi",
+            "org.wildfly.extension.elytron.jaas-realm",
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
@@ -249,7 +251,6 @@ public abstract class LayersTestBase {
             "ibm.jdk",
             "javax.api",
             "javax.sql.api",
-            "javax.xml.stream.api",
             // TODO see if org.apache.activemq.artemis.client can use specific JDK module(s)
             //"sun.jdk",
             //"sun.scripting",
