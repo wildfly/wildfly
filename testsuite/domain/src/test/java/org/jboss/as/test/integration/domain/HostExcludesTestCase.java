@@ -206,7 +206,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of();
+            return List.of("org.wildfly.extension.elytron.jaas-realm");
         }
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
