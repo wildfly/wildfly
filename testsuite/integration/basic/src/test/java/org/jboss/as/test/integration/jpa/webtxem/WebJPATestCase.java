@@ -15,10 +15,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.integration.jpa.hibernate.entity.Company;
-import org.jboss.as.test.integration.jpa.hibernate.entity.Customer;
-import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
-import org.jboss.as.test.integration.jpa.hibernate.entity.Ticket;
+import org.jboss.as.test.integration.jpa.webtxem.entity.WebJPAEntity;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -44,24 +41,23 @@ public class WebJPATestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, ARCHIVE_NAME + ".war");
         war.addClasses(WebJPATestCase.class, TestServlet.class,
-                HttpRequest.class, Flight.class, Company.class, Customer.class,
-                Ticket.class);
+                HttpRequest.class, WebJPAEntity.class);
         // WEB-INF/classes/ is implied
         war.addAsResource(WebJPATestCase.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         return war;
     }
 
-    private static String performCall(String urlPattern, String param)
+    private static String performCall(String param)
             throws Exception {
-        return HttpRequest.get(baseUrl.toString() + urlPattern + "?mode=" + param, 20, SECONDS);
+        return HttpRequest.get(baseUrl.toString() + "test?mode=" + param, 20, SECONDS);
     }
 
     @Test
     public void testReadWrite() throws Exception {
-        performCall("test", "write");
+        performCall("write");
 
-        String result = performCall("test", "read");
-        assertEquals("Flight number one", result);
+        String result = performCall("read");
+        assertEquals("WebJPAEntity One", result);
     }
 
 }
