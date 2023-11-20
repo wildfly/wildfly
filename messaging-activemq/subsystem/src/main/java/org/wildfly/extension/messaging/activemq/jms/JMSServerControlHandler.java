@@ -47,6 +47,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
@@ -92,7 +93,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
 
         final String operationName = operation.require(OP).asString();
-        final ActiveMQServer server = getServer(context, operation);
+        final ActiveMQBroker server = getServer(context, operation);
         if (server == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
@@ -165,7 +166,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
                 String addressName = ADDRESS_NAME.resolveModelAttribute(context, operation).asString();
                 // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
-                ServerSession session = server.getSessionByID(sessionID);
+                ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
                 if (session != null) {
                     for (ServerProducer producer : session.getServerProducers()) {
                         if (addressName.equals(producer.getAddress())) {
@@ -177,7 +178,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (GET_SESSION_CREATION_TIME.equals(operationName)) {
                 String sessionID = SESSION_ID.resolveModelAttribute(context, operation).asString();
                 // Artemis no longer defines the method. Its implementation from Artemis 1.5 has been inlined:
-                ServerSession session = server.getSessionByID(sessionID);
+                ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
                 if (session != null) {
                     String time = String.valueOf(session.getCreationTime());
                     context.getResult().set(time);
@@ -203,7 +204,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private JsonObject enrichConsumer(JsonObject originalConsumer, ActiveMQServer server) {
+    private JsonObject enrichConsumer(JsonObject originalConsumer, ActiveMQBroker server) {
         JsonObjectBuilder enrichedConsumer = Json.createObjectBuilder();
 
         for (Map.Entry<String, JsonValue> entry : originalConsumer.entrySet()) {
@@ -214,7 +215,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
             }
         }
         String queueName = originalConsumer.getString("queueName");
-        final QueueControl queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
+        final QueueControl queueControl = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + queueName));
         if (queueControl == null) {
             return originalConsumer;
         }
@@ -311,21 +312,21 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
     }
 
-    private ActiveMQServer getServer(final OperationContext context, final ModelNode operation) {
+    private ActiveMQBroker getServer(final OperationContext context, final ModelNode operation) {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
         return server;
     }
 
-    public String[] listTargetDestinations(ActiveMQServer server, String sessionID) throws Exception {
-        ServerSession session = server.getSessionByID(sessionID);
+    public String[] listTargetDestinations(ActiveMQBroker server, String sessionID) throws Exception {
+        ServerSession session = ((ActiveMQServer)server.getDelegate()).getSessionByID(sessionID);
         if (session == null) {
             return new String[0];
         }
         Map<String, QueueControl> allDests = new HashMap<>();
 
-        Object[] queueControls = server.getManagementService().getResources(QueueControl.class);
+        Object[] queueControls = server.getResources(QueueControl.class);
         for (Object queue : queueControls) {
             QueueControl queueControl = (QueueControl) queue;
             allDests.put(queueControl.getAddress(), queueControl);

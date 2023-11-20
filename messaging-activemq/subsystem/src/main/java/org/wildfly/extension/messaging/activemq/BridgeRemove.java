@@ -6,7 +6,6 @@
 package org.wildfly.extension.messaging.activemq;
 
 import org.apache.activemq.artemis.core.config.BridgeConfiguration;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,7 +38,7 @@ public class BridgeRemove extends AbstractRemoveStepHandler {
         final ServiceController<?> service = registry.getService(serviceName);
         if (service != null && service.getState() == ServiceController.State.UP) {
 
-            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
             try {
                 server.getActiveMQServerControl().destroyBridge(name);
             } catch (RuntimeException e) {
@@ -61,7 +60,7 @@ public class BridgeRemove extends AbstractRemoveStepHandler {
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
             final BridgeConfiguration bridgeConfiguration = BridgeAdd.createBridgeConfiguration(context, name, model);
-            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
             BridgeAdd.createBridge(bridgeConfiguration, server);
         }
     }

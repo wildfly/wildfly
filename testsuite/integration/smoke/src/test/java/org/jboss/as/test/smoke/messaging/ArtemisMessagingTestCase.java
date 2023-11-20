@@ -59,7 +59,7 @@ public class ArtemisMessagingTestCase {
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "messaging-example.jar");
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" +
-                "Dependencies: org.apache.activemq.artemis, org.jboss.dmr, org.jboss.as.controller-client\n"), "MANIFEST.MF");
+                "Dependencies: org.apache.activemq.artemis.client, org.jboss.dmr, org.jboss.as.controller-client\n"), "MANIFEST.MF");
         jar.addClass(ArtemisMessagingTestCase.class);
         return jar;
     }

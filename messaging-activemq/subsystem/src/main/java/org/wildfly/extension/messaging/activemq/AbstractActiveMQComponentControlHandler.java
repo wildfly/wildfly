@@ -16,7 +16,6 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQComponentControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -156,11 +155,11 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     /**
      * Gets the {@link ActiveMQComponentControl} implementation used by this handler.
      *
-     * @param activeMQServer the ActiveMQ server installed in the runtime
+     * @param activeMQBroker the ActiveMQ server installed in the runtime
      * @param address the address being invoked
      * @return the runtime ActiveMQ control object associated with the given address
      */
-    protected abstract T getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address);
+    protected abstract T getActiveMQComponentControl(ActiveMQBroker activeMQBroker, PathAddress address);
 
     protected abstract String getDescriptionPrefix();
 
@@ -260,7 +259,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     protected final T getActiveMQComponentControl(final OperationContext context, final ModelNode operation, final boolean forWrite) throws OperationFailedException {
         final ServiceName artemisServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> artemisService = context.getServiceRegistry(forWrite).getService(artemisServiceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(artemisService.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(artemisService.getValue());
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         return getActiveMQComponentControl(server, address);
     }

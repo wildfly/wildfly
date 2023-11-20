@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -117,13 +116,14 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     }
 
     @Override
-    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName) {
-        final QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
+    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQBroker server, String queueName) {
+        final QueueControl control = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + queueName));
         if (control == null) {
             return null;
         }
         return new DelegatingQueueControl<QueueControl>() {
 
+            @Override
             public QueueControl getDelegate() {
                 return control;
             }

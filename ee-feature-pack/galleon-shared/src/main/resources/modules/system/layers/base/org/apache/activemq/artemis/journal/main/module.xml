@@ -28,7 +28,6 @@
 
     <resources>
         <resource-root path="lib"/>
-        <artifact name="${org.apache.activemq:artemis-commons}"/>
         <artifact name="${org.apache.activemq:artemis-journal}"/>
         <artifact name="${org.apache.activemq:activemq-artemis-native}"/>
     </resources>
@@ -41,6 +40,7 @@
         <module name="java.logging"/>
         <module name="java.management"/>
         <module name="jdk.unsupported"/>
+        <module name="org.apache.activemq.artemis.commons" services="import"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.jctools"/>
         <module name="org.slf4j"/>
@@ -49,10 +49,6 @@
         <module name="io.netty.netty-resolver"/>
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-handler"/>
-        <!-- WFLY-6301 This module can be used to load user-created classes that are
-             used by Artemis resources (e.g. connector-service, transformers, etc.)
-        -->
-        <module name="org.apache.activemq.artemis.addons" optional="true" export="true"/>
     </dependencies>
 
 </module>

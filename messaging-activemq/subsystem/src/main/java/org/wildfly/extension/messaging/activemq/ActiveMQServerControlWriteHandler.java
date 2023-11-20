@@ -13,7 +13,6 @@ import static org.jboss.as.controller.security.CredentialReference.rollbackCrede
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -118,7 +117,7 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
     }
 
     private void applyOperationToActiveMQService(ModelNode operation, String attributeName, ModelNode newValue, ServiceController<?> activeMQServiceController) {
-        ActiveMQServerControl serverControl = ActiveMQServer.class.cast(activeMQServiceController.getValue()).getActiveMQServerControl();
+        ActiveMQServerControl serverControl = ActiveMQBroker.class.cast(activeMQServiceController.getValue()).getActiveMQServerControl();
         if (serverControl == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);

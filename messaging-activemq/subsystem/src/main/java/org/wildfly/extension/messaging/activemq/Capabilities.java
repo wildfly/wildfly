@@ -6,7 +6,6 @@
 package org.wildfly.extension.messaging.activemq;
 
 import javax.net.ssl.SSLContext;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -44,7 +43,7 @@ public class Capabilities {
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/messaging/activemq/server/capability.adoc">Capability documentation</a>
      */
-    static final RuntimeCapability<Void> ACTIVEMQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of(ACTIVEMQ_SERVER_CAPABILITY_NAME, true, ActiveMQServer.class)
+    static final RuntimeCapability<Void> ACTIVEMQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of(ACTIVEMQ_SERVER_CAPABILITY_NAME, true, ActiveMQBroker.class)
             //.addRuntimeOnlyRequirements(JMX_CAPABILITY) -- has no function so don't use it
             .build();
 

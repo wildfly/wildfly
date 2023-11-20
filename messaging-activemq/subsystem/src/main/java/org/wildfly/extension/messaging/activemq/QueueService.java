@@ -8,7 +8,6 @@ package org.wildfly.extension.messaging.activemq;
 import java.util.function.Supplier;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -22,12 +21,12 @@ import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
  */
 class QueueService implements Service<Void> {
 
-    private final Supplier<ActiveMQServer> activeMQServerSupplier;
+    private final Supplier<ActiveMQBroker> activeMQServerSupplier;
     private final CoreQueueConfiguration queueConfiguration;
     private final boolean temporary;
     private final boolean createQueue;
 
-    public QueueService(final Supplier<ActiveMQServer> activeMQServerSupplier, final CoreQueueConfiguration queueConfiguration, final boolean temporary, final boolean createQueue) {
+    public QueueService(final Supplier<ActiveMQBroker> activeMQServerSupplier, final CoreQueueConfiguration queueConfiguration, final boolean temporary, final boolean createQueue) {
         if(queueConfiguration == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("queueConfiguration");
         }
@@ -42,7 +41,7 @@ class QueueService implements Service<Void> {
     public synchronized void start(StartContext context) throws StartException {
         if (createQueue) {
             try {
-                final ActiveMQServer server = this.activeMQServerSupplier.get();
+                final ActiveMQBroker server = this.activeMQServerSupplier.get();
                 MessagingLogger.ROOT_LOGGER.debugf("Deploying queue on server %s with address: %s ,  name: %s, filter: %s ands durable: %s, temporary: %s",
                         server.getNodeID(), new SimpleString(queueConfiguration.getAddress()), new SimpleString(queueConfiguration.getName()),
                         SimpleString.toSimpleString(queueConfiguration.getFilterString()), queueConfiguration.isDurable(), temporary);
@@ -65,7 +64,7 @@ class QueueService implements Service<Void> {
     @Override
     public synchronized void stop(StopContext context) {
         try {
-            final ActiveMQServer server = this.activeMQServerSupplier.get();
+            final ActiveMQBroker server = this.activeMQServerSupplier.get();
             server.destroyQueue(new SimpleString(queueConfiguration.getName()), null, false);
             MessagingLogger.ROOT_LOGGER.debugf("Destroying queue from server %s queue with name: %s",server.getNodeID() , new SimpleString(queueConfiguration.getName()));
         } catch(Exception e) {

@@ -105,7 +105,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         MessagingLogger.ROOT_LOGGER.registeredHTTPUpgradeHandler(ACTIVEMQ_REMOTING, acceptorName);
         ServiceController<?> activeMQService = context.getController().getServiceContainer().getService(MessagingServices.getActiveMQServiceName(activeMQServerName));
-        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
+        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(ActiveMQBroker.class.cast(activeMQService.getValue()).getDelegate());
 
         httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
         upgradeSupplier.get().addProtocol(getProtocol(),

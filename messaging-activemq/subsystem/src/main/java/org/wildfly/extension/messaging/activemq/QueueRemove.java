@@ -10,7 +10,6 @@ package org.wildfly.extension.messaging.activemq;
 
 
 import org.apache.activemq.artemis.api.core.SimpleString;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +39,7 @@ class QueueRemove extends AbstractRemoveStepHandler {
         } else {
             ServiceController<?> serverService = context.getServiceRegistry(false).getService(serviceName);
             try {
-                ((ActiveMQServer) serverService.getValue()).destroyQueue(new SimpleString(name), null, false);
+                ((ActiveMQBroker) serverService.getValue()).destroyQueue(new SimpleString(name), null, false);
             } catch (Exception ex) {
                 MessagingLogger.ROOT_LOGGER.failedToDestroy("queue", name);
             }

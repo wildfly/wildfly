@@ -5,12 +5,10 @@
 
 package org.wildfly.extension.messaging.activemq.jms.bridge;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -30,15 +28,14 @@ class JMSBridgeRemove extends AbstractRemoveStepHandler {
     private JMSBridgeRemove() {
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String bridgeName = address.getLastElement().getValue();
-        context.removeService(MessagingServices.getJMSBridgeServiceName(bridgeName));
+        context.removeService(MessagingServices.getJMSBridgeServiceName(context.getCurrentAddressValue()));
     }
 
+    @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String bridgeName = address.getLastElement().getValue();
+        final String bridgeName = context.getCurrentAddressValue();
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceName jmsBridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);

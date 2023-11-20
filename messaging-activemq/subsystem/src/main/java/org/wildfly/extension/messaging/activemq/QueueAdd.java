@@ -10,7 +10,6 @@ package org.wildfly.extension.messaging.activemq;
 
 import java.util.function.Supplier;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -61,7 +60,7 @@ public class QueueAdd extends AbstractAddStepHandler {
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(queueName);
             final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
             sb.requires(ActiveMQActivationService.getServiceName(serviceName));
-            Supplier<ActiveMQServer> serverSupplier = sb.requires(serviceName);
+            Supplier<ActiveMQBroker> serverSupplier = sb.requires(serviceName);
             final QueueService service = new QueueService(serverSupplier, queueConfiguration, false, true);
             sb.setInitialMode(Mode.PASSIVE);
             sb.setInstance(service);

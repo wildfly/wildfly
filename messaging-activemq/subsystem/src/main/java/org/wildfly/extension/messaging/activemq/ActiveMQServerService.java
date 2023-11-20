@@ -59,7 +59,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-class ActiveMQServerService implements Service<ActiveMQServer> {
+class ActiveMQServerService implements Service<ActiveMQBroker> {
 
     /** */
     private static final String HOST = "host";
@@ -308,12 +308,12 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     }
 
     @Override
-    public synchronized ActiveMQServer getValue() throws IllegalStateException {
+    public synchronized ActiveMQBroker getValue() throws IllegalStateException {
         final ActiveMQServer server = this.server;
         if (server == null) {
             throw new IllegalStateException();
         }
-        return server;
+        return new ActiveMQBrokerImpl(server);
     }
 
 

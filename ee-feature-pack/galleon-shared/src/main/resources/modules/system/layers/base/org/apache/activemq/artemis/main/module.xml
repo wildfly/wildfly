@@ -22,30 +22,17 @@
             exposed by this module are subject to change or removal at any time.
 
             This module should not be directly depended upon by deployments.
+            You should use the "org.apache.activemq.artemis.client" instead.
         -->
-        <!--
-            NOTE: The previous comment reflects the intent of the WildFly project
-            that this module be marked as jboss-api=private, i.e. not to be directly
-            depended upon by deployments. However, we have identified valid use cases
-            where such a dependency is needed (see https://issues.redhat.com/browse/WFLY-18240).
-            While we evaluate whether those use cases can be handled while leaving
-            this module as private, we are temporarily marking it as "deprecated"
-            in order to make users aware its status may be changing in a later release.
-        -->
-        <property name="jboss.api" value="deprecated"/>
+        <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${org.apache.activemq:artemis-core-client}"/>
-        <artifact name="${org.apache.activemq:artemis-selector}"/>
         <artifact name="${org.apache.activemq:artemis-server}"/>
         <artifact name="${org.apache.activemq:artemis-cli}"/>
         <artifact name="${org.apache.activemq:artemis-dto}"/>
-        <artifact name="${org.apache.activemq:artemis-hqclient-protocol}"/>
         <artifact name="${org.apache.activemq:artemis-jdbc-store}"/>
-        <artifact name="${org.apache.activemq:artemis-jakarta-client}"/>
         <artifact name="${org.apache.activemq:artemis-jakarta-server}"/>
-        <artifact name="${org.apache.activemq:artemis-jakarta-service-extensions}"/>
     </resources>
 
     <dependencies>
@@ -66,6 +53,9 @@
         <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.apache.commons.collections" />
+        <module name="org.apache.activemq.artemis.commons" services="import" export="true"/>
+        <module name="org.apache.activemq.artemis.client" services="import"/>
+        <module name="org.apache.activemq.artemis.service-extensions" services="import" />
         <module name="org.apache.activemq.artemis.journal" export="true"/>
         <module name="org.jboss.jts"/>
         <module name="org.jctools"/>

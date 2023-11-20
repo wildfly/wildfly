@@ -20,8 +20,6 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSTopicService.JMS_T
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
-import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
@@ -40,6 +38,7 @@ import org.jboss.msc.service.ServiceName;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a ActiveMQ
@@ -72,9 +71,8 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        ManagementService managementService = server.getManagementService();
-        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
+        ActiveMQBroker broker = ActiveMQBroker.class.cast(service.getValue());
+        AddressControl control = AddressControl.class.cast(broker.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -90,19 +88,19 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
                 throw new RuntimeException(e);
             }
         } else if (CommonAttributes.DELIVERING_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getDeliveringCount(control, managementService));
+            context.getResult().set(getDeliveringCount(control, broker));
         } else if (CommonAttributes.MESSAGES_ADDED.getName().equals(attributeName)) {
-            context.getResult().set(getMessagesAdded(control, managementService));
+            context.getResult().set(getMessagesAdded(control, broker));
         } else if (DURABLE_MESSAGE_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getDurableMessageCount(control, managementService));
+            context.getResult().set(getDurableMessageCount(control, broker));
         } else if (NON_DURABLE_MESSAGE_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getNonDurableMessageCount(control, managementService));
+            context.getResult().set(getNonDurableMessageCount(control, broker));
         } else if (SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getSubscriptionCount(control, managementService));
+            context.getResult().set(getSubscriptionCount(control, broker));
         } else if (DURABLE_SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getDurableSubscriptionCount(control, managementService));
+            context.getResult().set(getDurableSubscriptionCount(control, broker));
         } else if (NON_DURABLE_SUBSCRIPTION_COUNT.getName().equals(attributeName)) {
-            context.getResult().set(getNonDurableSubscriptionCount(control, managementService));
+            context.getResult().set(getNonDurableSubscriptionCount(control, broker));
         } else if (TOPIC_ADDRESS.getName().equals(attributeName)) {
             context.getResult().set(control.getAddress());
         } else if (CommonAttributes.TEMPORARY.getName().equals(attributeName)) {
@@ -116,8 +114,8 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private int getDeliveringCount(AddressControl addressControl, ManagementService managementService) {
-        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, managementService);
+    private int getDeliveringCount(AddressControl addressControl, ActiveMQBroker broker) {
+        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, broker);
         int count = 0;
         for (QueueControl queue : queues) {
             count += queue.getDeliveringCount();
@@ -125,8 +123,8 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         return count;
     }
 
-    private long getMessagesAdded(AddressControl addressControl, ManagementService managementService) {
-        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, managementService);
+    private long getMessagesAdded(AddressControl addressControl, ActiveMQBroker broker) {
+        List<QueueControl> queues = getQueues(DurabilityType.ALL, addressControl, broker);
         long count = 0;
         for (QueueControl queue : queues) {
             count += queue.getMessagesAdded();
@@ -135,18 +133,18 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
     }
 
 
-    private int getDurableMessageCount(AddressControl addressControl, ManagementService managementService) {
-        return getMessageCount(DurabilityType.DURABLE, addressControl, managementService);
+    private int getDurableMessageCount(AddressControl addressControl, ActiveMQBroker broker) {
+        return getMessageCount(DurabilityType.DURABLE, addressControl, broker);
     }
 
 
-    private int getNonDurableMessageCount(AddressControl addressControl, ManagementService managementService) {
-        return getMessageCount(DurabilityType.NON_DURABLE, addressControl, managementService);
+    private int getNonDurableMessageCount(AddressControl addressControl, ActiveMQBroker broker) {
+        return getMessageCount(DurabilityType.NON_DURABLE, addressControl, broker);
     }
 
 
-    private int getMessageCount(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
-        List<QueueControl> queues = getQueues(durability, addressControl, managementService);
+    private int getMessageCount(final DurabilityType durability, AddressControl addressControl, ActiveMQBroker broker) {
+        List<QueueControl> queues = getQueues(durability, addressControl, broker);
         int count = 0;
         for (QueueControl queue : queues) {
             count += queue.getMessageCount();
@@ -154,25 +152,25 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         return count;
     }
 
-    public int getSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
-        return getQueues(DurabilityType.ALL, addressControl, managementService).size();
+    public int getSubscriptionCount(AddressControl addressControl, ActiveMQBroker broker) {
+        return getQueues(DurabilityType.ALL, addressControl, broker).size();
     }
 
-    public int getDurableSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
-        return getQueues(DurabilityType.DURABLE, addressControl, managementService).size();
+    public int getDurableSubscriptionCount(AddressControl addressControl, ActiveMQBroker broker) {
+        return getQueues(DurabilityType.DURABLE, addressControl, broker).size();
     }
 
-    public int getNonDurableSubscriptionCount(AddressControl addressControl, ManagementService managementService) {
-        return getQueues(DurabilityType.NON_DURABLE, addressControl, managementService).size();
+    public int getNonDurableSubscriptionCount(AddressControl addressControl, ActiveMQBroker broker) {
+        return getQueues(DurabilityType.NON_DURABLE, addressControl, broker).size();
     }
 
 
-    public static List<QueueControl> getQueues(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
+    public static List<QueueControl> getQueues(final DurabilityType durability, AddressControl addressControl, ActiveMQBroker broker) {
         try {
             List<QueueControl> matchingQueues = new ArrayList<>();
             String[] queues = addressControl.getQueueNames();
             for (String queue : queues) {
-                QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queue);
+                QueueControl coreQueueControl = (QueueControl) broker.getResource(ResourceNames.QUEUE + queue);
 
                 // Ignore the "special" subscription
                 if (coreQueueControl != null

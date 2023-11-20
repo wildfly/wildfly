@@ -114,13 +114,13 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            ActiveMQServer server = null;
+            ActiveMQBroker server = null;
             if (context.getRunningMode() == RunningMode.NORMAL) {
                 ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
                 if (service == null || service.getState() != ServiceController.State.UP) {
                     throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
                 }
-                server = ActiveMQServer.class.cast(service.getValue());
+                server = ActiveMQBroker.class.cast(service.getValue());
             }
             handleReadAttribute(context, operation, server);
             return;
@@ -337,9 +337,10 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
     }
 
-    private void handleReadAttribute(OperationContext context, ModelNode operation, final ActiveMQServer server) throws OperationFailedException {
+    private void handleReadAttribute(OperationContext context, ModelNode operation, final ActiveMQBroker broker) throws OperationFailedException {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
+        ActiveMQServer server = broker == null ? null : ActiveMQServer.class.cast(broker.getDelegate());
         if (STARTED.getName().equals(name)) {
             boolean started = server != null ? server.isStarted() : false;
             context.getResult().set(started);
@@ -377,7 +378,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         if (service == null || service.getState() != ServiceController.State.UP) {
             throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
         }
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
         return server.getActiveMQServerControl();
     }
 }

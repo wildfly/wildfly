@@ -35,6 +35,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.DefaultCredentials;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
@@ -46,7 +47,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Emanuel Muckenhuber
  */
 public class JMSService implements Service<JMSServerManager> {
-    private final InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
+    private final InjectedValue<ActiveMQBroker> activeMQServer = new InjectedValue<>();
     private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<>();
     private final ServiceName serverServiceName;
     private final boolean overrideInVMSecurity;
@@ -55,7 +56,7 @@ public class JMSService implements Service<JMSServerManager> {
     public static ServiceController<JMSServerManager> addService(final ServiceTarget target, ServiceName serverServiceName, boolean overrideInVMSecurity) {
         final JMSService service = new JMSService(serverServiceName, overrideInVMSecurity);
         ServiceBuilder<JMSServerManager> builder = target.addService(JMSServices.getJmsManagerBaseServiceName(serverServiceName), service);
-        builder.addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer);
+        builder.addDependency(serverServiceName, ActiveMQBroker.class, service.activeMQServer);
         builder.requires(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL);
         builder.setInitialMode(Mode.ACTIVE);
         addServerExecutorDependency(builder, service.serverExecutor);
@@ -119,18 +120,18 @@ public class JMSService implements Service<JMSServerManager> {
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
         ClassLoader oldTccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(getClass());
         try {
-            jmsServer = new JMSServerManagerImpl(activeMQServer.getValue(), new WildFlyBindingRegistry(context.getController().getServiceContainer())) {
+            jmsServer = new JMSServerManagerImpl(ActiveMQServer.class.cast(activeMQServer.getValue().getDelegate()), new WildFlyBindingRegistry(context.getController().getServiceContainer())) {
                 @Override
                 public void stop(ActiveMQServer server) {
                     // Suppress ARTEMIS-2438
                 }
             };
 
-            activeMQServer.getValue().registerActivationFailureListener(e -> {
+            ActiveMQServer.class.cast(activeMQServer.getValue().getDelegate()).registerActivationFailureListener(e -> {
                 StartException se = new StartException(e);
                 context.failed(se);
             });
-            activeMQServer.getValue().registerActivateCallback(new ActivateCallback() {
+            ActiveMQServer.class.cast(activeMQServer.getValue().getDelegate()).registerActivateCallback(new ActivateCallback() {
                 private volatile ServiceController<Void> activeMQActivationController;
 
                 public void preActivate() {
@@ -138,7 +139,7 @@ public class JMSService implements Service<JMSServerManager> {
 
                 public void activated() {
                     if (overrideInVMSecurity) {
-                        activeMQServer.getValue().getRemotingService().allowInvmSecurityOverride(new ActiveMQPrincipal(DefaultCredentials.getUsername(), DefaultCredentials.getPassword()));
+                        ActiveMQServer.class.cast(activeMQServer.getValue().getDelegate()).getRemotingService().allowInvmSecurityOverride(new ActiveMQPrincipal(DefaultCredentials.getUsername(), DefaultCredentials.getPassword()));
                     }
                     // ActiveMQ only provides a callback to be notified when ActiveMQ core server is activated.
                     // but the Jakarta Messaging service start must not be completed until the JMSServerManager wrappee is indeed started (and has deployed the Jakarta Messaging resources, etc.).

@@ -112,7 +112,7 @@ public class ExternalConnectionFactoryClientMappingTestCase {
                 "<jboss-deployment-structure>\n" +
                         "  <deployment>\n" +
                         "    <dependencies>\n" +
-                        "      <module name=\"org.apache.activemq.artemis\"/>\n" +
+                        "      <module name=\"org.apache.activemq.artemis.client\"/>\n" +
                         "    </dependencies>\n" +
                         "  </deployment>\n" +
                         "</jboss-deployment-structure>"), "META-INF/jboss-deployment-structure.xml");

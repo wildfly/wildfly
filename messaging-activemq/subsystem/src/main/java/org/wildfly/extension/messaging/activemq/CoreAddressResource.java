@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
@@ -30,11 +29,11 @@ import org.jboss.dmr.ModelNode;
 public class CoreAddressResource implements Resource {
 
     private final String name;
-    private final ManagementService managementService;
+    private final ActiveMQBroker broker;
 
-    public CoreAddressResource(final String name, final ManagementService managementService) {
+    public CoreAddressResource(final String name, final ActiveMQBroker broker) {
         this.name = name;
-        this.managementService = managementService;
+        this.broker = broker;
     }
 
     @Override
@@ -138,7 +137,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new CoreAddressResource(name, managementService);
+        return new CoreAddressResource(name, broker);
     }
 
     private Set<String> getSecurityRoles() {
@@ -155,10 +154,10 @@ public class CoreAddressResource implements Resource {
     }
 
     private AddressControl getAddressControl() {
-        if (managementService == null) {
+        if (broker == null) {
             return null;
         }
-        Object obj = managementService.getResource(ResourceNames.ADDRESS + name);
+        Object obj = broker.getResource(ResourceNames.ADDRESS + name);
         return AddressControl.class.cast(obj);
     }
 
@@ -171,11 +170,11 @@ public class CoreAddressResource implements Resource {
 
         final PathElement path;
         // we keep a ref on the management service to be able to clone it... is there a more elegant way?
-        private final ManagementService managementService2;
+        private final ActiveMQBroker broker2;
 
-        public CoreAddressResourceEntry(final String name, final ManagementService managementService) {
-            super(name, managementService);
-            managementService2 = managementService;
+        public CoreAddressResourceEntry(final String name, final ActiveMQBroker broker) {
+            super(name, broker);
+            broker2 = broker;
             path = PathElement.pathElement(CommonAttributes.CORE_ADDRESS, name);
         }
 
@@ -191,7 +190,7 @@ public class CoreAddressResource implements Resource {
 
         @Override
         public CoreAddressResourceEntry clone() {
-            return new CoreAddressResourceEntry(path.getValue(), managementService2);
+            return new CoreAddressResourceEntry(path.getValue(), broker2);
         }
     }
 }

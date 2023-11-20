@@ -2931,6 +2931,10 @@
                                         <!-- Override the standard module path that points at the shared module set from dist -->
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
+                                    <excludes combine.children="append">
+                                        <!-- JSM queues and topics declared on an XML deployment file won't work without embedded broker  -->
+                                        <exclude>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
 
@@ -3558,6 +3562,8 @@
                                         <exclude>org/jboss/as/test/integration/weld/modules/deployment/ModuleBeanDiscoveryModeTest.java</exclude>
                                         <exclude>org/jboss/as/test/integration/weld/modules/export/ExportedModuleTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/jca/classloading/custommodule/DatasourceCustomModulesTestCase.java</exclude>
+                                        <!-- JSM queues and topics declared on an XML deployment file won't work without embedded broker  -->
+                                        <exclude>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
@@ -3581,7 +3587,13 @@
                                         <include>org/jboss/as/test/integration/jpa/**/NonTransactionalEmTestCase.java</include>
                                         <!-- WebJPATestCase is currently the only test that does not need EJB -->
                                         <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
+                                        <!-- WebJPATestCase is currently the only test that does not need EJB -->
+                                        <include>org/jboss/as/test/integration/jpa/**/WebJPATestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <!-- JSM queues and topics declared on an XML deployment file won't work without embedded broker  -->
+                                        <exclude>org/jboss/as/test/integration/messaging/xmldeployment/DeployedXmlJMSManagementTestCase.java</exclude>
+                                    </excludes>
                                     <classpathDependencyExcludes>
                                         <classpathDependencyExclude>
                                             org.wildfly.arquillian:wildfly-arquillian-container-managed
