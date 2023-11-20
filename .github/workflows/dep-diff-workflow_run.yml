@@ -28,7 +28,7 @@ jobs:
         # It would have been nice to be able to use actions/download-artifact@v2
         # for this, but as the artifacts are uploaded by another workflow it does
         # not seem possible - so we need to do this stuff instead
-        uses: actions/github-script@v7.0.0
+        uses: actions/github-script@v7.0.1
         with:
           script: |
             var artifacts = await github.rest.actions.listWorkflowRunArtifacts({
