@@ -55,10 +55,6 @@ public abstract class LayersTestBase {
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
-            // Legacy extension not in ootb standalone.xml extension list
-            // and not in test-all-layers as it is admin-only
-            // TODO move to NO_LAYER_OR_REFERENCE_COMMON when the WFCORE-6591 is integrated
-            "org.jboss.as.security",
     };
 
     /**
@@ -259,7 +255,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.picketlink",
             "org.jboss.as.jsr77",
             "org.keycloak.keycloak-adapter-subsystem",
-            // end legacy subsystems ^^^
+            // end legacy subsystems with no layer ^^^
+            // Legacy extension not in ootb standalone.xml extension list
+            // and not in test-all-layers as it is admin-only
+            "org.jboss.as.security",
             // TODO move eclipse link support to an external feature pack
             "org.eclipse.persistence",
             // RA not associated with any layer
