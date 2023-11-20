@@ -122,29 +122,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <version>${version.org.wildfly.plugin}</version>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <stdout>none</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
@@ -169,6 +146,29 @@
                             </expected-errors>
                             <expected-discovery>[cdi, ee-integration, ejb, ejb-lite, elytron-oidc-client, naming, servlet]==>ee-core-profile-server,ejb,elytron-oidc-client</expected-discovery>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <offline>true</offline>
+                    <jboss-home>${wildfly.dir}</jboss-home>
+                    <stdout>none</stdout>
+                    <java-opts>${modular.jdk.args}</java-opts>
+                    <system-properties>
+                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                        <module.path>${jboss.dist}/modules</module.path>
+                    </system-properties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -256,6 +256,7 @@
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <glow.phase>test-compile</glow.phase>
+                <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
             </properties>
             <build>
                 <plugins>
@@ -277,6 +278,9 @@
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -284,28 +288,22 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>elytron-oidc-client-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -357,6 +355,7 @@
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <glow.phase>test-compile</glow.phase>
+                <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
             </properties>
             <build>
                 <plugins>
@@ -373,11 +372,14 @@
                                 <phase>none</phase>
                             </execution>
                         </executions>
-                    </plugin>
+                    </plugin>                
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -385,28 +387,22 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>                   
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>elytron-oidc-client-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -575,12 +571,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>
@@ -668,12 +658,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>

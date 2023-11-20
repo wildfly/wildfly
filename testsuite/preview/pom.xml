@@ -56,6 +56,8 @@
         <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
         <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
         <container.java.home>${java.home}</container.java.home>
+        
+        <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
     </properties>
 
     <dependencies>
@@ -408,7 +410,7 @@
                     <!-- Copy users and roles config from shared resources. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>${ts.config-as.copy-mgmt-users.phase}</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <inherited>true</inherited>
                         <configuration>

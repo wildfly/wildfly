@@ -67,8 +67,12 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -77,10 +81,14 @@
                         </goals>
                         <phase>process-test-classes</phase>
                         <configuration>
-                            <install-dir>${wildfly.home}</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
+                            <provisioning-dir>${wildfly.home}</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -93,10 +101,6 @@
                                     </excluded-packages>
                                 </feature-pack>
                             </feature-packs>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                         </configuration>
                     </execution>
                 </executions>
@@ -134,8 +138,9 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>

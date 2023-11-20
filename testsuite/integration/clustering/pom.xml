@@ -1844,26 +1844,30 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Provision a cloud-server with web-clustering -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1871,19 +1875,19 @@
                             <execution>
                                 <id>cloud-profile-mod_cluster-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-mod_cluster</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-mod_cluster</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server-mod-cluster/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1891,19 +1895,19 @@
                             <execution>
                                 <id>cloud-profile-jpa-distributed-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jpa-dist</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jpa-dist</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server-jpa-dist/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1911,19 +1915,19 @@
                             <execution>
                                 <id>cloud-profile-ejb-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server-ejb/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1931,19 +1935,19 @@
                             <execution>
                                 <id>jaxrs-server-jsf-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-jsf</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-jsf</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server-jaxrs-jsf/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1951,19 +1955,19 @@
                             <execution>
                                 <id>cloud-server-singleton-ha-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-singleton-ha</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-singleton-ha</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/wildfly-server-singleton-ha/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1971,19 +1975,19 @@
                             <execution>
                                 <id>web-passivation-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-web-passivation</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-web-passivation</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ts.surefire.clustering.web-passivation/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -1991,33 +1995,26 @@
                             <execution>
                                 <id>singleton-local-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-singleton-local</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-singleton-local</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ts.surefire.clustering.singleton-local/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Update server profile with shared configuration changes -->
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
+                            <!-- Update server profile with shared configuration changes -->
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2031,7 +2028,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-mod_cluster</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2051,7 +2048,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-lb-clustering-mod_cluster</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2071,7 +2068,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-ejb</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2091,7 +2088,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-jpa-dist</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2111,7 +2108,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-jsf</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2131,7 +2128,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-singleton-ha</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>

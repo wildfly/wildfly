@@ -36,6 +36,9 @@
         <glow.cloud-profile.phase>none</glow.cloud-profile.phase>
         <glow.jpa.phase>none</glow.jpa.phase>
         <glow.hibernate-search.phase>none</glow.hibernate-search.phase>
+        <ts.copy-wildfly-standalone-embedded-broker.phase>generate-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
+        <cloud-profile-provisioning.phase>none</cloud-profile-provisioning.phase>
+        <hibernate-search-provisioning.phase>none</hibernate-search-provisioning.phase>
     </properties>
 
     <dependencies>
@@ -175,6 +178,57 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
+                <executions>
+                    <!-- Provision a cloud-profile server -->
+                    <execution>
+                        <id>cloud-profile-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${cloud-profile-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Provision a server with hibernate-search -->
+                    <execution>
+                        <id>hibernate-search-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${hibernate-search-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-hibernate-search</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -198,7 +252,7 @@
                             <execution>
                                 <id>ts.copy-wildfly-standalone-embedded-broker</id>
                                 <inherited>true</inherited>
-                                <phase>generate-test-resources</phase>
+                                <phase>${ts.copy-wildfly-standalone-embedded-broker.phase}</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -304,6 +358,10 @@
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
+                <cloud-profile-provisioning.phase>test-compile</cloud-profile-provisioning.phase>
+                <hibernate-search-provisioning.phase>test-compile</hibernate-search-provisioning.phase>
+                <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
+                <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-classes</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
             <build>
                 <plugins>
@@ -321,54 +379,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Provision a cloud-profile server -->
-                            <execution>
-                                <id>cloud-profile-provisioning</id>
-                                <goals>
-                                    <goal>provision-file</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
-                                </configuration>
-                            </execution>
-
-                            <!-- Provision a server with hibernate-search -->
-                            <execution>
-                                <id>hibernate-search-provisioning</id>
-                                <goals>
-                                    <goal>provision-file</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-hibernate-search</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>

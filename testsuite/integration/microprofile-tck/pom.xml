@@ -141,27 +141,32 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
                 <executions>
                     <!-- Provision a server slimmed to only what we want for a particular TCK. -->
                     <execution>
                         <id>microprofile-tck-provisioning</id>
                         <goals>
-                            <goal>provision-file</goal>
+                            <goal>provision</goal>
                         </goals>
                         <!-- Use a property to drive whether this execution is enabled.
                              Default is 'none', i.e. disabled. -->
                         <phase>${ts.microprofile-tck-provisioning.phase}</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
-                            <plugin-options>
+                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
                             <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -324,8 +329,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Provision a server slimmed to only what we want for a particular TCK. -->
                             <execution>

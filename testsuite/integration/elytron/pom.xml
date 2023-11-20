@@ -564,8 +564,12 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
@@ -574,10 +578,10 @@
                                 </goals>
                                 <phase>generate-test-resources</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
+                                    <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -602,11 +606,11 @@
                                             </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <plugin-options>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                 </configuration>
                             </execution>
                         </executions>
@@ -746,8 +750,16 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <!-- Do not configure messaging as some layers do not include messaging -->
+                            <scripts combine.children="override">
+                                <script>modify-elytron-config.cli</script>
+                            </scripts>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Disable the standard provisioning -->
                             <execution>
@@ -758,34 +770,23 @@
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/${wildfly.instance.name}</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <configuration>
-                            <!-- Do not configure messaging as some layers do not include messaging -->
-                            <scripts combine.children="override">
-                                <script>modify-elytron-config.cli</script>
-                            </scripts>
-                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -882,12 +883,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>

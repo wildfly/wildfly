@@ -2156,26 +2156,30 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Provision a cloud-profile server -->
                             <execution>
                                 <id>cloud-profile-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
 
@@ -2184,19 +2188,19 @@
                             <execution>
                                 <id>jdr-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jdr</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jdr</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jdr.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2205,19 +2209,19 @@
                             <execution>
                                 <id>batch-jberet-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-batch</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-batch</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/batch-jberet-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2225,19 +2229,19 @@
                             <execution>
                                 <id>jpa-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jpa</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jpa</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jpa-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2245,19 +2249,19 @@
                             <execution>
                                 <id>hibernate-search-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-hibernate-search</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-hibernate-search</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/hibernate-search-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2266,19 +2270,19 @@
                             <execution>
                                 <id>jsonp-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsonp</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jsonp</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jsonp-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2286,19 +2290,19 @@
                             <execution>
                                 <id>jsonb-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsonb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jsonb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jsonb-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2306,19 +2310,19 @@
                             <execution>
                                 <id>ee-concurrency-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ee-concurrency</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-ee-concurrency</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ee-concurrency-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2326,19 +2330,19 @@
                             <execution>
                                 <id>ejb-lite-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-lite</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-ejb-lite</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ejb-lite-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2347,19 +2351,19 @@
                             <execution>
                                 <id>ejb-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ejb-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2367,19 +2371,19 @@
                             <execution>
                                 <id>ejb-embedded-broker-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-embedded-broker</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-ejb-embedded-broker</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ejb-embedded-broker-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2388,19 +2392,19 @@
                             <execution>
                                 <id>ejb-remote-broker-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-ejb-remote-broker</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-ejb-remote-broker</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/ejb-remote-broker-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2409,19 +2413,19 @@
                             <execution>
                                 <id>jsf-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsf</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jsf</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jsf-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2429,19 +2433,19 @@
                             <execution>
                                 <id>jsf-ejb-lite-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jsf-ejb-lite</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jsf-ejb-lite</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/jsf-ejb-lite-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2450,19 +2454,19 @@
                             <execution>
                                 <id>legacy-sar-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-legacy-sar</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/legacy-sar-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2470,19 +2474,19 @@
                             <execution>
                                 <id>mail-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-mail</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-mail</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/mail-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2492,19 +2496,19 @@
                             <execution>
                                 <id>mail-ejb-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-mail-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-mail-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/mail-ejb-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2513,19 +2517,19 @@
                             <execution>
                                 <id>pojo-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-pojo</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-pojo</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/pojo-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -2534,19 +2538,19 @@
                             <execution>
                                 <id>web-console-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-web-console</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-web-console</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/web-console-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -3294,8 +3298,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
@@ -3451,8 +3456,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>

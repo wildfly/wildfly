@@ -490,8 +490,12 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -500,10 +504,15 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
+                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -527,11 +536,6 @@
                                     </included-configs>
                                 </feature-pack>
                             </feature-packs>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </plugin-options>
                         </configuration>
                     </execution>
                 </executions>
@@ -621,8 +625,9 @@
                 <plugins>
                     <plugin>
                         <!-- Turn off the standard galleon provisioning (doesn't work with mvnd) -->
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
@@ -654,8 +659,9 @@
                 <plugins>
                     <plugin>
                         <!-- Turn off the standard galleon provisioning -->
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
@@ -727,26 +733,30 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Provision a cloud-profile server -->
                             <execution>
                                 <id>observability-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>process-test-classes</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -755,19 +765,19 @@
                             <execution>
                                 <id>legacy-sar-provisioning</id>
                                 <goals>
-                                    <goal>provision-file</goal>
+                                    <goal>provision</goal>
                                 </goals>
                                 <phase>process-test-classes</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-legacy-sar</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
+                                    </galleon-options>
                                     <provisioning-file>target/glow-scan/legacy-sar-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -868,8 +878,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
@@ -955,8 +966,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
