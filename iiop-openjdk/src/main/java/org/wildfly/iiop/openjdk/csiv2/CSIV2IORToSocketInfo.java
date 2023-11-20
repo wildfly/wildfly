@@ -193,7 +193,7 @@ public class CSIV2IORToSocketInfo implements IORToSocketInfo {
 
         while (iterator.hasNext()) {
             AlternateIIOPAddressComponent alternate = (AlternateIIOPAddressComponent) iterator.next();
-            String hostname = alternate.getAddress().getHost().toLowerCase();
+            String hostname = alternate.getAddress().getHost().toLowerCase(Locale.ENGLISH);
             int port = alternate.getAddress().getPort();
             SocketInfo socketInfo = createSocketInfo(hostname, port);
             result.add(socketInfo);

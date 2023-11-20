@@ -17,6 +17,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Locale;
+
 /**
  * AS7-5768 -Support for RA module deployment
  *
@@ -54,7 +56,7 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
 
         @Override
         protected String getSlot() {
-            return PureFlatTestCase.class.getSimpleName().toLowerCase();
+            return PureFlatTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 

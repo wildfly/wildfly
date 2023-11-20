@@ -193,7 +193,7 @@ public class HTTPSWebConnectorTestCase {
             assertEquals("Secured page was not reached", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
 
             String principal = makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_OK);
-            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase());
+            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase(Locale.ENGLISH));
 
             responseBody = makeCallWithHttpClient(unsecuredUrl, httpClientUntrusted, HttpServletResponse.SC_OK);
             assertEquals("Secured page was not reached", SimpleServlet.RESPONSE_BODY, responseBody);
@@ -238,7 +238,7 @@ public class HTTPSWebConnectorTestCase {
             makeCallWithHttpClient(printPrincipalUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
 
             final String principal = makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_OK);
-            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase());
+            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase(Locale.ENGLISH));
 
             String responseBody = makeCallWithHttpClient(unsecuredUrl, httpClient, HttpServletResponse.SC_OK);
             assertEquals("Unsecured page was not reached", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
@@ -276,7 +276,7 @@ public class HTTPSWebConnectorTestCase {
             final URL unsecuredUrl = getServletUrl(HTTPS_PORT_VERIFY_TRUE, SimpleServlet.SERVLET_PATH);
 
             String principal = makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_OK);
-            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase());
+            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase(Locale.ENGLISH));
 
             String responseBody = makeCallWithHttpClient(securedUrl, httpClient, HttpServletResponse.SC_OK);
             assertEquals("Secured page was not reached", SimpleSecuredServlet.RESPONSE_BODY, responseBody);

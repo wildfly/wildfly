@@ -6,6 +6,7 @@
 package org.wildfly.mod_cluster.undertow;
 
 import java.util.Iterator;
+import java.util.Locale;
 
 import io.undertow.server.session.SessionCookieConfig;
 import org.jboss.modcluster.container.Connector;
@@ -153,7 +154,7 @@ public class UndertowEngine implements Engine {
      */
     @Override
     public String getSessionParameterName() {
-        return getSessionCookieName().toLowerCase();
+        return getSessionCookieName().toLowerCase(Locale.ENGLISH);
     }
 
     @Override

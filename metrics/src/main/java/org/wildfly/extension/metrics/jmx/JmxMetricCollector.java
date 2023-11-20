@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.Properties;
@@ -153,12 +154,12 @@ public class JmxMetricCollector {
             tagsToFill = Arrays.asList(entryProperties.get("tagsToFill").split(","));
         }
 
-        final MeasurementUnit unit = (entryProperties.get("unit") == null) ? NONE : MeasurementUnit.valueOf(entryProperties.get("unit").toUpperCase());
+        final MeasurementUnit unit = (entryProperties.get("unit") == null) ? NONE : MeasurementUnit.valueOf(entryProperties.get("unit").toUpperCase(Locale.ENGLISH));
 
         JmxMetricMetadata metadata = new JmxMetricMetadata(name,
                 entryProperties.get("description"),
                 unit,
-                MetricMetadata.Type.valueOf(entryProperties.get("type").toUpperCase()),
+                MetricMetadata.Type.valueOf(entryProperties.get("type").toUpperCase(Locale.ENGLISH)),
                 entryProperties.get("mbean"),
                 tagsToFill,
                 Collections.emptyList());
