@@ -1070,12 +1070,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.thrift</groupId>
-                <artifactId>libthrift</artifactId>
-                <version>${version.org.apache.thrift}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
                 <version>${version.org.eclipse.microprofile.config.api}</version>
