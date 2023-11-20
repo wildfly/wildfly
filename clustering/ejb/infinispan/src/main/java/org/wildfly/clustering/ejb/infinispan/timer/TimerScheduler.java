@@ -152,9 +152,9 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
                         InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s [%s]", id, timer.getMetaData().getContext());
 
                         // In case we need to reset the last timeout
-                        Optional<Instant> lastTimeout = metaData.getLastTimout();
+                        Optional<Instant> lastTimeout = metaData.getLastTimeout();
                         // Record last timeout - expected to be set prior to triggering timeout
-                        metaData.setLastTimout(currentTimeout);
+                        metaData.setLastTimeout(currentTimeout);
 
                         try {
                             timer.invoke();
@@ -165,7 +165,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
                             // Component is not started or is suspended
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("EJB component is suspended - could not invoke timeout for timer %s", id);
                             // Reset last timeout
-                            metaData.setLastTimout(lastTimeout.orElse(null));
+                            metaData.setLastTimeout(lastTimeout.orElse(null));
                             return false;
                         }
 

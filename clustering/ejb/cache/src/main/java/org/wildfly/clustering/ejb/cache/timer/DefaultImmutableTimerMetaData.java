@@ -52,13 +52,13 @@ public class DefaultImmutableTimerMetaData<C> implements ImmutableTimerMetaData 
     }
 
     @Override
-    public Optional<Instant> getLastTimout() {
+    public Optional<Instant> getLastTimeout() {
         return Optional.ofNullable(this.entry.getLastTimeout()).map(this.entry.getStart()::plus);
     }
 
     @Override
     public Optional<Instant> getNextTimeout() {
-        Optional<Instant> lastTimeout = this.getLastTimout();
+        Optional<Instant> lastTimeout = this.getLastTimeout();
         return lastTimeout.isPresent() ? lastTimeout.map(this.entry) : Optional.of(this.entry.getStart());
     }
 
