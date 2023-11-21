@@ -28,7 +28,7 @@ public class DefaultTimerMetaData<C> extends DefaultImmutableTimerMetaData<C> im
 
     @Override
     public void setLastTimeout(Instant timeout) {
-        this.entry.setLastTimeout(Duration.between(this.entry.getStart(), timeout));
+        this.entry.setLastTimeout((timeout != null) ? Duration.between(this.entry.getStart(), timeout) : null);
         this.mutator.mutate();
     }
 }
