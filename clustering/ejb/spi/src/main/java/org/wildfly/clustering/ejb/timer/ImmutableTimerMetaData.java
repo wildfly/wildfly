@@ -52,7 +52,7 @@ public interface ImmutableTimerMetaData {
      * Returns the time of the most recent timeout event of this timer, or null if there are no previous timeout events
      * @return the optional time of the last timeout event
      */
-    Optional<Instant> getLastTimout();
+    Optional<Instant> getLastTimeout();
 
     /**
      * Returns the time of the next timeout event, or null if there are no future timeout events.

@@ -12,7 +12,7 @@ import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
 
 /**
- * A timer metadata implementation that triggers a mutator on {@link #setLastTimout(Instant)}.
+ * A timer metadata implementation that triggers a mutator on {@link #setLastTimeout(Instant)}.
  * @author Paul Ferraro
  */
 public class DefaultTimerMetaData<C> extends DefaultImmutableTimerMetaData<C> implements TimerMetaData {
@@ -27,8 +27,8 @@ public class DefaultTimerMetaData<C> extends DefaultImmutableTimerMetaData<C> im
     }
 
     @Override
-    public void setLastTimout(Instant timeout) {
-        this.entry.setLastTimeout(Duration.between(this.entry.getStart(), timeout));
+    public void setLastTimeout(Instant timeout) {
+        this.entry.setLastTimeout((timeout != null) ? Duration.between(this.entry.getStart(), timeout) : null);
         this.mutator.mutate();
     }
 }

@@ -83,13 +83,13 @@ public class DefaultImmutableTimerMetaDataTestCase {
     }
 
     @Test
-    public void getLastTimout() {
+    public void getLastTimeout() {
         Instant start = Instant.now();
 
         doReturn(null).when(this.entry).getLastTimeout();
         doReturn(start).when(this.entry).getStart();
 
-        Optional<Instant> result = this.metaData.getLastTimout();
+        Optional<Instant> result = this.metaData.getLastTimeout();
 
         Assert.assertFalse(result.isPresent());
 
@@ -97,7 +97,7 @@ public class DefaultImmutableTimerMetaDataTestCase {
 
         doReturn(lastTimeout).when(this.entry).getLastTimeout();
 
-        result = this.metaData.getLastTimout();
+        result = this.metaData.getLastTimeout();
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(lastTimeout, Duration.between(start, result.get()));
