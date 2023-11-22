@@ -4,7 +4,6 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-
 import java.security.AccessController;
 import jakarta.resource.spi.work.ExecutionContext;
 import jakarta.resource.spi.work.Work;
@@ -13,6 +12,7 @@ import jakarta.resource.spi.work.WorkListener;
 import jakarta.resource.spi.work.WorkManager;
 
 import org.apache.activemq.artemis.api.core.BroadcastEndpointFactory;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
 import org.apache.activemq.artemis.ra.ConnectionFactoryProperties;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.CurrentServiceContainer;
@@ -66,6 +66,16 @@ public class ActiveMQResourceAdapter extends org.apache.activemq.artemis.ra.Acti
 
     private static ServiceContainer currentServiceContainer() {
         return (System.getSecurityManager() == null) ? CurrentServiceContainer.getServiceContainer() : AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
+
+    /**
+     * Workaround for WFLY-18756 until https://issues.apache.org/jira/browse/ARTEMIS-4508 is merged and released.
+     */
+    @Override
+    public ActiveMQConnectionFactory createRecoveryActiveMQConnectionFactory(final ConnectionFactoryProperties overrideProperties) {
+        ActiveMQConnectionFactory cf = super.createRecoveryActiveMQConnectionFactory(overrideProperties);
+        cf.setUseTopologyForLoadBalancing(this.isUseTopologyForLoadBalancing());
+        return cf;
     }
 
     @Override
