@@ -1,0 +1,22 @@
+////
+This is a common file shared between docs.
+
+The value for QS-path is set in the Quickstart procedure
+that includes this file.
+////
+. Navigate to the __<application_home>__ directory.
+
+. Create a directory to store the Java files.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ mkdir -p src/main/java/{helloworld-QS-path}
+----
+
+. Navigate to the new directory.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ cd src/main/java/{helloworld-QS-path}
+----
+

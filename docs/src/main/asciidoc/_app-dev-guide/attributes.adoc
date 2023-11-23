@@ -1,0 +1,51 @@
+:context: default
+
+:ProductShortName: WildFly
+:JEEE: Jakarta EE
+:GettingStartedDevelopingApplications: Developing applications for {ProductShortName}
+
+:productNameInMaven: wildfly
+:cloudPlatform: OpenShift
+
+:EAPQuickStartRepo: https://github.com/wildfly/quickstart
+:EAPQuickStartRepoRef: main
+
+//wildfly maven plugin
+:wildflyMavenPluginGroupID: org.wildfly.plugins
+:wildflyMavenPluginArtifactID: wildfly-maven-plugin
+:wildflyMavenPluginVersion: {wildflyPluginVersion}
+
+//provisioning maven plugin
+:provisioningMavenPluginGroupID: {wildflyMavenPluginGroupID}
+:provisioningeapMavenPluginArtifactID: {wildflyMavenPluginArtifactID}
+:provisioningeapMavenPluginVersion: {wildflyMavenPluginVersion}
+
+
+
+//helloworld qs
+:helloworld-QS: helloworld
+:helloworld-QS-link: {EAPQuickStartRepo}/tree/{EAPQuickStartRepoRef}
+:helloworld-QS-artifactId: helloworld
+:helloworld-QS-groupId: org.jboss.as.quickstarts
+:helloworld-QS-path: org/jboss/as/quickstarts/{helloworld-QS-artifactId}
+
+//Feature packs
+:wildflyEEGalleonpackLocation: org.wildfly:wildfly-galleon-pack:${version.server}
+:wildflyCloudGalleonPackLocation: org.wildfly.cloud:wildfly-cloud-galleon-pack:${version.pack.cloud}
+:cloudLayerName: cloud-server
+:wildflyCloudPackVersion: 5.0.0.Final
+
+//BOMs
+
+:JBossServerBOMVersion: {wildflyversion}
+:JBossGroupID: org.wildfly.bom
+:JBossBOMWithTools: wildfly-ee-with-tools
+
+//Helm
+
+:helmName: wildfly
+:helmURL: https://docs.wildfly.org/wildfly-charts/
+:helmChart: wildfly/wildfly
+:helm-app-name: helloworld
+
+:pathToModules: modules

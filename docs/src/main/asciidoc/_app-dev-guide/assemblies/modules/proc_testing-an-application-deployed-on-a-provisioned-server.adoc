@@ -1,0 +1,60 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-29
+:_mod-docs-content-type: PROCEDURE
+
+[id="testing-an-application-deployed-on-a-provisioned-server_{context}"]
+= Testing an application deployed on a provisioned server
+
+[role="_abstract"]
+Test an application deployed on a provisioned server.
+
+.Prerequisites
+
+* You have deployed an application to a provisioned server.
++
+For more information, see xref:creating-a-test-class-to-test-an-application_testing-an-application-deployed-to-server[Creating a test class to test an application].
+
+.Procedure
+
+. Push the changes to your Git repository.
+
+. Navigate to the _<application_home>_ directory.
+
+. Run the test by using the `verify` command, activating the `integration-testing` profile and specifying the URL to the application.
++
+[source,options="nowrap"]
+----
+$ mvn verify -Pintegration-testing -Dserver.host="http://localhost:8080"
+----
++
+[NOTE]
+====
+The tests use SSL/TLS to connect to the deployed application. Therefore, you need the certificates to be trusted by the machine the tests are run from.
+
+To trust the certificates, you must add it to a Java trust store.
+
+.Example
+----
+$ keytool -trustcacerts -keystore _<path-to-java-truststore>_ -storepass _<trust-store-password>_ -importcert -alias _<alias-for-the-certificate>_ -file _<path-to-certificate>_/_<certificate-name>_
+----
+
+====
++
+.Example output
+----
+[INFO] Running org.jboss.as.quickstarts.helloworld.HelloWorldServletIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.353 s -- in org.jboss.as.quickstarts.helloworld.HelloWorldServletIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.2.2:verify (default) @ helloworld ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.446 s
+[INFO] Finished at: 2023-11-29T21:26:59+05:30
+[INFO] ------------------------------------------------------------------------
+----

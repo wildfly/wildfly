@@ -1,0 +1,6 @@
+$ mvn archetype:generate                          \
+-DgroupId={helloworld-QS-groupId}                \// <1>
+-DartifactId={helloworld-QS-artifactId}                           \// <2>
+-DarchetypeGroupId=org.apache.maven.archetypes    \// <3>
+-DarchetypeArtifactId=maven-archetype-webapp      \// <4>
+-DinteractiveMode=false                            // <5>

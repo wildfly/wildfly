@@ -1,0 +1,35 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-21
+:_mod-docs-content-type: PROCEDURE
+
+[id="defining-the-repositories-in-a-maven-project_{context}"]
+= Defining the repositories in a Maven project
+
+[role="_abstract"]
+Define the artifact and plug-in repositories in which Maven looks for artifacts and plug-ins to download.
+
+.Prerequisites
+
+include::fragments/frag_prereq-initialize-maven-project.adoc[]
+
+.Procedure
+
+. Define the artifacts repository.
++
+[source,xml,options="nowrap"]
+----
+include::sources/artifact-repo-pom.xml[]
+----
+<1> The JBoss Public Maven Repository provides artifacts such as WildFly Maven plug-ins.
+
+. Define the plug-ins repository.
++
+[source,xml,options="nowrap"]
+----
+include::sources/plugin-repo-pm.xml[]
+----
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:importing-the-server-boms-dependency-management-in-maven-project_creating-a-maven-project-for-a-hello-world-application[Importing the {ProductShortName} BOMs dependency management in Maven project].

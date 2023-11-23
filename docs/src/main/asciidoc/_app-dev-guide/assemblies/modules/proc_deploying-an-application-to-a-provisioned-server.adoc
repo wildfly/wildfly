@@ -1,0 +1,85 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-29
+:_mod-docs-content-type: PROCEDURE
+
+[id="deploying-an-application-to-a-provisioned-server_{context}"]
+= Building and deploying an application on a provisioned server
+
+[role="_abstract"]
+You can package the application with a provisioned server.
+
+.Prerequisites
+
+* You have created an application.
++
+For more information, see xref:creating-a-hello-world-servlet_default[Creating a Hello World servlet].
+
+.Procedure
+
+. Navigate to the application root directory.
++
+The application root directory contains the `pom.xml` configuration file.
+
+. Create a profile "provisioned-server" in the `pom.xml` configuration file.
++
+This profile configures the {ProductShortName} maven plug-in, with respect to the provisioning of a server with the application deployed.
++
+[source,xml,options="nowrap",subs="attributes+"]
+----
+include::sources/provisioned-server-profile.xml[]
+----
+<1> `feature-packs` defines the feature-packs (zipped files that contains features to dynamically provision a server). In our case all the features we need are provided by the standard {ProductShortName} pack `org.wildfly:wildfly-galleon-pack`.
+<2> `layers` defines the layers (from the configured feature-packs) to include in the provisioned server. Each layer identifies one or more server capabilities that can be installed on its own, or in combination with other layers. In our case we opt for the cloud-server layer, which provisions just the basic features of {ProductShortName}, well suited for a cloud server.
+<3> `<name>ROOT.war</name>`: Defines the resulting name of the application's web archive (WAR). If `ROOT.war` is specified then the application is deployed at the root path of the server, otherwise it is deployed at `<name/>` relative path.
+
+
+. Build and deploy the application by using the {ProductShortName} deploy plug-in.
++
+[source,options="nowrap"]
+----
+$ mvn package -Pprovisioned-server
+----
++
+You should see the following output:
++
+----
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+----
+
+.Verification
+
+. Navigate to the directory containing the provisioned server.
++
+[source,options="nowrap"]
+----
+$ cd target/server
+----
+
+. Start the server.
++
+[source,options="nowrap"]
+----
+$ ./bin/standalone.sh
+----
++
+In the log, you see that the application has been deployed as `ROOT.war`
++
+----
+...
+21:05:35,275 INFO  [org.jboss.as.server] (ServerService Thread Pool -- 35) WFLYSRV0010: Deployed "ROOT.war" (runtime-name : "ROOT.war")
+...
+----
+
+. To access the application, navigate to the address `http://localhost:8080/` in a browser.
++
+You are redirected to http://localhost:8080/HelloWorld and you get the following message:
++
+----
+Hello World!
+----
+
+[role="_additional-resources"]
+.Next steps
+* xref:testing-an-application-deployed-to-server_default[Testing an application deployed on {ProductShortName}]

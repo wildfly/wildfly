@@ -1,0 +1,53 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-21
+:_mod-docs-content-type: PROCEDURE
+
+[id="creating-a-maven-project-with-the-webapp-maven-archetype_{context}"]
+= Creating a Maven project with `maven-archetype-webapp`
+
+[role="_abstract"]
+Use the `maven-archetype-webapp` archetype to create a Maven project for building applications for {ProductShortName} deployment. Maven provides different archetypes for creating projects based on templates specific to project types. The `maven-archetype-webapp` creates a project with the structure required to develop simple web-applications.
+
+.Prerequisites
+
+* You have installed Maven. For more information, see link:https://maven.apache.org/download.cgi[Downloading Apache Maven].
+
+
+.Procedure
+
+. Set up a Maven project by using the `mvn` command. The command creates the directory structure for the project and the `pom.xml` configuration file.
++
+[source,options="nowrap",subs="attributes+"]
+----
+include::sources/maven-generate-command.txt[]
+----
+<1> `groupID` uniquely identifies the project.
+<2> `artifactID` is the name for the generated `jar` archive.
+<3> The `groupID` of `maven-archetype-webapp`.
+<4> The `artifactID` of `maven-archetype-webapp`.
+<5> Tell Maven to use the supplied parameters rather than starting interactive mode.
+
+. Navigate to the generated directory.
++
+[source,options="nowrap",subs="attributes+"]
+----
+$ cd {helloworld-QS-artifactId}
+----
+
+. Open the generated `pom.xml` configuration file in a text editor.
+
+. Remove the content inside the `<project>` section of `pom.xml` configuration file after the `<name>helloworld Maven Webapp</name>` line.
++
+Ensure that the file looks like this:
++
+[source,xml,options="nowrap"]
+----
+include::sources/initial-pom.xml[]
+----
++
+The content was removed because it is not required for the application.
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:defining-properties-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining properties in Maven project for a {ProductShortName} Hello World application].

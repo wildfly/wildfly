@@ -1,0 +1,35 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-11-21
+:_mod-docs-content-type: PROCEDURE
+
+[id="defining-properties-in-a-maven-project_{context}"]
+= Defining properties in a Maven project
+
+[role="_abstract"]
+You can define properties in a Maven `pom.xml` configuration file as place holders for values. Define the value for {ProductShortName} server as a property to use the value consistently in the configuration.
+
+.Prerequisites
+include::fragments/frag_prereq-initialize-maven-project.adoc[]
+
+.Procedure
+
+* Define a property `<version.server>` as the {ProductShortname} version on which you will deploy the configured application.
++
+
+[source,xml,options="nowrap",subs=attributes+]
+----
+<project>
+   ...
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <version.server>{JBossServerBOMVersion}</version.server>
+    </properties>
+</project>
+----
+
+[role="_additional-resources"]
+.Next steps
+
+* xref:defining-the-repositories-in-a-maven-project_creating-a-maven-project-for-a-hello-world-application[Defining the repositories in a Maven project].

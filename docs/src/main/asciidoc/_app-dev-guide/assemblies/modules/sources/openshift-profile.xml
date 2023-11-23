@@ -1,0 +1,38 @@
+<project>
+    ...
+    <profiles>
+    ...
+        <profile>
+            <id>openshift</id>
+                <build>
+                    <plugins>
+                    <plugin>
+                        <groupId>{provisioningMavenPluginGroupID}</groupId>
+                        <artifactId>{provisioningeapMavenPluginArtifactID}</artifactId>     <!--1-->
+                        <configuration>
+                            <feature-packs>                               <!--2-->
+                                <feature-pack>                            
+                                    <location>{wildflyEEGalleonpackLocation}</location>
+                                </feature-pack>
+                                <feature-pack>
+                                    <location>{wildflyCloudGalleonPackLocation}</location>
+                                </feature-pack>
+                            </feature-packs>
+                            <layers>                                      <!--3-->
+                                <layer>{cloudLayerName}</layer>               
+                            </layers>
+                            <name>ROOT.war</name>                       <!--4-->
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
