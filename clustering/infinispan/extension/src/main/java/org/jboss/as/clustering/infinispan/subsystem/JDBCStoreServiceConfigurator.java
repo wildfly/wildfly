@@ -14,12 +14,12 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.infinispan.persistence.jdbc.common.DatabaseType;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfiguration;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
-import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfiguration;
-import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -34,7 +34,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Paul Ferraro
  */
-public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JDBCStoreConfiguration, JDBCStoreConfigurationBuilder> {
+public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
 
     private final SupplierDependency<TableManipulationConfiguration> table;
     private volatile SupplierDependency<List<Module>> modules;
@@ -42,7 +42,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JDBCS
     private volatile DatabaseType dialect;
 
     JDBCStoreServiceConfigurator(PathAddress address) {
-        super(address, JDBCStoreConfigurationBuilder.class);
+        super(address, JdbcStringBasedStoreConfigurationBuilder.class);
         PathAddress cacheAddress = address.getParent();
         PathAddress containerAddress = cacheAddress.getParent();
         this.table = new ServiceSupplierDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress));
@@ -63,7 +63,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JDBCS
     }
 
     @Override
-    public void accept(JDBCStoreConfigurationBuilder builder) {
+    public void accept(JdbcStringBasedStoreConfigurationBuilder builder) {
         builder.table().read(this.table.get());
         TwoWayKey2StringMapper mapper = this.findMapper();
         if (mapper != null) {
