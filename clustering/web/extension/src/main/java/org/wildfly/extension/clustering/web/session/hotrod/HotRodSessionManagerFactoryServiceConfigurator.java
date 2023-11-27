@@ -15,7 +15,6 @@ import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
@@ -39,6 +38,7 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.common.function.Functions;
 
 /**
  * @param <S> the HttpSession specification type
@@ -88,7 +88,7 @@ public class HotRodSessionManagerFactoryServiceConfigurator<S, SC, AL, LC>  exte
 
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<SessionManagerFactory<SC, LC, TransactionBatch>> factory = this.cache.register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(factory, Function.identity(), this, Functions.closingConsumer());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 
