@@ -179,6 +179,16 @@
                                     <groupId>io.smallrye.reactive</groupId>
                                     <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
                                 </dependency>
+                                <!-- include RESTeasy MP REST Client -->
+                                <dependency>
+                                    <groupId>org.jboss.resteasy.microprofile</groupId>
+                                    <artifactId>microprofile-rest-client</artifactId>
+                                </dependency>
+                                <!-- include SmallRye Config -->
+                                <dependency>
+                                    <groupId>io.smallrye.config</groupId>
+                                    <artifactId>smallrye-config</artifactId>
+                                </dependency>
                             </includeDependencies>
                         </configuration>
                     </execution>
