@@ -37,7 +37,6 @@ import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -405,7 +404,7 @@ public class TransportConfigOperationHandlers {
                 socketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBindingName);
             }
         }
-        Supplier<ActiveMQServer> serverSupplier = builder.requires(MessagingServices.getActiveMQServiceName(context.getCurrentAddress()));
+        Supplier<ActiveMQBroker> serverSupplier = builder.requires(MessagingServices.getActiveMQServiceName(context.getCurrentAddress()));
         builder.setInstance(new ConnectorService(serverSupplier, socketBindingSupplier, outboundSocketBindingSupplier, factoryClass, parameters, extraParameters, context.getCurrentAddressValue()));
         builder.install();
     }

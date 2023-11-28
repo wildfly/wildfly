@@ -45,8 +45,8 @@ public class ActiveMQActivationService implements Service<Void> {
     public static boolean isActiveMQServerActive(ServiceRegistry serviceRegistry, ServiceName activeMQServerServiceName) {
         ServiceController<?> service = serviceRegistry.getService(activeMQServerServiceName);
         if (service != null) {
-            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-            if (server.isStarted() && server.isActive()) {
+            ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
+            if (server.isActive()) {
                 return true;
             }
         }
@@ -75,7 +75,7 @@ public class ActiveMQActivationService implements Service<Void> {
         final ServiceName activMQServerServiceName = MessagingServices.getActiveMQServiceName(pathAddress(operation.get(OP_ADDR)));
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(activMQServerServiceName);
         if(controller != null) {
-            return ActiveMQServer.class.cast(controller.getValue());
+            return ActiveMQServer.class.cast(ActiveMQBroker.class.cast(controller.getValue()).getDelegate());
         }
         return null;
     }

@@ -76,7 +76,7 @@ public class MDB20QueueTestCase extends AbstractMDB2xTestCase {
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20QueueTestCase.class.getPackage(), "ejb-jar-20.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20QueueTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.apache.activemq.artemis \n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.apache.activemq.artemis.client \n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         return ejbJar;
     }

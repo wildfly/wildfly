@@ -11,12 +11,12 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_Q
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.AbstractQueueControlHandler;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 
 /**
  * Handler for runtime operations that invoke on a ActiveMQ {@link QueueControl}.
@@ -43,15 +43,15 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
     }
 
     @Override
-    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
+    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQBroker server, String queueName){
         String name = queueName;
         if (queueName.startsWith(JMS_QUEUE_PREFIX)) {
             name = queueName.substring(JMS_QUEUE_PREFIX.length());
         }
-        QueueControl queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + name));
+        QueueControl queueControl = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + name));
         if (queueControl == null) {
             //For backward compatibility
-            queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
+            queueControl = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
             if (queueControl == null) {
                 return null;
             }

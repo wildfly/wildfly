@@ -15,7 +15,6 @@ import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -50,16 +49,16 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     private ActiveMQConnectionFactory factory;
-    private final ConnectionFactoryConfiguration config;
+    private final ExternalConnectionFactoryConfiguration config;
 
     ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
-            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
+            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ExternalConnectionFactoryConfiguration config) {
         this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, Collections.emptyMap(), clusterNames, null, config);
     }
 
     ExternalConnectionFactoryService(TransportConfiguration[] connectors, Map<String, Supplier<SocketBinding>> socketBindings,
-            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, Map<String, Supplier<SSLContext>> sslContexts, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
+            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, Map<String, Supplier<SSLContext>> sslContexts, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ExternalConnectionFactoryConfiguration config) {
         this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), sslContexts, Collections.emptyMap(), connectors, config);
     }
 
@@ -74,7 +73,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
             Map<String, Supplier<SSLContext>> sslContexts,
             Map<String, String> clusterNames,
             TransportConfiguration[] connectors,
-            ConnectionFactoryConfiguration config) {
+            ExternalConnectionFactoryConfiguration config) {
         assert (connectors != null && connectors.length > 0) || groupConfiguration != null;
         this.ha = ha;
         this.enable1Prefixes = enable1Prefixes;

@@ -34,8 +34,6 @@ import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
-import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.apache.activemq.artemis.jms.client.ActiveMQDestination;
 import org.apache.activemq.artemis.jms.client.ActiveMQMessage;
 import org.apache.activemq.artemis.utils.SelectorTranslator;
@@ -56,6 +54,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.jms.JMSTopicReadAttributeHandler.DurabilityType;
@@ -129,12 +128,11 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         String topicName = context.getCurrentAddressValue();
         boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
         ServiceController<?> service = context.getServiceRegistry(!readOnly).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        ManagementService managementService = server.getManagementService();
+        ActiveMQBroker broker = ActiveMQBroker.class.cast(service.getValue());
         if (topicName.startsWith(JMS_TOPIC_PREFIX)) {
             topicName = topicName.substring(JMS_TOPIC_PREFIX.length());
         }
-        AddressControl control = AddressControl.class.cast(managementService.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
+        AddressControl control = AddressControl.class.cast(broker.getResource(ResourceNames.ADDRESS + JMS_TOPIC_PREFIX + topicName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -143,46 +141,46 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
 
         try {
             if (LIST_ALL_SUBSCRIPTIONS.equals(operationName)) {
-                String json = listAllSubscriptionsAsJSON(control, managementService);
+                String json = listAllSubscriptionsAsJSON(control, broker);
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
             } else if (LIST_ALL_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
-                context.getResult().set(listAllSubscriptionsAsJSON(control, managementService));
+                context.getResult().set(listAllSubscriptionsAsJSON(control, broker));
             } else if (LIST_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
-                String json = listDurableSubscriptionsAsJSON(control, managementService);
+                String json = listDurableSubscriptionsAsJSON(control, broker);
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
             } else if (LIST_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
-                context.getResult().set(listDurableSubscriptionsAsJSON(control, managementService));
+                context.getResult().set(listDurableSubscriptionsAsJSON(control, broker));
             } else if (LIST_NON_DURABLE_SUBSCRIPTIONS.equals(operationName)) {
-                String json = listNonDurableSubscriptionsAsJSON(control, managementService);
+                String json = listNonDurableSubscriptionsAsJSON(control, broker);
                 ModelNode jsonAsNode = ModelNode.fromJSONString(json);
                 context.getResult().set(jsonAsNode);
             } else if (LIST_NON_DURABLE_SUBSCRIPTIONS_AS_JSON.equals(operationName)) {
-                context.getResult().set(listNonDurableSubscriptionsAsJSON(control, managementService));
+                context.getResult().set(listNonDurableSubscriptionsAsJSON(control, broker));
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
                 final String queueName = QUEUE_NAME.resolveModelAttribute(context, operation).asString();
-                String json = listMessagesForSubscriptionAsJSON(queueName, managementService);
+                String json = listMessagesForSubscriptionAsJSON(queueName, broker);
                 context.getResult().set(ModelNode.fromJSONString(json));
             } else if (LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON.equals(operationName)) {
                 final String queueName = QUEUE_NAME.resolveModelAttribute(context, operation).asString();
-                context.getResult().set(listMessagesForSubscriptionAsJSON(queueName, managementService));
+                context.getResult().set(listMessagesForSubscriptionAsJSON(queueName, broker));
             } else if (COUNT_MESSAGES_FOR_SUBSCRIPTION.equals(operationName)) {
                 String clientId = CLIENT_ID.resolveModelAttribute(context, operation).asString();
                 String subscriptionName = SUBSCRIPTION_NAME.resolveModelAttribute(context, operation).asString();
                 String filter = resolveFilter(context, operation);
-                context.getResult().set(countMessagesForSubscription(clientId, subscriptionName, filter, managementService));
+                context.getResult().set(countMessagesForSubscription(clientId, subscriptionName, filter, broker));
             } else if (DROP_DURABLE_SUBSCRIPTION.equals(operationName)) {
                 String clientId = CLIENT_ID.resolveModelAttribute(context, operation).asString();
                 String subscriptionName = SUBSCRIPTION_NAME.resolveModelAttribute(context, operation).asString();
-                dropDurableSubscription(clientId, subscriptionName, managementService);
+                dropDurableSubscription(clientId, subscriptionName, broker);
                 context.getResult();
             } else if (DROP_ALL_SUBSCRIPTIONS.equals(operationName)) {
-                dropAllSubscriptions(control, managementService);
+                dropAllSubscriptions(control, broker);
                 context.getResult();
             } else if (REMOVE_MESSAGES.equals(operationName)) {
                 String filter = resolveFilter(context, operation);
-                context.getResult().set(removeMessages(filter, control, managementService));
+                context.getResult().set(removeMessages(filter, control, broker));
             } else if (PAUSE.equals(operationName)) {
                 pause(control, PERSIST.resolveModelAttribute(context, operation).asBoolean());
                 context.getResult();
@@ -266,12 +264,12 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
     }
 
-    private int removeMessages(final String filterStr, AddressControl addressControl, ManagementService managementService) throws Exception {
+    private int removeMessages(final String filterStr, AddressControl addressControl, ActiveMQBroker broker) throws Exception {
         String filter = createFilterFromJMSSelector(filterStr);
         int count = 0;
         String[] queues = addressControl.getQueueNames();
         for (String queue : queues) {
-            QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queue);
+            QueueControl coreQueueControl = (QueueControl) broker.getResource(ResourceNames.QUEUE + queue);
             if (coreQueueControl != null) {
                 count += coreQueueControl.removeMessages(filter);
             }
@@ -280,9 +278,9 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         return count;
     }
 
-    private long countMessagesForSubscription(String clientID, String subscriptionName, String filterStr, ManagementService managementService) throws Exception {
+    private long countMessagesForSubscription(String clientID, String subscriptionName, String filterStr, ActiveMQBroker broker) throws Exception {
         SimpleString queueName = ActiveMQDestination.createQueueNameForSubscription(true, clientID, subscriptionName);
-        QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
+        QueueControl coreQueueControl = (QueueControl) broker.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
             throw MessagingLogger.ROOT_LOGGER.noSubscriptionError(queueName.toString(), clientID);
         }
@@ -290,8 +288,8 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         return coreQueueControl.countMessages(filter);
     }
 
-    private void dropAllSubscriptions(AddressControl addressControl, ManagementService managementService) throws Exception {
-        ActiveMQServerControl serverControl = (ActiveMQServerControl) managementService.getResource(ResourceNames.BROKER);
+    private void dropAllSubscriptions(AddressControl addressControl, ActiveMQBroker broker) throws Exception {
+        ActiveMQServerControl serverControl = (ActiveMQServerControl) broker.getResource(ResourceNames.BROKER);
         String[] queues = addressControl.getQueueNames();
         for (String queue : queues) {
             // Drop all subscription shouldn't delete the dummy queue used to identify if the topic exists on the core queues.
@@ -302,34 +300,34 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         }
     }
 
-    private void dropDurableSubscription(final String clientID, final String subscriptionName, ManagementService managementService) throws Exception {
+    private void dropDurableSubscription(final String clientID, final String subscriptionName, ActiveMQBroker broker) throws Exception {
         SimpleString queueName = ActiveMQDestination.createQueueNameForSubscription(true, clientID, subscriptionName);
-        QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
+        QueueControl coreQueueControl = (QueueControl) broker.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
             throw MessagingLogger.ROOT_LOGGER.noSubscriptionError(queueName.toString(), clientID);
         }
-        ActiveMQServerControl serverControl = (ActiveMQServerControl) managementService.getResource(ResourceNames.BROKER);
+        ActiveMQServerControl serverControl = (ActiveMQServerControl) broker.getResource(ResourceNames.BROKER);
         serverControl.destroyQueue(queueName.toString(), true);
     }
 
-    private String listAllSubscriptionsAsJSON(AddressControl addressControl, ManagementService managementService) {
-        return listSubscribersInfosAsJSON(DurabilityType.ALL, addressControl, managementService);
+    private String listAllSubscriptionsAsJSON(AddressControl addressControl, ActiveMQBroker broker) {
+        return listSubscribersInfosAsJSON(DurabilityType.ALL, addressControl, broker);
     }
 
-    private String listDurableSubscriptionsAsJSON(AddressControl addressControl, ManagementService managementService) throws Exception {
-        return listSubscribersInfosAsJSON(DurabilityType.DURABLE, addressControl, managementService);
+    private String listDurableSubscriptionsAsJSON(AddressControl addressControl, ActiveMQBroker broker) throws Exception {
+        return listSubscribersInfosAsJSON(DurabilityType.DURABLE, addressControl, broker);
     }
 
-    private String listNonDurableSubscriptionsAsJSON(AddressControl addressControl, ManagementService managementService) throws Exception {
-        return listSubscribersInfosAsJSON(DurabilityType.NON_DURABLE, addressControl, managementService);
+    private String listNonDurableSubscriptionsAsJSON(AddressControl addressControl, ActiveMQBroker broker) throws Exception {
+        return listSubscribersInfosAsJSON(DurabilityType.NON_DURABLE, addressControl, broker);
     }
 
-    public String listMessagesForSubscriptionAsJSON(final String queueName, ManagementService managementService) throws Exception {
-        return toJSON(listMessagesForSubscription(queueName, managementService));
+    public String listMessagesForSubscriptionAsJSON(final String queueName, ActiveMQBroker broker) throws Exception {
+        return toJSON(listMessagesForSubscription(queueName, broker));
     }
 
-    private Map<String, Object>[] listMessagesForSubscription(final String queueName, ManagementService managementService) throws Exception {
-        QueueControl coreQueueControl = (QueueControl) managementService.getResource(ResourceNames.QUEUE + queueName);
+    private Map<String, Object>[] listMessagesForSubscription(final String queueName, ActiveMQBroker broker) throws Exception {
+        QueueControl coreQueueControl = (QueueControl) broker.getResource(ResourceNames.QUEUE + queueName);
         if (coreQueueControl == null) {
             throw MessagingLogger.ROOT_LOGGER.noSubscriptionWithQueueName(queueName);
         }
@@ -343,10 +341,10 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         return jmsMessages;
     }
 
-    private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ManagementService managementService) {
+    private String listSubscribersInfosAsJSON(final DurabilityType durability, AddressControl addressControl, ActiveMQBroker broker) {
         jakarta.json.JsonArrayBuilder array = Json.createArrayBuilder();
         try {
-            List<QueueControl> queues = JMSTopicReadAttributeHandler.getQueues(durability, addressControl, managementService);
+            List<QueueControl> queues = JMSTopicReadAttributeHandler.getQueues(durability, addressControl, broker);
             for (QueueControl queue : queues) {
                 String clientID = null;
                 String subName = null;

@@ -28,7 +28,6 @@ import java.util.function.BiConsumer;
 
 import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.core.server.NetworkHealthCheck;
-import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -51,6 +50,7 @@ import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidat
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationPrimaryDefinition;
@@ -945,7 +945,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER))
                 .setAddHandler(new ServerAdd(broadcastCommandDispatcherFactoryInstaller))
                 .setRemoveHandler(ServerRemove.INSTANCE)
-                .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY));
+                .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
+                .setAdditionalPackages(RuntimePackageDependency.required("org.apache.activemq.artemis"), RuntimePackageDependency.required("org.apache.activemq.artemis.journal")));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -1060,4 +1061,9 @@ public class ServerDefinition extends PersistentResourceDefinition {
     private enum JournalType {
         NIO, ASYNCIO;
     }
+
+    private enum CriticalAnalyzerPolicy {
+        HALT, SHUTDOWN, LOG;
+    }
+
 }

@@ -13,7 +13,6 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_Q
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -25,6 +24,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
@@ -113,8 +113,8 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
+        QueueControl control = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
         return control;
     }
 }

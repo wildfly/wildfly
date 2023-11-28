@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.service-extensions">
+    <resources>
+        <artifact name="${org.apache.activemq:artemis-jakarta-service-extensions}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.jms.api" />
+        <module name="jakarta.resource.api"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.wildfly.extension.messaging-activemq" services="import"/>
+        <module name="org.apache.activemq.artemis.client"/>
+        <module name="org.apache.activemq.artemis.commons"/>
+        <module name="org.slf4j"/>
+    </dependencies>
+</module>

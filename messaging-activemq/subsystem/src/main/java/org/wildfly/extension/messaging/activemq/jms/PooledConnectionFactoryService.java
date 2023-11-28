@@ -97,6 +97,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
@@ -150,7 +151,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
     private String name;
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
+    private InjectedValue<ActiveMQBroker> activeMQBroker = new InjectedValue<>();
     private BindInfo bindInfo;
     private List<String> jndiAliases;
     private final boolean pickAnyConnectors;
@@ -283,7 +284,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-        serviceBuilder.addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer);
+        serviceBuilder.addDependency(serverServiceName, ActiveMQBroker.class, service.activeMQBroker);
         serviceBuilder.requires(ActiveMQActivationService.getServiceName(serverServiceName));
         serviceBuilder.requires(JMSServices.getJmsManagerBaseServiceName(serverServiceName));
         // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
@@ -321,7 +322,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             // if there is no discovery-group and the connector list is empty,
             // pick the first connector available if pickAnyConnectors is true
             if (discoveryGroupName == null && connectors.isEmpty() && pickAnyConnectors) {
-                Set<String> connectorNames = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().keySet();
+                Set<String> connectorNames = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getConnectorConfigurations().keySet();
                 if (!connectorNames.isEmpty()) {
                     String connectorName = connectorNames.iterator().next();
                     MessagingLogger.ROOT_LOGGER.connectorForPooledConnectionFactory(name, connectorName);
@@ -329,7 +330,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 }
             }
             for (String connector : connectors) {
-                TransportConfiguration tc = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().get(connector);
+                TransportConfiguration tc = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getConnectorConfigurations().get(connector);
                 if(tc == null) {
                     throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(connector);
                 }
@@ -357,7 +358,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             if(discoveryGroupName != null) {
-                DiscoveryGroupConfiguration discoveryGroupConfiguration = activeMQServer.getValue().getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
+                DiscoveryGroupConfiguration discoveryGroupConfiguration = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
                 BroadcastEndpointFactory bgCfg = discoveryGroupConfiguration.getBroadcastEndpointFactory();
                 if (bgCfg instanceof UDPBroadcastEndpointFactory) {
                     UDPBroadcastEndpointFactory udpCfg = (UDPBroadcastEndpointFactory) bgCfg;

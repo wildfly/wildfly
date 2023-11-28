@@ -131,7 +131,6 @@ import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.security.Role;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
@@ -468,7 +467,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
                         final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
                         sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
-                        Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                        Supplier<ActiveMQBroker> serverSupplier = sb.requires(activeMQServiceName);
                         final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
                         sb.setInitialMode(Mode.PASSIVE);
                         sb.setInstance(queueService);

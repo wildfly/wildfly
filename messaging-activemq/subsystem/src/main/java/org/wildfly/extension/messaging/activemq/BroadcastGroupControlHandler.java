@@ -9,7 +9,6 @@ import static org.wildfly.extension.messaging.activemq.BroadcastGroupDefinition.
 
 import org.apache.activemq.artemis.api.core.management.BaseBroadcastGroupControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -28,9 +27,9 @@ public class BroadcastGroupControlHandler extends AbstractActiveMQComponentContr
     }
 
     @Override
-    protected BaseBroadcastGroupControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
+    protected BaseBroadcastGroupControl getActiveMQComponentControl(ActiveMQBroker activeMQBroker, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return BaseBroadcastGroupControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.BROADCAST_GROUP + resourceName));
+        return BaseBroadcastGroupControl.class.cast(activeMQBroker.getResource(ResourceNames.BROADCAST_GROUP + resourceName));
     }
 
     @Override

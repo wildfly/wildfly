@@ -87,7 +87,7 @@ public class AddressSettingsResolveHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(address);
 
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+        ActiveMQServer server = ActiveMQServer.class.cast(ActiveMQBroker.class.cast(service.getValue()).getDelegate());
 
         final String activeMQAddress = ACTIVEMQ_ADDRESS.resolveModelAttribute(context, operation).asString();
         AddressSettings settings = server.getAddressSettingsRepository().getMatch(activeMQAddress);

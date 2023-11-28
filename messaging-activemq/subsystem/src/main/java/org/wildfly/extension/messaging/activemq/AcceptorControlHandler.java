@@ -7,7 +7,6 @@ package org.wildfly.extension.messaging.activemq;
 
 import org.apache.activemq.artemis.api.core.management.AcceptorControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.PathAddress;
 
 /**
@@ -20,9 +19,9 @@ public class AcceptorControlHandler extends AbstractActiveMQComponentControlHand
     public static final AcceptorControlHandler INSTANCE = new AcceptorControlHandler();
 
     @Override
-    protected AcceptorControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
+    protected AcceptorControl getActiveMQComponentControl(ActiveMQBroker activeMQBroker, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return AcceptorControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.ACCEPTOR + resourceName));
+        return AcceptorControl.class.cast(activeMQBroker.getResource(ResourceNames.ACCEPTOR + resourceName));
     }
 
     @Override

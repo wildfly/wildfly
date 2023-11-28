@@ -66,7 +66,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         serviceBuilder.install();
     }
 
-    static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
+    private static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
         final List<String> entries = Common.ENTRIES.unwrap(context, model);
 

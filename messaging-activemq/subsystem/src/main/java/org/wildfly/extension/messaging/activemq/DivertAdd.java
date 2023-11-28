@@ -9,7 +9,6 @@ package org.wildfly.extension.messaging.activemq;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.config.DivertConfiguration;
 import org.apache.activemq.artemis.core.config.TransformerConfiguration;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -57,7 +56,7 @@ public class DivertAdd extends AbstractAddStepHandler {
 
             DivertConfiguration divertConfiguration = createDivertConfiguration(context, name, model);
 
-            ActiveMQServerControl serverControl = ActiveMQServer.class.cast(service.getValue()).getActiveMQServerControl();
+            ActiveMQServerControl serverControl = ActiveMQBroker.class.cast(service.getValue()).getActiveMQServerControl();
             createDivert(name, divertConfiguration, serverControl);
 
         }

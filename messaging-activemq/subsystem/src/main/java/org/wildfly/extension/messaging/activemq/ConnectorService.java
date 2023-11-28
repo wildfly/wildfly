@@ -6,12 +6,12 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HOST;
+
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -27,7 +27,7 @@ import org.jboss.msc.service.StopContext;
  */
 class ConnectorService implements Service {
 
-    private final Supplier<ActiveMQServer> serverSupplier;
+    private final Supplier<ActiveMQBroker> serverSupplier;
     private final Supplier<SocketBinding> socketBindingSupplier;
     private final Supplier<OutboundSocketBinding> outboundSocketBindingSupplier;
     private final String factoryClass;
@@ -35,7 +35,7 @@ class ConnectorService implements Service {
     private final Map<String, Object> extraParameters;
     private final String name;
 
-    ConnectorService(Supplier<ActiveMQServer> serverSupplier, Supplier<SocketBinding> socketBindingSupplier, Supplier<OutboundSocketBinding> outboundSocketBindingSupplier, String factoryClass, Map<String, Object> parameters, Map<String, Object> extraParameters, String name) {
+    ConnectorService(Supplier<ActiveMQBroker> serverSupplier, Supplier<SocketBinding> socketBindingSupplier, Supplier<OutboundSocketBinding> outboundSocketBindingSupplier, String factoryClass, Map<String, Object> parameters, Map<String, Object> extraParameters, String name) {
         this.serverSupplier = serverSupplier;
         this.socketBindingSupplier = socketBindingSupplier;
         this.outboundSocketBindingSupplier = outboundSocketBindingSupplier;
@@ -79,7 +79,7 @@ class ConnectorService implements Service {
             }
         }
         try {
-            serverSupplier.get().getConfiguration().addConnectorConfiguration(name, new TransportConfiguration(factoryClass, parameters, name, extraParameters));
+            serverSupplier.get().addConnectorConfiguration(name, new TransportConfiguration(factoryClass, parameters, name, extraParameters));
         } catch (Exception ex) {
             throw new StartException(ex);
         }

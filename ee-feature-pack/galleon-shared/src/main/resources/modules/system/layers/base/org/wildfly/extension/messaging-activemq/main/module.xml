@@ -49,8 +49,9 @@
         <module name="jakarta.json.api"/>
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
-        <module name="org.apache.activemq.artemis" services="import"/>
-        <module name="org.apache.activemq.artemis.ra"/>
+        <module name="org.apache.activemq.artemis" services="import" optional="true"/>
+        <module name="org.apache.activemq.artemis.client" services="import" export="true"/>
+        <module name="org.apache.activemq.artemis.ra" export="true"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.staxmapper"/>
         <!-- required to provide high-level Jakarta Messaging CLI commands loaded by the extension -->

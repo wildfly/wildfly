@@ -35,6 +35,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.jms.JMSServices;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
@@ -138,7 +139,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
                 TransportConstants.NETTY_CONNECT_TIMEOUT);
     }
 
-    private final InjectedValue<ActiveMQServer> injectedActiveMQServer = new InjectedValue<ActiveMQServer>();
+    private final InjectedValue<ActiveMQBroker> injectedActiveMQServer = new InjectedValue<ActiveMQBroker>();
     private final HornetQConnectionFactory uncompletedConnectionFactory;
     private final String discoveryGroupName;
     private final List<String> connectors;
@@ -154,7 +155,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
 
     @Override
     public void start(StartContext context) throws StartException {
-        ActiveMQServer activeMQServer = injectedActiveMQServer.getValue();
+        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(injectedActiveMQServer.getValue().getDelegate());
 
         DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
         if (discoveryGroupName != null) {
@@ -238,7 +239,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
 
         final ServiceBuilder sb = serviceTarget.addService(serviceName, service);
         sb.requires(ActiveMQActivationService.getServiceName(activeMQServerServiceName));
-        sb.addDependency(activeMQServerServiceName, ActiveMQServer.class, service.injectedActiveMQServer);
+        sb.addDependency(activeMQServerServiceName, ActiveMQBroker.class, service.injectedActiveMQServer);
         sb.setInitialMode(ServiceController.Mode.PASSIVE);
         sb.install();
         return service;

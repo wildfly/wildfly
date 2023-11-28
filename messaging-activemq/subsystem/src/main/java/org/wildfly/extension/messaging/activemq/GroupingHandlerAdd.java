@@ -45,7 +45,7 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> service = registry.getService(serviceName);
         if (service != null) {
-            final ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            final ActiveMQServer server = ActiveMQServer.class.cast(ActiveMQBroker.class.cast(service.getValue()).getDelegate());
             if (server.getGroupingHandler() != null) {
                 throw new OperationFailedException(MessagingLogger.ROOT_LOGGER.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER));
             }

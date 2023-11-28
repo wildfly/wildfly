@@ -8,7 +8,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -21,6 +20,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
@@ -70,7 +70,7 @@ public class HAPolicySynchronizationStatusReadHandler extends AbstractRuntimeOnl
         if (service == null || service.getState() != ServiceController.State.UP) {
             throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
         }
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
         return server.getActiveMQServerControl();
     }
 }

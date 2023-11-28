@@ -10,7 +10,6 @@ import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,8 +45,8 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        AddressControl control = AddressControl.class.cast(server.getManagementService().getResource(ResourceNames.ADDRESS + addressName));
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
+        AddressControl control = AddressControl.class.cast(server.getResource(ResourceNames.ADDRESS + addressName));
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
