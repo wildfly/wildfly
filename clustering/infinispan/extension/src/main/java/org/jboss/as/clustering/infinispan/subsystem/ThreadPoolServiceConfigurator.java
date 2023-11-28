@@ -17,7 +17,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
-import org.jboss.threads.management.ManageableThreadPoolExecutorService;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.service.ServiceConfigurator;
 
@@ -65,7 +64,7 @@ public class ThreadPoolServiceConfigurator extends GlobalComponentServiceConfigu
         }
 
         @Override
-        public ManageableThreadPoolExecutorService createExecutor(ThreadFactory factory) {
+        public ExecutorService createExecutor(ThreadFactory factory) {
             return super.createExecutor(new DefaultThreadFactory(factory));
         }
     }
