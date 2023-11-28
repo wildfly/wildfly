@@ -1080,13 +1080,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.config</groupId>
-                <artifactId>microprofile-config-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.config.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
@@ -1098,13 +1091,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
-                <artifactId>microprofile-fault-tolerance-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.fault-tolerance.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1118,13 +1104,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.health</groupId>
-                <artifactId>microprofile-health-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.health.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.jwt</groupId>
@@ -1137,22 +1116,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.jwt</groupId>
-                <artifactId>microprofile-jwt-auth-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.jwt.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.jwt</groupId>
-                <artifactId>microprofile-jwt-auth-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.jwt.api}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
 
             <dependency>
                 <groupId>org.eclipse.microprofile.lra</groupId>
@@ -1165,13 +1128,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.lra</groupId>
-                <artifactId>microprofile-lra-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.lra.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>
@@ -1183,12 +1139,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.openapi</groupId>
-                <artifactId>microprofile-openapi-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.openapi}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1213,22 +1163,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
-                <artifactId>microprofile-reactive-streams-operators-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        Depends on org.reactivestreams:reactive-streams-tck which in turn has a dependency
-                        on an ancient version of this spi
-                     -->
-                    <exclusion>
-                        <groupId>org.jboss.arquillian.test</groupId>
-                        <artifactId>arquillian-test-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
@@ -1241,12 +1175,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
-                <artifactId>microprofile-reactive-messaging-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.reactive-messaging.api}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.rest.client</groupId>
@@ -1258,19 +1186,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.rest.client</groupId>
-                <artifactId>microprofile-rest-client-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.rest.client.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
-                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
