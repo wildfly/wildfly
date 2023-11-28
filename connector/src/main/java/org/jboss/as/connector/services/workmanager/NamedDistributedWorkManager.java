@@ -33,9 +33,9 @@ public class NamedDistributedWorkManager extends DistributedWorkManagerImpl {
     }
     protected WildflyWorkWrapper createWorKWrapper(SecurityIntegration securityIntegration, Work work,
                                                    ExecutionContext executionContext, WorkListener workListener, CountDownLatch startedLatch,
-                                                   CountDownLatch completedLatch) {
+                                                   CountDownLatch completedLatch, long startTimeout) {
         return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
-                startedLatch, completedLatch, System.currentTimeMillis());
+                startedLatch, completedLatch, System.currentTimeMillis(), startTimeout);
     }
     public boolean isElytronEnabled() {
         return elytronEnabled;

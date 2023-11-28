@@ -35,8 +35,8 @@ public class NamedWorkManager extends WorkManagerImpl {
     @Override
     protected WildflyWorkWrapper createWorkWrapper(SecurityIntegration securityIntegration, Work work,
                                             ExecutionContext executionContext, WorkListener workListener, CountDownLatch startedLatch,
-                                            CountDownLatch completedLatch) {
+                                            CountDownLatch completedLatch, long creationTime, long startTimeout) {
         return new WildflyWorkWrapper(this, securityIntegration, work, executionContext, workListener,
-                startedLatch, completedLatch, System.currentTimeMillis());
+                startedLatch, completedLatch, creationTime, startTimeout);
     }
 }
