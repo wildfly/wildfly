@@ -5,12 +5,11 @@
 package org.wildfly.extension.clustering.server.group;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
-import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -35,6 +34,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.function.Functions;
 
 /**
  * Builds a {@link Group} service for a cache.
@@ -74,7 +74,7 @@ public class CacheGroupServiceConfigurator extends SimpleServiceNameProvider imp
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(name).build(target);
         Consumer<Group> group = new CompositeDependency(this.cache, this.factory, this.environment).register(builder).provides(name);
-        Service service = new FunctionalService<>(group, Functions.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(group, Functions.cast(Function.identity()), this, Functions.closingConsumer());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

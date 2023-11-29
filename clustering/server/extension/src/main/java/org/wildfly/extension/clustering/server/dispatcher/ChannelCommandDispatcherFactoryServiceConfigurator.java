@@ -15,8 +15,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
-import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.Services;
 import org.jboss.marshalling.ClassResolver;
@@ -52,6 +50,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -109,7 +108,7 @@ public class ChannelCommandDispatcherFactoryServiceConfigurator extends SimpleSe
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
         this.loader = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
         Consumer<CommandDispatcherFactory> factory = new CompositeDependency(this.channel, this.channelFactory, this.module).register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(factory, Functions.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(factory, Functions.cast(Function.identity()), this, Functions.closingConsumer());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
     }
 
