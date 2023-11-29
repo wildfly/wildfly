@@ -570,6 +570,22 @@
             <!-- Keep sorted -->
 
             <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-channel</artifactId>
+                <version>${full.maven.version}</version>
+                <type>yaml</type>
+                <classifier>channel</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-channel</artifactId>
+                <version>${full.maven.version}</version>
+                <type>yaml</type>
+                <classifier>manifest</classifier>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-common-ee-dependency-management</artifactId>
                 <version>${ee.maven.version}</version>
@@ -588,6 +604,22 @@
                 <artifactId>wildfly-ee-build</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-channel</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>yaml</type>
+                <classifier>channel</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-channel</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>yaml</type>
+                <classifier>manifest</classifier>
             </dependency>
 
             <dependency>
@@ -665,6 +697,22 @@
                 <artifactId>wildfly-preview-build</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-channel</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>yaml</type>
+                <classifier>channel</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-preview-channel</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>yaml</type>
+                <classifier>manifest</classifier>
             </dependency>
 
             <dependency>
