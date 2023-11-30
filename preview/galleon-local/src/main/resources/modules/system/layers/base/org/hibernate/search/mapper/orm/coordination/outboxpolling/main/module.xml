@@ -10,7 +10,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.mapper.orm.coordination.outboxpolling">
 
     <resources>
-        <artifact name="${org.hibernate.search:hibernate-search-mapper-orm-coordination-outbox-polling-orm6}"/>
+        <artifact name="${org.hibernate.search:hibernate-search-mapper-orm-outbox-polling}"/>
     </resources>
 
     <dependencies>

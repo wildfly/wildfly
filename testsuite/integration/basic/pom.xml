@@ -360,7 +360,7 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
+            <artifactId>hibernate-search-mapper-orm</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -370,7 +370,7 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
+            <artifactId>hibernate-search-v5migrationhelper-orm</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -845,7 +845,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.hibernate.search</groupId>
-                                    <artifactId>hibernate-search-v5migrationhelper-orm-orm6</artifactId>
+                                    <artifactId>hibernate-search-v5migrationhelper-orm</artifactId>
                                     <version>${version.org.hibernate.search}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
