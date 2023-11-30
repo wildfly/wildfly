@@ -17,6 +17,12 @@ updates:
        # Only allow for patch release upgrades
       - dependency-name: '*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Dependencies exclusive to Hibernate Search:
+      # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
+      - dependency-name: 'org.elasticsearch.client:*'
+      - dependency-name: 'org.apache.lucene:*'
+      - dependency-name: 'com.carrotsearch:hppc'
+      - dependency-name: 'org.apache.avro:avro'
     rebase-strategy: "disabled"
     open-pull-requests-limit: 8
     registries:
