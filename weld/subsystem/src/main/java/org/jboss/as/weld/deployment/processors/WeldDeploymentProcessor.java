@@ -190,7 +190,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             if (bdm == rootBeanDeploymentModule) {
                 continue; // the root module only has access to itself
             }
-            for (ModuleDependency dependency : bdmSpec.getSystemDependencies()) {
+            for (ModuleDependency dependency : bdmSpec.getSystemDependenciesSet()) {
                 BeanDeploymentModule other = bdmsByIdentifier.get(dependency.getIdentifier());
                 if (other != null && other != bdm) {
                     bdm.addBeanDeploymentModule(other);

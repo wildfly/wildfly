@@ -5,13 +5,11 @@
 package org.jboss.as.appclient.deployment;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -40,7 +38,7 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
     }
 
     @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
 
@@ -58,16 +56,12 @@ public class ApplicationClientDependencyProcessor implements DeploymentUnitProce
             moduleIdentifiers.add(module.getAttachment(Attachments.MODULE_IDENTIFIER));
         }
 
-        final Iterator<ModuleDependency> iterator = moduleSpecification.getMutableUserDependencies().iterator();
-        while (iterator.hasNext()) {
-            final ModuleDependency dep = iterator.next();
+        moduleSpecification.removeUserDependencies(dep -> {
             final ModuleIdentifier identifier = dep.getIdentifier();
-            if (identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)
+            return identifier.getName().startsWith(ServiceModuleLoader.MODULE_PREFIX)
                     && !identifier.getName().startsWith(ExtensionIndexService.MODULE_PREFIX)
-                    && !moduleIdentifiers.contains(identifier)) {
-                iterator.remove();
-            }
-        }
+                    && !moduleIdentifiers.contains(identifier);
+        });
     }
 
 }
