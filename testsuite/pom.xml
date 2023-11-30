@@ -51,6 +51,7 @@
 
     <modules>
         <module>integration</module>
+        <module>test-product-conf</module>
     </modules>
 
 

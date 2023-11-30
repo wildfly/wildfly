@@ -33,6 +33,7 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
+        <manifest.url.prefix>file://</manifest.url.prefix>
     </properties>
 
     <dependencies>
@@ -330,6 +331,17 @@
             <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-channel</artifactId>
+            <type>yaml</type>
+            <classifier>manifest</classifier>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+            <version>100000.0.1.Final-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -383,8 +395,62 @@
                             </system-properties>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>multi-channel-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>false</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <galleon-options>
+                                <jboss-maven-dist>false</jboss-maven-dist>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <!-- TODO needing to add this seems not user-friendly -->
+                                <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
+                            </galleon-options>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${ee.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee-channel</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.prospero</groupId>
+                                        <artifactId>prospero-wildfly-galleon-pack</artifactId>
+                                        <version>${version.org.wildfly.prospero}</version>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <url>file://${project.build.directory}/test-classes/product-conf-override-manifest.yaml</url>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <version>${ee.maven.version}</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>org.wildfly.prospero</groupId>
+                                    <artifactId>prospero-wildfly-galleon-pack</artifactId>
+                                    <version>${version.org.wildfly.prospero}</version>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
+
             <!-- Generate the keystores and truststore needed for the manualmode tests -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -537,6 +603,17 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>window.prefxi</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <manifest.url.prefix>file:///</manifest.url.prefix>
+            </properties>
         </profile>
     </profiles>
 </project>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>31.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <name>WildFly: Test Product Configuration</name>
+    <description>Provides a test-only artifact whose MANIFEST.MF includes entries that provide installation
+        name and version information. Used in channel provisioning tests to override the real artifact
+        with the same GA.</description>
+
+    <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+    <!-- DO NOT CHANGE THIS. It's a fixed, deliberate value for this test-only artifact
+         chosen to avoid interferin with the release artifact with the same GA.
+         Other test infrastructure (e.g. a custom channel manifest) relies on this value. -->
+    <version>100000.0.1.Final-SNAPSHOT</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <!-- This is a test-only artifact with a never-changing version.
+                         DO NOT DEPLOY IT! -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <!-- This archive only has the manifest we generate. Turn off WARNs about that -->
+                    <skipIfEmpty>false</skipIfEmpty>
+                    <archive>
+                        <manifestEntries>
+                            <JBoss-Product-Release-Name>Just a Test</JBoss-Product-Release-Name>
+                            <JBoss-Product-Release-Version>1.2 GA Update 1</JBoss-Product-Release-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
