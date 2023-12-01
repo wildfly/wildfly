@@ -355,11 +355,11 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
 
             RuntimeCapability<Void> capability = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
             CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
-            Consumer<HandlerWrapper> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
+            Consumer<PredicateHandlerWrapper> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
             Supplier<ModCluster> serviceRequirement = builder.requires(configurator.getServiceName());
             Supplier<MCMPConfig> configRequirement = builder.requires(configurator.getConfigServiceName());
 
-            HandlerWrapper wrapper = new HandlerWrapper() {
+            PredicateHandlerWrapper wrapper = PredicateHandlerWrapper.filter(new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(HttpHandler next) {
                     ModCluster modCluster = serviceRequirement.get();
@@ -369,8 +369,8 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
                     //to specify the next handler. To get around this we invoke the mod_proxy handler
                     //and then if it has not dispatched or handled the request then we know that we can
                     //just pass it on to the next handler
-                    final HttpHandler proxyHandler = modCluster.createProxyHandler(next);
-                    final HttpHandler realNext = new HttpHandler() {
+                    HttpHandler proxyHandler = modCluster.createProxyHandler(next);
+                    HttpHandler realNext = new HttpHandler() {
                         @Override
                         public void handleRequest(HttpServerExchange exchange) throws Exception {
                             proxyHandler.handleRequest(exchange);
@@ -380,9 +380,10 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
                             }
                         }
                     };
-                    return (managementAccessPredicate != null)  ? Handlers.predicate(managementAccessPredicate, config.create(modCluster, realNext), next)  :  config.create(modCluster, realNext);
+                    HttpHandler mcmpHandler = config.create(modCluster, realNext);
+                    return (managementAccessPredicate != null) ? Handlers.predicate(managementAccessPredicate, mcmpHandler, next) : mcmpHandler;
                 }
-            };
+            });
 
             builder.setInstance(Service.newInstance(filter, wrapper)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 

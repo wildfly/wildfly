@@ -5,16 +5,15 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import io.undertow.server.HandlerWrapper;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Factory for creating a {@link HandlerWrapper}.
+ * Factory for creating a {@link PredicateHandlerWrapper}.
  * @author Paul Ferraro
  */
-public interface HandlerWrapperFactory {
-    HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException;
+public interface PredicateHandlerWrapperFactory {
+
+    PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException;
 }
