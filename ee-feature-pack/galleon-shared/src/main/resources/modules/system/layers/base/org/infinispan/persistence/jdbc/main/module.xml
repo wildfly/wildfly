@@ -21,8 +21,8 @@
         <module name="jakarta.transaction.api"/>
 
         <module name="io.reactivex.rxjava3.rxjava"/>
-        <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.logging"/>
         <module name="org.reactivestreams"/>

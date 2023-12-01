@@ -32,7 +32,7 @@
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
-        <module name="org.infinispan" services="import"/>
+        <module name="org.infinispan.core" services="import"/>
         <module name="org.infinispan.persistence.jdbc"/>
         <module name="org.infinispan.persistence.remote"/>
         <module name="org.infinispan.client.hotrod"/>
