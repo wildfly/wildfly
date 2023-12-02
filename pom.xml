@@ -353,8 +353,8 @@
         <version.org.testng>7.4.0</version.org.testng>
         <version.org.wildfly.arquillian>5.0.1.Final</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
-        <version.org.wildfly.prospero>1.2.0.Final</version.org.wildfly.prospero>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
+        <version.org.wildfly.prospero>1.2.1.Final</version.org.wildfly.prospero>
 
         <!--
             *Non-plugin* PRODUCTION CODE dependency versions. Please keep alphabetical.

@@ -12,6 +12,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.shared.logging.LoggingUtil.hasLogMessage;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -106,7 +107,7 @@ public class ChannelProvisioningTestCase {
             assertEquals(response.toString(), OVERRIDE_PROD_VERSION, response.get(RESULT, PRODUCT_VERSION).asString());
 
             // Validate the override settings appears in the "started" log message.
-            LogHandlerSetup logHandlerSetup = new LogHandlerSetup();
+            LogHandlerSetup logHandlerSetup = new LogHandlerSetup("org.jboss.as");
             logHandlerSetup.setup(modelControllerClient);
             try {
                 // Reload to capture the log message
@@ -123,11 +124,44 @@ public class ChannelProvisioningTestCase {
         }
     }
 
+    @Test
+    public void testChannelManifestLogging() throws Exception {
+        try (ModelControllerClient modelControllerClient = TestSuiteEnvironment.getModelControllerClient()) {
+
+             // Validate the manifest information in server boot logging.
+            LogHandlerSetup logHandlerSetup = new LogHandlerSetup("org.wildfly.core.installationmanager");
+            logHandlerSetup.setup(modelControllerClient);
+            try {
+                // Reload to capture the log message
+                ServerReload.executeReloadAndWaitForCompletion(modelControllerClient);
+                assertLogText(modelControllerClient, "WFLYIM0021");
+                assertLogText(modelControllerClient, System.getProperty("wildfly.ee.channel.groupId") + ":wildfly-ee-channel");
+                assertLogText(modelControllerClient, System.getProperty("wildfly.ee.channel.version"));
+                assertLogText(modelControllerClient, "org.wildfly.prospero:prospero-wildfly-galleon-pack");
+                assertLogText(modelControllerClient, System.getProperty("prospero.channel.version"));
+                assertLogText(modelControllerClient, "product-conf-override-manifest.yaml");
+            } finally {
+                logHandlerSetup.tearDown(modelControllerClient);
+            }
+        }
+    }
+
+    private static void assertLogText(ModelControllerClient modelControllerClient, String text) throws Exception {
+        assertNotNull(text);
+        assertTrue(text + " not found", hasLogMessage(modelControllerClient, "startup", text));
+    }
+
     private static class LogHandlerSetup extends TestLogHandlerSetupTask {
+
+        private final Set<String> categories;
+
+        private LogHandlerSetup(String category) {
+            this.categories = Set.of(category);
+        }
 
         @Override
         public Collection<String> getCategories() {
-            return Set.of("org.jboss.as");
+            return categories;
         }
 
         @Override
