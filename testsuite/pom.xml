@@ -1182,5 +1182,16 @@
             </properties>
         </profile>
 
+        <profile>
+            <!-- Use the internally-created channel when provisioning -->
+            <id>internal.channel.profile</id>
+            <activation><property><name>internal.wildfly.channels</name></property></activation>
+            <properties>
+                <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
+                     if a wildfly.channels pom property is set. -->
+                <wildfly.channels>${project.groupId}:wildfly-manifest:${project.version}</wildfly.channels>
+            </properties>
+        </profile>
+
     </profiles>
 </project>
