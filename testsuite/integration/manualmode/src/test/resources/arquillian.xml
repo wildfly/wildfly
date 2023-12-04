@@ -511,7 +511,10 @@
 
         <container qualifier="wildfly-multi-channel" default="false" mode="manual">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly-multi-channel</property>
+                <!-- Arquillian validates all configs before running any test,
+                     so this uses an unrelated jbossHome if the provisioning of this installation
+                     is disabled for profiles where it's not wanted. -->
+                <property name="jbossHome">${multichannel.jboss.home}</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=multi-channel</property>
                 <property name="serverConfig">${jboss.config.file.name:standalone.xml}</property>
                 <property name="jbossArguments">${jboss.args} --admin-only</property>

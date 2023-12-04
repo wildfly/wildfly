@@ -27,9 +27,12 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.logging.TestLogHandlerSetupTask;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.ServerControl;
@@ -53,6 +56,16 @@ public class ChannelProvisioningTestCase {
 
     private static final String OVERRIDE_PROD_NAME = "Just a Test";
     private static final String OVERRIDE_PROD_VERSION = "1.2 GA Update 1";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+        if (AssumeTestGroupUtil.isBootableJar()
+                || System.getProperty("external.wildfly.channels") != null
+                || System.getProperty("internal.wildfly.channels") != null) {
+            throw new AssumptionViolatedException("Unsuitable environment");
+        }
+    }
 
     @ArquillianResource
     private static volatile ContainerController container;
