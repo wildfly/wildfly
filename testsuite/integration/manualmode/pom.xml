@@ -33,7 +33,9 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
-        <manifest.url.prefix>file://</manifest.url.prefix>
+
+        <multi.channel.provisioning.phase>process-test-resources</multi.channel.provisioning.phase>
+        <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
     </properties>
 
     <dependencies>
@@ -400,7 +402,7 @@
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>process-test-resources</phase>
+                        <phase>${multi.channel.provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
                             <record-provisioning-state>false</record-provisioning-state>
@@ -430,7 +432,7 @@
                                 </channel>
                                 <channel>
                                     <manifest>
-                                        <url>file://${project.build.directory}/test-classes/product-conf-override-manifest.yaml</url>
+                                        <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
                                     </manifest>
                                 </channel>
                             </channels>
@@ -530,6 +532,7 @@
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
+                        <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -605,14 +608,31 @@
             </build>
         </profile>
         <profile>
-            <id>window.prefxi</id>
+            <id>external.wildfly.channels</id>
             <activation>
-                <os>
-                    <family>windows</family>
-                </os>
+                <property>
+                    <name>external.wildfly.channels</name>
+                </property>
             </activation>
             <properties>
-                <manifest.url.prefix>file:///</manifest.url.prefix>
+                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
+                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+                <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
+                <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
+            </properties>
+        </profile>
+        <profile>
+            <id>internal.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>internal.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
+                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+                <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
+                <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
             </properties>
         </profile>
     </profiles>
