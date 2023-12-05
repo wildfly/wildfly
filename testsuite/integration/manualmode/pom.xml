@@ -319,6 +319,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.prospero</groupId>
+            <artifactId>prospero-cli</artifactId>
+            <classifier>shaded</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
             <scope>test</scope>
@@ -332,6 +337,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-testsuite-shared</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -397,67 +407,15 @@
                             </system-properties>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>multi-channel-provisioning</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>${multi.channel.provisioning.phase}</phase>
-                        <configuration>
-                            <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
-                            <record-provisioning-state>true</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>false</offline-provisioning>
-                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
-                            <galleon-options>
-                                <jboss-maven-dist>false</jboss-maven-dist>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <!-- TODO needing to add this seems not user-friendly -->
-                                <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
-                            </galleon-options>
-                            <channels>
-                                <channel>
-                                    <manifest>
-                                        <groupId>${ee.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-channel</artifactId>
-                                        <version>${ee.maven.version}</version>
-                                    </manifest>
-                                </channel>
-                                <channel>
-                                    <manifest>
-                                        <groupId>org.wildfly.prospero</groupId>
-                                        <artifactId>prospero-wildfly-galleon-pack</artifactId>
-                                        <version>${version.org.wildfly.prospero}</version>
-                                    </manifest>
-                                </channel>
-                                <channel>
-                                    <manifest>
-                                        <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
-                                    </manifest>
-                                </channel>
-                            </channels>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${ee.maven.version}</version>
-                                </feature-pack>
-                                <feature-pack>
-                                    <groupId>org.wildfly.prospero</groupId>
-                                    <artifactId>prospero-wildfly-galleon-pack</artifactId>
-                                    <version>${version.org.wildfly.prospero}</version>
-                                </feature-pack>
-                            </feature-packs>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
 
-            <!-- Generate the keystores and truststore needed for the manualmode tests -->
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
+                    <!-- Generate the keystores and truststore needed for the manualmode tests -->
                     <execution>
                         <id>generate-jboss-stores</id>
                         <phase>test-compile</phase>
@@ -467,6 +425,80 @@
                         <configuration>
                             <mainClass>org.jboss.as.test.manualmode.ejb.ssl.GenerateJBossStores</mainClass>
                             <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                    <!-- Executions to provision a multi-channel installation using prospero -->
+                    <execution>
+                        <id>multi-channel-provisioning-ee</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>install --dir=${project.build.directory}/wildfly-multi-channel --fpl=${ee.maven.groupId}:wildfly-ee-galleon-pack:${ee.maven.version} --channel=${ee.maven.groupId}:wildfly-ee-channel:${ee.maven.version}</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>multi-channel-provisioning-prospero-channel</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=prospero --manifest=org.wildfly.prospero:prospero-wildfly-galleon-pack:${version.org.wildfly.prospero} --repositories=https://repo1.maven.org/maven2/,${maven.repository.url}</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                    <!-- TODO this should not be necessary. Universe artifacts should not have to come via a channel -->
+                    <execution>
+                        <id>multi-channel-provisioning-galleon-universe</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=universe --manifest=${project.baseUri}/target/test-classes/community-universe-manifest.yaml --repositories=${maven.repository.url}</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>multi-channel-provisioning-prospero-fp</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>feature-pack add --dir=${project.build.directory}/wildfly-multi-channel --fpl=org.wildfly.prospero:prospero-wildfly-galleon-pack --layers=prospero --yes</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>multi-channel-provisioning-override</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=override --manifest=${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml --repositories=${maven.repository.url}</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>multi-channel-provisioning-update</id>
+                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <commandlineArgs>update perform --dir=${project.build.directory}/wildfly-multi-channel --yes</commandlineArgs>
+                            <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
                     </execution>
                 </executions>

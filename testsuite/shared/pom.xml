@@ -234,6 +234,11 @@
             <artifactId>wildfly-naming-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.prospero</groupId>
+            <artifactId>prospero-cli</artifactId>
+            <classifier>shaded</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-elytron-auth-server</artifactId>
         </dependency>

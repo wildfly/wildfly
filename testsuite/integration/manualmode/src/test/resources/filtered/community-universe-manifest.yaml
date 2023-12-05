@@ -1,0 +1,12 @@
+---
+schemaVersion: "1.0.0"
+name: "Workaround for prospero having trouble resolving Galleon universe artifacts"
+id: "org.jboss.universe"
+description: "Manifest for providing org.jboss.universe artifacts."
+streams:
+  - groupId: "org.jboss.universe"
+    artifactId: "community-universe"
+    version: "1.2.0.Final"
+  - groupId: "org.jboss.universe.producer"
+    artifactId: "wildfly-producers"
+    versionPattern: "[0-9]+.[0-9]+.[0-9]+.Final"

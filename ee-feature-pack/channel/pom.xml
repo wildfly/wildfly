@@ -119,7 +119,7 @@
                     </execution>
                     <!-- Attach the channel.yaml to the build.
                          NOTE: Commented out until we have a concrete need. -->
-                    <!--<execution>
+                    <execution>
                         <id>attach-channel</id>
                         <phase>package</phase>
                         <goals>
@@ -134,7 +134,7 @@
                                 </artifact>
                             </artifacts>
                         </configuration>
-                    </execution>-->
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

@@ -373,6 +373,13 @@
                 <artifactId>wildfly-glow-maven-resolver</artifactId>
                 <version>${version.org.wildfly.glow}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.prospero</groupId>
+                <artifactId>prospero-cli</artifactId>
+                <version>${version.org.wildfly.prospero}</version>
+                <classifier>shaded</classifier>
+            </dependency>
         </dependencies>
 
     </dependencyManagement>
