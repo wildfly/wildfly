@@ -25,8 +25,10 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +68,8 @@ public class AbstractValidationUnitTest {
 
     private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<>();
     private static final Set<String> FUTURE_SCHEMA_FILES = new HashSet<>();
-    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<>();
-    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<>();
+    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new LinkedHashMap<>();
+    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new LinkedHashMap<>();
     private static final Source[] SCHEMA_SOURCES;
     private static final Map<String, String> NAMESPACE_MAP = new HashMap<>();
     private static final Map<String, String> OUTDATED_NAMESPACES = new HashMap<>();
@@ -152,6 +154,7 @@ public class AbstractValidationUnitTest {
             final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
 
             final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[0])));
+            Arrays.sort(xsds);
             for (File xsd : xsds) {
                 JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
             }
