@@ -5,8 +5,12 @@
 
 package org.wildfly.test.integration.microprofile.jwt.ejb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
+import java.net.URL;
+import java.nio.file.Paths;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,12 +28,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
-
-import java.net.URL;
-import java.nio.file.Paths;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * A test case for an Jakarta Enterprise Beans endpoint secured using the MP-JWT mechanism and invoking a

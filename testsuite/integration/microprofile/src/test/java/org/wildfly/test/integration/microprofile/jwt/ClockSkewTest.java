@@ -4,6 +4,14 @@
  */
 package org.wildfly.test.integration.microprofile.jwt;
 
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivateKey;
+
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -29,14 +37,6 @@ import org.junit.runner.RunWith;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.pem.Pem;
 import org.wildfly.test.integration.microprofile.jwt.norealm.App;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.PrivateKey;
-
-import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 /**
  * Tests for mp.jwt.verify.clock.skew property introduced in MP JWT 2.1

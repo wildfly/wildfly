@@ -22,8 +22,12 @@
 
 package org.wildfly.test.integration.microprofile.jwt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.wildfly.test.integration.microprofile.jwt.TokenUtil.generateJWT;
 
+import java.net.URL;
+import java.nio.file.Paths;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -32,12 +36,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
-
-import java.net.URL;
-import java.nio.file.Paths;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * A base for MicroProfile JWT test cases.
