@@ -23,9 +23,8 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
-        <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-fault-tolerance</ts.microprofile-tck-provisioning.decorator.layer>
+        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.fault-tolerance:microprofile-fault-tolerance-tck</ts.microprofile-tck-tests-dependency>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, datasources, ee-integration, microprofile-config, microprofile-fault-tolerance]==>ee-core-profile-server,datasources,microprofile-fault-tolerance</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -73,7 +72,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>
-                        <dependency>org.eclipse.microprofile.fault-tolerance:microprofile-fault-tolerance-tck</dependency>
+                        <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
@@ -99,7 +98,8 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
             </properties>
         </profile>
 
@@ -112,7 +112,9 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
@@ -125,7 +127,9 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
@@ -138,7 +142,8 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
             </properties>
         </profile>
 

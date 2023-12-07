@@ -33,13 +33,12 @@
             Essentially by default it will work like -Dts.layers
         -->
         <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-        <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
-        <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>cloud-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-reactive-messaging</ts.microprofile-tck-provisioning.decorator.layer>
-
+        <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+        <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-tck</ts.microprofile-tck-tests-dependency>
         <!-- Temporary property until we are fully aligned with Jakarta -->
         <version.eclipse.mp.rm.for.jakarta>3.0-RC2</version.eclipse.mp.rm.for.jakarta>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, microprofile-config, microprofile-reactive-messaging, microprofile-reactive-streams-operators]==>ee-core-profile-server,microprofile-reactive-messaging</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -108,7 +107,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>
-                        <dependenciesToScan>org.eclipse.microprofile.reactive.messaging:microprofile-reactive-messaging-tck</dependenciesToScan>
+                        <dependenciesToScan>${ts.microprofile-tck-tests-dependency}</dependenciesToScan>
                     </dependenciesToScan>
                     <systemPropertyVariables>
                         <microprofile.jvm.args>${microprofile.jvm.args}</microprofile.jvm.args>
@@ -132,7 +131,10 @@
                     <name>ts.layers</name>
                 </property>
             </activation>
-            <!--- Just uses the standard provisioning mechanism for this module -->
+            <properties>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+            </properties>
         </profile>
 
         <profile>
@@ -145,8 +147,8 @@
             <properties>
                 <!-- Turn off provisioning since it is enabled by default-->
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
-                <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
@@ -161,7 +163,9 @@
                 <!-- Turn off provisioning since it is enabled by default-->
                 <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 

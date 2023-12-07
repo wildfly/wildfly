@@ -4,7 +4,11 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="remote-activemq-cf">
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="remote-activemq-cf">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:messaging-activemq"/>
+        <prop name="org.wildfly.rule.add-on" value="messaging,remote-activemq-cf"/>
+    </props>
     <dependencies>
         <layer name="remote-activemq"/>
     </dependencies>

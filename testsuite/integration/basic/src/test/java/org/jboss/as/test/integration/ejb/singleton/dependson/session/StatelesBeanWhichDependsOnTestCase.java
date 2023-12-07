@@ -44,7 +44,7 @@ public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
 
     @Deployment(name = SessionConstants.DEPLOYMENT_NAME_SESSION, order = 1, managed = false, testable = false)
     public static Archive<?> getSessionArchive() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SessionConstants.DEPLOYMENT_NAME_SESSION);
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SessionConstants.DEPLOYMENT_JAR_NAME_SESSION);
         jar.addClass(Constants.class);
         jar.addClass(CallCounterProxy.class);
         jar.addClass(SessionConstants.class);

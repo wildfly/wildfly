@@ -33,6 +33,12 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
+        <glow.cloud-profile.phase>none</glow.cloud-profile.phase>
+        <glow.jpa.phase>none</glow.jpa.phase>
+        <glow.hibernate-search.phase>none</glow.hibernate-search.phase>
+        <ts.copy-wildfly-standalone-embedded-broker.phase>generate-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
+        <cloud-profile-provisioning.phase>none</cloud-profile-provisioning.phase>
+        <hibernate-search-provisioning.phase>none</hibernate-search-provisioning.phase>
     </properties>
 
     <dependencies>
@@ -115,6 +121,114 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>wildfly-preview-feature-pack</artifactId>
+                            <version>${project.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-cloud-profile-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.cloud-profile.phase}</phase>
+                        <configuration>
+                            <expected-discovery>[datasources, h2-datasource, h2-default-datasource]==>ee-core-profile-server,h2-default-datasource</expected-discovery>
+                            <surefire-execution-for-included-classes>cloud-server.layer.surefire</surefire-execution-for-included-classes>
+                            <add-ons>
+                                <add-on>h2-database:default</add-on>
+                            </add-ons>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-jpa-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.jpa.phase}</phase>
+                        <configuration>
+                            <expected-discovery>[datasources, h2-datasource, h2-default-datasource]==>ee-core-profile-server,h2-default-datasource</expected-discovery>
+                            <surefire-execution-for-included-classes>jpa-layers.surefire</surefire-execution-for-included-classes>
+                            <add-ons>
+                                <add-on>h2-database:default</add-on>
+                            </add-ons>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-hibernate-search-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.hibernate-search.phase}</phase>
+                        <configuration>
+                            <expected-discovery>[cdi, datasources, h2-datasource, h2-default-datasource, hibernate-search, jpa, transactions]==>ee-core-profile-server,h2-default-datasource,hibernate-search</expected-discovery>
+                            <surefire-execution-for-included-classes>hibernate-search.layer.surefire</surefire-execution-for-included-classes>
+                            <add-ons>
+                                <add-on>h2-database:default</add-on>
+                            </add-ons>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
+                <executions>
+                    <!-- Provision a cloud-profile server -->
+                    <execution>
+                        <id>cloud-profile-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${cloud-profile-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Provision a server with hibernate-search -->
+                    <execution>
+                        <id>hibernate-search-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${hibernate-search-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-hibernate-search</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -138,7 +252,7 @@
                             <execution>
                                 <id>ts.copy-wildfly-standalone-embedded-broker</id>
                                 <inherited>true</inherited>
-                                <phase>generate-test-resources</phase>
+                                <phase>${ts.copy-wildfly-standalone-embedded-broker.phase}</phase>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
@@ -242,6 +356,12 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
+                <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
+                <cloud-profile-provisioning.phase>test-compile</cloud-profile-provisioning.phase>
+                <hibernate-search-provisioning.phase>test-compile</hibernate-search-provisioning.phase>
+                <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
+                <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-classes</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
             <build>
                 <plugins>
@@ -259,94 +379,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Provision a cloud-profile server -->
-                            <execution>
-                                <id>cloud-profile-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-
-                            <!-- Provision a server with hibernate-search -->
-                            <execution>
-                                <id>hibernate-search-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-hibernate-search</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-preview-feature-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>hibernate-search</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <!-- In container tests use injected CDI beans and EJBs -->
-                                                <layer>cdi</layer>
-                                                <layer>ejb-lite</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -435,6 +467,8 @@
             </dependencies>
             <properties>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
+                <glow.jpa.phase>test-compile</glow.jpa.phase>
             </properties>
             <build>
                 <plugins>
@@ -497,17 +531,7 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                     </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>cloud-server</layer>
-                                        <layer>h2-default-datasource</layer>
-                                    </layers>
+                                    <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
 
@@ -533,18 +557,7 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                     </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <layers>
-                                        <layer>jpa</layer>
-                                        <layer>jaxrs-server</layer>
-                                        <layer>h2-default-datasource</layer>
-                                    </layers>
+                                    <provisioning-file>target/glow-scan/jpa-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -565,7 +578,7 @@
 
                             <!-- Tests against the cloud-server install -->
                             <execution>
-                                <id>cloud.server.surefire</id>
+                                <id>cloud-server.layer.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>

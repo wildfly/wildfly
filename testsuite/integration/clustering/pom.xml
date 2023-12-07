@@ -32,9 +32,12 @@
         <ts.surefire.clustering.ha.additionalExcludes>nothing-by-default</ts.surefire.clustering.ha.additionalExcludes>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
-        <bootable-jar-jpa-distributed-packaging.phase>none</bootable-jar-jpa-distributed-packaging.phase>
         <bootable-jar-load-balancer-packaging.phase>none</bootable-jar-load-balancer-packaging.phase>
-        <bootable-jar-configure-windows-paths.phase>none</bootable-jar-configure-windows-paths.phase>
+        <glow.phase>none</glow.phase>
+        <ts.config-as.configure-wildfly.phase>process-test-resources</ts.config-as.configure-wildfly.phase>
+        <ts.config-as.configure-lb.phase>generate-test-resources</ts.config-as.configure-lb.phase>
+        <genkey-keystore.phase>generate-test-resources</genkey-keystore.phase>
+        <ts.config-as.clustering.phase>test-compile</ts.config-as.clustering.phase>
         <!-- Disable the default surefire test execution. All profiles use custom executions. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
         <infinispan.server.home.override/>
@@ -431,6 +434,71 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.ee.galleon.pack.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <profiles>
+                        <profile>ha</profile>
+                    </profiles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-clustering-microprofile</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase}</phase>
+                        <configuration>
+                            <expected-errors>
+                                <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                            <add-ons>
+                                <add-on>infinispan</add-on>
+                            </add-ons>
+                            <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-jpa2lc</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase}</phase>
+                        <configuration>
+                            <expected-errors>
+                                <error>unbound datasources error: java:jboss/datasources/H2</error>
+                                <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <expected-discovery>[ha][cdi, ee-integration, h2-datasource, jaxrs, jpa, transactions]==>ee-core-profile-server,h2-datasource,jaxrs,jpa-distributed</expected-discovery>
+                            <surefireExecutionForIncludedClasses>ts.surefire.clustering.all.jpa2lc</surefireExecutionForIncludedClasses>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-load-balancer</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase}</phase>
+                        <configuration>
+                            <expected-discovery>[ha][base-server, io, undertow-load-balancer]==>ee-core-profile-server,undertow-load-balancer</expected-discovery>
+                            <add-ons>
+                                <add-on>load-balancer</add-on>
+                            </add-ons>
+                            <skip-scanning>true</skip-scanning>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
                 <version>${version.org.wildfly.jar.plugin}</version>
@@ -461,19 +529,7 @@
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>web-clustering</layer>
-                                <layer>h2-default-datasource</layer>
-                                <layer>infinispan</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/ts.surefire.clustering.microprofile/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
 
@@ -501,21 +557,7 @@
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <excluded-layers>
-                                <layer>jpa</layer>
-                            </excluded-layers>
-                            <layers>
-                                <layer>jaxrs-server</layer>
-                                <layer>h2-default-datasource</layer>
-                                <layer>jpa-distributed</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/ts.surefire.clustering.all.jpa2lc/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
 
@@ -543,17 +585,7 @@
                                     </script-files>
                                 </cli-session>
                             </cli-sessions>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>management</layer>
-                                <layer>undertow-load-balancer</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -580,7 +612,7 @@
                         <executions>
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
-                                <phase>process-test-resources</phase>
+                                <phase>${ts.config-as.configure-wildfly.phase}</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -602,7 +634,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-lb</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>${ts.config-as.configure-lb.phase}</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -642,7 +674,7 @@
                                 </goals>
                             </execution>
                             <execution>
-                                <phase>generate-test-resources</phase>
+                                <phase>${genkey-keystore.phase}</phase>
                                 <id>genkey-keystore</id>
                                 <goals>
                                     <goal>generateKeyPair</goal>
@@ -669,7 +701,7 @@
                         <executions combine.children="append">
                             <execution>
                                 <id>ts.config-as.clustering</id>
-                                <phase>test-compile</phase>
+                                <phase>${ts.config-as.clustering.phase}</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -1458,6 +1490,11 @@
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
+                <ts.config-as.configure-wildfly.phase>process-test-classes</ts.config-as.configure-wildfly.phase>
+                <ts.config-as.configure-lb.phase>process-test-classes</ts.config-as.configure-lb.phase>
+                <genkey-keystore.phase>process-test-classes</genkey-keystore.phase>
+                <ts.config-as.clustering.phase>process-test-classes</ts.config-as.clustering.phase>
             </properties>
             <build>
                 <plugins>
@@ -1477,8 +1514,342 @@
                     </plugin>
                     <!-- Instead provision slimmed installations -->
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.glow</groupId>
+                        <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <profiles>
+                                <profile>ha</profile>
+                            </profiles>
+                        </configuration>
+                        <executions>
+                            
+                            <!-- wildfly-server -->
+                            <!-- Provision the configuration that the ts.surefire.clustering.all
+                            surefire execution tests. -->
+                            <execution>
+                                <id>scan-clustering-cloud-profile</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <add-ons>
+                                        <add-on>infinispan</add-on>
+                                    </add-ons>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <!-- Some tests launch an lb process, and this gets set up
+                            by ts.config-as.clustering copying the single common dist
+                            to a separate dir, and then the tests launch a process from
+                            that dir with -c=standalone-load-balancer.xml. We could
+                            directly provision to that dir in a separate execution and
+                            then change the ts.config-as.clustering copying, which would be
+                            more formally correct. But this is simpler for now and, at least
+                            right now, does not result in extra packages ending up in the
+                            dist we test. (Avoiding the risk of extra packages would be the
+                            reason to do a separate provisioning of this installation.) -->
+                            <execution>
+                                <id>scan-load-balancer</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][base-server, io, undertow-load-balancer]==>ee-core-profile-server,undertow-load-balancer</expected-discovery>
+                                    <aggregate>wildfly-server</aggregate>
+                                    <config-name>standalone-load-balancer.xml</config-name>
+                                    <add-ons>
+                                        <add-on>load-balancer</add-on>
+                                    </add-ons>
+                                    <skip-scanning>true</skip-scanning>
+                                </configuration>
+                            </execution>
+                            <!-- Also produce a standalone-ha.xml file with the same content
+                                 as standalone-full-ha.xml.
+                                 This doesn't actually get used in any tests we run with this
+                                 profile but the clustering-ha.cli script wants to modify it
+                                 so to keep it simple create the file so that doesn't fail.
+                            -->
+                            <execution>
+                                <id>scan-clustering-ha</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ee-integration, ejb, ejb-lite, infinispan, naming, servlet, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <add-ons>
+                                        <add-on>infinispan</add-on>
+                                    </add-ons>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.microprofile</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-mod-cluster -->
+                            <execution>
+                                <id>scan-clustering-cloud-profile-mod-cluster</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ejb, ejb-lite, infinispan, mod_cluster, naming, servlet, web-passivation, web-server]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,mod_cluster,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server-mod-cluster</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <add-ons>
+                                        <add-on>infinispan</add-on>
+                                        <add-on>mod_cluster</add-on>
+                                    </add-ons>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.mod_cluster</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <!-- Some tests launch an lb process, and this gets set up
+                            by ts.config-as.clustering copying the single common dist
+                            to a separate dir, and then the tests launch a process from
+                            that dir with -c=standalone-load-balancer.xml. We could
+                            directly provision to that dir in a separate execution and
+                            then change the ts.config-as.clustering copying, which would be
+                            more formally correct. But this is simpler for now and, at least
+                            right now, does not result in extra packages ending up in the
+                            dist we test. (Avoiding the risk of extra packages would be the
+                            reason to do a separate provisioning of this installation.) -->
+                            <execution>
+                                <id>scan-load-balancer-mod-cluster</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][base-server, io, undertow-load-balancer]==>ee-core-profile-server,undertow-load-balancer</expected-discovery>
+                                    <aggregate>wildfly-server-mod-cluster</aggregate>
+                                    <config-name>standalone-load-balancer.xml</config-name>
+                                    <add-ons>
+                                        <add-on>load-balancer</add-on>
+                                    </add-ons>
+                                    <skip-scanning>true</skip-scanning>
+                                </configuration>
+                            </execution>
+                            <!-- Also produce a standalone-ha.xml file with the same content
+                                 as standalone-full-ha.xml.
+                                 This doesn't actually get used in any tests we run with this
+                                 profile but the clustering-ha.cli script wants to modify it
+                                 so to keep it simple create the file so that doesn't fail.
+                            -->
+                            <execution>
+                                <id>scan-clustering-ha-mod-cluster</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ejb, ejb-lite, infinispan, mod_cluster, naming, servlet, web-passivation, web-server]==>ee-core-profile-server,ejb,ejb-dist-cache,infinispan,mod_cluster,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server-mod-cluster</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <add-ons>
+                                        <add-on>infinispan</add-on>
+                                        <add-on>mod_cluster</add-on>
+                                    </add-ons>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.mod_cluster</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-jpa-dist -->
+                            <execution>
+                                <id>scan-clustering-jpa-dist</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>unbound datasources error: java:jboss/datasources/H2</error>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ee-integration, h2-datasource, jaxrs, jpa, transactions]==>ee-core-profile-server,h2-datasource,jaxrs,jpa-distributed</expected-discovery>
+                                    <aggregate>wildfly-server-jpa-dist</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.all.jpa2lc</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>scan-clustering-ha-jpa-dist</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>unbound datasources error: java:jboss/datasources/H2</error>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, ee-integration, h2-datasource, jaxrs, jpa, transactions]==>ee-core-profile-server,h2-datasource,jaxrs,jpa-distributed</expected-discovery>
+                                    <aggregate>wildfly-server-jpa-dist</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.all.jpa2lc</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-ejb -->
+                            <execution>
+                                <id>scan-clustering-ejb</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>an add-on of the messaging family is expected by the messaging-activemq layer</error>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, datasources, ee-integration, ejb, ejb-lite, h2-datasource, jpa, messaging-activemq, naming, servlet, transactions, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,h2-datasource,jpa-distributed,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server-ejb</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.ejb</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>scan-clustering-ha-ejb</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>an add-on of the messaging family is expected by the messaging-activemq layer</error>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[ha][cdi, datasources, ee-integration, ejb, ejb-lite, h2-datasource, jpa, messaging-activemq, naming, servlet, transactions, web-passivation]==>ee-core-profile-server,ejb,ejb-dist-cache,h2-datasource,jpa-distributed,web-clustering,-ejb-local-cache</expected-discovery>
+                                    <aggregate>wildfly-server-ejb</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.ejb</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-jaxrs-jsf -->
+                            <execution>
+                                <id>scan-clustering-jaxrs-jsf</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][cdi, ee-integration, jsf, web-passivation]==>ee-core-profile-server,jsf,web-clustering</expected-discovery>
+                                    <aggregate>wildfly-server-jaxrs-jsf</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.jsf</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>scan-clustering-ha-jaxrs-jsf</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][cdi, ee-integration, jsf, web-passivation]==>ee-core-profile-server,jsf,web-clustering</expected-discovery>
+                                    <aggregate>wildfly-server-jaxrs-jsf</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.jsf</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-singleton-ha -->
+                            <execution>
+                                <id>scan-clustering-singleton-ha</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][servlet, singleton-local]==>ee-core-profile-server,singleton-ha</expected-discovery>
+                                    <aggregate>wildfly-server-singleton-ha</aggregate>
+                                    <config-name>standalone-full-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.singleton-ha</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>scan-clustering-ha-singleton-ha</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[ha][servlet, singleton-local]==>ee-core-profile-server,singleton-ha</expected-discovery>
+                                    <aggregate>wildfly-server-singleton-ha</aggregate>
+                                    <config-name>standalone-ha.xml</config-name>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.singleton-ha</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-web-passivation -->
+                            <execution>
+                                <id>scan-clustering-web-passivation</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[standalone][servlet, web-passivation]==>ee-core-profile-server,web-passivation</expected-discovery>
+                                    <profiles>
+                                        <profile>standalone</profile>
+                                    </profiles>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.web-passivation</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                            
+                            <!-- wildfly-server-singleton-local -->
+                            <execution>
+                                <id>scan-clustering-singleton-local</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-discovery>[standalone][servlet, singleton-local]==>ee-core-profile-server,singleton-local</expected-discovery>
+                                    <profiles>
+                                        <profile>standalone</profile>
+                                    </profiles>
+                                    <surefireExecutionForIncludedClasses>ts.surefire.clustering.singleton-local</surefireExecutionForIncludedClasses>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Provision a cloud-server with web-clustering -->
                             <execution>
@@ -1486,74 +1857,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.all
-                                             surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>infinispan</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Some tests launch an lb process, and this gets set up
-                                             by ts.config-as.clustering copying the single common dist
-                                             to a separate dir, and then the tests launch a process from
-                                             that dir with -c=standalone-load-balancer.xml. We could
-                                             directly provision to that dir in a separate execution and
-                                             then change the ts.config-as.clustering copying, which would be
-                                             more formally correct. But this is simpler for now and, at least
-                                             right now, does not result in extra packages ending up in the
-                                             dist we test. (Avoiding the risk of extra packages would be the
-                                             reason to do a separate provisioning of this installation.) -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-load-balancer.xml</name>
-                                            <layers>
-                                                <layer>management</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>infinispan</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision a server with 'mod_cluster' layer -->
@@ -1562,71 +1877,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-mod_cluster</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-mod_cluster</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Also produce a standalone-full-ha.xml file with the same content
-                                             as standalone-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>mod_cluster</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>ejb</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.mod_cluster surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>mod_cluster</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>ejb</layer>
-                                            </layers>
-                                        </config>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-load-balancer.xml</name>
-                                            <layers>
-                                                <!-- Arquillian requires 'management' to manage the container. -->
-                                                <layer>management</layer>
-                                                <layer>undertow-load-balancer</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server-mod-cluster/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision a cloud-server with web-clustering and jpa-distributed-->
@@ -1635,68 +1897,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-jpa-dist</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-jpa-dist</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.all.jpa2lc
-                                             surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                            </excluded-layers>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server-jpa-dist/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision a cloud-server with web-clustering, ejb-dist-cache and jpa-distributed-->
@@ -1705,75 +1917,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-ejb</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.ejb-xpc
-                                             surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                                <layer>ejb-local-cache</layer>
-                                            </excluded-layers>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>ejb</layer>
-                                                <layer>ejb-dist-cache</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <excluded-layers>
-                                                <layer>jpa</layer>
-                                                <layer>ejb-local-cache</layer>
-                                            </excluded-layers>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <layer>jpa-distributed</layer>
-                                                <layer>ejb</layer>
-                                                <layer>ejb-dist-cache</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server-ejb/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision a jaxrs-server with web-clustering and jsf-->
@@ -1782,61 +1937,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-jsf</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-jsf</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.jsf
-                                             surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>jsf</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <layers>
-                                                <layer>jaxrs-server</layer>
-                                                <layer>web-clustering</layer>
-                                                <layer>jsf</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server-jaxrs-jsf/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision base 'web-server' + 'core-server' with 'singleton-ha'-->
@@ -1845,61 +1957,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-clustering-singleton-ha</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-clustering-singleton-ha</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                        <feature-pack>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>wildfly-test-galleon-pack</artifactId>
-                                            <version>${project.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <!-- Provision the configuration that the ts.surefire.clustering.singleton-ha
-                                             surefire execution tests. -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-full-ha.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                                <layer>core-server</layer>
-                                                <layer>singleton-ha</layer>
-                                            </layers>
-                                        </config>
-                                        <!-- Also produce a standalone-ha.xml file with the same content
-                                             as standalone-full-ha.xml.
-                                             This doesn't actually get used in any tests we run with this
-                                             profile but the clustering-ha.cli script wants to modify it
-                                             so to keep it simple create the file so that doesn't fail.
-                                        -->
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone-ha.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                                <layer>core-server</layer>
-                                                <layer>singleton-ha</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/wildfly-server-singleton-ha/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision datasources-web-server with web-passivation -->
@@ -1908,36 +1977,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-web-passivation</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-web-passivation</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>datasources-web-server</layer>
-                                                <layer>web-passivation</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/ts.surefire.clustering.web-passivation/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                             <!-- Provision base 'web-server' + 'core-server' with 'singleton-local' -->
@@ -1946,50 +1997,24 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-singleton-local</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-singleton-local</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>web-server</layer>
-                                                <layer>core-server</layer>
-                                                <layer>singleton-local</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/ts.surefire.clustering.singleton-local/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Update server profile with shared configuration changes -->
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
+                            <!-- Update server profile with shared configuration changes -->
                             <execution>
                                 <id>ts.config-as.configure-wildfly</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2003,7 +2028,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-mod_cluster</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2023,7 +2048,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-lb-clustering-mod_cluster</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2043,7 +2068,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-ejb</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2063,7 +2088,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-jpa-dist</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2083,7 +2108,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-jsf</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2103,7 +2128,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.configure-wildfly-clustering-singleton-ha</id>
-                                <phase>process-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
                                 </goals>
@@ -2130,7 +2155,7 @@
                         <executions combine.children="append">
                             <execution>
                                 <id>ts.config-as.clustering.mod_cluster</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -2150,7 +2175,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.clustering.ejb</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -2170,7 +2195,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.clustering.jpa-dist</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -2190,7 +2215,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.clustering.jsf</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -2210,7 +2235,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.clustering.singleton-ha</id>
-                                <phase>test-compile</phase>
+                                <phase>process-test-classes</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
@@ -2628,11 +2653,14 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
-                <bootable-jar-jpa-distributed-packaging.phase>process-test-resources</bootable-jar-jpa-distributed-packaging.phase>
-                <bootable-jar-load-balancer-packaging.phase>process-test-resources</bootable-jar-load-balancer-packaging.phase>
-                <bootable-jar-configure-windows-paths.phase>generate-test-sources</bootable-jar-configure-windows-paths.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-jpa-distributed-packaging.phase>test-compile</bootable-jar-jpa-distributed-packaging.phase>
+                <bootable-jar-load-balancer-packaging.phase>test-compile</bootable-jar-load-balancer-packaging.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <glow.phase>test-compile</glow.phase>
+                <ts.config-as.configure-wildfly.phase>none</ts.config-as.configure-wildfly.phase>
+                <ts.config-as.configure-lb.phase>none</ts.config-as.configure-lb.phase>
+                <ts.config-as.clustering.phase>none</ts.config-as.clustering.phase>
             </properties>
             <build>
                 <plugins>
@@ -2647,42 +2675,6 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Disable the standard configurations -->
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <id>ts.config-as.configure-lb</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>ts.config-as.configure-wildfly</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Disable copying the generated resources into server directories -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.config-as.clustering</id>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -2791,10 +2783,10 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
-                <bootable-jar-jpa-distributed-packaging.phase>process-test-resources</bootable-jar-jpa-distributed-packaging.phase>
-                <bootable-jar-load-balancer-packaging.phase>process-test-resources</bootable-jar-load-balancer-packaging.phase>
-                <bootable-jar-configure-windows-paths.phase>generate-test-sources</bootable-jar-configure-windows-paths.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-jpa-distributed-packaging.phase>test-compile</bootable-jar-jpa-distributed-packaging.phase>
+                <bootable-jar-load-balancer-packaging.phase>test-compile</bootable-jar-load-balancer-packaging.phase>
+                <glow.phase>test-compile</glow.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>

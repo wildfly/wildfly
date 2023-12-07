@@ -26,7 +26,7 @@ public class SinglePostConstructInvocationTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "single-postconstruct-invocation-test");
+        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "single-postconstruct-invocation-test.jar");
         archive.addClasses(Client.class, Controller.class);
         return archive;
     }

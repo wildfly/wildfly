@@ -516,7 +516,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.copy-mgmt-users.webservices</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals><goal>copy-resources</goal></goals>
                                 <inherited>true</inherited>
                                 <configuration>
@@ -532,7 +532,7 @@
                             </execution>
                             <execution>
                                 <id>ts.config-as.copy-mgmt-users.webservices-ejb</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-test-classes</phase>
                                 <goals><goal>copy-resources</goal></goals>
                                 <inherited>true</inherited>
                                 <configuration>
@@ -551,84 +551,61 @@
 
                     <!-- Server provisioning and configuration. -->
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.glow</groupId>
+                        <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.ee.galleon.pack.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>scan-ws</id>
+                                <goals>
+                                    <goal>scan</goal>
+                                </goals>
+                                <phase>test-compile</phase>
+                                <configuration>
+                                    <expected-errors>
+                                        <error>ambiguous resource injection. Enable verbose output to see the locations.</error>
+                                        <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                                    </expected-errors>
+                                    <expected-discovery>[cdi, ee-integration, ejb, ejb-lite, jsf, naming, servlet, webservices]==>ee-core-profile-server,ejb,jsf,webservices</expected-discovery>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>webservices-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-webservices</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-webservices</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>webservices</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>webservices-ejb-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-webservices-ejb</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>ejb</layer>
-                                                <layer>webservices</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                              </execution>
                            </executions>
                     </plugin>
                     <plugin>
@@ -674,71 +651,6 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
-                                     <excludes>
-                                        <!-- This requires JSF layer -->
-                                        <exclude>org/jboss/as/test/integration/ws/cdi/CdiJsfWebServicesTestCase.java</exclude>
-                                        <!-- requries jboss-ejb-policy --> 
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/EJBEndpointAuthenticationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/authentication/EJBEndpointSecuredWSDLAccessTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerSecurityPropagationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSTrustTestCase.java</exclude>
-                                        <!-- requires ejb/remoting layer -->
-                                        <exclude>org/jboss/as/test/integration/ws/ejb/SimpleStatelessWebserviceEndpointTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefEarTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</exclude>
-                                    </excludes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>ws-integration-ejb-layer.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables combine.children="append">
-                                        <jboss.install.dir>${basedir}/target/wildfly-webservices-ejb</jboss.install.dir>
-                                        <jboss.home>${project.build.directory}/wildfly-webservices-ejb</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-webservices-ejb</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-webservices-ejb</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-webservices-ejb</jboss.dist>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly-webservices-ejb/modules${path.separator}${basedir}/target/modules</module.path>
-                                        
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                        <!-- EJB client library hack, see WFLY-4973-->
-                                        <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
-
-                                        <!-- SSL settings -->
-                                        <cxf.tls-client.disableCNCheck>true</cxf.tls-client.disableCNCheck>
-                                        <javax.net.ssl.trustStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/test.truststore</javax.net.ssl.trustStore>
-                                        <javax.net.ssl.trustStorePassword>changeit</javax.net.ssl.trustStorePassword>
-                                        <javax.net.ssl.trustStoreType>jks</javax.net.ssl.trustStoreType>
-                                        <javax.net.ssl.keyStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/client.keystore</javax.net.ssl.keyStore>
-                                        <javax.net.ssl.keyStorePassword>changeit</javax.net.ssl.keyStorePassword>
-                                        <javax.net.ssl.keyStoreType>jks</javax.net.ssl.keyStoreType>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-webservices-ejb</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-                                     <includes>
-                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointAuthenticationTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointNoClassLevelSecurityAnnotationAuthenticationTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/authentication/EJBEndpointSecuredWSDLAccessTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/ejb/SimpleStatelessWebserviceEndpointTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefEarTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefSevletTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/serviceref/ServiceRefTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/wsse/trust/WSBearerElytronSecurityPropagationTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ws/wsse/usernametoken/UsernameTokenElytronTestCase.java</include>
-                                    </includes>
                                 </configuration>
                             </execution>
                         </executions>

@@ -1,9 +1,26 @@
 /*
- * Copyright The WildFly Authors
- * SPDX-License-Identifier: Apache-2.0
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2020, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.test.integration.microprofile.jwt.ejb;
+package org.wildfly.test.integration.microprofile.jwt;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -17,39 +34,15 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
 /**
- * A test case for an Jakarta Enterprise Beans endpoint secured using the MP-JWT mechanism and invoking a
- * second Jakarta Enterprise Beans with role restrictions.
+ * A base for MicroProfile JWT test cases.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
-public class JWTEJBTestCase {
-
-    private static final String DEPLOYMENT_NAME = JWTEJBTestCase.class.getSimpleName() + ".war";
-
-    @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
-                .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addClasses(JWTEJBTestCase.class)
-                .addClasses(App.class, BeanEndPoint.class, TargetBean.class)
-                .addAsManifestResource(BaseJWTCase.class.getPackage(), "microprofile-config.properties", "microprofile-config.properties")
-                .addAsManifestResource(BaseJWTCase.class.getPackage(), "public.pem", "public.pem");
-    }
+public abstract class BaseJWTCase {
 
     private static final URL KEY_LOCATION = BaseJWTCase.class.getResource("private.pem");
 
@@ -69,6 +62,16 @@ public class JWTEJBTestCase {
 
     @ArquillianResource
     private URL deploymentUrl;
+
+    @Test
+    public void testAuthorizationRequired() throws Exception {
+        HttpGet httpGet = new HttpGet(deploymentUrl.toString() + ROOT_PATH + SUBSCRIPTION);
+        CloseableHttpResponse httpResponse = httpClient.execute(httpGet);
+
+        assertEquals("Authorization required", 403, httpResponse.getStatusLine().getStatusCode());
+
+        httpResponse.close();
+    }
 
     @Test
     public void testAuthorized() throws Exception {
