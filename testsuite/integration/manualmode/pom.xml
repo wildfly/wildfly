@@ -34,8 +34,8 @@
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
 
-        <multi.channel.provisioning.phase>process-test-resources</multi.channel.provisioning.phase>
         <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
+        <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
     </properties>
 
     <dependencies>
@@ -402,7 +402,7 @@
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>${multi.channel.provisioning.phase}</phase>
+                        <phase>${channel.provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
                             <record-provisioning-state>false</record-provisioning-state>
@@ -415,6 +415,44 @@
                                 <!-- TODO needing to add this seems not user-friendly -->
                                 <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
                             </galleon-options>
+                        <channels>
+                        <channel>
+                            <manifest>
+                                <groupId>${ee.maven.groupId}</groupId>
+                                <artifactId>wildfly-ee-channel</artifactId>
+                                <version>${ee.maven.version}</version>
+                            </manifest>
+                        </channel>
+                        <channel>
+                            <manifest>
+                                 <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
+                            </manifest>
+                        </channel>
+                        </channels>
+                        <feature-packs>
+                            <feature-pack>
+                                <groupId>${ee.maven.groupId}</groupId>
+                                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                <version>${ee.maven.version}</version>
+                            </feature-pack>
+                        </feature-packs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>channel-provisioning-comparison</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${channel.provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-from-channel</provisioning-dir>
+                            <record-provisioning-state>true</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>true</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <galleon-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </galleon-options>
                             <channels>
                                 <channel>
                                     <manifest>
@@ -423,17 +461,15 @@
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
-                                <channel>
-                                    <manifest>
-                                        <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
-                                    </manifest>
-                                </channel>
                             </channels>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
                                     <artifactId>wildfly-ee-galleon-pack</artifactId>
                                     <version>${ee.maven.version}</version>
+                                    <included-packages>
+                                        <name>docs.examples.configs</name>
+                                    </included-packages>
                                 </feature-pack>
                             </feature-packs>
                         </configuration>
@@ -521,6 +557,7 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -578,6 +615,10 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
+                            <execution>
+                                <id>channel-provisioning-comparison</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -603,8 +644,8 @@
                 </property>
             </activation>
             <properties>
-                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
-                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
                 <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
                 <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
             </properties>
@@ -617,8 +658,8 @@
                 </property>
             </activation>
             <properties>
-                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
-                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
                 <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
                 <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
             </properties>
