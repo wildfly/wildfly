@@ -179,6 +179,18 @@
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-reactive-messaging-amqp</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
                 <version>${full.maven.version}</version>
                 <exclusions>
@@ -895,6 +907,17 @@
             </dependency>
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-mutiny-vertx-core</artifactId>
                 <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
                 <exclusions>
@@ -965,7 +988,26 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-api</artifactId>
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-amqp</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-kafka</artifactId>
@@ -992,6 +1034,18 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-provider</artifactId>
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-amqp-client</artifactId>
+                <version>${version.io.vertx.vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1082,6 +1136,18 @@
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-kafka-client</artifactId>
                 <version>${version.io.vertx.vertx-kafka-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-proton</artifactId>
+                <version>${version.io.vertx.vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

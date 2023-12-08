@@ -37,7 +37,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
 import org.wildfly.extension.microprofile.reactive.messaging.deployment.ReactiveMessagingDependencyProcessor;
 import org.wildfly.microprofile.reactive.messaging.common.DynamicDeploymentProcessorAdder;
-import org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.ElytronSSLContextRegistry;
+import org.wildfly.microprofile.reactive.messaging.common.security.ElytronSSLContextRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

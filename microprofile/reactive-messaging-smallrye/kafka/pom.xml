@@ -20,7 +20,7 @@
 
 
     <artifactId>wildfly-microprofile-reactive-messaging-kafka</artifactId>
-    <name>WildFly: MicroProfile Reactive Messaging Kakfa</name>
+    <name>WildFly: MicroProfile Reactive Messaging Kafka</name>
 
     <dependencies>
         <dependency>
@@ -30,10 +30,6 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.microprofile.config</groupId>
-            <artifactId>microprofile-config-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
