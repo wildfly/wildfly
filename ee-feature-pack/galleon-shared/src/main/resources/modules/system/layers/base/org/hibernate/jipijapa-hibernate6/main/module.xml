@@ -25,7 +25,7 @@
 
         <module name="org.hibernate"/>
         <module name="org.hibernate.commons-annotations"/>
-        <module name="org.infinispan" services="import"/>
+        <module name="org.infinispan.core" services="import"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.infinispan.hibernate-cache" services="import"/>
         <module name="org.jboss.as.jpa.spi"/>

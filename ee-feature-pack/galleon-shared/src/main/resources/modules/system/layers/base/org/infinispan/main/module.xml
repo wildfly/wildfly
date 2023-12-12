@@ -5,31 +5,22 @@
   -->
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan">
 
-    <resources>
-        <artifact name="${org.infinispan:infinispan-core-jakarta}"/>
-    </resources>
-
     <dependencies>
-        <module name="java.management"/>
-        <module name="java.naming"/>
-        <module name="java.transaction.xa"/>
-        <module name="jakarta.transaction.api"/>
-        <module name="jdk.unsupported"/>
-        <module name="com.github.ben-manes.caffeine"/>
-        <module name="io.reactivex.rxjava3.rxjava"/>
-        <module name="org.infinispan.persistence.jdbc" optional="true"/>
-        <module name="org.infinispan.persistence.remote" optional="true"/>
-        <module name="org.infinispan.client.hotrod" optional="true"/>
-        <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.component.annotations"/>
-        <module name="org.infinispan.protostream"/>
-        <module name="org.infinispan.protostream.types"/>
-        <module name="io.smallrye.jandex"/>
-        <module name="org.jboss.logging"/>
-        <!-- WFLY-14283 Allow Infinispan to resolve exceptions containing JBoss Marshalling TraceInformation -->
-        <module name="org.jboss.marshalling" optional="true"/>
-        <module name="org.jboss.threads"/>
-        <module name="org.jgroups" optional="true"/>
-        <module name="org.reactivestreams"/>
+        <module name="org.infinispan.core">
+            <exports>
+                <include-set>
+                    <path name="org/infinispan"/>
+                    <path name="org/infinispan/manager"/>
+                    <path name="org/infinispan/configuration/cache"/>
+                    <path name="org/infinispan/configuration/global"/>
+                    <path name="org/infinispan/distribution"/>
+                    <path name="org/infinispan/notifications"/>
+                    <path name="org/infinispan/notifications/cachelistener/event"/>
+                    <path name="org/infinispan/notifications/cachemanagerlistener/event"/>
+                    <path name="org/infinispan/remoting/transport"/>
+                    <path name="org/infinispan/util/concurrent"/>
+                </include-set>
+            </exports>
+        </module>
     </dependencies>
 </module>
