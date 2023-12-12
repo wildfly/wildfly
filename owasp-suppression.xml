@@ -1155,4 +1155,19 @@
         <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-45960</vulnerabilityName>
     </suppress>
+    <!-- Red Hat marked CVE-2023-4586 as Moderate Impact -->
+    <suppress>
+        <notes><![CDATA[
+   file name: vertx-core-4.2.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.vertx/vertx\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: infinispan-client-hotrod-13.0.10.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-client\-hotrod@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
+    </suppress>
 </suppressions>
