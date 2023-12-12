@@ -222,14 +222,13 @@ And then you have tests that run against each.
 == How to get the tests to main branch
 
 * First of all, *be sure to read the "Before you add a test" section*.
-* *Fetch* the newest mater:
-`git fetch upstream # Provided you have the jbossas/jbossas GitHub repo`
+* *Fetch* the newest main:
+`git fetch upstream # Provided you have the wildfly/wildfly GitHub repo`
 `as a remote called 'upstream'.`
 * *Rebase* your branch: git checkout WFLY-1234-your-branch; git rebase
 upstream/main
 * *Run* *_whole_* *testsuite* (integration-tests -DallTests). You may
-use
-https://jenkins.mw.lab.eng.bos.redhat.com/hudson/job/wildfly-as-testsuite-RHEL-matrix-openJDK7/lastCompletedBuild/testReport/.
+use https://ci.wildfly.org/viewType.html?buildTypeId=WF_Nightly.
 ** If any tests fail and they do not fail in main, fix it and go back
 to the "Fetch" step.
 * *Push* to a new branch in your GitHub repo:
@@ -244,8 +243,6 @@ the diff will be visible under your description.
 * *Keep the branch rebased daily* until it's merged (see the Fetch
 step). If you don't, you're dramatically decreasing chance to get it
 merged.
-* There's a mailing list, jbossas-pull-requests, which is notified of
-every pull-request.
 * You might have someone with merge privileges to cooperate with you, so
 they know what you're doing, and expect your pull request.
 * When your pull request is reviewed and merged, you'll be notified by
