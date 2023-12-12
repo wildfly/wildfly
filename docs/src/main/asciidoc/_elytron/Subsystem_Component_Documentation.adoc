@@ -24,8 +24,10 @@ Once an identity has been loaded for authorization decisions the identity will h
 :leveloffset: +1
 
 include::components/Aggregate_Security_Realm.adoc[]
+include::components/Distributed_Security_Realm.adoc[]
+include::components/Failover_Security_Realm.adoc[]
 include::components/Filesystem_Security_Realm.adoc[]
-include::components/JDBC_Security_Realm.adoc[]
 include::components/JAAS_Security_Realm.adoc[]
+include::components/JDBC_Security_Realm.adoc[]
 
 :leveloffset: -1

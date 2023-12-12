@@ -1,5 +1,5 @@
-[[distributed-realm]]
-= Distributed Realm
+[[distributed-security-realm]]
+= Distributed Security Realm
 
 The distributed realm allows combining identities located across multiple security realms of any type into a single security realm.
 
