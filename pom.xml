@@ -544,7 +544,7 @@
         <version.org.wildfly.http-client>2.0.6.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
-        <version.org.wildfly.transaction.client>3.0.2.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.transaction.client>3.0.3.Final</version.org.wildfly.transaction.client>
         <preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>1.0.0.Final</preview.version.org.wildfly.wildfly-ee-9-deployment-transformer>
         <version.software.amazon.awssdk>2.20.126</version.software.amazon.awssdk>
         <version.software.amazon.eventstream>1.0.1</version.software.amazon.eventstream>
