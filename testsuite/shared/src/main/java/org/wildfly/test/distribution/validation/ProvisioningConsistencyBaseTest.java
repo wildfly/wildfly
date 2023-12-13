@@ -19,15 +19,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.logging.Logger;
-import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -64,11 +61,6 @@ public abstract class ProvisioningConsistencyBaseTest {
         return "wildfly-" + System.getProperty("standard.dist.version");
     }
 
-    @BeforeClass
-    public static void ignoreWindows() {
-        // Ignore until WFLY-18844 is fixed
-        Assume.assumeFalse(System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("windows"));
-    }
 
     protected ProvisioningConsistencyBaseTest(String targetDist) {
         DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
