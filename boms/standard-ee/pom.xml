@@ -49,6 +49,12 @@
                  Keep sorted!
              -->
 
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>

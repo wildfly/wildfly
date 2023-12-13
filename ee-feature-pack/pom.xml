@@ -27,10 +27,12 @@
     <name>WildFly: EE Feature Pack Parent</name>
 
     <modules>
+        <module>channel</module>
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
         <module>layer-metadata-tests</module>
+        <module>product-conf</module>
     </modules>
 
     <dependencyManagement>

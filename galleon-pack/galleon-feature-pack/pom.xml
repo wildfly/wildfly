@@ -147,9 +147,7 @@
                         <configuration>
                             <release-name>${full.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                            <task-properties>
-                                <product.release.version>${full.dist.product.release.version}</product.release.version>
-                            </task-properties>
+                            <generate-channel-manifest>true</generate-channel-manifest>
                         </configuration>
                     </execution>
                 </executions>
