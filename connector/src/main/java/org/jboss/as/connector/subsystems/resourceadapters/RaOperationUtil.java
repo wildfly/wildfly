@@ -486,7 +486,7 @@ public class RaOperationUtil {
                 }
                 final List<VirtualFile> jarChildren = deploymentRoot.getChildren(new SuffixMatchFilter(".jar", VisitorAttributes.LEAVES_ONLY));
                 for (VirtualFile subJarRoot: jarChildren) {
-                    Closeable subClosable = VFS.mountZip(subJarRoot, subJarRoot, TempFileProviderService.provider());
+                    Closeable subClosable = VFS.mountZip(subJarRoot.getPhysicalFile(), subJarRoot, TempFileProviderService.provider());
                     ResourceRoot subResRoot = new ResourceRoot(subJarRoot, MountHandle.create(subClosable));
                     ResourceRootIndexer.indexResourceRoot(subResRoot);
                     Index subIndex = subResRoot.getAttachment(Attachments.ANNOTATION_INDEX);
