@@ -2380,6 +2380,7 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
+                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
@@ -2468,6 +2469,7 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>metrics</layer>
                                                 <layer>mod_cluster</layer>
+                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>

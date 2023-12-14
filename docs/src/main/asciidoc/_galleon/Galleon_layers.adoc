@@ -458,6 +458,13 @@ link:#gal.opentelemetry[opentelemetry]
 |
 link:#gal.web-server[web-server] +
 
+|[[gal.mvc-krazo]]mvc-krazo
+|Support for Jakarta MVC (_WildFly Preview only unless the  link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] is used_)
+|
+link:#gal.bean-validation[bean-validation] +
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs-core[jaxrs-core] +
+
 |[[gal.naming]]naming
 |Support for JNDI.
 |
