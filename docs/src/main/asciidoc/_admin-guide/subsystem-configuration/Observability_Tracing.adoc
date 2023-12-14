@@ -28,10 +28,22 @@ Systems administrators can configure a number of aspects of OpenTelemetry: the e
 
 The exporter can be selected and configured using the `exporter` child element, which supports these attributes:
 
-* `exporter`: WildFly supports two different exporters:
-** `jaeger`: The default exporter
-** `otlp`: The OpenTelemetry protocol
-* `endpoint`: The URL via which OpenTelemetry will push traces. The default is Jaeger's gRPC-based endpoint, http://localhost:14250
+* `exporter`: WildFly currently supports only one exporter
+** `otlp`: The default, which use the OpenTelemetry protocol
+* `endpoint`: The URL via which OpenTelemetry will push traces. The default is OTLP's gRPC-based endpoint, `http://localhost:4317`
+
+.IMPORTANT CHANGE
+[NOTE]
+====
+Earlier versions of WildFly supported `jaeger` as a valid exporter type. Jaeger support, however, has been dropped by
+the OpenTelemetry project upstream, so its support has been removed from WildFly as well. Any server configurations with
+`jaeger` still configured will fail to start the `opentelemetry` subsystem and apps using OpenTelemetry will fail to
+deploy  until the server is reconfigured to use `otlp`. You can, however, start the server in admin-only mode in order
+to reconfigure the value. Of course, editing the  XML config file is also a valid option should you prefer that approach.
+
+Note also that OTLP has a different default value for the endpoint, so that will need to be configured appropriately for
+your environment.
+====
 
 === Span Processor
 The span process is configured via the `span-processor` element, which supports the following attributes:
@@ -64,8 +76,8 @@ default values, so what you see in the configuration file may look different):
 <subsystem xmlns="urn:wildfly:opentelemetry:1.0"
         service-name="example">
     <exporter
-        type="jaeger"
-        endpoint="http://localhost:14250"/>
+        type="otlp"
+        endpoint="http://localhost:4317"/>
     <span-processor
         type="batch"
         batch-delay="4500"

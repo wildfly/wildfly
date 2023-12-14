@@ -15,8 +15,9 @@ import org.jboss.staxmapper.IntVersion;
 
 public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<OpenTelemetrySubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly 25
+    VERSION_1_1(1, 1), // WildFly 31
     ;
-    public static final OpenTelemetrySubsystemSchema CURRENT = VERSION_1_0;
+    public static final OpenTelemetrySubsystemSchema CURRENT = VERSION_1_1;
 
     private final VersionedNamespace<IntVersion, OpenTelemetrySubsystemSchema> namespace;
 

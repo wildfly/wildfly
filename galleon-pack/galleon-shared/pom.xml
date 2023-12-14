@@ -57,9 +57,12 @@
         <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></dependency>
         <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java-util</artifactId></dependency>
 
-        <dependency><groupId>com.squareup.okhttp3</groupId><artifactId>okhttp</artifactId></dependency>
-
         <dependency><groupId>com.squareup.okio</groupId><artifactId>okio-jvm</artifactId></dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+        </dependency>
 
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-core</artifactId></dependency>
         <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-otlp</artifactId></dependency>
@@ -73,7 +76,6 @@
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-events</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-jaeger</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
@@ -83,14 +85,13 @@
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-trace</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-sender-okhttp</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-semconv</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
-        
+
         <dependency><groupId>io.perfmark</groupId><artifactId>perfmark-api</artifactId></dependency>
 
         <dependency>
@@ -316,6 +317,7 @@
 
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-api</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-cdi</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-exporters</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-propagation</artifactId></dependency>
         <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-rest</artifactId></dependency>
 
@@ -461,6 +463,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-grpc-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-grpc-common</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
@@ -586,9 +596,6 @@
             <artifactId>reactive-streams</artifactId>
         </dependency>
 
-        <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib</artifactId></dependency>
-        <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib-common</artifactId></dependency>
-
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>lra-service-base</artifactId>
@@ -646,9 +653,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib-jdk8</artifactId></dependency>
-        <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib-jdk7</artifactId></dependency>
 
         <dependency>
             <groupId>org.lz4</groupId>
