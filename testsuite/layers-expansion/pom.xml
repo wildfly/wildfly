@@ -528,6 +528,62 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>microprofile-reactive-messaging-amqp</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/microprofile-reactive-messaging-amqp</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-reactive-messaging-amqp</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>microprofile-reactive-messaging-kafka</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/microprofile-reactive-messaging-kafka</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.galleon.pack.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>microprofile-reactive-messaging-kafka</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>microprofile-standalone-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
