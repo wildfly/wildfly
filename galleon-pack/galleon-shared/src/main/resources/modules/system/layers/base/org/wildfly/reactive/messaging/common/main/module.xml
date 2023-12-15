@@ -3,7 +3,6 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-
 <module xmlns="urn:jboss:module:1.9" name="org.wildfly.reactive.messaging.common">
     <properties>
         <property name="jboss.api" value="private"/>
@@ -14,6 +13,13 @@
     </resources>
 
     <dependencies>
+        <module name="io.smallrye.config"/>
+        <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.reactive.messaging.common"/>
+        <module name="org.wildfly.reactive.messaging.config"/>
     </dependencies>
 </module>

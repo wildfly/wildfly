@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
+import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>

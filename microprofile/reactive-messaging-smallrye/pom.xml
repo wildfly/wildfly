@@ -24,9 +24,10 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>amqp</module>
         <module>common</module>
-        <module>extension</module>
         <module>config</module>
+        <module>extension</module>
         <module>kafka</module>
     </modules>
 </project>

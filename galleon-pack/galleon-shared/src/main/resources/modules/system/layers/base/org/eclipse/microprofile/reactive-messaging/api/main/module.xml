@@ -17,6 +17,7 @@
         <module name="jakarta.enterprise.api" />
         <!-- Needed by the temporary smallrye-reactive-messaging-api -->
         <module name="io.opentelemetry.api"/>
+        <module name="io.opentelemetry.context"/>
         <module name="org.reactivestreams"/>
         <module name="io.smallrye.reactive.mutiny"/>
     </dependencies>

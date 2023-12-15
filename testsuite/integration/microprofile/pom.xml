@@ -231,6 +231,37 @@
             <version>${version.org.apache.kafka}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Dependencies for embedded artemis -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-amqp-protocol</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-socks</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <!-- Needed if people use compression.type=zstd in their Kafka config -->
             <groupId>com.github.luben</groupId>
@@ -369,7 +400,7 @@
                         </goals>
                         <phase>${ts.glow.phase}</phase>
                         <configuration>
-                            <expected-discovery>[cdi, ee-integration, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, opentelemetry, transactions]==>ee-core-profile-server,ejb-lite,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry</expected-discovery>
+                            <expected-discovery>[cdi, ee-integration, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, opentelemetry, transactions]==>ee-core-profile-server,ejb-lite,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry</expected-discovery>
                         </configuration>
                     </execution>
                 </executions>
