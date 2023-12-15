@@ -37,6 +37,7 @@
         <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
         <!-- This module tests expanded funtionality, so use a bom that includes expansion dependencies -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
     </properties>
 
     <dependencyManagement>
@@ -254,6 +255,68 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <executions>
+                    <execution>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>channel-provisioning-comparison</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${channel.provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-from-channel</provisioning-dir>
+                            <record-provisioning-state>true</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>true</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <galleon-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </galleon-options>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${ee.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee-channel</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${full.maven.groupId}</groupId>
+                                        <artifactId>wildfly-channel</artifactId>
+                                        <version>${full.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                            <feature-packs>
+                                <feature-pack>
+                                    <transitive>true</transitive>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <version>${ee.maven.version}</version>
+                                    <included-packages>
+                                        <name>docs.examples.configs</name>
+                                    </included-packages>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>${full.maven.groupId}</groupId>
+                                    <artifactId>wildfly-galleon-pack</artifactId>
+                                    <version>${full.maven.version}</version>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Surefire. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -283,6 +346,7 @@
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
+                        <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -330,19 +394,6 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <phase>none</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
@@ -354,8 +405,43 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>channel-provisioning-comparison</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>external.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>external.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>internal.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>internal.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+            </properties>
         </profile>
     </profiles>
 </project>

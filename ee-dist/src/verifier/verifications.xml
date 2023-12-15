@@ -17,6 +17,8 @@
     7) Schemas coming from a module distributed directly by the ee-galleon-pack are copied to docs/schema
     8) Schemas coming from a module formerly distributed by the transitive servlet-galleon-pack are copied to docs/schema
     9) Schemas coming from a module formerly distributed by the transitive core-galleon-pack are copied to docs/schema
+   10) the .galleon dir exists
+   11) no .galleon/history dir exists
 -->
   <files>
     <file>
@@ -102,6 +104,14 @@
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-io_3_0.xsd</location>
       <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
+      <exists>false</exists>
     </file>
   </files>
 </verifications>

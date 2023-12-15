@@ -15,6 +15,8 @@
     5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml exists
     6) the module.xml above contains to 'org.wildfly:wildfly-ee-feature-pack-product-conf'
     7) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    8) the .galleon dir exists
+    9) no .galleon/history dir exists
 -->
   <files>
     <file>
@@ -87,6 +89,14 @@
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
       <exists>false</exists>
     </file>
   </files>

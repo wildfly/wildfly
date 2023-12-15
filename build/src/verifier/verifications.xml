@@ -14,6 +14,8 @@
     4) standalone/configuration/standalone.xml must exist
     5) modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/module.xml exists
     6) the module.xml above contains to 'org.wildfly:wildfly-preview-feature-pack-product-conf'
+    7) the .galleon dir exists
+    8) no .galleon/history dir exists
 -->
   <files>
     <file>
@@ -39,6 +41,14 @@
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
       <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
+      <exists>false</exists>
     </file>
   </files>
 </verifications>
