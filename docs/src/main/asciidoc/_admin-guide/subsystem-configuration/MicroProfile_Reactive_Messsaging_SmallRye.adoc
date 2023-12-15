@@ -311,8 +311,7 @@ mp.messaging.incoming.from.address=my-topic
 
 Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
 
-
-'amqp-host=localhost' '`amqp-port=5672` points the connector to an AMQP broker running on `localhost:5672`. As before we could also have done these for an individual channel by for example specifying  `mp.messaging.outgoing.to.host=localhost` instead. If the host is not specified, it defaults to `localhost.
+The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an AMQP broker running on `localhost:5672`. As before we could also have done these for an individual channel by for example specifying  `mp.messaging.outgoing.to.host=localhost` instead. If the host is not specified, it defaults to `localhost`.
 
 `mp.messaging.outgoing.to.connector=smallrye-amqp` says that we want to use AMQP to back the `to` channel. Note that the value `smallrye-amqp` is SmallRye Reactive Messaging specific, and will only be understood if the AMQP connector is enabled.
 
@@ -329,6 +328,7 @@ The prefixes discussed above are stripped off before passing the property to the
 
 
 ===== Connecting to a secure AMQP broker
+
 If connecting to a Kafka instance secured with SSL and SASL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to-amqp.` and `mp.messaging.incoming.from-amqp.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-kafka` prefix).
 
 [source]
