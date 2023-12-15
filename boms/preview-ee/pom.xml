@@ -60,7 +60,7 @@
 
             <dependency>
                 <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>

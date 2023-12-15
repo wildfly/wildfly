@@ -99,7 +99,7 @@
 
         <dependency>
             <groupId>org.hibernate.search</groupId>
-            <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
+            <artifactId>hibernate-search-mapper-orm</artifactId>
             <scope>provided</scope>
         </dependency>
 
