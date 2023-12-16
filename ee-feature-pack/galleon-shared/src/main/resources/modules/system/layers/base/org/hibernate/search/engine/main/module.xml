@@ -23,6 +23,6 @@
         <module name="org.hibernate.search.backend.elasticsearch" optional="true" services="import"/>
         <module name="org.hibernate.search.mapper.pojo" optional="true" services="import"/>
         <module name="org.hibernate.search.mapper.orm" optional="true" services="import"/>
-        <module name="org.hibernate.search.mapper.orm.coordination.outboxpolling" optional="true" services="import"/>
+        <module name="org.hibernate.search.mapper.orm.outboxpolling" optional="true" services="import"/>
     </dependencies>
 </module>
