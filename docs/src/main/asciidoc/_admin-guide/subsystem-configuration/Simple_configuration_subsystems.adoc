@@ -15,6 +15,7 @@ element in the configuration
 [source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
+<subsystem xmlns="urn:jboss:domain:mvc-krazo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
 ----
@@ -27,14 +28,16 @@ The presence of each of these turns on a piece of functionality:
 
 |jdr |Enables the gathering of diagnostic data for use in remote
 analysis of error conditions. Although the data is in a simple format
-and could be useful to anyone, primarily useful for JBoss EAP
+and could be useful to anyone, it is primarily useful for JBoss EAP
 subscribers who would provide the data to Red Hat when requesting
-support
+support.
+
+|mvc-krazo| Provides support for use of Jakarta MVC in deployments. Currently only provided in WildFly Preview, although `preview` stability level support can be added to standard WildFly by including the link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] Galleon feature pack in your server provisioning configuration.
 
 |pojo |Enables the deployment of applications containing JBoss
 Microcontainer services, as supported by previous versions of JBoss
-Application Server
+Application Server.
 
 |sar |Enables the deployment of .SAR archives containing MBean services,
-as supported by previous versions of JBoss Application Server
+as supported by previous versions of JBoss Application Server.
 |=======================================================================

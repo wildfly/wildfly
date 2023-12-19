@@ -660,6 +660,35 @@
                                 </configuration>
                             </execution>
 
+                            <execution>
+                                <id>mvc-krazo-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>${provisioning.phase.preview.only}</phase>
+                                <configuration>
+                                    <install-dir>${layers.install.dir}/mvc-krazo</install-dir>
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${full.maven.groupId}</groupId>
+                                            <artifactId>wildfly-preview-feature-pack</artifactId>
+                                            <version>${full.maven.version}</version>
+                                            <inherit-configs>false</inherit-configs>
+                                            <inherit-packages>false</inherit-packages>
+                                        </feature-pack>
+                                    </feature-packs>
+                                    <configurations>
+                                        <config>
+                                            <model>standalone</model>
+                                            <name>standalone.xml</name>
+                                            <layers>
+                                                <layer>mvc-krazo</layer>
+                                            </layers>
+                                        </config>
+                                    </configurations>
+                                </configuration>
+                            </execution>
+
                             <!--
                                 All layers provisioned all together
                              -->
@@ -954,6 +983,7 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
+                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
@@ -1059,6 +1089,7 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
+                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>

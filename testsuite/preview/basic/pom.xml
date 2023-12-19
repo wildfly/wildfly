@@ -33,12 +33,13 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
-        <glow.cloud-profile.phase>none</glow.cloud-profile.phase>
-        <glow.jpa.phase>none</glow.jpa.phase>
+        <glow.mvc.phase>none</glow.mvc.phase>
         <glow.hibernate-search.phase>none</glow.hibernate-search.phase>
-        <ts.copy-wildfly-standalone-embedded-broker.phase>generate-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
+        <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-resources</ts.copy-wildfly-standalone-embedded-broker.phase>
         <cloud-profile-provisioning.phase>none</cloud-profile-provisioning.phase>
+        <full-provisioning.phase>generate-test-resources</full-provisioning.phase>
         <hibernate-search-provisioning.phase>none</hibernate-search-provisioning.phase>
+        <mvc-provisioning.phase>none</mvc-provisioning.phase>
     </properties>
 
     <dependencies>
@@ -50,6 +51,11 @@
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mvc</groupId>
+            <artifactId>jakarta.mvc-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -104,6 +110,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-controller</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
             <scope>test</scope>
         </dependency>
@@ -111,6 +122,20 @@
 
     <build>
         <plugins>
+            <!-- Disable the standard copy-based provisioning -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions combine.children="append">
+                    <execution>
+                        <id>ts.copy-wildfly</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -135,28 +160,15 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>scan-cloud-profile-layers</id>
+                        <id>scan-mvc-layers</id>
                         <goals>
                             <goal>scan</goal>
                         </goals>
-                        <phase>${glow.cloud-profile.phase}</phase>
+                        <phase>${glow.mvc.phase}</phase>
+                        <!--<phase>none</phase>-->
                         <configuration>
-                            <expected-discovery>[datasources, h2-datasource, h2-default-datasource]==>ee-core-profile-server,h2-default-datasource</expected-discovery>
-                            <surefire-execution-for-included-classes>cloud-server.layer.surefire</surefire-execution-for-included-classes>
-                            <add-ons>
-                                <add-on>h2-database:default</add-on>
-                            </add-ons>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>scan-jpa-layers</id>
-                        <goals>
-                            <goal>scan</goal>
-                        </goals>
-                        <phase>${glow.jpa.phase}</phase>
-                        <configuration>
-                            <expected-discovery>[datasources, h2-datasource, h2-default-datasource]==>ee-core-profile-server,h2-default-datasource</expected-discovery>
-                            <surefire-execution-for-included-classes>jpa-layers.surefire</surefire-execution-for-included-classes>
+                            <expected-discovery>[cdi, datasources, h2-datasource, h2-default-datasource, jaxrs, mvc-krazo]==>ee-core-profile-server,h2-default-datasource,jaxrs,mvc-krazo</expected-discovery>
+                            <surefire-execution-for-included-classes>mvc.layer.surefire</surefire-execution-for-included-classes>
                             <add-ons>
                                 <add-on>h2-database:default</add-on>
                             </add-ons>
@@ -186,13 +198,13 @@
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
                 </configuration>
                 <executions>
-                    <!-- Provision a cloud-profile server -->
+                    <!-- Provision a non-slimmed server -->
                     <execution>
-                        <id>cloud-profile-provisioning</id>
+                        <id>full-server-provisioning</id>
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>${cloud-profile-provisioning.phase}</phase>
+                        <phase>${full-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                             <record-provisioning-state>false</record-provisioning-state>
@@ -203,7 +215,13 @@
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                 <optional-packages>passive+</optional-packages>
                             </galleon-options>
-                            <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${full.maven.groupId}</groupId>
+                                    <artifactId>wildfly-preview-feature-pack</artifactId>
+                                    <version>${full.maven.version}</version>
+                                </feature-pack>
+                            </feature-packs>
                         </configuration>
                     </execution>
 
@@ -227,6 +245,27 @@
                             <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
+
+                    <!-- Provision a server with mvc-krazo -->
+                    <execution>
+                        <id>mvc-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${mvc-provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-mvc</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -248,7 +287,8 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions combine.children="append">
-                            <!-- Copy the AS into current_submodule/target/wildfly . This is executed recursively in submodules. -->
+                            <!-- Copy the docs/example configs into the regulard configuration dir so
+                                 they are available for use by surefire executions that need them. -->
                             <execution>
                                 <id>ts.copy-wildfly-standalone-embedded-broker</id>
                                 <inherited>true</inherited>
@@ -282,7 +322,7 @@
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
+                                    <!-- Tests to execute. Overridden in webProfileExclusion.profile . -->
                                     <includes>
                                         <include>**/*TestCase*.java</include>
                                     </includes>
@@ -299,6 +339,8 @@
                                         <com.sun.CORBA.ORBUseDynamicStub>true</com.sun.CORBA.ORBUseDynamicStub>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -332,6 +374,8 @@
                                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <!-- Override the standard module path that points at the shared module set from dist -->
+                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
@@ -358,27 +402,15 @@
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
-                <cloud-profile-provisioning.phase>test-compile</cloud-profile-provisioning.phase>
+                <glow.mvc.phase>test-compile</glow.mvc.phase>
+                <full-provisioning.phase>none</full-provisioning.phase>
                 <hibernate-search-provisioning.phase>test-compile</hibernate-search-provisioning.phase>
+                <mvc-provisioning.phase>test-compile</mvc-provisioning.phase>
                 <ts.config-as.copy-mgmt-users.phase>process-test-classes</ts.config-as.copy-mgmt-users.phase>
-                <ts.copy-wildfly-standalone-embedded-broker.phase>process-test-classes</ts.copy-wildfly-standalone-embedded-broker.phase>
+                <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -393,28 +425,28 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Tests against the cloud-server install -->
+                            <!-- Tests against the mvc install -->
                             <execution>
-                                <id>cloud-server.layer.surefire</id>
+                                <id>mvc.layer.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
-                                        <jboss.home>${project.build.directory}/wildfly</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                                        <jboss.install.dir>${basedir}/target/wildfly-mvc</jboss.install.dir>
+                                        <jboss.home>${project.build.directory}/wildfly-mvc</jboss.home>
+                                        <jboss.home.dir>${project.build.directory}/wildfly-mvc</jboss.home.dir>
+                                        <jbossas.dist>${project.build.directory}/wildfly-mvc</jbossas.dist>
+                                        <jboss.dist>${project.build.directory}/wildfly-mvc</jboss.dist>
                                         <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
+                                        <module.path>${project.build.directory}/wildfly-mvc/modules${path.separator}${basedir}/target/modules</module.path>
                                     </systemPropertyVariables>
                                     <includes>
                                         <!-- Dummy test used to validate this pom -->
-                                        <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
+                                        <include>org/wildfly/test/preview/mvc/**/*TestCase.java</include>
                                     </includes>
-                                    <reportNameSuffix>cloud-server.layer.surefire</reportNameSuffix>
+                                    <reportNameSuffix>mvc.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -451,7 +483,7 @@
             </build>
         </profile>
 
-        <!-- Test against bootable jar ee9-->
+        <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.preview.profile</id>
             <activation>
@@ -467,8 +499,11 @@
             </dependencies>
             <properties>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <full-provisioning.phase>none</full-provisioning.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
-                <glow.jpa.phase>test-compile</glow.jpa.phase>
+                <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
+                <glow.mvc.phase>test-compile</glow.mvc.phase>
+                <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
             </properties>
             <build>
                 <plugins>
@@ -509,15 +544,15 @@
                         <artifactId>wildfly-jar-maven-plugin</artifactId>
                         <version>${version.org.wildfly.jar.plugin}</version>
                         <executions>
-                            <!-- Package a cloud-profile server -->
+                            <!-- Package a server with hibernate-search -->
                             <execution>
-                                <id>bootable-jar-cloud-profile-packaging</id>
+                                <id>bootable-jar-hibernate-search-packaging</id>
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
                                 <phase>process-test-classes</phase>
                                 <configuration>
-                                    <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                                    <output-file-name>test-wildfly-hibernate-search.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
@@ -531,19 +566,19 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                     </plugin-options>
-                                    <provisioning-file>target/glow-scan/cloud-server.layer.surefire/provisioning.xml</provisioning-file>
+                                    <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
 
-                            <!-- Package a server with jpa -->
+                            <!-- Package a server with mvc -->
                             <execution>
-                                <id>bootable-jar-jpa-packaging</id>
+                                <id>bootable-jar-mvc-packaging</id>
                                 <goals>
                                     <goal>package</goal>
                                 </goals>
                                 <phase>process-test-classes</phase>
                                 <configuration>
-                                    <output-file-name>test-wildfly-jpa.jar</output-file-name>
+                                    <output-file-name>test-wildfly-mvc.jar</output-file-name>
                                     <hollowJar>true</hollowJar>
                                     <record-state>false</record-state>
                                     <log-time>${galleon.log.time}</log-time>
@@ -557,7 +592,7 @@
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                     </plugin-options>
-                                    <provisioning-file>target/glow-scan/jpa-layers.surefire/provisioning.xml</provisioning-file>
+                                    <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -576,17 +611,17 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Tests against the cloud-server install -->
+                            <!-- Tests against the hibernate-search install -->
                             <execution>
-                                <id>cloud-server.layer.surefire</id>
+                                <id>hibernate-search.layer.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/wildfly</install.dir>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-cloud-profile.jar</bootable.jar>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-hibernate-search</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-hibernate-search.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
                                     <classpathDependencyExcludes>
@@ -595,24 +630,23 @@
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
                                     <includes>
-                                        <!-- Dummy test used to validate this pom -->
-                                        <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
+                                        <include>org/wildfly/test/preview/hibernate/search/**/*TestCase.java</include>
                                     </includes>
-                                    <reportNameSuffix>cloud.server.surefire</reportNameSuffix>
+                                    <reportNameSuffix>hibernate-search.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
 
                             <!-- Tests against a server provisioned with jpa -->
                             <execution>
-                                <id>jpa-layers.surefire</id>
+                                <id>mvc.layer.surefire</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
                                 </goals>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/wildfly-bootable-jpa</install.dir>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-jpa.jar</bootable.jar>
+                                        <install.dir>${project.build.directory}/wildfly-bootable-mvc</install.dir>
+                                        <bootable.jar>${project.build.directory}/test-wildfly-mvc.jar</bootable.jar>
                                         <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
                                     </systemPropertyVariables>
                                     <classpathDependencyExcludes>
@@ -621,10 +655,9 @@
                                         </classpathDependencyExclude>
                                     </classpathDependencyExcludes>
                                     <includes>
-                                        <!-- Dummy test used to validate this pom -->
-                                        <include>org/wildfly/test/preview/util/TestsuiteModuleTestCase.java</include>
+                                        <include>org/wildfly/test/preview/mvc/**/*TestCase.java</include>
                                     </includes>
-                                    <reportNameSuffix>jpa-layers.surefire</reportNameSuffix>
+                                    <reportNameSuffix>mvc.layer.surefire</reportNameSuffix>
                                 </configuration>
                             </execution>
                         </executions>

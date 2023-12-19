@@ -482,6 +482,7 @@
             <modules>
                 <module>test-feature-pack-preview</module>
                 <module>integration</module>
+                <module>preview</module>
             </modules>
         </profile>
 

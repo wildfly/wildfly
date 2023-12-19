@@ -81,11 +81,16 @@
                                     <artifactId>wildfly-core-feature-pack-ee-10-api</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
                             </artifactItems>
                             <!-- The feature pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
-                            <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
+                            <outputDirectory>${basedir}/target/unpacked-dependency-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -105,7 +110,29 @@
                             <escapeString>\</escapeString>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
+                                    <excludes>
+                                        <!-- We handle system/add-ons separately -->
+                                        <exclude>modules/system/add-ons/mvc-krazo/**</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- The mvc-krazo FP puts things in system/add-ons but for us they are in system/layers/base -->
+                        <id>copy-unpacked-module-addons-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources/modules/system/layers/base</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources/modules/system/add-ons/mvc-krazo</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -314,6 +341,13 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>mvc-krazo-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -378,6 +412,7 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
+                                                <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

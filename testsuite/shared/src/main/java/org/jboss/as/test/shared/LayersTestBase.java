@@ -229,6 +229,8 @@ public abstract class LayersTestBase {
      */
     public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
             "org.wildfly.extension.metrics",
+            // Extension not included in the default config
+            "org.wildfly.extension.mvc-krazo",
     };
 
     /**

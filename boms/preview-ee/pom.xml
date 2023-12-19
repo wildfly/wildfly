@@ -69,6 +69,40 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- Import the MVC runtime deps -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-subsystem</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.wildfly.deployment</groupId>
                 <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
