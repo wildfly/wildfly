@@ -19,17 +19,61 @@
         <group name="org.wildfly.core"/>
     </package-schemas>
 
-    <config name="standalone.xml" model="standalone"/>
-    <config name="standalone-ha.xml" model="standalone"/>
-    <config name="standalone-full.xml" model="standalone"/>
-    <config name="standalone-full-ha.xml" model="standalone"/>
-    <config name="standalone-load-balancer.xml" model="standalone"/>
-    <config name="standalone-microprofile.xml" model="standalone"/>
-    <config name="standalone-microprofile-ha.xml" model="standalone"/>
-    <config name="domain.xml" model="domain"/>
-    <config name="host.xml" model="host"/>
-    <config name="host-primary.xml" model="host"/>
-    <config name="host-secondary.xml" model="host"/>
+    <config name="standalone.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-ha.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-full.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-full-ha.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-load-balancer.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-microprofile.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="standalone-microprofile-ha.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="domain.xml" model="domain">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="host.xml" model="host">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="host-primary.xml" model="host">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
+    <config name="host-secondary.xml" model="host">
+        <props>
+            <prop name="--stability" value="preview"/>
+        </props>
+    </config>
 
     <plugins>
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
