@@ -7,6 +7,7 @@ package org.jboss.as.clustering.controller;
 
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.wildfly.clustering.service.BinaryRequirement;
 

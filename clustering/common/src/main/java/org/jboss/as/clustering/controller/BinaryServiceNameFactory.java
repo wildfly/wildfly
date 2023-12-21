@@ -7,6 +7,7 @@ package org.jboss.as.clustering.controller;
 
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceName;
 
