@@ -7,8 +7,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 
 /**
  * Executor for partition handling operations.

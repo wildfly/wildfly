@@ -8,6 +8,8 @@ package org.jboss.as.clustering.controller;
 import java.util.function.Predicate;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.service.BinaryRequirement;

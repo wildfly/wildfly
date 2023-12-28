@@ -7,14 +7,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.Function;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.controller.FunctionExecutor;
+import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
