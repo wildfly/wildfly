@@ -28,7 +28,6 @@ import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueCaptor;
 import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ServiceValueRegistry;
@@ -38,7 +37,6 @@ import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -387,7 +385,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
 
             builder.setInstance(Service.newInstance(filter, wrapper)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-            new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(configurator.getServiceName()))).build(context.getServiceTarget()).install();
+            new ServiceValueCaptorServiceConfigurator<>(this.registry.add(configurator.getServiceName())).build(context.getServiceTarget()).install();
         }
 
         @Override
@@ -397,26 +395,6 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             context.removeService(serviceName);
 
             context.removeService(ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(context.getCurrentAddress()));
-        }
-    }
-
-    static class ModClusterResourceServiceValueCaptor implements ServiceValueCaptor<ModCluster> {
-        private final ServiceValueCaptor<ModCluster> captor;
-        private final Consumer<ModCluster> consumer;
-
-        ModClusterResourceServiceValueCaptor(OperationContext context, ServiceValueCaptor<ModCluster> captor) {
-            this.captor = captor;
-            this.consumer = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
-        }
-        @Override
-        public ServiceName getServiceName() {
-            return this.captor.getServiceName();
-        }
-
-        @Override
-        public void accept(ModCluster service) {
-            this.captor.accept(service);
-            this.consumer.accept(service);
         }
     }
 }
