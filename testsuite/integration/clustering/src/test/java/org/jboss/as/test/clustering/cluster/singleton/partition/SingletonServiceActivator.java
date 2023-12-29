@@ -11,7 +11,6 @@ import static org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase.NO
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.test.clustering.cluster.singleton.service.NodeServiceExecutorRegistry;
 import org.jboss.as.test.clustering.cluster.singleton.service.SingletonElectionListenerService;
 import org.jboss.msc.service.ServiceActivator;
@@ -48,8 +47,8 @@ public class SingletonServiceActivator implements ServiceActivator {
         };
         builder.setInstance(new ChildTargetService(installer)).install();
 
-        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(SERVICE_A_NAME)).build(context.getServiceTarget()).install();
-        new ServiceValueCaptorServiceConfigurator<>(NodeServiceExecutorRegistry.INSTANCE.add(SERVICE_B_NAME)).build(context.getServiceTarget()).install();
+        NodeServiceExecutorRegistry.INSTANCE.capture(SERVICE_A_NAME).install(context.getServiceTarget());
+        NodeServiceExecutorRegistry.INSTANCE.capture(SERVICE_B_NAME).install(context.getServiceTarget());
     }
 
     private static void install(ServiceTarget target, SingletonServiceConfiguratorFactory factory, ServiceName name, String preferredNode) {

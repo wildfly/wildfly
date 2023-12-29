@@ -8,9 +8,9 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.controller.PathElement;
 import org.wildfly.clustering.server.service.LocalCacheServiceConfiguratorProvider;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/local-cache=*

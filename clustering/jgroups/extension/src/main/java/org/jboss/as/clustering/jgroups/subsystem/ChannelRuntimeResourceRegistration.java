@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.controller.descriptions.SimpleResourceDescriptionResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
@@ -37,6 +36,7 @@ import org.jgroups.JChannel;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.stack.Protocol;
 import org.wildfly.clustering.jgroups.spi.RelayConfiguration;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Paul Ferraro

@@ -10,8 +10,6 @@ import java.util.function.Function;
 
 import org.infinispan.Cache;
 import org.infinispan.xsite.XSiteAdminOperations;
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
 import org.jboss.as.clustering.controller.OperationFunction;
@@ -21,6 +19,9 @@ import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Operation handler for backup site operations.
@@ -45,7 +46,7 @@ public class BackupOperationExecutor implements OperationExecutor<Map.Entry<Stri
                 return new AbstractMap.SimpleImmutableEntry<>(site, cache.getAdvancedCache().getComponentRegistry().getLocalComponent(XSiteAdminOperations.class));
             }
         };
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.get(name);
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(name));
         return (executor != null) ? executor.execute(new OperationFunction<>(context, operation, mapper, executable)) : null;
     }
 }
