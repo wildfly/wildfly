@@ -35,7 +35,6 @@
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.infinispan" services="import"/>
         <module name="org.wildfly.clustering.server.service"/>
-        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.clustering.singleton.service"/>

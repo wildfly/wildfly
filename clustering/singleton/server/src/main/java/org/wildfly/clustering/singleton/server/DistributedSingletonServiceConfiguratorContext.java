@@ -6,8 +6,8 @@
 package org.wildfly.clustering.singleton.server;
 
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.service.SupplierDependency;
 
 /**

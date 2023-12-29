@@ -5,8 +5,8 @@
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
  * Non-clustered {@link CommandDispatcherFactory} implementation
@@ -26,7 +26,7 @@ public class LocalCommandDispatcherFactory implements CommandDispatcherFactory {
     }
 
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context, ClassLoader loader) {
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
         return new LocalCommandDispatcher<>(this.group.getLocalMember(), context);
     }
 }

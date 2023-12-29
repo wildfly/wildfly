@@ -21,12 +21,22 @@ public interface CommandDispatcherFactory {
     Group getGroup();
 
     /**
-     * Creates a new command dispatcher using the specified identifier and context..
+     * Creates a new command dispatcher using the specified identifier and context.
      * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
-     *
      * @param id      a unique identifier for this dispatcher
      * @param context the context used for executing commands
      * @return a new command dispatcher
      */
     <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context);
+
+    /**
+     * Creates a new command dispatcher using the specified identifier and context, whose marshaller is configured via the specified class loader.
+     * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
+     * @param id      a unique identifier for this dispatcher
+     * @param context the context used for executing commands
+     * @return a new command dispatcher
+     */
+    default <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context, ClassLoader loader) {
+        return this.createCommandDispatcher(id, context);
+    }
 }

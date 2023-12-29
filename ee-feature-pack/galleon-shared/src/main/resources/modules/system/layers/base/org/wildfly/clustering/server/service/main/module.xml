@@ -21,7 +21,6 @@
         <!-- Enable dynamic installation of clustering services per channel or cache -->
         <module name="org.wildfly.extension.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.server.api"/>
-        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <!-- Enable dynamic installation of singleton services -->
         <module name="org.wildfly.clustering.singleton.server" services="import"/>
