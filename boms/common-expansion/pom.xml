@@ -400,6 +400,17 @@
             </dependency>
             <dependency>
                 <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-commons</artifactId>
+                <version>${version.io.micrometer}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-core</artifactId>
                 <version>${version.io.micrometer}</version>
                 <exclusions>
