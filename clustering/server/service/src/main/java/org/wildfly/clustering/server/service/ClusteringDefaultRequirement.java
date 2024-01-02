@@ -7,8 +7,8 @@ package org.wildfly.clustering.server.service;
 import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.group.Group;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.service.Requirement;
 
 /**

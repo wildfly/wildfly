@@ -25,7 +25,7 @@ import org.wildfly.clustering.group.Group;
  */
 public class ConcurrentBroadcastCommandDispatcherFactoryTestCase {
 
-    private final org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory factory = mock(org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory.class);
+    private final CommandDispatcherFactory factory = mock(CommandDispatcherFactory.class);
 
     @Test
     public void registration() {

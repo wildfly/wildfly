@@ -27,7 +27,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.clustering.server.api"/>
-        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.clustering.singleton.service"/>

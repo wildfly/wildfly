@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.bean.BeanExpirationConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
@@ -15,10 +16,9 @@ import org.wildfly.clustering.ejb.bean.BeanManager;
 import org.wildfly.clustering.ejb.bean.BeanManagerConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagerFactory;
 import org.wildfly.clustering.ejb.cache.bean.BeanFactory;
-import org.wildfly.clustering.ejb.cache.bean.RemappableBeanMetaDataEntry;
 import org.wildfly.clustering.ejb.cache.bean.CompositeBeanFactory;
+import org.wildfly.clustering.ejb.cache.bean.RemappableBeanMetaDataEntry;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**

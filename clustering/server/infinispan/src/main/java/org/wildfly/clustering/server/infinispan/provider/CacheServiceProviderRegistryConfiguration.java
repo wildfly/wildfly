@@ -5,8 +5,8 @@
 package org.wildfly.clustering.server.infinispan.provider;
 
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**

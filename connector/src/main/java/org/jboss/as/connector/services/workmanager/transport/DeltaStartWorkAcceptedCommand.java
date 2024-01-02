@@ -9,7 +9,7 @@ import org.jboss.jca.core.spi.workmanager.Address;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#deltaStartWorkAccepted(java.util.Map)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#deltaStartWorkAccepted(java.util.Map).
  * @author Paul Ferraro
  */
 public class DeltaStartWorkAcceptedCommand implements Command<Void, CommandDispatcherTransport> {

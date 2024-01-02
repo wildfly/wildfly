@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Scheduler;
@@ -47,7 +48,6 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.infinispan.distribution.SimpleLocality;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**
