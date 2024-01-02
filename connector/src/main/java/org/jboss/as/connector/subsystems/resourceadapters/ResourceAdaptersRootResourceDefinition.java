@@ -8,6 +8,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapter
 
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
@@ -18,6 +19,10 @@ import org.jboss.as.controller.registry.RuntimePackageDependency;
  */
 public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefinition {
 
+    private static final String RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY = "org.wildfly.resource-adapters";
+
+    static final RuntimeCapability<Void> RESOURCE_ADAPTERS_SUBSYSTEM = RuntimeCapability.Builder.of(RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY).build();
+
     private final boolean runtimeOnlyRegistrationValid;
 
     @Override
@@ -26,7 +31,11 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     }
 
     public ResourceAdaptersRootResourceDefinition(boolean runtimeOnlyRegistrationValid) {
-        super(ResourceAdaptersExtension.SUBSYSTEM_PATH, ResourceAdaptersExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME), ResourceAdaptersSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new Parameters(ResourceAdaptersExtension.SUBSYSTEM_PATH,
+                ResourceAdaptersExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME))
+                .setAddHandler(ResourceAdaptersSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(RESOURCE_ADAPTERS_SUBSYSTEM));
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
     }
 
