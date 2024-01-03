@@ -1170,4 +1170,12 @@
         <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-client\-hotrod@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
     </suppress>
+    <!-- Dependency used only in test modules -->
+    <suppress>
+        <notes><![CDATA[
+        file name: json-path-2.4.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.jayway\.jsonpath/json\-path@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-51074</vulnerabilityName>
+    </suppress>
 </suppressions>
