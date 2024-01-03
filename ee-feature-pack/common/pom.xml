@@ -43,14 +43,14 @@
     <packaging>pom</packaging>
 
     <dependencyManagement>
-        <dependencies>
-            <dependency>
+    <dependencies>
+        <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
+        </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -436,7 +436,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jberet</groupId>
             <artifactId>jberet-jpa-repository</artifactId>
@@ -1223,7 +1223,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-web</artifactId>
@@ -1234,7 +1233,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-jsf</artifactId>
