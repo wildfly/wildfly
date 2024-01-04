@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- WARNING. This layer is for internal use only and is not expected to be provisioned directly.
+ It aggregates a set of Galleon layers that are shared between default standalone full configurations. -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="internal-standalone-full-profile">
+    <dependencies>
+        <layer name="internal-standalone-profile"/>
+        <layer name="iiop-openjdk" optional="true"/>
+        <layer name="remote-activemq" optional="true"/>
+    </dependencies>
+</layer-spec>

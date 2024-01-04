@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider">
+    <resources>
+        <artifact name="${com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider}"/>
+        <artifact name="${com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-base}"/>
+        <artifact name="${com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations}"/>
+    </resources>
+
+    <dependencies>
+        <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+        <module name="com.fasterxml.jackson.core.jackson-core"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="jakarta.ws.rs.api"/>
+        <module name="jakarta.xml.bind.api"/>
+    </dependencies>
+</module>

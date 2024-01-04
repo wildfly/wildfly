@@ -1,45 +1,29 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.component.pool;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * User: jpai
  */
 public class StrictMaxPoolConfigService implements Service<StrictMaxPoolConfig> {
 
+    private final Consumer<StrictMaxPoolConfig> configConsumer;
+    private final Supplier<Integer> maxThreadsSupplier;
     private final StrictMaxPoolConfig poolConfig;
 
-    private final InjectedValue<Integer> maxThreadsInjector = new InjectedValue<>();
 
     private volatile int declaredMaxSize;
 
@@ -48,19 +32,32 @@ public class StrictMaxPoolConfigService implements Service<StrictMaxPoolConfig> 
     private volatile Derive derive;
 
 
-    public StrictMaxPoolConfigService(final String poolName, int declaredMaxSize, Derive derive, long timeout, TimeUnit timeUnit) {
+    public StrictMaxPoolConfigService(final Consumer<StrictMaxPoolConfig> configConsumer, final Supplier<Integer> maxThreadsSupplier, final String poolName, int declaredMaxSize, Derive derive, long timeout, TimeUnit timeUnit) {
+        this.configConsumer = configConsumer;
+        this.maxThreadsSupplier = maxThreadsSupplier;
         this.declaredMaxSize = declaredMaxSize;
         this.derive = derive;
         this.poolConfig = new StrictMaxPoolConfig(poolName, declaredMaxSize, timeout, timeUnit);
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         setDerive(derive);
+        configConsumer.accept(poolConfig);
+    }
+
+    @Override
+    public void stop(final StopContext context) {
+        configConsumer.accept(null);
+    }
+
+    @Override
+    public StrictMaxPoolConfig getValue() {
+        return poolConfig;
     }
 
     private int calcMaxFromWorkPools() {
-        Integer max = maxThreadsInjector.getOptionalValue();
+        Integer max = maxThreadsSupplier != null ? maxThreadsSupplier.get() : null;
         return max != null && max > 0 ? max : calcMaxFromCPUCount();
     }
 
@@ -104,19 +101,5 @@ public class StrictMaxPoolConfigService implements Service<StrictMaxPoolConfig> 
 
     public void setTimeoutUnit(TimeUnit timeUnit) {
         poolConfig.setTimeoutUnit(timeUnit);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-
-    }
-
-    @Override
-    public StrictMaxPoolConfig getValue() throws IllegalStateException, IllegalArgumentException {
-        return this.poolConfig;
-    }
-
-    public Injector<Integer> getMaxThreadsInjector() {
-        return maxThreadsInjector;
     }
 }

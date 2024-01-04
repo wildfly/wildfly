@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.ejb.spi">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-ejb-spi}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.ejb.api"/>
+        <module name="org.jboss.as.clustering.common"/>
+        <!-- Enable dynamic loading of schedule timer operation provider -->
+        <module name="org.jboss.as.ejb3" services="import"/>
+        <module name="org.jboss.ejb-client"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
+        <!-- Enable dynamic loading of legacy distributable bean manager provider -->
+        <module name="org.wildfly.clustering.ejb.infinispan" services="import" optional="true"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.service"/>
+    </dependencies>
+</module>

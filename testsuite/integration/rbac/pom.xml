@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -11,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -25,6 +30,7 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+        <wildfly.standalone.config>${project.build.directory}/wildfly/standalone/configuration</wildfly.standalone.config>
     </properties>
 
     <dependencies>
@@ -36,6 +42,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.installation-manager</groupId>
+            <artifactId>installation-manager-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -69,22 +80,22 @@
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <dir>${wildfly.standalone.config}</dir>
                                     <skipDefaultExcludes>true</skipDefaultExcludes>
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <stylesheet>${basedir}/../src/test/xslt/enableRbac.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <outputDir>${wildfly.standalone.config}</outputDir>
                                 </transformationSet>
                                 <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <dir>${wildfly.standalone.config}</dir>
                                     <skipDefaultExcludes>true</skipDefaultExcludes>
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <stylesheet>${basedir}/../src/test/xslt/setupRbacRolesMappingTests.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <outputDir>${wildfly.standalone.config}</outputDir>
                                     <fileMappers>
                                         <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                                             <pattern>^</pattern>
@@ -103,16 +114,21 @@
                         <executions combine.children="append">
                             <!-- Copy users and roles config from resources. -->
                             <execution>
-                                <id>ts.config-as.copy-rbac-users</id>
-                                <phase>generate-test-resources</phase>
-                                <goals><goal>copy-resources</goal></goals>
+                                <id>mgmt.config</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
                                 <configuration>
-                                    <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                                    <outputDirectory>${wildfly.standalone.config}</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
-                                            <directory>src/test/resources</directory>
-                                            <includes><include>*.properties</include></includes>
+                                            <directory>src/test/resources/</directory>
+                                            <includes>
+                                                <include>mgmt-groups.properties</include>
+                                                <include>mgmt-users.properties</include>
+                                            </includes>
                                         </resource>
                                     </resources>
                                 </configuration>
@@ -127,12 +143,20 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
 
                             <execution>
                                 <id>access-integration-default-full.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile. -->
                                     <includes>
@@ -140,7 +164,7 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>properties-role-mapping-standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

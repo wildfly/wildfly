@@ -1,25 +1,7 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.wildfly.extension.messaging.activemq.ActiveMQActivationService.getActiveMQServer;
@@ -57,13 +39,18 @@ class AddressSettingAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 
-        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL);
+        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL, false);
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ActiveMQServer server = getActiveMQServer(context, operation);
-        if(server != null) {
+        if (server != null) {
             final AddressSettings settings = createSettings(context, model);
             server.getAddressSettingsRepository().addMatch(context.getCurrentAddressValue(), settings);
         }
@@ -80,7 +67,6 @@ class AddressSettingAdd extends AbstractAddStepHandler {
      */
     static AddressSettings createSettings(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final AddressSettings settings = new AddressSettings();
-
         if (config.hasDefined(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.getName())) {
             final AddressFullMessagePolicy addressPolicy = AddressFullMessagePolicy.valueOf(AddressSettingDefinition.ADDRESS_FULL_MESSAGE_POLICY.resolveModelAttribute(context, config).asString());
             settings.setAddressFullMessagePolicy(addressPolicy);
@@ -93,6 +79,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         settings.setAutoCreateAddresses(AddressSettingDefinition.AUTO_CREATE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteAddresses(AddressSettingDefinition.AUTO_DELETE_ADDRESSES.resolveModelAttribute(context, config).asBoolean());
         settings.setAutoDeleteCreatedQueues(AddressSettingDefinition.AUTO_DELETE_CREATED_QUEUES.resolveModelAttribute(context, config).asBoolean());
+        settings.setMaxReadPageBytes(AddressSettingDefinition.MAX_READ_PAGE_BYTES.resolveModelAttribute(context, config).asInt());
         if (config.hasDefined(DEAD_LETTER_ADDRESS.getName())) {
             settings.setDeadLetterAddress(asSimpleString(DEAD_LETTER_ADDRESS.resolveModelAttribute(context, config), null));
         }

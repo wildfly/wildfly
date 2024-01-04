@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:jboss:domain:jaxrs:3.0"
+           xmlns="urn:jboss:domain:jaxrs:3.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="3.0">
+
+    <!-- The jaxrs subsystem root element -->
+    <xs:element name="subsystem" type="subsystemType"/>
+    <xs:complexType name="subsystemType">
+        <xs:all minOccurs="0" maxOccurs="1">
+            <xs:element name="jaxrs-2-0-request-matching" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-add-charset" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true"/>
+            <xs:element name="resteasy-buffer-exception-entity" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="true"/>
+            <xs:element name="resteasy-disable-html-sanitizer" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-disable-providers" type="classListType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-document-expand-entity-references" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-document-secure-disableDTDs" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="true"/>
+            <xs:element name="resteasy-document-secure-processing-feature" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="true"/>
+            <xs:element name="resteasy-gzip-max-input" type="xs:integer" minOccurs="0" maxOccurs="1"
+                        default="10000000"/>
+            <xs:element name="resteasy-jndi-resources" type="jndiListType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-language-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-media-type-mappings" type="mapType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-media-type-param-mapping" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-prefer-jackson-over-jsonb" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-providers" type="classListType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resteasy-rfc7232preconditions" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-role-based-security" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-secure-random-max-use" type="xs:integer" minOccurs="0" maxOccurs="1"
+                        default="100"/>
+            <xs:element name="resteasy-use-builtin-providers" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="true"/>
+            <xs:element name="resteasy-use-container-form-params" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="resteasy-wider-request-matching" type="xs:boolean" minOccurs="0" maxOccurs="1"
+                        default="false"/>
+            <xs:element name="tracing-type" minOccurs="0" maxOccurs="1" default="OFF">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="OFF"/>
+                        <xs:enumeration value="ON_DEMAND"/>
+                        <xs:enumeration value="ALL"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="tracing-threshold" minOccurs="0" maxOccurs="1" default="SUMMARY">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="SUMMARY"/>
+                        <xs:enumeration value="TRACE"/>
+                        <xs:enumeration value="VERBOSE"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="classListType">
+        <xs:sequence>
+            <xs:element name="class" type="xs:NMTOKEN" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="jndiListType">
+        <xs:sequence>
+            <xs:element name="jndi" type="jndiType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="jndiType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\w+:.+(/.+)*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="mapType">
+        <xs:sequence>
+            <xs:element name="entry" type="entryType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="entryType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="key"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>

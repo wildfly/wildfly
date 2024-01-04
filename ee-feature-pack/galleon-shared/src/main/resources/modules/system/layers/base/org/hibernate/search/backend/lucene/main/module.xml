@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- Hibernate Search Lucene backend: provides the ability to index into a Lucene index on the local filesystem -->
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.search.backend.lucene">
+
+    <resources>
+        <artifact name="${org.hibernate.search:hibernate-search-backend-lucene}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.logging"/>
+        <module name="org.hibernate.search.engine" export="true" />
+        <!-- This is not exported on purpose: users wanting to use Lucene directly need to explicitly opt in
+             by adding a dependency to that module -->
+        <module name="org.apache.lucene" />
+        <module name="com.carrotsearch.hppc" />
+    </dependencies>
+</module>

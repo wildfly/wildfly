@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-
-<package-spec xmlns="urn:jboss:galleon:package:2.0" name="servlet.misc.standalone">
-    <dependencies>
-        <package name="core.misc.standalone"/>
-        <package name="servlet.misc.common"/>
-    </dependencies>
-</package-spec>

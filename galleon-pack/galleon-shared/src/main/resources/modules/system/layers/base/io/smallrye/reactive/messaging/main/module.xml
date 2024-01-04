@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.messaging">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <!--
+        As this artifact duplicates classes (and adds some new ones) from the Eclipse RM API
+        jar, we don't add it here, and instead make the org.eclipse.microprofile.reactive-messaging.api
+        module contain this jar.
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-api}"/>
+        -->
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-provider}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.reactivex.rxjava2.rxjava"/>
+        <module name="io.smallrye.common.annotation"/>
+        <module name="io.smallrye.common.vertx-context"/>
+        <module name="io.smallrye.config" services="import"/>
+        <module name="io.smallrye.reactive.converters.api"/>
+        <module name="io.smallrye.reactive.messaging.connector"/>
+        <module name="io.smallrye.reactive.mutiny"/>
+        <module name="io.smallrye.reactive.mutiny.vertx-core"/>
+        <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
+        <module name="io.smallrye.reactive.mutiny.zero"/>
+        <module name="io.smallrye.reactive.mutiny.zero-flow-adapters"/>
+        <module name="io.vertx.core"/>
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.eclipse.microprofile.reactive-messaging.api"/>
+        <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
+        <module name="org.eclipse.microprofile.reactive-streams-operators.core" services="import"/>
+        <module name="org.jboss.logging" />
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.jboss.weld.api"/>
+        <module name="org.reactivestreams"/>
+        <module name="org.slf4j"/>
+        <module name="org.wildfly.reactive.messaging.config" services="import"/>
+    </dependencies>
+</module>

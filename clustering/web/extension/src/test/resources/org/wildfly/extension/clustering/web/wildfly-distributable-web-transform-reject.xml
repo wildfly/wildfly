@@ -1,4 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:distributable-web:3.0" default-session-management="session" default-single-sign-on-management="default">
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:distributable-web:4.0" default-session-management="session" default-single-sign-on-management="default">
     <infinispan-session-management name="session" cache-container="foo" granularity="SESSION">
         <ranked-affinity delimiter=":" max-routes="4"/>
     </infinispan-session-management>

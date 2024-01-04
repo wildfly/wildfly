@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /**
@@ -27,7 +10,6 @@ package org.wildfly.extension.messaging.activemq;
 
 import java.util.function.Supplier;
 import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -55,6 +37,11 @@ public class QueueAdd extends AbstractAddStepHandler {
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.isDefaultRequiresRuntime() && !context.isBooting();
+    }
+
+    @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (final AttributeDefinition attributeDefinition : QueueDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
@@ -73,7 +60,7 @@ public class QueueAdd extends AbstractAddStepHandler {
             final ServiceName queueServiceName = MessagingServices.getQueueBaseServiceName(serviceName).append(queueName);
             final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
             sb.requires(ActiveMQActivationService.getServiceName(serviceName));
-            Supplier<ActiveMQServer> serverSupplier = sb.requires(serviceName);
+            Supplier<ActiveMQBroker> serverSupplier = sb.requires(serviceName);
             final QueueService service = new QueueService(serverSupplier, queueConfiguration, false, true);
             sb.setInitialMode(Mode.PASSIVE);
             sb.setInstance(service);

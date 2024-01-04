@@ -1,17 +1,6 @@
 /*
- * Copyright 2017 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.connector.metadata.ds;
 
@@ -46,15 +35,13 @@ public class DsSecurityImpl extends CredentialImpl implements DsSecurity, Creden
      * @param password        user password
      * @param securityContext specific information used by implementation to define in which context this user/password info
      *                        belongs
-     * @param elytronEnabled  indicates if elytron is enabled. In this case, {@param securityContext}, defined as
-     *                        securityDomain in super class, refers to an Elytron authentication context
      * @param reauthPlugin    reauthentication plugin
      * @param credentialSourceSupplier an Elytron credentia supplier
      * @throws ValidateException in case of validation error
      */
-    public DsSecurityImpl(final String userName, final String password, final String securityContext, final boolean elytronEnabled,
+    public DsSecurityImpl(final String userName, final String password, final String securityContext,
                           final ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier, Extension reauthPlugin) throws ValidateException {
-        super(userName, password, securityContext, elytronEnabled, credentialSourceSupplier);
+        super(userName, password, securityContext, credentialSourceSupplier);
         this.reauthPlugin = reauthPlugin;
         this.validate();
     }
@@ -83,7 +70,6 @@ public class DsSecurityImpl extends CredentialImpl implements DsSecurity, Creden
                 "userName='" + getUserName() + '\'' +
                 ", password='" + getPassword() + '\'' +
                 ", securityDomain='" + getSecurityDomain() + '\'' +
-                ", elytronEnabled=" + isElytronEnabled() +
                 "reauthPlugin=" + reauthPlugin +
                 '}';
     }

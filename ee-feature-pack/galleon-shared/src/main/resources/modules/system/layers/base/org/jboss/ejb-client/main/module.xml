@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ejb-client">
+
+    <resources>
+        <artifact name="${org.jboss:jboss-ejb-client}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.interceptor.api"/>
+        <module name="org.wildfly.client.config"/>
+        <module name="org.wildfly.discovery"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.naming-client"/>
+        <module name="org.wildfly.transaction.client"/>
+        <module name="org.jboss.remoting"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.marshalling.river"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.jboss.modules"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

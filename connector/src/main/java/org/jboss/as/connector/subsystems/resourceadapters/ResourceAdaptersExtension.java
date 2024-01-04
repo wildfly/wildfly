@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
@@ -44,11 +27,15 @@ more  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class ResourceAdaptersExtension implements Extension {
 
+    static final ModelVersion VERSION_6_0_0 = ModelVersion.create(6,0,0); // EAP 7.4.0
+    static final ModelVersion VERSION_6_1_0 = ModelVersion.create(6,1,0); // WFLY 27.0
+    static final ModelVersion VERSION_7_0_0 = ModelVersion.create(7,0,0); // WFLY 28.0
+
     public static final String SUBSYSTEM_NAME = RESOURCEADAPTERS_NAME;
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
-    private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 1, 0);
+    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_7_0_0;
 
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -86,14 +73,17 @@ public class ResourceAdaptersExtension implements Extension {
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_2_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_3_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_0.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_1.getUriString(), () -> ResourceAdapterSubsystemParser.INSTANCE);
+        ResourceAdapterSubsystemParser resourceAdapterSubsystemParser = ResourceAdapterSubsystemParser.INSTANCE;
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_2_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_3_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_4_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_5_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_6_1.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_7_0.getUriString(), resourceAdapterSubsystemParser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_7_1.getUriString(), resourceAdapterSubsystemParser);
     }
 
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-jwt">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.jwt,org.eclipse.microprofile.auth.LoginConfig"/>
+        <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.jwt.*"/>
+    </props>
+    <dependencies>
+        <layer name="ee-security"/>
+        <layer name="microprofile-config"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-jwt-smallrye"/>
+</layer-spec>

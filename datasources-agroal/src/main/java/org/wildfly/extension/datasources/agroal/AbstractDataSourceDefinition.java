@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.datasources.agroal;
 
@@ -44,6 +27,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -226,17 +210,17 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- Operations //
 
-    private static final OperationDefinition FLUSH_ALL = new SimpleOperationDefinitionBuilder("flush-all", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_ALL = new SimpleOperationDefinitionBuilder("flush-all", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_GRACEFUL = new SimpleOperationDefinitionBuilder("flush-graceful", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_GRACEFUL = new SimpleOperationDefinitionBuilder("flush-graceful", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_INVALID = new SimpleOperationDefinitionBuilder("flush-invalid", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_INVALID = new SimpleOperationDefinitionBuilder("flush-invalid", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition FLUSH_IDLE = new SimpleOperationDefinitionBuilder("flush-idle", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition FLUSH_IDLE = new SimpleOperationDefinitionBuilder("flush-idle", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition RESET_STATISTICS = new SimpleOperationDefinitionBuilder("reset-statistics", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition RESET_STATISTICS = new SimpleOperationDefinitionBuilder("reset-statistics", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
-    private static final OperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection", AgroalExtension.getResolver()).build();
+    private static final OperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection", AgroalExtension.SUBSYSTEM_RESOLVER).build();
 
     // --- Runtime attributes //
 
@@ -321,7 +305,7 @@ abstract class AbstractDataSourceDefinition extends PersistentResourceDefinition
 
     // --- //
 
-    AbstractDataSourceDefinition(Parameters parameters) {
+    AbstractDataSourceDefinition(SimpleResourceDefinition.Parameters parameters) {
         super(parameters.setCapabilities(DATA_SOURCE_CAPABILITY));
     }
 

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.util;
@@ -31,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -41,7 +25,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  * @param <E> the enum type for this marshaller
  */
-public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> {
+public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMarshaller.Supplied<EnumSet<E>, EnumSetBuilder<E>> {
 
     static final Field ENUM_SET_CLASS_FIELD = WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
         @Override
@@ -63,7 +47,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
     private static final int FIELDS = 4;
 
     @Override
-    public EnumSetBuilder<E> getBuilder() {
+    public EnumSetBuilder<E> createInitialValue() {
         return new DefaultEnumSetBuilder<>();
     }
 
@@ -73,7 +57,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
     }
 
     @Override
-    public EnumSetBuilder<E> readField(ProtoStreamReader reader, int index, EnumSetBuilder<E> builder) throws IOException {
+    public EnumSetBuilder<E> readFrom(ProtoStreamReader reader, int index, WireType type, EnumSetBuilder<E> builder) throws IOException {
         switch (index) {
             case CLASS_INDEX:
                 return builder.setComplement(false).setEnumClass(reader.readObject(Class.class));
@@ -84,18 +68,19 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
             case ELEMENT_INDEX:
                 return builder.add(reader.readUInt32());
             default:
+                reader.skipField(type);
                 throw new IllegalArgumentException(Integer.toString(index));
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, EnumSet<E> set) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, EnumSet<E> set) throws IOException {
         Class<?> enumClass = this.findEnumClass(set);
         Object[] values = enumClass.getEnumConstants();
         // Marshal the smaller of the set versus the set's complement
         boolean complement = set.size() * 2 > values.length;
 
-        writer.writeObject(startIndex  + (complement ? COMPLEMENT_CLASS_INDEX : CLASS_INDEX), enumClass);
+        writer.writeObject(complement ? COMPLEMENT_CLASS_INDEX : CLASS_INDEX, enumClass);
 
         EnumSet<E> targetSet = complement ? EnumSet.complementOf(set) : set;
 
@@ -105,10 +90,10 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
             for (int i = 0; i < values.length; ++i) {
                 bits.set(i, targetSet.contains(values[i]));
             }
-            writer.writeBytes(startIndex + BITS_INDEX, bits.toByteArray());
+            writer.writeBytes(BITS_INDEX, bits.toByteArray());
         } else {
             for (E value : targetSet) {
-                writer.writeUInt32(startIndex + ELEMENT_INDEX, value.ordinal());
+                writer.writeUInt32(ELEMENT_INDEX, value.ordinal());
             }
         }
     }
@@ -170,7 +155,7 @@ public class EnumSetFieldSetMarshaller<E extends Enum<E>> implements FieldSetMar
         }
 
         @Override
-        public EnumSet<E> build() {
+        public EnumSet<E> get() {
             EnumSet<E> set = EnumSet.noneOf(this.enumClass);
             E[] values = this.enumClass.getEnumConstants();
             if (this.bits != null) {

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.genericjms">
+
+    <resources>
+       <resource-root path="."/>
+        <artifact name="${org.jboss.genericjms:generic-jms-ra-jar}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.naming"/>
+        <module name="jakarta.transaction.api"/>
+        <!-- WFLY-4656 export the JMS API module,  otherwise MDB using this RA will not found JMS classes -->
+        <module name="jakarta.jms.api" export="true"/>
+        <module name="jakarta.resource.api"/>
+        <module name="org.jboss.logging"/>
+
+        <!--
+             This module is used to provide the provider-specific classes
+             containing the JMS implementation (and any of their dependencies)
+             used by the generic JMS resource adapter
+        -->
+        <module name="org.jboss.genericjms.provider" optional="true"/>
+    </dependencies>
+</module>

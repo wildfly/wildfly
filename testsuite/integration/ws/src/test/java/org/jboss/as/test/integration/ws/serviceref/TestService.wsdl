@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <definitions name='EndpointService' targetNamespace='http://www.openuri.org/2004/04/HelloWorld'
              xmlns='http://schemas.xmlsoap.org/wsdl/'
              xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/'

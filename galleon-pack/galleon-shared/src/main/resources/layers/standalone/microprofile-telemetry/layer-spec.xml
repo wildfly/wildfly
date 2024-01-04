@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-telemetry">
+    <props>
+        <prop name="org.wildfly.rule.inclusion-mode" value="all-dependencies"/>
+    </props>
+    <dependencies>
+        <layer name="cdi"/>
+        <layer name="opentelemetry"/>
+        <layer name="microprofile-config"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-telemetry"/>
+</layer-spec>

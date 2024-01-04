@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="infinispan-local-ejb" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="subsystem.infinispan">
+
+        <feature spec="subsystem.infinispan.cache-container">
+            <param name="cache-container" value="ejb"/>
+            <param name="modules" value="[org.wildfly.clustering.ejb.infinispan]"/>
+            <param name="marshaller" value="PROTOSTREAM"/>
+            <param name="aliases" value="[sfsb]"/>
+            <param name="default-cache" value="passivation"/>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="passivation"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="passivation" value="true"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="persistent"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="preload" value="true"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.infinispan.cache-container.local-cache">
+                <param name="local-cache" value="transient"/>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.locking">
+                    <param name="isolation" value="REPEATABLE_READ"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.transaction">
+                    <param name="mode" value="BATCH"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.component.expiration">
+                    <param name="interval" value="0"/>
+                </feature>
+                <feature spec="subsystem.infinispan.cache-container.local-cache.store.file">
+                    <param name="passivation" value="true"/>
+                    <param name="purge" value="true"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+
+</feature-group-spec>

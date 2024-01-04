@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.jwt">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+    
+    <resources>
+        <artifact name="${io.smallrye:smallrye-jwt}"/>
+        <artifact name="${io.smallrye:smallrye-jwt-cdi-extension}"/>
+        <artifact name="${io.smallrye:smallrye-jwt-common}"/>
+        <artifact name="${io.smallrye:smallrye-jwt-http-mechanism}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.security.enterprise.api" />
+        <module name="jakarta.servlet.api"/>
+        <module name="org.bitbucket.jose4j"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.eclipse.microprofile.jwt.auth.api"/>
+        <module name="org.jboss.logging" />
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.json.api" />
+        <module name="jakarta.ws.rs.api" />
+        <module name="io.smallrye.config" services="import"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.jboss.weld.api"/>
+    </dependencies>
+</module>

@@ -1,30 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR_CAPABILITY_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_INTERCEPTORS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
@@ -61,6 +43,8 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.clustering.SingletonBarrierService;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryService;
 import org.jboss.as.ejb3.deployment.processors.AnnotatedEJBComponentDescriptionDeploymentUnitProcessor;
@@ -153,12 +137,13 @@ import org.jboss.ejb.client.EJBTransportProvider;
 import org.jboss.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
@@ -170,11 +155,14 @@ import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
 import io.undertow.server.handlers.PathHandler;
+import org.wildfly.transaction.client.naming.txn.TxnNamingContextFactory;
+
+import javax.naming.NamingException;
 
 /**
  * Add operation handler for the EJB3 subsystem.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -337,8 +325,8 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
         this.denyAccessByDefault.set(defaultMissingMethodValue);
 
         final ModelNode defaultStatefulSessionTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_SESSION_TIMEOUT.resolveModelAttribute(context, model);
-        final ValueService<AtomicLong> defaultStatefulSessionTimeoutService = new ValueService<>(new ImmediateValue<>(
-                defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE));
+        final AtomicLong defaultTimeout = defaultStatefulSessionTimeout.isDefined() ? new AtomicLong(defaultStatefulSessionTimeout.asLong()) : DefaultStatefulBeanSessionTimeoutWriteHandler.INITIAL_TIMEOUT_VALUE;
+        final ValueService defaultStatefulSessionTimeoutService = new ValueService(defaultTimeout);
         context.getServiceTarget().addService(DefaultStatefulBeanSessionTimeoutWriteHandler.SERVICE_NAME, defaultStatefulSessionTimeoutService).install();
 
         final boolean defaultMdbPoolAvailable = model.hasDefined(DEFAULT_MDB_INSTANCE_POOL);
@@ -474,10 +462,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model);
         }
 
-        if (model.hasDefined(DEFAULT_ENTITY_BEAN_INSTANCE_POOL)) {
-            EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL.updatePoolService(context, model);
-        }
-
         if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
             EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, model);
         }
@@ -549,6 +533,17 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                         .install();
             }
         }
+
+        TxnNamingContextFactory.setAccessChecker(new TxnNamingContextFactory.AccessChecker() {
+            @Override
+            public void checkAccessAllowed() throws NamingException {
+                try {
+                    AllowedMethodsInformation.checkAllowed(MethodType.GET_USER_TRANSACTION);
+                } catch (IllegalStateException e) {
+                    throw new NamingException(e.getMessage());
+                }
+            }
+        });
     }
 
     private static void addRemoteInvocationServices(final OperationContext context,
@@ -610,6 +605,25 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
             Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.POLICY.getName(), SingletonDefaultRequirement.POLICY.getType()));
             builder.setInstance(new SingletonBarrierService(policy)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        }
+    }
+
+    private static final class ValueService implements Service<AtomicLong> {
+        private final AtomicLong value;
+        public ValueService(final AtomicLong value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            // noop
+        }
+
+        public void stop(final StopContext context) {
+            // noop
+        }
+
+        public AtomicLong getValue() throws IllegalStateException {
+            return value;
         }
     }
 }

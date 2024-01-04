@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.transactions">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <exports>
+        <exclude path="org/jboss/as/txn/logging" />
+    </exports>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-transactions}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.management"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.jts.integration"/>
+        <module name="org.omg.api"/>
+        <module name="org.wildfly.iiop-openjdk"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.transaction.client"/>
+        <module name="io.smallrye.jandex"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.wildfly.security.manager"/>
+
+        <!-- Only used if the org.wildfly.undertow.http-invoker capability is present,
+             in which case this module will also be present.
+             TODO Work out how to mark http-client.transaction as 'passive' so we
+             can make it optional here but have it provisioned if http is available
+        -->
+        <module name="io.undertow.core"/>
+        <module name="org.wildfly.http-client.transaction" />
+
+        <!-- Only used if the org.jboss.remoting.endpoint capability is present,
+             in which case this module will also be present. -->
+        <module name="org.jboss.remoting" optional="true"/>
+
+        <module name="java.xml"/>
+        <module name="java.desktop"/>
+    </dependencies>
+</module>

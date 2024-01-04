@@ -1,30 +1,13 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.PersistenceConfiguration;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
@@ -36,6 +19,7 @@ import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -48,7 +32,7 @@ import org.jboss.dmr.ModelType;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfiguratorFactory {
+public abstract class StoreResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
 
     protected static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -105,11 +89,11 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanModel.VERSION_16_0_0),
+        FETCH_STATE("fetch-state", ModelType.BOOLEAN, ModelNode.TRUE, InfinispanSubsystemModel.VERSION_16_0_0),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanSubsystemModel deprecation) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)
@@ -125,11 +109,15 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    private final UnaryOperator<ResourceDescriptor> configurator;
+    static final Set<PathElement> REQUIRED_SINGLETON_CHILDREN = Set.of(StoreWriteThroughResourceDefinition.PATH);
 
-    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator) {
+    private final UnaryOperator<ResourceDescriptor> configurator;
+    private final ResourceServiceConfiguratorFactory factory;
+
+    protected StoreResourceDefinition(PathElement path, ResourceDescriptionResolver resolver, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
         super(path, resolver);
         this.configurator = configurator;
+        this.factory = factory;
     }
 
     @Override
@@ -140,9 +128,9 @@ public abstract class StoreResourceDefinition extends ChildResourceDefinition<Ma
                 .addAttributes(Attribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 .addCapabilities(Capability.class)
-                .addRequiredSingletonChildren(StoreWriteThroughResourceDefinition.PATH)
+                .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
+        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new StoreWriteBehindResourceDefinition().register(registration);

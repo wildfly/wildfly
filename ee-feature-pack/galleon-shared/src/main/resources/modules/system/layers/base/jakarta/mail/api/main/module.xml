@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.mail.api">
+
+    <resources>
+        <artifact name="${jakarta.mail:jakarta.mail-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="jakarta.activation.api" />
+        <module name="org.eclipse.angus.mail" services="import" />
+    </dependencies>
+</module>

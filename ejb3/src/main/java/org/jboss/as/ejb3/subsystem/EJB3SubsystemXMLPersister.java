@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.subsystem;
@@ -269,7 +252,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         // identity element
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(IDENTITY) && model.get(SERVICE, IDENTITY).hasDefined(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getName())) {
             writer.writeStartElement(EJB3SubsystemXMLElement.IDENTITY.getLocalName());
-            IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS.getAttributeMarshaller().marshallAsAttribute(IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, model.get(SERVICE, IDENTITY), false, writer);
+            writeAttribute(writer, model.get(SERVICE, IDENTITY), IdentityResourceDefinition.OUTFLOW_SECURITY_DOMAINS, false);
             writer.writeEndElement();
         }
 
@@ -527,7 +510,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 ModelNode cache = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
                 LegacyCacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
-                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES);
+                writeAttribute(writer, cache, LegacyCacheFactoryResourceDefinition.ALIASES, true);
                 writer.writeEndElement();
             }
         }
@@ -760,7 +743,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         writer.writeEndElement();
     }
 
-    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute) throws XMLStreamException {
-        attribute.getAttributeMarshaller().marshallAsAttribute(attribute, model, true, writer);
+    private static void writeAttribute(XMLExtendedStreamWriter writer, ModelNode model, AttributeDefinition attribute, boolean marshallDefault) throws XMLStreamException {
+        attribute.getMarshaller().marshallAsAttribute(attribute, model, marshallDefault, writer);
     }
 }

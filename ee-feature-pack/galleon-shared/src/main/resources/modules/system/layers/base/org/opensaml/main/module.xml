@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.opensaml">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.opensaml:opensaml-core}"/>
+        <artifact name="${org.opensaml:opensaml-profile-api}"/>
+        <artifact name="${org.opensaml:opensaml-saml-api}"/>
+        <artifact name="${org.opensaml:opensaml-saml-impl}"/>
+        <artifact name="${org.opensaml:opensaml-security-api}"/>
+        <artifact name="${org.opensaml:opensaml-security-impl}"/>
+        <artifact name="${org.opensaml:opensaml-soap-api}"/>
+        <artifact name="${org.opensaml:opensaml-xacml-api}"/>
+        <artifact name="${org.opensaml:opensaml-xacml-impl}"/>
+        <artifact name="${org.opensaml:opensaml-xacml-saml-api}"/>
+        <artifact name="${org.opensaml:opensaml-xacml-saml-impl}"/>
+        <artifact name="${org.opensaml:opensaml-xmlsec-api}"/>
+        <artifact name="${org.opensaml:opensaml-xmlsec-impl}"/>
+        <artifact name="${org.cryptacular:cryptacular}"/>
+        <artifact name="${net.shibboleth.utilities:java-support}"/>
+    </resources>
+
+    <dependencies>
+      <module name="java.scripting"/>
+      <module name="org.slf4j"/>
+      <module name="org.apache.santuario.xmlsec"/>
+      <module name="org.apache.ws.security" />
+      <module name="org.joda.time"/>
+      <module name="com.google.guava"/>
+      <module name="org.bouncycastle.bcmail"/>
+      <module name="org.bouncycastle.bcpkix"/>
+      <module name="org.bouncycastle.bcprov"/>
+      <module name="org.apache.commons.codec"/>
+      <module name="java.xml"/>
+    </dependencies>
+</module>

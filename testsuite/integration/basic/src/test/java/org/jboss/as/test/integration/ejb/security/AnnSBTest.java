@@ -1,34 +1,16 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.integration.ejb.security;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import jakarta.ejb.EJBAccessException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import jakarta.ejb.EJBAccessException;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
@@ -101,7 +83,7 @@ public abstract class AnnSBTest {
      */
     public void testSingleMethodAnnotationsNoUserTemplate(final String MODULE, final Logger log, final Class SB_CLASS) throws Exception {
         final Context ctx = Util.createNamingContext();
-        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.EMPTY.useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
+        final AuthenticationContext authenticationContext = AuthenticationContext.empty().with(MatchRule.ALL, AuthenticationConfiguration.empty().useAuthorizationPrincipal(AnonymousPrincipal.getInstance()));
         authenticationContext.runCallable(() -> {
             String echoValue = getBean(MODULE, log, SB_CLASS, ctx).defaultAccess("alohomora");
             Assert.assertEquals(echoValue, "alohomora");
@@ -274,7 +256,7 @@ public abstract class AnnSBTest {
         final AuthenticationContext authenticationContext = AuthenticationContext.empty()
                 .with(
                         MatchRule.ALL,
-                        AuthenticationConfiguration.EMPTY
+                        AuthenticationConfiguration.empty()
                                 .useName(username == null ? "$local" : username)
                                 .usePassword(password)
                                 .useRealm(null)

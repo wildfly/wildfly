@@ -1,6 +1,14 @@
 [[Shortened_Maven_Run_Overview]]
 = Shortened Maven Run Overview
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[how-to-get-it]]
 == How to get it
 

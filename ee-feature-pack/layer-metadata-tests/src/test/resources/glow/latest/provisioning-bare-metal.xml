@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<installation xmlns="urn:jboss:galleon:provisioning:3.0">
+    <feature-pack location="${ee.maven.groupId}:wildfly-ee-galleon-pack:${project.version}"/>
+</installation>

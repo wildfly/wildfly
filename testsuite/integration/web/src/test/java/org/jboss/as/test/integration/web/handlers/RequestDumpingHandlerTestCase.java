@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.integration.web.handlers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE;
@@ -7,7 +12,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
 import java.net.SocketPermission;

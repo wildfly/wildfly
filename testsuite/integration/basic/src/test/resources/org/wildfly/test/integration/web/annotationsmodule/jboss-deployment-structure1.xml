@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
     <module name="deployment.library-jar">
         <resources>
@@ -6,7 +11,6 @@
         </resources>
         <dependencies>
             <module name="javaee.api" export="true"/>
-            <module name="javax.api" export="true"/>
             <module name="javax.servlet.api" export="true"/>
         </dependencies>
     </module>

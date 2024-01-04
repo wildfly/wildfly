@@ -1,30 +1,13 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.wildfly.extension.messaging.activemq.BinderServiceUtil.installBinderService;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.Locale;
@@ -32,7 +15,6 @@ import java.util.Locale;
 import org.apache.activemq.artemis.spi.core.naming.BindingRegistry;
 import org.jboss.msc.service.LifecycleEvent;
 import org.jboss.msc.service.LifecycleListener;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.ServiceContainer;
@@ -71,7 +53,7 @@ public class WildFlyBindingRegistry implements BindingRegistry {
     @Override
     public boolean bind(String name, Object obj) {
         if (name == null || name.isEmpty()) {
-            throw MessagingLogger.ROOT_LOGGER.cannotBindJndiName();
+            throw ROOT_LOGGER.cannotBindJndiName();
         }
         installBinderService(container, name, obj);
         ROOT_LOGGER.boundJndiName(name);
@@ -84,7 +66,7 @@ public class WildFlyBindingRegistry implements BindingRegistry {
     @Override
     public void unbind(String name) {
         if (name == null || name.isEmpty()) {
-            throw MessagingLogger.ROOT_LOGGER.cannotUnbindJndiName();
+            throw ROOT_LOGGER.cannotUnbindJndiName();
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
         ServiceController<?> bindingService = container.getService(bindInfo.getBinderServiceName());

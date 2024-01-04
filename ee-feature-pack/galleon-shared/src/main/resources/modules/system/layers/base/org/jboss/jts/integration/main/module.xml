@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.jts.integration">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.narayana.jts:narayana-jts-integration}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.naming" />
+        <module name="org.omg.api" />
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.logging"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="org.jboss.as.transactions">
+            <imports>
+                <include path="org.jboss.iiop.tm"/>
+            </imports>
+        </module>
+    </dependencies>
+</module>

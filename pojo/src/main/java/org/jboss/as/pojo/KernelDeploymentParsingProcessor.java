@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.pojo;
@@ -27,15 +10,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.xml.XMLElementSchema;
+import org.jboss.as.pojo.descriptor.BeanDeploymentSchema;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
-import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
-import org.jboss.as.pojo.descriptor.LegacyKernelDeploymentXmlDescriptorParser;
 import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -57,17 +40,8 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  */
 public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor {
 
-    private final XMLMapper xmlMapper = XMLMapper.Factory.create();
+    private final XMLMapper xmlMapper = XMLElementSchema.createXMLMapper(EnumSet.allOf(BeanDeploymentSchema.class));
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-
-    public KernelDeploymentParsingProcessor() {
-        final KernelDeploymentXmlDescriptorParser parser = new KernelDeploymentXmlDescriptorParser();
-        xmlMapper.registerRootElement(new QName(KernelDeploymentXmlDescriptorParser.NAMESPACE, "deployment"), parser);
-        // old MC parser -- just a warning / info atm
-        final LegacyKernelDeploymentXmlDescriptorParser legacy = new LegacyKernelDeploymentXmlDescriptorParser();
-        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_1_0, "deployment"), legacy);
-        xmlMapper.registerRootElement(new QName(LegacyKernelDeploymentXmlDescriptorParser.MC_NAMESPACE_2_0, "deployment"), legacy);
-    }
 
     /**
      * Process a deployment for jboss-beans.xml files.

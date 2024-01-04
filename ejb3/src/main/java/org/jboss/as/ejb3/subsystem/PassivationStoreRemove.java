@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.subsystem;
@@ -36,8 +19,6 @@ import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvid
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -51,16 +32,8 @@ import java.util.Set;
 @Deprecated
 public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
-    private final Set<RuntimeCapability> unavailableCapabilities;
-
     public PassivationStoreRemove(final AbstractAddStepHandler addOperation) {
         super(addOperation);
-        this.unavailableCapabilities = new LinkedHashSet<>();
-    }
-
-    public PassivationStoreRemove(final AbstractAddStepHandler addOperation, RuntimeCapability ...  unavailableCapabilities) {
-        super(addOperation, unavailableCapabilities);
-        this.unavailableCapabilities = new LinkedHashSet<>(Arrays.asList(unavailableCapabilities));
     }
 
     @Override
@@ -78,13 +51,13 @@ public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
         if (removeInCurrentStep(resource)) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
-            Set<RuntimeCapability> capabilitySet = unavailableCapabilities.isEmpty() ? context.getResourceRegistration().getCapabilities() : unavailableCapabilities;
+            Set<RuntimeCapability> capabilitySet = context.getResourceRegistration().getCapabilities();
             PathAddress address = context.getCurrentAddress();
 
             // deregister capabilities which will no longer be available after remove
             for (RuntimeCapability capability : capabilitySet) {
                 if (capability.isDynamicallyNamed()) {
-                    context.deregisterCapability(capability.getDynamicName(context.getCurrentAddress()));
+                    context.deregisterCapability(capability.getDynamicName(address));
                 } else {
                     context.deregisterCapability(capability.getName());
                 }

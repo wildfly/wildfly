@@ -1,28 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow.deployment;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +19,7 @@ import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.annotation.WebListener;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.jboss.annotation.javaee.Descriptions;
 import org.jboss.annotation.javaee.DisplayNames;
@@ -101,6 +86,14 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
     private static final DotName declareRoles = DotName.createSimple(DeclareRoles.class.getName());
     private static final DotName multipartConfig = DotName.createSimple(MultipartConfig.class.getName());
     private static final DotName servletSecurity = DotName.createSimple(ServletSecurity.class.getName());
+    private static final DotName servletDotName = DotName.createSimple(HttpServlet.class.getName());
+    // This list defines some annotations that won't get processed if they are added to a servlet according to Servlet Specification
+    // but sometimes users may misuse them, users will get a warning log in such scenarios.
+    // https://issues.redhat.com/browse/WFLY-14307
+    private static final List<DotName> badAnnotationsInServlet = new ArrayList<>();
+    static {
+        badAnnotationsInServlet.add(DotName.createSimple("org.jboss.ejb3.annotation.RunAsPrincipal"));
+    }
 
     /**
      * Process web annotations.
@@ -528,6 +521,22 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     }
                 }
                 annotationMD.setServletSecurity(servletSecurity);
+            }
+        }
+        // bad annotations
+        for (DotName badAnnotation: badAnnotationsInServlet) {
+            final List<AnnotationInstance> badAnnotationInstance = index.getAnnotations(badAnnotation);
+            if (badAnnotationInstance != null && !badAnnotationInstance.isEmpty()) {
+                Collection<ClassInfo> servlets = index.getAllKnownSubclasses(servletDotName);
+                for (AnnotationInstance annotation: badAnnotationInstance) {
+                    AnnotationTarget target = annotation.target();
+                    if (target instanceof ClassInfo) {
+                        ClassInfo classInfo = (ClassInfo) target;
+                        if (servlets.contains(classInfo)) {
+                            UndertowLogger.ROOT_LOGGER.badAnnotationOnServlet(badAnnotation.toString(), classInfo.toString());
+                        }
+                    }
+                }
             }
         }
         return metaData;

@@ -1,6 +1,14 @@
 [[EJB_invocations_from_a_remote_client_using_JNDI]]
 = EJB invocations from a remote client using JNDI
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This chapter explains how to invoke EJBs from a remote client by using
 the JNDI API to first lookup the bean proxy and then invoke on that
 proxy.
@@ -303,7 +311,7 @@ public class RemoteEJBClient {
 
 The entire server side and client side code is hosted at the github repo
 here
-https://github.com/wildfly/quickstart/tree/master/ejb-remote[ejb-remote]
+https://github.com/wildfly/quickstart/tree/main/ejb-remote[ejb-remote]
 
 The code has some comments which will help you understand each of those
 lines. But we'll explain here in more detail what the code does. As a
@@ -509,10 +517,6 @@ remote.connection.default.password=apppassword
 This file includes a reference to a default password. Be sure to change
 this as soon as possible.
 
-The above properties file is just an example. The actual file that was
-used for this sample program is available here for reference
-https://github.com/wildfly/quickstart/blob/master/ejb-remote/client/src/main/resources/jboss-ejb-client.properties[jboss-ejb-client.properties]
-
 [NOTE]
 
 We'll see what each of it means.
@@ -673,4 +677,4 @@ mentioned above. You'll also need to have your application's bean
 interface jars and other jars that are required by your application, in
 the client classpath
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

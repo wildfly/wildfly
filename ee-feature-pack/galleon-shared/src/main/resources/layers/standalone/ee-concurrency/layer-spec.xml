@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-concurrency">
+    <props>
+        <prop name="org.wildfly.rule.class" value="jakarta.enterprise.concurrent"/>
+    </props>
+    <dependencies>
+        <layer name="naming"/>
+    </dependencies>
+    <feature-group name="ee-concurrency"/>
+</layer-spec>

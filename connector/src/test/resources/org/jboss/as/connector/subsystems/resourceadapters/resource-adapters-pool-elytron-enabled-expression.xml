@@ -1,4 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
     <!--Optional:-->
     <resource-adapters>
         <!--1 or more repetitions:-->
@@ -16,7 +21,7 @@
             <!--Zero or more repetitions:-->
             <config-property name="config1">${test.expr:value}</config-property>
             <workmanager>
-                <security>
+                <security enabled="${test.expr:true}">
                     <mapping-required>${test.expr:true}</mapping-required>
                     <elytron-security-domain>${test.expr:ApplicationDomain}</elytron-security-domain>
                 </security>
@@ -77,9 +82,7 @@
                     <!--Optional:-->
                     <recovery no-recovery="${test.expr:false}">
                         <!--Optional:-->
-                        <recover-credential>
-                            <!--Optional:-->
-                            <user-name>${test.expr:userName}</user-name>
+                        <recover-credential user-name="${test.expr:userName}">
                             <!--Optional:-->
                             <credential-reference store="teststore" alias="${test.expr:myalias}"/>
                             <!--Optional:-->

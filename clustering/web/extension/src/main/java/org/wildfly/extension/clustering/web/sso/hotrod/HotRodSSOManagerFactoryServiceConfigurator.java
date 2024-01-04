@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.clustering.web.sso.hotrod;
@@ -37,19 +20,19 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceConfigurator;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
-import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
 /**
  * @author Paul Ferraro
  */
-public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodSSOManagerFactoryConfiguration {
+public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, HotRodConfiguration {
 
     private final String name;
     private final HotRodSSOManagementConfiguration config;
@@ -90,7 +73,7 @@ public class HotRodSSOManagerFactoryServiceConfigurator<A, D, S> extends SimpleS
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K, V> RemoteCache<K, V> getRemoteCache() {
+    public <K, V> RemoteCache<K, V> getCache() {
         return (RemoteCache<K, V>) this.cache.get();
     }
 }

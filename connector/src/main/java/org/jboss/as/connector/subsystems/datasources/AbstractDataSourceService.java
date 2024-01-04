@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.subsystems.datasources;
@@ -74,7 +57,6 @@ import org.jboss.jca.core.api.connectionmanager.pool.PoolConfiguration;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.bootstrapcontext.BootstrapContextCoordinator;
 import org.jboss.jca.core.connectionmanager.ConnectionManager;
-import org.jboss.jca.core.security.picketbox.PicketBoxSubjectFactory;
 import org.jboss.jca.core.spi.mdr.MetadataRepository;
 import org.jboss.jca.core.spi.mdr.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -94,7 +76,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.security.SubjectFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -124,7 +105,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     protected final InjectedValue<TransactionIntegration> transactionIntegrationValue = new InjectedValue<TransactionIntegration>();
     private final InjectedValue<Driver> driverValue = new InjectedValue<Driver>();
     private final InjectedValue<ManagementRepository> managementRepositoryValue = new InjectedValue<ManagementRepository>();
-    private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
@@ -264,10 +244,6 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<DriverRegistry> getDriverRegistryInjector() {
         return driverRegistry;
-    }
-
-    public Injector<SubjectFactory> getSubjectFactoryInjector() {
-        return subjectFactory;
     }
 
     public Injector<CachedConnectionManager> getCcmInjector() {
@@ -487,17 +463,11 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
                 return null;
             // safe assertion because all parsers create Credential
             assert credential instanceof Credential;
-            final String securityDomain = credential.getSecurityDomain();
-            if (((Credential) credential).isElytronEnabled()) {
-                try {
-                    return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
-                } catch (URISyntaxException e) {
-                    throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
-                }
-            } else if (securityDomain == null || securityDomain.trim().equals("") || subjectFactory.getOptionalValue() == null) {
-                return null;
-            } else {
-                return new PicketBoxSubjectFactory(subjectFactory.getValue());
+
+            try {
+                return new ElytronSubjectFactory(authenticationContext.getOptionalValue(), new java.net.URI(jndiName));
+            } catch (URISyntaxException e) {
+                throw ConnectorLogger.ROOT_LOGGER.cannotDeploy(e);
             }
         }
 

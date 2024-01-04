@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="domain-host-excludes" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly23.0"/>
+        <param name="host-release" value="WildFly23.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly24.0"/>
+        <param name="host-release" value="WildFly24.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.elytron-oidc-client&quot;,&quot;org.wildfly.extension.opentelemetry&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly25.0"/>
+        <param name="host-release" value="WildFly25.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly26.0"/>
+        <param name="host-release" value="WildFly26.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.clustering.ejb&quot;,&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
+    </feature>
+    <feature spec="domain.host-exclude">
+        <param name="host-exclude" value="WildFly27.0"/>
+        <param name="host-release" value="WildFly27.0"/>
+        <param name="excluded-extensions" value="[&quot;org.wildfly.extension.microprofile.lra-participant&quot;,&quot;org.wildfly.extension.microprofile.lra-coordinator&quot;,&quot;org.wildfly.extension.microprofile.telemetry&quot;]"/>
+    </feature>
+</feature-group-spec>

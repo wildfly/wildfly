@@ -1,6 +1,14 @@
 [[Client_Authentication_with_Elytron_Client]]
 = Client Authentication with Elytron Client
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly Elytron uses the Elytron Client project to enable remote clients
 to authenticate using Elytron. Elytron Client has the following
 components:
@@ -154,7 +162,7 @@ files even if the _wildfly.config.url_ system property is set.
 When creating rules, you can look for matches on various parameters such
 as hostname, port, protocol, or username. A full list of options for
 _MatchRule_ are available in the
-http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/auth/client/MatchRule.html[Javadocs].
+https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/auth/client/MatchRule.html[Javadocs].
 Rules are evaluated in the order in which they are configured.
 
 *Common Rules*
@@ -204,7 +212,7 @@ in the client's code:
 ----
 //create your authentication configuration
 AuthenticationConfiguration adminConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm")
@@ -239,7 +247,7 @@ to use a masked password instead.
 ----
 //create your authentication configuration
 AuthenticationConfiguration adminConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm")
@@ -275,7 +283,7 @@ connecting over different hostnames, you could do the following:
 ----
 //create your authentication configuration
 AuthenticationConfiguration commonConfig =
-    AuthenticationConfiguration.EMPTY
+    AuthenticationConfiguration.empty()
       .useProviders(() -> new Provider[] { new WildFlyElytronProvider() })
       .allowSaslMechanisms("DIGEST-MD5")
       .useRealm("ManagementRealm");
@@ -355,13 +363,13 @@ Default Configuration Approach>>, and
 <<using-elytron-client-with-clients-deployed-to-wildfly,Using Elytron Client
 with Clients Deployed to WildFly>> sections.
 
-Using _AuthenticationConfiguration.EMPTY_ should only be used as a base
+Using _AuthenticationConfiguration.empty()_ should only be used as a base
 to build a configuration on top of and should not be used on its own. It
 provides a configuration that uses the JVM-wide registered providers and
 enables anonymous authentication.
 
 When specifying the providers on top of the
-_AuthenticationConfiguration.EMPTY_ configuration, you can specify a
+_AuthenticationConfiguration.empty()_ configuration, you can specify a
 custom list, but most users should use _WildFlyElytronProvider()_
 providers.
 

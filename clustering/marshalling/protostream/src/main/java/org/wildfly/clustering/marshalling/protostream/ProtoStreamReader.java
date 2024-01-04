@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream;
@@ -25,6 +8,7 @@ package org.wildfly.clustering.marshalling.protostream;
 import java.io.IOException;
 
 import org.infinispan.protostream.TagReader;
+import org.infinispan.protostream.descriptors.WireType;
 
 /**
  * A {@link TagReader} with the additional ability to read an arbitrary embedded object.
@@ -32,18 +16,36 @@ import org.infinispan.protostream.TagReader;
  */
 public interface ProtoStreamReader extends ProtoStreamOperation, TagReader {
 
-    default Context getContext() {
-        return ProtoStreamReaderContext.INSTANCE.get();
+    /**
+     * Returns the tag of the current field, or optional if {@link #readTag()} was not yet called for the next field.
+     * @return
+     */
+    int getCurrentTag();
+
+    /**
+     * Skips over the field of the specified wire type.
+     * @return true, if the current tag is a normal field, false otherwise
+     * @throws IOException if the stream does not conform to the wire type of the skipped field.
+     */
+    default boolean skipField(WireType type) throws IOException {
+        return this.skipField(WireType.makeTag(0, type));
     }
+
+    /**
+     * Returns a reader for a field set whose fields start at the specified index.
+     * @param <T> the field builder type
+     * @param reader a field reader
+     * @param startIndex the start index for the field set
+     * @return a field set reader
+     */
+    <T> FieldSetReader<T> createFieldSetReader(FieldReadable<T> reader, int startIndex);
 
     /**
      * Reads an object of an arbitrary type from this reader.
      * @return a supplier of the unmarshalled object
      * @throws IOException if the object could not be read with the associated marshaller.
      */
-    default Object readAny() throws IOException {
-        return this.readObject(Any.class).get();
-    }
+    Object readAny() throws IOException;
 
     /**
      * Reads an object of an arbitrary type from this reader, cast to the specified type.

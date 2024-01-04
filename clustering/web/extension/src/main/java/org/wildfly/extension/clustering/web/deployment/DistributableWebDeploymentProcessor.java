@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.clustering.web.deployment;
@@ -46,6 +29,8 @@ import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
  */
 public class DistributableWebDeploymentProcessor implements DeploymentUnitProcessor {
 
+    private static final String WEB_API = "org.wildfly.clustering.web.api";
+    private static final String MARSHALLING_API = "org.wildfly.clustering.marshalling.api";
     private static final String PROTOSTREAM = "org.infinispan.protostream";
     private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
@@ -63,6 +48,8 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
 
             ModuleSpecification specification = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
             ModuleLoader loader = Module.getBootModuleLoader();
+
+            specification.addSystemDependency(new ModuleDependency(loader, WEB_API, false, false, false, false));
 
             if (provider.getSessionManagementConfiguration().getMarshallerFactory() == SessionMarshallerFactory.PROTOSTREAM) {
                 specification.addSystemDependency(new ModuleDependency(loader, PROTOSTREAM, false, false, false, false));
@@ -82,9 +69,11 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                         throw new IllegalStateException(e);
                     }
                 }
+            } else {
+                specification.addSystemDependency(new ModuleDependency(loader, MARSHALLING_API, false, false, false, false));
             }
 
-            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_2_0)) {
+            if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_4_0)) {
                 specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
                 specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
             }

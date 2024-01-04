@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.datasources.agroal;
 
@@ -40,21 +23,21 @@ class AgroalSubsystemParser_2_0 extends PersistentResourceXMLParser {
     private static final PersistentResourceXMLDescription XML_DESCRIPTION;
 
     static {
-        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.INSTANCE.getPathElement(), AgroalNamespace.AGROAL_2_0.getUriString());
+        PersistentResourceXMLBuilder subsystemXMLBuilder = builder(AgroalSubsystemDefinition.PATH, AgroalNamespace.AGROAL_2_0.getUriString());
 
-        PersistentResourceXMLBuilder datasourceXMLBuilder = builder(DataSourceDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder datasourceXMLBuilder = builder(DataSourceDefinition.PATH);
         for (AttributeDefinition attributeDefinition : DataSourceDefinition.ATTRIBUTES) {
             datasourceXMLBuilder.addAttribute(attributeDefinition);
         }
         subsystemXMLBuilder.addChild(datasourceXMLBuilder);
 
-        PersistentResourceXMLBuilder xaDatasourceXMLBuilder = builder(XADataSourceDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder xaDatasourceXMLBuilder = builder(XADataSourceDefinition.PATH);
         for (AttributeDefinition attributeDefinition : XADataSourceDefinition.ATTRIBUTES) {
             xaDatasourceXMLBuilder.addAttribute(attributeDefinition);
         }
         subsystemXMLBuilder.addChild(xaDatasourceXMLBuilder);
 
-        PersistentResourceXMLBuilder driverXMLBuilder = PersistentResourceXMLDescription.builder(DriverDefinition.INSTANCE.getPathElement());
+        PersistentResourceXMLBuilder driverXMLBuilder = PersistentResourceXMLDescription.builder(DriverDefinition.PATH);
         driverXMLBuilder.setXmlWrapperElement(DriverDefinition.DRIVERS_ELEMENT_NAME);
         for (AttributeDefinition attributeDefinition : DriverDefinition.ATTRIBUTES) {
             driverXMLBuilder.addAttribute(attributeDefinition);

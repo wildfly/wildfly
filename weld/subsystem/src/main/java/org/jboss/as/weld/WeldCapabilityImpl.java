@@ -1,30 +1,16 @@
 /*
- * JBoss, Home of Professional Open Source
- *
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
+
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
-import jakarta.enterprise.inject.spi.InterceptionType;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.weld._private.WeldDeploymentMarker;
-import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -77,20 +63,4 @@ public class WeldCapabilityImpl implements WeldCapability {
         WeldDeploymentMarker.mark(unit);
     }
 
-    @Override
-    public void ignorePrecalculatedJandexForModules(DeploymentUnit deploymentUnit, String... moduleNames) {
-        // Test if running in EE9 or not
-        InterceptionType type = InterceptionType.AROUND_CONSTRUCT;
-        boolean ee9 = !type.getClass().getName().startsWith("javax.");
-
-        if (ee9) {
-            DeploymentUnit root = deploymentUnit;
-            while (root.getParent() != null) {
-                root = root.getParent();
-            }
-            for (String module : moduleNames) {
-                root.addToAttachmentList(WeldAttachments.INGORE_PRECALCULATED_JANDEX_MODULES, module);
-            }
-        }
-    }
 }

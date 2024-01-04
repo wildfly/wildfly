@@ -1,20 +1,20 @@
 [[YAML_Configuration_file]]
-= (YAML) Configuration file (Experimental))
+= YAML Configuration file
 
-In order to provide some way to separate customization from the configuration provisionned by Galleon we want to *experiment* with a new feature where this customization is provided by YAML files.
-Because this feature is *EXPERIMENTAL* we are disabling it by default and you can *NOT* rely on it being present or compatible in the future releases.
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
-[[activate_yaml_feature]]
-== Active the YAML support feature
+A common way to manage WildFly installations over time is to start with a standard configuration file (e.g. the out-of-the-box `standalone.xml` file that comes with each WildFly release) and then apply installation specific customizations to it (e.g. add datasource resources and Elytron security realm resources to integrate with the company's own services). As the standard configuration file evolves over time (with new releases) the goal is to efficiently re-apply the installation specific customizations. Users have several ways to apply their customizations: edit the XML manually or with XML manipulation tools (neither of which is recommended), create jboss-cli scripts that you can run on each upgrade, or use WildFly's YAML configuration file feature.
 
-To enable that feature you need to add a ServiceLoader configuration in the `org.jboss.as.controller` module.
-You need to create the following file: `META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension` containing a single line *org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension* in the dir folder of the `org.jboss.as.controller` module.
+With the YAML configuration file approach, you provide one or more YAML files that specify the resources that you want WildFly to add to its running configuration, along with any configuration attribute values that should differ from what's in standalone.xml. Using YAML files has advantages over using CLI scripts:
 
-[source,options="nowrap"]
-----
-mkdir -p $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/
-echo 'org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension' > $WILDFLY_HOME/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension
-----
+* CLI scripts can be tricky to write as they usually aren't idempotent. If you run a script that adds a datasource, that datasource is now in the standalone.xml file, so if you run the script again, it will fail due to attempting to add an existing resource. This can be worked around by using the `--read-ony-server-config` command line flag instead of the usual `-c` / `--server-config`. Or you can write more complex CLI scripts that check whether resources already exist before attempting to add them. Both of these approaches can work, but they can be tricky to do correctly. The YAML configuration file approach is idempotent. The WildFly server reads the YAML at boot and updates its running configuration, but it does not update the standalone.xml file, so the same thing can be done repeatedly.
+* Applying a CLI script usually involves launching a separate Java process (the WildFly CLI). Needing to do this can be a poor fit for configuration customization workflows. With the YAML configuration file approach, the WildFly server process itself process the YAML as part of boot.
 
 [[starting_with_yaml_files]]
 == Starting with YAML files

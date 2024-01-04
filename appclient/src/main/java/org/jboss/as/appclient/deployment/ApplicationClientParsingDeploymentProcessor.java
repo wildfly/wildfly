@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.appclient.deployment;
 
@@ -105,23 +88,12 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
             descriptor = deploymentRoot.getRoot().getChild(APP_XML);
         }
         if (descriptor.exists()) {
-            InputStream is = null;
-            try {
-                is = descriptor.openStream();
-                ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
-                return data;
+            try (InputStream is = descriptor.openStream()) {
+                return new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
+                throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor);
             }
         } else {
             return null;
@@ -132,24 +104,13 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final VirtualFile appXml = deploymentRoot.getChild(JBOSS_CLIENT_XML);
         if (appXml.exists()) {
-            InputStream is = null;
-            try {
-                is = appXml.openStream();
-                JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
-                return data;
+            try (InputStream is = appXml.openStream()) {
+                return new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
             } catch (XMLStreamException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
 
             } catch (IOException e) {
                 throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
         } else {
             //we may already have this info from jboss-all.xml
@@ -160,7 +121,6 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
     private XMLStreamReader getXMLStreamReader(InputStream is) throws XMLStreamException {
         final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
         inputFactory.setXMLResolver(NoopXMLResolver.create());
-        XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
-        return xmlReader;
+        return inputFactory.createXMLStreamReader(is);
     }
 }

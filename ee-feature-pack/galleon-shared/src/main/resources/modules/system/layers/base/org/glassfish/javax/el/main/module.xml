@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module-alias xmlns="urn:jboss:module:1.9" name="org.glassfish.javax.el" target-name="org.glassfish.jakarta.el"/>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<licenseSummary>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                </license>
+                <license>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                </license>
+                <license>
+                    <name>FSF All Permissive License</name>
+                </license>
+                <license>
+                    <name>MIT License</name>
+                </license>
+            </licenses>
+        </dependency>
+    </dependencies>
+</licenseSummary>

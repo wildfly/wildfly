@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.integration.messaging.mgmt;
@@ -106,29 +89,42 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
                 assertEquals(true, e.getResult().get(ROLLED_BACK).asBoolean());
                 assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0105"));
             }
+        } catch(Exception ex) {
+            ex.printStackTrace();
         } finally {
-            jmsOperations.removeJmsExternalConnectionFactory(CF_NAME);
-            jmsOperations.removeExternalHttpConnector(CONNECTOR_NAME);
+            try {
+                jmsOperations.removeJmsExternalConnectionFactory(CF_NAME);
+            } catch (RuntimeException ex) {
+                //ignore
+            }
+            try {
+                jmsOperations.removeExternalHttpConnector(CONNECTOR_NAME);
+            } catch (RuntimeException ex) {
+                //ignore
+            }
         }
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Test
     public void testRemovePooledConnectionFactory() throws Exception {
-//      /subsystem=messaging-activemq/in-vm-connector=invm1:add(server-id=123)
-        ModelNode invmConnectorAddress = new ModelNode();
-        invmConnectorAddress.add("subsystem", "messaging-activemq");
-        invmConnectorAddress.add("in-vm-connector", "invm1");
-        ModelNode op = Operations.createAddOperation(invmConnectorAddress);
-        op.get("server-id").set("123");
+        //      /subsystem=messaging-activemq/http-connector=http-connector-remove-test:add(socket-binding=http, endpoint=http-acceptor)
+        JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+//        jmsOperations.addExternalHttpConnector("http-connector-remove-test", "http", "http-acceptor");
+        ModelNode connectorAddress = new ModelNode();
+        connectorAddress.add("subsystem", "messaging-activemq");
+        connectorAddress.add("http-connector", "http-connector-remove-test");
+        ModelNode op = Operations.createAddOperation(connectorAddress);
+        op.get("socket-binding").set("http");
+        op.get("endpoint").set("http-acceptor");
         execute(managementClient.getControllerClient(), op);
 
-//      /subsystem=messaging-activemq/pooled-connection-factory=pool3:add(connectors=[invm1],entries=[foo])
+//      /subsystem=messaging-activemq/pooled-connection-factory=pool3:add(connectors=[http-connector-test],entries=[foo])
         ModelNode pcfAddress = new ModelNode();
         pcfAddress.add("subsystem", "messaging-activemq");
         pcfAddress.add("pooled-connection-factory", "pool3");
         op = Operations.createAddOperation(pcfAddress);
-        op.get("connectors").setEmptyList().add("invm1");
+        op.get("connectors").setEmptyList().add("http-connector-remove-test");
         op.get("entries").setEmptyList().add("foo");
         execute(managementClient.getControllerClient(), op);
 
@@ -136,7 +132,7 @@ public class ExternalConnectionFactoryManagementTestCase extends ContainerResour
         op = Operations.createRemoveOperation(pcfAddress);
         execute(managementClient.getControllerClient(), op);
 
-        op = Operations.createRemoveOperation(invmConnectorAddress);
+        op = Operations.createRemoveOperation(connectorAddress);
         execute(managementClient.getControllerClient(), op);
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }

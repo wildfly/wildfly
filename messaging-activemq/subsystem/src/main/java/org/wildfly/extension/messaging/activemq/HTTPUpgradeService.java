@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -64,7 +47,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.IoUtils;
@@ -122,7 +105,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         MessagingLogger.ROOT_LOGGER.registeredHTTPUpgradeHandler(ACTIVEMQ_REMOTING, acceptorName);
         ServiceController<?> activeMQService = context.getController().getServiceContainer().getService(MessagingServices.getActiveMQServiceName(activeMQServerName));
-        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
+        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(ActiveMQBroker.class.cast(activeMQService.getValue()).getDelegate());
 
         httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
         upgradeSupplier.get().addProtocol(getProtocol(),

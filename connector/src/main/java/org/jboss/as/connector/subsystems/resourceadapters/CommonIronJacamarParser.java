@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
@@ -1301,7 +1284,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                     Recovery.Tag tag = Recovery.Tag.forName(reader.getLocalName());
                     switch (tag) {
                         case RECOVER_CREDENTIAL: {
-                            parseElytronSupportedRecoveryCredential(reader, node);
+                            if (Namespace.forUri(reader.getNamespaceURI()).compareTo(Namespace.RESOURCEADAPTERS_7_1) >= 0) {
+                                parseElytronSupportedRecoveryCredential_7_1(reader, node);
+                            } else {
+                                parseElytronSupportedRecoveryCredential(reader, node);
+                            }
                             break;
                         }
                         case RECOVER_PLUGIN: {
@@ -1321,6 +1308,20 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
     private void parseSecuritySettings(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {
+
+        for (Recovery.Attribute attribute : Recovery.Attribute.values()) {
+            switch (attribute) {
+                case NO_RECOVERY: {
+                    String value = rawAttributeText(reader, NO_RECOVERY.getXmlName());
+                    if (value != null) {
+                        NO_RECOVERY.parseAndSetParameter(value, node, reader);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
 
         boolean securtyDomainMatched = false;
         while (reader.hasNext()) {
@@ -1440,7 +1441,6 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
     private void parseRecoveryCredential(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException,
             ValidateException {
 
-
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
@@ -1473,6 +1473,76 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                         case SECURITY_DOMAIN: {
                             String value = rawElementText(reader);
                             RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        default:
+                            throw ParseUtils.unexpectedElement(reader);
+                    }
+                    break;
+                }
+            }
+        }
+        throw ParseUtils.unexpectedEndElement(reader);
+    }
+
+    private void parseElytronSupportedRecoveryCredential_7_1(XMLExtendedStreamReader reader, ModelNode node)
+            throws XMLStreamException, ParserException, ValidateException {
+
+        for (Credential.Attribute attribute : Credential.Attribute.values()) {
+            switch (attribute) {
+                case USER_NAME: {
+                    String value = rawAttributeText(reader, RECOVERY_USERNAME.getXmlName());
+                    if (value != null) {
+                        RECOVERY_USERNAME.parseAndSetParameter(value, node, reader);
+                    }
+                    break;
+                }
+                case PASSWORD: {
+                    String value = rawAttributeText(reader, RECOVERY_PASSWORD.getXmlName());
+                    if (value != null) {
+                        RECOVERY_PASSWORD.parseAndSetParameter(value, node, reader);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        while (reader.hasNext()) {
+            switch (reader.nextTag()) {
+                case END_ELEMENT: {
+                    if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.SECURITY
+                            || Recovery.Tag.forName(reader.getLocalName()) == Recovery.Tag.RECOVER_CREDENTIAL) {
+
+                        return;
+                    } else {
+                        if (Credential.Tag.forName(reader.getLocalName()) == Credential.Tag.UNKNOWN) {
+                            throw ParseUtils.unexpectedEndElement(reader);
+                        }
+                    }
+                    break;
+                }
+                case START_ELEMENT: {
+                    switch (Credential.Tag.forName(reader.getLocalName())) {
+                        case CREDENTIAL_REFERENCE: {
+                            RECOVERY_CREDENTIAL_REFERENCE.getParser().parseElement(RECOVERY_CREDENTIAL_REFERENCE, reader, node);
+                            break;
+                        }
+                        case SECURITY_DOMAIN: {
+                            String value = rawElementText(reader);
+                            RECOVERY_SECURITY_DOMAIN.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case ELYTRON_ENABLED: {
+                            String value = rawElementText(reader);
+                            value = value == null? "true": value;
+                            RECOVERY_ELYTRON_ENABLED.parseAndSetParameter(value, node, reader);
+                            break;
+                        }
+                        case AUTHENTICATION_CONTEXT: {
+                            String value = rawElementText(reader);
+                            RECOVERY_AUTHENTICATION_CONTEXT.parseAndSetParameter(value, node, reader);
                             break;
                         }
                         default:

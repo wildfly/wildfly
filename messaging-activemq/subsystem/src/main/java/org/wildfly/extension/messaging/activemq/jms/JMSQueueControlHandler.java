@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.jms;
@@ -28,12 +11,12 @@ import static org.wildfly.extension.messaging.activemq.jms.JMSQueueService.JMS_Q
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.messaging.activemq.AbstractQueueControlHandler;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 
 /**
  * Handler for runtime operations that invoke on a ActiveMQ {@link QueueControl}.
@@ -60,15 +43,15 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<QueueCon
     }
 
     @Override
-    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQServer server, String queueName){
+    protected DelegatingQueueControl<QueueControl> getQueueControl(ActiveMQBroker server, String queueName){
         String name = queueName;
         if (queueName.startsWith(JMS_QUEUE_PREFIX)) {
             name = queueName.substring(JMS_QUEUE_PREFIX.length());
         }
-        QueueControl queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + name));
+        QueueControl queueControl = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + name));
         if (queueControl == null) {
             //For backward compatibility
-            queueControl = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
+            queueControl = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + JMS_QUEUE_PREFIX + queueName));
             if (queueControl == null) {
                 return null;
             }

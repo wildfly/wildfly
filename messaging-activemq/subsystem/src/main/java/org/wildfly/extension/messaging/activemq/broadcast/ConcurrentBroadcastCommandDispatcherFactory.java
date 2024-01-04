@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.broadcast;
@@ -33,11 +16,11 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Manager;
 import org.wildfly.clustering.ee.cache.ConcurrentManager;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -82,7 +65,7 @@ public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCom
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
         CommandDispatcherFactory dispatcherFactory = this.factory;
-        Function<Runnable, CommandDispatcher<?>> factory = new Function<Runnable, CommandDispatcher<?>>() {
+        Function<Runnable, CommandDispatcher<?>> factory = new Function<>() {
             @Override
             public CommandDispatcher<C> apply(Runnable closeTask) {
                 CommandDispatcher<C> dispatcher = dispatcherFactory.createCommandDispatcher(id, context, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));

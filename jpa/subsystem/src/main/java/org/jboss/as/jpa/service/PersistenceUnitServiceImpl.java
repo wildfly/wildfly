@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jpa.service;
@@ -26,6 +9,7 @@ import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -53,6 +37,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
+import org.jipijapa.plugin.spi.PersistenceProviderIntegratorAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -81,6 +66,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
 
     private final Map properties;
     private final PersistenceProviderAdaptor persistenceProviderAdaptor;
+    private final List<PersistenceProviderIntegratorAdaptor> persistenceProviderIntegratorAdaptors;
     private final PersistenceProvider persistenceProvider;
     private final PersistenceUnitMetadata pu;
     private final ClassLoader classLoader;
@@ -98,6 +84,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final ClassLoader classLoader,
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
+            final List<PersistenceProviderIntegratorAdaptor> persistenceProviderIntegratorAdaptors,
             final PersistenceProvider persistenceProvider,
             final PersistenceUnitRegistryImpl persistenceUnitRegistry,
             final ServiceName deploymentUnitServiceName,
@@ -106,6 +93,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
         this.properties = properties;
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
+        this.persistenceProviderIntegratorAdaptors = persistenceProviderIntegratorAdaptors;
         this.persistenceProvider = persistenceProvider;
         this.classLoader = classLoader;
         this.persistenceUnitRegistry = persistenceUnitRegistry;
@@ -367,6 +355,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties);
         } finally {
             persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
+            for (PersistenceProviderIntegratorAdaptor adaptor : persistenceProviderIntegratorAdaptors) {
+                adaptor.afterCreateContainerEntityManagerFactory(pu);
+            }
         }
     }
 

@@ -1,29 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.ee.cache.function;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,90 +18,82 @@ import org.junit.Test;
  */
 public class FunctionTestCase {
     @Test
-    public void copyOnWriteSet() {
-        Set<String> result = new CopyOnWriteSetAddFunction<>("foo").apply(null, null);
+    public void set() {
+        Set<String> result = new SetAddFunction<>("foo").apply(null, null);
         Assert.assertNotNull(result);
         Assert.assertTrue(result.contains("foo"));
 
-        Set<String> result2 = new CopyOnWriteSetAddFunction<>("bar").apply(null, result);
+        Set<String> result2 = new SetAddFunction<>("bar").apply(null, result);
         Assert.assertNotNull(result2);
         Assert.assertNotSame(result, result2);
         Assert.assertTrue(result2.contains("foo"));
         Assert.assertTrue(result2.contains("bar"));
 
-        Set<String> result3 = new CopyOnWriteSetRemoveFunction<>("foo").apply(null, result2);
+        Set<String> result3 = new SetAddFunction<>(Set.of("baz", "qux")).apply(null, result2);
         Assert.assertNotNull(result3);
         Assert.assertNotSame(result2, result3);
-        Assert.assertFalse(result3.contains("foo"));
+        Assert.assertTrue(result3.contains("foo"));
         Assert.assertTrue(result3.contains("bar"));
+        Assert.assertTrue(result3.contains("baz"));
+        Assert.assertTrue(result3.contains("qux"));
 
-        Set<String> result4 = new CopyOnWriteSetRemoveFunction<>("bar").apply(null, result3);
-        Assert.assertNull(result4);
+        Set<String> result4 = new SetRemoveFunction<>("foo").apply(null, result3);
+        Assert.assertNotNull(result4);
+        Assert.assertNotSame(result3, result4);
+        Assert.assertFalse(result4.contains("foo"));
+        Assert.assertTrue(result4.contains("bar"));
+        Assert.assertTrue(result4.contains("baz"));
+        Assert.assertTrue(result4.contains("qux"));
+
+        Set<String> result5 = new SetRemoveFunction<>(Set.of("bar", "baz")).apply(null, result4);
+        Assert.assertNotNull(result5);
+        Assert.assertNotSame(result4, result5);
+        Assert.assertFalse(result5.contains("foo"));
+        Assert.assertFalse(result5.contains("bar"));
+        Assert.assertFalse(result5.contains("baz"));
+        Assert.assertTrue(result5.contains("qux"));
+
+        Set<String> result6 = new SetRemoveFunction<>("qux").apply(null, result5);
+        Assert.assertNull(result6);
     }
 
     @Test
-    public void concurrentSet() {
-        Set<String> result = new ConcurrentSetAddFunction<>("foo").apply(null, null);
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.contains("foo"));
-
-        Set<String> result2 = new ConcurrentSetAddFunction<>("bar").apply(null, result);
-        Assert.assertNotNull(result2);
-        Assert.assertSame(result, result2);
-        Assert.assertTrue(result2.contains("foo"));
-        Assert.assertTrue(result2.contains("bar"));
-
-        Set<String> result3 = new ConcurrentSetRemoveFunction<>("foo").apply(null, result2);
-        Assert.assertNotNull(result3);
-        Assert.assertSame(result2, result3);
-        Assert.assertFalse(result3.contains("foo"));
-        Assert.assertTrue(result3.contains("bar"));
-
-        Set<String> result4 = new ConcurrentSetRemoveFunction<>("bar").apply(null, result3);
-        Assert.assertNull(result4);
-    }
-
-    @Test
-    public void copyOnWriteMap() {
-        Map<String, String> result = new CopyOnWriteMapPutFunction<>("foo", "a").apply(null, null);
+    public void map() {
+        Map<String, String> result = new MapPutFunction<>("foo", "a").apply(null, null);
         Assert.assertNotNull(result);
         Assert.assertTrue(result.containsKey("foo"));
 
-        Map<String, String> result2 = new CopyOnWriteMapPutFunction<>("bar", "b").apply(null, result);
+        Map<String, String> result2 = new MapPutFunction<>("bar", "b").apply(null, result);
         Assert.assertNotNull(result2);
         Assert.assertNotSame(result, result2);
         Assert.assertTrue(result2.containsKey("foo"));
         Assert.assertTrue(result2.containsKey("bar"));
 
-        Map<String, String> result3 = new CopyOnWriteMapRemoveFunction<String, String>("foo").apply(null, result2);
+        Map<String, String> result3 = new MapRemoveFunction<String, String>("foo").apply(null, result2);
         Assert.assertNotNull(result3);
         Assert.assertNotSame(result2, result3);
         Assert.assertFalse(result3.containsKey("foo"));
         Assert.assertTrue(result3.containsKey("bar"));
 
-        Map<String, String> result4 = new CopyOnWriteMapRemoveFunction<String, String>("bar").apply(null, result3);
+        Map<String, String> result4 = new MapRemoveFunction<String, String>("bar").apply(null, result3);
         Assert.assertNull(result4);
-    }
 
-    @Test
-    public void concurrentMap() {
-        Map<String, String> result = new ConcurrentMapPutFunction<>("foo", "a").apply(null, null);
-        Assert.assertNotNull(result);
-        Assert.assertTrue(result.containsKey("foo"));
+        Map<String, String> result5 = new MapComputeFunction<>(Map.of("foo", "a", "bar", "b")).apply(null, result4);
+        Assert.assertNotNull(result5);
+        Assert.assertEquals(2, result5.size());
+        Assert.assertEquals("a", result5.get("foo"));
+        Assert.assertEquals("b", result5.get("bar"));
 
-        Map<String, String> result2 = new ConcurrentMapPutFunction<>("bar", "b").apply(null, result);
-        Assert.assertNotNull(result2);
-        Assert.assertSame(result, result2);
-        Assert.assertTrue(result2.containsKey("foo"));
-        Assert.assertTrue(result2.containsKey("bar"));
+        Map<String, String> updates = new TreeMap<>();
+        updates.put("foo", null);
+        updates.put("bar", "c");
+        Map<String, String> result6 = new MapComputeFunction<>(updates).apply(null, result5);
+        Assert.assertNotNull(result6);
+        Assert.assertEquals(1, result6.size());
+        Assert.assertFalse(result6.containsKey("foo"));
+        Assert.assertEquals("c", result6.get("bar"));
 
-        Map<String, String> result3 = new ConcurrentMapRemoveFunction<String, String>("foo").apply(null, result2);
-        Assert.assertNotNull(result3);
-        Assert.assertSame(result2, result3);
-        Assert.assertFalse(result3.containsKey("foo"));
-        Assert.assertTrue(result3.containsKey("bar"));
-
-        Map<String, String> result4 = new ConcurrentMapRemoveFunction<String, String>("bar").apply(null, result3);
-        Assert.assertNull(result4);
+        Map<String, String> result7 = new MapComputeFunction<>(Collections.<String, String>singletonMap("bar", null)).apply(null, result6);
+        Assert.assertNull(result7);
     }
 }

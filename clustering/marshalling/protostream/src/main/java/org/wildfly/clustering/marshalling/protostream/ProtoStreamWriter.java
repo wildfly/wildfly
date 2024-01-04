@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream;
@@ -33,9 +16,7 @@ import org.infinispan.protostream.descriptors.WireType;
  */
 public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
 
-    default Context getContext() {
-        return ProtoStreamWriterContext.FACTORY.get().apply(this);
-    }
+    <T> FieldSetWriter<T> createFieldSetWriter(Writable<T> writer, int startIndex);
 
     /**
      * Writes the specified object of an abitrary type using the specified index.
@@ -45,7 +26,8 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
      */
     default void writeAny(int index, Object value) throws IOException {
-        this.writeObject(index, new Any(value));
+        this.writeTag(index, WireType.LENGTH_DELIMITED);
+        this.writeAnyNoTag(value);
     }
 
     /**
@@ -61,7 +43,14 @@ public interface ProtoStreamWriter extends ProtoStreamOperation, TagWriter {
     }
 
     /**
-     * Writes the specified object.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
+     * Writes the specified object of an arbitrary type.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
+     * @param value a value to be written
+     * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
+     */
+    void writeAnyNoTag(Object value) throws IOException;
+
+    /**
+     * Writes the specified object of a specific type.  Must be preceded by {{@link #writeTag(int, org.infinispan.protostream.descriptors.WireType)}.
      * @param value a value to be written
      * @throws IOException if no marshaller is associated with the type of the specified object, or if the marshaller fails to write the specified object
      */

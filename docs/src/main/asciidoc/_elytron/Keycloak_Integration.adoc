@@ -1,4 +1,12 @@
 [[Keycloak_Integration]]
 = Using Keycloak with WildFly Elytron
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The ability to secure applications using link:https://openid.net/specs/openid-connect-core-1_0.html[OpenID Connect] is provided by the _elytron-oidc-client_ subsystem. For details about securing applications deployed on WildFly with OpenID Connect, by using Keycloak as the OpenID provider, see the link:Admin_Guide{outfilesuffix}#Elytron_OIDC_Client[Elytron OIDC Client] documentation.

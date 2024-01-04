@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.naming.subsystem;
@@ -35,6 +18,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -56,7 +40,7 @@ import java.util.List;
  */
 public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
-    static final NamingBindingResourceDefinition INSTANCE = new NamingBindingResourceDefinition();
+    private static final String[] ALLOWED_TYPES = {"char", "java.lang.Character", "byte", "java.lang.Byte", "short", "java.lang.Short", "int", "java.lang.Integer", "long", "java.lang.Long", "float", "java.lang.Float", "double", "java.lang.Double", "boolean", "java.lang.Boolean", "java.lang.String", "java.net.URL"};
 
     static final SimpleAttributeDefinition BINDING_TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.BINDING_TYPE, ModelType.STRING, false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -71,6 +55,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setValidator(new StringAllowedValuesValidator(ALLOWED_TYPES))
             .build();
 
     static final SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(NamingSubsystemModel.CLASS, ModelType.STRING, true)
@@ -111,7 +96,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     static final OperationStepHandler VALIDATE_RESOURCE_MODEL_OPERATION_STEP_HANDLER = (context, op) -> validateResourceModel(context.readResource(PathAddress.EMPTY_ADDRESS).getModel(), true);
 
-    private NamingBindingResourceDefinition() {
+    NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
                 NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.BINDING),
                 NamingBindingAdd.INSTANCE, NamingBindingRemove.INSTANCE);

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.web.container;
@@ -32,18 +15,18 @@ import org.jboss.msc.service.ServiceName;
 public interface SessionManagementProvider {
 
     /**
-     * Returns a configurator for a service providing a {@link org.jboss.as.web.session.SessionIdentifierCodec} service.
-     * @param name the service name of the SessionIdentifierCodec service
-     * @param configuration the configuration of the deployment
-     * @return a service configurator
-     */
-    CapabilityServiceConfigurator getSessionIdentifierCodecServiceConfigurator(ServiceName name, WebDeploymentConfiguration configuration);
-
-    /**
-     * Returns a configurator for a service providing a container-specific session manager factory.
+     * Returns a set of configurators for services providing a container-specific session manager factory.
      * @param name the service name of the session manager factory service
      * @param configuration the configuration of the session manager factory
-     * @return a service configurator
+     * @return a number of service configurators
      */
-    CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(ServiceName name, SessionManagerFactoryConfiguration configuration);
+    Iterable<CapabilityServiceConfigurator> getSessionManagerFactoryServiceConfigurators(ServiceName name, SessionManagerFactoryConfiguration configuration);
+
+    /**
+     * Returns set of configurators for services providing container-specific session affinity logic.
+     * @param name the service name of the session affinity service
+     * @param configuration the configuration of the deployment
+     * @return a number of service configurators
+     */
+    Iterable<CapabilityServiceConfigurator> getSessionAffinityServiceConfigurators(ServiceName name, WebDeploymentConfiguration configuration);
 }

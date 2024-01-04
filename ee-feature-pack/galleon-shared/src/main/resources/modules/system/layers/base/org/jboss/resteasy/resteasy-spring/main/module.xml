@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-spring">
+
+    <resources>
+        <!-- This module just contains the jar as a resource root. It cannot be depended on to get
+         access to the jar classes-->
+        <resource-root path="bundled"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+    </dependencies>
+</module>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="javax.orb.api">
+
+    <resources>
+        <artifact name="${org.jboss.openjdk-orb:openjdk-orb}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="jdk.unsupported"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.jts.integration"/>
+        <module name="org.jboss.iiop-client"/>
+        <!-- These dependencies are required only if the
+             iiop-openjdk or jacorb subsystems are present.
+             If they are the subsystem will initialize the
+             ORB with a specification to use classes from
+             these modules. -->
+        <module name="org.wildfly.iiop-openjdk" optional="true"/>
+        <module name="org.jboss.as.transactions" optional="true"/>
+    </dependencies>
+
+</module>
+

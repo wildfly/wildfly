@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.jgroups.subsystem;
@@ -35,6 +18,7 @@ import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.Global;
 import org.jgroups.PhysicalAddress;
+import org.jgroups.protocols.FD_ALL2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
 
@@ -94,16 +78,17 @@ public class ProtocolResourceRegistrar implements ManagementRegistrar<Management
     }
 
     enum LegacyProtocol {
+        FD(FD_ALL2.class, JGroupsSubsystemModel.VERSION_10_0_0),
         ;
         final String name;
         final String targetName;
-        final JGroupsModel deprecation;
+        final JGroupsSubsystemModel deprecation;
 
-        LegacyProtocol(Class<? extends Protocol> targetProtocol, JGroupsModel deprecation) {
+        LegacyProtocol(Class<? extends Protocol> targetProtocol, JGroupsSubsystemModel deprecation) {
             this(null, targetProtocol, deprecation);
         }
 
-        LegacyProtocol(String name, Class<? extends Protocol> targetProtocol, JGroupsModel deprecation) {
+        LegacyProtocol(String name, Class<? extends Protocol> targetProtocol, JGroupsSubsystemModel deprecation) {
             this.name = (name != null) ? name : this.name();
             this.targetName = targetProtocol.getName().substring(Global.PREFIX.length());
             this.deprecation = deprecation;
@@ -151,25 +136,25 @@ public class ProtocolResourceRegistrar implements ManagementRegistrar<Management
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {
             new JDBCProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
         for (EncryptProtocol protocol : EnumSet.allOf(EncryptProtocol.class)) {
             new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
         for (InitialHostsProtocol protocol : EnumSet.allOf(InitialHostsProtocol.class)) {
             new SocketDiscoveryProtocolResourceDefinition<>(protocol.name(), protocol.hostTransformer, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
         for (AuthProtocol protocol : EnumSet.allOf(AuthProtocol.class)) {
             new AuthProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
         }
 
         if (registration.getProcessType().isServer()) { // only auto-update legacy protocols in server processes

@@ -1,28 +1,11 @@
 /*
- *
- *  JBoss, Home of Professional Open Source.
- *  Copyright 2013, Red Hat, Inc., and individual contributors
- *  as indicated by the @author tags. See the copyright.txt file in the
- *  distribution for a full listing of individual contributors.
- *
- *  This is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation; either version 2.1 of
- *  the License, or (at your option) any later version.
- *
- *  This software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this software; if not, write to the Free
- *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * /
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.mail.extension;
+
+import java.util.function.Supplier;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
@@ -34,10 +17,10 @@ import org.jboss.as.naming.ValueManagedReference;
 */
 class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
-    private final MailSessionService service;
+    private final Supplier<SessionProvider> provider;
 
-    public MailSessionManagedReferenceFactory(MailSessionService service) {
-        this.service = service;
+    public MailSessionManagedReferenceFactory(Supplier<SessionProvider> provider) {
+        this.provider = provider;
     }
 
     @Override
@@ -53,6 +36,6 @@ class MailSessionManagedReferenceFactory implements ContextListAndJndiViewManage
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(service.getValue());
+        return new ValueManagedReference(this.provider.get().getSession());
     }
 }

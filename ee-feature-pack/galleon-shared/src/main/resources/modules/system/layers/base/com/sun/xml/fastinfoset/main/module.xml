@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="com.sun.xml.fastinfoset">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${com.sun.xml.fastinfoset:FastInfoset}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+    </dependencies>
+
+</module>

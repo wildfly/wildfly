@@ -1,6 +1,14 @@
 [[Web_Undertow_Reference_Guide]]
 = Sharing sessions between wars in an ear
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Undertow allows you to share sessions between wars in an ear, if it is
 explicitly configured to do so. Note that if you use this feature your
 applications may not be portable, as this is not a standard servlet

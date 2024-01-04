@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2019, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.ee.cache.scheduler;
@@ -31,6 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -45,6 +29,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Paul Ferraro
  */
 public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(LocalScheduler.class);
 
     private final ScheduledExecutorService executor;
     private final ScheduledEntries<T, Instant> entries;
@@ -54,7 +39,7 @@ public class LocalScheduler<T> implements Scheduler<T, Instant>, Runnable {
     private volatile Map.Entry<Map.Entry<T, Instant>, Future<?>> futureEntry = null;
 
     public LocalScheduler(ScheduledEntries<T, Instant> entries, Predicate<T> task, Duration closeTimeout) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory(this.getClass()));
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, THREAD_FACTORY);
         executor.setKeepAliveTime(1L, TimeUnit.MINUTES);
         executor.allowCoreThreadTimeOut(true);
         executor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);

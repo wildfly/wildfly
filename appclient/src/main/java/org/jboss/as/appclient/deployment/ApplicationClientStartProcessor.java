@@ -1,28 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.appclient.deployment;
 
+import static org.jboss.as.appclient.subsystem.AppClientSubsystemResourceDefinition.APPCLIENT_CAPABILITY;
+
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
 import org.jboss.as.appclient.logging.AppClientLogger;
@@ -40,6 +26,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceBuilder;
 
 /**
  * Processor that starts an application client deployment
@@ -85,18 +72,17 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         if (mainMethod == null) {
             throw AppClientLogger.ROOT_LOGGER.cannotStartAppClient(deploymentUnit.getName(), mainClass);
         }
-        final ApplicationClientStartService startService;
-
 
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.OTHER_EE_SETUP_ACTIONS);
 
-        startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(), module.getClassLoader(), setupActions);
+        ServiceBuilder<?> builder = phaseContext.getServiceTarget()
+                .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME));
+        Supplier<ApplicationClientDeploymentService> acdsSupplier = builder.requires(APPCLIENT_CAPABILITY.getCapabilityServiceName());
+        Supplier<Component> componentSupplier = builder.requires(component.getCreateServiceName());
 
+        final ApplicationClientStartService startService = new ApplicationClientStartService(mainMethod, parameters, moduleDescription.getNamespaceContextSelector(),
+                            module.getClassLoader(), setupActions, acdsSupplier, componentSupplier);
 
-        phaseContext.getServiceTarget()
-                .addService(deploymentUnit.getServiceName().append(ApplicationClientStartService.SERVICE_NAME), startService)
-                .addDependency(ApplicationClientDeploymentService.SERVICE_NAME, ApplicationClientDeploymentService.class, startService.getApplicationClientDeploymentServiceInjectedValue())
-                .addDependency(component.getCreateServiceName(), Component.class, startService.getApplicationClientComponent())
-                .install();
+        builder.setInstance(startService).install();
     }
 }

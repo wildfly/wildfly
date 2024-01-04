@@ -1,0 +1,19 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.smallrye.reactive.mutiny">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.smallrye.reactive:mutiny}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.reactivestreams"/>
+        <module name="org.jboss.logging"/>
+    </dependencies>
+</module>

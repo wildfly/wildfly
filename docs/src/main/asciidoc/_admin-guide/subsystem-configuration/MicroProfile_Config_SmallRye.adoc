@@ -1,6 +1,14 @@
 [[MicroProfile_Config_SmallRye]]
 = MicroProfile Config Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Support for https://microprofile.io/project/eclipse/microprofile-config[MicroProfile Config] is provided by
  the _microprofile-config-smallrye_ subsystem.
 

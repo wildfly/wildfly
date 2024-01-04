@@ -1,19 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.integration.elytron.oidc.client;
@@ -33,6 +20,8 @@ import org.keycloak.representations.idm.RolesRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 /**
  * Keycloak configuration for testing.
@@ -42,11 +31,13 @@ import io.restassured.RestAssured;
 public class KeycloakConfiguration {
 
     private static final String USER_ROLE = "user";
-    private static final String JBOSS_ADMIN_ROLE = "JBossAdmin";
+    public static final String JBOSS_ADMIN_ROLE = "JBossAdmin";
     public static final String ALICE = "alice";
     public static final String ALICE_PASSWORD = "alice123+";
     public static final String BOB = "bob";
     public static final String BOB_PASSWORD = "bob123+";
+    public static final String CHARLIE = "charlie";
+    public static final String CHARLIE_PASSWORD = "charlie123+";
     public static final String ALLOWED_ORIGIN = "http://somehost";
 
     public enum ClientAppType {
@@ -73,15 +64,26 @@ public class KeycloakConfiguration {
     }
 
     public static String getAdminAccessToken(String authServerUrl) {
-        return RestAssured
+        RequestSpecification requestSpecification = RestAssured
                 .given()
                 .param("grant_type", "password")
                 .param("username", KeycloakContainer.ADMIN_USER)
                 .param("password", KeycloakContainer.ADMIN_PASSWORD)
-                .param("client_id", "admin-cli")
-                .when()
-                .post(authServerUrl + "/realms/master/protocol/openid-connect/token")
-                .as(AccessTokenResponse.class).getToken();
+                .param("client_id", "admin-cli");
+
+        Response response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
+
+        final long deadline = System.currentTimeMillis() + 180000;
+        while (response.getStatusCode() != 200) {
+            // the Keycloak admin user isn't available yet, keep trying until it is to ensure we can obtain the token
+            // needed to set up the realms for the test
+            response = requestSpecification.when().post(authServerUrl + "/realms/master/protocol/openid-connect/token");
+            if (System.currentTimeMillis() > deadline) {
+                return null;
+            }
+        }
+
+        return response.as(AccessTokenResponse.class).getToken();
     }
 
     public static String getAccessToken(String authServerUrl, String realmName, String username, String password, String clientId, String clientSecret) {
@@ -136,6 +138,7 @@ public class KeycloakConfiguration {
 
         realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         realm.getUsers().add(createUser(BOB, BOB_PASSWORD, Arrays.asList(USER_ROLE)));
+        realm.getUsers().add(createUser(CHARLIE, CHARLIE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         return realm;
     }
 

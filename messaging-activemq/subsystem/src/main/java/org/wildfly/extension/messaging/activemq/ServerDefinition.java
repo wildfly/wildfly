@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -39,6 +22,7 @@ import static org.wildfly.extension.messaging.activemq.MessagingExtension.VERSIO
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -66,6 +50,7 @@ import static org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidat
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.wildfly.extension.messaging.activemq.ha.LiveOnlyDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationColocatedDefinition;
 import org.wildfly.extension.messaging.activemq.ha.ReplicationPrimaryDefinition;
@@ -146,13 +131,13 @@ public class ServerDefinition extends PersistentResourceDefinition {
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = create("security-domain", ModelType.STRING)
             .setAttributeGroup(SECURITY_ATTRIBUTE_GROUP)
             .setXmlName("domain")
-            .setDefaultValue(new ModelNode("other"))
             .setAlternatives("elytron-domain")
             .setRequired(false)
             .setAllowExpression(false) // references the security domain service name
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(MessagingExtension.MESSAGING_SECURITY_SENSITIVE_TARGET)
+            .setCapabilityReference(Capabilities.LEGACY_SECURITY_DOMAIN_CAPABILITY.getName(), Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
             .setDeprecated(MessagingExtension.VERSION_2_0_0)
             .build();
     public static final SimpleAttributeDefinition ELYTRON_DOMAIN = create("elytron-domain", ModelType.STRING)
@@ -243,7 +228,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
     // TODO: if this attribute is set, warn/error if any fs-related journal attribute is set.
-    // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/master/org/wildfly/data-source/capability.adoc
+    // TODO: add capability for data-source https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/data-source/capability.adoc
     public static final SimpleAttributeDefinition JOURNAL_DATASOURCE = create("journal-datasource", STRING)
             .setAttributeGroup(JOURNAL_ATTRIBUTE_GROUP)
             .setXmlName("datasource")
@@ -914,7 +899,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
             .setAttributeGroup(CRITICAL_ANALYZER_ATTRIBUTE_GROUP)
             .setXmlName("policy")
             .setDefaultValue(new ModelNode("LOG"))
-            .setAllowedValues("HALT", "SHUTDOWN", "LOG")
+            .setValidator(EnumValidator.create(CriticalAnalyzerPolicy.class, EnumSet.allOf(CriticalAnalyzerPolicy.class)))
             .setRequired(false)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -960,7 +945,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER))
                 .setAddHandler(new ServerAdd(broadcastCommandDispatcherFactoryInstaller))
                 .setRemoveHandler(ServerRemove.INSTANCE)
-                .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY));
+                .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
+                .setAdditionalPackages(RuntimePackageDependency.required("org.apache.activemq.artemis"), RuntimePackageDependency.required("org.apache.activemq.artemis.journal")));
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -998,27 +984,27 @@ public class ServerDefinition extends PersistentResourceDefinition {
         List<PersistentResourceDefinition> children = new ArrayList<>();
         // Static resources
         children.addAll(Arrays.asList(// HA policy
-                LiveOnlyDefinition.INSTANCE,
-                registerRuntimeOnly ? ReplicationPrimaryDefinition.INSTANCE : ReplicationPrimaryDefinition.HC_INSTANCE,
-                registerRuntimeOnly ? ReplicationSecondaryDefinition.INSTANCE : ReplicationSecondaryDefinition.HC_INSTANCE,
-                ReplicationColocatedDefinition.INSTANCE,
-                SharedStorePrimaryDefinition.INSTANCE,
-                SharedStoreSecondaryDefinition.INSTANCE,
-                SharedStoreColocatedDefinition.INSTANCE,
+                new LiveOnlyDefinition(),
+                new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, registerRuntimeOnly),
+                new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, registerRuntimeOnly),
+                new ReplicationColocatedDefinition(),
+                new SharedStorePrimaryDefinition(MessagingExtension.SHARED_STORE_PRIMARY_PATH, false),
+                new SharedStoreSecondaryDefinition(MessagingExtension.SHARED_STORE_SECONDARY_PATH, false),
+                new SharedStoreColocatedDefinition(),
 
-                AddressSettingDefinition.INSTANCE,
-                SecuritySettingDefinition.INSTANCE,
+                new AddressSettingDefinition(),
+                new SecuritySettingDefinition(),
 
                 // Acceptors
-                HTTPAcceptorDefinition.INSTANCE,
+                new HTTPAcceptorDefinition(),
 
-                DivertDefinition.INSTANCE,
-                ConnectorServiceDefinition.INSTANCE,
-                GroupingHandlerDefinition.INSTANCE,
+                new DivertDefinition(false),
+                new ConnectorServiceDefinition(),
+                new GroupingHandlerDefinition(),
 
                 // Jakarta Messaging resources
-                LegacyConnectionFactoryDefinition.INSTANCE,
-                PooledConnectionFactoryDefinition.INSTANCE));
+                new LegacyConnectionFactoryDefinition(),
+                new PooledConnectionFactoryDefinition(false)));
 
         // Dynamic resources (depending on registerRuntimeOnly)
         // acceptors
@@ -1058,7 +1044,7 @@ public class ServerDefinition extends PersistentResourceDefinition {
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
         if (registerRuntimeOnly) {
             resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly, MessagingExtension.RUNTIME_QUEUE_PATH));
-            resourceRegistration.registerSubModel(CoreAddressDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(new CoreAddressDefinition());
         }
     }
 
@@ -1075,4 +1061,9 @@ public class ServerDefinition extends PersistentResourceDefinition {
     private enum JournalType {
         NIO, ASYNCIO;
     }
+
+    private enum CriticalAnalyzerPolicy {
+        HALT, SHUTDOWN, LOG;
+    }
+
 }

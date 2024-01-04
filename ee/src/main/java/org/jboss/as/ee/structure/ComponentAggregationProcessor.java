@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.structure;
@@ -32,8 +15,11 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 
 import java.util.List;
 import java.util.Map;
@@ -57,9 +43,10 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             return;
         }
 
-        phaseContext.getServiceTarget().addService(ComponentRegistry.serviceName(deploymentUnit), new ValueService<>(new ImmediateValue<Object>(componentRegistry)))
-                .addDependency(moduleDescription.getDefaultClassIntrospectorServiceName(), EEClassIntrospector.class, componentRegistry.getClassIntrospectorInjectedValue())
-                .install();
+        final ServiceName sn = ComponentRegistry.serviceName(deploymentUnit);
+        final ServiceBuilder<?> sb = phaseContext.getServiceTarget().addService(sn);
+        sb.setInstance(new ValueService(componentRegistry));
+        sb.addDependency(moduleDescription.getDefaultClassIntrospectorServiceName(), EEClassIntrospector.class, componentRegistry.getClassIntrospectorInjectedValue()).install();
 
         deploymentUnit.putAttachment(COMPONENT_REGISTRY, componentRegistry);
 
@@ -116,6 +103,25 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             for (final ComponentDescription componentDescription : deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
                 applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }
+        }
+    }
+
+    private static final class ValueService implements Service<ComponentRegistry> {
+        private final ComponentRegistry value;
+        public ValueService(final ComponentRegistry value) {
+            this.value = value;
+        }
+
+        public void start(final StartContext context) {
+            // noop
+        }
+
+        public void stop(final StopContext context) {
+            // noop
+        }
+
+        public ComponentRegistry getValue() {
+            return value;
         }
     }
 }

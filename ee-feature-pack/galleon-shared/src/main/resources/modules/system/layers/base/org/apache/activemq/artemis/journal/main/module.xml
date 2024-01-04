@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.journal">
+
+    <properties>
+        <!--
+            END USER MODULE USAGE: Subsystem configuration plug points
+
+            End users may depend on this module for access to APIs needed to
+            implement custom plug points exposed by a subsystem's supported
+            management API (in this case the messaging-activemq subsystem).
+            Typically such plug points involve classname and module name
+            configuration attribute pairs where the end user specifies a module and
+            class that they provide to implement an API provided by the subsystem.
+
+            Such APIs and the name of this module are stable API. All other resources
+            exposed by this module are subject to change or removal at any time.
+
+            This module should not be directly depended upon by deployments.
+        -->
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="lib"/>
+        <artifact name="${org.apache.activemq:artemis-journal}"/>
+        <artifact name="${org.apache.activemq:activemq-artemis-native}"/>
+    </resources>
+
+    <dependencies>
+        <!-- required for ARTEMIS-298 -->
+        <module name="com.google.guava"/>
+        <module name="internal.javax.json.api.ee8" services="import"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="jdk.unsupported"/>
+        <module name="org.apache.activemq.artemis.commons" services="import"/>
+        <module name="org.apache.commons.beanutils" />
+        <module name="org.jctools"/>
+        <module name="org.slf4j"/>
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+    </dependencies>
+
+</module>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.mod_cluster;
 
@@ -49,9 +32,9 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelNode>> {
 
-    private final ModClusterSchema schema;
+    private final ModClusterSubsystemSchema schema;
 
-    ModClusterSubsystemXMLReader(ModClusterSchema schema) {
+    ModClusterSubsystemXMLReader(ModClusterSubsystemSchema schema) {
         this.schema = schema;
     }
 
@@ -67,13 +50,13 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case MOD_CLUSTER_CONFIG: {
-                    if (!schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                    if (!schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0)) {
                         this.parseProxy(reader, list, subsystemAddress);
                         break;
                     }
                 }
                 case PROXY: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0)) {
                         this.parseProxy(reader, list, subsystemAddress);
                         break;
                     }
@@ -86,7 +69,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
     }
 
     private void parseProxy(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
-        String name = schema.since(ModClusterSchema.MODCLUSTER_4_0) ? require(reader, XMLAttribute.NAME) : "default";
+        String name = schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0) ? require(reader, XMLAttribute.NAME) : "default";
 
         PathAddress address = parent.append(ProxyConfigurationResourceDefinition.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
@@ -178,7 +161,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     break;
                 }
                 case PROXY_LIST: {
-                    if (this.schema.since(ModClusterSchema.MODCLUSTER_6_0)) {
+                    if (this.schema.since(ModClusterSubsystemSchema.MODCLUSTER_6_0)) {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                     ROOT_LOGGER.ignoredAttribute(attribute.getLocalName(), reader.getLocalName());
@@ -186,20 +169,20 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                 }
                 // 1.0
                 case DOMAIN: {
-                    if (schema == ModClusterSchema.MODCLUSTER_1_0) {
+                    if (schema == ModClusterSubsystemSchema.MODCLUSTER_1_0) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP);
                         break;
                     }
                 }
                 // 1.1
                 case LOAD_BALANCING_GROUP: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_1_1)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LOAD_BALANCING_GROUP);
                         break;
                     }
                 }
                 case CONNECTOR: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_1) && !schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_1_1) && !schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
                         break;
                     } else {
@@ -208,40 +191,40 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                 }
                 // 1.2
                 case SESSION_DRAINING_STRATEGY: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_1_2)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_1_2)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SESSION_DRAINING_STRATEGY);
                         break;
                     }
                 }
                 // 2.0
                 case STATUS_INTERVAL: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_2_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_2_0)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.STATUS_INTERVAL);
                         break;
                     }
                 }
                 case PROXIES: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_2_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_2_0)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.PROXIES);
                         break;
                     }
                 }
                 // 3.0
                 case SSL_CONTEXT: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_3_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_3_0)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.SSL_CONTEXT);
                         break;
                     }
                 }
                 // 4.0
                 case NAME: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0)) {
                         // Ignore -- already parsed.
                         break;
                     }
                 }
                 case LISTENER: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_4_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_4_0)) {
                         readAttribute(reader, i, operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
                         break;
                     }
@@ -252,7 +235,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
             }
         }
 
-        if (schema == ModClusterSchema.MODCLUSTER_1_0) {
+        if (schema == ModClusterSubsystemSchema.MODCLUSTER_1_0) {
             // This is a required attribute - so set it to something reasonable
             setAttribute(reader, "ajp", operation, ProxyConfigurationResourceDefinition.Attribute.LISTENER);
         }
@@ -321,7 +304,7 @@ final class ModClusterSubsystemXMLReader implements XMLElementReader<List<ModelN
                     break;
                 }
                 case INITIAL_LOAD: {
-                    if (schema.since(ModClusterSchema.MODCLUSTER_5_0)) {
+                    if (schema.since(ModClusterSubsystemSchema.MODCLUSTER_5_0)) {
                         readAttribute(reader, i, operation, DynamicLoadProviderResourceDefinition.Attribute.INITIAL_LOAD);
                         break;
                     }

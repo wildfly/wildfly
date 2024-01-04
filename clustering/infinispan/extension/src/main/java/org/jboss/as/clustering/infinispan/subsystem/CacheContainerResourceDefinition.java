@@ -1,31 +1,16 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -34,12 +19,12 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
@@ -48,6 +33,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -113,18 +100,19 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode(InfinispanMarshallerFactory.LEGACY.name()))
-                        .setValidator(new EnumValidator<>(InfinispanMarshallerFactory.class) {
+                        .setValidator(new ParameterValidator() {
+                            private final ParameterValidator validator = EnumValidator.create(InfinispanMarshallerFactory.class);
+
                             @Override
                             public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                                super.validateParameter(parameterName, value);
+                                this.validator.validateParameter(parameterName, value);
                                 if (!value.isDefined() || value.equals(MARSHALLER.getDefinition().getDefaultValue())) {
                                     InfinispanLogger.ROOT_LOGGER.marshallerEnumValueDeprecated(parameterName, InfinispanMarshallerFactory.LEGACY, EnumSet.complementOf(EnumSet.of(InfinispanMarshallerFactory.LEGACY)));
                                 }
                             }
-                        })
-                        ;
+                        });
             }
-        }
+        },
         ;
         private final AttributeDefinition definition;
 
@@ -176,6 +164,9 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
+    static final Set<PathElement> REQUIRED_CHILDREN = Stream.concat(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)).stream(), EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).stream()).map(ResourceDefinitionProvider::getPathElement).collect(Collectors.toSet());
+    static final Set<PathElement> REQUIRED_SINGLETON_CHILDREN = Set.of(NoTransportResourceDefinition.PATH);
+
     CacheContainerResourceDefinition() {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
@@ -192,9 +183,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(ClusteringDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
                 .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(SingletonDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
-                .addRequiredChildren(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)))
-                .addRequiredChildren(ScheduledThreadPoolResourceDefinition.class)
-                .addRequiredSingletonChildren(NoTransportResourceDefinition.PATH)
+                .addRequiredChildren(REQUIRED_CHILDREN)
+                .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 .setResourceTransformation(CacheContainerResource::new)
                 ;
         ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = new ServiceValueExecutorRegistry<>();

@@ -1,6 +1,14 @@
 [[WS-Addressing]]
 = WS-Addressing
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 JBoss Web Services inherits full WS-Addressing capabilities from the
 underlying Apache CXF implementation. Apache CXF provides support for
 2004-08 and http://www.w3.org/TR/ws-addr-core/[1.0] versions of

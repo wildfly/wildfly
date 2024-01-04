@@ -1,5 +1,15 @@
 = Load Balancing
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 include::load-balancing/mod_cluster_Subsystem.adoc[leveloffset=+1]
 
 include::load-balancing/Ranked_Affinity.adoc[leveloffset=+1]
+
+include::load-balancing/Affinity_Cookie.adoc[leveloffset=+1]

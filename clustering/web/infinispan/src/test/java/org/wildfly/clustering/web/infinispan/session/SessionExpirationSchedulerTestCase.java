@@ -1,26 +1,11 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -36,7 +21,7 @@ import org.wildfly.clustering.ee.Remover;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
-import org.wildfly.clustering.web.cache.session.ImmutableSessionMetaDataFactory;
+import org.wildfly.clustering.web.cache.session.metadata.ImmutableSessionMetaDataFactory;
 import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 
 /**
@@ -67,8 +52,10 @@ public class SessionExpirationSchedulerTestCase {
         when(canceledSessionMetaData.getTimeout()).thenReturn(Duration.ofSeconds(100L));
 
         Instant now = Instant.now();
-        when(expiringSessionMetaData.getLastAccessTime()).thenReturn(now);
-        when(canceledSessionMetaData.getLastAccessTime()).thenReturn(now);
+        doCallRealMethod().when(expiringSessionMetaData).getLastAccessTime();
+        doReturn(now).when(expiringSessionMetaData).getLastAccessEndTime();
+        doCallRealMethod().when(canceledSessionMetaData).getLastAccessTime();
+        doReturn(now).when(canceledSessionMetaData).getLastAccessEndTime();
         when(remover.remove(expiringSessionId)).thenReturn(true);
 
         try (Scheduler<String, ExpirationMetaData> scheduler = new SessionExpirationScheduler<>(batcher, metaDataFactory, remover, Duration.ZERO)) {

@@ -1,0 +1,25 @@
+package org.wildfly.clustering.web.cache.session.metadata.coarse;
+
+import "java.time.proto";
+import "org.wildfly.clustering.ee.cache.offset.proto";
+
+// IDs: 205 - 209
+
+/**
+ * @TypeId(205)
+ */
+message DefaultSessionMetaDataEntry {
+	optional	java.time.Instant	creationTime	= 1;
+	optional	java.time.Duration	timeout	= 2;
+	optional	org.wildfly.clustering.ee.cache.offset.InstantOffset	lastAccessStartTimeOffset	= 3;
+	optional	org.wildfly.clustering.ee.cache.offset.InstantOffset	lastAccessEndTimeOffset	= 4;
+}
+
+/**
+ * @TypeId(206)
+ */
+message SessionMetaDataEntryFunction {
+	optional	org.wildfly.clustering.ee.cache.offset.DurationOffset	timeoutOffset	= 1;
+	optional	org.wildfly.clustering.ee.cache.offset.InstantOffset	lastAccessStartTimeOffset	= 2;
+	optional	org.wildfly.clustering.ee.cache.offset.InstantOffset	lastAccessEndTimeOffset	= 3;
+}

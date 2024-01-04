@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="jpa-search-test-pu">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+        <properties>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.search.schema_management.strategy" value="drop-and-create-and-drop"/>
+            <property name="hibernate.search.backend.type" value="lucene"/>
+            <property name="hibernate.search.backend.lucene_version" value="LUCENE_CURRENT"/>
+            <property name="hibernate.search.backend.directory.type" value="local-heap"/>
+        </properties>
+    </persistence-unit>
+</persistence>

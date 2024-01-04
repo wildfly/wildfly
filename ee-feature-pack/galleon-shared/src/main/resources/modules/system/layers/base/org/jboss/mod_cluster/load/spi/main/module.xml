@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.mod_cluster.load.spi">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.mod_cluster:mod_cluster-load-spi}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.mod_cluster.container.spi"/>
+    </dependencies>
+</module>

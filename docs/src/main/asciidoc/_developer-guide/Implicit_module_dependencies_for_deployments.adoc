@@ -1,6 +1,14 @@
 [[Implicit_module_dependencies_for_deployments]]
 = Implicit module dependencies for deployments
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 As explained in the <<Class_Loading_in_WildFly,Class Loading in WildFly>> article,
 WildFly {wildflyVersion} is based on module classloading. A class within a module B
 isn't visible to a class within a module A, unless module B adds a
@@ -68,6 +76,8 @@ that are added to a deployment, by various deployers within WildFly.
 [[which-are-the-implicit-module-dependencies]]
 == Which are the implicit module dependencies?
 
+NOTE: The sun.jdk is no longer added by the Core Server as an implicit dependency.
+
 [cols=",,,",,options="header"]
 |=======================================================================
 |Subsystem responsible for adding the implicit dependency |Dependencies
@@ -75,7 +85,7 @@ that are always added |Dependencies that are added if a trigger
 condition is met |Trigger which leads to the implicit module dependency
 being added
 
-|Core Server |javax.api sun.jdk org.jboss.vfs |  | 
+|Core Server |java.se org.jboss.vfs|  | 
 
 |Batch Subsystem |jakarta.batch.api |  | implicit
 
@@ -131,9 +141,8 @@ is a SAR archive
 
 |Security Subsystem |org.picketbox |  | 
 
-|Web Subsystem |  |javaee.api com.sun.jsf-impl org.hibernate.validator
-org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Server Faces
-is only added if used. Multiple version options exist for mojarra.
+|Web Subsystem |  |javaee.api jakarta.faces.api jakarta.faces.impl org.hibernate.validator org.jboss.as.web org.jboss.logging |The deployment is a WAR archive. Jakarta Faces
+is only added if used. Multiple version options exist for Jakarta Faces.
 
 |Web Services Subsystem |org.jboss.ws.api org.jboss.ws.spi |  | 
 

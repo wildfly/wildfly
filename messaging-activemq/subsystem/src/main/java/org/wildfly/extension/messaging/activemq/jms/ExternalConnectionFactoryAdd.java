@@ -1,22 +1,15 @@
 /*
- * Copyright 2018 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.SOCKET_BINDING_CAPABILITY;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_FAILOVER_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CALL_TIMEOUT;
+import static org.wildfly.extension.messaging.activemq.CommonAttributes.CLIENT_ID;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.HA;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
@@ -50,16 +43,15 @@ import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.DiscoveryGroupDefinition;
 import org.wildfly.extension.messaging.activemq.GroupBindingService;
 import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupDefinition;
-import org.wildfly.extension.messaging.activemq.MessagingExtension;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.Common;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 import static org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.External.ENABLE_AMQ1_PREFIX;
 
-import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
+import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.AttributeDefinition;
 
 /**
@@ -70,7 +62,6 @@ import org.jboss.as.controller.AttributeDefinition;
  */
 public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
 
-    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
     public static final ExternalConnectionFactoryAdd INSTANCE = new ExternalConnectionFactoryAdd();
 
     private ExternalConnectionFactoryAdd() {
@@ -84,7 +75,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
         boolean ha = HA.resolveModelAttribute(context, model).asBoolean();
         boolean enable1Prefixes = ENABLE_AMQ1_PREFIX.resolveModelAttribute(context, model).asBoolean();
         final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP.resolveModelAttribute(context, model);
-        final ConnectionFactoryConfiguration config = ConnectionFactoryAdd.createConfiguration(context, name, model);
+        final ExternalConnectionFactoryConfiguration config = createConfiguration(context, name, model);
         JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
         List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
         ServiceBuilder<?> builder = context.getServiceTarget()
@@ -113,7 +104,7 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                 String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                 clusterNames.put(key, clusterName);
             } else {
-                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(dgname);
+                final ServiceName groupBinding = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(dgname);
                 Supplier<SocketBinding> groupBindingSupplier = builder.requires(groupBinding);
                 groupBindings.put(key, groupBindingSupplier);
             }
@@ -122,7 +113,8 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             Map<String, Supplier<SocketBinding>> socketBindings = new HashMap<>();
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings = new HashMap<>();
             Set<String> connectorsSocketBindings = new HashSet<>();
-            TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings);
+            final Set<String> sslContextNames = new HashSet<>();
+            TransportConfiguration[] transportConfigurations = TransportConfigOperationHandlers.processConnectors(context, connectorNames, connectorsSocketBindings, sslContextNames);
             Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
             for (final String connectorSocketBinding : connectorsSocketBindings) {
                 // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
@@ -136,7 +128,12 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
                     socketBindings.put(connectorSocketBinding, socketBindingsSupplier);
                 }
             }
-            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, jmsFactoryType, ha, enable1Prefixes, config);
+            Map<String, Supplier<SSLContext>> sslContexts = new HashMap<>();
+            for (final String entry : sslContextNames) {
+                Supplier<SSLContext> sslContext = builder.requires(ELYTRON_SSL_CONTEXT_CAPABILITY.getCapabilityServiceName(entry));
+                sslContexts.put(entry, sslContext);
+            }
+            service = new ExternalConnectionFactoryService(transportConfigurations, socketBindings, outboundSocketBindings, sslContexts, jmsFactoryType, ha, enable1Prefixes, config);
         }
         builder.setInstance(service);
         builder.install();
@@ -144,6 +141,91 @@ public class ExternalConnectionFactoryAdd extends AbstractAddStepHandler {
             MessagingLogger.ROOT_LOGGER.debugf("Referencing %s with JNDI name %s", serviceName, entry);
             BinderServiceUtil.installBinderService(context.getServiceTarget(), entry, service, serviceName);
         }
+    }
+
+    static ExternalConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
+
+        final List<String> entries = Common.ENTRIES.unwrap(context, model);
+
+        final ExternalConnectionFactoryConfiguration config = new ExternalConnectionFactoryConfiguration()
+                .setName(name)
+                .setHA(false)
+                .setBindings(entries.toArray(String[]::new));
+
+        config.setHA(HA.resolveModelAttribute(context, model).asBoolean());
+        config.setAutoGroup(Common.AUTO_GROUP.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnAcknowledge(Common.BLOCK_ON_ACKNOWLEDGE.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnDurableSend(Common.BLOCK_ON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
+        config.setBlockOnNonDurableSend(Common.BLOCK_ON_NON_DURABLE_SEND.resolveModelAttribute(context, model).asBoolean());
+        config.setCacheLargeMessagesClient(Common.CACHE_LARGE_MESSAGE_CLIENT.resolveModelAttribute(context, model).asBoolean());
+        config.setCallTimeout(CALL_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        config.setClientFailureCheckPeriod(Common.CLIENT_FAILURE_CHECK_PERIOD.resolveModelAttribute(context, model).asInt());
+        config.setCallFailoverTimeout(CALL_FAILOVER_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        final ModelNode clientId = CLIENT_ID.resolveModelAttribute(context, model);
+        if (clientId.isDefined()) {
+            config.setClientID(clientId.asString());
+        }
+        config.setCompressLargeMessages(Common.COMPRESS_LARGE_MESSAGES.resolveModelAttribute(context, model).asBoolean());
+        config.setConfirmationWindowSize(Common.CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setConnectionTTL(Common.CONNECTION_TTL.resolveModelAttribute(context, model).asLong());
+        List<String> connectorNames = Common.CONNECTORS.unwrap(context, model);
+        config.setConnectorNames(connectorNames);
+        config.setConsumerMaxRate(Common.CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
+        config.setConsumerWindowSize(Common.CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP.resolveModelAttribute(context, model);
+        if (discoveryGroupName.isDefined()) {
+            config.setDiscoveryGroupName(discoveryGroupName.asString());
+        }
+
+        config.setDupsOKBatchSize(Common.DUPS_OK_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setFailoverOnInitialConnection(Common.FAILOVER_ON_INITIAL_CONNECTION.resolveModelAttribute(context, model).asBoolean());
+
+        final ModelNode groupId = Common.GROUP_ID.resolveModelAttribute(context, model);
+        if (groupId.isDefined()) {
+            config.setGroupID(groupId.asString());
+        }
+
+        final ModelNode lbcn = Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model);
+        if (lbcn.isDefined()) {
+            config.setLoadBalancingPolicyClassName(lbcn.asString());
+        }
+        config.setMaxRetryInterval(Common.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
+        config.setMinLargeMessageSize(Common.MIN_LARGE_MESSAGE_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setPreAcknowledge(Common.PRE_ACKNOWLEDGE.resolveModelAttribute(context, model).asBoolean());
+        config.setProducerMaxRate(Common.PRODUCER_MAX_RATE.resolveModelAttribute(context, model).asInt());
+        config.setProducerWindowSize(Common.PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setReconnectAttempts(Common.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt());
+        config.setRetryInterval(Common.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
+        config.setRetryIntervalMultiplier(Common.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble());
+        config.setScheduledThreadPoolMaxSize(Common.SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setThreadPoolMaxSize(Common.THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setTransactionBatchSize(Common.TRANSACTION_BATCH_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setUseGlobalPools(Common.USE_GLOBAL_POOLS.resolveModelAttribute(context, model).asBoolean());
+        config.setLoadBalancingPolicyClassName(Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.resolveModelAttribute(context, model).asString());
+        final ModelNode clientProtocolManagerFactory = Common.PROTOCOL_MANAGER_FACTORY.resolveModelAttribute(context, model);
+        if (clientProtocolManagerFactory.isDefined()) {
+            config.setProtocolManagerFactoryStr(clientProtocolManagerFactory.asString());
+        }
+        if (model.hasDefined(DESERIALIZATION_BLOCKLIST.getName())) {
+            List<String> deserializationBlockList = DESERIALIZATION_BLOCKLIST.unwrap(context, model);
+            if (!deserializationBlockList.isEmpty()) {
+                config.setDeserializationBlackList(String.join(",", deserializationBlockList));
+            }
+        }
+        if (model.hasDefined(DESERIALIZATION_ALLOWLIST.getName())) {
+            List<String> deserializationAllowList = DESERIALIZATION_ALLOWLIST.unwrap(context, model);
+            if (!deserializationAllowList.isEmpty()) {
+                config.setDeserializationWhiteList(String.join(",", deserializationAllowList));
+            }
+        }
+        JMSFactoryType jmsFactoryType = ConnectionFactoryType.valueOf(ConnectionFactoryAttributes.Regular.FACTORY_TYPE.resolveModelAttribute(context, model).asString()).getType();
+        config.setFactoryType(jmsFactoryType);
+
+        config.setInitialMessagePacketSize(Common.INITIAL_MESSAGE_PACKET_SIZE.resolveModelAttribute(context, model).asInt());
+        config.setEnableSharedClientID(true);
+        config.setEnable1xPrefixes(true);
+        config.setUseTopologyForLoadBalancing(Common.USE_TOPOLOGY.resolveModelAttribute(context, model).asBoolean());
+        return config;
     }
 
     static DiscoveryGroupConfiguration getDiscoveryGroup(final OperationContext context, final String name) throws OperationFailedException {

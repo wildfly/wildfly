@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.metadata.appclient">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.metadata:jboss-metadata-appclient}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.metadata.common"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

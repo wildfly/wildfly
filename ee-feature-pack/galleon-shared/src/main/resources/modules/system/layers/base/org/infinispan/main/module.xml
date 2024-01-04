@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.infinispan">
+
+    <dependencies>
+        <module name="org.infinispan.core">
+            <exports>
+                <include-set>
+                    <path name="org/infinispan"/>
+                    <path name="org/infinispan/manager"/>
+                    <path name="org/infinispan/configuration/cache"/>
+                    <path name="org/infinispan/configuration/global"/>
+                    <path name="org/infinispan/distribution"/>
+                    <path name="org/infinispan/notifications"/>
+                    <path name="org/infinispan/notifications/cachelistener/event"/>
+                    <path name="org/infinispan/notifications/cachemanagerlistener/event"/>
+                    <path name="org/infinispan/remoting/transport"/>
+                    <path name="org/infinispan/util/concurrent"/>
+                </include-set>
+            </exports>
+        </module>
+    </dependencies>
+</module>

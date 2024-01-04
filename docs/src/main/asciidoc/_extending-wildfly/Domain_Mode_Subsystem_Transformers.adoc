@@ -1,6 +1,14 @@
 [[Domain_Mode_Subsystem_Transformers]]
 = Domain Mode Subsystem Transformers
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [abstract]
 
 A WildFly domain may consist of a new Domain Controller (DC) controlling
@@ -664,14 +672,14 @@ and all its children.
 
 There is a set of related classes in the `org.wildfly.legacy.util`
 package to help you determine this. These now live at
-https://github.com/wildfly/wildfly-legacy-test/tree/master/tools/src/main/java/org/wildfly/legacy/util. +
+https://github.com/wildfly/wildfly-legacy-test/tree/main/tools/src/main/java/org/wildfly/legacy/util. +
 They are all runnable in your IDE, just start the WildFly or JBoss AS 7
 instances as described below.
 
 [[getting-data-for-a-previous-version]]
 === Getting data for a previous version
 
-https://github.com/wildfly/wildfly-legacy-test/tree/master/tools/src/main/resources/legacy-models
+https://github.com/wildfly/wildfly-legacy-test/tree/main/tools/src/main/resources/legacy-models
 contains the output for the previous WildFly/JBoss AS 7 versions, so
 check if the files for the version you want to check backwards
 compatibility are there yet. If not, then you need to do the following
@@ -2703,4 +2711,4 @@ And then finally we do the conversion:
     }
 ----
 
-NOTE: References in this document to Java Persistence API(JPA) refer to the Jakarta Persistence unless otherwise noted.
+NOTE: References in this document to Java Persistence API (JPA) refer to the Jakarta Persistence unless otherwise noted.

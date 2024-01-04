@@ -1,6 +1,14 @@
 [[Migrated_to_WildFly_Example_Applications]]
 = Example Applications - Migrated to WildFly
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[example-applications-migrated-from-previous-releases]]
 == Example Applications Migrated from Previous Releases
 

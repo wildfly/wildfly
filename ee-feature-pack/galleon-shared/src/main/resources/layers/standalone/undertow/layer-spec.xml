@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="undertow">
+    <dependencies>
+        <layer name="io"/>
+    </dependencies>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <feature-group name="undertow-sockets"/>
+    </feature>
+    <feature-group name="undertow-base"/>
+</layer-spec>

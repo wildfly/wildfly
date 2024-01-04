@@ -1,0 +1,3 @@
+module remove --name=jakarta.faces.api --slot=mojarra-${jsf-version}
+module remove --name=jakarta.faces.impl --slot=mojarra-${jsf-version}
+module remove --name=org.jboss.as.jsf-injection --slot=mojarra-${jsf-version}

@@ -1,6 +1,14 @@
 [[jaas-security-realm]]
 = JAAS Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 A JAAS realm utilizes a https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/login/LoginContext.html[LoginContext] initialized from a https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[JAAS configuration file] to authenticate and authorize users with custom https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/security/auth/spi/LoginModule.html[Login Modules]. Flags and options can be specified in a https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[JAAS configuration file] according to the https://docs.oracle.com/en/java/javase/17/security/appendix-b-jaas-login-configuration-file.html[Java documentation].
 
 The `jaas-realm` resource contains the following attributes: -

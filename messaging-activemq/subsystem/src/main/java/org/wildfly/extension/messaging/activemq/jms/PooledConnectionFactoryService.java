@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.jms;
@@ -114,10 +97,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
-import org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
 import org.wildfly.extension.messaging.activemq.broadcast.CommandDispatcherBroadcastEndpointFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
 import org.wildfly.security.password.interfaces.ClearPassword;
@@ -138,7 +121,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String CONNECTION_PARAMETERS = "connectionParameters";
     private static final String ACTIVEMQ_ACTIVATION = "org.apache.activemq.artemis.ra.inflow.ActiveMQActivationSpec";
     private static final String ACTIVEMQ_CONN_DEF = "ActiveMQConnectionDefinition";
-    private static final String ACTIVEMQ_RESOURCE_ADAPTER = ActiveMQResourceAdapter.class.getName();
+    private static final String ACTIVEMQ_RESOURCE_ADAPTER = "org.wildfly.extension.messaging.activemq.ActiveMQResourceAdapter";
     private static final String RAMANAGED_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAManagedConnectionFactory";
     private static final String RA_CONN_FACTORY = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactory";
     private static final String RA_CONN_FACTORY_IMPL = "org.apache.activemq.artemis.ra.ActiveMQRAConnectionFactoryImpl";
@@ -168,7 +151,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private List<PooledConnectionFactoryConfigProperties> adapterParams;
     private String name;
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
-    private InjectedValue<ActiveMQServer> activeMQServer = new InjectedValue<>();
+    private InjectedValue<ActiveMQBroker> activeMQBroker = new InjectedValue<>();
     private BindInfo bindInfo;
     private List<String> jndiAliases;
     private final boolean pickAnyConnectors;
@@ -301,7 +284,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private static ServiceBuilder createServiceBuilder(ServiceTarget serviceTarget, ServiceName serverServiceName, ServiceName serviceName, PooledConnectionFactoryService service) {
         ServiceBuilder serviceBuilder = serviceTarget.addService(serviceName, service);
         serviceBuilder.requires(MessagingServices.getCapabilityServiceName(MessagingServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY));
-        serviceBuilder.addDependency(serverServiceName, ActiveMQServer.class, service.activeMQServer);
+        serviceBuilder.addDependency(serverServiceName, ActiveMQBroker.class, service.activeMQBroker);
         serviceBuilder.requires(ActiveMQActivationService.getServiceName(serverServiceName));
         serviceBuilder.requires(JMSServices.getJmsManagerBaseServiceName(serverServiceName));
         // ensures that Artemis client thread pools are not stopped before any deployment depending on a pooled-connection-factory
@@ -339,7 +322,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             // if there is no discovery-group and the connector list is empty,
             // pick the first connector available if pickAnyConnectors is true
             if (discoveryGroupName == null && connectors.isEmpty() && pickAnyConnectors) {
-                Set<String> connectorNames = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().keySet();
+                Set<String> connectorNames = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getConnectorConfigurations().keySet();
                 if (!connectorNames.isEmpty()) {
                     String connectorName = connectorNames.iterator().next();
                     MessagingLogger.ROOT_LOGGER.connectorForPooledConnectionFactory(name, connectorName);
@@ -347,7 +330,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 }
             }
             for (String connector : connectors) {
-                TransportConfiguration tc = activeMQServer.getValue().getConfiguration().getConnectorConfigurations().get(connector);
+                TransportConfiguration tc = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getConnectorConfigurations().get(connector);
                 if(tc == null) {
                     throw MessagingLogger.ROOT_LOGGER.connectorNotDefined(connector);
                 }
@@ -375,7 +358,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             if(discoveryGroupName != null) {
-                DiscoveryGroupConfiguration discoveryGroupConfiguration = activeMQServer.getValue().getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
+                DiscoveryGroupConfiguration discoveryGroupConfiguration = ActiveMQServer.class.cast(activeMQBroker.getValue().getDelegate()).getConfiguration().getDiscoveryGroupConfigurations().get(discoveryGroupName);
                 BroadcastEndpointFactory bgCfg = discoveryGroupConfiguration.getBroadcastEndpointFactory();
                 if (bgCfg instanceof UDPBroadcastEndpointFactory) {
                     UDPBroadcastEndpointFactory udpCfg = (UDPBroadcastEndpointFactory) bgCfg;
@@ -544,10 +527,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         //   <application />
         // </security>
         // => PoolStrategy.POOL_BY_CRI
-        Security security = new SecurityImpl(null, null, true, false);
+        Security security = new SecurityImpl(null, null, true);
         // register the XA Connection *without* recovery. ActiveMQ already takes care of the registration with the correct credentials
         // when its ResourceAdapter is started
-        Recovery recovery = new Recovery(new CredentialImpl(null, null, null, false, null), null, Boolean.TRUE);
+        Recovery recovery = new Recovery(new CredentialImpl(null, null, null, null), null, Boolean.TRUE);
         Validation validation = new ValidationImpl(Defaults.VALIDATE_ON_MATCH, null, null, false);
         // do no track
         return new ConnectionDefinitionImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, ACTIVEMQ_CONN_DEF, true, true, true, Defaults.SHARABLE, Defaults.ENLISTMENT, Defaults.CONNECTABLE, false, managedConnectionPoolClassName, enlistmentTrace, pool, timeOut, validation, security, recovery, isXA);

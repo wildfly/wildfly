@@ -1,6 +1,14 @@
 [[SOAP_over_Jakarta_Messaging]]
 = SOAP over Jakarta Messaging
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 JBoss Web Services allows communication over the _Jakarta Messaging_ transport. The
 functionality comes from Apache CXF support for the
 http://www.w3.org/TR/soapjms/[SOAP over Java Message Service 1.0]
@@ -141,7 +149,7 @@ as:
   </wsdl:binding>
   <wsdl:service name="HelloWorldService">
     <soapjms:jndiConnectionFactoryName>java:jms/RemoteConnectionFactory</soapjms:jndiConnectionFactoryName>
-    <soapjms:jndiInitialContextFactory>org.jboss.naming.remote.client.InitialContextFactory</soapjms:jndiInitialContextFactory>
+    <soapjms:jndiInitialContextFactory>org.wildfly.naming.client.WildFlyInitialContextFactory</soapjms:jndiInitialContextFactory>
     <soapjms:jndiURL>http-remoting://myhost:8080</soapjms:jndiURL>
     <wsdl:port binding="tns:HelloWorldServiceSoapBinding" name="HelloWorldImplPort">
       <soap:address location="jms:queue:testQueue"/>
@@ -305,7 +313,7 @@ similarly to
 [source,java,options="nowrap"]
 ----
 Properties env = new Properties();
-env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
 env.put(Context.PROVIDER_URL, "http-remoting://myhost:8080");
 env.put(Context.SECURITY_PRINCIPAL, "user");
 env.put(Context.SECURITY_CREDENTIALS, "password");
@@ -411,7 +419,7 @@ We from a WSDL contract such as below (please note we've two `binding` /
   </wsdl:binding>
   <wsdl:service name="HelloWorldService">
     <soapjms:jndiConnectionFactoryName>java:jms/RemoteConnectionFactory</soapjms:jndiConnectionFactoryName>
-    <soapjms:jndiInitialContextFactory>org.jboss.naming.remote.client.InitialContextFactory</soapjms:jndiInitialContextFactory>
+    <soapjms:jndiInitialContextFactory>org.wildfly.naming.client.WildFlyInitialContextFactory</soapjms:jndiInitialContextFactory>
     <soapjms:jndiURL>http-remoting://localhost:8080</soapjms:jndiURL>
     <wsdl:port binding="tns:HelloWorldServiceSoapBinding" name="HelloWorldImplPort">
       <soap:address location="jms:queue:testQueue"/>

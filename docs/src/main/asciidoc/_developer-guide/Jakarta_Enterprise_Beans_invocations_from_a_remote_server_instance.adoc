@@ -1,6 +1,14 @@
 [[EJB_invocations_from_a_remote_server_instance]]
 = EJB invocations from a remote server instance
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The purpose of this chapter is to demonstrate how to lookup and invoke
 on EJBs deployed on an WildFly server instance *from another* WildFly
 server instance. This is different from invoking the EJBs
@@ -444,4 +452,4 @@ public void invokeOnBean() {
 That's it! The above code will invoke on the bean deployed on the
 "Destination Server" and return the result.
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

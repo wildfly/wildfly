@@ -1,24 +1,7 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat, Inc., and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package org.jboss.as.jdr;
 
@@ -91,12 +74,8 @@ public class CommandLineMain {
             if (line.hasOption("config")) {
                 config = line.getOptionValue("config");
             }
-        } catch (ParseException e) {
+        } catch (ParseException | NumberFormatException e) {
             System.out.println(e.getMessage());
-            formatter.printHelp(usage, options);
-            return;
-        } catch (NumberFormatException nfe) {
-            System.out.println(nfe.getMessage());
             formatter.printHelp(usage, options);
             return;
         }
@@ -106,9 +85,9 @@ public class CommandLineMain {
         // Try to run JDR on the Wildfly JVM
         CLI cli = CLI.newInstance();
         boolean embedded = false;
-        JdrReport report = null;
+        JdrReport report;
         try {
-            System.out.println(String.format("Trying to connect to %s %s:%s", protocol, host, port));
+            System.out.printf("Trying to connect to %s %s:%s%n", protocol, host, port);
             cli.connect(protocol, host, port, null, null);
         } catch (IllegalStateException ex) {
             System.out.println("Starting embedded server");
@@ -130,15 +109,13 @@ public class CommandLineMain {
             System.out.println(ise.getMessage());
             report = standaloneCollect(cli, protocol, host, port);
         } finally {
-            if(cli != null) {
-                try {
-                    if(embedded)
-                        cli.getCommandContext().handleSafe("stop-embedded-server");
-                    else
-                        cli.disconnect();
-                } catch(Exception e) {
-                    System.out.println("Caught exception while disconnecting: " + e.getMessage());
-                }
+            try {
+                if(embedded)
+                    cli.getCommandContext().handleSafe("stop-embedded-server");
+                else
+                    cli.disconnect();
+            } catch(Exception e) {
+                System.out.println("Caught exception while disconnecting: " + e.getMessage());
             }
         }
         printJdrReportInfo(report);
@@ -156,10 +133,9 @@ public class CommandLineMain {
 
     private static JdrReport standaloneCollect(CLI cli, String protocol, String host, int port) {
         // Unable to connect to a running server, so proceed without it
-        JdrReportService reportService = new JdrReportService();
         JdrReport report = null;
         try {
-            report = reportService.standaloneCollect(cli, protocol, host, port);
+            report = new JdrRunner(cli, protocol, host, port, null, null).collect();
         } catch (OperationFailedException e) {
             System.out.println("Failed to complete the JDR report: " + e.getMessage());
         }

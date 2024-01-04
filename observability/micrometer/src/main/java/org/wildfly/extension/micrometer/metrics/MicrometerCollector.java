@@ -1,20 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2022 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.micrometer.metrics;
@@ -45,6 +31,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class MicrometerCollector {
     private final LocalModelControllerClient modelControllerClient;
@@ -60,7 +47,7 @@ public class MicrometerCollector {
     }
 
     // collect metrics from the resources
-    public synchronized void collectResourceMetrics(final Resource resource,
+    public synchronized MetricRegistration collectResourceMetrics(final Resource resource,
                                                     ImmutableManagementResourceRegistration managementResourceRegistration,
                                                     Function<PathAddress, PathAddress> resourceAddressResolver,
                                                     boolean exposeAnySubsystem,
@@ -70,7 +57,7 @@ public class MicrometerCollector {
         queueMetricRegistration(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver,
                 registration, exposeAnySubsystem, exposedSubsystems);
         // Defer the actual registration until the server is running and they can be collected w/o errors
-        PropertyChangeListener listener = new PropertyChangeListener() {
+        this.processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ControlledProcessState.State.RUNNING == evt.getNewValue()) {
@@ -83,12 +70,14 @@ public class MicrometerCollector {
                 }
 
             }
-        };
-        this.processStateNotifier.addPropertyChangeListener(listener);
+        });
+
         // If server is already running, we won't get a change event so register now
         if (ControlledProcessState.State.RUNNING == this.processStateNotifier.getCurrentState()) {
             registration.register();
         }
+
+        return registration;
     }
 
     private void queueMetricRegistration(final Resource current,

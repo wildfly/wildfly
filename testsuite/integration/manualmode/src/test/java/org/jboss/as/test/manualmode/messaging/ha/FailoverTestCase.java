@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.manualmode.messaging.ha;
@@ -53,8 +36,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        testMasterInSyncWithReplica(createClient1());
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(createClient1());
+        testSecondaryInSyncWithReplica(client2);
         log.trace("===================");
         log.trace("STOP SERVER1...");
         log.trace("===================");
@@ -63,7 +46,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(jmsOperations2, true);
         checkJMSQueue(jmsOperations2, jmsQueueName, true);
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         InitialContext context2 = createJNDIContextFromServer2();
         // receive the message that was sent to server1 before failover occurs
@@ -72,7 +55,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         String text2 = "sent to server2, received from server 1 (after failback)";
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         log.trace("====================");
         log.trace("START SERVER1...");
@@ -100,8 +83,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendAndReceiveMessage(context1, jmsQueueLookup);
         context1.close();
 
-        testMasterInSyncWithReplica(client1);
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(client1);
+        testSecondaryInSyncWithReplica(client2);
         log.trace("=============================");
         log.trace("RETURN TO NORMAL OPERATION...");
         log.trace("=============================");
@@ -110,7 +93,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         log.trace("STOP SERVER2...");
         log.trace("===================");
         container.stop(SERVER2);
-        testMasterOutOfSyncWithReplica(client1);
+        testPrimaryOutOfSyncWithReplica(client1);
     }
 
     @Test
@@ -124,8 +107,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text);
         context1.close();
 
-        testMasterInSyncWithReplica(createClient1());
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(createClient1());
+        testSecondaryInSyncWithReplica(client2);
         log.trace("############## 1 #############");
         //listSharedStoreDir();
 
@@ -140,7 +123,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupJMSOperations, true);
         checkJMSQueue(backupJMSOperations, jmsQueueName, true);
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         InitialContext context2 = createJNDIContextFromServer2();
         // receive the message that was sent to server1 before failover occurs
@@ -149,7 +132,7 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         String text2 = "sent to server2, received from server 1 (after failback)";
         sendMessage(context2, jmsQueueLookup, text2);
         context2.close();
-        testSlaveOutOfSyncWithReplica(client2);
+        testSecondaryOutOfSyncWithReplica(client2);
 
         log.trace("====================");
         log.trace("START SERVER1...");
@@ -177,8 +160,8 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
         sendMessage(context1, jmsQueueLookup, text3);
         context1.close();
 
-        testMasterInSyncWithReplica(client1);
-        testSlaveInSyncWithReplica(client2);
+        testPrimaryInSyncWithReplica(client1);
+        testSecondaryInSyncWithReplica(client2);
         log.trace("==============================");
         log.trace("STOP SERVER1 A 2ND TIME...");
         log.trace("==============================");
@@ -219,11 +202,11 @@ public abstract class FailoverTestCase extends AbstractMessagingHATestCase {
 
     }
 
-    protected void testMasterInSyncWithReplica(ModelControllerClient client) throws Exception {}
+    protected void testPrimaryInSyncWithReplica(ModelControllerClient client) throws Exception {}
 
-    protected void testSlaveInSyncWithReplica(ModelControllerClient client) throws Exception  {}
+    protected void testSecondaryInSyncWithReplica(ModelControllerClient client) throws Exception  {}
 
-    protected void testMasterOutOfSyncWithReplica(ModelControllerClient client) throws Exception {}
+    protected void testPrimaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception {}
 
-    protected void testSlaveOutOfSyncWithReplica(ModelControllerClient client) throws Exception  {}
+    protected void testSecondaryOutOfSyncWithReplica(ModelControllerClient client) throws Exception  {}
 }

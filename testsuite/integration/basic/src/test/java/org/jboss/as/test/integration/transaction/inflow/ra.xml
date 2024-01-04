@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <connector xmlns="http://java.sun.com/xml/ns/j2ee" version="1.5">
   <display-name>Inflow Transaction Test Resource Adapter</display-name>
   <vendor-name>WildFly</vendor-name>

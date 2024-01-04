@@ -1,29 +1,11 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.logging;
 
 
-import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -1087,9 +1069,9 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 109, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
     DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 
-    @LogMessage(level = DEBUG) // this is only used in a log-and-throw so make it DEBUG
-    @Message(id = 110, value = "Failed to run scheduled task")
-    void failedToRunTask(@Cause Exception e);
+    @LogMessage(level = ERROR)
+    @Message(id = 110, value = "Failed to run scheduled task: %s")
+    void failedToRunTask(Object delegate, @Cause Exception e);
 
     @Message(id = 111, value = "Cannot run scheduled task %s as container is suspended")
     IllegalStateException cannotRunScheduledTask(Object delegate);
@@ -1220,4 +1202,26 @@ public interface EeLogger extends BasicLogger {
             "specifications. The conflicting class is %s. Solutions include providing an alternate name for the component " +
             "or renaming the class.")
     void duplicateJndiBindingFound(String componentName, String jndiName, Class clazz);
+
+    @Message(id = 134, value = "Multiple uses of ContextServiceDefinition.ALL_REMAINING")
+    IllegalStateException multipleUsesOfAllRemaining();
+
+    @LogMessage(level = WARN)
+    @Message(id = 135, value = "Failed to resume transaction.")
+    void failedToResumeTransaction(@Cause Throwable cause);
+
+    @Message(id = 136, value = "Failed to run scheduled task: %s")
+    RuntimeException failureWhileRunningTask(Object delegate,@Cause Exception e);
+
+    @Message(id = 137, value = "Error equals() cannot be called before resolve()")
+    RuntimeException errorEqualsCannotBeCalledBeforeResolve();
+
+    @Message(id = 138, value = "hungTaskTerminationPeriod is not > 0")
+    IllegalArgumentException hungTaskTerminationPeriodIsNotBiggerThanZero();
+
+    @Message(id = 139, value = "Cannot add a remoting receiver which references a null/empty outbound connection")
+    IllegalArgumentException cannotAddRemotingReceiver();
+
+    @Message(id = 140, value="Cannot add a HTTP connection which references a null/empty URI")
+    IllegalArgumentException cannotAddHTTPConnection();
 }

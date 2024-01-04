@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.deployment;
@@ -37,7 +20,9 @@ import java.util.Collections;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.property.PropertyReplacer;
@@ -64,7 +49,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
         this.propertyReplacer = propertyReplacer;
     }
 
-
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult result) throws XMLStreamException {
 
         final Namespace schemaVer = Namespace.forUri(reader.getNamespaceURI());
@@ -143,7 +128,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, topic, reader);
+                    parseAndAddParameter(CommonAttributes.DESTINATION_ENTRIES, entry, topic, reader);
                     break;
                 }
                 default: {
@@ -169,7 +154,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (reader.getLocalName()) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, queue, reader);
+                    parseAndAddParameter(CommonAttributes.DESTINATION_ENTRIES, entry, queue, reader);
                     break;
                 }
                 case "selector": {
@@ -194,5 +179,10 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             }
         }
         result.getQueues().add(new JmsDestination(queue, serverName, name));
+    }
+
+    protected static void parseAndAddParameter(AttributeDefinition ad, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
+        ModelNode attValue = ad.getParser().parse(ad, value, reader);
+        operation.get(ad.getName()).add(attValue);
     }
 }

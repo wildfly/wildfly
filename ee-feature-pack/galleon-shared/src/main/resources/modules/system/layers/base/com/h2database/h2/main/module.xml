@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="com.h2database.h2">
+
+    <resources>
+        <artifact name="${com.h2database:h2}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.compiler"/>
+        <module name="java.desktop"/>
+        <module name="java.instrument"/>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.scripting"/>
+        <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
+        <!-- H2 uses Jakarta Servlet to allow apps (in our case deployments) to expose its console as a servlet.
+             WildFly isn't concerning itself with allowing this H2 feature to continue to work in both a
+             javax.* EE namespace and jakarta.* EE namespace environment, so this no longer works out of the box.
+             But, we add an optional dep on a non-existent module as a hook to allow users to get it to work.
+             Users who want this to work can provide a module with the name:slot javax.servlet.api:h2. That module could
+             be a simple alias to the jakarta.servlet.api module the server provides, if that works with this module's
+             H2 artifact. Or the user could provide a non-alias module that packages and exposes the servlet resources H2 needs. -->
+        <module name="javax.servlet.api:h2" optional="true"/>
+        <module name="org.slf4j"/>
+    </dependencies>
+</module>

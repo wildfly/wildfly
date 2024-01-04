@@ -1,36 +1,22 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -46,6 +32,7 @@ import java.util.List;
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.JSP);
     protected static final SimpleAttributeDefinition DEVELOPMENT =
             new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -173,7 +160,8 @@ class JspDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(ModelNode.FALSE)
                     .setAllowExpression(true)
                     .build();
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             DISABLED,
             DEVELOPMENT,
@@ -194,23 +182,21 @@ class JspDefinition extends PersistentResourceDefinition {
             JAVA_ENCODING,
             X_POWERED_BY,
             DISPLAY_SOURCE_FRAGMENT,
-            OPTIMIZE_SCRIPTLETS
-    };
-    static final JspDefinition INSTANCE = new JspDefinition();
+            OPTIMIZE_SCRIPTLETS);
 
-    private JspDefinition() {
-        super(UndertowExtension.PATH_JSP,
-                UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()),
-                new JSPAdd(),
-                new JSPRemove());
+    JspDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+                .setAddHandler(new JSPAdd())
+                .setRemoveHandler(new JSPRemove())
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
-    public JSPConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    static JSPConfig getConfig(final ExpressionResolver context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
@@ -242,7 +228,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
     private static class JSPAdd extends RestartParentResourceAddHandler {
         protected JSPAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -254,7 +240,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -266,12 +252,12 @@ class JspDefinition extends PersistentResourceDefinition {
     private static class JSPRemove extends RestartParentResourceRemoveHandler {
 
         protected JSPRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

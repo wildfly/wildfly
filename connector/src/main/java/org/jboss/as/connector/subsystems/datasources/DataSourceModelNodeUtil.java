@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.subsystems.datasources;
@@ -52,7 +35,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENLISTMENT_TRACE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
@@ -71,7 +53,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIME
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
@@ -106,6 +87,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.api.common.Credential;
 import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.metadata.common.CredentialImpl;
@@ -181,13 +163,14 @@ class DataSourceModelNodeUtil {
 
 
         final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
-        final boolean elytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ELYTRON_ENABLED);
+        if (securityDomain != null) {
+            throw new OperationFailedException(ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotSupported());
+        }
         final String authenticationContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, AUTHENTICATION_CONTEXT);
 
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
-        final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
+        final DsSecurity security = new DsSecurityImpl(username, password, authenticationContext, credentialSourceSupplier, reauthPlugin);
 
         final boolean sharePreparedStatements = SHARE_PREPARED_STATEMENTS.resolveModelAttribute(operationContext, dataSourceNode).asBoolean();
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
@@ -282,13 +265,14 @@ class DataSourceModelNodeUtil {
         final String username = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, USERNAME);
         final String password= ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, PASSWORD);
         final String securityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, SECURITY_DOMAIN);
-        final boolean elytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ELYTRON_ENABLED);
+        if (securityDomain != null) {
+            throw new OperationFailedException(ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotSupported());
+        }
         final String authenticationContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, AUTHENTICATION_CONTEXT);
 
         final Extension reauthPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
 
-        final DsSecurity security = new DsSecurityImpl(username, password,
-                elytronEnabled? authenticationContext: securityDomain, elytronEnabled, credentialSourceSupplier, reauthPlugin);
+        final DsSecurity security = new DsSecurityImpl(username, password, authenticationContext, credentialSourceSupplier, reauthPlugin);
 
         final boolean sharePreparedStatements = SHARE_PREPARED_STATEMENTS.resolveModelAttribute(operationContext, dataSourceNode).asBoolean();
         final Long preparedStatementsCacheSize = ModelNodeUtil.getLongIfSetOrGetDefault(operationContext, dataSourceNode, PREPARED_STATEMENTS_CACHE_SIZE);
@@ -335,7 +319,9 @@ class DataSourceModelNodeUtil {
         final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_USERNAME);
         final String recoveryPassword = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_PASSWORD);
         final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_SECURITY_DOMAIN);
-        final boolean recoveryElytronEnabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_ELYTRON_ENABLED);
+        if(recoverySecurityDomain != null){
+            throw new OperationFailedException(ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotSupported());
+        }
         final String recoveryAuthenticationContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, RECOVERY_AUTHENTICATION_CONTEXT);
         Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, NO_RECOVERY);
         final String urlProperty =   ModelNodeUtil.getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, URL_PROPERTY);
@@ -344,8 +330,7 @@ class DataSourceModelNodeUtil {
             Credential credential = null;
 
             if ((recoveryUsername != null && (recoveryPassword != null || recoveryCredentialSourceSupplier != null)) || recoverySecurityDomain != null)
-               credential = new CredentialImpl(recoveryUsername, recoveryPassword,
-                       recoveryElytronEnabled? recoveryAuthenticationContext: recoverySecurityDomain, elytronEnabled, recoveryCredentialSourceSupplier);
+                credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoveryAuthenticationContext, recoveryCredentialSourceSupplier);
 
             Extension recoverPlugin = ModelNodeUtil.extractExtension(operationContext, dataSourceNode, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
 

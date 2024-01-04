@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="com.google.protobuf">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${com.google.api.grpc:proto-google-common-protos}"/>
+        <artifact name="${com.google.protobuf:protobuf-java}"/>
+        <artifact name="${com.google.protobuf:protobuf-java-util}"/>
+        <artifact name="${io.perfmark:perfmark-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="com.google.guava"/>
+        <module name="java.logging"/>
+    </dependencies>
+</module>

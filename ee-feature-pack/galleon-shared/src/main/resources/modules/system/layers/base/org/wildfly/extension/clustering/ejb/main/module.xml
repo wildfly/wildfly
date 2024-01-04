@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.clustering.ejb">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-ejb-extension}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.dmr"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.ejb.cache"/>
+        <module name="org.wildfly.clustering.ejb.infinispan"/>
+        <module name="org.wildfly.clustering.ejb.spi"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.service"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+        <module name="org.wildfly.clustering.service"/>
+    </dependencies>
+</module>

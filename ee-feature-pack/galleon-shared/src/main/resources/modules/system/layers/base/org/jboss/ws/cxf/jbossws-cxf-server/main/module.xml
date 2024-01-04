@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.jbossws-cxf-server">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-server}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.xml"/>
+        <module name="jakarta.security.auth.message.api"/>
+        <module name="jakarta.servlet.api" />
+        <module name="javax.wsdl4j.api" />
+        <module name="jakarta.xml.bind.api" />
+        <module name="jakarta.xml.ws.api" />
+        <module name="org.apache.commons.codec" />
+        <module name="org.jboss.ws.api" />
+        <module name="org.jboss.ws.spi" />
+        <module name="org.jboss.ws.common" />
+        <module name="org.jboss.ws.jaxws-client" />
+        <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="import"/>
+        <!-- do not import services from cxf, those need to come from jbossws -->
+        <module name="org.apache.cxf.impl">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF"/>
+          </imports>
+        </module>
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" services="import">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF"/>
+          </imports>
+        </module>
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" services="import">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF"/>
+          </imports>
+        </module>
+        <module name="org.jboss.logging" />
+        <module name="org.apache.ws.security" />
+        <module name="org.wildfly.security.elytron" />
+    </dependencies>
+
+</module>

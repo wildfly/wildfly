@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.appclient.service;
@@ -32,68 +15,66 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.LocalModelControllerClient;
+import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service responsible for deploying the application client that was specified on the command line
  *
  * @author Stuart Douglas
  */
-public class ApplicationClientDeploymentService implements Service<ApplicationClientDeploymentService> {
+public class ApplicationClientDeploymentService implements Service {
 
-
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("appClientDeploymentService");
 
     private final File path;
-    private ModelControllerClient controllerClient;
-    private final InjectedValue<ModelController> controllerValue = new InjectedValue<ModelController>();
+    private final Consumer<ApplicationClientDeploymentService> consumer;
+    private final Supplier<ModelControllerClientFactory> clientFactorySupplier;
+    private final Supplier<ExecutorService> executorServiceSupplier;
     private final CountDownLatch deploymentCompleteLatch = new CountDownLatch(1);
 
 
-    public ApplicationClientDeploymentService(final File path) {
+    public ApplicationClientDeploymentService(final Consumer<ApplicationClientDeploymentService> consumer,
+                                              final File path,
+                                              final Supplier<ModelControllerClientFactory> clientFactorySupplier,
+                                              final Supplier<ExecutorService> executorServiceSupplier) {
+        this.consumer = consumer;
         this.path = path;
+        this.clientFactorySupplier = clientFactorySupplier;
+        this.executorServiceSupplier = executorServiceSupplier;
     }
 
     @Override
-    public synchronized void start(final StartContext context) throws StartException {
-        controllerClient = controllerValue.getValue().createClient(Executors.newSingleThreadExecutor());
-
+    public synchronized void start(final StartContext context) {
         final DeployTask task = new DeployTask();
+        // TODO use executorServiceSupplier
         Thread thread = new Thread(new DeploymentTask(new OperationBuilder(task.getUpdate()).build()));
         thread.start();
+        consumer.accept(this);
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         //TODO: undeploy
+        consumer.accept(null);
     }
-
-    @Override
-    public ApplicationClientDeploymentService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
 
     private final class DeployTask {
 
-        protected ModelNode getUpdate() {
+        ModelNode getUpdate() {
             final ModelNode address = new ModelNode().add(DEPLOYMENT, path.getName());
             final ModelNode addOp = Util.getEmptyOperation(DeploymentAddHandler.OPERATION_NAME, address);
             addOp.get(CONTENT).set(createContent());
@@ -102,7 +83,7 @@ public class ApplicationClientDeploymentService implements Service<ApplicationCl
         }
 
 
-        protected ModelNode createContent() {
+        ModelNode createContent() {
             final ModelNode content = new ModelNode();
             final ModelNode contentItem = content.get(0);
             contentItem.get(PATH).set(path.getAbsolutePath());
@@ -130,21 +111,15 @@ public class ApplicationClientDeploymentService implements Service<ApplicationCl
 
         @Override
         public void run() {
-            try {
+            try (LocalModelControllerClient controllerClient = clientFactorySupplier.get().createSuperUserClient(executorServiceSupplier.get())) {
                 ModelNode result = controllerClient.execute(deploymentOp);
                 if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
                     System.exit(1);
                 }
                 deploymentCompleteLatch.countDown();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
 
-    }
-
-    public InjectedValue<ModelController> getControllerValue() {
-        return controllerValue;
     }
 
     public CountDownLatch getDeploymentCompleteLatch() {

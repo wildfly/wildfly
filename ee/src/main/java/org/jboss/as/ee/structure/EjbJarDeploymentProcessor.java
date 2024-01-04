@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ee.structure;
 
@@ -45,10 +28,10 @@ import org.jboss.vfs.VirtualFile;
  */
 public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final DotName STATELESS = DotName.createSimple("javax.ejb.Stateless");
-    private static final DotName STATEFUL = DotName.createSimple("javax.ejb.Stateful");
-    private static final DotName MESSAGE_DRIVEN = DotName.createSimple("javax.ejb.MessageDriven");
-    private static final DotName SINGLETON = DotName.createSimple("javax.ejb.Singleton");
+    private static final DotName STATELESS = DotName.createSimple("jakarta.ejb.Stateless");
+    private static final DotName STATEFUL = DotName.createSimple("jakarta.ejb.Stateful");
+    private static final DotName MESSAGE_DRIVEN = DotName.createSimple("jakarta.ejb.MessageDriven");
+    private static final DotName SINGLETON = DotName.createSimple("jakarta.ejb.Singleton");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

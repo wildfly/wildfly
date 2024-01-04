@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:jboss:domain:datasources-agroal:2.0">
     <datasource name="sample" jndi-name="${test.expr.1:java:jboss/datasources/ExampleDS}" jta="${test.expr.2:false}" connectable="${test.expr.3:true}" statistics-enabled="${test.expr.4:true}">
         <connection-factory driver="h2" url="${test.expr.5:jdbc:h2:tcp://localhost:1701}" transaction-isolation="${test.expr.6:SERIALIZABLE}" new-connection-sql="${test.expr.7:SELECT 1}" username="${test.expr.8:sa}" password="${test.expr.9:sa}">

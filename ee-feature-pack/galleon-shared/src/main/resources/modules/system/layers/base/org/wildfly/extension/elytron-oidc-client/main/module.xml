@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.elytron-oidc-client">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-elytron-oidc-client-subsystem}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.undertow.core"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-http-oidc"/>
+        <module name="org.wildfly.security.elytron-private"/>
+    </dependencies>
+</module>

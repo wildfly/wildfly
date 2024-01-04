@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-full-ha.xml" model="standalone">
+    <layers>
+        <include name="internal-standalone-full-profile"/>
+        <exclude name="jpa"/>      
+        <include name="jpa-distributed"/>            
+        <exclude name="ejb-local-cache"/>
+        <include name="ejb-dist-cache"/>
+        <exclude name="web-passivation"/>
+        <include name="web-clustering"/>
+        <include name="mod_cluster"/>
+        <include name="singleton-ha"/>
+    </layers>
+
+    <feature-group name="adjust-standalone-full-ha-config"/>
+</config>

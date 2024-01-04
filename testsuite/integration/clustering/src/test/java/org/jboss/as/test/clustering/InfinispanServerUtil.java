@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.clustering;
@@ -35,6 +18,7 @@ import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.GlowUtil;
 import org.junit.rules.TestRule;
 
 /**
@@ -53,12 +37,16 @@ public class InfinispanServerUtil {
         } catch (URISyntaxException ignore) {
         }
 
-        INFINISPAN_SERVER_RULE = InfinispanServerRuleBuilder
-                .config(absoluteConfigurationFile)
-                .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
-                .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
+        InfinispanServerRuleBuilder builder = InfinispanServerRuleBuilder
+                .config(absoluteConfigurationFile);
+        // When WildFly Glow is instantiating the deployment outside of the test excution, INFINISPAN_SERVER_HOME is null
+        if (!GlowUtil.isGlowScan()) {
+            builder.property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME);
+        }
+        INFINISPAN_SERVER_RULE = builder.property("infinispan.client.rest.auth_username", "testsuite-driver-user")
                 .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
-                .numServers(1)
+                // When WildFly Glow is instantiating the deployment, we don't want to start any server.
+                .numServers(GlowUtil.isGlowScan() ? 0 : 1)
                 .runMode(ServerRunMode.FORKED)
                 .build();
     }

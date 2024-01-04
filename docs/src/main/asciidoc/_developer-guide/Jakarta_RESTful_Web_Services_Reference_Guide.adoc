@@ -1,6 +1,14 @@
 [[Jakarta_RESTful_Web_Services_Reference_Guide]]
 = Jakarta RESTful Web Services Reference Guide
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 RESTEasy is the Jakarta RESTful Web Services implementation used in {appservername}. For detailed documentation see the
 https://resteasy.dev/docs[RESTEasy {resteasyversion} documentation].
 
@@ -152,6 +160,24 @@ public class JaxbJsonObjectMapperProvider implements ContextResolver<ObjectMappe
 }
 ----
 
+== Using the Tracing Feature
+
+The tracing feature provides more internal states of the Jakarta RESTful Web Services container. For example, it could
+be able to show what filters a request is going through, or how long time a request is processed and other kinds of information.
+
+The tracing feature can be enabled by setting the `tracing-type` attribute to `ALL` or `ON_DEMAND`. You can also control
+the threshold with the `tracing-threshold` attribute. The following is an example of enabling tracing using CLI:
+
+----
+/subsystem=jaxrs:write-attribute(name=tracing-type, value=ALL)
+:reload
+----
+
+You can also configure the tracing feature with the context parameters `resteasy.server.tracing.type` and
+`resteasy.server.tracing.threshold` in your deployments `web.xml` file.
+
+IMPORTANT: The tracing feature should not be used in production environments. Data can be exposed to clients via HTTP headers.
+
 == RESTEasy Spring Framework Integration
 
 WildFly generally includes support for Jakarta Context and Dependency Injection (CDI). The Spring Framework, however,
@@ -166,9 +192,6 @@ The following is an example `jboss-deployment-structure.xml` that may be needed.
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <deployment>
-        <exclude-subsystems>
-            <subsystem name="microprofile-opentracing-smallrye"/>
-        </exclude-subsystems>
         <exclusions>
             <module name="org.jboss.resteasy.resteasy-cdi"/>
         </exclusions>
@@ -176,8 +199,7 @@ The following is an example `jboss-deployment-structure.xml` that may be needed.
 </jboss-deployment-structure>
 ----
 
-The `microprofile-opentracing-smallrye` subsystem registers some Jakarta RESTful Web Services resources which require
-CDI. The `org.jboss.resteasy.resteasy-cdi` module adds CDI support for the RESTEasy implementation. Excluding these
+The `org.jboss.resteasy.resteasy-cdi` module adds CDI support for the RESTEasy implementation. Excluding this
 should allow Spring deployments to work.
 
-NOTE: References in this document to Java API for RESTful Web Services(JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.
+NOTE: References in this document to Java API for RESTful Web Services (JAX-RS) refer to Jakarta RESTful Web Services unless otherwise noted.

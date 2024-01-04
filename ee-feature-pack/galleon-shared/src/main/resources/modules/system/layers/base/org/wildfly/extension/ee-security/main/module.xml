@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.ee-security">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <exports>
+        <exclude path="org/wildfly/extension/ee-security/logging"/>
+    </exports>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-ee-security}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.server" />
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.glassfish.soteria" />
+        <module name="jakarta.security.enterprise.api" />
+        <module name="jakarta.enterprise.api" />
+        <module name="io.smallrye.jandex"/>
+    </dependencies>
+</module>

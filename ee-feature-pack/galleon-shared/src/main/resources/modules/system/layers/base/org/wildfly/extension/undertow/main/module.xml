@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.undertow">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <exports>
+        <exclude path="org/wildfly/extension/undertow/logging"/>
+    </exports>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-undertow}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.undertow.core" services="import"/>
+        <module name="io.undertow.servlet" services="import"/>
+        <module name="io.undertow.jsp"/>
+        <module name="io.undertow.websocket"/>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
+        <module name="jakarta.annotation.api"/>
+        <!-- Only needed if using access logging -->
+        <module name="jakarta.json.api" optional="true"/>
+        <module name="jakarta.security.auth.message.api"/>
+        <module name="jakarta.security.jacc.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.websocket.api"/>
+        <module name="io.smallrye.jandex"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.web.container"/>
+        <!-- Allow dynamic loading of distributable session management provider -->
+        <module name="org.wildfly.clustering.web.undertow" services="import" optional="true"/>
+        <module name="org.wildfly.extension.request-controller" />
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.domain-management"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.core-security"/>
+        <module name="org.wildfly.extension.io"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.network"/>
+
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.common-beans" services="import"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.marshalling.river" services="import"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.invocation"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.metadata.ear"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.threads"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.jboss.as.version"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.xnio"/>
+        <module name="org.jboss.xnio.nio" services="import"/>
+        <module name="org.wildfly.http-client.common"/>
+        <module name="org.wildfly.event.logger" optional="true"/>
+        <module name="org.wildfly.common" optional="true"/>
+    </dependencies>
+
+</module>

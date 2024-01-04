@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.netty.netty-codec-dns">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.netty:netty-codec-dns}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.netty.netty-buffer" />
+        <module name="io.netty.netty-codec" />
+        <module name="io.netty.netty-common" />
+        <module name="io.netty.netty-transport" />
+    </dependencies>
+</module>

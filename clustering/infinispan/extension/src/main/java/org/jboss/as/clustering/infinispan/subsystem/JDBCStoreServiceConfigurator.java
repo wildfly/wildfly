@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.infinispan.subsystem;
@@ -31,12 +14,12 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.infinispan.persistence.jdbc.common.DatabaseType;
-import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfiguration;
-import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.TableManipulationConfiguration;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.persistence.jdbc.DataSourceConnectionFactoryConfigurationBuilder;
+import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfiguration;
+import org.jboss.as.clustering.infinispan.persistence.jdbc.JDBCStoreConfigurationBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -51,7 +34,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Paul Ferraro
  */
-public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcStringBasedStoreConfiguration, JdbcStringBasedStoreConfigurationBuilder> {
+public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JDBCStoreConfiguration, JDBCStoreConfigurationBuilder> {
 
     private final SupplierDependency<TableManipulationConfiguration> table;
     private volatile SupplierDependency<List<Module>> modules;
@@ -59,7 +42,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
     private volatile DatabaseType dialect;
 
     JDBCStoreServiceConfigurator(PathAddress address) {
-        super(address, JdbcStringBasedStoreConfigurationBuilder.class);
+        super(address, JDBCStoreConfigurationBuilder.class);
         PathAddress cacheAddress = address.getParent();
         PathAddress containerAddress = cacheAddress.getParent();
         this.table = new ServiceSupplierDependency<>(CacheComponent.STRING_TABLE.getServiceName(cacheAddress));
@@ -80,7 +63,7 @@ public class JDBCStoreServiceConfigurator extends StoreServiceConfigurator<JdbcS
     }
 
     @Override
-    public void accept(JdbcStringBasedStoreConfigurationBuilder builder) {
+    public void accept(JDBCStoreConfigurationBuilder builder) {
         builder.table().read(this.table.get());
         TwoWayKey2StringMapper mapper = this.findMapper();
         if (mapper != null) {

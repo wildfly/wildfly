@@ -1,60 +1,65 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2021 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.opentelemetry;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_BATCH_DELAY;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_EXPORT_TIMEOUT;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_MAX_EXPORT_BATCH_SIZE;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.DEFAULT_MAX_QUEUE_SIZE;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_JAEGER;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_EXPORTER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_SAMPLER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_SPAN_PROCESSOR;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.OPENTELEMETRY_CAPABILITY_NAME;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.SPAN_PROCESSOR_BATCH;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.opentelemetry.deployment.OpenTelemetryExtensionLogger;
 
 /*
  * For future reference: https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#jaeger-exporter
  */
 
-public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
-    private static final String[] ALLOWED_EXPORTERS = {"jaeger", "otlp"};
-    private static final String[] ALLOWED_SAMPLERS = {"on", "off", "ratio"};
-    private static final String[] ALLOWED_SPAN_PROCESSORS = {"batch", "simple"};
-
-    public static final String DEFAULT_ENDPOINT = "http://localhost:14250";
+class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
+    static final String OPENTELEMETRY_MODULE = "org.wildfly.extension.opentelemetry";
     public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
-            "io.opentelemetry.context"
+            "io.opentelemetry.context",
+            "io.opentelemetry.exporter",
+            "io.opentelemetry.sdk",
+            "io.smallrye.opentelemetry",
+            "io.vertx.core",
+            "io.vertx.grpc-client",
+            "io.netty.netty-buffer"
     };
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
@@ -62,6 +67,10 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
                     .addRequirements(WELD_CAPABILITY_NAME)
                     .build();
 
+    public static final WildFlyOpenTelemetryConfigSupplier CONFIG_SUPPLIER = new WildFlyOpenTelemetryConfigSupplier();
+    static final RuntimeCapability<WildFlyOpenTelemetryConfigSupplier> OPENTELEMETRY_CONFIG_CAPABILITY =
+            RuntimeCapability.Builder.of(OPENTELEMETRY_MODULE + ".config", false, CONFIG_SUPPLIER).build();
+    @Deprecated
     public static final SimpleAttributeDefinition SERVICE_NAME = SimpleAttributeDefinitionBuilder
             .create(OpenTelemetryConfigurationConstants.SERVICE_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
@@ -73,9 +82,8 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_EXPORTER)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
-            .setDefaultValue(new ModelNode("jaeger"))
-            .setAllowedValues(ALLOWED_EXPORTERS)
-            .setValidator(new StringAllowedValuesValidator(ALLOWED_EXPORTERS))
+            .setDefaultValue(new ModelNode(EXPORTER_OTLP))
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_EXPORTERS))
             .setRestartAllServices()
             .build();
 
@@ -84,19 +92,18 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_EXPORTER)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(DEFAULT_ENDPOINT))
+            .setDefaultValue(new ModelNode(OpenTelemetryConfigurationConstants.DEFAULT_OTLP_ENDPOINT))
             .build();
 
-
+    @Deprecated
     public static final SimpleAttributeDefinition SPAN_PROCESSOR_TYPE = SimpleAttributeDefinitionBuilder
             .create(OpenTelemetryConfigurationConstants.SPAN_PROCESSOR_TYPE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode("batch"))
-            .setAllowedValues(ALLOWED_SPAN_PROCESSORS)
-            .setValidator(new StringAllowedValuesValidator(ALLOWED_SPAN_PROCESSORS))
+            .setDefaultValue(new ModelNode(SPAN_PROCESSOR_BATCH))
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_SPAN_PROCESSORS))
             .build();
 
     public static final SimpleAttributeDefinition BATCH_DELAY = SimpleAttributeDefinitionBuilder
@@ -104,7 +111,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(5000))
+            .setDefaultValue(new ModelNode(DEFAULT_BATCH_DELAY))
             .build();
 
     public static final SimpleAttributeDefinition MAX_QUEUE_SIZE = SimpleAttributeDefinitionBuilder
@@ -112,7 +119,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(2048))
+            .setDefaultValue(new ModelNode(DEFAULT_MAX_QUEUE_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition MAX_EXPORT_BATCH_SIZE = SimpleAttributeDefinitionBuilder
@@ -120,7 +127,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(512))
+            .setDefaultValue(new ModelNode(DEFAULT_MAX_EXPORT_BATCH_SIZE))
             .build();
 
     public static final SimpleAttributeDefinition EXPORT_TIMEOUT = SimpleAttributeDefinitionBuilder
@@ -128,7 +135,7 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SPAN_PROCESSOR)
             .setRestartAllServices()
-            .setDefaultValue(new ModelNode(30000))
+            .setDefaultValue(new ModelNode(DEFAULT_EXPORT_TIMEOUT))
             .build();
 
     public static final SimpleAttributeDefinition SAMPLER = SimpleAttributeDefinitionBuilder
@@ -136,12 +143,12 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
             .setAllowExpression(true)
             .setXmlName(OpenTelemetryConfigurationConstants.TYPE)
             .setAttributeGroup(GROUP_SAMPLER)
-            .setAllowedValues(ALLOWED_SAMPLERS)
+            .setValidator(new StringAllowedValuesValidator(OpenTelemetryConfigurationConstants.ALLOWED_SAMPLERS))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RATIO = SimpleAttributeDefinitionBuilder
-            .create(OpenTelemetryConfigurationConstants.RATIO, ModelType.DOUBLE, true)
+            .create(OpenTelemetryConfigurationConstants.SAMPLER_RATIO, ModelType.DOUBLE, true)
             .setAllowExpression(true)
             .setAttributeGroup(GROUP_SAMPLER)
             .setValidator((parameterName, value) -> {
@@ -162,15 +169,65 @@ public class OpenTelemetrySubsystemDefinition extends PersistentResourceDefiniti
 
     protected OpenTelemetrySubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH,
-                OpenTelemetrySubsystemExtension.getResourceDescriptionResolver())
-                .setAddHandler(OpenTelemetrySubsystemAdd.INSTANCE)
+                OpenTelemetrySubsystemExtension.SUBSYSTEM_RESOLVER)
+                .setAddHandler(new OpenTelemetrySubsystemAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .setCapabilities(OPENTELEMETRY_CAPABILITY)
+                .setCapabilities(OPENTELEMETRY_CAPABILITY, OPENTELEMETRY_CONFIG_CAPABILITY)
         );
+    }
+
+    static void validateExporter(OperationContext context, String exporter) throws OperationFailedException {
+
+        if (EXPORTER_JAEGER.equals(exporter)) {
+            if (context.isNormalServer()) {
+                context.setRollbackOnly();
+                throw new OperationFailedException(OTEL_LOGGER.jaegerIsNoLongerSupported());
+            } else {
+                OTEL_LOGGER.warn(OTEL_LOGGER.jaegerIsNoLongerSupported());
+            }
+        }
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        OperationStepHandler handler = new ValidateExporterWriteAttributeHandler();
+        for (AttributeDefinition attr : getAttributes()) {
+            if(!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+                throw ControllerLogger.ROOT_LOGGER.attributeWasNotMarkedAsReloadRequired(attr.getName(), resourceRegistration.getPathAddress());
+            }
+            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+        }
+    }
+
+    static class WildFlyOpenTelemetryConfigSupplier implements Supplier<OpenTelemetryConfig>, Consumer<OpenTelemetryConfig> {
+        private OpenTelemetryConfig config;
+        @Override
+        public void accept(OpenTelemetryConfig openTelemetryConfig) {
+            this.config = openTelemetryConfig;
+        }
+
+        @Override
+        public OpenTelemetryConfig get() {
+            return config;
+        }
+    }
+
+    private static class ValidateExporterWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
+
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
+            AttributeDefinition attributeDefinition = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName).getAttributeDefinition();
+            if (EXPORTER.equals(attributeDefinition)) {
+                // Need to validate 'jaeger' isn't used in a non-admin-only server
+                validateExporter(context, resolvedValue.asString());
+            }
+
+            return super.applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, voidHandback);
+        }
     }
 }

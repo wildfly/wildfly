@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.distribution.validation;
@@ -42,8 +25,10 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -83,8 +68,8 @@ public class AbstractValidationUnitTest {
 
     private static final Set<String> EXCLUDED_SCHEMA_FILES = new HashSet<>();
     private static final Set<String> FUTURE_SCHEMA_FILES = new HashSet<>();
-    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new HashMap<>();
-    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new HashMap<>();
+    private static final Map<String, File> JBOSS_SCHEMAS_MAP = new LinkedHashMap<>();
+    private static final Map<String, File> CURRENT_JBOSS_SCHEMAS_MAP = new LinkedHashMap<>();
     private static final Source[] SCHEMA_SOURCES;
     private static final Map<String, String> NAMESPACE_MAP = new HashMap<>();
     private static final Map<String, String> OUTDATED_NAMESPACES = new HashMap<>();
@@ -169,6 +154,7 @@ public class AbstractValidationUnitTest {
             final File schemaDir = new File(JBOSS_DIST_DIR, SCHEMAS_LOCATION);
 
             final File[] xsds = schemaDir.listFiles(new SchemaFilter(EXCLUDED_SCHEMA_FILES.toArray(new String[0])));
+            Arrays.sort(xsds);
             for (File xsd : xsds) {
                 JBOSS_SCHEMAS_MAP.put(xsd.getName(), xsd);
             }

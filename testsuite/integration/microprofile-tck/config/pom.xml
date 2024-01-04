@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -32,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-config</artifactId>
@@ -43,8 +26,7 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-config</ts.microprofile-tck-provisioning.decorator.layer>
+        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.config:microprofile-config-tck</ts.microprofile-tck-tests-dependency>
         <config.configure-weld-subsystem.phase>process-test-resources</config.configure-weld-subsystem.phase>
         <!--
             Arquillian does not propagate the system properties the TCK needs when starting the server. Create a
@@ -53,6 +35,7 @@
         -->
         <mp.tck.properties>-Dmp.tck.prop.dummy=dummy -Dcustomer.hobby=Tennis -Dconfig_ordinal=120</mp.tck.properties>
 
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, microprofile-config]==>ee-core-profile-server,microprofile-config</ts.microprofile-tck-glow.expected-discovery>
 
     </properties>
 
@@ -103,13 +86,11 @@
                         <config_ordinal>45</config_ordinal>
                         <customer_name>Bob</customer_name>
                     </environmentVariables>
-                    <systemProperties>
+                    <systemPropertyVariables>
                         <!-- We have put these values into mp.tck.properties above -->
                         <mp.tck.prop.dummy>dummy</mp.tck.prop.dummy>
                         <customer.hobby>Tennis</customer.hobby>
                         <config_ordinal>120</config_ordinal>
-                    </systemProperties>
-                    <systemPropertyVariables>
                         <!-- Pass the my_string_property and MY_STRING_PROPERTY as sysprop to exclude them from the
                              ConfigProviderTest#testEnvironmentConfigSource that does not deal with case-sensitive environment variables on Windows
                         -->
@@ -166,7 +147,9 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <config.configure-weld-subsystem.phase>process-test-classes</config.configure-weld-subsystem.phase>
             </properties>
         </profile>
 
@@ -179,7 +162,9 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
                 <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
                 <config.configure-weld-subsystem.phase>none</config.configure-weld-subsystem.phase>
             </properties>
@@ -208,15 +193,17 @@
         </profile>
         
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
                 <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
                 <config.configure-weld-subsystem.phase>none</config.configure-weld-subsystem.phase>
             </properties>
@@ -245,15 +232,18 @@
         </profile>
 
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
+                <config.configure-weld-subsystem.phase>test-compile</config.configure-weld-subsystem.phase>
             </properties>
         </profile>
 

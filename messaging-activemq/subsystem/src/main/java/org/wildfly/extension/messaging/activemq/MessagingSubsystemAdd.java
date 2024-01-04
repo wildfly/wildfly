@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -75,7 +58,7 @@ import org.wildfly.extension.messaging.activemq.deployment.MessagingDependencyPr
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.MessagingXmlParsingDeploymentUnitProcessor;
 import org.wildfly.extension.messaging.activemq.deployment.injection.CDIDeploymentProcessor;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Add handler for the messaging subsystem.
@@ -83,8 +66,6 @@ import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
-
-    private static final ServiceName JBOSS_MESSAGING_ACTIVEMQ = ServiceName.JBOSS.append(MessagingExtension.SUBSYSTEM_NAME);
 
     final BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller;
 
@@ -168,8 +149,9 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
                 // Process connectors
-                final Set<String> connectorsSocketBindings = new HashSet<String>();
-                final Map<String, TransportConfiguration> connectors = TransportConfigOperationHandlers.processConnectors(context, "localhost", model, connectorsSocketBindings);
+                final Set<String> connectorsSocketBindings = new HashSet<>();
+                final Map<String, String> sslContextNames = new HashMap<>();
+                final Map<String, TransportConfiguration> connectors = TransportConfigOperationHandlers.processConnectors(context, "localhost", model, connectorsSocketBindings, sslContextNames);
 
                 Map<String, ServiceName> outboundSocketBindings = new HashMap<>();
                 Map<String, Boolean> outbounds = TransportConfigOperationHandlers.listOutBoundSocketBinding(context, connectorsSocketBindings);
@@ -206,7 +188,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, broadcastGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
-                        final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                        final ServiceName groupBindingServiceName = GroupBindingService.getBroadcastBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }
@@ -225,7 +207,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         String clusterName = JGROUPS_CLUSTER.resolveModelAttribute(context, discoveryGroupModel).asString();
                         clusterNames.put(key, clusterName);
                     } else {
-                        final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(JBOSS_MESSAGING_ACTIVEMQ).append(name);
+                        final ServiceName groupBindingServiceName = GroupBindingService.getDiscoveryBaseServiceName(MessagingServices.getActiveMQServiceName()).append(name);
                         if (!groupBindingServices.contains(groupBindingServiceName)) {
                             groupBindingServices.add(groupBindingServiceName);
                         }
@@ -239,7 +221,8 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         outboundSocketBindings,
                         groupBindings,
                         commandDispatcherFactories,
-                        clusterNames))
+                        clusterNames,
+                        sslContextNames))
                         .install();
             }
         }, OperationContext.Stage.RUNTIME);

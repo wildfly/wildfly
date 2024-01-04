@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<verifications xmlns="http://maven.apache.org/verifications/1.0.0"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://maven.apache.org/verifications/1.0.0 http://maven.apache.org/xsd/verifications-1.0.0.xsd">
+<!--
+    1) bin/product.conf exists
+    2) bin/product.conf has a slot property with a value equal to the value of the
+       'preview.dist.product.slot' property
+    3) jboss-modules.jar must exist
+    4) standalone/configuration/standalone.xml must exist
+    5) modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/module.xml exists
+    6) the module.xml above contains to 'org.wildfly:wildfly-preview-feature-pack-product-conf'
+    7) Various modules provided by the feature pack that provides the complete MicroProfile feature set are present
+    8) the .galleon dir exists
+    9) no .galleon/history dir exists
+-->
+  <files>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/bin/product.conf</location>
+      <contains>slot=${preview.dist.product.slot}</contains>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/module.xml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${preview.dist.product.slot}/module.xml</location>
+      <contains>org.wildfly:wildfly-preview-feature-pack-product-conf</contains>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/jboss-modules.jar</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/standalone/configuration/standalone.xml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/fault-tolerance/api/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/fault-tolerance-smallrye/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/microprofile/fault-tolerance-smallrye</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/openapi/api/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/openapi-smallrye/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/jwt/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/bitbucket/jose4j/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/eclipse/microprofile/jwt/auth/api/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/extension/microprofile/jwt-smallrye/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.galleon/history</location>
+      <exists>false</exists>
+    </file>
+  </files>
+</verifications>

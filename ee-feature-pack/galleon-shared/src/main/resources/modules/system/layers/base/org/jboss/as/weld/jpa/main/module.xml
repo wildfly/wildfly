@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.weld.jpa">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-weld-jpa}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.spi" />
+        <module name="org.jboss.as.weld.spi" />
+        <module name="org.jboss.as.weld.common" />
+        <module name="org.jboss.as.jpa"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.metadata.ear"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.transaction.client"/>
+        <module name="org.wildfly.common"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+    </dependencies>
+
+</module>

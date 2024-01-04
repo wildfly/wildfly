@@ -1,26 +1,13 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.controller;
+
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.stream.Stream;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExpressionResolver;
@@ -50,5 +37,24 @@ public interface Attribute extends Definable<AttributeDefinition> {
      */
     default ModelNode resolveModelAttribute(ExpressionResolver resolver, ModelNode model) throws OperationFailedException {
         return this.getDefinition().resolveModelAttribute(resolver, model);
+    }
+
+    /**
+     * Convenience method that exposes an Attribute enum as a stream of {@link AttributeDefinition}s.
+     * @param <E> the attribute enum type
+     * @param enumClass the enum class
+     * @return a stream of attribute definitions.
+     */
+    static <E extends Enum<E> & Attribute> Stream<AttributeDefinition> stream(Class<E> enumClass) {
+        return stream(EnumSet.allOf(enumClass));
+    }
+
+    /**
+     * Convenience method that exposes a set of attributes as a stream of {@link AttributeDefinition}s.
+     * @param <A> the attribute type
+     * @return a stream of attribute definitions.
+     */
+    static <A extends Attribute> Stream<AttributeDefinition> stream(Collection<A> attributes) {
+        return attributes.stream().map(Attribute::getDefinition);
     }
 }

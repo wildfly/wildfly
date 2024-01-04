@@ -1,25 +1,6 @@
 /*
- *
- *  JBoss, Home of Professional Open Source.
- *  Copyright 2015, Red Hat, Inc., and individual contributors
- *  as indicated by the @author tags. See the copyright.txt file in the
- *  distribution for a full listing of individual contributors.
- *
- *  This is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation; either version 2.1 of
- *  the License, or (at your option) any later version.
- *
- *  This software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this software; if not, write to the Free
- *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * /
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ee.subsystem;
 
@@ -182,7 +163,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
                     PathElement bvExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.bean-validation");
                     ManagementResourceRegistration extensionRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvExtension, NonResolvingResourceDescriptionResolver.INSTANCE));
                     extensionRegistration.registerReadOnlyAttribute(new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build(), null);
-                    extensionRegistration.registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    extensionRegistration.registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
                     extensionRegistration.registerOperationHandler(addExtension,
                             new ReloadRequiredAddStepHandler(
                                     new SimpleAttributeDefinitionBuilder("module", ModelType.STRING).setRequired(true).build()));
@@ -195,7 +176,7 @@ public class EeLegacySubsystemTestCase extends AbstractSubsystemBaseTest {
 
                     PathElement bvSubsystem = PathElement.pathElement(SUBSYSTEM, "bean-validation");
                     ManagementResourceRegistration subsystemRegistration = rootRegistration.registerSubModel(new SimpleResourceDefinition(bvSubsystem, NonResolvingResourceDescriptionResolver.INSTANCE));
-                    subsystemRegistration.registerOperationHandler(removeSubsystem, new ReloadRequiredRemoveStepHandler());
+                    subsystemRegistration.registerOperationHandler(removeSubsystem, ReloadRequiredRemoveStepHandler.INSTANCE);
                     subsystemRegistration.registerOperationHandler(addSubsystem, new ReloadRequiredAddStepHandler());
                 }
 

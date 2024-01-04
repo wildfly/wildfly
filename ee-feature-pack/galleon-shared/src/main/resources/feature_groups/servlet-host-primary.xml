@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="servlet-host-primary" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="core-host-primary"/>
+
+    <feature spec="host">
+        <param name="host" value="primary"/>
+
+        <!-- TODO Track back and check why this override is needed. --> 
+        <feature spec="host.core-service.management.management-interface.http-interface">
+            <param name="http-authentication-factory" value="management-http-authentication"/>
+            <param name="interface" value="management"/>
+            <param name="port" value="${jboss.management.http.port:9990}"/>
+            <feature spec="host.core-service.management.management-interface.http-interface.http-upgrade">
+                <param name="enabled" value="true"/>
+                <param name="sasl-authentication-factory" value="management-sasl-authentication"/>
+            </feature>
+        </feature>
+
+        <feature spec="host.jvm">
+            <param name="jvm" value="default"/>
+            <param name="heap-size" value="64m"/>
+            <param name="max-heap-size" value="256m"/>
+            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+            <unset param="environment-variables"/>
+        </feature>
+    </feature>
+
+</feature-group-spec>

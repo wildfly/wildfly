@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.subsystem;
@@ -27,9 +10,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,13 +31,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.auth.server.RealmUnavailableException;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.auth.server.SecurityIdentity;
@@ -74,6 +57,7 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
             .setRequired(false)
             .setMinSize(1)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAttributeParser(AttributeParser.STRING_LIST)
             .setCapabilityReference(SECURITY_DOMAIN_CAPABILITY_NAME, IDENTITY_CAPABILITY)
             .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.ELYTRON_SECURITY_DOMAIN_REF)
             .build();
@@ -114,28 +98,36 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            IdentityService identityService = new IdentityService();
-            CapabilityServiceBuilder<?> capabilityServiceBuilder = context.getCapabilityServiceTarget().addCapability(IDENTITY_CAPABILITY);
+            final List<Supplier<SecurityDomain>> outflowSecurityDomainSuppliers = new ArrayList<>();
+            final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(IDENTITY_CAPABILITY);
+            final Consumer<Function<SecurityIdentity, Set<SecurityIdentity>>> consumer = sb.provides(IDENTITY_CAPABILITY);
             for (String outflowSecurityDomain : outflowSecurityDomains) {
-                capabilityServiceBuilder.addCapabilityRequirement(SECURITY_DOMAIN_CAPABILITY_NAME, SecurityDomain.class, identityService.createOutflowSecurityDomainInjector(), outflowSecurityDomain);
+                outflowSecurityDomainSuppliers.add(sb.requiresCapability(SECURITY_DOMAIN_CAPABILITY_NAME, SecurityDomain.class, outflowSecurityDomain));
             }
-            capabilityServiceBuilder.setInitialMode(Mode.ACTIVE).setInstance(identityService).install();
+            IdentityService identityService = new IdentityService(consumer, outflowSecurityDomainSuppliers);
+            sb.setInstance(identityService).install();
         }
     }
 
-    static class IdentityService implements Service<Function<SecurityIdentity, Set<SecurityIdentity>>> {
-
-        private final List<InjectedValue<SecurityDomain>> outflowSecurityDomainInjectors = new ArrayList<>();
+    static class IdentityService implements Service {
+        private final Consumer<Function<SecurityIdentity, Set<SecurityIdentity>>> consumer;
+        private final List<Supplier<SecurityDomain>> outflowSecurityDomainSuppliers;
         private Set<SecurityDomain> outflowSecurityDomains = new HashSet<>();
+
+        private IdentityService(final Consumer<Function<SecurityIdentity, Set<SecurityIdentity>>> consumer, final List<Supplier<SecurityDomain>> outflowSecurityDomainSuppliers) {
+            this.consumer = consumer;
+            this.outflowSecurityDomainSuppliers = outflowSecurityDomainSuppliers;
+        }
 
         @Override
         public void start(StartContext context) throws StartException {
             HashSet<SecurityDomain> securityDomains = new HashSet<>();
-            for (InjectedValue<SecurityDomain> outflowSecurityDomainInjector : outflowSecurityDomainInjectors) {
-                SecurityDomain value = outflowSecurityDomainInjector.getValue();
+            for (Supplier<SecurityDomain> outflowSecurityDomainInjector : outflowSecurityDomainSuppliers) {
+                SecurityDomain value = outflowSecurityDomainInjector.get();
                 securityDomains.add(value);
             }
             outflowSecurityDomains.addAll(securityDomains);
+            consumer.accept(this::outflowIdentity);
         }
 
         private Set<SecurityIdentity> outflowIdentity(final SecurityIdentity securityIdentity) {
@@ -158,19 +150,8 @@ public class IdentityResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public void stop(StopContext context) {
-            outflowSecurityDomains = null;
+            consumer.accept(null);
+            outflowSecurityDomains.clear();
         }
-
-        @Override
-        public Function<SecurityIdentity, Set<SecurityIdentity>> getValue() throws IllegalStateException, IllegalArgumentException {
-            return this::outflowIdentity;
-        }
-
-        Injector<SecurityDomain> createOutflowSecurityDomainInjector() {
-            InjectedValue<SecurityDomain> injectedValue = new InjectedValue<>();
-            outflowSecurityDomainInjectors.add(injectedValue);
-            return injectedValue;
-        }
-
     }
 }

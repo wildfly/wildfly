@@ -1,0 +1,28 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:undertow:14.0" default-server="default-server" default-servlet-container="servlet-container" default-virtual-host="virtual-host" instance-id="${jboss.node.name}-undertow" statistics-enabled="true" >
+   <buffer-cache buffer-size="1025" buffers-per-region="1054" max-regions="15" name="default"/>
+   <server name="default-server" default-host="virtual-host" servlet-container="servlet-container">
+      <http-listener name="default" socket-binding="http" redirect-socket="ajp" enable-http2="true"/>
+      <https-listener name="https" socket-binding="https-non-default" security-realm="ApplicationRealm" enable-http2="true"/>
+      <host name="virtual-host" alias="localhost">
+         <location name="/" handler="welcome-content" />
+         <http-invoker security-realm="ApplicationRealm"/>
+      </host>
+   </server>
+   <server name="abc">
+      <host name="abc-host" alias="localhost">
+         <location name="/" handler="welcome-content" />
+      </host>
+   </server>
+   <servlet-container name="servlet-container">
+      <jsp-config/>
+      <websockets/>
+   </servlet-container>
+   <handlers>
+      <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
+   </handlers>
+</subsystem>

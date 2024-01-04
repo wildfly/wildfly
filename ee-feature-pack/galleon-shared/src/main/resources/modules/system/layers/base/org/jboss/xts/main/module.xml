@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.xts">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.narayana.xts:jbossxts}"/>
+        <artifact name="${org.jboss.narayana:jbosstxbridge}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.rmi"/>
+        <module name="java.xml"/>
+
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.enterprise.api"/>
+
+        <module name="org.jboss.jts"/>
+        <module name="org.jboss.ws.api" services="export"/>
+        <module name="org.jboss.ws.jaxws-client" services="export"/>
+        <module name="org.jboss.ws.cxf.jbossws-cxf-client" services="export"/>
+        <module name="jakarta.xml.soap.api"/>
+        <module name="jakarta.xml.ws.api"/>
+
+        <!-- this is needed to ensure @Resource annotations on the JaxWS endpoint classes are in the
+             classloader scope-->
+        <module name="jakarta.annotation.api"  export="true" />
+        <!-- this is needed to ensure the JaxWS endpoint classes canb refer to HttpServletRequest etc -->
+        <module name="jakarta.servlet.api"/>
+        <module name="org.jboss.weld.core" />
+        <module name="org.jboss.logging" />
+        <module name="org.jboss.narayana.compensations" export="true" />
+        <module name="jakarta.interceptor.api"  export="true" />
+
+        <!-- This dependency is required only if the
+             xts subsystem is present. If it is the
+             subsystem may configure the deployment such
+             that this module will need to use classes from
+             the subsystem module.-->
+        <module name="org.jboss.as.xts" export="true" optional="true">
+          <imports>
+            <include path="org.jboss.as.xts.txnclient"/>
+          </imports>
+        </module>
+    </dependencies>
+</module>

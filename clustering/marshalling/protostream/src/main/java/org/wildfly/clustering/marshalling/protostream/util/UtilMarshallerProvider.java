@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.util;
@@ -31,6 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -47,9 +31,9 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalScalarMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -77,7 +61,8 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     EMPTY_SORTED_MAP(new ValueMarshaller<>(Collections.emptySortedMap())),
     EMPTY_SORTED_SET(new ValueMarshaller<>(Collections.emptySortedSet())),
     ENUM_MAP(new EnumMapMarshaller<>()),
-    ENUM_SET(new EnumSetMarshaller<>()),
+    @SuppressWarnings("unchecked")
+    ENUM_SET(new FieldSetProtoStreamMarshaller<>((Class<EnumSet<UtilMarshallerProvider>>) (Class<?>) EnumSet.class, new EnumSetFieldSetMarshaller<>())),
     HASH_MAP(new MapMarshaller<>(HashMap::new)),
     HASH_SET(new CollectionMarshaller<>(HashSet::new)),
     LINKED_HASH_MAP(new LinkedHashMapMarshaller()),
@@ -120,7 +105,7 @@ public enum UtilMarshallerProvider implements ProtoStreamMarshallerProvider {
     UNMODIFIABLE_SET(new DecoratorMarshaller<>(Set.class, Collections::unmodifiableSet, Collections.emptySet())),
     UNMODIFIABLE_SORTED_MAP(new DecoratorMarshaller<>(SortedMap.class, Collections::unmodifiableSortedMap, Collections.emptySortedMap())),
     UNMODIFIABLE_SORTED_SET(new DecoratorMarshaller<>(SortedSet.class, Collections::unmodifiableSortedSet, Collections.emptySortedSet())),
-    UUID(new ProtoStreamBuilderFieldSetMarshaller<>(UUIDMarshaller.INSTANCE)),
+    UUID(new FieldSetProtoStreamMarshaller<>(UUIDMarshaller.INSTANCE)),
     ;
     private final ProtoStreamMarshaller<?> marshaller;
 

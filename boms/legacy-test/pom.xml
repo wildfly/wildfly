@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>31.0.0.Final-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-legacy-test-bom</artifactId>
+    <description>
+        Bill of materials for testsuites that use legacy version of artifacts that differ from
+		the versions used in the current release.
+    </description>
+    <packaging>pom</packaging>
+
+    <name>WildFly: Legacy Testsuite Dependency Management</name>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!--
+                Inherit the common deps.
+             -->
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-common-ee-dependency-management</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Dependencies specific to this bom. Keep sorted by maven GA -->
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <!-- use the Netty version required by HornetQ 2.4.7.Final -->
+                <version>${legacy.version.io.netty}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${legacy.version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${legacy.version.jakarta.inject.jakarta.inject-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-commons</artifactId>
+                <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-core-client</artifactId>
+                <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+			
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-jms-client</artifactId>
+                <version>${version.org.hornetq}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.jms</groupId>
+                <artifactId>jboss-jms-api_2.0_spec</artifactId>
+                <version>${legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-naming-client</artifactId>
+                <version>${legacy.version.org.wildfly.naming-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.wildfly.extension.messaging.activemq.jms;
 
 import java.util.SortedSet;
@@ -38,6 +43,7 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("cacheDestinations");
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("ignoreJTA");
         UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("enable1xPrefixes");
+        UNSUPPORTED_ACTIVEMQ_RA_PROPERTIES.add("compressionLevel");
 
         KNOWN_ATTRIBUTES = new TreeSet<String>();
         // these are supported but it is not found by JavaBeans introspector because of the type

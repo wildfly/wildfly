@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-integration">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.annotation,jakarta.annotation.security,jakarta.annotation.sql,jakarta.xml.bind.annotation,jakarta.xml.bind.annotation.adapters"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.xml.bind.*"/>
+    </props>
+    <dependencies>
+        <layer name="naming"/>
+        <layer name="jsonb" optional="true"/>
+    </dependencies>
+    <feature-group name="ee-integration"/>
+</layer-spec>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="unsecured-basic-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="servlet-unsecured-basic-profile"/>
+
+    <feature spec="subsystem.discovery"/>
+
+    <feature spec="subsystem.ee">
+        <feature spec="subsystem.ee.context-service">
+            <param name="context-service" value="default"/>
+        </feature>
+    </feature>
+
+    <feature-group name="remoting"/>
+    <feature-group name="remote-naming"/>
+
+    <feature-group name="batch-jberet"/>
+    <feature spec="subsystem.bean-validation"/>
+    <feature-group name="transactions"/>
+    <feature-group name="datasources"/>
+    <feature spec="subsystem.ee-security"/>
+    <feature-group name="jacc-policy" />
+    <feature-group name="ejb3"/>
+    <feature spec="subsystem.resource-adapters"/>
+    <feature-group name="jca"/>
+    <feature-group name="jpa"/>
+    <feature spec="subsystem.jsf"/>
+    <feature-group name="jaxrs"/>
+    <feature spec="subsystem.jdr"/>
+    <feature spec="subsystem.weld"/>
+    <feature spec="subsystem.pojo"/>
+    <feature spec="subsystem.sar"/>
+    <feature-group name="mail"/>
+    <feature-group name="webservices"/>
+    <feature-group name="security-manager"/>
+</feature-group-spec>

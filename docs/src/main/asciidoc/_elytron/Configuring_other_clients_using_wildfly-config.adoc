@@ -1,6 +1,14 @@
 [[Configuring_other_clients_using_wildfly-config]]
 = Client configuration using wildfly-config.xml
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Prior to WildFly 11, many WildFly client libraries used different configuration strategies. WildFly 11 introduces a new `wildfly-config.xml` file which unifies all client configuration in a single place. In addition to being able to configure authentication using Elytron as described in the previous section, a `wildfly-config.xml` file can also be used to:
 
 == Configure Jakarta Enterprise Beans client connections, global interceptors, and invocation timeout
@@ -106,7 +114,7 @@ Example configuration:
             <bearer-token value="bearerTokenValue"/>
         </credentials>
         <key-stores>
-            <key-store name="truststore" type="JKS">
+            <key-store name="truststore" type="PKCS12">
                 <file name="src/test/resources/org/jboss/resteasy/test/security/client-different-cert.truststore"/>
             </key-store>
         </key-stores>

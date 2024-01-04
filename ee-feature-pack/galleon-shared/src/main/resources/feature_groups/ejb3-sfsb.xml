@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="ejb3-sfsb" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ejb3">
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
+        <param name="default-sfsb-cache" value="distributable"/>
+        <feature spec="subsystem.ejb3.service.timer-service">
+            <unset param="thread-pool-name"/>
+            <param name="default-transient-timer-management" value="transient"/>
+            <unset param="default-data-store"/>
+            <param name="default-persistent-timer-management" value="persistent"/>
+        </feature>
+    </feature>
+</feature-group-spec>

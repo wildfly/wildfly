@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.infinispan.subsystem;
@@ -34,10 +17,10 @@ import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.validation.EnumValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,8 +34,8 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     static final PathElement PATH = pathElement("partition-handling");
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        WHEN_SPLIT("when-split", PartitionHandling.ALLOW_READ_WRITES, new EnumValidator<>(PartitionHandling.class)),
-        MERGE_POLICY("merge-policy", MergePolicy.NONE, new EnumValidator<>(MergePolicy.class, EnumSet.complementOf(EnumSet.of(MergePolicy.CUSTOM)))),
+        WHEN_SPLIT("when-split", PartitionHandling.ALLOW_READ_WRITES, EnumValidator.create(PartitionHandling.class)),
+        MERGE_POLICY("merge-policy", MergePolicy.NONE, EnumValidator.create(MergePolicy.class, EnumSet.complementOf(EnumSet.of(MergePolicy.CUSTOM)))),
         ;
         private final AttributeDefinition definition;
 
@@ -77,11 +60,11 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
     }
 
     enum DeprecatedAttribute implements org.jboss.as.clustering.controller.Attribute {
-        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanModel.VERSION_16_0_0),
+        ENABLED("enabled", ModelType.BOOLEAN, ModelNode.FALSE, InfinispanSubsystemModel.VERSION_16_0_0),
         ;
         private final AttributeDefinition definition;
 
-        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanModel deprecation) {
+        DeprecatedAttribute(String name, ModelType type, ModelNode defaultValue, InfinispanSubsystemModel deprecation) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setRequired(false)

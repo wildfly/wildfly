@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <module xmlns="urn:jboss:module:1.9" name="com.github.tomakehurst.wiremock">
 
     <resources>
@@ -17,7 +22,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="org.apache.httpcomponents"/>
         <module name="org.apache.httpcomponents.core" export="true"/>
         <module name="com.google.guava"/>
@@ -27,10 +31,10 @@
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.inject.api"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.servlet.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.inject.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="export" export="true">
           <imports>
             <include path="META-INF"/>

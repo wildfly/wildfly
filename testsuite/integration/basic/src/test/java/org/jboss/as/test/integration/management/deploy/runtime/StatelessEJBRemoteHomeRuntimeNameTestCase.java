@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.integration.management.deploy.runtime;
 
 import java.util.Hashtable;
@@ -98,8 +103,8 @@ public class StatelessEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTe
 
     private static InitialContext getInitialContext() throws NamingException {
         final Hashtable env = new Hashtable();
-        env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.URL_PKG_PREFIXES, "org.wildfly.naming.client");
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, "remote+http://" + TestSuiteEnvironment.getServerAddress() + ":" + 8080);
         return new InitialContext(env);
     }

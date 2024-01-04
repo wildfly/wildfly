@@ -1,0 +1,11 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- Allow to re-name standalone-full.xml file standalone.xml, expected by tests -->
+<config  xmlns="urn:jboss:galleon:config:1.0" model="standalone" name="standalone-full.xml">
+    <props>
+        <prop name="--server-config" value="standalone.xml"/>
+    </props> 
+</config>

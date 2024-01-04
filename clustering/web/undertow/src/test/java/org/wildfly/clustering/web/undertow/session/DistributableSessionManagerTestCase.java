@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.web.undertow.session;
 
@@ -59,6 +42,7 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
+import org.wildfly.common.function.Functions;
 import org.xnio.OptionMap;
 import org.xnio.StreamConnection;
 import org.xnio.channels.Configurable;
@@ -84,7 +68,6 @@ public class DistributableSessionManagerTestCase {
         when(config.getSessionListeners()).thenReturn(this.listeners);
         when(config.getSessionManager()).thenReturn(this.manager);
         when(config.getStatistics()).thenReturn(this.statistics);
-        when(config.isOrphanSessionAllowed()).thenReturn(false);
 
         this.adapter = new DistributableSessionManager(config);
         this.adapter.registerSessionListener(this.listener);
@@ -113,13 +96,6 @@ public class DistributableSessionManagerTestCase {
     }
 
     @Test
-    public void setDefaultSessionTimeout() {
-        this.adapter.setDefaultSessionTimeout(10);
-
-        verify(this.manager).setDefaultMaxInactiveInterval(Duration.ofSeconds(10L));
-    }
-
-    @Test
     public void createSessionResponseCommitted() {
         // Ugh - all this, just to get HttpServerExchange.isResponseStarted() to return true
         Configurable configurable = mock(Configurable.class);
@@ -128,7 +104,13 @@ public class DistributableSessionManagerTestCase {
         StreamSinkConduit sinkConduit = mock(StreamSinkConduit.class);
         ConduitStreamSinkChannel sinkChannel = new ConduitStreamSinkChannel(configurable, sinkConduit);
         StreamConnection stream = mock(StreamConnection.class);
+        String id = "foo";
+        Supplier<String> identifierFactory = Functions.constantSupplier(id);
+        int expectedTimeout = 10;
 
+        this.adapter.setDefaultSessionTimeout(expectedTimeout);
+
+        when(this.manager.getIdentifierFactory()).thenReturn(identifierFactory);
         when(stream.getSourceChannel()).thenReturn(sourceChannel);
         when(stream.getSinkChannel()).thenReturn(sinkChannel);
 
@@ -141,7 +123,13 @@ public class DistributableSessionManagerTestCase {
 
         SessionConfig config = mock(SessionConfig.class);
 
-        Assert.assertThrows(IllegalStateException.class, () -> this.adapter.createSession(exchange, config));
+        io.undertow.server.session.Session session = this.adapter.createSession(exchange, config);
+
+        // Verify that a nonce session was created
+        verify(this.manager, never()).createSession(id);
+
+        Assert.assertEquals(id, session.getId());
+        Assert.assertEquals(expectedTimeout, session.getMaxInactiveInterval());
     }
 
     @Test

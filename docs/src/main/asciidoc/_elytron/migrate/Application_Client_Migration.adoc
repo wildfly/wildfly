@@ -1,25 +1,33 @@
 [[Application_Client_Migration]]
 = Application Client Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 [[naming-client]]
 == Naming Client
 
 This migration example assumes a client application performs a remote
 JNDI lookup using an ﻿﻿ `InitialContext` backed by the
-`org.jboss.naming.remote.client.InitialContextFactory` class.
+`org.wildfly.naming.client.WildFlyInitialContextFactory` class.
 
 [[original-configuration-app-client]]
 === Original Configuration
 
 An `InitialContext` backed by the
-`org.jboss.naming.remote.client.InitialContextFactory` class can be
+`org.wildfly.naming.client.WildFlyInitialContextFactory` class can be
 created by specifying properties that contain the URL of the naming
 provider to connect to along with appropriate user credentials:
 
 [source,java,options="nowrap"]
 ----
 Properties properties = new Properties();
-properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
 properties.put(Context.PROVIDER_URL, "http-remoting://127.0.0.1:8080");
 properties.put(Context.SECURITY_PRINCIPAL, "bob");
 properties.put(Context.SECURITY_CREDENTIALS, "secret");
@@ -242,4 +250,4 @@ Callable<Void> callable = () -> {
 context.runCallable(callable);
 ----
 
-NOTE: References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+NOTE: References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

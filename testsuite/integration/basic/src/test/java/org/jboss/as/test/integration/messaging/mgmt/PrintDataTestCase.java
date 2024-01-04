@@ -1,17 +1,6 @@
 /*
- * Copyright 2020 JBoss by Red Hat.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.messaging.mgmt;
 
@@ -73,13 +62,13 @@ public class PrintDataTestCase {
     protected final String jmsQueueLookup = "jms/" + jmsQueueName;
     private static final Pattern ADDRESS_ID = Pattern.compile(";userRecordType=44;isUpdate=false;compactCount=0;"
             + "PersistentAddressBindingEncoding \\[id=([0-9]+), name=jms.queue.PrintDataTestCase-Queue, "
-            + "routingTypes=\\{ANYCAST\\}, autoCreated=false\\]");
+            + "routingTypes=\\{ANYCAST\\}, autoCreated=false, internal=false\\]");
     private static final Pattern QUEUE_ID = Pattern.compile("userRecordType=21;isUpdate=false;compactCount=0;PersistentQueueBindingEncoding "
             + "\\[id=([0-9]+), name=jms.queue.PrintDataTestCase-Queue, address=jms.queue.PrintDataTestCase-Queue, filterString=null, "
             + "user=null, autoCreated=false, maxConsumers=-1, purgeOnNoConsumers=false, enabled=true, exclusive=false, lastValue=false,"
             + " lastValueKey=null, nonDestructive=false, consumersBeforeDispatch=0, delayBeforeDispatch=-1, routingType=1, "
             + "configurationManaged=false, groupRebalance=false, groupRebalancePauseDispatch=false, groupBuckets=-1, groupFirstKey=null, "
-            + "autoDelete=false, autoDeleteDelay=0, autoDeleteMessageCount=0\\]");
+            + "autoDelete=false, autoDeleteDelay=0, autoDeleteMessageCount=0, internal=false\\]");
     private static final Pattern SAFE_QUEUE_COUNT = Pattern.compile("queue id [0-9]+,count=1");
 
     @ContainerResource

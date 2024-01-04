@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -33,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -54,7 +37,6 @@
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
-        <ts.elytron.cli>../shared/enable-elytron-domain.cli</ts.elytron.cli>
         <ts.skipTests>${skipTests}</ts.skipTests>
         <!-- Use the complete build, not just the ee one, for this testsuite -->
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
@@ -85,13 +67,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.build</groupId>
-            <artifactId>wildfly-server-provisioning-standalone</artifactId>
-            <!-- Set in root pom.xml -->
-            <version>${version.org.wildfly.build-tools}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -205,6 +180,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-patching</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -243,53 +224,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>elytron.profile</id>
-            <activation>
-                <property>
-                    <name>elytron</name>
-                </property>
-                <file>
-                    <exists>${ts.elytron.cli}</exists>
-                </file>
-            </activation>
-            <properties>
-                <!-- Re-enable the default surefire execution -->
-                <surefire.default-test.phase>test</surefire.default-test.phase>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <offline>true</offline>
-                            <scripts>
-                                <script>${ts.elytron.cli}</script>
-                            </scripts>
-                            <jboss-home>${project.build.directory}/wildfly</jboss-home>
-                            <stdout>none</stdout>
-                            <java-opts>${modular.jdk.args}</java-opts>
-                            <system-properties>
-                                <public.ip>${node0}</public.ip>
-                                <management.ip>${node0}</management.ip>
-                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                                <module.path>${jboss.dist}/modules</module.path>
-                            </system-properties>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <profile>
             <id>legacy-secondary-java-home</id>
             <activation>

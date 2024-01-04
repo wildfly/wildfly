@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb">
+    <!-- Aggregates EJB functionality, excluding ejb-iiop. -->
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.ejb.MessageDriven,jakarta.ejb.Remote"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.ejb.MessageDrivenContext"/>
+    </props>
+    <dependencies>
+        <layer name="ejb-lite"/>
+        <layer name="resource-adapters"/>
+
+        <layer name="messaging-activemq" optional="true"/>
+        <layer name="remoting"/>
+        <layer name="undertow"/>
+    </dependencies>
+
+    <feature-group name="remote-naming"/>
+    <feature-group name="ejb3-mdb"/>
+    <feature-group name="ejb3-mdb-pool"/>
+    <feature-group name="ejb3-remote-service"/>
+</layer-spec>

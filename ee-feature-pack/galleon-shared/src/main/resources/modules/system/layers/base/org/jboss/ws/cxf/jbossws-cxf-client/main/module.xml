@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.jbossws-cxf-client">
+
+    <dependencies>
+        <!-- JAXB API + REF IMPL -->
+        <module name="jakarta.xml.bind.api" export="true"/>
+        <module name="org.glassfish.jaxb" export="true" services="export"/>
+        <module name="jakarta.xml.ws.api" export="true"/>
+        <!-- WSDL4J API -->
+        <module name="javax.wsdl4j.api" export="true"/>
+        <!-- JBossWS API -->
+        <module name="org.jboss.ws.api" export="true" />
+        <!--  JBossWS JAXWS client -->
+        <module name="org.jboss.ws.jaxws-client" export="true" services="export" />
+        <!--  JBossWS configuration of Apache CXF -->
+        <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" />
+        <!-- Apache CXF APIs only -->
+        <module name="org.apache.cxf" export="true" />
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" export="true" services="export" />
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" export="true" services="export" />
+        <module name="org.jboss.jaxbintros" export="true"/>
+        <module name="jakarta.security.auth.message.api" export="true"/>
+        <module name="org.apache.ws.security" export="true"/>
+        <module name="org.eclipse.angus.activation" export="true" services="export"/>
+        <!-- Tools support on JDK 9 and later -->
+        <module name="org.jboss.modules"/>
+    </dependencies>
+</module>

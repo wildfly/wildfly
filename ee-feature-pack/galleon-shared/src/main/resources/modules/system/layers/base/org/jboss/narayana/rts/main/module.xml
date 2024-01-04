@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.rts">
+    <resources>
+        <artifact name="${org.jboss.narayana.rts:restat-api}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-util}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-integration}"/>
+        <artifact name="${org.jboss.narayana.rts:restat-bridge}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.resteasy.resteasy-client"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
+        <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
+        <module name="org.jboss.resteasy.resteasy-json-p-provider"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.ws.rs.api" services="export"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="org.jboss.jts"/>
+        <module name="org.wildfly.extension.rts" export="true">
+            <imports>
+                <include path="org/wildfly/extension/rts/jaxrs"/>
+            </imports>
+        </module>
+        <module name="org.jboss.logging"/>
+
+        <!-- TODO WFLY-5966 validate the need for these and remove if not needed.
+             Prior to WFLY-5922 they were exported by javax.ejb.api. -->
+        <module name="javax.rmi.api"/>
+        <module name="org.omg.api"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

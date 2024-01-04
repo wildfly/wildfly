@@ -1,4 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:datasources:7.1">
   <datasources>
     <!--You have a CHOICE of the next 2 items at this level-->
     <datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">
@@ -179,9 +184,7 @@
         <wrap-xa-resource>false</wrap-xa-resource>
       </xa-pool>
       <!--Optional:-->
-      <security>
-        <user-name>token</user-name>
-        <password>token</password>
+      <security user-name="token" password="token">
         <elytron-enabled>true</elytron-enabled>
         <!--Optional:-->
         <reauth-plugin class-name="token">

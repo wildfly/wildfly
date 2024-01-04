@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:microprofile-telemetry:1.0"
+           xmlns="urn:wildfly:microprofile-telemetry:1.0"
+           elementFormDefault="unqualified"
+           version="1.0">
+
+    <xs:element name="subsystem">
+        <xs:complexType></xs:complexType>
+    </xs:element>
+</xs:schema>

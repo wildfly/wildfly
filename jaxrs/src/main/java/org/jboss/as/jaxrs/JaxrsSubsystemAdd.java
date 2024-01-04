@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jaxrs;
@@ -108,7 +91,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setResteasyDocumentExpandEntityReferences(JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS)) {
-            config.setResteasyDocumentExpandEntityReferences(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.resolveModelAttribute(context, configuration));
+            config.setResteasySecureDisableDTDs(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE)) {
             config.setResteasyDocumentSecureProcessingFeature(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE.resolveModelAttribute(context, configuration));
@@ -151,6 +134,12 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING)) {
             config.setResteasyWiderRequestMatching(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsAttribute.TRACING_THRESHOLD.getName())) {
+            config.putContextParameter("resteasy.server.tracing.threshold", JaxrsAttribute.TRACING_THRESHOLD.resolveModelAttribute(context, configuration).asString());
+        }
+        if (configuration.hasDefined(JaxrsAttribute.TRACING_TYPE.getName())) {
+            config.putContextParameter("resteasy.server.tracing.type", JaxrsAttribute.TRACING_TYPE.resolveModelAttribute(context, configuration).asString());
         }
         return config;
     }

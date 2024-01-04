@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.tools.wsprovide">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+        <property name="jboss.require-java-version" value="1.7"/>
+    </properties>
+
+    <main-class name="org.jboss.ws.tools.cmd.WSProvide"/>
+
+    <dependencies>
+        <module name="org.jboss.logmanager" services="import"/>
+        <module name="org.jboss.ws.tools.common"/>
+        <module name="org.wildfly.security.elytron-private" services="import"/>
+    </dependencies>
+</module>

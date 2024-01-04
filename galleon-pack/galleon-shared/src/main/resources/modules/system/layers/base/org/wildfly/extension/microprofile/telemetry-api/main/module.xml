@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.microprofile.telemetry-api">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-microprofile-telemetry-cdi-provider}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.wildfly.extension.microprofile.config-smallrye" />
+        <module name="org.wildfly.extension.opentelemetry"/>
+        <module name="org.wildfly.extension.opentelemetry-api" export="true"/>
+
+        <module name="io.opentelemetry.api" />
+        <module name="io.opentelemetry.context" />
+        <module name="io.opentelemetry.exporter" />
+        <module name="io.opentelemetry.sdk" />
+        <module name="io.smallrye.opentelemetry" />
+
+        <module name="org.jboss.weld.api"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.wildfly.security.manager"/>
+
+        <module name="java.logging"/>
+
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.ws.rs.api" optional="true" services="import"/>
+    </dependencies>
+</module>

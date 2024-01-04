@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-reactive-messaging-amqp">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
+        <prop name="org.wildfly.rule.add-on" value="reactive-messaging,amqp"/>
+        <prop name="org.wildfly.rule.properties-file-match-mp-amqp-property" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.connector.smallrye-amqp.*"/>
+        <prop name="org.wildfly.rule.properties-file-match-mp-amqp-outgoing" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.outgoing.*.connector,smallrye-amqp"/>
+        <prop name="org.wildfly.rule.properties-file-match-mp-amqp-incoming" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.messaging.incoming.*.connector,smallrye-amqp"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for the MicroProfile Reactive Messaging AMQP connector."/>
+    </props>
+    <dependencies>
+        <layer name="microprofile-reactive-messaging"/>
+    </dependencies>
+
+    <packages>
+        <package name="io.smallrye.reactive.messaging.connector.amqp"/>
+        <package name="org.wildfly.reactive.messaging.amqp"/>
+    </packages>
+</layer-spec>

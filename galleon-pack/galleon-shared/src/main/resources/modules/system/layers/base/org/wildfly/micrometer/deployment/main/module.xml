@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.micrometer.deployment">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-micrometer-deployment}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.micrometer" export="true"/>
+
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+        <module name="org.jboss.weld.api"/>
+        <module name="org.wildfly.security.manager"/>
+
+        <module name="jakarta.enterprise.api" />
+        <module name="java.logging"/>
+    </dependencies>
+</module>

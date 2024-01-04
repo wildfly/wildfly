@@ -1,25 +1,6 @@
 /*
- *
- *  * JBoss, Home of Professional Open Source.
- *  * Copyright 2011, Red Hat, Inc., and individual contributors
- *  * as indicated by the @author tags. See the copyright.txt file in the
- *  * distribution for a full listing of individual contributors.
- *  *
- *  * This is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU Lesser General Public License as
- *  * published by the Free Software Foundation; either version 2.1 of
- *  * the License, or (at your option) any later version.
- *  *
- *  * This software is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  * Lesser General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Lesser General Public
- *  * License along with this software; if not, write to the Free
- *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- *
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.logging;
@@ -40,6 +21,10 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.naming.Context;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import jakarta.ejb.ConcurrentAccessTimeoutException;
 import jakarta.ejb.EJBAccessException;
 import jakarta.ejb.EJBException;
@@ -54,16 +39,12 @@ import jakarta.ejb.RemoveException;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.interceptor.InvocationContext;
-import javax.naming.Context;
 import jakarta.resource.ResourceException;
 import jakarta.resource.spi.UnavailableException;
 import jakarta.resource.spi.endpoint.MessageEndpoint;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Transaction;
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -325,7 +306,7 @@ public interface EjbLogger extends BasicLogger {
      */
     @LogMessage(level = WARN)
     @Message(id = 26, value = "Could not read timer information for Jakarta Enterprise Beans component %s")
-    void failToReadTimerInformation(String componentName);
+    void failToReadTimerInformation(String componentName, @Cause Throwable cause);
 
 //    /**
 //     * Logs an error message indicating it could not remove persistent timer
@@ -1566,13 +1547,13 @@ public interface EjbLogger extends BasicLogger {
 //    IllegalStateException callMethodNotAllowWhenDependencyInjectionInProgress(String method);
 
 
-    /**
-     * Creates an exception indicating the method is deprecated
-     *
-     * @return a {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 246, value = "%s is deprecated")
-    UnsupportedOperationException isDeprecated(String getEnvironment);
+//    /**
+//     * Creates an exception indicating the method is deprecated
+//     *
+//     * @return a {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 246, value = "%s is deprecated")
+//    UnsupportedOperationException isDeprecated(String getEnvironment);
 
 //    /**
 //     * Creates an exception indicating getting parameters is not allowed on lifecycle callbacks
@@ -2631,13 +2612,13 @@ public interface EjbLogger extends BasicLogger {
     EJBException acquireSemaphoreInterrupted();
 
 
-    /**
-     * Creates an exception indicating the method is deprecated
-     *
-     * @return a {@link IllegalStateException} for the error.
-     */
-    @Message(id = 380, value = "%s is deprecated")
-    IllegalStateException isDeprecatedIllegalState(String getEnvironment);
+//    /**
+//     * Creates an exception indicating the method is deprecated
+//     *
+//     * @return a {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 380, value = "%s is deprecated")
+//    IllegalStateException isDeprecatedIllegalState(String getEnvironment);
 
 //    @Message(id = 381, value = "Could not find method %s on entity bean")
 //    RuntimeException couldNotFindEntityBeanMethod(String method);
@@ -3261,4 +3242,16 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 532, value = "Database detected from configuration is: '%s'. If this is incorrect, please specify the correct database.")
     void unknownDatabaseName(String name);
+
+    @Message(id = 533, value = "Invocation failed")
+    RemoteException invocationFailed(@Cause Exception e);
+
+    @Message(id = 534, value = "Authentication failed")
+    SecurityException authenticationFailed();
+
+    @Message(id = 535, value = "Message endpoint %s has already been released")
+    IllegalStateException messageEndpointAlreadyReleasedISE(MessageEndpoint messageEndpoint);
+
+    @Message(id = 536, value = "Unsupported EJB receiver protocol %s")
+    IllegalArgumentException unsupportedEJBReceiverProtocol(String uriScheme);
 }

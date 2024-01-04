@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-config">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.config.inject"/>
+        <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.config.*"/>
+        <prop name="org.wildfly.rule.expected-file" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties]"/>
+    </props>
+    <dependencies>
+        <layer name="cdi"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-config-smallrye"/>
+</layer-spec>

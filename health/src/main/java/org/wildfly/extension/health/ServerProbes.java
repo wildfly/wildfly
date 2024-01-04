@@ -1,24 +1,7 @@
 
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.health;
 
@@ -35,7 +18,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUSPEND_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.server.suspend.SuspendController.State.RUNNING;
 
 import java.util.List;
 
@@ -46,6 +31,7 @@ import org.jboss.dmr.ModelNode;
 class ServerProbes {
 
     private static final ModelNode READ_SERVER_STATE_ATTRIBUTE;
+    private static final ModelNode READ_SUSPEND_STATE_ATTRIBUTE;
     private static final ModelNode READ_BOOT_ERRORS;
     private static final ModelNode READ_DEPLOYMENTS_STATUS;
 
@@ -54,6 +40,11 @@ class ServerProbes {
         READ_SERVER_STATE_ATTRIBUTE.get(OP).set(READ_ATTRIBUTE_OPERATION);
         READ_SERVER_STATE_ATTRIBUTE.get(OP_ADDR).set(new ModelNode());
         READ_SERVER_STATE_ATTRIBUTE.get(NAME).set("server-state");
+
+        READ_SUSPEND_STATE_ATTRIBUTE = new ModelNode();
+        READ_SUSPEND_STATE_ATTRIBUTE.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        READ_SUSPEND_STATE_ATTRIBUTE.get(OP_ADDR).set(new ModelNode());
+        READ_SUSPEND_STATE_ATTRIBUTE.get(NAME).set(SUSPEND_STATE);
 
         READ_BOOT_ERRORS = new ModelNode();
         READ_BOOT_ERRORS.get(OP).set("read-boot-errors");
@@ -101,6 +92,45 @@ class ServerProbes {
         @Override
         public String getName() {
             return "server-state";
+        }
+    }
+
+    /**
+     * Check that the suspend-state attribute value is "RUNNING"
+     */
+    static class SuspendStateCheck implements ServerProbe {
+
+        private final LocalModelControllerClient modelControllerClient;
+
+        public SuspendStateCheck(LocalModelControllerClient modelControllerClient) {
+            this.modelControllerClient = modelControllerClient;
+        }
+
+        @Override
+        public Outcome getOutcome() {
+            ModelNode response = modelControllerClient.execute(READ_SUSPEND_STATE_ATTRIBUTE);
+
+            if (!SUCCESS.equals(response.get(OUTCOME).asStringOrNull())) {
+                return Outcome.FAILURE;
+            }
+            if (response.hasDefined(FAILURE_DESCRIPTION)) {
+                ModelNode data = new ModelNode();
+                data.add(FAILURE_DESCRIPTION, response.get(FAILURE_DESCRIPTION).asString());
+                return new Outcome(false, data);
+            }
+            ModelNode result = response.get(RESULT);
+            if (!result.isDefined()) {
+                return Outcome.FAILURE;
+            }
+            String value = result.asString();
+            ModelNode data = new ModelNode();
+            data.add(VALUE, value);
+            return new Outcome(RUNNING.toString().equals(value), data);
+        }
+
+        @Override
+        public String getName() {
+            return "suspend-state";
         }
     }
 

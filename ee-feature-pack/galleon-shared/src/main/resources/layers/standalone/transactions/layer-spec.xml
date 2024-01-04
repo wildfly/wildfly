@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="transactions">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.transaction"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.transaction"/>
+    </props>
+    <dependencies>
+        <layer name="elytron"/>
+        <layer name="ee"/>
+    </dependencies>
+    <feature-group name="transactions-all"/>
+</layer-spec>

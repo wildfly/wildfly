@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="distributable-ejb" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature spec="subsystem.distributable-ejb">
+        <param name="default-bean-management" value="default"/>
+        <feature spec="subsystem.distributable-ejb.infinispan-bean-management">
+            <param name="infinispan-bean-management" value="default"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="max-active-beans" value="10000"/>
+        </feature>
+        <feature spec="subsystem.distributable-ejb.client-mappings-registry.infinispan">
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="client-mappings"/>
+        </feature>
+        <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
+            <param name="infinispan-timer-management" value="persistent"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="persistent"/>
+            <param name="max-active-timers" value="10000"/>
+        </feature>
+        <feature spec="subsystem.distributable-ejb.infinispan-timer-management">
+            <param name="infinispan-timer-management" value="transient"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="cache" value="transient"/>
+            <param name="max-active-timers" value="10000"/>
+        </feature>
+    </feature>
+
+</feature-group-spec>

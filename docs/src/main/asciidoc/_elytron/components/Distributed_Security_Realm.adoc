@@ -1,0 +1,34 @@
+[[distributed-security-realm]]
+= Distributed Security Realm
+
+The distributed realm allows combining identities located across multiple security realms of any type into a single security realm.
+
+The `distributed-realm` resource contains the following attributes: -
+
+* `realms` - List of realms in the order they should be queried
+* `ignore-unavailable-realms` - Whether subsequent realms should be checked after an unavailable realm is reached. The default value is false.
+* `emit-events` - Whether a SecurityEvent signifying realm unavailability should be emitted. The default value is true.
+
+== Defining a Distributed Realm
+
+As an example, assuming realms named `properties-realm`, `ldap-realm` and `jdbc-realm` have already been configured, then a distributed-realm that references these three realms can be created as follows:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm])
+----
+
+When configuring a `distributed-realm`, it is possible to ignore any unavailable realms by setting `ignore-unavailable-realms` to true. When retrieving an identity from a `distributed-realm`, each of the configured realms is attempted sequentially until a realm containing the identity is found. If a security realm becomes unavailable for some reason, if `ignore-unavailable-realms` is true, any subsequent realms will still be checked.  If `ignore-unavailable-realms` is true and searched identity happened to be stored in the unavailable realm, authentication fails, and `401` response wil be received. If `ignore-unavailable-realms` is set to false or not set, and the realm happens to be unavailable then an `org.wildfly.security.auth.server.RealmUnavailableException` will be thrown and no further realms will be attempted.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm], ignore-unavailable-realms=true)
+----
+
+While `ignore-unavailable-realms` is set to true, `emit-events` is also set to true by default, so the `SecurityEvent` will be emitted in case any of the attempted realms is unavailable.
+This can be turned off by setting `emit-events` to false.
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/distributed-realm=distributedRealmExample:add(realms=[properties-realm, ldap-realm, jdbc-realm], ignore-unavailable-realms=true, emit-events=false)
+----

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.ws.cxf:jbossws-cxf-transports-undertow}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="org.jboss.ws.spi"/>
+        <module name="org.jboss.ws.common"/>
+        <module name="org.jboss.logging"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.xml.ws.api"/>
+        <module name="org.jboss.ws.jaxws-undertow-httpspi"/>
+        <module name="org.apache.cxf.impl" services="import">
+          <imports>
+            <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
+            <include path="META-INF"/>
+          </imports>
+        </module>
+        <module name="io.undertow.core"/>
+    </dependencies>
+</module>

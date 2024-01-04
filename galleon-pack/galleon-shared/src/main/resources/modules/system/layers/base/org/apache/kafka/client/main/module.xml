@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.kafka.client">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.kafka:kafka-clients}"/>
+    </resources>
+
+    <dependencies>
+        <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.github.luben.zstd-jni"/>
+        <module name="java.management"/>
+        <module name="java.security.jgss"/>
+        <module name="java.security.sasl"/>
+        <module name="org.lz4.lz4-java"/>
+        <module name="org.slf4j"/>
+        <module name="org.xerial.snappy.snappy-java"/>
+    </dependencies>
+</module>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.datasources.agroal;
 
@@ -51,6 +34,7 @@ import org.wildfly.security.credential.source.CredentialSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 import static io.agroal.api.configuration.AgroalConnectionPoolConfiguration.ConnectionValidator.defaultValidator;
 import static java.time.Duration.ofMillis;
@@ -118,16 +102,21 @@ class AbstractDataSourceOperations {
         return configuration;
     }
 
-    protected static void setupElytronSecurity(OperationContext context, ModelNode model, DataSourceService dataSourceService, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
+    protected static Supplier<AuthenticationContext> setupAuthenticationContext(OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
         if (AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).isDefined()) {
             String authenticationContextName = AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT.resolveModelAttribute(context, model).asString();
             ServiceName authenticationContextCapability = context.getCapabilityServiceName(AbstractDataSourceDefinition.AUTHENTICATION_CONTEXT_CAPABILITY, authenticationContextName, AuthenticationContext.class);
-            serviceBuilder.addDependency(authenticationContextCapability, AuthenticationContext.class, dataSourceService.getAuthenticationContextInjector());
+            return serviceBuilder.requires(authenticationContextCapability);
         }
+        return null;
+    }
+
+    protected static Supplier<ExceptionSupplier<CredentialSource, Exception>> setupCredentialReference(OperationContext context, ModelNode model, ServiceBuilder<?> serviceBuilder) throws OperationFailedException {
         if (AbstractDataSourceDefinition.CREDENTIAL_REFERENCE.resolveModelAttribute(context, model).isDefined()) {
             ExceptionSupplier<CredentialSource, Exception> credentialSourceSupplier = CredentialReference.getCredentialSourceSupplier(context, AbstractDataSourceDefinition.CREDENTIAL_REFERENCE, model, serviceBuilder);
-            dataSourceService.getCredentialSourceSupplierInjector().inject(credentialSourceSupplier);
+            return () -> credentialSourceSupplier;
         }
+        return null;
     }
 
     protected static AgroalConnectionPoolConfigurationSupplier connectionPoolConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {

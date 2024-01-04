@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream;
@@ -52,12 +35,13 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
     @Override
     public Class<?> readFrom(ProtoStreamReader reader) throws IOException {
         String className = Scalar.STRING.cast(String.class).readFrom(reader);
-        ClassLoader loader = this.loaderMarshaller.getBuilder();
+        FieldSetReader<ClassLoader> loaderReader = reader.createFieldSetReader(this.loaderMarshaller, this.loaderIndex);
+        ClassLoader loader = this.loaderMarshaller.createInitialValue();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if ((index >= this.loaderIndex) && (index < this.loaderIndex + this.loaderMarshaller.getFields())) {
-                loader = this.loaderMarshaller.readField(reader, index - this.loaderIndex, loader);
+            if (loaderReader.contains(index)) {
+                loader = loaderReader.readField(loader);
             } else {
                 reader.skipField(tag);
             }
@@ -74,7 +58,7 @@ public class LoadedClassField implements Field<Class<?>>, FieldMarshaller<Class<
     @Override
     public void writeTo(ProtoStreamWriter writer, Class<?> targetClass) throws IOException {
         Scalar.STRING.writeTo(writer, targetClass.getName());
-        this.loaderMarshaller.writeFields(writer, this.loaderIndex, WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
+        writer.createFieldSetWriter(this.loaderMarshaller, this.loaderIndex).writeFields(WildFlySecurityManager.getClassLoaderPrivileged(targetClass));
     }
 
     @Override

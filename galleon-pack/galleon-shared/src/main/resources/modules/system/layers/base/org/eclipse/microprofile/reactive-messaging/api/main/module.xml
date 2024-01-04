@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.microprofile.reactive-messaging.api">
+
+    <resources>
+        <!-- Here temporarily, it should be in the io.smallrye.reactive.messaging module, or its own -->
+        <artifact name="${io.smallrye.reactive:smallrye-reactive-messaging-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="java.logging"/>
+        <module name="jakarta.enterprise.api" />
+        <!-- Needed by the temporary smallrye-reactive-messaging-api -->
+        <module name="io.opentelemetry.api"/>
+        <module name="io.opentelemetry.context"/>
+        <module name="org.reactivestreams"/>
+        <module name="io.smallrye.reactive.mutiny"/>
+    </dependencies>
+</module>

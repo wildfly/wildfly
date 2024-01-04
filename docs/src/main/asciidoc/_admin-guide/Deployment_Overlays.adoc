@@ -1,6 +1,14 @@
 [[Deployment_Overlays]]
 = Deployment Overlays
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Deployment overlays are our way of 'overlaying' content into an existing
 deployment, without physically modifying the contents of the deployment
 archive. Possible use cases include swapping out deployment descriptors,

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.weld.webservices">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-weld-webservices}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.weld.api" />
+        <module name="org.jboss.weld.spi" />
+        <module name="org.jboss.weld.core" />
+        <module name="org.jboss.as.weld.spi" />
+        <module name="org.jboss.as.weld.common" />
+        <module name="org.jboss.as.webservices.server.integration"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.modules"/>
+        <module name="jakarta.enterprise.api"/>
+    </dependencies>
+
+</module>

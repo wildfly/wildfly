@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="internal-standalone-profile">
+    <dependencies>
+        <layer name="microprofile-config" optional="true"/>
+        <layer name="microprofile-jwt" optional="true"/>
+    </dependencies>
+</layer-spec>

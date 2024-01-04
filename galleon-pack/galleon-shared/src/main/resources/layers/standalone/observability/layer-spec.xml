@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="observability">
+    <dependencies>
+        <layer name="microprofile-config" optional="true"/>
+        <layer name="microprofile-telemetry" optional="true"/>
+        <layer name="microprofile-health" optional="true"/>
+    </dependencies>
+</layer-spec>

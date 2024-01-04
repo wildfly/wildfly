@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.clustering.web.session.infinispan;
 
@@ -34,7 +17,6 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.CompositeServiceBuilder;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
@@ -42,6 +24,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
@@ -52,7 +35,6 @@ import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.NodeFactory;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
@@ -63,16 +45,16 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.common.function.Functions;
 
 /**
  * @param <S> the HttpSession specification type
@@ -140,7 +122,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
         if (strategy.isEnabled()) {
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
+            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionMetaDataKey.class::isInstance);
         }
     }
 
@@ -153,7 +135,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<SessionManagerFactory<SC, LC, TransactionBatch>> factory = new CompositeDependency(this.group, this.affinityFactory, this.dispatcherFactory).register(builder).provides(this.getServiceName());
         this.cache = builder.requires(this.cacheConfigurator.getServiceName());
-        Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(factory, Function.identity(), this, Functions.closingConsumer());
         return new CompositeServiceBuilder<>(List.of(configurationBuilder, cacheBuilder, groupBuilder, builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND)));
     }
 
@@ -203,7 +185,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
     }
 
     @Override
-    public LocalContextFactory<LC> getLocalContextFactory() {
+    public Supplier<LC> getLocalContextFactory() {
         return this.factoryConfiguration.getLocalContextFactory();
     }
 

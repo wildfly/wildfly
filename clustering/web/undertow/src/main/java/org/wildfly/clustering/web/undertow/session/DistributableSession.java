@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.web.undertow.session;
 
@@ -25,7 +8,6 @@ import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
-import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import java.time.Duration;
@@ -173,7 +155,7 @@ public class DistributableSession implements io.undertow.server.session.Session 
     public void setMaxInactiveInterval(int interval) {
         Session<Map<String, Object>> session = this.getSessionEntry().getKey();
         try (BatchContext context = this.resumeBatch()) {
-            session.getMetaData().setMaxInactiveInterval(Duration.ofSeconds(interval));
+            session.getMetaData().setTimeout(Duration.ofSeconds(interval));
         } catch (IllegalStateException e) {
             this.closeIfInvalid(null, session);
             throw e;
@@ -299,10 +281,6 @@ public class DistributableSession implements io.undertow.server.session.Session 
 
     @Override
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
-        // Workaround for UNDERTOW-1902
-        if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
-            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
-        }
         Session<Map<String, Object>> oldSession = this.getSessionEntry().getKey();
         SessionManager<Map<String, Object>, Batch> manager = this.manager.getSessionManager();
         String id = manager.getIdentifierFactory().get();
@@ -312,8 +290,8 @@ public class DistributableSession implements io.undertow.server.session.Session 
                 for (String name: oldSession.getAttributes().getAttributeNames()) {
                     newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
                 }
-                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getTimeout());
-                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
+                newSession.getMetaData().setTimeout(oldSession.getMetaData().getTimeout());
+                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
                 newSession.getLocalContext().putAll(oldSession.getLocalContext());
                 oldSession.invalidate();
                 config.setSessionId(exchange, id);

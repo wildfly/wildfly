@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="jca" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.jca">
+        <feature spec="subsystem.jca.archive-validation.archive-validation">
+            <param name="enabled" value="true"/>
+            <param name="fail-on-error" value="true"/>
+            <param name="fail-on-warn" value="false"/>
+        </feature>
+        <feature spec="subsystem.jca.bean-validation.bean-validation">
+            <param name="enabled" value="true"/>
+        </feature>
+        <feature spec="subsystem.jca.cached-connection-manager.cached-connection-manager">
+            <param name="install" value="true" />
+        </feature>
+        <feature spec="subsystem.jca.workmanager">
+            <param name="workmanager" value="default" />
+            <param name="name" value="default" />
+            <feature spec="subsystem.jca.workmanager.short-running-threads">
+                <param name="short-running-threads" value="default"/>
+                <param name="max-threads" value="50"/>
+                <param name="queue-length" value="50"/>
+                <param name="core-threads" value="50"/>
+                <feature spec="subsystem.jca.workmanager.short-running-threads.keepalive-time">
+                    <param name="time" value="10"/>
+                    <param name="unit" value="SECONDS"/>
+                </feature>
+            </feature>
+            <feature spec="subsystem.jca.workmanager.long-running-threads">
+                <param name="long-running-threads" value="default"/>
+                <param name="max-threads" value="50"/>
+                <param name="queue-length" value="50"/>
+                <param name="core-threads" value="50"/>
+                <feature spec="subsystem.jca.workmanager.long-running-threads.keepalive-time">
+                    <param name="time" value="10"/>
+                    <param name="unit" value="SECONDS"/>
+                </feature>
+            </feature>
+        </feature>
+        <feature spec="subsystem.jca.bootstrap-context">
+            <param name="bootstrap-context" value="default"/>
+            <param name="name" value="default"/>
+            <param name="workmanager" value="default"/>
+        </feature>
+    </feature>
+</feature-group-spec>

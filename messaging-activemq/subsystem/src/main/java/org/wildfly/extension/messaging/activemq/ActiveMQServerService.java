@@ -1,28 +1,11 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -36,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
+import javax.net.ssl.SSLContext;
 import javax.sql.DataSource;
 
 import org.apache.activemq.artemis.api.core.BroadcastGroupConfiguration;
@@ -62,8 +46,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -75,7 +59,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-class ActiveMQServerService implements Service<ActiveMQServer> {
+class ActiveMQServerService implements Service<ActiveMQBroker> {
 
     /** */
     private static final String HOST = "host";
@@ -109,6 +93,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     // Supplier for Elytron SecurityDomain
     private final Optional<Supplier<SecurityDomain>> elytronSecurityDomain;
+    // Supplier for Elytron SSLContext
+    private final Map<String, Supplier<SSLContext>> sslContexts;
 
     // credential source injectors
     private Map<String, InjectedValue<ExceptionSupplier<CredentialSource, Exception>>> bridgeCredentialSource = new HashMap<>();
@@ -126,7 +112,8 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                                  Map<String, String> clusterNames,
                                  Optional<Supplier<SecurityDomain>> elytronSecurityDomain,
                                  Optional<Supplier<MBeanServer>> mbeanServer,
-                                 Optional<Supplier<DataSource>> dataSource) {
+                                 Optional<Supplier<DataSource>> dataSource,
+                                 Map<String, Supplier<SSLContext>> sslContexts) {
         this.configuration = configuration;
         this.pathConfig = pathConfig;
         this.dataSource = dataSource;
@@ -145,6 +132,7 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                 bridgeCredentialSource.put(bridgeConfiguration.getName(), new InjectedValue<>());
             }
         }
+        this.sslContexts = sslContexts;
     }
 
     @Override
@@ -171,6 +159,9 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         configuration.setJournalDirectory(pathConfig.resolveJournalPath(pathManager.get()));
         configuration.setPagingDirectory(pathConfig.resolvePagingPath(pathManager.get()));
         pathConfig.registerCallbacks(pathManager.get());
+        for (Map.Entry<String, Supplier<SSLContext>> entry : sslContexts.entrySet()) {
+            org.jboss.activemq.artemis.wildfly.integration.WildFlySSLContextFactory.registerSSLContext(entry.getKey(), entry.getValue().get());
+        }
 
         try {
             // Update the acceptor/connector port/host values from the
@@ -287,7 +278,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
             for (Interceptor outgoingInterceptor : outgoingInterceptors) {
                 server.getServiceRegistry().addOutgoingInterceptor(outgoingInterceptor);
             }
-
             // the server is actually started by the Jakarta Messaging Service.
         } catch (Exception e) {
             throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
@@ -309,7 +299,6 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
                         binding.get().getSocketBindings().getNamedRegistry().unregisterBinding(binding.get().getName());
                     }
                 }
-
                 // the server is actually stopped by the Jakarta Messaging Service
             }
             pathConfig.closeCallbacks(pathManager.get());
@@ -318,12 +307,13 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
         }
     }
 
-    public synchronized ActiveMQServer getValue() throws IllegalStateException {
+    @Override
+    public synchronized ActiveMQBroker getValue() throws IllegalStateException {
         final ActiveMQServer server = this.server;
         if (server == null) {
             throw new IllegalStateException();
         }
-        return server;
+        return new ActiveMQBrokerImpl(server);
     }
 
 

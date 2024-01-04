@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.timerservice.distributable;
@@ -29,6 +12,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -38,7 +22,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.ejb.EJBException;
@@ -70,7 +53,7 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public class DistributableTimerService<I> implements ManagedTimerService, Function<I, jakarta.ejb.Timer> {
+public class DistributableTimerService<I> implements ManagedTimerService {
 
     private final TimerServiceRegistry registry;
     private final TimedObjectInvoker invoker;
@@ -215,17 +198,22 @@ public class DistributableTimerService<I> implements ManagedTimerService, Functi
     public Collection<jakarta.ejb.Timer> getTimers() throws EJBException {
         this.validateInvocationContext();
 
+        Collection<jakarta.ejb.Timer> timers = new LinkedList<>();
         @SuppressWarnings("unchecked")
         Set<I> inactiveTimers = (ManagedTimerService.getActiveTransaction() != null) ? (Set<I>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.manager) : null;
-        try (Stream<I> activeTimers = this.manager.getActiveTimers()) {
-            Stream<I> timers = (inactiveTimers != null) ? Stream.concat(activeTimers, inactiveTimers.stream()) : activeTimers;
-            return Collections.unmodifiableCollection(timers.map(this).collect(Collectors.toList()));
+        if (inactiveTimers != null) {
+            this.addTimers(timers, inactiveTimers);
         }
+        try (Stream<I> activeTimers = this.manager.getActiveTimers()) {
+            this.addTimers(timers, activeTimers::iterator);
+        }
+        return Collections.unmodifiableCollection(timers);
     }
 
-    @Override
-    public jakarta.ejb.Timer apply(I id) {
-        return new OOBTimer<>(this.manager, id, this.invoker, this.synchronizationFactory);
+    private void addTimers(Collection<jakarta.ejb.Timer> timers, Iterable<I> timerIds) {
+        for (I timerId : timerIds) {
+            timers.add(new OOBTimer<>(this.manager, timerId, this.invoker, this.synchronizationFactory));
+        }
     }
 
     @Override

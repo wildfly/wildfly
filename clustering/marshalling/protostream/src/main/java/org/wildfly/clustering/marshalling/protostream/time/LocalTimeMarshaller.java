@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.time;
@@ -26,6 +9,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoField;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -39,7 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public enum LocalTimeMarshaller implements FieldSetMarshaller<LocalTime, LocalTime> {
+public enum LocalTimeMarshaller implements FieldSetMarshaller.Simple<LocalTime> {
     INSTANCE;
 
     private static final int HOURS_OF_DAY_INDEX = 0;
@@ -50,7 +34,7 @@ public enum LocalTimeMarshaller implements FieldSetMarshaller<LocalTime, LocalTi
     private static final int FIELDS = 5;
 
     @Override
-    public LocalTime getBuilder() {
+    public LocalTime createInitialValue() {
         return LocalTime.MIDNIGHT;
     }
 
@@ -60,7 +44,7 @@ public enum LocalTimeMarshaller implements FieldSetMarshaller<LocalTime, LocalTi
     }
 
     @Override
-    public LocalTime readField(ProtoStreamReader reader, int index, LocalTime time) throws IOException {
+    public LocalTime readFrom(ProtoStreamReader reader, int index, WireType type, LocalTime time) throws IOException {
         switch (index) {
             case HOURS_OF_DAY_INDEX:
                 return time.with(ChronoField.HOUR_OF_DAY, reader.readUInt32());
@@ -73,33 +57,34 @@ public enum LocalTimeMarshaller implements FieldSetMarshaller<LocalTime, LocalTi
             case NANOS_INDEX:
                 return time.withNano(reader.readUInt32());
             default:
+                reader.skipField(type);
                 return time;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, LocalTime time) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, LocalTime time) throws IOException {
         int secondOfDay = time.toSecondOfDay();
         if (secondOfDay > 0) {
             if (secondOfDay % 60 == 0) {
                 int minutesOfDay = secondOfDay / 60;
                 if (minutesOfDay % 60 == 0) {
                     int hoursOfDay = minutesOfDay / 60;
-                    writer.writeUInt32(startIndex + HOURS_OF_DAY_INDEX, hoursOfDay);
+                    writer.writeUInt32(HOURS_OF_DAY_INDEX, hoursOfDay);
                 } else {
-                    writer.writeUInt32(startIndex + MINUTES_OF_DAY_INDEX, minutesOfDay);
+                    writer.writeUInt32(MINUTES_OF_DAY_INDEX, minutesOfDay);
                 }
             } else {
-                writer.writeUInt32(startIndex + SECONDS_OF_DAY_INDEX, secondOfDay);
+                writer.writeUInt32(SECONDS_OF_DAY_INDEX, secondOfDay);
             }
         }
         int nanos = time.getNano();
         if (nanos > 0) {
             // Use ms precision, if possible
             if (nanos % 1_000_000 == 0) {
-                writer.writeUInt32(startIndex + MILLIS_INDEX, time.get(ChronoField.MILLI_OF_SECOND));
+                writer.writeUInt32(MILLIS_INDEX, time.get(ChronoField.MILLI_OF_SECOND));
             } else {
-                writer.writeUInt32(startIndex + NANOS_INDEX, nanos);
+                writer.writeUInt32(NANOS_INDEX, nanos);
             }
         }
     }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.glassfish.jaxb">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${com.sun.istack:istack-commons-runtime}"/>
+        <artifact name="${com.sun.istack:istack-commons-tools}"/>
+        <artifact name="${com.sun.xml.bind.external:rngom}"/>
+        <artifact name="${com.sun.xml.bind.external:relaxng-datatype}"/>
+        <artifact name="${org.glassfish.jaxb:codemodel}"/>
+        <artifact name="${org.glassfish.jaxb:jaxb-jxc}"/>
+        <artifact name="${org.glassfish.jaxb:jaxb-runtime}"/>
+        <artifact name="${org.glassfish.jaxb:jaxb-core}"/>
+        <artifact name="${org.glassfish.jaxb:jaxb-xjc}"/>
+        <artifact name="${org.glassfish.jaxb:xsom}"/>
+        <artifact name="${org.glassfish.jaxb:txw2}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.compiler"/>
+        <module name="java.desktop"/>
+        <module name="java.xml"/>
+        <module name="jakarta.activation.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="jdk.compiler" optional="true"/>
+    </dependencies>
+
+</module>

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="webservices">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.jws,jakarta.jws.soap,jakarta.xml.ws.*"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.xml.ws.*"/>
+    </props>
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="ejb-lite" optional="true"/>
+        <layer name="messaging-activemq" optional="true"/>
+    </dependencies>
+    <feature-group name="webservices"/>
+    <packages>
+        <package name="org.jboss.as.webservices.server.integration"/>
+        <package name="org.jboss.ws.saaj-impl"/>
+        <package name="org.jboss.ws.cxf.sts"/>
+        <!-- ws tools provision -->
+        <package name="bin.wstools"/>
+        <package name="org.jboss.ws.tools.common"/>
+        <package name="org.jboss.ws.tools.wsconsume"/>
+        <package name="org.jboss.ws.tools.wsprovide"/>
+    </packages>
+
+</layer-spec>

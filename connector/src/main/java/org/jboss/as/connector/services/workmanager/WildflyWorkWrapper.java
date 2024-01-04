@@ -1,17 +1,6 @@
 /*
- * Copyright 2017 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.connector.services.workmanager;
 
@@ -22,7 +11,6 @@ import jakarta.resource.spi.work.Work;
 import jakarta.resource.spi.work.WorkCompletedException;
 import jakarta.resource.spi.work.WorkListener;
 
-import org.jboss.as.connector.security.CallbackImpl;
 import org.jboss.as.connector.security.ElytronSecurityContext;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.core.spi.security.SecurityIntegration;
@@ -48,16 +36,13 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
      * @throws IllegalArgumentException for null work, execution context or a negative start timeout
      */
     WildflyWorkWrapper(WorkManagerImpl workManager, SecurityIntegration si, Work work, ExecutionContext executionContext,
-            WorkListener workListener, CountDownLatch startedLatch, CountDownLatch completedLatch, long startTime) {
-        super(workManager, si, work, executionContext, workListener, startedLatch, completedLatch, startTime);
+            WorkListener workListener, CountDownLatch startedLatch, CountDownLatch completedLatch, long creationTime, long startTimeout) {
+        super(workManager, si, work, executionContext, workListener, startedLatch, completedLatch, creationTime, startTimeout);
     }
 
     @Override
     protected void runWork() throws WorkCompletedException {
-        // if there is security and elytron is enabled, we need to let the context run the remainder of the work
-        // so the context can run the work as the specified Elytron identity
-        if (securityIntegration.getSecurityContext() != null &&
-                ((CallbackImpl) workManager.getCallbackSecurity()).isElytronEnabled())
+        if (securityIntegration.getSecurityContext() != null)
             ((ElytronSecurityContext) securityIntegration.getSecurityContext()).runWork(() -> {
                 try {
                     WildflyWorkWrapper.super.runWork();
@@ -65,7 +50,6 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
                     ConnectorLogger.ROOT_LOGGER.unexceptedWorkerCompletionError(e.getLocalizedMessage(),e);
                 }
             });
-        // delegate to super class if there is no elytron enabled
         else super.runWork();
     }
 }

@@ -1,0 +1,12 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
+embed-server --server-config=standalone-load-balancer.xml
+
+/subsystem=undertow/configuration=filter/mod-cluster=load-balancer:undefine-attribute(name=advertise-socket-binding)
+
+/subsystem=undertow/configuration=filter/mod-cluster=load-balancer/affinity=ranked:add()
+
+stop-embedded-server

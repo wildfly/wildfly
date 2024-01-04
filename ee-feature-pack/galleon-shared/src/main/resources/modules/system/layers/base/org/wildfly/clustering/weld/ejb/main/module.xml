@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.weld.ejb">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-weld-ejb}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.jboss.as.ejb3"/>
+        <module name="org.jboss.as.weld.ejb"/>
+        <module name="org.jboss.ejb-client"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.wildfly.clustering.ejb.client"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
+    </dependencies>
+</module>

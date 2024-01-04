@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.xml.bind.api">
+
+    <resources>
+        <artifact name="${jakarta.xml.bind:jakarta.xml.bind-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.xml"/>
+        <module name="jakarta.activation.api" export="true"/>
+        <module name="org.eclipse.angus.activation" services="export" export="true"/>
+        <!-- Export the implementation as the TCCL is typically the CL of a deployment. We do not want to export the
+             services as that would trigger the loading through the service loader. This can be an issue and require
+             special permissions if the security manager is present. Not exporting the services falls back to a default
+             implementation provided by the org.glassfish.jaxb module.
+
+             Please note the comment in WFLY-17065. The org.glassfish.jaxb module includes more than one module. While
+             it is likely not an issue to NOT export the services, it should be noted this currently affects;
+             jaxb-runtime.jar and jaxb-xjc.jar.
+         -->
+        <module name="org.glassfish.jaxb" services="import" export="true"/>
+    </dependencies>
+
+</module>

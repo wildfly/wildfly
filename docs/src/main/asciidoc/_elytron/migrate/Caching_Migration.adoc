@@ -1,6 +1,14 @@
 [[Caching_Migration]]
 = Caching Migration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Where a PicketBox based security domain is defined it is possible to enable caching for that security domain, this enables subsequent hits to the identity store to be avoided as an in memory cache can be used instead, this example demonstrates how caching can be used with a WildFly Elytron based configuration.
 
 The purpose of this chapter is to highlight the migration of a configuration with caching enabled, this example is based in the previous LDAP example but with caching enabled.

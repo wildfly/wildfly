@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.microprofile.config.smallrye;
@@ -66,12 +49,6 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         return System.getProperties();
     }
 
-
-    @Test
-    public void testRejectingTransformersEAP_7_3_0() throws Exception {
-        testRejectingTransformers(ModelTestControllerVersion.EAP_7_3_0, VERSION_1_0_0);
-    }
-
     @Test
     public void testRejectingTransformersEAP_XP4() throws Exception {
         testRejectingTransformers(ModelTestControllerVersion.EAP_XP_4, VERSION_1_1_0);
@@ -103,19 +80,6 @@ public class MPConfigSubsystemParsingTestCase extends AbstractSubsystemBaseTest 
         assertTrue(mainServices.getLegacyServices(microprofileConfigVersion).isSuccessfulBoot());
 
         List<ModelNode> ops = builder.parseXmlResource("subsystem_reject_transformers.xml");
-        if (controllerVersion == ModelTestControllerVersion.EAP_7_3_0) {
-            // For 7.3.0 the ConfigSource 'add' operation installs services despite being in admin-only mode,
-            // which causes errors.
-            // Since the transformers are chained the rejection of the 'root' nested attribute installed
-            // by the 'my-config-source-with-root' config source is tested in later legacy controller versions.
-            int remove = -1;
-            for (int i = 0 ; i < ops.size() ; i++) {
-                if (ops.get(i).get("address").asString().contains("my-config-source-with-root")) {
-                    remove = i;
-                }
-            }
-            ops.remove(remove);
-        }
 
         PathAddress subsystemAddress = PathAddress.pathAddress(SUBSYSTEM_PATH);
 

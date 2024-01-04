@@ -1,24 +1,7 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2012, Red Hat, Inc., and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package org.jboss.as.test.integration.jpa.webtxem;
 
@@ -32,12 +15,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
-import org.jboss.as.test.integration.jpa.hibernate.entity.Flight;
+import org.jboss.as.test.integration.jpa.webtxem.entity.WebJPAEntity;
 
 /**
- * Test servlet used by {@link WebJPATestCase}. Entity {@link Flight} is read or written, type of operation depends on
+ * Test servlet used by {@link WebJPATestCase}. Entity {@link WebJPAEntity} is read or written, type of operation depends on
  * parameter: mode=write or mode=read.
  *
  * @author Zbyněk Roubalík
@@ -63,14 +47,14 @@ public class TestServlet extends HttpServlet {
                 String mode = req.getParameter("mode");
 
                 if (mode.equals("write")) {
-                    Flight f = new Flight();
-                    f.setId(new Long(1));
-                    f.setName("Flight number one");
+                    WebJPAEntity f = new WebJPAEntity();
+                    f.setId(1L);
+                    f.setName("WebJPAEntity One");
                     em.merge(f);
 
                 } else if (mode.equals("read")) {
 
-                    Flight f = em.find(Flight.class, new Long(1));
+                    WebJPAEntity f = em.find(WebJPAEntity.class, 1L);
                     resp.setContentType("text/plain");
                     PrintWriter out = resp.getWriter();
                     out.print(f.getName());
@@ -82,7 +66,11 @@ public class TestServlet extends HttpServlet {
                 tx.setRollbackOnly();
                 throw e;
             } finally {
-                tx.commit();
+                if (tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                    tx.rollback();
+                } else {
+                    tx.commit();
+                }
             }
 
         } catch (Exception e) {

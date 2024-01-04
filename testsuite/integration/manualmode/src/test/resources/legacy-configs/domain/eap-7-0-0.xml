@@ -1,5 +1,10 @@
 <?xml version="1.0" ?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <domain xmlns="urn:jboss:domain:4.1">
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>

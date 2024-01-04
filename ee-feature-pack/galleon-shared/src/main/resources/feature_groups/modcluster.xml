@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="modcluster" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.modcluster">
+        <feature spec="subsystem.modcluster.proxy">
+            <param name="proxy" value="default"/>
+            <param name="advertise-socket" value="modcluster"/>
+            <param name="listener" value="ajp"/>
+            <feature spec="subsystem.modcluster.proxy.load-provider.dynamic">
+                <feature spec="subsystem.modcluster.proxy.load-provider.dynamic.load-metric">
+                    <param name="load-metric" value="cpu"/>
+                    <param name="type" value="cpu"/>
+                </feature>
+            </feature>
+        </feature>
+    </feature>
+</feature-group-spec>

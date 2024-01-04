@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="com.google.guava">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${com.google.guava:guava}"/>
+    </resources>
+
+    <dependencies>
+        <module name="com.google.guava.failureaccess" export="true"/>
+        <module name="java.logging"/>
+        <module name="jdk.unsupported"/>
+    </dependencies>
+</module>

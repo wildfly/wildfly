@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:jboss:domain:ejb3:1.5">
     <timer-service thread-pool-name="default" default-data-store="file-data-store">
         <data-stores>

@@ -1,0 +1,11 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<server xmlns="urn:jboss:service:7.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
+
+    <mbean name="wildfly:name=tccl-test-mbean" code="org.jboss.as.test.integration.sar.context.classloader.module.mbean.MBeanInAModuleService">
+    </mbean>
+</server>

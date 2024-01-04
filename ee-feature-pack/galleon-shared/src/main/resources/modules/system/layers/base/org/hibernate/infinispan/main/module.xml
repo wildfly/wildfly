@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<!--
+    END USER MODULE USAGE: Alias for a private module.
+
+    This module is an alias for a private module and may be removed at any time.
+-->
+<module-alias xmlns="urn:jboss:module:1.9" name="org.hibernate.infinispan" target-name="org.infinispan.hibernate-cache"/>

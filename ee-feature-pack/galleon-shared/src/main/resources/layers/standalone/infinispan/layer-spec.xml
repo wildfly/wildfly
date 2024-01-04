@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="infinispan">
+    <props>
+        <prop name="org.wildfly.rule.add-on" value="clustering,infinispan"/>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Brings in infinispan caches."/>
+    </props>
+    <dependencies>
+        <layer name="cdi" optional="true"/>
+    </dependencies>
+
+    <feature-group name="infinispan"/>
+
+</layer-spec>

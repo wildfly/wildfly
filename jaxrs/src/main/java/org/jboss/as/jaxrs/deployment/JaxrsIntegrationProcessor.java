@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jaxrs.deployment;
@@ -38,6 +21,7 @@ import jakarta.ws.rs.core.Application;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -114,7 +98,14 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (resteasy == null)
             return;
 
-        deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
+        // Set up the configuration factory
+        final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        if (module != null) {
+            final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+            final WildFlyConfigurationFactory configurationFactory = WildFlyConfigurationFactory.getInstance();
+            configurationFactory.register(module.getClassLoader(), support.hasCapability("org.wildfly.microprofile.config"));
+        }
+
         final List<ParamValueMetaData> params = webdata.getContextParams();
         boolean entityExpandEnabled = false;
         if (params != null) {
@@ -209,6 +200,17 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (!resteasy.getScannedApplicationClasses().isEmpty() || resteasy.hasBootClasses() || resteasy.isDispatcherCreated()) {
             addManagement(deploymentUnit, resteasy);
             managementAdded = true;
+        }
+
+        // Check for the existence of the "resteasy.server.tracing.type" context parameter. If set to ALL or ON_DEMAND
+        // log a warning message.
+        final String value = webdata.getContextParams().stream()
+                .filter(contextValue -> "resteasy.server.tracing.type".equals(contextValue.getParamName()))
+                .map(ParamValueMetaData::getParamValue)
+                .findFirst()
+                .orElse(null);
+        if (value != null && !"OFF".equals(value)) {
+            JAXRS_LOGGER.tracingEnabled(deploymentUnit.getName());
         }
 
         if (resteasy.hasBootClasses() || resteasy.isDispatcherCreated())
@@ -397,6 +399,10 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             Object typeFactory = defaultInstanceMethod.invoke(null);
             Method clearCache = typeFactoryClass.getDeclaredMethod("clearCache");
             clearCache.invoke(typeFactory);
+            // Remove the deployment from the registered configuration factory
+            if (JaxrsDeploymentMarker.isJaxrsDeployment(context)) {
+                WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
+            }
         } catch (Exception e) {
             JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
         }
@@ -546,6 +552,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (isTransmittable(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, modelNode = config.isResteasyWiderRequestMatching())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING, modelNode.asString());
         }
+
+        // Add the context parameters
+        config.getContextParameters().forEach((key, value) -> setContextParameter(webdata, key, value));
     }
 
     /**

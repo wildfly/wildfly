@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.domain.mixed;
 
@@ -111,7 +94,7 @@ public class DomainAdjuster {
         removeIpv4SystemProperty(client);
 
         // We don't want any standard host-excludes as the tests are meant to see what happens
-        // with the current configs on legacy secondarys
+        // with the current configs on legacy secondaries
         removeHostExcludes(client);
 
         // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
@@ -119,7 +102,6 @@ public class DomainAdjuster {
         // those extensions.
         // We remove here these extensions and subsystems configured by default if they are in the current configuration, this makes this code capable to work for wildfly and EAP
         final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, profile);
-        removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-opentracing-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.opentracing-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-jwt-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.jwt-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "microprofile-config-smallrye"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.microprofile.config-smallrye"));
         removeSubsystemExtensionIfExist(client, profileAddress.append(SUBSYSTEM, "opentelemetry"), PathAddress.pathAddress(EXTENSION, "org.wildfly.extension.opentelemetry"));

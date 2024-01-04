@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="servlet-unsecured-standalone-profile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="core-standalone-profile">
+        <exclude spec="subsystem.discovery"/>
+    </feature-group>
+
+    <feature-group name="deployment-scanner"/>
+
+    <feature-group name="servlet-unsecured-basic-profile"/>
+
+</feature-group-spec>

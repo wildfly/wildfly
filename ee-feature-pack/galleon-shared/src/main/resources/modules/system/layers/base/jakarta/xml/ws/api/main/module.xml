@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.xml.ws.api">
+
+    <resources>
+        <artifact name="${org.jboss.spec.jakarta.xml.ws:jboss-jakarta-xml-ws-api_4.0_spec}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="jakarta.xml.bind.api" export="true"/>
+        <module name="jakarta.xml.soap.api" export="true"/>
+        <module name="org.jboss.modules"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.batch.api">
+
+    <resources>
+        <artifact name="${jakarta.batch:jakarta.batch-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="jakarta.enterprise.api"/>
+    </dependencies>    
+</module>

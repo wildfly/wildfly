@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module-alias xmlns="urn:jboss:module:1.9" name="javax.resource.api" target-name="jakarta.resource.api"/>
+<!--
+     WARNING: This module is DEPRECATED and will be removed in a future release.
+
+     References to this module should be changed to the 'jakarta' module for
+     which this module is an alias.
+
+     Note that despite its name this module does not expose javax.* package namespace
+     APIs from Jakarta EE 8 or earlier. It exposes the jakarta.* package namespace
+     APIs from the module it aliases.
+
+     This module only exists to ease migration from the old javax.* namespace to
+     the current jakarta.* namespace by allowing references to the old module names
+     to temporarily work. Such references should be updated.
+
+     (Note that an xml comment is used here instead of the usual 'jboss.api=deprecated'
+     property child element only because the 'module-alias' element and associated
+     Java classes do not support property child elements.)
+-->

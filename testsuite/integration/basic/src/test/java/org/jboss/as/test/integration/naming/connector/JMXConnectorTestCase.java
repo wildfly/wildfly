@@ -1,18 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.naming.connector;
 
@@ -23,6 +11,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,7 +29,7 @@ import java.net.SocketPermission;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 /**
  * Tests that JMX Connector work properly from container.
@@ -88,6 +77,7 @@ public class JMXConnectorTestCase {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
+        archive.addAsManifestResource(new StringAsset("Dependencies: jdk.naming.rmi\n"), "MANIFEST.MF");
         archive.addAsManifestResource(createPermissionsXmlAsset(
             new RuntimePermission("accessClassInPackage.com.sun.jndi.url.rmi"),
             new SocketPermission("*:*", "connect,resolve")
@@ -98,7 +88,7 @@ public class JMXConnectorTestCase {
     @Test
     public void testMBeanCount() throws Exception {
         final Properties env = new Properties();
-        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.wildfly.naming.client.WildFlyInitialContextFactory.class.getName());
         env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");

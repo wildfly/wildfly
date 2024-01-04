@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.context">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-context}"/>
+    </resources>
+
+    <dependencies>
+        <!-- Loads naming contextualizer -->
+        <module name="org.jboss.as.clustering.common" services="import" optional="true"/>
+        <module name="org.jboss.threads"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
+    </dependencies>
+</module>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.keycloak.subsystem.adapter.extension;
 
@@ -172,7 +155,7 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
         assertFalse(jbossInfraRealm.get("ignore-oauth-query-parameter").asBoolean());
         assertFalse(jbossInfraRealm.get("verify-token-audience").asBoolean());
 
-        ModelNode secretCredentialDeployment = newSubsystem.get("secure-deployment", "secret-credential-app");
+        ModelNode secretCredentialDeployment = newSubsystem.get("secure-deployment", "secret-credential-app.war");
         assertTrue(secretCredentialDeployment.isDefined());
         assertEquals("master", secretCredentialDeployment.get("realm").asString());
         assertEquals("secret-credential-app", secretCredentialDeployment.get("resource").asString());
@@ -190,7 +173,7 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
         assertEquals("0aa31d98-e0aa-404c-b6e0-e771dba1e798", secretCredentialDeployment.get("credential", "secret").get("secret").asString());
         assertEquals("api/$1/", secretCredentialDeployment.get("redirect-rewrite-rule", "^/wsmaster/api/(.*)$").get("replacement").asString());
 
-        ModelNode jwtCredentialDeployment = newSubsystem.get("secure-deployment", "jwt-credential-app");
+        ModelNode jwtCredentialDeployment = newSubsystem.get("secure-deployment", "jwt-credential-app.war");
         assertTrue(jwtCredentialDeployment.isDefined());
         assertEquals("master", jwtCredentialDeployment.get("realm").asString());
         assertEquals("jwt-credential-app", jwtCredentialDeployment.get("resource").asString());
@@ -212,8 +195,8 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testMigrateNonEmptyKeycloakConfigWithWarnings() throws Exception {
-        String subsystemXml = readResource("keycloak-subsystem-migration-with-warnings-config.xml");
+    public void testMigrateNonEmptyKeycloakConfigWithSecureServerConfig() throws Exception {
+        String subsystemXml = readResource("keycloak-subsystem-migration-with-secure-server-config.xml");
         NewSubsystemAdditionalInitialization additionalInitialization = new NewSubsystemAdditionalInitialization();
         KernelServices services = createKernelServicesBuilder(additionalInitialization).setSubsystemXml(subsystemXml).build();
 
@@ -231,9 +214,7 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
         checkOutcome(response);
 
         ModelNode warnings = response.get(RESULT, "migration-warnings");
-        assertEquals(warnings.toString(), 2, warnings.asList().size());
-        assertTrue(warnings.get(0).toString().contains(("secure-server")));
-        assertTrue(warnings.get(1).toString().contains(("secure-server")));
+        assertEquals(warnings.toString(), 0, warnings.asList().size());
 
         model = services.readWholeModel();
 
@@ -249,11 +230,26 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
         ModelNode jbossInfraRealm = newSubsystem.get("realm", "jboss-infra");
         assertTrue(jbossInfraRealm.isDefined());
 
-        ModelNode secureDeployment = newSubsystem.get("secure-deployment", "web-console");
+        ModelNode secureDeployment = newSubsystem.get("secure-deployment", "web-console.war");
         assertTrue(secureDeployment.isDefined());
 
-        ModelNode secureServer = newSubsystem.get("secure-server");
-        assertFalse(secureServer.isDefined());
+        secureDeployment = newSubsystem.get("secure-deployment", "wildfly-management");
+        assertTrue(secureDeployment.isDefined());
+        assertEquals("jboss-infra", secureDeployment.get("realm").asString());
+        assertEquals("wildfly-management", secureDeployment.get("resource").asString());
+        assertTrue(secureDeployment.get("bearer-only").asBoolean());
+        assertEquals("EXTERNAL", secureDeployment.get("ssl-required").asString());
+        assertEquals("preferred_username", secureDeployment.get("principal-attribute").asString());
+
+        ModelNode secureServer = newSubsystem.get("secure-server", "wildfly-console");
+        assertTrue(secureServer.isDefined());
+        assertEquals("jboss-infra", secureServer.get("realm").asString());
+        assertEquals("wildfly-console", secureServer.get("resource").asString());
+        assertTrue(secureServer.get("public-client").asBoolean());
+        assertEquals("/", secureServer.get("adapter-state-cookie-path").asString());
+        assertEquals("EXTERNAL", secureServer.get("ssl-required").asString());
+        assertEquals(443, secureServer.get("confidential-port").asInt());
+        assertEquals("http://localhost:9000", secureServer.get("proxy-url").asString());
     }
 
     private static class NewSubsystemAdditionalInitialization extends AdditionalInitialization {
@@ -266,11 +262,11 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
                     .build();
             PathElement keycloakExtension = PathElement.pathElement(EXTENSION, "org.keycloak.keycloak-adapter-subsystem");
             rootRegistration.registerSubModel(new SimpleResourceDefinition(keycloakExtension, ControllerResolver.getResolver(EXTENSION)))
-                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
             rootResource.registerChild(keycloakExtension, Resource.Factory.create());
             PathElement elytronExtension = PathElement.pathElement(EXTENSION, "org.wildfly.extension.elytron");
             rootRegistration.registerSubModel(new SimpleResourceDefinition(elytronExtension, ControllerResolver.getResolver(EXTENSION)))
-                    .registerOperationHandler(removeExtension, new ReloadRequiredRemoveStepHandler());
+                    .registerOperationHandler(removeExtension, ReloadRequiredRemoveStepHandler.INSTANCE);
             rootResource.registerChild(elytronExtension, Resource.Factory.create());
 
             rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(EXTENSION),

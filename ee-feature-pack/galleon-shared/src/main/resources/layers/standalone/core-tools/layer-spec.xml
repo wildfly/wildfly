@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="core-tools">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="all-dependencies"/>
+        <prop name="org.wildfly.rule.add-on" value="management,wildfly-cli"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Server command line tools: jboss-cli, add-user, elytron-tool."/>
+    </props>
+    <dependencies>
+        <layer name="management" optional="true"/>
+    </dependencies>
+   <packages>
+       <!-- required for CLI and users management -->
+       <package name="org.jboss.as.cli"/>
+       <package name="org.jboss.as.domain-add-user"/>
+       <package name="org.wildfly.security.elytron-tool"/>
+        <!-- We can't include "tools" package that contain all of them in ee FP -->
+        <package name="core-tools"/>
+    </packages>
+</layer-spec>

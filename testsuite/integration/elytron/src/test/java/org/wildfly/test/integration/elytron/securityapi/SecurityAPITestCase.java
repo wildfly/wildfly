@@ -1,17 +1,6 @@
 /*
- * Copyright 2018 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.integration.elytron.securityapi;
@@ -179,15 +168,10 @@ public class SecurityAPITestCase {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
-            ConfigurableElement[] elements = new ConfigurableElement[3];
-            // 1 - Add empty JACC Policy
-            elements[0] = Policy.builder()
-                    .withName("jacc")
-                    .withJaccPolicy()
-                    .build();
+            ConfigurableElement[] elements = new ConfigurableElement[1];
 
-            // 2 - Map the application-security-domain
-            elements[1] = UndertowApplicationSecurityDomain.builder()
+            // 1 - Map the application-security-domain
+            elements[0] = UndertowApplicationSecurityDomain.builder()
                     .withName("SecurityAPI")
                     .withSecurityDomain("ApplicationDomain")
                     .withIntegratedJaspi(false)

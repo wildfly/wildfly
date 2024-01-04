@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="web-passivation">
+    <props>
+        <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/distributable"/>
+    </props>
+    <dependencies>
+        <layer name="web-server"/>
+        <layer name="transactions"/>
+    </dependencies>
+    <feature-group name="distributable-web-local"/>
+    <feature-group name="infinispan-local-web"/>
+    <packages>
+        <!-- The distributable-web subsystem doesn't assume undertow,
+             and undertow subsystem doesn't assume clustering, but the
+             combination requires the clustering<->undertow integration package -->
+        <package name="org.wildfly.clustering.web.undertow"/>
+    </packages>
+</layer-spec>

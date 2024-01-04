@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jberet.jberet-core">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jberet:jberet-core}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="java.scripting"/>
+        <module name="java.sql"/>
+        <module name="jakarta.batch.api"/>
+        <module name="jakarta.inject.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="com.google.guava"/>
+        <module name="com.h2database.h2" optional="true"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

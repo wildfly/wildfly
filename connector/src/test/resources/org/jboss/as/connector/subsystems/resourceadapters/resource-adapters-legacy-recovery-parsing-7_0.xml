@@ -1,0 +1,22 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.0">
+    <resource-adapters>
+        <resource-adapter id="myRA" statistics-enabled="false">
+            <archive>archive.rar</archive>
+            <connection-definitions>
+                <connection-definition jndi-name="java:jboss/cf/PoolName" class-name="Foo">
+                    <recovery no-recovery="false">
+                        <recover-credential>
+                            <user-name>userName</user-name>
+                            <password>pwd</password>
+                        </recover-credential>
+                    </recovery>
+                </connection-definition>
+            </connection-definitions>
+        </resource-adapter>
+    </resource-adapters>
+</subsystem>

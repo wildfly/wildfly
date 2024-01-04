@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="cloud-server">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="base-layer"/>
+    </props>
+    <dependencies>
+        <layer name="jaxrs-server"/>
+        <layer name="ee-security" optional="true"/>
+        <layer name="jms-activemq" optional="true"/>
+        <layer name="observability" optional="true"/>
+        <layer name="resource-adapters" optional="true"/>
+    </dependencies>
+</layer-spec>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.5" name="jakarta.faces.api">
+    <dependencies>
+        <module name="jakarta.el.api" export="true"/>
+        <module name="jakarta.servlet.api" export="true"/>
+        <module name="jakarta.servlet.jsp.api" export="true"/>
+        <module name="jakarta.servlet.jstl.api" export="true"/>
+        <module name="jakarta.validation.api" export="true"/>
+    </dependencies>
+
+    <resources>
+        <resource-root path="jboss-jsf-api_2.1_spec-2.0.7.Final.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+</module>

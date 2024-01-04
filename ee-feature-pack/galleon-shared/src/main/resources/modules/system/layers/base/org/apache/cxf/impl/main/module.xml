@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.cxf.impl">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.cxf:cxf-rt-bindings-coloc}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-bindings-soap}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-bindings-xml}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-databinding-aegis}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-databinding-jaxb}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-features-clustering}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-frontend-jaxws}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-frontend-simple}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-management}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-security-saml}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-transports-http}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-transports-http-hc}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-transports-jms}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-transports-local}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-wsdl}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-addr}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-mex}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-policy}"/>
+        <artifact name="${org.apache.cxf:cxf-rt-ws-rm}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-common}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-java2ws}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-validator}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-wsdlto-core}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb}"/>
+        <artifact name="${org.apache.cxf:cxf-tools-wsdlto-frontend-jaxws}"/>
+        <artifact name="${org.apache.cxf.services.ws-discovery:cxf-services-ws-discovery-api}"/>
+        <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-boolean}"/>
+        <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-bug986}"/>
+        <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-dv}"/>
+        <artifact name="${org.apache.cxf.xjcplugins:cxf-xjc-ts}"/>
+        <artifact name="${org.apache.cxf.xjc-utils:cxf-xjc-runtime}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.sql"/>
+        <module name="java.management"/>
+        <module name="java.management.rmi"/>
+        <module name="java.naming"/>
+        <module name="java.rmi"/>
+        <module name="java.security.jgss"/>
+        <module name="java.xml"/>
+        <module name="asm.asm"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.jms.api"/>
+        <module name="jakarta.mail.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="javax.wsdl4j.api"/>
+        <module name="jakarta.xml.bind.api" services="import"/>
+        <module name="org.glassfish.jaxb" services="import"/>
+        <module name="jakarta.xml.soap.api"/>
+        <module name="jakarta.xml.ws.api"/>
+        <module name="org.apache.commons.lang3"/>
+        <module name="org.apache.commons.logging"/>
+        <module name="org.apache.httpcomponents"/>
+        <module name="org.apache.neethi"/>
+        <module name="org.apache.velocity"/>
+        <module name="org.apache.xml-resolver"/>
+        <module name="org.apache.ws.xmlschema"/>
+        <module name="org.apache.ws.security"/>
+        <module name="org.apache.santuario.xmlsec"/>
+        <module name="org.codehaus.woodstox"/>
+        <module name="org.joda.time"/>
+        <module name="org.opensaml"/>
+        <module name="org.apache.cxf" export="true">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+        <module name="org.apache.cxf.ws-security" export="true" services="export">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+        <module name="org.apache.cxf.services-sts" export="true" services="export">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+        <module name="org.springframework.spring" optional="true">
+            <imports>
+                <include path="META-INF"/>
+            </imports>
+        </module>
+    </dependencies>
+
+</module>

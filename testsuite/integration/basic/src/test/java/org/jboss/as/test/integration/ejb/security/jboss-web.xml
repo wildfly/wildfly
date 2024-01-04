@@ -1,4 +1,9 @@
 <?xml version="1.0"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <jboss-web>
     <security-domain>ejb3-tests</security-domain>
 </jboss-web>

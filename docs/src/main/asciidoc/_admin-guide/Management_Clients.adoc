@@ -1,6 +1,14 @@
 [[Management_Clients]]
 = Management Clients
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly offers three different approaches to configure and manage
 servers: a web interface, a command line client and a set of XML
 configuration files. Regardless of the approach you choose, the
@@ -118,18 +126,6 @@ include::Default_HTTP_Interface_Security.adoc[leveloffset=+1]
 
 include::Default_Native_Interface_Security.adoc[leveloffset=+1]
 
-
-
-[[command-line-interface]]
-== Command Line Interface
-
-The Command Line Interface (CLI) is a management tool for a managed
-domain or standalone server. It allows a user to connect to the domain
-controller or a standalone server and execute management operations
-available through the de-typed management model.
-
-Details on how to use the CLI can be found in the
-<<Command_Line_Interface,Command Line Interface page>>.
 
 [[configuration-files]]
 == Configuration Files

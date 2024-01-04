@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.infinispan.protostream">
+
+    <resources>
+        <artifact name="${org.infinispan.protostream:protostream}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.compiler"/>
+        <module name="java.logging"/>
+
+        <module name="jdk.unsupported"/>
+        <module name="com.squareup.protoparser"/>
+        <module name="org.jboss.logging"/>
+    </dependencies>
+
+</module>

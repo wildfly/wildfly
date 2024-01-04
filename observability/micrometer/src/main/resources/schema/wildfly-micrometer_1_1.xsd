@@ -1,0 +1,44 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:micrometer:1.1"
+           xmlns="urn:wildfly:micrometer:1.1"
+           elementFormDefault="qualified"
+           version="1.1">
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="otlp-registry" minOccurs="0">
+                    <xs:complexType>
+                        <xs:attribute name="endpoint" type="xs:string">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The URL of the OTLP collector to which metrics will be published.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="step" type="xs:int" default="60">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The step size (reporting frequency) to use in seconds.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="exposed-subsystems" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The names of the WildFly subsystems that exposes their metrics (or '*' to expose any subsystem
+                        metrics).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

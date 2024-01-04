@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <subsystem xmlns="urn:jboss:domain:picketlink-federation:1.0">
     <federation name="federation-without-signatures">
         <saml token-timeout="${test.picketlink.idp.token-timeout:4000}" clock-skew="${test.picketlink.idp.clock-skew:0}"/>

@@ -1,0 +1,15 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:undertow:14.0" default-server="default-server" default-servlet-container="default-container" default-virtual-host="default-host" instance-id="foo">
+    <server name="default-server" default-host="default-host">
+        <host name="default-host"/>
+    </server>
+    <servlet-container name="default-container"/>
+    <servlet-container name="rejected-container" allow-orphan-session="true"/>
+    <servlet-container name="affinity-cookie-container">
+        <affinity-cookie name="SRV"/>
+    </servlet-container>
+</subsystem>

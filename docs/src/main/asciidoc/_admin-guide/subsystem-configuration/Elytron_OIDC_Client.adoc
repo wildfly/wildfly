@@ -1,6 +1,14 @@
 [[Elytron_OIDC_Client]]
 = Elytron OpenID Connect Client Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The ability to secure applications using https://openid.net/specs/openid-connect-core-1_0.html[OpenID Connect] is
 provided by the _elytron-oidc-client_ subsystem.
 
@@ -59,9 +67,9 @@ Here is an example of an `oidc.json` configuration file:
    "connection-ttl-millis": 500,
    "disable-trust-manager": false,
    "allow-any-hostname" : false,
-   "truststore" : "path/to/truststore.jks",
+   "truststore" : "path/to/truststore.pkcs12",
    "truststore-password" : "geheim",
-   "client-keystore" : "path/to/client-keystore.jks",
+   "client-keystore" : "path/to/client-keystore.pkcs12",
    "client-keystore-password" : "geheim",
    "client-key-password" : "geheim",
    "token-minimum-time-to-live" : 10,
@@ -141,6 +149,12 @@ resources that have been defined in the Elytron subsystem, like traditional depl
 the _elytron-oidc-client_ subsystem will automatically create and make use of its own virtual security domain
 across the deployment. No further managed configuration is required.
 
+[NOTE]
+====
+To propagate an identity from a virtual security domain, additional configuration might be required
+depending on your use case. See <<identity_propagation, Identity Propagation>> for more details.
+====
+
 == OpenID Providers
 
 The `provider-url` attribute in the `oidc.json` configuration and in the _elytron-oidc-client_
@@ -149,6 +163,15 @@ For WildFly 25, the _elytron-oidc-client_ subsystem has been tested with the Key
 Other OpenID providers haven't been extensively tested yet so the use of other OpenID providers should
 be considered experimental for now and should not be used in a production environment yet. Proper support
 for other OpenID providers will be added in a future WildFly release.
+
+=== Disabling "typ" Claim Validation
+
+By default, when verifying an access token, the _elytron-oidc-client_ subsystem expects the token
+to contain a `typ` claim with value `Bearer`. Access tokens provided by the Keycloak OpenID provider
+contain this claim. However, access tokens provided by other OpenID providers might not include this
+claim, causing token validation to fail. When using an OpenID provider other than Keycloak,
+it is possible to disable the `typ` claim validation by setting the `wildfly.elytron.oidc.disable.typ.claim.validation`
+system property to `true`.
 
 == Multi-Tenancy Support
 
@@ -209,3 +232,140 @@ your application's `web.xml` file, as shown in the example below:
     ...
 </web-app>
 ----
+
+[[identity_propagation]]
+== Identity Propagation
+
+When securing an application with OpenID Connect, the `elytron-oidc-client` subsystem will automatically
+create a virtual security domain for you. If your application invokes an EJB, additional configuration
+might be required to propagate the security identity from the virtual security domain depending on how
+the EJB is being secured.
+
+=== Securing an EJB using a different security domain
+
+If your application secured with OpenID Connect invokes an EJB within the same deployment (e.g.,
+within the same WAR or EAR) or invokes an EJB in a separate deployment (e.g., across EARs)
+and you'd like to secure the EJB using a different security domain from your servlet,
+additional configuration will be needed to outflow the security identities established by
+the virtual security domain to another security domain.
+
+The `virtual-security-domain` resource allows you to specify that security identities
+established by a virtual security domain should automatically be outflowed to other
+security domains. A `virtual-security-domain` resource has a few attributes, as
+described below:
+
+* `name` - This is the runtime name of a deployment associated with a virtual security domain (e.g.,
+`DEPLOYMENT_NAME.ear`, a deployment that has a subdeployment that is secured using OpenID Connect).
+
+* `outflow-security-domains` - This is the list of `security-domains` that security identities from
+the virtual security domain should be automatically outflowed to.
+
+* `outflow-anonymous` - When outflowing to a security domain, if outflow is not possible, should the
+anonymous identity be used? Outflow to a security domain might not be possible if the domain does
+not trust this domain or if the identity being outflowed to a domain does not exist in that domain.
+Outflowing anonymous has the effect of clearing any identity already established for that domain.
+This attribute defaults to `false`.
+
+In addition to configuring a `virtual-security-domain` resource, you'll also need to update the
+`security-domain` configuration for your EJB to indicate that it should trust security identities established
+by the `virtual-security-domain`. This can be specified by configuring the `trusted-virtual-security-domains`
+attribute for a `security-domain` (e.g., setting the `trusted-virtual-security-domains` attribute to
+`DEPLOYMENT_NAME.ear` for a `security-domain` would indicate that this `security-domain`
+should trust the virtual security domain associated with the `DEPLOYMENT_NAME.ear` deployment).
+
+The `virtual-security-domain` configuration and `trusted-virtual-security-domains` configuration
+will allow security identities established by a virtual security domain to be successfully
+outflowed to a `security-domain` being used to secure the EJB.
+
+=== Securing an EJB using the same virtual security domain
+
+==== Within the same deployment
+
+If your application secured with OpenID Connect invokes an EJB within the same deployment (e.g.,
+within the same WAR or EAR), and you'd like to secure the EJB using the same virtual security
+domain as your servlet, no additional configuration is required. This means that if no security
+domain configuration has been explicitly specified for the EJB, the virtual security domain will
+automatically be used to secure the EJB.
+
+==== Across deployments
+
+If your application secured with OpenID Connect invokes an EJB in a separate deployment (e.g., across EARs)
+and you'd like to secure the EJB using the same virtual security domain as your servlet,
+additional configuration will be needed. In particular, the EJB will need to reference the virtual
+security domain explicitly.
+
+The `virtual-security-domain` resource allows you to reference the virtual security domain
+from the security domain configuration for the EJB. As an example, a `virtual-security-domain`
+resource could be added as follows:
+
+`/subsystem=elytron/virtual-security-domain=DEPLOYMENT_NAME.ear:add()`
+
+An annotation like `@SecurityDomain(DEPLOYMENT_NAME.ear)` can then be added to the EJB,
+where `DEPLOYMENT_NAME.ear` is a reference to the `virtual-security-domain` defined above.
+
+This configuration indicates that the virtual security domain associated with `DEPLOYMENT_NAME.ear`
+should be used to secure the EJB.
+
+== Securing the management console with OpenID Connect
+
+The management console can be secured with OpenID Connect using the Keycloak OpenID provider.
+
+[NOTE]
+====
+The ability to secure the management console with the Keycloak OpenID provider is only available when
+running a standalone server and is not supported when running a managed domain. The management
+CLI cannot be secured with OpenID Connect.
+====
+
+To secure the management console with OpenID Connect, configuration is required on the Keycloak side
+and in the `elytron-oidc-client` subsystem.
+
+=== Keycloak Configuration
+
+Follow the steps in Keycloak's https://www.keycloak.org/guides#getting-started[getting started guide] to
+add a new realm called `wildfly-infra`.
+
+Then, create a new OpenID Connect client called `wildfly-console`. Set the *Valid Redirect URIs* using
+the URI used to access the WildFly management console, e.g., `http://localhost:9990/console/*`. Similarly, you'll
+also need to set *Web Origins* using the management port for your WildFly instance, e.g.,
+`http://localhost:9990`.
+
+Next, create a second OpenID Connect client called `wildfly-management`. This will be a bearer-only client so in
+the *Capability* configuration, be sure to uncheck the Standard flow and Direct access grants.
+
+If you will be configuring WildFly to enable <<RBAC.adoc#rbac-roles,Role Based Access Control>> (RBAC), you can also create
+a new *Realm role* (e.g., Administrator) and assign it to a user.
+
+=== Elytron OIDC Client Subsystem Configuration
+
+We need to add a `secure-deployment` resource that references the `wildfly-management` client that was created
+in the previous section.
+
+A `secure-server` that references the `wildfly-console` client is also needed.
+
+Some example CLI commands that add these resources can be seen here:
+
+[source,options="nowrap"]
+----
+# Configure the Keycloak provider
+/subsystem=elytron-oidc-client/provider=keycloak:add(provider-url=http://localhost:8180/realms/wildfly-infra)
+
+# Create a secure-deployment in order to protect mgmt interface
+/subsystem=elytron-oidc-client/secure-deployment=wildfly-management:add(provider=keycloak,client-id=wildfly-management,principal-attribute=preferred_username,bearer-only=true,ssl-required=EXTERNAL)
+
+# Enable RBAC where roles are obtained from the identity
+/core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+/core-service=management/access=authorization:write-attribute(name=use-identity-roles,value=true)
+
+# Create a secure-server in order to publish the management console configuration via mgmt interface
+/subsystem=elytron-oidc-client/secure-server=wildfly-console:add(provider=keycloak,client-id=wildfly-console,public-client=true)
+
+# reload
+reload
+----
+
+== Accessing the management console
+
+With the above configuration in place, when you access the management console (e.g., `http://localhost:9990/console/`),
+you will be redirected to Keycloak to log in, and will then be redirected back to the management console upon successful
+authentication.

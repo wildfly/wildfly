@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="software.amazon.awssdk.s3">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${software.amazon.awssdk:annotations}"/>
+        <artifact name="${software.amazon.awssdk:apache-client}"/>
+        <artifact name="${software.amazon.awssdk:arns}"/>
+        <artifact name="${software.amazon.awssdk:auth}"/>
+        <artifact name="${software.amazon.awssdk:aws-core}"/>
+        <artifact name="${software.amazon.awssdk:aws-query-protocol}"/>
+        <artifact name="${software.amazon.awssdk:aws-xml-protocol}"/>
+        <artifact name="${software.amazon.awssdk:crt-core}"/>
+        <artifact name="${software.amazon.awssdk:endpoints-spi}"/>
+        <artifact name="${software.amazon.awssdk:http-client-spi}"/>
+        <artifact name="${software.amazon.awssdk:json-utils}"/>
+        <artifact name="${software.amazon.awssdk:metrics-spi}"/>
+        <artifact name="${software.amazon.awssdk:profiles}"/>
+        <artifact name="${software.amazon.awssdk:protocol-core}"/>
+        <artifact name="${software.amazon.awssdk:regions}"/>
+        <artifact name="${software.amazon.awssdk:s3}"/>
+        <artifact name="${software.amazon.awssdk:sdk-core}"/>
+        <artifact name="${software.amazon.awssdk:third-party-jackson-core}"/>
+        <artifact name="${software.amazon.awssdk:utils}"/>
+        <artifact name="${software.amazon.eventstream:eventstream}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.xml"/>
+
+        <module name="org.apache.httpcomponents.core"/>
+        <module name="org.reactivestreams"/>
+        <module name="org.slf4j"/>
+    </dependencies>
+
+</module>

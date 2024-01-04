@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -29,11 +12,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.NAME;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.dmr.ModelType.BOOLEAN;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQComponentControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -50,7 +32,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Base class for {@link org.jboss.as.controller.OperationStepHandler} implementations for handlers that interact
@@ -173,11 +155,11 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     /**
      * Gets the {@link ActiveMQComponentControl} implementation used by this handler.
      *
-     * @param activeMQServer the ActiveMQ server installed in the runtime
+     * @param activeMQBroker the ActiveMQ server installed in the runtime
      * @param address the address being invoked
      * @return the runtime ActiveMQ control object associated with the given address
      */
-    protected abstract T getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address);
+    protected abstract T getActiveMQComponentControl(ActiveMQBroker activeMQBroker, PathAddress address);
 
     protected abstract String getDescriptionPrefix();
 
@@ -277,7 +259,7 @@ public abstract class AbstractActiveMQComponentControlHandler<T extends ActiveMQ
     protected final T getActiveMQComponentControl(final OperationContext context, final ModelNode operation, final boolean forWrite) throws OperationFailedException {
         final ServiceName artemisServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> artemisService = context.getServiceRegistry(forWrite).getService(artemisServiceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(artemisService.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(artemisService.getValue());
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         return getActiveMQComponentControl(server, address);
     }

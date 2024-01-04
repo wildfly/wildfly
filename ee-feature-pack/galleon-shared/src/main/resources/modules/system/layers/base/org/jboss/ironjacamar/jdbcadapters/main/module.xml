@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ironjacamar.jdbcadapters">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-jdbc}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.security.jgss"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+        <module name="java.transaction.xa"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.resource.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="org.hibernate.validator"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.ironjacamar.api"/>
+        <module name="org.jboss.ironjacamar.impl"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.threads"/>
+    </dependencies>
+
+</module>

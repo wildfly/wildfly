@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2017, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -33,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -42,9 +25,6 @@
     <name>WildFly: Documentation</name>
 
     <properties>
-        <!-- Because this version is only used here and should not currently be used outside of this module we are
-             going to define it here rather than the root pom. -->
-        <version.org.jboss.wildscribe>2.0.0.Final</version.org.jboss.wildscribe>
         <server.name>wildfly-${project.version}</server.name>
         <messages.filename>${server.name}.messages</messages.filename>
         <management-model.filename>${server.name}.dmr</management-model.filename>
@@ -148,8 +128,11 @@
                         <required-extension>org.wildfly.extension.rts</required-extension>
                         <required-extension>org.jboss.as.xts</required-extension>
                         <required-extension>org.wildfly.extension.datasources-agroal</required-extension>
+                        <required-extension>org.wildfly.extension.micrometer</required-extension>
                         <required-extension>org.wildfly.extension.microprofile.fault-tolerance-smallrye</required-extension>
                         <required-extension>org.wildfly.extension.microprofile.openapi-smallrye</required-extension>
+                        <required-extension>org.wildfly.extension.microprofile.telemetry</required-extension>
+                        <required-extension>org.wildfly.extension.opentelemetry</required-extension>
                     </required-extensions>
                 </configuration>
                 <executions>

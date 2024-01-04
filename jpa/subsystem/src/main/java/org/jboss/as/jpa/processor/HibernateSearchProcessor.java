@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jpa.processor;
@@ -58,8 +41,8 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier MODULE_MAPPER_ORM_DEFAULT =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
 
-    private static final ModuleIdentifier MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING);
+    private static final ModuleIdentifier MODULE_MAPPER_ORM_OUTBOXPOLLING =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING);
     private static final ModuleIdentifier MODULE_BACKEND_LUCENE =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE);
     private static final ModuleIdentifier MODULE_BACKEND_ELASTICSEARCH =
@@ -125,6 +108,11 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        // Configure sourcing of Jandex indexes in Hibernate Search,
+        // so that it can look for @ProjectionConstructor annotations
+        deploymentUnit.addToAttachmentList(JpaAttachments.INTEGRATOR_ADAPTOR_MODULE_NAMES,
+                Configuration.HIBERNATE_SEARCH_INTEGRATOR_ADAPTOR_MODULE_NAME);
+
         List<String> backendTypes = HibernateSearchDeploymentMarker.getBackendTypes(deploymentUnit);
         if (backendTypes != null) {
             if (backendTypes.contains(Configuration.HIBERNATE_SEARCH_BACKEND_TYPE_VALUE_LUCENE)) {
@@ -140,7 +128,7 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
         List<String> coordinationStrategies = HibernateSearchDeploymentMarker.getCoordinationStrategies(deploymentUnit);
         if (coordinationStrategies != null) {
             if (coordinationStrategies.contains(Configuration.HIBERNATE_SEARCH_COORDINATION_STRATEGY_VALUE_OUTBOX_POLLING)) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING,
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_OUTBOXPOLLING,
                         false, true, true, false));
             }
         }

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.managedbean.processors;
@@ -33,7 +16,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
@@ -47,21 +29,20 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JBOSS_INVOCATION_ID = ModuleIdentifier.create("org.jboss.invocation");
-    private static ModuleIdentifier JBOSS_AS_EE = ModuleIdentifier.create("org.jboss.as.ee");
+    private static String JBOSS_INVOCATION_ID = "org.jboss.invocation";
+    private static String JBOSS_AS_EE = "org.jboss.as.ee";
 
-    private static final ModuleIdentifier[] JAVA_EE_API_MODULES = {
-            ModuleIdentifier.create("javax.annotation.api"),
-            ModuleIdentifier.create("javax.enterprise.concurrent.api"),
-            ModuleIdentifier.create("javax.interceptor.api"),
-            ModuleIdentifier.create(JSON_API),
-            ModuleIdentifier.create("javax.json.bind.api"),
-            ModuleIdentifier.create("javax.resource.api"),
-            ModuleIdentifier.create("javax.rmi.api"),
-            ModuleIdentifier.create("javax.xml.bind.api"),
-            ModuleIdentifier.create("javax.api"),
-            ModuleIdentifier.create(GLASSFISH_EL),
-            ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")
+    private static final String[] JAVA_EE_API_MODULES = {
+            "jakarta.annotation.api",
+            "jakarta.enterprise.concurrent.api",
+            "jakarta.interceptor.api",
+            JSON_API,
+            "jakarta.json.bind.api",
+            "jakarta.resource.api",
+            "javax.rmi.api",
+            "jakarta.xml.bind.api",
+            GLASSFISH_EL,
+            "org.glassfish.jakarta.enterprise.concurrent"
     };
 
 
@@ -92,12 +73,12 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(ee);
 
         // add dep for naming permission
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, ModuleIdentifier.create(WILDFLY_NAMING), false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, WILDFLY_NAMING, false, false, false, false));
 
         //we always add all Jakarta EE API modules, as the platform spec requires them to always be available
         //we do not just add the javaee.api module, as this breaks excludes
 
-        for (final ModuleIdentifier moduleIdentifier : JAVA_EE_API_MODULES) {
+        for (final String moduleIdentifier : JAVA_EE_API_MODULES) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, true, false, true, false));
         }
     }

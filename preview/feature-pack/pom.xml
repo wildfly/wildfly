@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-preview-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>31.0.0.Final-SNAPSHOT</version>
+    </parent>
+    
+    <artifactId>wildfly-preview-feature-pack</artifactId>
+
+    <name>WildFly Preview: Galleon Feature Pack</name>
+    <description>Tech Preview Galleon feature pack providing possibly experimental functionality</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+
+        <!-- WildFly full and ee galleon contents -->
+        <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
+        <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
+
+        <!-- WildFly Preview modules -->
+        <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
+
+    </properties>
+
+    <build>
+        <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
+        <plugins>
+            <plugin>
+                <!-- Feature pack generation is vulnerable to leftover files in the target
+                     folder from previous builds, so always clean even if the clean lifecycle is not invoked -->
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-core-common-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-common</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-core-feature-pack-ee-10-api</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <!-- The feature pack build seems to ignore such things anyway, but to be
+                                 robust exclude artifact metadata content -->
+                            <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
+                            <outputDirectory>${basedir}/target/unpacked-dependency-galleon-resources</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
+                                    <excludes>
+                                        <!-- We handle system/add-ons separately -->
+                                        <exclude>modules/system/add-ons/mvc-krazo/**</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- The mvc-krazo FP puts things in system/add-ons but for us they are in system/layers/base -->
+                        <id>copy-unpacked-module-addons-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources/modules/system/layers/base</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources/modules/system/add-ons/mvc-krazo</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-ee-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${ee.galleon.shared.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-full-galleon-shared-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${full.galleon.shared.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-local-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.local.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.maven.plugins</groupId>
+                <artifactId>licenses-plugin</artifactId>
+                <inherited>false</inherited>
+                <configuration>
+                    <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+                    <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-galleon-local</excludedArtifacts>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>update-licenses-xml</id>
+                        <goals>
+                            <goal>insert-versions</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <licensesConfigFiles>
+                                <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
+                            </licensesConfigFiles>
+                            <licensesOutputFile>${license.directory}/wildfly-preview-feature-pack-licenses.xml</licensesOutputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>feature-pack-build</id>
+                        <goals>
+                            <goal>build-feature-pack</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <release-name>${preview.dist.product.release.name}</release-name>
+                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
+                            <generate-channel-manifest>true</generate-channel-manifest>
+                            <deploy-channel-manifest>false</deploy-channel-manifest>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+
+        <!-- feature pack dependencies -->
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-plugins</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-config-gen</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- module and copy artifact dependencies -->
+
+        <!-- Deps from the source modules we copy in -->
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+            <exclusions>
+                <!-- Exclude deps that have been replaced with different artifacts in this FP.
+                     TODO perhaps put these in a different maven module that we don't pull in -->
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jacc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-jaspi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-audit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-http-oidc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-json-util</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-mechanism-oauth2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-realm-token</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-tool</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.wildfly.security</groupId>
+                    <artifactId>wildfly-elytron-x500-cert-acme</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Bring in all the WildFly Preview Galleon Local deps in one go -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>mvc-krazo-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <!-- This profile should only be activated to download licenses from remote URLs
+                 instead of copying the license files from the src/main/resources/content/docs/licences
+                 directory -->
+            <id>download-licenses</id>
+            <activation>
+                <property>
+                    <name>download-licenses</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>download-licenses</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <licensesOutputDirectory>${basedir}/target/resources/content/docs/licenses</licensesOutputDirectory>
+                                    <licensesOutputFile>${basedir}/target/resources/content/docs/licenses/licenses.xml</licensesOutputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>enforce</id>
+            <activation>
+                <property>
+                    <name>!skip-enforce</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>ban-transitive-deps</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <banTransitiveDependencies>
+                                            <excludes>
+                                                <!-- Ignore the shared resource poms as those we want their
+                                                     transitives. Those poms ban transitives at their level -->
+                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
+                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
+                                                <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
+                                            </excludes>
+                                        </banTransitiveDependencies>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>enforce-product</id>
+            <activation>
+                <property>
+                    <name>enforce-product</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss.maven.plugins.enforcer.rules</groupId>
+                                <artifactId>version-enforcer-rule</artifactId>
+                                <version>1.0.0</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>ban-non-product-deps</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule implementation="org.jboss.maven.plugins.enforcer.rules.version.BanVersionDependenciesRule">
+                                          <versionPattern>^((?!redhat).)*$</versionPattern>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>javadocDist</id>
+            <properties>
+                <javadoc.branding>WildFly public API - ${project.version}</javadoc.branding>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${version.javadoc.plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>javadocs-dist</id>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <verbose>true</verbose>
+                                    <maxmemory>2400m</maxmemory>
+                                    <!-- To prevent problems with author names written in non-UTF-8:
+                                    -->
+                                    <encoding>ISO-8859-1</encoding>
+
+                                    <windowtitle>${javadoc.branding} public API</windowtitle>
+                                    <doctitle>${javadoc.branding} public API</doctitle>
+                                    <header>${javadoc.branding}</header>
+                                    <footer>${javadoc.branding}</footer>
+
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </dependencySourceIncludes>
+
+                                    <dependencySourceExcludes>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </dependencySourceExcludes>
+
+                                    <groups>
+                                        <!-- Filled by a script during creation of Javadoc. -->
+                                    </groups>
+
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

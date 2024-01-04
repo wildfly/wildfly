@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.deployment.processors;
@@ -118,16 +101,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
                 deploymentDescriptorEnvironment = new DeploymentDescriptorEnvironment("java:comp/env/", beanMetaData);
 
                 messagingType = beanMetaData.getMessagingType();
-                final ActivationConfigMetaData activationConfigMetaData = beanMetaData.getActivationConfig();
-                if (activationConfigMetaData != null) {
-                    final ActivationConfigPropertiesMetaData propertiesMetaData = activationConfigMetaData
-                            .getActivationConfigProperties();
-                    if (propertiesMetaData != null) {
-                        for (final ActivationConfigPropertyMetaData propertyMetaData : propertiesMetaData) {
-                            activationConfigProperties.put(propertyMetaData.getKey(), propertyMetaData.getValue());
-                        }
-                    }
-                }
+                activationConfigProperties.putAll(getActivationConfigProperties(beanMetaData));
                 messageListenerInterfaceName = messagingType != null ? messagingType : getMessageListenerInterface(compositeIndex, messageBeanAnnotation, deploymentUnit);
 
             } else {
@@ -181,21 +155,33 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         return interfaces.iterator().next().toString();
     }
 
-    private Properties getActivationConfigProperties(final ActivationConfigMetaData activationConfig) {
+    private Properties getActivationConfigProperties(final MessageDrivenBeanMetaData mdb) {
         final Properties activationConfigProps = new Properties();
-        if (activationConfig == null || activationConfig.getActivationConfigProperties() == null) {
-            return activationConfigProps;
+        final ActivationConfigMetaData activationConfig = mdb.getActivationConfig();
+        if (activationConfig != null && activationConfig.getActivationConfigProperties() != null) {
+            final ActivationConfigPropertiesMetaData activationConfigPropertiesMetaData = activationConfig.getActivationConfigProperties();
+            for (ActivationConfigPropertyMetaData activationConfigProp : activationConfigPropertiesMetaData) {
+                if (activationConfigProp == null) {
+                    continue;
+                }
+                final String propName = activationConfigProp.getActivationConfigPropertyName();
+                final String propValue = activationConfigProp.getValue();
+                if (propName != null) {
+                    activationConfigProps.put(propName, propValue);
+                }
+            }
         }
-        final ActivationConfigPropertiesMetaData activationConfigPropertiesMetaData = activationConfig.getActivationConfigProperties();
-        for (ActivationConfigPropertyMetaData activationConfigProp : activationConfigPropertiesMetaData) {
-            if (activationConfigProp == null) {
-                continue;
-            }
-            final String propName = activationConfigProp.getActivationConfigPropertyName();
-            final String propValue = activationConfigProp.getValue();
-            if (propName != null) {
-                activationConfigProps.put(propName, propValue);
-            }
+        if (mdb.getAcknowledgeMode() != null && !mdb.getAcknowledgeMode().isBlank()) {
+            activationConfigProps.put("acknowledgeMode", mdb.getAcknowledgeMode());
+        }
+        if (mdb.getMessageDestinationType() != null && !mdb.getMessageDestinationType().isBlank()) {
+            activationConfigProps.put("destinationType", mdb.getMessageDestinationType());
+        }
+        if (mdb.getMessageSelector() != null && !mdb.getMessageSelector().isBlank()) {
+            activationConfigProps.put("messageSelector", mdb.getMessageSelector());
+        }
+        if (mdb.getSubscriptionDurability() != null) {
+            activationConfigProps.put("subscriptionDurability", mdb.getSubscriptionDurability().toString());
         }
         return activationConfigProps;
     }
@@ -209,7 +195,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             // TODO: This isn't really correct to default to MessageListener
             messageListenerInterface = MessageListener.class.getName();
         }
-        final Properties activationConfigProps = getActivationConfigProperties(mdb.getActivationConfig());
+        final Properties activationConfigProps = getActivationConfigProperties(mdb);
         final String defaultResourceAdapterName = this.getDefaultResourceAdapterName(deploymentUnit.getServiceRegistry());
         final MessageDrivenComponentDescription mdbComponentDescription = new MessageDrivenComponentDescription(beanName, beanClassName, ejbJarDescription, deploymentUnit, messageListenerInterface, activationConfigProps, defaultResourceAdapterName, mdb, defaultMdbPoolAvailable);
         mdbComponentDescription.setDeploymentDescriptorEnvironment(new DeploymentDescriptorEnvironment("java:comp/env/", mdb));

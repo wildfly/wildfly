@@ -1,24 +1,7 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
-* as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
@@ -27,7 +10,7 @@ import java.util.Properties;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
-import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -47,18 +30,23 @@ import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 @RunWith(value = Parameterized.class)
-public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<InfinispanSchema> {
+public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<InfinispanSubsystemSchema> {
 
     @Parameters
-    public static Iterable<InfinispanSchema> parameters() {
-        return EnumSet.allOf(InfinispanSchema.class);
+    public static Iterable<InfinispanSubsystemSchema> parameters() {
+        return EnumSet.allOf(InfinispanSubsystemSchema.class);
     }
 
-    private final InfinispanSchema schema;
+    private final InfinispanSubsystemSchema schema;
 
-    public InfinispanSubsystemTestCase(InfinispanSchema schema) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, "subsystem-infinispan-%d_%d.xml", "schema/jboss-as-infinispan_%d_%d.xsd");
+    public InfinispanSubsystemTestCase(InfinispanSubsystemSchema schema) {
+        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
         this.schema = schema;
+    }
+
+    @Override
+    protected String getSubsystemXsdPathPattern() {
+        return "schema/jboss-as-%s_%d_%d.xsd";
     }
 
     @Override
@@ -71,11 +59,6 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
                 .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
                 .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
-    }
-
-    @Override
-    public void testSchemaOfSubsystemTemplates() throws Exception {
-        // Skip
     }
 
     @Override
@@ -100,7 +83,7 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest<Infinis
     protected KernelServices standardSubsystemTest(String configId, String configIdResolvedModel, boolean compareXml, AdditionalInitialization additionalInit) throws Exception {
         KernelServices services = super.standardSubsystemTest(configId, configIdResolvedModel, compareXml, additionalInit);
 
-        if (!this.schema.since(InfinispanSchema.VERSION_1_5)) {
+        if (!this.schema.since(InfinispanSubsystemSchema.VERSION_1_5)) {
             ModelNode model = services.readWholeModel();
 
             Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));

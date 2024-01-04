@@ -1,28 +1,10 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -30,11 +12,9 @@ import java.util.Set;
 
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,37 +33,25 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String DEFAULT_VIRTUAL_HOST = "default-host";
     private static final String UNDERTOW_SERVER = "undertow-server";
 
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("undertow-13.0.xml");
+    public ServerServiceTestCase() {
+        super(UndertowSubsystemSchema.VERSION_12_0);
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-undertow_13_0.xsd";
-    }
-
-    @Before
     public void setUp() {
-        setProperty();
+        super.setUp();
         System.setProperty("jboss.node.name", NODE_NAME);
     }
 
     private Server load(String xmlFile, String serverName) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(RUNTIME).setSubsystemXml(readResource(xmlFile));
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(readResource(xmlFile));
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
         final ServiceName undertowServerName = ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(serverName);
-        ServiceController<Server> serverService = (ServiceController<Server>) mainServices.getContainer().getService(undertowServerName);
-
-        assertNotNull(serverService);
-        serverService.setMode(ServiceController.Mode.ACTIVE);
-        serverService.getServiceContainer().awaitStability();
-        final Server server = serverService.getValue();
+        Server server = (Server) this.values.get(undertowServerName).get();
         assertNotNull(server);
         return server;
     }

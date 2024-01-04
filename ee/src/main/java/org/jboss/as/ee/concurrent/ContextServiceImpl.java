@@ -1,39 +1,21 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 2110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.concurrent;
 
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
-import static org.wildfly.common.Assert.checkArrayBounds;
-import static org.wildfly.common.Assert.checkNotNullParam;
+import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
-import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+import static org.wildfly.common.Assert.checkArrayBounds;
+import static org.wildfly.common.Assert.checkNotNullParam;
 
 /**
  * An extension of Jakarta EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
@@ -41,14 +23,16 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl {
 
+    private final ContextServiceTypesConfiguration contextServiceTypesConfiguration;
+
     /**
      *
      * @param name
      * @param contextSetupProvider
-     * @param transactionSetupProvider
      */
-    public ContextServiceImpl(String name, ContextSetupProvider contextSetupProvider, TransactionSetupProvider transactionSetupProvider) {
-        super(name, contextSetupProvider, transactionSetupProvider);
+    public ContextServiceImpl(String name, ContextSetupProvider contextSetupProvider, ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
+        super(name, contextSetupProvider, null);
+        this.contextServiceTypesConfiguration = contextServiceTypesConfiguration;
     }
 
     private <T> T internalCreateContextualProxy(T instance, Map<String, String> executionProperties, Class<T> intf) {
@@ -104,4 +88,9 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
         }
     }
 
+    public ContextServiceTypesConfiguration getContextServiceTypesConfiguration() {
+        return contextServiceTypesConfiguration;
+    }
+
+    // TODO *FOLLOW UP* revisit RI impl of the async methods, which quality seems to have issues (e.g. each method uses a new Managed Executor instance...)
 }

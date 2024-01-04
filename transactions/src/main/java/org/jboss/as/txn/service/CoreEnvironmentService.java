@@ -1,36 +1,22 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
- * as indicated by the @authors tag. All rights reserved.
- * See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This copyrighted material is made available to anyone wishing to use,
- * modify, copy, or redistribute it subject to the terms and conditions
- * of the GNU Lesser General Public License, v. 2.1.
- * This program is distributed in the hope that it will be useful, but WITHOUT A
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
- * You should have received a copy of the GNU Lesser General Public License,
- * v.2.1 along with this distribution; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA  02110-1301, USA.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.txn.service;
 
 import org.jboss.as.network.SocketBinding;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.utils.Process;
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+
+import java.util.function.Supplier;
 
 /**
  * An msc service for setting up the
@@ -40,11 +26,12 @@ import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     /** A dependency on a socket binding for the socket process id */
-    private final InjectedValue<SocketBinding> socketProcessBindingInjector = new InjectedValue<SocketBinding>();
+    private final Supplier<SocketBinding>  socketBindingSupplier;
     private final String nodeIdentifier;
 
-    public CoreEnvironmentService(String nodeIdentifier) {
+    public CoreEnvironmentService(final String nodeIdentifier, final Supplier<SocketBinding>  socketBindingSupplier) {
         this.nodeIdentifier = nodeIdentifier;
+        this.socketBindingSupplier = socketBindingSupplier;
     }
 
     @Override
@@ -70,7 +57,7 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
         }
 
         // Setup the socket process id if there is a binding
-        SocketBinding binding = socketProcessBindingInjector.getOptionalValue();
+        SocketBinding binding = socketBindingSupplier.get();
         if(binding != null) {
             int port = binding.getPort();
             coreEnvironmentBean.setSocketProcessIdPort(port);
@@ -79,10 +66,6 @@ public class CoreEnvironmentService implements Service<CoreEnvironmentBean> {
 
     @Override
     public void stop(StopContext context) {
-    }
-
-    public Injector<SocketBinding> getSocketProcessBindingInjector() {
-        return socketProcessBindingInjector;
     }
 
     public int getSocketProcessIdMaxPorts() {

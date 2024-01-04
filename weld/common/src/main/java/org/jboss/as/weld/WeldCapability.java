@@ -1,26 +1,13 @@
 /*
- * JBoss, Home of Professional Open Source
- *
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.weld;
 
 import java.util.function.Supplier;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.inject.Injector;
@@ -107,22 +94,4 @@ public interface WeldCapability {
      */
     void markAsWeldDeployment(DeploymentUnit unit);
 
-    /**
-     * Some Maven artifacts come with a precalculated Jandex index file. This is problematic when running in EE9
-     * preview mode since the index may reference {@code javax.} annotations, while Weld looks for {@code jakarta.}
-     * annotations. This results in the CDI beans from such jars not being found. This allows us to bypass using the
-     * cached Jandex index for the modules passed in.
-     * <p>
-     * <b>Note: </b> This method works out whether running in EE9 preview mode or not. If not running in EE9 preview mode
-     * calling this method is a noop.
-     * <p>
-     * This method is deprecated, simply because once we fully move to EE9 it will more than likely have served its purpose.
-     *
-     * @param deploymentUnit The deployment unit to attach the ignored modules to. The implementation of this method
-     *                       will associate the ignored modules with the top level deployment unit.
-     * @param moduleNames The names of the modules to ignore precalculated indexes for
-     * @deprecated
-     */
-    @Deprecated
-    void ignorePrecalculatedJandexForModules(DeploymentUnit deploymentUnit, String... moduleNames);
 }

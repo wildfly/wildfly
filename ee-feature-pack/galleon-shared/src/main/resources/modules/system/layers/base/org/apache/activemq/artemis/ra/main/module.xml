@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.ra">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.activemq:artemis-jakarta-ra}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.jms.api" />
+        <module name="jakarta.resource.api"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+        <module name="org.jboss.jts"/>
+        <!-- allow to create a RA that connects to a remote Artemis server -->
+        <module name="org.wildfly.naming-client" optional="true"/>
+        <module name="org.jgroups"/>
+        <module name="org.slf4j"/>
+        <module name="org.apache.activemq.artemis.service-extensions" services="import" export="true"/>
+        <module name="org.apache.activemq.artemis.commons"/>
+        <module name="org.wildfly.extension.messaging-activemq" services="import"/>
+    </dependencies>
+</module>

@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-security">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.security.enterprise.authentication.mechanism.http.*,jakarta.security.enterprise.identitystore"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.security.*"/>
+    </props>
+     <dependencies>
+        <layer name="cdi"/>
+        <layer name="elytron"/>
+     </dependencies>
+    <feature-group name="jacc-policy"/>
+    <feature spec="subsystem.ee-security"/>
+</layer-spec>

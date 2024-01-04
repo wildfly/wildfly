@@ -1,20 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2022 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.micrometer.jmx;
@@ -37,7 +23,6 @@ import java.util.OptionalDouble;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -47,11 +32,12 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
-import org.wildfly.extension.micrometer.metrics.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class JmxMicrometerCollector {
+    public static final String JMX_METRICS_PROPERTIES = "jmx-metrics.properties";
     private final MBeanServer mbs;
-    private WildFlyRegistry registry;
+    private final WildFlyRegistry registry;
 
     public JmxMicrometerCollector(WildFlyRegistry registry) {
         this.registry = registry;
@@ -59,20 +45,13 @@ public class JmxMicrometerCollector {
     }
 
     public void init() throws IOException {
-        register("jmx-metrics.properties", registry);
-    }
-
-    private void register(String propertiesFile, WildFlyRegistry registry) throws IOException {
-        List<JmxMetricMetadata> configs = findMetadata(propertiesFile);
+        List<JmxMetricMetadata> configs = findMetadata();
 
         // expand multi mbeans
         List<JmxMetricMetadata> expandedConfigs = new ArrayList<>();
         Iterator<JmxMetricMetadata> iterator = configs.iterator();
         while (iterator.hasNext()) {
             JmxMetricMetadata metadata =  iterator.next();
-            if (metadata.getTagsToFill().isEmpty()) {
-                continue;
-            }
             try {
                 String[] split = metadata.getMBean().split("/");
                 String query = split[0];
@@ -103,11 +82,11 @@ public class JmxMicrometerCollector {
         configs.addAll(expandedConfigs);
 
         for (JmxMetricMetadata config : configs) {
-            register(registry, config);
+            register(config);
         }
     }
 
-    void register(WildFlyRegistry registry, JmxMetricMetadata metadata) {
+    void register(JmxMetricMetadata metadata) {
         WildFlyMetric metric = new WildFlyMetric() {
             @Override
             public OptionalDouble getValue() {
@@ -121,9 +100,9 @@ public class JmxMicrometerCollector {
         registry.addMeter(metric, metadata);
     }
 
-    private List<JmxMetricMetadata> findMetadata(String propertiesFile) throws IOException {
+    private List<JmxMetricMetadata> findMetadata() throws IOException {
         try (
-                InputStream propertiesResource = getResource(propertiesFile)) {
+                InputStream propertiesResource = getResource()) {
             if (propertiesResource == null) {
                 return Collections.emptyList();
             }
@@ -144,14 +123,14 @@ public class JmxMicrometerCollector {
         return parsedMetrics.entrySet()
                 .stream()
                 .map(this::metadataOf)
-                .sorted(Comparator.comparing(e -> e.getMetricName()))
+                .sorted(Comparator.comparing(JmxMetricMetadata::getMetricName))
                 .collect(Collectors.toList());
     }
 
-    private InputStream getResource(String location) {
-        InputStream is = getClass().getResourceAsStream(location);
+    private InputStream getResource() {
+        InputStream is = getClass().getResourceAsStream(JMX_METRICS_PROPERTIES);
         if (is == null) {
-            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
+            is = Thread.currentThread().getContextClassLoader().getResourceAsStream(JMX_METRICS_PROPERTIES);
         }
         return is;
     }
@@ -169,15 +148,13 @@ public class JmxMicrometerCollector {
 
         final MeasurementUnit unit = (entryProperties.get("unit") == null) ? NONE : MeasurementUnit.valueOf(entryProperties.get("unit").toUpperCase());
 
-        JmxMetricMetadata metadata = new JmxMetricMetadata(name,
+        return new JmxMetricMetadata(name,
                 entryProperties.get("description"),
                 unit,
                 MetricMetadata.Type.valueOf(entryProperties.get("type").toUpperCase()),
                 entryProperties.get("mbean"),
                 tagsToFill,
                 Collections.emptyList());
-
-        return metadata;
     }
 
     private static class MetricProperty {

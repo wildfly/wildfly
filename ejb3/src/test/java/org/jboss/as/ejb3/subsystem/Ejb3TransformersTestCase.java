@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.ejb3.subsystem;
 
 import static org.jboss.as.controller.capability.RuntimeCapability.buildDynamicCapabilityName;
@@ -31,7 +36,7 @@ import org.junit.Assert;
  * @author Richard Achmatowicz (c) 2015 Red Hat Inc.
  * @author Richard Achmatowicz (c) 2020 Red Hat Inc.
  *
- * NOTE: References in this file to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+ * NOTE: References in this file to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
  */
 public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 

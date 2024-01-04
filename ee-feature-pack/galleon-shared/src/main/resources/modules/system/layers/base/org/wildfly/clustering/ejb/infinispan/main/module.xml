@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.ejb.infinispan">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <exports>
+        <exclude path="org/wildfly/clustering/ejb/infinispan/logging"/>
+    </exports>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-ejb-infinispan}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.transaction.api"/>
+
+        <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.ejb-client"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.clustering.context"/>
+        <module name="org.wildfly.clustering.ee.cache" services="import"/>
+        <module name="org.wildfly.clustering.ee.infinispan" services="import"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.ejb.cache"/>
+        <module name="org.wildfly.clustering.ejb.client"/>
+        <module name="org.wildfly.clustering.ejb.spi"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.service"/>
+        <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
+        <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.server.api"/>
+        <!-- Make sure galleon includes this module -->
+        <module name="org.wildfly.clustering.server.infinispan" optional="true"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.security.elytron-private"/>
+    </dependencies>
+</module>

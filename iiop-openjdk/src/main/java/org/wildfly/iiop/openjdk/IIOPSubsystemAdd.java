@@ -1,27 +1,11 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.iiop.openjdk;
 
+import static org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.wildfly.iiop.openjdk.logging.IIOPLogger.ROOT_LOGGER;
 import static org.wildfly.iiop.openjdk.Capabilities.IIOP_CAPABILITY;
 import static org.wildfly.iiop.openjdk.Capabilities.LEGACY_SECURITY;
@@ -31,12 +15,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
 import com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -47,6 +35,7 @@ import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -54,13 +43,13 @@ import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.omg.CORBA.ORB;
 import org.omg.PortableServer.IdAssignmentPolicyValue;
 import org.omg.PortableServer.LifespanPolicyValue;
 import org.omg.PortableServer.POA;
+import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.csiv2.CSIV2IORToSocketInfo;
 import org.wildfly.iiop.openjdk.csiv2.ElytronSASClientInterceptor;
 import org.wildfly.iiop.openjdk.deployment.IIOPClearCachesProcessor;
@@ -130,7 +119,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (IIOPExtension.SUBSYSTEM_NAME.equals(context.getCurrentAddressValue())) {
             ModelNode model = resource.getModel();
             String security = IIOPRootDefinition.SECURITY.resolveModelAttribute(context, model).asStringOrNull();
-            if (SecurityAllowedValues.IDENTITY.toString().equals(security)) {
+            if (SecurityAllowedValues.IDENTITY.toString().equals(security) || SecurityAllowedValues.CLIENT.toString().equals(security)) {
                 context.registerAdditionalCapabilityRequirement(LEGACY_SECURITY, IIOP_CAPABILITY, Constants.ORB_INIT_SECURITY);
             }
         }
@@ -180,9 +169,12 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean sslConfigured = this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
-        CorbaORBService orbService = new CorbaORBService(props);
-        final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
-        org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector());
+        final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(org.wildfly.iiop.openjdk.IIOPRootDefinition.IIOP_CAPABILITY);
+        final Consumer<ORB> serviceConsumer = builder.provides(org.wildfly.iiop.openjdk.IIOPRootDefinition.IIOP_CAPABILITY, CorbaORBService.SERVICE_NAME);
+        Supplier<ExecutorService> executorServiceSupplier = Services.requireServerExecutor(builder);
+        Supplier<SocketBinding> iiopSocketBindingSupplier = Functions.constantSupplier(null);
+        Supplier<SocketBinding> iiopSSLSocketBindingSupplier = Functions.constantSupplier(null);
+
 
         // if a security domain has been specified, add a dependency to the domain service.
         String securityDomain = props.getProperty(Constants.SECURITY_SECURITY_DOMAIN);
@@ -215,8 +207,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         String socketBinding = props.getProperty(Constants.ORB_SOCKET_BINDING);
         if (socketBinding != null) {
             if (!serverRequiresSsl) {
-                builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
-                        orbService.getIIOPSocketBindingInjector());
+                iiopSocketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, socketBinding);
             } else {
                 IIOPLogger.ROOT_LOGGER.wontUseCleartextSocket();
             }
@@ -225,8 +216,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         String sslSocketBinding = props.getProperty(Constants.ORB_SSL_SOCKET_BINDING);
         if(sslSocketBinding != null) {
-            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
-                    orbService.getIIOPSSLSocketBindingInjector());
+            iiopSSLSocketBindingSupplier = builder.requiresCapability(SOCKET_BINDING_CAPABILITY_NAME, SocketBinding.class, sslSocketBinding);
         }
 
         // create the IOR security config metadata service.
@@ -239,8 +229,13 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         builder.requires(IORSecConfigMetaDataService.SERVICE_NAME);
 
+        builder.setInitialMode(ServiceController.Mode.ACTIVE);
+
+        CorbaORBService orbService = new CorbaORBService(props, serviceConsumer, executorServiceSupplier, iiopSocketBindingSupplier, iiopSSLSocketBindingSupplier);
+
+        builder.setInstance(orbService);
         // set the initial mode and install the service.
-        builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        builder.install();
 
         // create the service the initializes the Root POA.
         CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa", serverRequiresSsl);
@@ -292,7 +287,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected Properties getConfigurationProperties(OperationContext context, ModelNode model) throws OperationFailedException {
         Properties properties = new Properties();
 
-        for (AttributeDefinition attrDefinition : IIOPRootDefinition.INSTANCE.getAttributes()) {
+        for (AttributeDefinition attrDefinition : IIOPRootDefinition.ALL_ATTRIBUTES) {
             if(attrDefinition instanceof PropertiesAttributeDefinition){
                 ModelNode resolvedModelAttribute = attrDefinition.resolveModelAttribute(context, model);
                 if(resolvedModelAttribute.isDefined()) {

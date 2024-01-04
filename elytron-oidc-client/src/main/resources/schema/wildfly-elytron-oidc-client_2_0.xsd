@@ -1,0 +1,1315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:wildfly:elytron-oidc-client:2.0"
+            xmlns="urn:wildfly:elytron-oidc-client:2.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.0">
+
+    <!-- The subsystem root element -->
+    <xs:element name="subsystem" type="subsystem-type"/>
+
+    <xs:complexType name="subsystem-type">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="realm" maxOccurs="unbounded" minOccurs="0" type="realm-type">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Configuration for a Keycloak realm. If you have multiple deployments secured by the same
+                        realm you can share the realm configuration here.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider" maxOccurs="unbounded" minOccurs="0" type="provider-type">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Configuration for an OpenID Connect provider. If you have multiple deployments secured by
+                        the same OpenID provider you can share the provider configuration here.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="secure-deployment" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        A deployment secured by an OpenID Connect provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="secure-server" maxOccurs="unbounded" minOccurs="0" type="secure-deployment-type">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Configuration used to secure the management console using Keycloak.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="realm-type">
+        <xs:all>
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value
+                        of the 'Access-Control-Allow-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client keystore. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when communicating with Keycloak over HTTPS. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the truststore to use when communicating with Keycloak over HTTPS.
+                        Prefix the path with 'classpath:' to obtain the truststore from the deployment's classpath.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the truststore.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Enable the Keycloak Cross-Origin Resource Sharing (CORS) support. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', hostname verification will be skipped when communicating with Keycloak
+                        over HTTPS. This can be useful in testing environments.
+
+                        This should never be set to 'true' in production environments as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The connection pool size to use when communicating with Keycloak.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Max-Age' header. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="auth-server-url" type="xs:string" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The base URL of the Keycloak authorization server. It is recommended to use the 'provider-url' instead.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', an authenticated browser client can obtain the signed access token
+                        (through a Javascript HTTP invocation) via the URL 'root/k_query_bearer_token'. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether or not to make use of a trust manager when communicating with Keycloak over HTTPS. This is optional.
+
+                        This should be set to 'true' only during development and never in production as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether the communication with Keycloak should be over HTTPS. Valid values are:
+
+                        'all' - to always require HTTPS,
+                        'external' - to only require HTTPS for external requests,
+                        'none' - if HTTPS is not required.
+
+                        This should be set to 'all' in production environments.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The confidential port used by Keycloak when communicating securely over SSL/TLS.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Allow-Methods' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Expose-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The public key of the Keycloak realm in PEM format. This is optional. It is not recommended to set it.
+
+                        If the public key is not set, the subsystem downloads the public key from Keycloak when needed.
+                        If the public key is set, the subsystem never downloads new keys from Keycloak, breaking the subsystem when Keycloak rotates its keys.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem refreshes the token every time your application receives
+                        a web request, and a new request is sent to Keycloak to obtain a new access token.
+
+                        This can result in a higher load on the Keycloak and may impact the performance of the application.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem sends a registration request to Keycloak.
+                        This attribute is useful only when your application is clustered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If 'register-node-at-startup' is set to 'true', this specifies the frequency (in seconds) at which the node should be re-registered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Defines whether to store account information in an HTTP session or in a cookie.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Indicates which value from the ID token to use as the principal for the identity.
+                        The principal defaults to the value of the 'sub' if the token attribute is null.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether to auto-detect SOAP or REST clients based on headers like 'X-Requested-With',
+                        'SOAPAction' or 'Accept'.
+
+                        If set to 'true', the subsystem sends an HTTP 401 status code to unauthenticated SOAP or REST clients
+                        instead of redirecting them to the Keycloak login page.
+
+                        Set the value to 'true' if your application serves both applications and web services.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Disable query parameter parsing for the 'access_token'. Users will not be able to authenticate if they only pass in an 'access_token'.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The URL for the HTTP proxy if one is used.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', then during bearer-only authentication, the subsystem verifies if the token
+                        contains the client name defined as an audience. It is recommended to set to 'true' for improved security.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for the socket waiting for data after establishing the connection in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The amount of time in milliseconds for the connection to be kept alive.
+                        A value less than or equal to zero is interpreted as an infinite value.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for establishing a connection with the remote host in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The token signature algorithm used by Keycloak.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the Keycloak realm.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="provider-type">
+        <xs:all>
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Allow-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client keystore. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when communicating with the OpenID provider over HTTPS. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the truststore to use when communicating with Keycloak over HTTPS.
+                        Prefix the path with 'classpath:' to obtain the truststore from the deployment's classpath.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the truststore.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Enable the Keycloak Cross-Origin Resource Sharing (CORS) support. This is optional. This is Keycloak-specific.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', hostname verification is skipped when communicating with the OpenID provider
+                        over HTTPS. This can be useful in testing environments.
+
+                        This should never be set to 'true' in production environments as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The connection pool size to use when communicating with the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Max-Age' header. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider-url" type="xs:string" minOccurs="1" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The OpenID provider URL.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', an authenticated browser client can obtain the signed access token
+                        (through a Javascript HTTP invocation) via the URL 'root/k_query_bearer_token'. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether or not to make use of a trust manager when communicating with the OpenID provider over HTTPS. This is optional.
+
+                        This should be set to 'true' only during development and never in production as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether the communication with the OpenID provider should be over HTTPS. Valid values are:
+
+                        'all' - to always require HTTPS,
+                        'external' - to only require HTTPS for external requests,
+                        'none' - if HTTPS is not required.
+
+                        This should be set to 'all' in production environments.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The confidential port used by the OpenID provider when communicating securely over SSL/TLS.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Allow-Methods' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Expose-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The public key of the OpenID provider in PEM format. This is optional. It is not recommended to set it.
+
+                        If the public key is not set, the subsystem downloads the public key from the OpenID provider when needed.
+                        If the public key is set, the subsystem never downloads new keys from the OpenID provider, breaking the subsystem when the OpenID provider rotates its keys.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem refreshes the token every time your application receives
+                        a web request, and a new request is sent to the OpenID provider to obtain a new access token.
+
+                        This can result in a higher load on the OpenID provider and may impact the performance of the application.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem sends a registration request to the OpenID provider.
+                        This attribute is useful only when your application is clustered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If 'register-node-at-startup' is set to 'true', this specifies the frequency (in seconds) at which the node should be re-registered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Defines whether to store account information in an HTTP session or in a cookie.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Indicates which value from the ID token to use as the principal for the identity.
+                        The principal defaults to the value of the 'sub' if the token attribute is null.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether to auto-detect SOAP or REST clients based on headers like 'X-Requested-With',
+                        'SOAPAction' or 'Accept'.
+
+                        If set to 'true', the subsystem sends an HTTP 401 status code to unauthenticated SOAP or REST clients
+                        instead of redirecting them to the OpenID provider login page.
+
+                        Set the value to 'true' if your application serves both applications and web services.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Disable query parameter parsing for the 'access_token'. Users will not be able to authenticate if they only pass in an 'access_token'.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The URL for the HTTP proxy if one is used.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', then during bearer-only authentication, the subsystem verifies if the token
+                        contains the client name defined as an audience. It is recommended to set the value to 'true' for improved security.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for the socket waiting for data after establishing the connection in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The amount of time in milliseconds for the connection to be kept alive.
+                        A value less than or equal to zero is interpreted as an infinite value.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for establishing a connection with the remote host in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the OpenID provider.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="secure-deployment-type">
+        <xs:all>
+            <xs:element name="client-keystore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client keystore. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-keystore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the client keystore to use when communicating with the OpenID provider over HTTPS. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="enable-cors" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Enable the Keycloak Cross-Origin Resource Sharing (CORS) support. This is optional. This is Keycloak-specific.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="allow-any-hostname" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', hostname verification is skipped when communicating with the OpenID provider
+                        over HTTPS. This can be useful in testing environments.
+
+                        This should never be set to 'true' in production environments as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="use-resource-role-mappings" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem will look inside the token for application-level role mappings for a user.
+                        If set to 'false', the subsystem will look at the realm-level for user-role mappings. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-max-age" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Max-Age' header. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="auth-server-url" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The base URL of the Keycloak authorization server. This is Keycloak-specific. It is recommended to use 'provider-url' instead.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider-url" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The OpenID provider URL.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="realm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The Keycloak realm to use for authentication.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="provider" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The OpenID Connect provider to use for authentication.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="disable-trust-manager" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether or not to make use of a trust manager when communicating with the OpenID provider
+                        over HTTPS. This is optional.
+
+                        This should be set to 'true' only during development and never in production as it disables verification of SSL certificates.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-allowed-methods" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Allow-Methods' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Enable Bearer-Token only authentication. Set this to 'true' if your application serves only web services and does not authenticate users.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-allowed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Allow-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cors-exposed-headers" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If Cross-Origin Resource Sharing (CORS) is enabled, this sets the value of the
+                        'Access-Control-Expose-Headers' header. This should be a comma-separated string.
+                        This is optional. If not set, this header is not returned in CORS responses.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="resource" type="xs:string" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The unique, legacy identifier for a client application registered in the OpenID provider.
+                        It is recommended to use the 'client-id'.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-id" type="xs:string" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The unique identifier for a client application registered in the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The path to the truststore to use when communicating with Keycloak over HTTPS.
+                        Prefix the path with 'classpath:' to obtain the truststore from the deployment's classpath.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="truststore-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the truststore.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="client-key-password" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The password for the client key. This is required if 'client-keystore' has been specified.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="public-client" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', no client credentials are sent when communicating with the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-pool-size" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The connection pool size to use when communicating with the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="expose-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', an authenticated browser client can obtain the signed access token
+                        (through a Javascript HTTP invocation) via the URL 'root/k_query_bearer_token'. This is optional.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ssl-required" type="xs:string" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether the communication with the OpenID provider should be over HTTPS. Valid values are:
+
+                        'all' - to always require HTTPS,
+                        'external' - to only require HTTPS for external requests,
+                        'none' - if HTTPS is not required.
+
+                        This should be set to 'all' in production environments.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="confidential-port" type="xs:integer" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The confidential port used by the OpenID provider when communicating securely over SSL/TLS.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="realm-public-key" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The public key of the OpenID provider in PEM format. This is optional. It is not recommended to set it.
+
+                        If the public key is not set, the subsystem downloads the public key from the OpenID provider when needed.
+                        If the public key is set, the subsystem never downloads new keys from the OpenID provider, breaking the subsystem when the OpenID provider rotates its keys.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="credential" type="credential-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The credential used to communicate with the OpenID Connect provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="redirect-rewrite-rule" type="redirect-rewrite-rule-type" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The rewrite rule for the redirect URI. The rewrite rule is an object notation, where the key is
+                        a regular expression with which the redirect URI is matched and the value is the replacement String.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="always-refresh-token" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem refreshes the token every time your application receives
+                        a web request, and a new request is sent to the OpenID provider to obtain a new access token.
+
+                        This can result in a higher load on the OpenID provider and may impact the performance of the application.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-at-startup" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', the subsystem sends a registration request to the OpenID provider.
+                        This attribute is useful only when your application is clustered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="register-node-period" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If 'register-node-at-startup' is set to 'true', this specifies the frequency (in seconds) at which the node should be re-registered.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-store" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Defines whether to store account information in an HTTP session or in a cookie.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="principal-attribute" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Indicates which value from the ID token to use as the principal for the identity.
+                        The principal defaults to the value of the 'sub' if the token attribute is null.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="enable-basic-auth" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Enable Basic authentication. This is not supported in the current release.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="turn-off-change-session-id-on-login" type="xs:boolean" minOccurs="0" maxOccurs="1" >
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The Session ID is changed by default on a successful login. Set this to 'true' if you want to turn this off.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-minimum-time-to-live" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        he subsystem will refresh the token if it will expire within the duration specified in
+                        'token-minimum-time-to-live' seconds. This value should never exceed the access token lifespan.
+                        If the value is set to 0 seconds, the subsystem will refresh the token only if the token has expired.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="min-time-between-jwks-requests" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If the subsystem recognizes a token signed by an unknown public key, it will try to download
+                        a new public key from the server. The subsystem won't try to download a public key if it already tried
+                        last in less than 'min-time-between-jwks-requests' seconds.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="public-key-cache-ttl" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The maximum interval between two requests to retrieve new public keys in seconds.
+                        New public keys are downloaded when the subsystem recognizes a token signed by an unknown public key.
+                        Even if the token's key is already known, new public keys are downloaded periodically as per the interval set here at least once.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="autodetect-bearer-only" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Whether to auto-detect SOAP or REST clients based on headers like 'X-Requested-With',
+                        'SOAPAction' or 'Accept'.
+
+                        If set to 'true', the subsystem sends an HTTP 401 status code to unauthenticated SOAP or REST clients
+                        instead of redirecting them to the OpenID provider login page.
+
+                        Set the value to 'true' if your application serves both applications and web services.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ignore-oauth-query-parameter" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Disable query parameter parsing for the 'access_token'. Users will not be able to authenticate if they only pass in an 'access_token'.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="proxy-url" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The URL for the HTTP proxy if one is used.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="verify-token-audience" type="xs:boolean" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set to 'true', then during bearer-only authentication, the subsystem verifies if the token
+                        contains the client name defined as an audience. It is recommended to set the value to 'true' for improved security.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="adapter-state-cookie-path" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If set, this defines the path used in cookies set by the subsystem.
+                        This is useful when deploying an application in the root context path.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="socket-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for the socket waiting for data after establishing the connection in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-ttl-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The amount of time in milliseconds for the connection to be kept alive.
+                        A value less than or equal to zero is interpreted as an infinite value.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-timeout-millis" type="xs:long" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The timeout for establishing a connection with the remote host in milliseconds.
+                        A timeout value of zero is interpreted as an infinite timeout, and a negative value is interpreted as undefined.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="token-signature-algorithm" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        The token signature algorithm used by the OpenID provider.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the realm.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="credential-type">
+        <xs:attribute name="client-keystore-file" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The path to the client keystore when the credential provider is used. This is optional.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="client-keystore-type" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The client keystore type when the credential provider is used.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="client-keystore-password" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The password for the client keystore when the credential provider is used.
+                    This is required if 'client-keystore-file' has been specified.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="client-key-password" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The password for the client key when the credential provider is used.
+                    This is required if 'client-keystore-file' has been specified.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="client-key-alias" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The client key alias when the credential provider is used.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="token-timeout" type="xs:int">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The amount of time after which the token expires and can no longer be used to authenticate requests.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="secret" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The client secret that was registered with the OpenID provider.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="algorithm" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The credential signature algorithm used by the OpenID provider.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the credential type.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="redirect-rewrite-rule-type">
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the Redirect URI rewrite rule.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="replacement" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The replacement String in the rewrite rule for the redirect URI.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>

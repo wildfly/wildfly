@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.tools.common">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.ws:jbossws-common-tools}"/>
+    </resources>
+
+    <dependencies>
+        <module name="gnu.getopt"/>
+        <module name="org.jboss.as.webservices.server.integration" services="import">
+          <imports>
+            <include path="META-INF"/>
+            <include path="META-INF/cxf"/>
+          </imports>
+        </module>
+    </dependencies>
+</module>

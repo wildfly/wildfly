@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.weld.deployment.processors;
 
 import static org.jboss.as.weld.discovery.AnnotationType.FOR_CLASSINFO;
@@ -34,6 +39,7 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
 
     private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("jakarta.faces.view.ViewScoped");
     private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("jakarta.faces.flow.FlowScoped");
+    private static final DotName CLIENT_WINDOW_SCOPED = DotName.createSimple("jakarta.faces.lifecycle.ClientWindowScoped");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -52,6 +58,7 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
         addAnnotation(deploymentUnit, new AnnotationType(TransactionScoped.class));
         addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
+        addAnnotation(deploymentUnit, new AnnotationType(CLIENT_WINDOW_SCOPED, true));
 
         for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
             addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));

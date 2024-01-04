@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="domain-interfaces" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="core-domain-interfaces"/>
+    <feature spec="domain.interface">
+        <param name="interface" value="private"/>
+    </feature>
+
+</feature-group-spec>

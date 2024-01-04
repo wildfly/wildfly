@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jsf.subsystem;
@@ -29,7 +12,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.jsf.logging.JSFLogger;
 
@@ -51,25 +35,16 @@ public class JSFExtension implements Extension {
 
     static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-
-    private static final String RESOURCE_NAME = JSFExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, JSFExtension.class);
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 1, 0);
-
-    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-        for (String kp : keyPrefix) {
-            prefix.append('.').append(kp);
-        }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JSFExtension.class.getClassLoader(), true, false);
-    }
 
     /** {@inheritDoc} */
     @Override
     public void initialize(final ExtensionContext context) {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerSubsystemModel(JSFResourceDefinition.INSTANCE);
+        subsystem.registerSubsystemModel(new JSFResourceDefinition());
         subsystem.registerXMLElementWriter(JSFSubsystemParser_1_1.INSTANCE);
     }
 
@@ -87,7 +62,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_0)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_0)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .build();
         }
@@ -104,7 +79,7 @@ public class JSFExtension implements Extension {
         private static final PersistentResourceXMLDescription xmlDescription;
 
         static {
-            xmlDescription = builder(JSFResourceDefinition.INSTANCE.getPathElement(), NAMESPACE_1_1)
+            xmlDescription = builder(PATH_SUBSYSTEM, NAMESPACE_1_1)
                     .addAttributes(JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT)
                     .addAttributes(JSFResourceDefinition.DISALLOW_DOCTYPE_DECL)
                     .build();

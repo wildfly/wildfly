@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.commons.digester">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="commons-digester-${version.commons-digester}.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.xml"/>
+        <module name="org.apache.commons.collections"/>
+        <module name="org.apache.commons.logging"/>
+        <module name="org.apache.commons.beanutils"/>
+    </dependencies>
+</module>

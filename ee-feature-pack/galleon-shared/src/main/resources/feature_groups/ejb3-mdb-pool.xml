@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="ejb3-mdb-pool" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
+            <param name="strict-max-bean-instance-pool" value="mdb-strict-max-pool"/>
+            <param name="derive-size" value="from-cpu-count"/>
+            <param name="timeout" value="5"/>
+            <param name="timeout-unit" value="MINUTES"/>
+        </feature>
+    </feature>
+</feature-group-spec>

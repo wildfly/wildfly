@@ -1,17 +1,6 @@
 /*
- * Copyright 2019 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.undertow;
 
@@ -51,6 +40,7 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG);
     private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(
             Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, EventLoggerService.class)
             .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
@@ -74,12 +64,9 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
             AccessLogDefinition.PREDICATE,
             METADATA
     );
-    static final ConsoleAccessLogDefinition INSTANCE = new ConsoleAccessLogDefinition();
 
-
-    private ConsoleAccessLogDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG),
-                UndertowExtension.getResolver(Constants.CONSOLE_ACCESS_LOG))
+    ConsoleAccessLogDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AddHandler.INSTANCE)
                 .setRemoveHandler(RemoveHandler.INSTANCE)
                 .addCapabilities(CONSOLE_ACCESS_LOG_CAPABILITY)

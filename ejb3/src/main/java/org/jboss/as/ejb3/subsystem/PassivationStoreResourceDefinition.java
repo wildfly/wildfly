@@ -1,4 +1,9 @@
 /*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -76,7 +81,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
     PassivationStoreResourceDefinition() {
         super(new Parameters(PathElement.pathElement(EJB3SubsystemModel.PASSIVATION_STORE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.PASSIVATION_STORE))
                 .setAddHandler(ADD_HANDLER)
-                .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER, PASSIVATION_STORE_CAPABILITY))
+                .setRemoveHandler(new PassivationStoreRemove(ADD_HANDLER))
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setCapabilities(PASSIVATION_STORE_CAPABILITY));
         this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());

@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- WARNING. This layer is for internal use only and is not expected to be provisioned directly.
+ It aggregates a set of Galleon layers that are shared between default standalone configurations. -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="internal-standalone-profile">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="hidden"/>
+    </props>
+    <dependencies>
+        <layer name="jaxrs-server"/>
+        <layer name="ee-security" optional="true"/>
+        <layer name="metrics" optional="true"/>
+        <layer name="health" optional="true"/>
+
+        <layer name="h2-default-datasource" optional="true"/>
+        <layer name="elytron-oidc-client" optional="true"/>
+        <layer name="ejb" optional="true"/>
+        <layer name="ejb-http-invoker" optional="true"/>
+        <layer name="resource-adapters" optional="true"/>
+        <layer name="remoting" optional="true"/>
+                        
+        <layer name="web-passivation" optional="true"/>
+        <layer name="undertow-https" optional="true"/>
+        <layer name="jdr" optional="true"/>
+        <layer name="jsf" optional="true"/>
+        <layer name="webservices" optional="true"/>
+        <layer name="pojo" optional="true"/>
+        <layer name="mail" optional="true"/>
+        <layer name="sar" optional="true"/>
+        <layer name="batch-jberet" optional="true"/>
+        
+        <layer name="hibernate-search" optional="true"/>
+        <layer name="web-console" optional="true"/>
+    </dependencies>
+</layer-spec>

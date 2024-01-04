@@ -1,5 +1,16 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.iiop.basic;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.rmi.RemoteException;
 
 import jakarta.ejb.EJBMetaData;
@@ -33,21 +44,22 @@ public class ClientEjb {
     }
 
 
-    public String getRemoteViaHandleMessage() throws RemoteException {
+    public String getRemoteViaHandleMessage() throws RemoteException, IOException, ClassNotFoundException {
 
         final IIOPBasicRemote object = home.create();
-        final Handle handle = object.getHandle();
+        final Handle handle = serializeAndDeserialize(object.getHandle());
         final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
         return newObject.hello();
     }
 
-    public String getRemoteViaWrappedHandle() throws RemoteException {
+    public String getRemoteViaWrappedHandle() throws RemoteException, IOException, ClassNotFoundException {
 
         final IIOPBasicRemote object = home.create();
-        final Handle handle = object.wrappedHandle().getHandle();
+        final Handle handle = serializeAndDeserialize(object.wrappedHandle().getHandle());
         Assert.assertEquals(HandleImplIIOP.class, handle.getClass());
         final IIOPBasicRemote newObject = (IIOPBasicRemote) PortableRemoteObject.narrow(handle.getEJBObject(), IIOPBasicRemote.class);
         return newObject.hello();
+
     }
 
     public String getRemoteMessageViaEjbMetadata() throws RemoteException {
@@ -69,5 +81,22 @@ public class ClientEjb {
         final IIOPBasicRemote s2 = home.create();
         Assert.assertTrue(s1.isIdentical(s1));
         Assert.assertTrue(s1.isIdentical(s2));
+    }
+
+    private static <T extends Serializable> T serializeAndDeserialize(T o) throws IOException, ClassNotFoundException {
+        //serialize
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(o);
+        oos.close();
+
+        //.. and deserialize hande
+        ByteArrayInputStream fileInputStream
+                = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream objectInputStream
+                = new ObjectInputStream(fileInputStream);
+        T result = (T) objectInputStream.readObject();
+        objectInputStream.close();
+        return result;
     }
 }

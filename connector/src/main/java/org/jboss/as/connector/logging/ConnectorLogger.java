@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.logging;
@@ -31,6 +14,7 @@ import java.sql.Driver;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -681,8 +665,8 @@ public interface ConnectorLogger extends BasicLogger {
      * @param moduleName the module name.
      * @return the message.
      */
-    @Message(id = 73, value = "Failed to load module for RA [%s]")
-    String failedToLoadModuleRA(String moduleName);
+    @Message(id = 73, value = "Failed to load module for RA [%s] Cause: %s")
+    String failedToLoadModuleRA(String moduleName, String cause);
 
     /**
      * Creates an exception indicating a method is undefined.
@@ -977,4 +961,16 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 130, value = "Report directory %s does not exist")
     OperationFailedException reportDirectoryDoesNotExist(String reportDirectory);
+
+    @Message(id = 131, value = "Legacy security attribute %s is no longer supported. Please use Elytron configuration instead")
+    OperationFailedException legacySecurityAttributeNotSupported(String attribute);
+
+    @Message(id = 132, value = "Legacy security is no longer supported. Please use Elytron configuration instead")
+    String legacySecurityNotSupported();
+
+    @Message(id = 133, value = "Authorization failed")
+    SecurityException authorizationFailed();
+
+    @Message(id = 134, value = "name attribute is mandatory for workmanager element")
+    XMLStreamException nameAttributeIsMandatory();
 }

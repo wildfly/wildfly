@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.xnio.netty.netty-xnio-transport">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.xnio.netty:netty-xnio-transport}"/>
+    </resources>
+
+    <dependencies>
+        <!--<module name="io.netty"/>-->
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-handler-proxy"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-socks"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
+        <module name="io.netty.netty-codec-http"/>
+        <module name="org.jboss.xnio"/>
+        <module name="org.jboss.xnio.nio"/>
+    </dependencies>
+</module>

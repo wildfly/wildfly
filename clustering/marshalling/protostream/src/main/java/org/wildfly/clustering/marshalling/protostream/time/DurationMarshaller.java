@@ -1,30 +1,17 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.time;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.Set;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -38,8 +25,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * </ol>
  * @author Paul Ferraro
  */
-public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration> {
+public enum DurationMarshaller implements FieldSetMarshaller.Simple<Duration> {
     INSTANCE;
+
+    private static final int NANOS_PER_MILLI = ChronoUnit.MILLIS.getDuration().getNano();
+    private static final Set<ChronoUnit> SUPER_SECOND_UNITS = EnumSet.of(ChronoUnit.SECONDS, ChronoUnit.MINUTES, ChronoUnit.HOURS, ChronoUnit.HALF_DAYS, ChronoUnit.DAYS);
+    private static final Set<ChronoUnit> SUB_MILLSECOND_UNITS = EnumSet.of(ChronoUnit.NANOS, ChronoUnit.MICROS);
 
     private static final int POSITIVE_SECONDS_INDEX = 0;
     private static final int NEGATIVE_SECONDS_INDEX = 1;
@@ -48,7 +39,7 @@ public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration>
     private static final int FIELDS = 4;
 
     @Override
-    public Duration getBuilder() {
+    public Duration createInitialValue() {
         return Duration.ZERO;
     }
 
@@ -58,37 +49,57 @@ public enum DurationMarshaller implements FieldSetMarshaller<Duration, Duration>
     }
 
     @Override
-    public Duration readField(ProtoStreamReader reader, int index, Duration duration) throws IOException {
+    public Duration readFrom(ProtoStreamReader reader, int index, WireType type, Duration duration) throws IOException {
         switch (index) {
             case POSITIVE_SECONDS_INDEX:
-                return duration.withSeconds(reader.readUInt64());
+                long seconds = reader.readUInt64();
+                if (duration.isZero()) {
+                    for (ChronoUnit unit : SUPER_SECOND_UNITS) {
+                        Duration unitDuration = unit.getDuration();
+                        if (unitDuration.getSeconds() == seconds) {
+                            return unitDuration;
+                        }
+                    }
+                }
+                return duration.withSeconds(seconds);
             case NEGATIVE_SECONDS_INDEX:
                 return duration.withSeconds(0 - reader.readUInt64());
             case MILLIS_INDEX:
-                return duration.withNanos(reader.readUInt32() * 1_000_000);
+                int millis = reader.readUInt32();
+                return (duration.isZero() && (millis == 1)) ? ChronoUnit.MILLIS.getDuration() : duration.withNanos(millis * NANOS_PER_MILLI);
             case NANOS_INDEX:
-                return duration.withNanos(reader.readUInt32());
+                int nanos = reader.readUInt32();
+                if (duration.isZero()) {
+                    for (ChronoUnit unit : SUB_MILLSECOND_UNITS) {
+                        Duration unitDuration = unit.getDuration();
+                        if (unitDuration.getNano() == nanos) {
+                            return unitDuration;
+                        }
+                    }
+                }
+                return duration.withNanos(nanos);
             default:
+                reader.skipField(type);
                 return duration;
         }
     }
 
     @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, Duration duration) throws IOException {
+    public void writeTo(ProtoStreamWriter writer, Duration duration) throws IOException {
         long seconds = duration.getSeconds();
         // Optimize for positive values
         if (seconds > 0) {
-            writer.writeUInt64(startIndex + POSITIVE_SECONDS_INDEX, seconds);
+            writer.writeUInt64(POSITIVE_SECONDS_INDEX, seconds);
         } else if (seconds < 0) {
-            writer.writeUInt64(startIndex + NEGATIVE_SECONDS_INDEX, 0 - seconds);
+            writer.writeUInt64(NEGATIVE_SECONDS_INDEX, 0 - seconds);
         }
         int nanos = duration.getNano();
         if (nanos > 0) {
             // Optimize for ms precision, if possible
-            if (nanos % 1_000_000 == 0) {
-                writer.writeUInt32(startIndex + MILLIS_INDEX, nanos / 1_000_000);
+            if (nanos % NANOS_PER_MILLI == 0) {
+                writer.writeUInt32(MILLIS_INDEX, nanos / NANOS_PER_MILLI);
             } else {
-                writer.writeUInt32(startIndex + NANOS_INDEX, nanos);
+                writer.writeUInt32(NANOS_INDEX, nanos);
             }
         }
     }

@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="servlet">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="jakarta.servlet.annotation,jakarta.websocket.*"/>
+        <prop name="org.wildfly.rule.xml-path" value="/WEB-INF/web.xml,/web-app/servlet"/>
+        <prop name="org.wildfly.rule.class" value="jakarta.servlet.*,jakarta.websocket.*"/>
+    </props>
+    <dependencies>
+        <layer name="ee-integration"/>
+        <layer name="naming"/>
+        <layer name="undertow"/>
+        <layer name="deployment-scanner" optional="true"/>
+    </dependencies>
+    <feature-group name="undertow-servlet"/>
+</layer-spec>

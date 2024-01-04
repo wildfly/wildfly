@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.microprofile.config">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+    <resources>
+        <artifact name="${org.jboss.resteasy.microprofile:microprofile-config}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.ws.rs.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.jboss.resteasy.resteasy-core" services="import"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
+    </dependencies>
+</module>

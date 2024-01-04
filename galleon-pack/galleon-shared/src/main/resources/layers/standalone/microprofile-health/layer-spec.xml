@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="microprofile-health">
+    <props>
+        <prop name="org.wildfly.rule.annotations" value="org.eclipse.microprofile.health"/>
+        <prop name="org.wildfly.rule.class" value="org.eclipse.microprofile.health.*"/> 
+    </props>
+    <dependencies>
+        <layer name="management"/>
+        <layer name="microprofile-config"/>
+        <layer name="health"/>
+    </dependencies>
+    <feature spec="subsystem.microprofile-health-smallrye">
+        <param name="security-enabled" value="false"/>
+        <param name="empty-liveness-checks-status" value="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" />
+        <param name="empty-readiness-checks-status" value="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}" />
+        <param name="empty-startup-checks-status" value="${env.MP_HEALTH_EMPTY_STARTUP_CHECKS_STATUS:UP}" />
+    </feature>
+</layer-spec>

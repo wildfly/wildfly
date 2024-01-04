@@ -1,17 +1,6 @@
 /*
- * Copyright 2020 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.security.common.elytron;
@@ -34,11 +23,15 @@ public class DistributedRealm implements SecurityRealm {
     private final PathAddress address;
     private final String name;
     private final String[] realms;
+    private final Boolean ignoreUnavailableRealms;
+    private final Boolean emitEvents;
 
-    DistributedRealm(final String name, final String[] realms) {
+    DistributedRealm(final String name, final Builder builder) {
         this.name = name;
         this.address = PathAddress.pathAddress(PathElement.pathElement("subsystem", "elytron"), PathElement.pathElement("distributed-realm", name));
-        this.realms = realms;
+        this.realms = builder.realms;
+        this.ignoreUnavailableRealms = builder.ignoreUnavailableRealms;
+        this.emitEvents = builder.emitEvents;
     }
 
     @Override
@@ -53,6 +46,12 @@ public class DistributedRealm implements SecurityRealm {
             for (String realmName : realms) {
                 realmsList.add(realmName);
             }
+        }
+        if (this.ignoreUnavailableRealms != null) {
+            addOperation.get("ignore-unavailable-realms").set(this.ignoreUnavailableRealms);
+        }
+        if (this.emitEvents != null) {
+            addOperation.get("emit-events").set(this.emitEvents);
         }
 
         return addOperation;
@@ -80,6 +79,8 @@ public class DistributedRealm implements SecurityRealm {
 
         private final String name;
         private String[] realms;
+        private Boolean ignoreUnavailableRealms;
+        private Boolean emitEvents;
 
         Builder(final String name) {
             this.name = name;
@@ -91,8 +92,20 @@ public class DistributedRealm implements SecurityRealm {
             return this;
         }
 
+        public Builder withIgnoreUnavailableRealms(final Boolean ignoreUnavailableRealms) {
+            this.ignoreUnavailableRealms = ignoreUnavailableRealms;
+
+            return this;
+        }
+
+        public Builder withEmitEvents(final Boolean emitEvents) {
+            this.emitEvents = emitEvents;
+
+            return this;
+        }
+
         public SecurityRealm build() {
-            return new DistributedRealm(name, realms);
+            return new DistributedRealm(name, this);
         }
 
     }

@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="singleton-local">
+    <props>
+        <prop name="org.wildfly.rule.expected-file" value="[/META-INF/singleton-deployment.xml,/WEB-INF/classes/META-INF/singleton-deployment.xml]"/>
+        <prop name="org.wildfly.rule.class" value="org.wildfly.clustering.singleton.*"/>
+    </props>
+
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+
+    <feature-group name="infinispan-local-server"/>
+    <feature-group name="singleton"/>
+</layer-spec>

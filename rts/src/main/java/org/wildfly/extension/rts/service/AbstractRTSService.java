@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.rts.service;
 
@@ -31,14 +14,13 @@ import io.undertow.servlet.api.ServletInfo;
 import java.net.Inet4Address;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 import jakarta.servlet.ServletException;
 
 import org.jboss.as.network.SocketBinding;
 import org.jboss.jbossts.star.service.ContextListener;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
 import org.wildfly.extension.rts.logging.RTSLogger;
 import org.wildfly.extension.undertow.Host;
 
@@ -49,18 +31,14 @@ import org.wildfly.extension.undertow.Host;
  */
 public class AbstractRTSService {
 
-    private InjectedValue<Host> injectedHost = new InjectedValue<>();
-
-    private InjectedValue<SocketBinding> injectedSocketBinding = new InjectedValue<>();
+    private final Supplier<Host> hostSupplier;
+    private final Supplier<SocketBinding> socketBindingSupplier;
 
     private volatile Deployment deployment = null;
 
-    public InjectedValue<Host> getInjectedHost() {
-        return injectedHost;
-    }
-
-    public InjectedValue<SocketBinding> getInjectedSocketBinding() {
-        return injectedSocketBinding;
+    public AbstractRTSService(final Supplier<Host> hostSupplier, final Supplier<SocketBinding> socketBindingSupplier) {
+        this.hostSupplier = hostSupplier;
+        this.socketBindingSupplier = socketBindingSupplier;
     }
 
     protected DeploymentInfo getDeploymentInfo(final String name, final String contextPath, final Map<String, String> initialParameters) {
@@ -69,7 +47,6 @@ public class AbstractRTSService {
         deploymentInfo.setContextPath(contextPath);
         deploymentInfo.setDeploymentName(name);
         deploymentInfo.addServlets(getResteasyServlet());
-        deploymentInfo.addListener(getResteasyListener());
         deploymentInfo.addListener(getRestATListener());
 
         for (Entry<String, String> entry : initialParameters.entrySet()) {
@@ -86,7 +63,7 @@ public class AbstractRTSService {
         deployment = manager.getDeployment();
 
         try {
-            injectedHost.getValue().registerDeployment(deployment, manager.start());
+            hostSupplier.get().registerDeployment(deployment, manager.start());
         } catch (ServletException e) {
             RTSLogger.ROOT_LOGGER.warn(e.getMessage(), e);
             deployment = null;
@@ -95,16 +72,16 @@ public class AbstractRTSService {
 
     protected void undeployServlet() {
         if (deployment != null) {
-            injectedHost.getValue().unregisterDeployment(deployment);
+            hostSupplier.get().unregisterDeployment(deployment);
             deployment = null;
         }
     }
 
     protected String getBaseUrl() {
-        final String address = injectedSocketBinding.getValue().getAddress().getHostAddress();
-        final int port = injectedSocketBinding.getValue().getAbsolutePort();
+        final String address = socketBindingSupplier.get().getAddress().getHostAddress();
+        final int port = socketBindingSupplier.get().getAbsolutePort();
 
-        if (injectedSocketBinding.getValue().getAddress() instanceof Inet4Address) {
+        if (socketBindingSupplier.get().getAddress() instanceof Inet4Address) {
             return "http://" + address + ":" + port;
         } else {
             return "http://[" + address + "]:" + port;
@@ -116,12 +93,6 @@ public class AbstractRTSService {
         servletInfo.addMapping("/*");
 
         return servletInfo;
-    }
-
-    private ListenerInfo getResteasyListener() {
-        final ListenerInfo listenerInfo = new ListenerInfo(ResteasyBootstrap.class);
-
-        return listenerInfo;
     }
 
     private ListenerInfo getRestATListener() {

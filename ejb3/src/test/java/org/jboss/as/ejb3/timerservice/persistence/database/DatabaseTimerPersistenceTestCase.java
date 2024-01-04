@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.ejb3.timerservice.persistence.database;
 
 import java.lang.reflect.Field;
@@ -11,7 +16,7 @@ import org.junit.Test;
 
 public class DatabaseTimerPersistenceTestCase {
 
-    private DatabaseTimerPersistence object = new DatabaseTimerPersistence("", "part", "nodeA", 1000000, true);
+    private DatabaseTimerPersistence object = new DatabaseTimerPersistence(null, null, null, null, "", "part", "nodeA", 1000000, true);
     private Field field;
     private Method method;
 

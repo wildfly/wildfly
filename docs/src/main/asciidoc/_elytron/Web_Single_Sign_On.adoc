@@ -1,6 +1,14 @@
 [[Web_Single_Sign_On]]
 = Web Single Sign-On
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 This document will guide on how to enable single sign-on across different applications deployed into different servers, where these applications belong to same security domain.
 
 == Create a Server Configuration Template
@@ -58,14 +66,14 @@ By default, if your application does not define any specific _security-domain_ i
 In order to create a _key-store_ in Elytron subsystem, first create a Java Key Store as follows:
 [source,options="nowrap"]
 ----
-keytool -genkeypair -alias localhost -keyalg RSA -keysize 2048 -validity 365 -keystore keystore.jks -dname "CN=localhost" -keypass secret -storepass secret
+keytool -genkeypair -alias localhost -keyalg RSA -keysize 2048 -validity 365 -keystore keystore.pkcs12 -dname "CN=localhost" -keypass secret -storepass secret
 ----
 
-Once the _keystore.jks_ file is created, execute the following CLI commands to create a _key-store_ definition in Elytron:
+Once the _keystore.pkcs12_ file is created, execute the following CLI commands to create a _key-store_ definition in Elytron:
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/key-store=example-keystore:add(path=keystore.jks, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=JKS)
+/subsystem=elytron/key-store=example-keystore:add(path=keystore.pkcs12, relative-to=jboss.server.config.dir, credential-reference={clear-text=secret}, type=PKCS12)
 ----
 
 

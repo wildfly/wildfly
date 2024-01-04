@@ -1,6 +1,14 @@
 [[JVM_settings]]
 = JVM settings
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Configuration of the JVM settings is different for a managed domain and
 a standalone server. In a managed domain, the domain controller
 components are responsible for starting and stopping server processes and
@@ -104,6 +112,12 @@ This ability is useful when you need to configure JVM settings without specifyin
     }}}}}}
 }
 ----
+
+=== Other server properties that can be resolved as JVM options on domain mode
+
+In addition to the aforementioned server properties, the Host Controller can resolve the following `jboss.server-xyz` properties as JVM options:
+
+* jboss.server.name
 
 
 == Standalone Server

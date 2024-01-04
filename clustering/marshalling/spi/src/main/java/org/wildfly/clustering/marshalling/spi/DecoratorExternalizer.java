@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.spi;
@@ -26,7 +9,10 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.security.PrivilegedAction;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -65,14 +51,23 @@ public class DecoratorExternalizer<T> implements Externalizer<T>, ParametricPriv
     }
 
     static Field findDecoratedField(Class<?> decoratorClass, Class<?> decoratedClass) {
+        List<Field> assignableFields = new LinkedList<>();
         for (Field field : decoratorClass.getDeclaredFields()) {
-            if (field.getType().isAssignableFrom(decoratedClass)) {
-                return field;
+            Class<?> type = field.getType();
+            if (!Modifier.isStatic(field.getModifiers()) && (type != Object.class) && type.isAssignableFrom(decoratedClass)) {
+                assignableFields.add(field);
             }
+        }
+        // We should not have matched more than 1 field
+        if (assignableFields.size() > 1) {
+            throw new IllegalStateException(assignableFields.toString());
+        }
+        if (!assignableFields.isEmpty()) {
+            return assignableFields.get(0);
         }
         Class<?> superClass = decoratorClass.getSuperclass();
         if (superClass == null) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(decoratorClass.getName());
         }
         return findDecoratedField(superClass, decoratedClass);
     }

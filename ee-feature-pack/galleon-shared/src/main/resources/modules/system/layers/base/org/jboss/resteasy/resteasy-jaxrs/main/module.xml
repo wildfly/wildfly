@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-jaxrs">
+
+    <properties>
+        <property name="jboss.api" value="deprecated"/>
+    </properties>
+
+    <dependencies>
+        <module name="org.jboss.resteasy.resteasy-client" export="true" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-client-api" export="true"/>
+        <module name="org.jboss.resteasy.resteasy-core" export="true" services="export"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi" export="true"/>
+    </dependencies>
+</module>

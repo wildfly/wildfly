@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.5" name="jakarta.faces.impl">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <dependencies>
+        <module name="jakarta.faces.api"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
+        <module name="jakarta.websocket.api" />
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.json.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="org.glassfish.expressly"/>
+        <module name="java.xml"/>
+    </dependencies>
+
+    <resources>
+        <resource-root path="jsf-impl-2.1.13-jbossorg-1.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+</module>

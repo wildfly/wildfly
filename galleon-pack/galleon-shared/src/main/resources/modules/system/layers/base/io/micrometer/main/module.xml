@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.micrometer">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.micrometer:micrometer-commons}"/>
+        <artifact name="${io.micrometer:micrometer-core}"/>
+        <artifact name="${io.micrometer:micrometer-registry-otlp}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.opentelemetry.otlp"/>
+        <module name="io.opentelemetry.proto"/>
+        <module name="com.google.protobuf"/>
+
+        <module name="jakarta.servlet.api"/>
+        <module name="java.management"/>
+        <module name="java.logging"/>
+    </dependencies>
+</module>

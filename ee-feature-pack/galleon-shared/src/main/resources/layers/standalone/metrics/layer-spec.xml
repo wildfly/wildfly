@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="metrics">
+    <props>
+        <prop name="org.wildfly.rule.add-on" value="observability,metrics"/>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:management"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for base metrics from the WildFly Management Model and JVM MBeans."/>
+    </props>
+    <dependencies>
+        <layer name="management"/>
+    </dependencies>
+    <feature-group name="metrics"/>
+</layer-spec>

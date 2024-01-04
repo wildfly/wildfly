@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.web.session.oob;
@@ -261,7 +244,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.readSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessTime);
+        Assert.assertThrows(IllegalStateException.class, this.session.getMetaData()::getLastAccessEndTime);
 
         verify(batch).close();
         reset(batch);
@@ -272,9 +255,9 @@ public class OOBSessionTestCase {
 
         when(this.manager.readSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
-        when(metaData.getLastAccessTime()).thenReturn(expected);
+        when(metaData.getLastAccessEndTime()).thenReturn(expected);
 
-        Instant result = this.session.getMetaData().getLastAccessTime();
+        Instant result = this.session.getMetaData().getLastAccessEndTime();
 
         Assert.assertSame(expected, result);
 
@@ -316,7 +299,7 @@ public class OOBSessionTestCase {
     }
 
     @Test
-    public void setMaxInactiveInterval() {
+    public void setTimeout() {
         Batcher<Batch> batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Duration duration = Duration.ZERO;
@@ -325,7 +308,7 @@ public class OOBSessionTestCase {
         when(batcher.createBatch()).thenReturn(batch);
         when(this.manager.findSession(this.id)).thenReturn(null);
 
-        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setMaxInactiveInterval(duration));
+        Assert.assertThrows(IllegalStateException.class, () -> this.session.getMetaData().setTimeout(duration));
 
         verify(batch).close();
         reset(batch);
@@ -336,9 +319,9 @@ public class OOBSessionTestCase {
         when(this.manager.findSession(this.id)).thenReturn(session);
         when(session.getMetaData()).thenReturn(metaData);
 
-        this.session.getMetaData().setMaxInactiveInterval(duration);
+        this.session.getMetaData().setTimeout(duration);
 
-        verify(metaData).setMaxInactiveInterval(duration);
+        verify(metaData).setTimeout(duration);
         verify(session).close();
         verify(batch).close();
     }

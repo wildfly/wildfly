@@ -1,6 +1,14 @@
 [[Starting_and_Stopping_Servers_in_a_Managed_Domain]]
 = Starting and Stopping Servers in a Managed Domain
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 Starting a standalone server is done through the `bin/standalone.sh`
 script. However in a managed domain server instances are managed by the
 domain controller and need to be started through the management layer:

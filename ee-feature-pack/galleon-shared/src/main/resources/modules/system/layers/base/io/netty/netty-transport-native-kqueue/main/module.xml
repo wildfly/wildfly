@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.netty.netty-transport-native-kqueue">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="lib"/>
+        <artifact name="${io.netty:netty-transport-classes-kqueue}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-transport-native-unix-common"/>
+    </dependencies>
+</module>

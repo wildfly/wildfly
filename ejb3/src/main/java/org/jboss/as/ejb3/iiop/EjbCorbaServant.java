@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ejb3.iiop;
 
@@ -30,23 +13,22 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import javax.management.MBeanException;
 
 import jakarta.ejb.EJBMetaData;
 import jakarta.ejb.HomeHandle;
-import javax.management.MBeanException;
 import jakarta.transaction.Status;
 import jakarta.transaction.Transaction;
 import jakarta.transaction.TransactionManager;
-
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.logging.EjbLogger;
-import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;
+import org.jboss.iiop.csiv2.SASCurrent;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.marshalling.InputStreamByteInput;
 import org.jboss.marshalling.MarshallerFactory;
@@ -296,7 +278,7 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                         if (this.securityDomain != null) {
                             // an elytron security domain is available: authenticate and authorize the client before invoking the component.
                             SecurityIdentity identity = this.securityDomain.getAnonymousSecurityIdentity();
-                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.EMPTY;
+                            AuthenticationConfiguration authenticationConfiguration = AuthenticationConfiguration.empty();
 
                             if (identityPrincipal != null) {
                                 // we have an identity token principal - check if the TLS identity, if available,
@@ -458,11 +440,11 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                     return context.getAuthorizedIdentity();
                 } else {
                     context.fail();
-                    throw new SecurityException("Authorization failed");
+                    throw EjbLogger.ROOT_LOGGER.authenticationFailed();
                 }
             } else {
                 context.fail();
-                throw new SecurityException("Authentication failed");
+                throw EjbLogger.ROOT_LOGGER.authenticationFailed();
             }
         } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
             context.fail();

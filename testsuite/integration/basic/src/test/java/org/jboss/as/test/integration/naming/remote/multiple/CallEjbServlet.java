@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.integration.naming.remote.multiple;
 
 import java.io.IOException;
@@ -29,7 +34,7 @@ public class CallEjbServlet extends HttpServlet {
             // format possible IPv6 address
             address = NetworkUtils.formatPossibleIpv6Address(address);
             env.put(Context.PROVIDER_URL, "remote+http://" + address + ":8080");
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
             ctx = new InitialContext(env);
 
             // ensure it's actually connected to the server

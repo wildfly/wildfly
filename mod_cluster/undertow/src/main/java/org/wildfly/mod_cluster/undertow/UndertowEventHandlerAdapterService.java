@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.mod_cluster.undertow;
@@ -26,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.suspend.ServerActivity;
@@ -56,6 +40,7 @@ import io.undertow.servlet.api.Deployment;
 public class UndertowEventHandlerAdapterService implements UndertowEventListener, Service, Runnable, ServerActivity {
     // No logger interface for this module and no reason to create one for this class only
     private static final Logger log = Logger.getLogger("org.jboss.mod_cluster.undertow");
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(UndertowEventHandlerAdapterService.class);
 
     private final UndertowEventHandlerAdapterConfiguration configuration;
     private final Set<Context> contexts = new HashSet<>();
@@ -84,12 +69,12 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
         eventHandler.start(this.server);
         for (Engine engine : this.server.getEngines()) {
             for (org.jboss.modcluster.container.Host host : engine.getHosts()) {
-                host.getContexts().forEach(c->contexts.add(c));
+                host.getContexts().forEach(contexts::add);
             }
         }
 
         // Start the periodic STATUS thread
-        this.executor = Executors.newScheduledThreadPool(1, new DefaultThreadFactory(UndertowEventHandlerAdapterService.class));
+        this.executor = Executors.newScheduledThreadPool(1, THREAD_FACTORY);
         this.executor.scheduleWithFixedDelay(this, 0, this.configuration.getStatusInterval().toMillis(), TimeUnit.MILLISECONDS);
         this.configuration.getSuspendController().registerActivity(this);
     }
@@ -120,13 +105,15 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     private synchronized void onStart(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
 
-        handler.add(context);
-
         State state = this.configuration.getSuspendController().getState();
 
-        // TODO break into onDeploymentAdd once implemented in Undertow
-        if(state == State.RUNNING) {
+        if (state == State.RUNNING) {
+            // Normal operation - trigger ENABLE-APP
             handler.start(context);
+        } else {
+            // Suspended mode - trigger STOP-APP without request nor session draining;
+            // n.b. contexts will be started by UndertowEventHandlerAdapterService#resume()
+            handler.add(context);
         }
 
         this.contexts.add(context);
@@ -134,10 +121,13 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
 
     private synchronized void onStop(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
+
+        // Trigger STOP-APP with possible session draining
         handler.stop(context);
 
-        // TODO break into onDeploymentRemove once implemented in Undertow
+        // Trigger REMOVE-APP
         handler.remove(context);
+
         this.contexts.remove(context);
     }
 

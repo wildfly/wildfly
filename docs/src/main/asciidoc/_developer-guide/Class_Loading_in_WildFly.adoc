@@ -1,6 +1,13 @@
 [[Class_Loading_in_WildFly]]
 = Class Loading in WildFly
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 Since JBoss AS 7, Class loading is considerably different from previous
 versions of JBoss AS. Class loading is based on the
@@ -353,7 +360,7 @@ ear deployment is as follows:
 [IMPORTANT]
 
 The xsd for jboss-deployment-structure.xml is available at
-https://github.com/wildfly/wildfly-core/blob/master/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd[https://github.com/wildfly/wildfly-core/blob/main/server/src/main/resources/schema/jboss-deployment-structure-1_2.xsd]
+https://github.com/wildfly/wildfly-core/blob/main/server/src/main/resources/schema/jboss-deployment-structure-1_3.xsd[jboss-deployment-structure-1_3.xsd]
 
 [[accessing-jdk-classes]]
 == Accessing JDK classes

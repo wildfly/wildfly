@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.transaction.client">
+
+<exports>
+    <exclude path="org/wildfly/transaction/client/_private" />
+</exports>
+
+<resources>
+    <artifact name="${org.wildfly.transaction:wildfly-transaction-client}"/>
+</resources>
+
+<dependencies>
+    <!-- Sorted alphabetically -->
+    <module name="java.naming"/>
+    <module name="jakarta.resource.api"/>
+    <module name="jakarta.transaction.api"/>
+
+    <module name="org.jboss.ejb-client" services="import" optional="true"/>
+    <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+    <module name="org.jboss.jboss-transaction-spi" optional="true"/>
+    <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+    <module name="org.jboss.jts" optional="true"/>
+    <!-- Not needed if the transaction subsystem is not present to build a JBossLocalTransactionProvider -->
+    <module name="org.jboss.jts.integration" optional="true"/>
+    <module name="org.wildfly.http-client.transaction" optional="true"/>
+    <module name="org.jboss.logging"/>
+    <module name="org.jboss.remoting"/>
+    <module name="org.jboss.xnio"/>
+
+    <module name="org.wildfly.common"/>
+    <module name="org.wildfly.naming-client"/>
+    <module name="org.wildfly.security.elytron"/>
+</dependencies>
+
+<provides>
+    <service name="org.wildfly.transaction.client.spi.RemoteTransactionProvider">
+        <with-class name="org.wildfly.httpclient.transaction.HttpRemoteTransactionProvider"/>
+    </service>
+</provides>
+</module>
+

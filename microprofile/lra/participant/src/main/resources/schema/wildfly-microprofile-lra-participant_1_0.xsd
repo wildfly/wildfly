@@ -1,0 +1,31 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:microprofile-lra-participant:1.0"
+           xmlns="urn:wildfly:microprofile-lra-participant:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+
+  <!-- The lra-participant subsystem root element -->
+  <xs:element name="subsystem">
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation>
+          <![CDATA[
+            The configuration of the LRA Participant subsystem.
+            The "url" configures lra.coordinator.url System Property which should be used by the LRA Participant Subsystem.
+            The "proxy-server" attribute defines the Undertow subsystem 'server' resource the LRA Participant proxy starts at.
+            The "proxy-host" attribute defines the Undertow subsystem 'host' resource the LRA Participant proxy starts at.
+          ]]>
+        </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="lra-coordinator-url" type="xs:string" default="http://localhost:8080/lra-coordinator/lra-coordinator"/>
+      <xs:attribute name="proxy-server" type="xs:string" use="optional" default="default-server"/>
+      <xs:attribute name="proxy-host" type="xs:string" use="optional" default="default-host"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

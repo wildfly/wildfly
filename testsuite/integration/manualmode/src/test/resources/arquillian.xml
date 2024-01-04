@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
@@ -19,6 +24,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -36,6 +42,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -53,6 +60,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -69,6 +77,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -85,6 +94,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -101,6 +111,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -117,6 +128,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -133,6 +145,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -148,6 +161,7 @@
 
                 <property name="waitForPorts">11990</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -164,6 +178,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -180,6 +195,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10240</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -196,6 +212,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -213,6 +230,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -229,6 +247,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
         <!-- -Xrunjdwp:transport=dt_socket,address=127.0.0.1:8787,server=y,suspend=y -->
@@ -245,6 +264,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8987} ${as.managementPort:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -262,6 +282,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -279,6 +300,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -295,6 +317,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1:8887} ${as.managementPort.node1:10090}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -312,6 +335,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -329,6 +353,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -347,6 +372,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -365,6 +391,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -383,6 +410,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -401,6 +429,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -419,6 +448,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -437,6 +467,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -455,6 +486,7 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -473,15 +505,19 @@
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
                 <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
-        <container qualifier="microprofile" mode="manual">
+        <container qualifier="wildfly-multi-channel" default="false" mode="manual">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly</property>
-                <property name="javaVmArguments">${microprofile.server.jvm.args}</property>
-                <property name="serverConfig">standalone-microprofile.xml</property>
-                <property name="jbossArguments">${jboss.args}</property>
+                <!-- Arquillian validates all configs before running any test,
+                     so this uses an unrelated jbossHome if the provisioning of this installation
+                     is disabled for profiles where it's not wanted. -->
+                <property name="jbossHome">${multichannel.jboss.home}</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=multi-channel</property>
+                <property name="serverConfig">${jboss.config.file.name:standalone.xml}</property>
+                <property name="jbossArguments">${jboss.args} --admin-only</property>
                 <property name="allowConnectingToRunningServer">true</property>
                 <property name="managementAddress">${node0:127.0.0.1}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>
@@ -489,7 +525,8 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
-                <property name="modulePath">${basedir}/target/wildfly/modules</property>
+                <property name="modulePath">${basedir}/target/wildfly-multi-channel/modules</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
     </group>

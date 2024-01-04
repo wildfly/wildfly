@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jaxrs.deployment;
@@ -87,7 +70,6 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         //we need to add these from all deployments, as they could be using the Jakarta RESTful Web Services client
 
         addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM, true, false);
-        addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR, true, false);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CLIENT, true, deploymentBundlesClientBuilder);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CLIENT_API, true, deploymentBundlesClientBuilder);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_CORE, true, deploymentBundlesClientBuilder);
@@ -113,6 +95,11 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         if (support.hasCapability("org.wildfly.microprofile.config")) {
             addDependency(moduleSpecification, moduleLoader, MP_REST_CLIENT, true, false);
             addDependency(moduleSpecification, moduleLoader, "org.jboss.resteasy.microprofile.config", true, false);
+        }
+        // If bean-validation is available, add the support for the resteasy-validator
+        if (support.hasCapability("org.wildfly.bean-validation")) {
+            final ModuleDependency dep = new ModuleDependency(moduleLoader, RESTEASY_VALIDATOR, true, true, true, false);
+            moduleSpecification.addSystemDependency(dep);
         }
     }
 

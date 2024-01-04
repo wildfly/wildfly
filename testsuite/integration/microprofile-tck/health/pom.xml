@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2018, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -32,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-health</artifactId>
@@ -42,9 +25,8 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <!-- These properties control what layers are provisioned if galleon provision occurs -->
-        <ts.microprofile-tck-provisioning.base.layer>datasources-web-server</ts.microprofile-tck-provisioning.base.layer>
-        <ts.microprofile-tck-provisioning.decorator.layer>microprofile-health</ts.microprofile-tck-provisioning.decorator.layer>
+        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.health:microprofile-health-tck</ts.microprofile-tck-tests-dependency>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, jsonp, microprofile-config, microprofile-health]==>ee-core-profile-server,microprofile-health</ts.microprofile-tck-glow.expected-discovery>
     </properties>
 
     <dependencies>
@@ -105,7 +87,7 @@
                 </dependencies>
                 <configuration>
                     <dependenciesToScan>
-                        <dependency>org.eclipse.microprofile.health:microprofile-health-tck</dependency>
+                        <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
                         <!-- Disable default procedures as the MP Metrics TCK must be run without them -->
@@ -128,7 +110,8 @@
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
             </properties>
         </profile>
 
@@ -141,33 +124,38 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
         
          <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
+                <ts.bootable-jar-microprofile-tck-packaging.phase>test-compile</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
 
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>
                 <!-- Enable galleon provisioning -->
-                <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
+                <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
             </properties>
         </profile>
 

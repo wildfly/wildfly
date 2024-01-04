@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.integration.domain;
@@ -35,7 +18,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.safeClose;
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -179,6 +162,7 @@ public class JVMServerPropertiesTestCase {
         Assert.assertEquals(serverLogDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.log.dir"));
         Assert.assertEquals(serverDataDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.data.dir"));
         Assert.assertEquals(serverTmpDir.toAbsolutePath().toString(), p.getProperty("test.jboss.server.temp.dir"));
+        Assert.assertEquals(server, p.getProperty("test.jboss.server.name"));
     }
 
     private static String performHttpCall(String host, int port, String context) throws IOException {

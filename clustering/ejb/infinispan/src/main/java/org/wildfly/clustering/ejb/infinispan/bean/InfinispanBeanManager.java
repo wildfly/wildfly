@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.ejb.infinispan.bean;
 
@@ -41,6 +24,7 @@ import org.infinispan.context.Flag;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.Scheduler;
@@ -51,11 +35,11 @@ import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
 import org.wildfly.clustering.ee.infinispan.GroupedKey;
 import org.wildfly.clustering.ee.infinispan.PrimaryOwnerLocator;
 import org.wildfly.clustering.ee.infinispan.affinity.AffinityIdentifierFactory;
+import org.wildfly.clustering.ee.infinispan.expiration.ScheduleWithExpirationMetaDataCommandFactory;
+import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleLocalEntriesTask;
-import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithMetaDataCommand;
 import org.wildfly.clustering.ee.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
-import org.wildfly.clustering.ee.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.ee.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.ee.infinispan.tx.InfinispanBatcher;
 import org.wildfly.clustering.ejb.bean.Bean;
@@ -72,7 +56,6 @@ import org.wildfly.clustering.infinispan.distribution.CacheLocality;
 import org.wildfly.clustering.infinispan.distribution.Locality;
 import org.wildfly.clustering.infinispan.distribution.SimpleLocality;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 
 /**
  * A {@link BeanManager} implementation backed by an infinispan cache.
@@ -109,7 +92,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         this.primaryOwnerLocator = new PrimaryOwnerLocator<>(configuration.getCache(), configuration.getGroup());
         Group group = configuration.getGroup();
         this.strongAffinity = this.cache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(group.getName()) : new NodeAffinity(group.getLocalMember().getName());
-        this.filter = new InfinispanBeanCreationMetaDataFilter<>(configuration.getBeanName());
+        this.filter = new InfinispanBeanMetaDataFilter<>(configuration.getBeanName());
     }
 
     @Override
@@ -120,7 +103,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         CacheEntryScheduler<K, ExpirationMetaData> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batcher, this.beanFactory, this.expiration, stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
-        this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanCreationMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new)) : null;
+        this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, dispatcherName, localScheduler, this.primaryOwnerLocator, InfinispanBeanMetaDataKey::new, this.properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new)) : null;
 
         BiConsumer<Locality, Locality> scheduleTask = (localScheduler != null) ? new ScheduleLocalEntriesTask<>(this.cache, this.filter, localScheduler) : null;
         this.schedulerListenerRegistration = (localScheduler != null) ? new SchedulerTopologyChangeListener<>(this.cache, localScheduler, scheduleTask).register() : null;

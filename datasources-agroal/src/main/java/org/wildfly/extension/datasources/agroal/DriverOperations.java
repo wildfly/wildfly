@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.datasources.agroal;
 
@@ -30,8 +13,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
 
 import java.lang.reflect.Method;
@@ -102,7 +85,17 @@ class DriverOperations {
             boolean classDefined = DriverDefinition.CLASS_ATTRIBUTE.resolveModelAttribute(context, model).isDefined();
             String className = classDefined ? DriverDefinition.CLASS_ATTRIBUTE.resolveModelAttribute(context, model).asString() : null;
 
-            Service<?> driverService = new ValueService<>(new Value<Class<?>>() {
+            Service<?> driverService = new Service<Class<?>>() {
+                @Override
+                public void start(final StartContext startContext) {
+                    // noop
+                }
+
+                @Override
+                public void stop(final StopContext stopContext) {
+                    // noop
+                }
+
                 @Override
                 public Class<?> getValue() throws IllegalStateException, IllegalArgumentException {
                     if (className != null) {
@@ -111,7 +104,7 @@ class DriverOperations {
                         return loadDriver(driverName, moduleName);
                     }
                 }
-            });
+            };
 
             context.getCapabilityServiceTarget().addCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.fromBaseCapability(driverName)).setInstance(driverService).install();
         }

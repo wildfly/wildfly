@@ -3,6 +3,32 @@ on:
   pull_request_target:
     branches:
       - main
+    paths-ignore:
+      - ".mvn/**"
+      - "docs/**"
+      - ".github/workflows/build-manual.yml"
+      - ".github/workflows/shared-wildfly-build.yml"
+      - '.gitattributes'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'build.bat'
+      - 'build.sh'
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "integration-tests.bat"
+      - "integration-tests.sh"
+      - "LICENSE.txt"
+      - "mvnw"
+      - "mvnw.cmd"
+      - "README.md"
+      - "SECURITY.md"
+      - "**/README.md"
+      - "**/README.adoc"
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
 env:
   # Repository where the cloud tests will be run
   REPOSITORY: wildfly-extras/wildfly-cloud-tests
@@ -27,7 +53,7 @@ jobs:
 
       - name: Checkout run-status branch
         if: ${{ env.TOKEN }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.STATUS_BRANCH }}

@@ -1,6 +1,14 @@
 [[authentication-client]]
 = <authentication-client /> - WildFly Elytron
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The _<authentication-client/>_ element can be added to the wildfly-config.xml configuration to define configuration in relation to authentication configuration for outbound connections and SSL configuration for outbound connections e.g.
 
 [source,xml,options="nowrap"]
@@ -491,7 +499,7 @@ This structure is identical to the structure use in [<key-store-credential />|#k
  <cipher-suite selector="..." names="..." />:: Configuration to filter the enabled cipher suites. This element must contain at least one of the following two attributes: -
 
  selector:: _(Optional)_ Used to configure the enabled cipher suites for TLSv1.2 and below. The format of the `selector` attribute is described in detail
- in http://wildfly-security.github.io/wildfly-elytron/master/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString-java.lang.String-[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
+ in https://wildfly-security.github.io/wildfly-elytron/documentation/api/next/org/wildfly/security/ssl/CipherSuiteSelector.html#fromString(java.lang.String)[org.wildfly.security.ssl.CipherSuiteSelector.fromString(selector)].
  The default value is `DEFAULT`, which corresponds to all known cipher suites that do not have NULL encryption and excludes any cipher suites that have no authentication.
 
  names:: _(Optional)_ Used to configure the enabled cipher suites for TLSv1.3. The format of the `names` attribute is a simple colon (":")

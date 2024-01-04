@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.spi;
@@ -28,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 import org.jboss.logging.Logger;
 
@@ -44,12 +28,25 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
     private transient volatile T object;
     private transient volatile ByteBuffer buffer;
 
+    /**
+     * Constructs a marshalled value from the specified object and marshaller.
+     * @param object the wrapped object
+     * @param marshaller a marshaller suitable for marshalling the specified object
+     */
     public ByteBufferMarshalledValue(T object, ByteBufferMarshaller marshaller) {
         this.marshaller = marshaller;
         this.object = object;
     }
 
+    /**
+     * Constructs a marshalled value from the specified byte buffer.
+     * This constructor is only public to facilitate marshallers of this object (from other packages).
+     * The byte buffer parameter must not be read outside the context of this object.
+     * @param buffer a byte buffer
+     */
     public ByteBufferMarshalledValue(ByteBuffer buffer) {
+        // Normally, we would create a defensive ByteBuffer.asReadOnlyBuffer()
+        // but this would preclude the use of operations on the backing array.
         this.buffer = buffer;
     }
 
@@ -64,11 +61,20 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
     public synchronized ByteBuffer getBuffer() throws IOException {
         ByteBuffer buffer = this.buffer;
-        if (buffer != null) return buffer;
-        if (this.object == null) return null;
-        ByteBuffer result = this.marshaller.write(this.object);
-        LOGGER.debugf("Marshalled size of %s(%s) = %d bytes", this.object.getClass().getCanonicalName(), this.object, result.limit() - result.arrayOffset());
-        return result;
+        if ((buffer == null) && (this.object != null)) {
+            // Since the wrapped object is likely mutable, we cannot cache the generated buffer
+            buffer = this.marshaller.write(this.object);
+            // N.B. Refrain from logging wrapped object
+            // If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
+            LOGGER.debugf("Marshalled size of %s object = %d bytes", this.object.getClass().getCanonicalName(), buffer.limit() - buffer.arrayOffset());
+        }
+        return buffer;
+    }
+
+    public synchronized OptionalInt size() {
+        // N.B. Buffer position is guarded by synchronization on this object
+        // We invalidate buffer upon reading it, ensuring that ByteBuffer.remaining() returns the effective buffer size
+        return (this.buffer != null) ? OptionalInt.of(this.buffer.remaining()) : this.marshaller.size(this.object);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,6 +83,7 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
         if (this.object == null) {
             this.marshaller = marshaller;
             if (this.buffer != null) {
+                // Invalidate buffer after reading object
                 this.object = (T) this.marshaller.read(this.buffer);
                 this.buffer = null;
             }
@@ -110,10 +117,9 @@ public class ByteBufferMarshalledValue<T> implements MarshalledValue<T, ByteBuff
 
     @Override
     public String toString() {
-        Object object = this.object;
-        if (object != null) return object.toString();
-        ByteBuffer buffer = this.buffer;
-        return (buffer != null) ? buffer.toString() : null;
+        // N.B. Refrain from logging wrapped object
+        // If wrapped object contains an EJB proxy, toString() will trigger an EJB invocation!
+        return String.format("%s [%s]", this.getClass().getName(), (this.object != null) ? this.object.getClass().getName() : "<serialized>");
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

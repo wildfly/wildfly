@@ -1,17 +1,6 @@
 /*
- * Copyright 2018 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
@@ -20,12 +9,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 import jakarta.jms.ConnectionFactory;
+import javax.net.ssl.SSLContext;
 import org.apache.activemq.artemis.api.core.DiscoveryGroupConfiguration;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
 import org.apache.activemq.artemis.api.jms.JMSFactoryType;
 import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
-import org.apache.activemq.artemis.jms.server.config.ConnectionFactoryConfiguration;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -37,7 +26,7 @@ import org.wildfly.extension.messaging.activemq.JGroupsDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.SocketDiscoveryGroupAdd;
 import org.wildfly.extension.messaging.activemq.TransportConfigOperationHandlers;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  *
@@ -53,23 +42,24 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
 
     private final Map<String, Supplier<SocketBinding>> socketBindings;
     private final Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings;
+    private final Map<String, Supplier<SSLContext>> sslContexts;
     private final Map<String, Supplier<SocketBinding>> groupBindings;
     // mapping between the {discovery}-groups and the cluster names they use
     private final Map<String, String> clusterNames;
     // mapping between the {discovery}-groups and the command dispatcher factory they use
     private final Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories;
     private ActiveMQConnectionFactory factory;
-    private final ConnectionFactoryConfiguration config;
+    private final ExternalConnectionFactoryConfiguration config;
 
     ExternalConnectionFactoryService(DiscoveryGroupConfiguration groupConfiguration,
             Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
-            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
-        this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, clusterNames, null, config);
+            Map<String, Supplier<SocketBinding>> groupBindings, Map<String, String> clusterNames, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ExternalConnectionFactoryConfiguration config) {
+        this(ha, enable1Prefixes, type, groupConfiguration, Collections.emptyMap(), Collections.emptyMap(),commandDispatcherFactories, groupBindings, Collections.emptyMap(), clusterNames, null, config);
     }
 
     ExternalConnectionFactoryService(TransportConfiguration[] connectors, Map<String, Supplier<SocketBinding>> socketBindings,
-            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ConnectionFactoryConfiguration config) {
-        this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), connectors, config);
+            Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings, Map<String, Supplier<SSLContext>> sslContexts, JMSFactoryType type, boolean ha, boolean enable1Prefixes, ExternalConnectionFactoryConfiguration config) {
+        this(ha, enable1Prefixes, type, null, socketBindings, outboundSocketBindings, Collections.emptyMap(), Collections.emptyMap(), sslContexts, Collections.emptyMap(), connectors, config);
     }
 
     private ExternalConnectionFactoryService(boolean ha,
@@ -80,9 +70,10 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
             Map<String, Supplier<OutboundSocketBinding>> outboundSocketBindings,
             Map<String, Supplier<BroadcastCommandDispatcherFactory>> commandDispatcherFactories,
             Map<String, Supplier<SocketBinding>> groupBindings,
+            Map<String, Supplier<SSLContext>> sslContexts,
             Map<String, String> clusterNames,
             TransportConfiguration[] connectors,
-            ConnectionFactoryConfiguration config) {
+            ExternalConnectionFactoryConfiguration config) {
         assert (connectors != null && connectors.length > 0) || groupConfiguration != null;
         this.ha = ha;
         this.enable1Prefixes = enable1Prefixes;
@@ -94,6 +85,7 @@ public class ExternalConnectionFactoryService implements Service<ConnectionFacto
         this.clusterNames = clusterNames;
         this.commandDispatcherFactories = commandDispatcherFactories;
         this.groupBindings = groupBindings;
+        this.sslContexts = sslContexts;
         this.config = config;
     }
 

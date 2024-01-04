@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.as.jsf-injection:${jsf-impl-name}-${jsf-version}">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <resource-root path="wildfly-jsf-injection-${project.version}.jar"/>
+        <resource-root path="weld-jsf-${version.org.jboss.weld.weld}.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.faces.impl:${jsf-impl-name}-${jsf-version}"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="java.desktop"/>
+        <module name="java.naming"/>
+        <module name="org.jboss.as.jsf"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.api"/>
+
+        <module name="jakarta.faces.api:${jsf-impl-name}-${jsf-version}"/>
+    </dependencies>
+</module>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="urn:jboss:jbossws-jaxws-config:5.0"
+            xmlns:tns="urn:jboss:jbossws-jaxws-config:5.0"
+            xmlns:jakartaee="https://jakarta.ee/xml/ns/jakartaee"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="1.1">
+
+   <xsd:annotation>
+      <xsd:documentation>
+         <![CDATA[
+            This is the schema definition for JBossWS JAXWS configurations.
+            It relies on the handler definitions that are part of the standard Jakarta EE deployment descriptors.
+         ]]>
+      </xsd:documentation>
+   </xsd:annotation>
+
+   <xsd:import namespace="https://jakarta.ee/xml/ns/jakartaee" schemaLocation="https://jakarta.ee/xml/ns/jakartaee/jakartaee_10.xsd"/>
+
+   <xsd:element name="jaxws-config" type="tns:jaxwsConfigType"/>
+   <xsd:complexType name="jaxwsConfigType">
+      <xsd:sequence>
+         <xsd:element name="endpoint-config" type="tns:endpointConfigType" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="client-config" type="tns:clientConfigType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:complexType name="endpointConfigType">
+      <xsd:complexContent>
+         <xsd:extension base="tns:commonConfigType"/>
+      </xsd:complexContent>
+   </xsd:complexType>
+
+   <xsd:complexType name="clientConfigType">
+      <xsd:complexContent>
+         <xsd:extension base="tns:commonConfigType"/>
+      </xsd:complexContent>
+   </xsd:complexType>
+
+   <xsd:complexType name="commonConfigType">
+      <xsd:sequence>
+         <xsd:element name="config-name" type="xsd:string"/>
+         <xsd:element name="pre-handler-chains" type="jakartaee:handler-chainsType" minOccurs="0"/>
+         <xsd:element name="post-handler-chains" type="jakartaee:handler-chainsType" minOccurs="0"/>
+         <xsd:element name="feature" type="tns:featureType" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="property" type="tns:propertyType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:complexType name="featureType">
+      <xsd:sequence>
+         <xsd:element name="feature-name" type="xsd:string"/>
+         <xsd:element name="feature-data" type="xsd:anyType" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:complexType name="propertyType">
+      <xsd:sequence>
+         <xsd:element name="property-name" type="xsd:string"/>
+         <xsd:element name="property-value" type="xsd:string"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+</xsd:schema>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-rxjava2">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.resteasy:resteasy-rxjava2}" />
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.ws.rs.api"/>
+        <module name="org.jboss.resteasy.resteasy-core"/>
+        <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="org.reactivestreams" export = "true" />
+        <module name="io.reactivex.rxjava2.rxjava" export="true" />
+    </dependencies>
+</module>

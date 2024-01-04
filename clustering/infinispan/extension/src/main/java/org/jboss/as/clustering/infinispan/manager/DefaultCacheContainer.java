@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.infinispan.manager;
@@ -36,9 +19,9 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.internal.PrivateGlobalConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
@@ -49,6 +32,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.infinispan.marshall.EncoderRegistry;
 import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
 import org.wildfly.clustering.infinispan.marshalling.MarshalledValueTranscoder;
+import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
@@ -119,8 +103,8 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         Configuration configuration = cache.getCacheConfiguration();
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
-        // Bypass deployment-specific media types for local cache w/out a store or for hibernate 2LC
-        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().module(PrivateGlobalConfiguration.class).isServerMode()) {
+        // Bypass deployment-specific media types for local cache w/out a store or if using a non-ProtoStream marshaller
+        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE)) {
             return new DefaultCache<>(this, cache);
         }
         ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -133,7 +117,14 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
             boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
             boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);
             if (registerKeyMediaType || registerValueMediaType) {
-                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(loader);
+                ClassLoader managerLoader = this.cm.getCacheManagerConfiguration().classLoader();
+                PrivilegedAction<ClassLoader> action = new PrivilegedAction<>() {
+                    @Override
+                    public ClassLoader run() {
+                        return new AggregatedClassLoader(List.of(loader, managerLoader));
+                    }
+                };
+                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(WildFlySecurityManager.doUnchecked(action));
                 if (registerKeyMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
                     registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));

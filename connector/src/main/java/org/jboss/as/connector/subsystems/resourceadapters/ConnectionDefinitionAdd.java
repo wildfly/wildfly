@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.subsystems.resourceadapters;
@@ -31,11 +14,9 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_CREDENTIAL_REFERENCE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_ELYTRON_ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
@@ -71,9 +52,6 @@ import org.wildfly.security.auth.client.AuthenticationContext;
  */
 public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
-    private static final ServiceName SECURITY_MANAGER_SERVICE = ServiceName.JBOSS.append("security", "simple-security-manager");
-    private static final ServiceName SUBJECT_FACTORY_SERVICE = ServiceName.JBOSS.append("security", "subject-factory");
-
     public static final ConnectionDefinitionAdd INSTANCE = new ConnectionDefinitionAdd();
 
     @Override
@@ -107,56 +85,30 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
         }
         ModelNode resourceModel = resource.getModel();
 
-        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is true
-        // domains/application attributes should only be defined when Elytron enabled is undefined or false (default value)
-        if (ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean()) {
-            if (resourceModel.hasDefined(SECURITY_DOMAIN.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
-            else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
-            else if (resourceModel.hasDefined(APPLICATION.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(APPLICATION.getName(), ELYTRON_ENABLED.getName());
-        } else {
-            if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
-            else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
-        }
+        // add extra security validation: legacy security configuration should not be used
+        if (resourceModel.hasDefined(SECURITY_DOMAIN.getName()))
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN.getName());
+        else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()))
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN_AND_APPLICATION.getName());
+        else if (resourceModel.hasDefined(APPLICATION.getName()))
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(APPLICATION.getName());
         // do the same for recovery security attributes
-        if (RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean()) {
-            if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
-        } else {
-            if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()))
-                throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
-        }
+        if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()))
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(RECOVERY_SECURITY_DOMAIN.getName());
 
-        final boolean elytronEnabled = ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
-        final boolean elytronRecoveryEnabled = RECOVERY_ELYTRON_ENABLED.resolveModelAttribute(context, resourceModel).asBoolean();
         final ModelNode credentialReference = RECOVERY_CREDENTIAL_REFERENCE.resolveModelAttribute(context, resourceModel);
-        // add extra security validation: authentication contexts should only be defined when Elytron Enabled is false
-        // domains should only be defined when Elytron enabled is undefined or false (default value)
+        // add extra security validation: legacy security configuration should not be used
         boolean hasSecurityDomain = resourceModel.hasDefined(SECURITY_DOMAIN.getName());
         boolean hasSecurityDomainAndApp = resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName());
-        if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName()) && !elytronEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT.getName(), ELYTRON_ENABLED.getName());
+        if (hasSecurityDomain) {
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN.getName());
         }
-        else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName()) && !elytronEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
-        }
-        else if (hasSecurityDomain && elytronEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN.getName(), ELYTRON_ENABLED.getName());
-        }
-        else if (hasSecurityDomainAndApp && elytronEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(SECURITY_DOMAIN_AND_APPLICATION.getName(), ELYTRON_ENABLED.getName());
+        else if (hasSecurityDomainAndApp) {
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN_AND_APPLICATION.getName());
         }
         boolean hasRecoverySecurityDomain = resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName());
-        if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName()) &&
-                !elytronRecoveryEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresTrueAttribute(RECOVERY_AUTHENTICATION_CONTEXT.getName(), RECOVERY_ELYTRON_ENABLED.getName());
-        }
-        else if (hasRecoverySecurityDomain && elytronRecoveryEnabled) {
-            throw SUBSYSTEM_RA_LOGGER.attributeRequiresFalseOrUndefinedAttribute(RECOVERY_SECURITY_DOMAIN.getName(), RECOVERY_ELYTRON_ENABLED.getName());
+        if (hasRecoverySecurityDomain) {
+            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(RECOVERY_SECURITY_DOMAIN.getName());
         }
         if (raModel.get(ARCHIVE.getName()).isDefined()) {
             archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, raModel).asString();
@@ -184,32 +136,23 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
             // Add a dependency to the required authentication-contexts. These will be looked in the ElytronSecurityFactory
             // and this should be changed to use a proper capability in the future.
-            if (elytronEnabled) {
-                if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
-                    cdServiceBuilder.requires(context.getCapabilityServiceName(
-                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                            AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
-                            AuthenticationContext.class));
-                } else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName())) {
-                    cdServiceBuilder.requires(context.getCapabilityServiceName(
-                            Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                            AUTHENTICATION_CONTEXT_AND_APPLICATION.resolveModelAttribute(context, resourceModel).asString(),
-                            AuthenticationContext.class));
-                }
-            }
-
-            if (elytronRecoveryEnabled && resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
-                cdServiceBuilder.requires(context.getCapabilityServiceName(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
-                        RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+            if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT.getName())) {
+                cdServiceBuilder.requires(context.getCapabilityServiceName(
+                        Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                        AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                        AuthenticationContext.class));
+            } else if (resourceModel.hasDefined(AUTHENTICATION_CONTEXT_AND_APPLICATION.getName())) {
+                cdServiceBuilder.requires(context.getCapabilityServiceName(
+                        Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                        AUTHENTICATION_CONTEXT_AND_APPLICATION.resolveModelAttribute(context, resourceModel).asString(),
                         AuthenticationContext.class));
             }
 
-            if (!elytronEnabled || !elytronRecoveryEnabled) {
-                if (hasSecurityDomain || hasSecurityDomainAndApp || hasRecoverySecurityDomain || RaAdd.requiresLegacySecurity(context, raModel)) {
-                    // We can't satisfy the config, so fail with a meaningful error
-                    context.setRollbackOnly();
-                    throw SUBSYSTEM_RA_LOGGER.legacySecurityNotAvailable(path.getLastElement().getValue(), path.getParent().getLastElement().getValue());
-                } // else there's no legacy security. We're not configured for elytron, but our RA's WM doesn't require legacy security nor do we.
+
+            if (resourceModel.hasDefined(RECOVERY_AUTHENTICATION_CONTEXT.getName())) {
+                cdServiceBuilder.requires(context.getCapabilityServiceName(Capabilities.AUTHENTICATION_CONTEXT_CAPABILITY,
+                        RECOVERY_AUTHENTICATION_CONTEXT.resolveModelAttribute(context, resourceModel).asString(),
+                        AuthenticationContext.class));
             }
 
             if (credentialReference.isDefined()) {

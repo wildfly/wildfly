@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.clustering.web;
@@ -86,10 +69,10 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         return String.format(pattern, this.controller.getMavenGavVersion());
     }
 
-    private DistributableWebModel getModelVersion() {
+    private DistributableWebSubsystemModel getModelVersion() {
         switch (this.controller) {
             case EAP_7_4_0:
-                return DistributableWebModel.VERSION_2_0_0;
+                return DistributableWebSubsystemModel.VERSION_2_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -173,7 +156,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
         PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, DistributableWebExtension.SUBSYSTEM_NAME);
 
-        if (DistributableWebModel.VERSION_3_0_0.requiresTransformation(this.version)) {
+        if (DistributableWebSubsystemModel.VERSION_3_0_0.requiresTransformation(this.version)) {
             config.addFailedAttribute(subsystemAddress.append(InfinispanSessionManagementResourceDefinition.pathElement("protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
             config.addFailedAttribute(subsystemAddress.append(HotRodSessionManagementResourceDefinition.pathElement("remote-protostream")), new FailedOperationTransformationConfig.NewAttributesConfig(SessionManagementResourceDefinition.Attribute.MARSHALLER.getName()));
         }

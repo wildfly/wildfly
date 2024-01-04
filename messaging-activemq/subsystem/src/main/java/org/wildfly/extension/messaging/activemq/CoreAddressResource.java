@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -32,11 +15,10 @@ import java.util.stream.Stream;
 
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,11 +29,11 @@ import org.jboss.dmr.ModelNode;
 public class CoreAddressResource implements Resource {
 
     private final String name;
-    private final ManagementService managementService;
+    private final ActiveMQBroker broker;
 
-    public CoreAddressResource(final String name, final ManagementService managementService) {
+    public CoreAddressResource(final String name, final ActiveMQBroker broker) {
         this.name = name;
-        this.managementService = managementService;
+        this.broker = broker;
     }
 
     @Override
@@ -155,7 +137,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource clone() {
-        return new CoreAddressResource(name, managementService);
+        return new CoreAddressResource(name, broker);
     }
 
     private Set<String> getSecurityRoles() {
@@ -172,10 +154,10 @@ public class CoreAddressResource implements Resource {
     }
 
     private AddressControl getAddressControl() {
-        if (managementService == null) {
+        if (broker == null) {
             return null;
         }
-        Object obj = managementService.getResource(ResourceNames.ADDRESS + name);
+        Object obj = broker.getResource(ResourceNames.ADDRESS + name);
         return AddressControl.class.cast(obj);
     }
 
@@ -188,11 +170,11 @@ public class CoreAddressResource implements Resource {
 
         final PathElement path;
         // we keep a ref on the management service to be able to clone it... is there a more elegant way?
-        private final ManagementService managementService2;
+        private final ActiveMQBroker broker2;
 
-        public CoreAddressResourceEntry(final String name, final ManagementService managementService) {
-            super(name, managementService);
-            managementService2 = managementService;
+        public CoreAddressResourceEntry(final String name, final ActiveMQBroker broker) {
+            super(name, broker);
+            broker2 = broker;
             path = PathElement.pathElement(CommonAttributes.CORE_ADDRESS, name);
         }
 
@@ -208,7 +190,7 @@ public class CoreAddressResource implements Resource {
 
         @Override
         public CoreAddressResourceEntry clone() {
-            return new CoreAddressResourceEntry(path.getValue(), managementService2);
+            return new CoreAddressResourceEntry(path.getValue(), broker2);
         }
     }
 }

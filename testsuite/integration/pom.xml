@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -11,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -47,7 +52,9 @@
 
         <ts.skipTests>${skipTests}</ts.skipTests>
 
+        <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
         <wildfly.dir>${project.build.directory}/wildfly</wildfly.dir>
+        <container.java.home>${java.home}</container.java.home>
     </properties>
 
     <profiles>
@@ -57,12 +64,11 @@
             <id>ts.integ.allGroups</id>
             <activation><property><name>allTests</name></property></activation>
             <modules>
+                <!-- Tests of EE feature pack functionality -->
                 <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>iiop</module>
                 <module>xts</module>
@@ -73,9 +79,13 @@
                 <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
-                <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+
+                <!-- Tests of expansion functionality -->
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>manualmode-expansion</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -83,12 +93,11 @@
             <id>ts.integ.allGroupsIntegration</id>
             <activation><property><name>ts.integration</name></property></activation>
             <modules>
+                <!-- Tests of EE feature pack functionality -->
                 <module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>basic</module>
-                <module>microprofile</module>
-                <module>microprofile-tck</module>
                 <module>vdx</module>
                 <module>clustering</module>
                 <module>iiop</module>
@@ -99,9 +108,13 @@
                 <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
-                <module>legacy-ejb-client</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
+
+                <!-- Tests of expansion functionality -->
+                <module>microprofile</module>
+                <module>microprofile-tck</module>
+                <module>manualmode-expansion</module>
             </modules>
         </profile>
 
@@ -179,6 +192,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.manualmode-expansion -->
+        <profile>
+            <id>ts.integ.group.manualmode-expansion</id>
+            <activation><property><name>ts.manualmode-expansion</name></property></activation>
+            <modules>
+                <module>manualmode-expansion</module>
+            </modules>
+        </profile>
+
         <!-- -Dts.rbac -->
         <profile>
             <id>ts.integ.group.rbac</id>
@@ -234,15 +256,6 @@
             </modules>
         </profile>
 
-        <!-- -Dts.legacy.ejb.client -->
-        <profile>
-            <id>ts.integ.group.legacy.ejb.client</id>
-            <activation><property><name>ts.legacy.ejb.client</name></property></activation>
-            <modules>
-                <module>legacy-ejb-client</module>
-            </modules>
-        </profile>
-
         <!-- -Dts.microprofile -->
         <profile>
             <id>ts.integ.group.microprofile</id>
@@ -293,10 +306,10 @@
             </modules>
         </profile>
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <properties>
@@ -308,18 +321,18 @@
             <modules>
                 <!--<module>basic</module>-->
                 <!--<module>clustering</module>-->
-                <!--<module>microprofile</module>-->
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>elytron-oidc-client</module>
             </modules>
         </profile>
 
-        <!-- Test against the EE 9 feature pack -->
+        <!-- Test against the WildFly Preview feature pack -->
         <profile>
-            <id>ee9.test.profile</id>
+            <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <modules>
@@ -327,7 +340,7 @@
                 <module>legacy</module>
                 <module>ws</module>
                 <!--<module>clustering</module>-->
-                <!--<module>microprofile</module>-->
+                <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>secman</module>
                 <module>elytron</module>
@@ -361,7 +374,7 @@
                     <!-- Copy users and roles config from shared resources. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>${ts.config-as.copy-mgmt-users.phase}</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <inherited>true</inherited>
                         <configuration>
@@ -422,6 +435,7 @@
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <cli.jvm.args>${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</cli.jvm.args>
                         <modular.jdk.args>${modular.jdk.args}</modular.jdk.args>
+                        <container.java.home>${container.java.home}</container.java.home>
                     </systemPropertyVariables>
 
                 </configuration>
@@ -447,6 +461,7 @@
         <dependency>
            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -461,7 +476,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-testsuite-shared</artifactId>
         </dependency>
         <dependency>
@@ -481,11 +496,6 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
 

@@ -1,0 +1,4 @@
+module remove --name=jakarta.faces.impl --slot=myfaces-${jsf-version}
+module remove --name=jakarta.faces.api --slot=myfaces-${jsf-version}
+module remove --name=org.jboss.as.jsf-injection --slot=myfaces-${jsf-version}
+module remove --name=org.apache.commons.digester --slot=main

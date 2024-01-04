@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq.jms.legacy;
@@ -52,8 +35,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq.ActiveMQActivationService;
+import org.wildfly.extension.messaging.activemq.ActiveMQBroker;
 import org.wildfly.extension.messaging.activemq.jms.JMSServices;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
@@ -155,7 +139,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
                 TransportConstants.NETTY_CONNECT_TIMEOUT);
     }
 
-    private final InjectedValue<ActiveMQServer> injectedActiveMQServer = new InjectedValue<ActiveMQServer>();
+    private final InjectedValue<ActiveMQBroker> injectedActiveMQServer = new InjectedValue<ActiveMQBroker>();
     private final HornetQConnectionFactory uncompletedConnectionFactory;
     private final String discoveryGroupName;
     private final List<String> connectors;
@@ -171,7 +155,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
 
     @Override
     public void start(StartContext context) throws StartException {
-        ActiveMQServer activeMQServer = injectedActiveMQServer.getValue();
+        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(injectedActiveMQServer.getValue().getDelegate());
 
         DiscoveryGroupConfiguration discoveryGroupConfiguration = null;
         if (discoveryGroupName != null) {
@@ -255,7 +239,7 @@ public class LegacyConnectionFactoryService implements Service<ConnectionFactory
 
         final ServiceBuilder sb = serviceTarget.addService(serviceName, service);
         sb.requires(ActiveMQActivationService.getServiceName(activeMQServerServiceName));
-        sb.addDependency(activeMQServerServiceName, ActiveMQServer.class, service.injectedActiveMQServer);
+        sb.addDependency(activeMQServerServiceName, ActiveMQBroker.class, service.injectedActiveMQServer);
         sb.setInitialMode(ServiceController.Mode.PASSIVE);
         sb.install();
         return service;

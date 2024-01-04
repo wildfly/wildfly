@@ -1,0 +1,20 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
+embed-server --server-config=standalone.xml
+batch
+/subsystem=infinispan/cache-container=server:add(modules=[org.wildfly.clustering.singleton.server],marshaller=PROTOSTREAM,default-cache=default)
+/subsystem=infinispan/cache-container=server/local-cache=default:add
+/subsystem=infinispan/cache-container=server/local-cache=default/component=expiration:add(interval=0)
+run-batch
+stop-embedded-server
+
+embed-server --server-config=standalone-full.xml
+batch
+/subsystem=infinispan/cache-container=server:add(modules=[org.wildfly.clustering.singleton.server],marshaller=PROTOSTREAM,default-cache=default)
+/subsystem=infinispan/cache-container=server/local-cache=default:add
+/subsystem=infinispan/cache-container=server/local-cache=default/component=expiration:add(interval=0)
+run-batch
+stop-embedded-server

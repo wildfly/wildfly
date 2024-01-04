@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -11,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -28,8 +33,8 @@
         <jboss.dist>${basedir}/target/wildfly</jboss.dist>
         <!-- properties to enable plugins shared by various bootable jar executions -->
         <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
-        <bootable-jar-legacy-security-packaging.phase>none</bootable-jar-legacy-security-packaging.phase>
-
+        <glow.phase.observability>none</glow.phase.observability>
+        <glow.phase.sar>none</glow.phase.sar>
     </properties>
 
     <dependencies>
@@ -48,6 +53,12 @@
         <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-runtime</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -324,31 +335,31 @@
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-api-jakarta</artifactId>
+            <artifactId>ironjacamar-common-api</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-common-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-common-impl</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-deployers-common-jakarta</artifactId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -411,12 +422,6 @@
             <artifactId>wsdl4j</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -448,14 +453,6 @@
                                     <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
                                 </systemPropertyVariables>
                                 <excludes>
-                                    <!-- Requires legacy security -->
-                                    <exclude>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</exclude>
-                                    <exclude>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</exclude>
                                     <!-- Requires EJB -->
                                     <exclude>org/jboss/as/test/smoke/ejb3/**/*TestCase.java</exclude>
                                     <exclude>org/jboss/as/test/smoke/property/EjbDDWithPropertyTestCase.java</exclude>
@@ -476,26 +473,6 @@
                                 </excludes>
                             </configuration>
                         </execution>
-
-                        <!-- Tests against the install with legacy security layer -->
-                        <execution>
-                            <id>legacy-security-layers.surefire</id>
-                            <phase>none</phase>
-                            <goals>
-                                <goal>test</goal>
-                            </goals>
-                            <configuration>
-                                <includes>
-                                    <include>org/jboss/as/test/smoke/mgmt/resourceadapter/ResourceAdapterOperationsUnitTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/configproperty/ConfigPropertyTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/earpackage/EarPackagedDeploymentTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/multiactivation/MultipleActivationTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectactivation/MultipleObjectActivationTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/multiobjectpartialactivation/MultipleObjectPartialActivationTestCase.java</include>
-                                    <include>org/jboss/as/test/smoke/deployment/rar/tests/raconnection/RaTestConnectionTestCase.java</include>
-                                </includes>
-                            </configuration>
-                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
@@ -513,8 +490,12 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                </configuration>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -523,20 +504,22 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/wildfly</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
+                            <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
                                     <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
                                     <version>${testsuite.ee.galleon.pack.version}</version>
-                                    <excluded-packages>
-                                        <name>docs</name>
-                                        <name>docs.licenses.merge</name>
-                                    </excluded-packages>
                                     <inherit-configs>false</inherit-configs>
+                                    <inherit-packages>false</inherit-packages>
                                     <included-configs>
                                         <config>
                                             <model>standalone</model>
@@ -553,10 +536,49 @@
                                     </included-configs>
                                 </feature-pack>
                             </feature-packs>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.ee.galleon.pack.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <config-name>standalone.xml</config-name>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-observability</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase.observability}</phase>
+                        <configuration>
+                            <expected-errors>
+                                <error>an add-on of the messaging family is expected by the messaging-activemq layer</error>
+                                <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <add-layers-for-jndi>h2-datasource</add-layers-for-jndi>
+                            <expected-discovery>[datasources, ee-integration, h2-datasource, jaxrs, messaging-activemq, naming, resource-adapters, servlet]==>ee-core-profile-server,h2-datasource,jaxrs,messaging-activemq</expected-discovery>
+                            <surefire-execution-for-included-classes>microprofile.surefire</surefire-execution-for-included-classes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>scan-legacy-sar-layers</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${glow.phase.sar}</phase>
+                        <configuration>
+                            <expected-discovery>[sar]==>ee-core-profile-server,sar</expected-discovery>
+                            <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>
                 </executions>
@@ -583,48 +605,7 @@
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                             </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>h2-default-datasource</layer>
-                            </layers>
-                        </configuration>
-                    </execution>
-
-                    <!-- Package a cloud-profile server with legacy security as well -->
-                    <execution>
-                        <id>bootable-jar-legacy-security-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-legacy-security-packaging.phase}</phase>
-                        <configuration>
-                            <output-file-name>test-wildfly-legacy-security.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.ee.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>h2-default-datasource</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -644,8 +625,9 @@
                 <plugins>
                     <plugin>
                         <!-- Turn off the standard galleon provisioning (doesn't work with mvnd) -->
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
@@ -677,8 +659,9 @@
                 <plugins>
                     <plugin>
                         <!-- Turn off the standard galleon provisioning -->
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
@@ -730,6 +713,8 @@
             </activation>
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <glow.phase.observability>test-compile</glow.phase.observability>
+                <glow.phase.sar>test-compile</glow.phase.sar>
             </properties>
             <build>
                 <plugins>
@@ -748,8 +733,12 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <!-- Provision a cloud-profile server -->
                             <execution>
@@ -757,74 +746,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
-                                </configuration>
-                            </execution>
-                            <!-- Provision a cloud-profile server with legacy-security as well -->
-                            <execution>
-                                <id>legacy-security-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>compile</phase>
-                                <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-security</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>h2-default-datasource</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
 
@@ -834,42 +767,18 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>process-test-classes</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly-legacy-sar</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly-legacy-sar</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <name>standalone.xml</name>
-                                            <layers>
-                                                <layer>sar</layer>
-
-                                                <!-- Needed by arquillian: protocol and security manager -->
-                                                <layer>jmx-remoting</layer>
-                                                <layer>security-manager</layer>
-
-                                                <!-- Needed by org.jboss.as.test.smoke.sar.ConfigService -->
-                                                <layer>logging</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/legacy-sar-layers.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -884,7 +793,6 @@
                                 <id>default-test</id>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Tests against the install without legacy security -->
                             <!-- Reuse the microprofile.surefire execution as the valid tests are the same.
                                  Just point to standalone.xml. -->
                             <execution>
@@ -899,30 +807,6 @@
                                         <module.path>${project.build.directory}/wildfly/modules${path.separator}${basedir}/target/modules</module.path>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <jboss.home>${project.build.directory}/wildfly-legacy-security</jboss.home>
-                                        <jboss.home.dir>${project.build.directory}/wildfly-legacy-security</jboss.home.dir>
-                                        <jbossas.dist>${project.build.directory}/wildfly-legacy-security</jbossas.dist>
-                                        <jboss.dist>${project.build.directory}/wildfly-legacy-security</jboss.dist>
-                                        <jboss.install.dir>${basedir}/target/wildfly-legacy-security</jboss.install.dir>
-                                        <!-- Override the standard module path that points at the shared module set from dist -->
-                                        <module.path>${project.build.directory}/wildfly-legacy-security/modules${path.separator}${basedir}/target/modules</module.path>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${project.build.directory}/wildfly-legacy-security</JBOSS_HOME>
-                                    </environmentVariables>
-                                    <!--<includes> included tests are defined in the common part of legacy-security-layers.surefire above </includes>-->
                                 </configuration>
                             </execution>
                             
@@ -974,8 +858,8 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
-                <bootable-jar-legacy-security-packaging.phase>process-test-resources</bootable-jar-legacy-security-packaging.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <glow.phase.observability>test-compile</glow.phase.observability>
             </properties>
             <build>
                 <plugins>
@@ -994,8 +878,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
@@ -1017,7 +902,6 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Tests against the cloud-server install without legacy security -->
                             <execution>
                                 <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
                                      as the set of tests we want is the same -->
@@ -1040,30 +924,6 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with legacy security -->
-                            <execution>
-                                <!-- We reuse the legacy-security-layers.surefire execution used for testing layers with legacy security
-                                     as the set of tests we want is the same -->
-                                <id>legacy-security-layers.surefire</id>
-                                <phase>test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <install.dir>${project.build.directory}/wildfly-bootable-legacy-security</install.dir>
-                                        <bootable.jar>${project.build.directory}/test-wildfly-legacy-security.jar</bootable.jar>
-                                        <arquillian.xml>arquillian-bootable.xml</arquillian.xml>
-                                    </systemPropertyVariables>
-                                    <classpathDependencyExcludes>
-                                        <classpathDependencyExclude>
-                                            org.wildfly.arquillian:wildfly-arquillian-container-managed
-                                        </classpathDependencyExclude>
-                                    </classpathDependencyExcludes>
-                                    <!--<includes> included tests are defined in the common part of legacy-security-layers.surefire above </includes>-->
-                                </configuration>
-                            </execution>
-
                         </executions>
                     </plugin>
                 </plugins>
@@ -1072,10 +932,10 @@
         
         <!-- Test against bootable jar -->
         <profile>
-            <id>bootablejar.ee9.profile</id>
+            <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.bootable.ee9</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>
@@ -1085,7 +945,8 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-cloud-profile-packaging.phase>process-test-resources</bootable-jar-cloud-profile-packaging.phase>
+                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <glow.phase.observability>test-compile</glow.phase.observability>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
@@ -1105,8 +966,9 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
@@ -1129,7 +991,6 @@
                                 <phase>none</phase>
                             </execution>
 
-                            <!-- Tests against the cloud-server install without legacy security -->
                             <execution>
                                 <!-- We reuse the microprofile.surefire execution used for testing standalone-microprofile.xml
                                      as the set of tests we want is the same -->
@@ -1157,12 +1018,12 @@
             </build>
         </profile>
 
-        <!-- Test against EE 9 dist -->
+        <!-- Test against WildFly Preview dist -->
         <profile>
-            <id>ee9.profile</id>
+            <id>preview.profile</id>
             <activation>
                 <property>
-                    <name>ts.ee9</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <build>

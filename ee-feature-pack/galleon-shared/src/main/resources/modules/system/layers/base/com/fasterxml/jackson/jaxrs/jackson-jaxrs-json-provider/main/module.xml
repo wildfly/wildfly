@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<!--
+    END USER MODULE USAGE: Deprecated module alias.
+
+    This module is an alias for the module specified in the 'target-name' attribute,
+    provided for compatibility purposes.
+    Uses of this module should be updated to use the target module.
+    This alias is deprecated and will be removed in a future release.
+-->
+<module-alias xmlns="urn:jboss:module:1.9" name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" target-name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider"/>

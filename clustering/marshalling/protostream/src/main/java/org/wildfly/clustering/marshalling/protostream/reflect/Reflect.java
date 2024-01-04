@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.reflect;
@@ -26,7 +9,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.security.PrivilegedAction;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -41,11 +27,32 @@ final class Reflect {
         return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Field>() {
             @Override
             public Field run() {
-                for (Field field : sourceClass.getDeclaredFields()) {
-                    if (field.getType().isAssignableFrom(fieldType)) {
-                        field.setAccessible(true);
-                        return field;
+                List<Field> assignableFields = new LinkedList<>();
+                Field[] fields = sourceClass.getDeclaredFields();
+                // Try first with precise type checking
+                for (Field field : fields) {
+                    Class<?> type = field.getType();
+                    if (!Modifier.isStatic(field.getModifiers()) && (type == fieldType)) {
+                        assignableFields.add(field);
                     }
+                }
+                // Retry with relaxed type checking, if necessary
+                if (assignableFields.isEmpty()) {
+                    for (Field field : fields) {
+                        Class<?> type = field.getType();
+                        if (!Modifier.isStatic(field.getModifiers()) && (type != Object.class) && type.isAssignableFrom(fieldType)) {
+                            assignableFields.add(field);
+                        }
+                    }
+                }
+                // We should not have matched more than 1 field
+                if (assignableFields.size() > 1) {
+                    throw new IllegalStateException(assignableFields.toString());
+                }
+                if (!assignableFields.isEmpty()) {
+                    Field field = assignableFields.get(0);
+                    field.setAccessible(true);
+                    return field;
                 }
                 Class<?> superClass = sourceClass.getSuperclass();
                 if ((superClass == null) || (superClass == Object.class)) {
@@ -60,11 +67,20 @@ final class Reflect {
         return WildFlySecurityManager.doUnchecked(new PrivilegedAction<Method>() {
             @Override
             public Method run() {
+                List<Method> matchingMethods = new LinkedList<>();
                 for (Method method : sourceClass.getDeclaredMethods()) {
-                    if ((method.getParameterCount() == 0) && (method.getReturnType() == returnType)) {
-                        method.setAccessible(true);
-                        return method;
+                    if (!Modifier.isStatic(method.getModifiers()) && (method.getParameterCount() == 0) && (method.getReturnType() == returnType)) {
+                        matchingMethods.add(method);
                     }
+                }
+                // We should not have matched more than 1 method
+                if (matchingMethods.size() > 1) {
+                    throw new IllegalStateException(matchingMethods.toString());
+                }
+                if (!matchingMethods.isEmpty()) {
+                    Method method = matchingMethods.get(0);
+                    method.setAccessible(true);
+                    return method;
                 }
                 Class<?> superClass = sourceClass.getSuperclass();
                 if ((superClass == null) || (superClass == Object.class)) {

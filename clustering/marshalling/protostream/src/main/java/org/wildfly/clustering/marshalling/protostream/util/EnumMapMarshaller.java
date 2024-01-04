@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream.util;
@@ -33,6 +16,7 @@ import java.util.List;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -61,24 +45,25 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     private static final int ENUM_SET_INDEX = 1;
 
     private final FieldSetMarshaller<EnumSet<E>, EnumSetBuilder<E>> marshaller = new EnumSetFieldSetMarshaller<>();
-    private final int valueIndex = this.marshaller.getFields() + 1;
+    private final int valueIndex = this.marshaller.nextIndex(ENUM_SET_INDEX);
 
     @Override
     public EnumMap<E, Object> readFrom(ProtoStreamReader reader) throws IOException {
-        EnumSetBuilder<E> builder = this.marshaller.getBuilder();
+        FieldSetReader<EnumSetBuilder<E>> enumReader = reader.createFieldSetReader(this.marshaller, ENUM_SET_INDEX);
+        EnumSetBuilder<E> builder = this.marshaller.createInitialValue();
         List<Object> values = new LinkedList<>();
         while (!reader.isAtEnd()) {
             int tag = reader.readTag();
             int index = WireType.getTagFieldNumber(tag);
-            if ((index >= ENUM_SET_INDEX) && (index < ENUM_SET_INDEX + this.marshaller.getFields())) {
-                builder = this.marshaller.readField(reader, index - ENUM_SET_INDEX, builder);
+            if (enumReader.contains(index)) {
+                builder = enumReader.readField(builder);
             } else if (index == this.valueIndex) {
                 values.add(reader.readAny());
             } else {
                 reader.skipField(tag);
             }
         }
-        EnumSet<E> enumSet = builder.build();
+        EnumSet<E> enumSet = builder.get();
         Iterator<E> enumValues = enumSet.iterator();
         EnumMap<E, Object> enumMap = new EnumMap<>(builder.getEnumClass());
         for (Object value : values) {
@@ -91,7 +76,7 @@ public class EnumMapMarshaller<E extends Enum<E>> implements ProtoStreamMarshall
     public void writeTo(ProtoStreamWriter writer, EnumMap<E, Object> map) throws IOException {
         EnumSet<E> set = EnumSet.noneOf(this.findEnumClass(map));
         set.addAll(map.keySet());
-        this.marshaller.writeFields(writer, ENUM_SET_INDEX, set);
+        writer.createFieldSetWriter(this.marshaller, ENUM_SET_INDEX).writeFields(set);
 
         for (Object value : map.values()) {
             writer.writeAny(this.valueIndex, value);

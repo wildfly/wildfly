@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <module xmlns="urn:jboss:module:1.5" name="protocol-change-interceptor-module">
     <resources>
         <resource-root path="client-side-interceptor.jar"/>
     </resources>
     <dependencies>
-        <module name="javax.interceptor.api"/>
+        <module name="jakarta.interceptor.api"/>
         <module name="org.jboss.ejb-client"/>
     </dependencies>
 </module>

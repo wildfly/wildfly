@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.web.hotrod.session;
 
@@ -32,6 +15,7 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
+import org.wildfly.clustering.ee.expiration.Expiration;
 import org.wildfly.clustering.web.cache.session.SessionFactory;
 import org.wildfly.clustering.web.cache.session.SimpleImmutableSession;
 import org.wildfly.clustering.web.cache.session.ValidSession;
@@ -58,8 +42,8 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     private final Batcher<TransactionBatch> batcher;
     private final Duration stopTimeout;
     private final Consumer<ImmutableSession> closeTask = Functions.discardingConsumer();
+    private final Expiration expiration;
 
-    private volatile Duration defaultMaxInactiveInterval = Duration.ofMinutes(30L);
     private volatile Registration expirationListenerRegistration;
 
     public HotRodSessionManager(SessionFactory<SC, MV, AV, LC> factory, HotRodSessionManagerConfiguration<SC> configuration) {
@@ -70,6 +54,7 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
         this.identifierFactory = configuration.getIdentifierFactory();
         this.batcher = configuration.getBatcher();
         this.stopTimeout = configuration.getStopTimeout();
+        this.expiration = configuration;
     }
 
     @Override
@@ -92,16 +77,6 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
     @Override
     public Batcher<TransactionBatch> getBatcher() {
         return this.batcher;
-    }
-
-    @Override
-    public Duration getDefaultMaxInactiveInterval() {
-        return this.defaultMaxInactiveInterval;
-    }
-
-    @Override
-    public void setDefaultMaxInactiveInterval(Duration duration) {
-        this.defaultMaxInactiveInterval = duration;
     }
 
     @Override
@@ -128,10 +103,9 @@ public class HotRodSessionManager<SC, MV, AV, LC> implements SessionManager<LC, 
 
     @Override
     public Session<LC> createSession(String id) {
-        Map.Entry<MV, AV> entry = this.factory.createValue(id, null);
+        Map.Entry<MV, AV> entry = this.factory.createValue(id, this.expiration.getTimeout());
         if (entry == null) return null;
         Session<LC> session = this.factory.createSession(id, entry, this.context);
-        session.getMetaData().setMaxInactiveInterval(this.defaultMaxInactiveInterval);
         return new ValidSession<>(session, this.closeTask);
     }
 

@@ -1,79 +1,51 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.undertow;
 
-import java.security.NoSuchAlgorithmException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
-import javax.net.ssl.SSLContext;
-
-import io.undertow.predicate.Predicates;
-import io.undertow.server.DefaultByteBufferPool;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import org.jboss.as.controller.ControlledProcessStateService;
+
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.as.remoting.HttpListenerRegistryService;
-import org.jboss.as.server.Services;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.as.server.suspend.SuspendController;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.junit.Assert;
-import org.wildfly.extension.io.IOServices;
-import org.wildfly.extension.io.WorkerService;
-import org.wildfly.extension.undertow.filters.FilterRef;
-import org.wildfly.extension.undertow.filters.FilterService;
-import org.wildfly.extension.undertow.filters.ModClusterService;
-import org.wildfly.security.auth.server.HttpAuthenticationFactory;
-import org.xnio.OptionMap;
-import org.xnio.Options;
-import org.xnio.Xnio;
-import org.xnio.XnioWorker;
+import org.junit.Before;
+import org.junit.Test;
 
-public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
-    public AbstractUndertowSubsystemTestCase() {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension());
+public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemSchemaTest<UndertowSubsystemSchema> {
+    final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
+    private final UndertowSubsystemSchema schema;
+
+    AbstractUndertowSubsystemTestCase() {
+        this(UndertowSubsystemSchema.CURRENT);
     }
 
-    public static void setProperty() {
+    AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
+        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
+        this.schema = schema;
+    }
+
+    @Before
+    public void setUp() {
         System.setProperty("server.data.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
@@ -81,116 +53,77 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
     }
 
     @Override
-      protected Properties getResolvedProperties() {
-          Properties properties = new Properties();
-          properties.put("jboss.home.dir", System.getProperty("java.io.tmpdir"));
-          properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
-          properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
-          return properties;
-      }
+    protected Properties getResolvedProperties() {
+        Properties properties = new Properties();
+        properties.put("jboss.home.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
+        properties.put("server.data.dir", System.getProperty("java.io.tmpdir"));
+        return properties;
+    }
 
-    public static void testRuntime(KernelServices mainServices, final String virtualHostName, int schemaVersion) throws InterruptedException {
+    @Test
+    public void testRuntime() throws Exception {
+        // Skip runtime tests for old versions - since legacy SSO is only allowed in admin-only mode
+        if (!this.schema.since(UndertowSubsystemSchema.VERSION_14_0)) return;
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(getSubsystemXml());
+        KernelServices mainServices = builder.build();
+
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
-        ServiceController connectionLimiter = mainServices.getContainer()
-                .getService(UndertowService.FILTER.append("limit-connections"));
-        connectionLimiter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService connectionLimiterService = (FilterService) awaitServiceValue(connectionLimiter);
-        HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
-        Assert.assertNotNull("handler should have been created", result);
 
-        ServiceController headersFilter = mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
-        headersFilter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService headersService = (FilterService) awaitServiceValue(headersFilter);
-        HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
+        HandlerWrapper connectionLimiterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("limit-connections")).get();
+        HttpHandler connectionLimiterHandler = connectionLimiterService.wrap(new PathHandler());
+        Assert.assertNotNull("handler should have been created", connectionLimiterHandler);
+
+        HandlerWrapper headersService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("headers")).get();
+        HttpHandler headerHandler = headersService.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
-        if (schemaVersion >= 3) {
-            ServiceController modClusterServiceServiceController = mainServices.getContainer()
-                    .getService(UndertowService.FILTER.append("mod-cluster"));
-            modClusterServiceServiceController.setMode(ServiceController.Mode.ACTIVE);
-            ModClusterService modClusterService = (ModClusterService) awaitServiceValue(modClusterServiceServiceController);
-            Assert.assertNotNull(modClusterService);
-            Assert.assertNotNull(modClusterService.getModCluster());
+        HandlerWrapper modClusterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("mod-cluster")).get();
+        Assert.assertNotNull(modClusterService);
 
-            HttpHandler modClusterHandler = modClusterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
-            Assert.assertNotNull("handler should have been created", modClusterHandler);
-        }
+        HttpHandler modClusterHandler = modClusterService.wrap(new PathHandler());
+        Assert.assertNotNull("handler should have been created", modClusterHandler);
 
-
-        final ServiceName undertowServiceName = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
-        ServiceController<?> undertowServiceService = mainServices.getContainer().getService(undertowServiceName);
-        Assert.assertNotNull(undertowServiceService);
-        undertowServiceService.setMode(ServiceController.Mode.ACTIVE);
-        final UndertowService undertowService = (UndertowService) awaitServiceValue(undertowServiceService);
+        UndertowService undertowService = (UndertowService) this.values.get(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()).get();
         Assert.assertEquals("some-id", undertowService.getInstanceId());
-        if (schemaVersion > 1)
-            Assert.assertTrue(undertowService.isStatisticsEnabled());
-        else
-            Assert.assertFalse(undertowService.isStatisticsEnabled());
-        if (schemaVersion > 1)
-            Assert.assertEquals("some-server", undertowService.getDefaultServer());
+        Assert.assertTrue(undertowService.isStatisticsEnabled());
+        Assert.assertEquals("some-server", undertowService.getDefaultServer());
         Assert.assertEquals("myContainer", undertowService.getDefaultContainer());
         Assert.assertEquals("default-virtual-host", undertowService.getDefaultVirtualHost());
 
-        // We need to wait for the server to register itself with the undertow service
-        awaitServiceValue(mainServices.getContainer().getService(ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName(virtualHostName)));
-
         // Don't verify servers until we know they are registered
         Assert.assertEquals(1, undertowService.getServers().size());
-        final Server server = undertowService.getServers().iterator().next();
+        Server server = undertowService.getServers().iterator().next();
         Assert.assertEquals("other-host", server.getDefaultHost());
 
-        // We need to wait for each host to register itself with the server
-        awaitServiceValue(mainServices.getContainer().getService(HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "default-virtual-host")));
-
-        final ServiceName hostServiceName = HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(virtualHostName, "other-host");
-        ServiceController hostSC = mainServices.getContainer().getService(hostServiceName);
-        Assert.assertNotNull(hostSC);
-        hostSC.setMode(ServiceController.Mode.ACTIVE);
-
-        Host host = (Host) awaitServiceValue(hostSC);
+        Host host = (Host) this.values.get(HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "other-host")).get();
 
         // Don't verify hosts until we know that they are all registered
         Assert.assertEquals(2, server.getHosts().size());
-        if (schemaVersion > 1)
-            Assert.assertEquals("some-server", server.getName());
+        Assert.assertEquals("some-server", server.getName());
 
-        if (schemaVersion >=3) {
-            Assert.assertEquals(3, host.getAllAliases().size());
-            Assert.assertTrue(host.getAllAliases().contains("default-alias"));
-        }
+        Assert.assertEquals(3, host.getAllAliases().size());
+        Assert.assertTrue(host.getAllAliases().contains("default-alias"));
 
-        final ServiceName locationServiceName = UndertowService.locationServiceName(virtualHostName, "default-virtual-host", "/");
-        ServiceController locationSC = mainServices.getContainer().getService(locationServiceName);
-        Assert.assertNotNull(locationSC);
-        locationSC.setMode(ServiceController.Mode.ACTIVE);
-        LocationService locationService = (LocationService) awaitServiceValue(locationSC);
+        LocationService locationService = (LocationService) this.values.get(UndertowService.locationServiceName("some-server", "default-virtual-host", "/")).get();
         Assert.assertNotNull(locationService);
-        connectionLimiter.setMode(ServiceController.Mode.REMOVE);
-        final ServiceName servletContainerServiceName = UndertowService.SERVLET_CONTAINER.append("myContainer");
-        ServiceController servletContainerService = mainServices.getContainer().getService(servletContainerServiceName);
-        Assert.assertNotNull(servletContainerService);
-        JSPConfig jspConfig = ((ServletContainerService) awaitServiceValue(servletContainerService)).getJspConfig();
+
+        JSPConfig jspConfig = ((ServletContainerService) this.values.get(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName("myContainer")).get()).getJspConfig();
         Assert.assertNotNull(jspConfig);
         Assert.assertNotNull(jspConfig.createJSPServletInfo());
 
-        final ServiceName filterRefName = UndertowService.filterRefName(virtualHostName, "other-host", "/", "static-gzip");
-
-        ServiceController gzipFilterController = mainServices.getContainer().getService(filterRefName);
-        gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
-        FilterRef gzipFilterRef = (FilterRef) awaitServiceValue(gzipFilterController);
-        HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
+        UndertowFilter gzipFilterRef = (UndertowFilter) this.values.get(UndertowService.filterRefName("some-server", "other-host", "/", "static-gzip")).get();
+        HttpHandler gzipHandler = gzipFilterRef.wrap(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
 
-        // We need to ensure filter has registered itself with the host
-        awaitServiceValue(mainServices.getContainer().getService(UndertowService.filterRefName(virtualHostName, "other-host", "headers")));
         Assert.assertEquals(1, host.getFilters().size());
 
         ModelNode op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
+                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
                         .append("servlet-container", "myContainer")
                         .append("setting", "websockets")
         );
@@ -202,8 +135,8 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         // WFLY-14648 Check expression in enabled attribute is resolved.
         op = Util.createOperation("write-attribute",
-                PathAddress.pathAddress(UndertowExtension.SUBSYSTEM_PATH)
-                        .append("server", virtualHostName)
+                PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT)
+                        .append("server", "some-server")
                         .append("http-listener", "default")
         );
         op.get("name").set("enabled");
@@ -211,133 +144,27 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
         res = ModelTestUtils.checkOutcome(mainServices.executeOperation(op));
         Assert.assertNotNull(res);
-    }
 
-    public static void testRuntimeOther(KernelServices mainServices) throws InterruptedException {
-        ServiceController defaultHostSC = mainServices.getContainer().getService(UndertowService.DEFAULT_HOST);
-        defaultHostSC.setMode(ServiceController.Mode.ACTIVE);
-        Host defaultHost = (Host) awaitServiceValue(defaultHostSC);
+        Host defaultHost = (Host) this.values.get(UndertowService.DEFAULT_HOST).get();
         Assert.assertNotNull("Default host should exist", defaultHost);
 
-        ServiceController defaultServerSC = mainServices.getContainer().getService(UndertowService.DEFAULT_SERVER);
-        defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
-        Server defaultServer = (Server) awaitServiceValue(defaultServerSC);
+        Server defaultServer = (Server) this.values.get(UndertowService.DEFAULT_SERVER).get();
         Assert.assertNotNull("Default host should exist", defaultServer);
-    }
 
-    public static void testRuntimeLast(KernelServices mainServices) throws InterruptedException {
-        final ServiceName accessLogServiceName = UndertowService.accessLogServiceName("some-server", "default-virtual-host");
-        ServiceController accessLogSC = mainServices.getContainer().getService(accessLogServiceName);
-        Assert.assertNotNull(accessLogSC);
-        accessLogSC.setMode(ServiceController.Mode.ACTIVE);
-        AccessLogService accessLogService = (AccessLogService) awaitServiceValue(accessLogSC);
+        AccessLogService accessLogService = (AccessLogService) this.values.get(UndertowService.accessLogServiceName("some-server", "default-virtual-host")).get();
         Assert.assertNotNull(accessLogService);
         Assert.assertFalse(accessLogService.isRotate());
+
+        if (this.schema.since(UndertowSubsystemSchema.VERSION_13_0)) {
+            PathAddress address = PathAddress.pathAddress(UndertowRootDefinition.PATH_ELEMENT, PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN, "other"), SingleSignOnDefinition.PATH_ELEMENT);
+            ModelNode result = mainServices.executeOperation(Util.getWriteAttributeOperation(address, SingleSignOnDefinition.Attribute.PATH.getName(), new ModelNode("/modified-path")));
+            assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+            assertTrue("It is expected that reload is required after the operation.", result.get(ModelDescriptionConstants.RESPONSE_HEADERS).get(ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean());
+        }
     }
-
-
-    static final AdditionalInitialization DEFAULT = new DefaultInitialization();
-    static final AdditionalInitialization RUNTIME = new RuntimeInitialization();
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return DEFAULT;
-    }
-
-    private static Object awaitServiceValue(ServiceController controller) throws InterruptedException {
-        try {
-            return controller.awaitValue(2, TimeUnit.MINUTES);
-        } catch (TimeoutException e) {
-            controller.getServiceContainer().dumpServices();
-            Assert.fail(String.format("ServiceController %s did not provide a value within 2 minutes; mode is %s and state is %s", controller.getName(), controller.getMode(), controller.getState()));
-            throw new IllegalStateException("unreachable");
-        }
-    }
-
-    private static class RuntimeInitialization extends DefaultInitialization {
-        @Override
-        protected RunningMode getRunningMode() {
-            return RunningMode.NORMAL;
-        }
-
-        @Override
-        protected void addExtraServices(ServiceTarget target) {
-            super.addExtraServices(target);
-            try {
-                SSLContext sslContext = SSLContext.getDefault();
-
-                target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)).setInstance(new SuspendController()).install();
-                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
-                target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
-                target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
-
-                ServiceBuilder<?> builder1 = target.addService(IOServices.WORKER.append("default"));
-                Consumer<XnioWorker> workerConsumer1 = builder1.provides(IOServices.WORKER.append("default"));
-                builder1.setInstance(
-                        new WorkerService(
-                                workerConsumer1,
-                                () -> Executors.newFixedThreadPool(1),
-                                Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
-                builder1.install();
-
-                ServiceBuilder<?> builder2 = target.addService(IOServices.WORKER.append("non-default"));
-                Consumer<XnioWorker> workerConsumer2 = builder2.provides(IOServices.WORKER.append("non-default"));
-                builder2.setInstance(
-                        new WorkerService(
-                                workerConsumer2,
-                                () -> Executors.newFixedThreadPool(1),
-                                Xnio.getInstance().createWorkerBuilder().populateFromOptions(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap())));
-                builder2.install();
-
-                target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
-
-                final ServiceBuilder<?> sb0 = target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
-                final Consumer<DefaultByteBufferPool> dbbpConsumer = sb0.provides(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
-                sb0.setInstance(Service.newInstance(dbbpConsumer, new DefaultByteBufferPool(true, 2048)));
-                sb0.install();
-
-                // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
-                // InetSocketAddress.createUnresolved("localhost",8080));
-                target.addService(ServiceName.parse(Capabilities.REF_HTTP_LISTENER_REGISTRY)).setInstance(new HttpListenerRegistryService()).install();
-                final ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "temp");
-                final ServiceBuilder<?> sb1 = target.addService(tmpDirPath);
-                final Consumer<String> c = sb1.provides(tmpDirPath);
-                sb1.setInstance(Service.newInstance(c, System.getProperty("java.io.tmpdir")));
-                sb1.install();
-
-                HttpAuthenticationFactory authenticationFactory = HttpAuthenticationFactory.builder()
-                        .build();
-                final ServiceBuilder<?> sb4 = target.addService(ServiceName.parse("org.wildfly.security.http-authentication-factory.factory"));
-                final Consumer<HttpAuthenticationFactory> hafConsumer = sb4.provides(ServiceName.parse("org.wildfly.security.http-authentication-factory.factory"));
-                sb4.setInstance(Service.newInstance(hafConsumer, authenticationFactory));
-                sb4.install();
-
-                ServiceName sslContextServiceName = ServiceName.parse("org.wildfly.security.ssl-context.TestContext");
-                final ServiceBuilder<?> sb5 = target.addService(sslContextServiceName);
-                final Consumer<SSLContext> scConsumer = sb5.provides(sslContextServiceName);
-                sb5.setInstance(Service.newInstance(scConsumer, sslContext));
-                sb5.install();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
-    private static final class NullService implements org.jboss.msc.service.Service<ControlledProcessStateService> {
-        @Override
-        public void start(StartContext context) {
-
-        }
-
-        @Override
-        public void stop(StopContext context) {
-
-        }
-
-        @Override
-        public ControlledProcessStateService getValue() throws IllegalStateException, IllegalArgumentException {
-            return null;
-        }
+        return new DefaultInitialization();
     }
 }

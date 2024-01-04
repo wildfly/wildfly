@@ -1,28 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.integration.elytron.oidc.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
@@ -122,9 +106,11 @@ public abstract class OidcBaseTest {
 
     public static void sendRealmCreationRequest(RealmRepresentation realm) {
         try {
+            String adminAccessToken = KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl());
+            assertNotNull(adminAccessToken);
             RestAssured
                     .given()
-                    .auth().oauth2(KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl()))
+                    .auth().oauth2(adminAccessToken)
                     .contentType("application/json")
                     .body(JsonSerialization.writeValueAsBytes(realm))
                     .when()
@@ -344,12 +330,21 @@ public abstract class OidcBaseTest {
     }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
-        loginToApp(appName, username, password, expectedStatusCode, expectedText, true);
+        loginToApp(username, password, expectedStatusCode, expectedText, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI());
+    }
+
+    public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText, URI requestUri) throws Exception {
+        loginToApp(username, password, expectedStatusCode, expectedText, true, requestUri);
     }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak) throws Exception {
-        final URI requestUri = new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
-                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI();
+        loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + appName + SimpleSecuredServlet.SERVLET_PATH).toURI());
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri) throws Exception {
         CookieStore store = new BasicCookieStore();
         HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
@@ -368,7 +363,7 @@ public abstract class OidcBaseTest {
                 assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
                 if (expectedText != null) {
                     String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
-                    assertTrue(responseString.contains(expectedText));
+                    assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
                 }
             } else {
                 assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);

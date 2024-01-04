@@ -1,27 +1,10 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2021, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.jsf.version;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.FilePermission;
 import java.io.IOException;
@@ -29,7 +12,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.PropertyPermission;
-
 import jakarta.faces.context.FacesContext;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -52,22 +34,19 @@ import org.jboss.as.test.integration.jsf.version.ejb.JSFMyFacesEJB;
 import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.test.shared.util.LoggingUtil;
-import org.jboss.modules.maven.ArtifactCoordinates;
-import org.jboss.modules.maven.MavenResolver;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 
 /**
  * Tests different ways to add Jakarta Server Faces implementation in ear files
@@ -77,7 +56,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({JSFDeploymentProcessorTestCase.TestLogHandlerSetup.class})
 @RunAsClient
-@Ignore("WFLY-16528")
 public class JSFDeploymentProcessorTestCase {
 
     private static final String WEB_BUNDLED_JSF = "bundled-jsf";
@@ -98,12 +76,6 @@ public class JSFDeploymentProcessorTestCase {
     @ArquillianResource
     @OperateOnDeployment(WEB_FACES_CONFIG_XML)
     private URL facesConfigXml;
-
-    @BeforeClass
-    public static void beforeClass() {
-        // https://issues.redhat.com/browse/WFLY-15367
-        AssumeTestGroupUtil.assumeSecurityManagerDisabledOrAssumeJDKVersionBefore(11);
-    }
 
     /**
      * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
@@ -132,13 +104,22 @@ public class JSFDeploymentProcessorTestCase {
         war.addAsWebResource(JSFVersion.class.getPackage(), "jsfmyfacesversion.xhtml", "jsfmyfacesversion.xhtml");
         war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
 
-        //add Jakarta Server Faces as webapp lib
-
-        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-beanutils", "commons-beanutils", "1.9.3")));
-        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-collections", "commons-collections", "3.2.2")));
-        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("commons-digester", "commons-digester", "1.8")));
-        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("org.apache.myfaces.core", "myfaces-api", "2.0.24")));
-        war.addAsLibrary(MavenResolver.createDefaultResolver().resolveJarArtifact(new ArtifactCoordinates("org.apache.myfaces.core", "myfaces-impl", "2.0.24")));
+        // Do not add these libraries that would then be scanned by WildFly Glow when instantiating/scanning the deployment.
+        if (!GlowUtil.isGlowScan()) {
+            //add Jakarta Server Faces as webapp lib
+            final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
+            war.addAsLibraries(
+                    resolver.resolve(
+                                    "commons-beanutils:commons-beanutils:1.9.3",
+                                    "commons-collections:commons-collections:3.2.2",
+                                    "commons-digester:commons-digester:1.8",
+                                    "org.apache.myfaces.core:myfaces-api:2.0.24",
+                                    "org.apache.myfaces.core:myfaces-impl:2.0.24"
+                            )
+                            .withoutTransitivity()
+                            .asFile()
+            );
+        }
 
         // add the .war
         ear.addAsModule(war);

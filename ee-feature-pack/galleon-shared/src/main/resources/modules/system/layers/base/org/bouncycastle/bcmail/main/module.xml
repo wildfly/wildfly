@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.bouncycastle.bcmail">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <!-- bcjmail is the Jakarta version of bcmail -->
+        <artifact name="${org.bouncycastle:bcjmail-jdk18on}"/>
+    </resources>
+
+    <dependencies>
+        <!-- Required for the IBM J9 1.8 -->
+        <module name="java.se"/>
+        <module name="jakarta.mail.api" optional="true"/>
+        <module name="jakarta.activation.api" optional="true"/>
+        <module name="org.bouncycastle.bcpkix"/>
+        <module name="org.bouncycastle.bcprov"/>
+        <module name="org.bouncycastle.bcutil"/>
+    </dependencies>
+</module>

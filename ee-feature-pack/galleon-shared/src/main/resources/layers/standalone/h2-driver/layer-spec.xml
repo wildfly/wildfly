@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="h2-driver">
+    <props>
+        <prop name="org.wildfly.rule.xml-path" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/datasource/driver,h2"/>
+        <prop name="org.wildfly.rule.xml-path-xa" value="[/WEB-INF/*.xml,/META-INF/*.xml],/datasources/xa-datasource/driver,h2"/>
+    </props>
+    <dependencies>
+        <layer name="datasources"/>
+        <layer name="base-server"/>
+    </dependencies>
+    <feature-group name="h2-driver"/>
+    <packages>
+        <package name="com.h2database.h2"/>
+    </packages>
+</layer-spec>

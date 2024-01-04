@@ -9,7 +9,14 @@ WildFly team;
 :doctype: book
 :icons: font
 :source-highlighter: coderay
-ifdef::env-github[:imagesdir: images/]
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
 
 // ifndef::ebook-format[:leveloffset: 1]
 
@@ -26,7 +33,7 @@ application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
 lightweight and powerful implementation of the Jakarta
 Enterprise Edition 10 specifications. WildFly's modular architecture built on the
 JBoss Modules and JBoss Modular Service Container projects enables services on-demand when your
-application requires them. The table below lists the technologies available in WildFly {wildflyVersion}
+application requires them. The table below lists the Jakarta technologies available in WildFly {wildflyVersion}
 server configuration profiles.
 
 [cols=",,,,",options="header"]
@@ -72,13 +79,16 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Messaging 3.1 |X |-- |X |--
 
+| Jakarta MVC 2.1
+(_WildFly Preview only_)|--|--|--|--
+
 |Jakarta Persistence 3.1 |X |X |X |X
 
 |Jakarta RESTful Web Services 3.1 |X |X |X |X
 
 |Jakarta Security 3.0 |X |X |X |X
 
-|Jakarta Server Faces 4.0 |X |X |X |X
+|Jakarta Faces 4.0 |X |X |X |X
 
 |Jakarta Server Pages 3.1 |X |X |X |X
 
@@ -114,8 +124,6 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 |MicroProfile Metrics 4.0 (deprecated in WildFly; will be replaced by link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[Micrometer]) |-- |X
 
 |MicroProfile OpenAPI 3.0 |-- |X
-
-|MicroProfile OpenTracing 3.0 (deprecated; use link:Admin_Guide{outfilesuffix}#Observability_Tracing[OpenTelemetry]) |X |X
 
 |MicroProfile Reactive Messaging 3.0 |-- |--
 
@@ -438,7 +446,7 @@ As with previous WildFly releases, you can point your browser to
 *_http://localhost:8080_* (if using the default configured http port)
 which brings you to the Welcome Screen:
 
-image:wildfly.png[images/wildfly.png]
+image:images/wildfly.png[wildfly.png]
 
 From here you can access links to the WildFly community documentation
 set, stay up-to-date on the latest project information, have a

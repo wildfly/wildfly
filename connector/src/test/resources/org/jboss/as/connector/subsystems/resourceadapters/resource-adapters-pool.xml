@@ -1,4 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:6.1">
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -16,7 +21,7 @@
       <!--Optional:-->
       <transaction-support>NoTransaction</transaction-support>
       <workmanager>
-        <security>
+        <security enabled="true">
           <mapping-required>false</mapping-required>
           <domain>domain</domain>
           <default-groups>
@@ -84,11 +89,7 @@
           <!--Optional:-->
           <recovery no-recovery="false">
             <!--Optional:-->
-            <recover-credential>
-              <!--Optional:-->
-              <user-name>userName</user-name>
-              <!--Optional:-->
-              <password>pwd</password>
+            <recover-credential user-name="userName" password="password">
               <!--Optional:-->
               <security-domain>token</security-domain>
             </recover-credential>

@@ -1,28 +1,12 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.datasources.agroal;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import io.agroal.api.AgroalDataSource;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
@@ -37,6 +21,12 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.credential.source.CredentialSource;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Operations for adding and removing an xa-datasource resource to the model
@@ -80,17 +70,15 @@ class XADataSourceOperations extends AbstractAddStepHandler {
 
             String jndiName = AbstractDataSourceDefinition.JNDI_NAME_ATTRIBUTE.resolveModelAttribute(context, model).asString();
             String driverName = AbstractDataSourceDefinition.DRIVER_ATTRIBUTE.resolveModelAttribute(context, factoryModel).asString();
-
-            DataSourceService dataSourceService = new DataSourceService(datasourceName, jndiName, false, false, true, dataSourceConfiguration);
-
-            CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName))
-                    .setInstance(dataSourceService)
-                    .addCapabilityRequirement(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class, dataSourceService.getDriverInjector());
+            CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName));
+            final Consumer<AgroalDataSource> consumer = serviceBuilder.provides(AbstractDataSourceDefinition.DATA_SOURCE_CAPABILITY.fromBaseCapability(datasourceName));
+            final Supplier<Class> driverSupplier = serviceBuilder.requiresCapability(DriverDefinition.AGROAL_DRIVER_CAPABILITY.getDynamicName(driverName), Class.class);
+            final Supplier<AuthenticationContext> authenticationContextSupplier = AbstractDataSourceOperations.setupAuthenticationContext(context, factoryModel, serviceBuilder);
+            final Supplier<ExceptionSupplier<CredentialSource, Exception>> credentialSourceSupplier = AbstractDataSourceOperations.setupCredentialReference(context, factoryModel, serviceBuilder);
             // TODO add a Stage.MODEL requirement
-            serviceBuilder.addCapabilityRequirement("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class, dataSourceService.getTransactionSynchronizationRegistryInjector());
-
-            AbstractDataSourceOperations.setupElytronSecurity(context, factoryModel, dataSourceService, serviceBuilder);
-
+            final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier = serviceBuilder.requiresCapability("org.wildfly.transactions.transaction-synchronization-registry", TransactionSynchronizationRegistry.class);
+            DataSourceService dataSourceService = new DataSourceService(consumer, driverSupplier, authenticationContextSupplier, credentialSourceSupplier, txnRegistrySupplier, datasourceName, jndiName, false, false, true, dataSourceConfiguration);
+            serviceBuilder.setInstance(dataSourceService);
             serviceBuilder.install();
         }
     }

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  - Copyright The WildFly Authors
+  - SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1280px" height="384px" viewBox="0 0 1280 384" enable-background="new 0 0 1280 384" xml:space="preserve">  <image id="image0" width="1280" height="384" x="0" y="0"
     xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABQAAAAGACAYAAADyG888AAAABGdBTUEAALGPC/xhBQAAACBjSFJN

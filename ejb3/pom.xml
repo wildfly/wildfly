@@ -1,27 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-vi:ts=4:sw=4:expandtab
--->
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!--
-~ JBoss, Home of Professional Open Source.
-~ Copyright (c) 2011, Red Hat, Inc., and individual contributors
-~ as indicated by the @author tags. See the copyright.txt file in the
-~ distribution for a full listing of individual contributors.
-~
-~ This is free software; you can redistribute it and/or modify it
-~ under the terms of the GNU Lesser General Public License as
-~ published by the Free Software Foundation; either version 2.1 of
-~ the License, or (at your option) any later version.
-~
-~ This software is distributed in the hope that it will be useful,
-~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-~ Lesser General Public License for more details.
-~
-~ You should have received a copy of the GNU Lesser General Public
-~ License along with this software; if not, write to the Free
-~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+vi:ts=4:sw=4:expandtab
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -35,7 +19,7 @@ vi:ts=4:sw=4:expandtab
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -49,6 +33,13 @@ vi:ts=4:sw=4:expandtab
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-standard-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-standard-test-bom</artifactId>
+                <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -74,7 +65,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
         </dependency>
 
         <dependency>
@@ -159,7 +150,7 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
-            <artifactId>openjdk-orb-jakarta</artifactId>
+            <artifactId>openjdk-orb</artifactId>
         </dependency>
 
         <dependency>
@@ -243,8 +234,14 @@ vi:ts=4:sw=4:expandtab
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-integration-jakarta</artifactId>
+            <artifactId>narayana-jts-integration</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming-client</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.wildfly.transaction</groupId>
             <artifactId>wildfly-transaction-client</artifactId>
@@ -288,7 +285,7 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>org.jboss</groupId>
-            <artifactId>jboss-iiop-client-jakarta</artifactId>
+            <artifactId>jboss-iiop-client</artifactId>
         </dependency>
 
         <dependency>
@@ -316,7 +313,7 @@ projects that depend on this project.-->
 
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-ejb-jakarta</artifactId>
+            <artifactId>jboss-metadata-ejb</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>jakarta.ejb</groupId>
@@ -326,7 +323,7 @@ projects that depend on this project.-->
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-common-jakarta</artifactId>
+            <artifactId>jboss-metadata-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.metadata</groupId>
@@ -400,6 +397,17 @@ projects that depend on this project.-->
         </dependency>
 
         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core-jakarta</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
             <type>pom</type>
@@ -408,8 +416,7 @@ projects that depend on this project.-->
 
         <dependency>
             <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <type>pom</type>
+            <artifactId>groovy</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

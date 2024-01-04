@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.component.deployers;
@@ -50,8 +33,8 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.modules.Module;
 
-import javax.annotation.Resource;
-import javax.annotation.Resources;
+import jakarta.annotation.Resource;
+import jakarta.annotation.Resources;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,14 +62,14 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
-        locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
-        locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
+        locations.put("jakarta.transaction.UserTransaction", "java:jboss/UserTransaction");
+        locations.put("jakarta.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context available
         //so we can only use it for resources that are not valid to be entries in application.xml
-        locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
-        locations.put("javax.ejb.TimerService", "java:comp/TimerService");
+        locations.put("jakarta.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
+        locations.put("jakarta.ejb.TimerService", "java:comp/TimerService");
         locations.put("org.omg.CORBA.ORB", "java:comp/ORB");
         FIXED_LOCATIONS = Collections.unmodifiableMap(locations);
 

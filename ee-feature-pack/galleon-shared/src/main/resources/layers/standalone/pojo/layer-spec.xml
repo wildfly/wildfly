@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="pojo">
+    <props>
+        <prop name="org.wildfly.rule.expected-file" value="[/META-INF/*jboss-beans.xml,/WEB-INF/*jboss-beans.xml,/WEB-INF/classes/META-INF/*jboss-beans.xml]"/>
+    </props>
+    <dependencies>
+        <layer name="base-server"/>
+    </dependencies>
+    <feature spec="subsystem.pojo"/>
+</layer-spec>

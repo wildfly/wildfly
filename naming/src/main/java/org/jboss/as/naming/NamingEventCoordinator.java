@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.naming;
@@ -59,7 +42,7 @@ public class NamingEventCoordinator {
 
     private final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
         public JBossThreadFactory run() {
-            return new JBossThreadFactory(new ThreadGroup("NamingEventCoordinator-threads"), Boolean.FALSE, null, "%G - %t", null, null);
+            return new JBossThreadFactory(ThreadGroupHolder.THREAD_GROUP, Boolean.FALSE, null, "%G - %t", null, null);
         }
     });
 
@@ -261,5 +244,9 @@ public class NamingEventCoordinator {
             result = 31 * result + scope;
             return result;
         }
+    }
+
+    private static class ThreadGroupHolder {
+        private static final ThreadGroup THREAD_GROUP = new ThreadGroup("NamingEventCoordinator-threads");
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="servlet-host" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="core-host"/>
+
+    <feature spec="host">
+        <param name="host" value="primary"/>
+        <feature spec="host.interface">
+            <param name="interface" value="private"/>
+            <param name="inet-address" value="${jboss.bind.address.private:127.0.0.1}"/>
+        </feature>
+        <feature spec="host.jvm">
+            <param name="jvm" value="default"/>
+            <param name="jvm-options" value="[&quot;-server&quot;,&quot;-XX:MetaspaceSize=96m&quot;,&quot;-XX:MaxMetaspaceSize=256m&quot;]"/>
+        </feature>
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-two"/>
+            <feature spec="host.server-config.jvm">
+                <param name="jvm" value="default"/>
+            </feature>
+        </feature>
+        <feature spec="host.server-config">
+            <param name="server-config" value="server-three"/>
+            <feature spec="host.server-config.jvm">
+                <param name="jvm" value="default"/>
+            </feature>
+        </feature>
+    </feature>
+
+    <feature-group name="host-primary"/>
+
+</feature-group-spec>

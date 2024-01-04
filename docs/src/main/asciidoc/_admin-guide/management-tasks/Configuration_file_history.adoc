@@ -1,6 +1,14 @@
 [[Configuration_file_history]]
 = Configuration file history
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The management operations may modify the model. When this occurs the xml
 backing the model is written out again reflecting the latest changes. In
 addition a full history of the file is maintained. The history of the

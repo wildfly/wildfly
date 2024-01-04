@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <jboss-web>
     <security-domain>database_cert_domain</security-domain>
     <proactive-authentication>true</proactive-authentication>

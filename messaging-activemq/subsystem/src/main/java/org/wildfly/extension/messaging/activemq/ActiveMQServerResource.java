@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -33,15 +16,13 @@ import java.util.Set;
 import org.apache.activemq.artemis.api.core.management.AddressControl;
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
-import org.apache.activemq.artemis.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Resource representing a ActiveMQ server.
@@ -51,7 +32,7 @@ import org.jboss.msc.service.ServiceController;
 public class ActiveMQServerResource implements Resource {
 
     private final Resource delegate;
-    private volatile ServiceController<ActiveMQServer> activeMQServerServiceController;
+    private volatile ServiceController<ActiveMQBroker> activeMQServerServiceController;
 
     public ActiveMQServerResource() {
         this(Factory.create());
@@ -61,11 +42,11 @@ public class ActiveMQServerResource implements Resource {
         this.delegate = delegate;
     }
 
-    public ServiceController<ActiveMQServer> getActiveMQServerServiceController() {
+    public ServiceController<ActiveMQBroker> getActiveMQServerServiceController() {
         return activeMQServerServiceController;
     }
 
-    public void setActiveMQServerServiceController(ServiceController<ActiveMQServer> activeMQServerServiceController) {
+    public void setActiveMQServerServiceController(ServiceController<ActiveMQBroker> activeMQServerServiceController) {
         this.activeMQServerServiceController = activeMQServerServiceController;
     }
 
@@ -98,7 +79,7 @@ public class ActiveMQServerResource implements Resource {
     @Override
     public Resource getChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
-            return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getManagementService()) : null;
+            return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getActiveMQBroker()) : null;
         } else if (RUNTIME_QUEUE.equals(element.getKey())) {
             return hasQueueControl(element.getValue()) ? PlaceholderResource.INSTANCE : null;
         } else {
@@ -110,7 +91,7 @@ public class ActiveMQServerResource implements Resource {
     public Resource requireChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
             if (hasAddressControl(element)) {
-                return new CoreAddressResource(element.getValue(), getManagementService());
+                return new CoreAddressResource(element.getValue(), getActiveMQBroker());
             }
             throw new NoSuchResourceException(element);
         } else if (RUNTIME_QUEUE.equals(element.getKey())) {
@@ -140,7 +121,7 @@ public class ActiveMQServerResource implements Resource {
             if (address.size() > 1) {
                 throw new NoSuchResourceException(address.getElement(1));
             }
-            return new CoreAddressResource(address.getElement(0).getValue(), getManagementService());
+            return new CoreAddressResource(address.getElement(0).getValue(), getActiveMQBroker());
         } else if (address.size() > 0 && RUNTIME_QUEUE.equals(address.getElement(0).getKey())) {
             if (address.size() > 1) {
                 throw new NoSuchResourceException(address.getElement(1));
@@ -180,7 +161,7 @@ public class ActiveMQServerResource implements Resource {
         if (CORE_ADDRESS.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             for (String name : getCoreAddressNames()) {
-                result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getManagementService()));
+                result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getActiveMQBroker()));
             }
             return result;
         } else if (RUNTIME_QUEUE.equals(childType)) {
@@ -239,22 +220,22 @@ public class ActiveMQServerResource implements Resource {
     }
 
     private boolean hasAddressControl(PathElement element) {
-        final ManagementService managementService = getManagementService();
-        return managementService == null ? false : managementService.getResource(ResourceNames.ADDRESS + element.getValue()) != null;
+        final ActiveMQBroker broker = getActiveMQBroker();
+        return broker == null ? false : broker.getResource(ResourceNames.ADDRESS + element.getValue()) != null;
     }
 
     private boolean hasQueueControl(String name) {
-        final ManagementService managementService = getManagementService();
-        return managementService == null ? false : managementService.getResource(ResourceNames.QUEUE + name) != null;
+        final ActiveMQBroker broker = getActiveMQBroker();
+        return broker == null ? false : broker.getResource(ResourceNames.QUEUE + name) != null;
     }
 
     private Set<String> getCoreAddressNames() {
-        final ManagementService managementService = getManagementService();
-        if (managementService == null) {
+        final ActiveMQBroker broker = getActiveMQBroker();
+        if (broker == null) {
             return Collections.emptySet();
         } else {
             Set<String> result = new HashSet<String>();
-            for (Object obj : managementService.getResources(AddressControl.class)) {
+            for (Object obj : broker.getResources(AddressControl.class)) {
                 AddressControl ac = AddressControl.class.cast(obj);
                 result.add(ac.getAddress());
             }
@@ -263,12 +244,12 @@ public class ActiveMQServerResource implements Resource {
     }
 
     private Set<String> getCoreQueueNames() {
-        final ManagementService managementService = getManagementService();
-        if (managementService == null) {
+        final ActiveMQBroker broker = getActiveMQBroker();
+        if (broker == null) {
             return Collections.emptySet();
         } else {
             Set<String> result = new HashSet<String>();
-            for (Object obj : managementService.getResources(QueueControl.class)) {
+            for (Object obj : broker.getResources(QueueControl.class)) {
                 QueueControl qc = QueueControl.class.cast(obj);
                 result.add(qc.getName());
             }
@@ -276,12 +257,12 @@ public class ActiveMQServerResource implements Resource {
         }
     }
 
-    private ManagementService getManagementService() {
+    private ActiveMQBroker getActiveMQBroker() {
         if (activeMQServerServiceController == null
                 || activeMQServerServiceController.getState() != ServiceController.State.UP) {
             return null;
         } else {
-            return activeMQServerServiceController.getValue().getManagementService();
+            return activeMQServerServiceController.getValue();
         }
     }
 }

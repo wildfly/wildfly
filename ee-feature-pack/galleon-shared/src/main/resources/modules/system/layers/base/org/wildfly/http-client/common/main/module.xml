@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.http-client.common">
+
+    <resources>
+         <artifact name="${org.wildfly.wildfly-http-client:wildfly-http-client-common}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.naming"/>
+        <module name="java.xml"/>
+        <module name="org.jboss.xnio" />
+        <module name="org.wildfly.client.config"/>
+        <module name="io.undertow.core" />
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling" />
+        <module name="org.jboss.marshalling.river" />
+        <module name="org.wildfly.security.elytron"/>
+    </dependencies>
+</module>

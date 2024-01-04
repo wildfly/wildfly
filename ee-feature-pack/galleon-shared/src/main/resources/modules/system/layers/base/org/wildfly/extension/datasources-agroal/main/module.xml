@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.extension.datasources-agroal">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-datasources-agroal}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.agroal"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="java.security.jgss"/>
+        <module name="java.sql"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.logging"/>
+        <module name="io.smallrye.jandex"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.wildfly.security.elytron"/>
+        <module name="org.wildfly.transaction.client"/>
+    </dependencies>
+</module>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.resource.api">
+
+    <resources>
+        <artifact name="${jakarta.resource:jakarta.resource-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.desktop"/>
+        <module name="java.naming" export="false">
+            <exports>
+                <include path="javax/naming"/>
+            </exports>
+        </module>
+        <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
+        <module name="jakarta.transaction.api" export="true"/>
+    </dependencies>
+</module>

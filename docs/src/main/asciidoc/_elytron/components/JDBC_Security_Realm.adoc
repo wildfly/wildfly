@@ -1,6 +1,14 @@
 [[jdbc-security-realm]]
 = JDBC Security Realm
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The JDBC security realm is a security realm developed to support loading identities from a database with the option of multiple credentials and multiple attributes each with the option of containing multiple values.
 
 When defining the JDBC security realm one or more principal queries can be defined, each of these can load a credential and / or attributes for the resulting identity.  Each defined principal query is associated with it's own datasource, this means quite a complex configuration can be created loading the different aspects of an identity from multiple locations.

@@ -1,6 +1,14 @@
 [[jboss-ejb3]]
 = jboss-ejb3.xml Reference
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 `jboss-ejb3.xml` is a custom deployment descriptor that can be placed in
 either ejb-jar or war archives. If it is placed in an ejb-jar then it
 must be placed in the `META-INF` folder, in a web archive it must be

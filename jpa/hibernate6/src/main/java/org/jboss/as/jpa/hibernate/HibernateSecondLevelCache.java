@@ -1,19 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.jpa.hibernate;
@@ -46,7 +33,7 @@ import org.jipijapa.event.impl.internal.Notification;
  */
 public class HibernateSecondLevelCache {
 
-    private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v60.InfinispanRegionFactory";
+    private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v62.InfinispanRegionFactory";
 
     public static final String CACHE_TYPE = "cachetype";    // shared (Jakarta Persistence) or private (for native applications)
     public static final String CACHE_PRIVATE = "private";

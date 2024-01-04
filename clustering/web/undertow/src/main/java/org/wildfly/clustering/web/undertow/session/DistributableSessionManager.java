@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.web.undertow.session;
 
@@ -38,7 +21,6 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.server.session.SessionManagerStatistics;
-import io.undertow.servlet.UndertowServletMessages;
 import io.undertow.util.AttachmentKey;
 
 import org.wildfly.clustering.ee.Batch;
@@ -65,7 +47,9 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
     private final SessionManager<Map<String, Object>, Batch> manager;
     private final RecordableSessionManagerStatistics statistics;
     private final StampedLock lifecycleLock = new StampedLock();
-    private final boolean allowOrphanSession;
+
+    // Matches io.undertow.server.session.InMemorySessionManager
+    private volatile int defaultSessionTimeout = 30 * 60;
 
     // Guarded by this
     private OptionalLong lifecycleStamp = OptionalLong.empty();
@@ -75,7 +59,6 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         this.manager = config.getSessionManager();
         this.listeners = config.getSessionListeners();
         this.statistics = config.getStatistics();
-        this.allowOrphanSession = config.isOrphanSessionAllowed();
     }
 
     @Override
@@ -150,16 +133,11 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
-        // Workaround for UNDERTOW-1902
         if (exchange.isResponseStarted()) { // Should match the condition in io.undertow.servlet.spec.HttpServletResponseImpl#isCommitted()
-            // The servlet specification mandates that an ISE be thrown here
-            if (this.allowOrphanSession) {
-                // Return a single use session to be garbage collected at the end of the request
-                io.undertow.server.session.Session session = new OrphanSession(this, this.manager.getIdentifierFactory().get());
-                session.setMaxInactiveInterval((int) this.manager.getDefaultMaxInactiveInterval().getSeconds());
-                return session;
-            }
-            throw UndertowServletMessages.MESSAGES.responseAlreadyCommited();
+            // Return single-use session to be garbage collected at the end of the request
+            io.undertow.server.session.Session session = new OrphanSession(this, this.manager.getIdentifierFactory().get());
+            session.setMaxInactiveInterval(this.defaultSessionTimeout);
+            return session;
         }
 
         String requestedId = config.findSessionId(exchange);
@@ -272,7 +250,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
 
     @Override
     public void setDefaultSessionTimeout(int timeout) {
-        this.manager.setDefaultMaxInactiveInterval(Duration.ofSeconds(timeout));
+        this.defaultSessionTimeout = timeout;
     }
 
     @Override
@@ -297,7 +275,7 @@ public class DistributableSessionManager implements UndertowSessionManager, Long
         if (!IDENTIFIER_MARSHALLER.validate(sessionId)) {
             return null;
         }
-        Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.createLocalContext());
+        Session<Map<String, Object>> session = new OOBSession<>(this.manager, sessionId, LocalSessionContextFactory.INSTANCE.get());
         return session.isValid() ? new DistributableSession(this, session, new SimpleSessionConfig(sessionId), null, Functions.discardingConsumer(), null) : null;
     }
 

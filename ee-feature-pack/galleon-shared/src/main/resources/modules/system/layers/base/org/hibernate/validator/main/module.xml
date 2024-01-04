@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.validator">
+
+  <resources>
+    <artifact name="${org.hibernate.validator:hibernate-validator}"/>
+  </resources>
+
+  <dependencies>
+    <module name="java.desktop"/>
+    <module name="java.scripting"/>
+    <module name="java.xml"/>
+    <module name="com.fasterxml.classmate"/>
+    <module name="jakarta.persistence.api"/>
+    <module name="jakarta.validation.api"/>
+    <module name="jakarta.xml.bind.api"/>
+    <module name="org.glassfish.expressly"/>
+    <module name="org.jboss.logging"/>
+    <module name="org.jboss.weld.core"/>
+    <module name="org.jboss.weld.spi"/>
+    <module name="org.joda.time"/>
+  </dependencies>
+</module>

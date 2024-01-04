@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="ejb-appclient">
+    <dependencies>
+        <package name="appclient"/>
+        <package name="bin.appclient"/>
+        <package name="org.jboss.as.appclient"/>
+    </dependencies>
+</package-spec>

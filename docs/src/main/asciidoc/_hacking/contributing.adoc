@@ -1,5 +1,14 @@
 [[Contributing]]
 = Development environment
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 * Latest Maven build tool https://maven.apache.org/
 * OpenJDK 11 (eleven!) You can use any distribution in example Eclipse https://adoptium.net/
 * Eclipse https://www.eclipse.org/downloads/packages/[Eclipse Download] or any other IDE allowing correct source formatting (IntelliJ)
@@ -64,6 +73,11 @@ Make sure there is a JIRA somewhere for the enhancement/fix
 
 * https://issues.redhat.com/projects/WFLY (for WildFly full)
 * https://issues.redhat.com/projects/WFCORE (for WildFly Core)
+
+== Good First Issues
+Want to contribute to the WildFly project but aren't quite sure where to start? Check out our issues with the https://issues.redhat.com/browse/WFLY-15654?filter=12403174[good-first-issue] label. These are a triaged set of issues that are great for getting started on our project.
+
+Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. If you've resolved a WildFly issue before, to assign an issue to yourself, you should be able to simply click on "Start Progress" or Change the assignee by clicking on "Assign to me". This will automatically assign the issue to you. If you haven't resolved an issue before, please start a thread expressing your interest in the issue in the https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers[wildfly-developers] stream in zulip.
 
 == Special cases
 For component upgrades select this type for the Jira. The title must reflect the library and the new version.

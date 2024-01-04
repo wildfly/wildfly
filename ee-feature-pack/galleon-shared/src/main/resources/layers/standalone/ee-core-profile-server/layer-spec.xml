@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ee-core-profile-server">
+    <props>
+        <prop name="org.wildfly.rule.kind" value="default-base-layer"/>
+    </props>
+    <dependencies>
+        <layer name="core-server"/>
+        <layer name="cdi"/>
+        <layer name="ee-integration"/>
+        <layer name="elytron"/>  <!-- Non optional dependency needed due to use of undertow-elytron-security feature-group-->
+        <layer name="jaxrs-core"/>
+        <layer name="jsonp"/>
+        <layer name="jsonb"/>
+    </dependencies>
+    <!-- Ensure we have an application-security-domain mapping i.e. default security-domain -->
+    <feature-group name="undertow-elytron-security"/>
+</layer-spec>

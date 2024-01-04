@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.integration.elytron.application;
@@ -37,7 +20,6 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.extension.elytron._private.ElytronSubsystemMessages;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
@@ -148,7 +130,7 @@ public class CredentialStoreTestCase extends AbstractCredentialStoreTestCase {
                         CS_NAME_MODIFIABLE, alias, alias), true);
                 ModelNode result = ModelNode.fromString(cli.readOutput());
                 assertEquals("result " + result, result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(),
-                        ElytronSubsystemMessages.ROOT_LOGGER.credentialAlreadyExists(alias, PasswordCredential.class.getName()).getMessage());
+                        String.format("WFLYELY00913: Credential alias '%s' of credential type '%s' already exists in the store", alias, PasswordCredential.class.getName()));
             } finally {
                 cli.sendLine(
                         String.format("/subsystem=elytron/credential-store=%s:remove-alias(alias=%s)", CS_NAME_MODIFIABLE, alias));

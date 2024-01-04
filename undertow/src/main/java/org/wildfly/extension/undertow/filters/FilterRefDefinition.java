@@ -1,42 +1,29 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow.filters;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
+import io.undertow.server.HandlerWrapper;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,6 +35,7 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.extension.undertow.UndertowFilter;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -55,7 +43,7 @@ import org.wildfly.extension.undertow.UndertowService;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
-
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.FILTER_REF);
     public static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
             .setRequired(false)
             .setAllowExpression(true)
@@ -70,24 +58,23 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PREDICATE, PRIORITY);
 
-
-    private FilterRefDefinition() {
-        super(UndertowExtension.PATH_FILTER_REF,
-                UndertowExtension.getResolver(Constants.FILTER_REF),
-                new FilterRefAdd(),
-                new ServiceRemoveStepHandler(new FilterRefAdd()) {
+    public FilterRefDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
+                .setAddHandler(new FilterRefAdd())
+                .setRemoveHandler(new ServiceRemoveStepHandler(new FilterRefAdd()) {
                     @Override
                     protected ServiceName serviceName(String name, PathAddress address) {
                         return UndertowService.getFilterRefServiceName(address, name);
                     }
-                });
+                })
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(PREDICATE, PRIORITY);
+        return ATTRIBUTES;
     }
 
     static class FilterRefAdd extends AbstractAddStepHandler {
@@ -128,10 +115,10 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
             final ServiceBuilder<?> sb = target.addService(sn);
-            final Consumer<FilterRef> frConsumer = sb.provides(sn);
-            final Supplier<FilterService> fSupplier = sb.requires(UndertowService.FILTER.append(name));
+            final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
+            final Supplier<HandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
             final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
-            sb.setInstance(new FilterRef(frConsumer, fSupplier, lSupplier, predicate, priority));
+            sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
             sb.install();
         }
     }

@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <server xmlns="urn:jboss:domain:1.5">
     <management>
         <security-realms>

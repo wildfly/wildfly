@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -11,15 +16,15 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
-    <!-- ************************* Manual-mode Integration Tests ************************** -->
+    <!-- ********* Manual-mode Integration Tests for base (EE etc) functionality ********** -->
     <!-- ********************************************************************************** -->
     <artifactId>wildfly-ts-integ-manualmode</artifactId>
 
-    <name>WildFly Test Suite: Integration - Manual Mode Tests</name>
+    <name>WildFly Test Suite: Integration - Manual Mode Tests -- Base</name>
 
     <properties>
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
@@ -28,10 +33,9 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
-        <!-- JVM args -->
-        <microprofile.server.jvm.args>${server.jvm.args} -Djboss.node.name=microprofile</microprofile.server.jvm.args>
-        <!-- This module has some MicroProfile tests, so use a bom that includes expansion dependencies -->
-        <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+
+        <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
+        <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
     </properties>
 
     <dependencies>
@@ -128,7 +132,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api-jakarta</artifactId>
+            <artifactId>ironjacamar-core-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,12 +164,12 @@
              the tests fail for some reason. Changing the return type to DistributedWorkManager seems to cause issues -->
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-impl-jakarta</artifactId>
+            <artifactId>ironjacamar-core-impl</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-jdbc-jakarta</artifactId>
+            <artifactId>ironjacamar-jdbc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -179,33 +183,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.microprofile.health</groupId>
-            <artifactId>microprofile-health-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman-submit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-client-api</artifactId>
+            <artifactId>resteasy-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-context</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -311,7 +300,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
-            <artifactId>narayana-jts-idlj-jakarta</artifactId>
+            <artifactId>narayana-jts-idlj</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -340,14 +329,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-client-all</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-channel</artifactId>
+            <type>yaml</type>
+            <classifier>manifest</classifier>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
+            <version>100000.0.1.Final-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -402,8 +397,86 @@
                             </system-properties>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>multi-channel-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${channel.provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>false</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <galleon-options>
+                                <jboss-maven-dist>false</jboss-maven-dist>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <!-- TODO needing to add this seems not user-friendly -->
+                                <ignore-not-excluded-layers>true</ignore-not-excluded-layers>
+                            </galleon-options>
+                        <channels>
+                        <channel>
+                            <manifest>
+                                <groupId>${ee.maven.groupId}</groupId>
+                                <artifactId>wildfly-ee-channel</artifactId>
+                                <version>${ee.maven.version}</version>
+                            </manifest>
+                        </channel>
+                        <channel>
+                            <manifest>
+                                 <url>${project.baseUri}/target/test-classes/product-conf-override-manifest.yaml</url>
+                            </manifest>
+                        </channel>
+                        </channels>
+                        <feature-packs>
+                            <feature-pack>
+                                <groupId>${ee.maven.groupId}</groupId>
+                                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                <version>${ee.maven.version}</version>
+                            </feature-pack>
+                        </feature-packs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>channel-provisioning-comparison</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>${channel.provisioning.phase}</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-from-channel</provisioning-dir>
+                            <record-provisioning-state>true</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>true</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <galleon-options>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                            </galleon-options>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${ee.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee-channel</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <version>${ee.maven.version}</version>
+                                    <included-packages>
+                                        <name>docs.examples.configs</name>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
+
             <!-- Generate the keystores and truststore needed for the manualmode tests -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -468,7 +541,6 @@
                         <byteman.port>${byteman.port}</byteman.port>
                         <jvm.args>${jvm.args.ip.server} ${modular.jdk.args} -Dmaven.repo.local=${settings.localRepository}</jvm.args>
                         <server.jvm2.args>${surefire.system.args} ${jvm.args.ip} -Djboss.bind.address=${node1} -Djboss.bind.address.management=${node1} -Djboss.bind.address.unsecure=${node1} -Dnode0=${node0} -Dnode1=${node1} ${modular.jdk.args}</server.jvm2.args>
-                        <microprofile.server.jvm.args>${microprofile.server.jvm.args}</microprofile.server.jvm.args>
                         <arquillian.launch>manual-mode</arquillian.launch>
                         <jboss.config.file.name>standalone-ha.xml</jboss.config.file.name>
                         <ryuk.container.timeout>60</ryuk.container.timeout>
@@ -484,6 +556,8 @@
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
+                        <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -541,6 +615,10 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
+                            <execution>
+                                <id>channel-provisioning-comparison</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -559,27 +637,32 @@
             </build>
         </profile>
         <profile>
-            <id>disable.microprofile.profile</id>
+            <id>external.wildfly.channels</id>
             <activation>
                 <property>
-                    <name>disable.microprofile.tests</name>
+                    <name>external.wildfly.channels</name>
                 </property>
             </activation>
-            <build>
-                <plugins>
-                    <!-- Surefire. -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <exclude>org/wildfly/test/manual/management/MPScriptTestCase.java</exclude>
-                                <exclude>org/wildfly/test/manual/microprofile/**/*TestCase.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+                <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
+                <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
+            </properties>
+        </profile>
+        <profile>
+            <id>internal.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>internal.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+                <!-- Stop arquillian blowing up on a non-existent dir for an arquillian.xml config -->
+                <multichannel.jboss.home>${project.build.directory}/wildfly</multichannel.jboss.home>
+            </properties>
         </profile>
     </profiles>
 </project>

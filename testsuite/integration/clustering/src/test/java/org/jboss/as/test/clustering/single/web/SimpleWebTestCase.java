@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.clustering.single.web;
 
@@ -45,7 +28,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -111,12 +94,27 @@ public class SimpleWebTestCase {
         Assert.assertNotEquals(0, result.get(ModelDescriptionConstants.RESULT).asInt());
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder.node("single")
-                    .setup("/subsystem=infinispan/cache-container=web/local-cache=passivation:write-attribute(name=statistics-enabled, value=true)")
-                    .teardown("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
-                    ;
+            super("single", createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            // Switch to primary-owner routing to validate WFLY-18095
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=routing:add")
+                            .add("/subsystem=distributable-web/routing=infinispan:add(cache-container=web, cache=routing)")
+                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=primary-owner:add")
+                            .endBatch()
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:write-attribute(name=statistics-enabled, value=true)")
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=passivation:undefine-attribute(name=statistics-enabled)")
+                            .startBatch()
+                            .add("/subsystem=distributable-web/infinispan-session-management=default/affinity=local:add")
+                            .add("/subsystem=distributable-web/routing=infinispan:remove")
+                            .add("/subsystem=infinispan/cache-container=web/local-cache=routing:remove")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
 }

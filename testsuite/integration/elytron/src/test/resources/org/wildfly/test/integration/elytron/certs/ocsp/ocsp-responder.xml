@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <OCSPServer master="true" xmlns="http://xipki.org/ocsp/conf/v2">
     <responders>
         <responder name="responder1">

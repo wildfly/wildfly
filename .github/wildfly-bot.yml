@@ -1,0 +1,245 @@
+wildfly:
+  rules:
+    - id: appclient
+      directories: [ appclient ]
+      notify: [ bstansberry ]
+
+    - id: batch-jberet
+      directories: [ batch-jberet ]
+      notify: [ chengfang ]
+
+    - id: bean-validation
+      directories: [ bean-validation ]
+      notify: [ jasondlee ]
+
+    - id: clustering
+      directories: 
+        - clustering
+        - testsuite/integration/clustering
+      notify: [ pferraro ]
+
+    - id: connector
+      directories: [ connector ]
+      notify: [ tadamski ]
+
+    - id: ee
+      directories: [ ee ]
+      notify: [ bstansberry ]
+
+    - id: ejb3
+      directories: [ ejb3 ]
+      notify: [ chengfang ]
+
+    - id: elytron
+      directories: 
+        - elytron-oidc-client
+        - testsuite/integration/elytron
+        - testsuite/integration/elytron-oidc-client
+      notify: [ fjuma ]
+
+    - id: health
+      directories:
+        - health
+        - microprofile/health-smallrye
+        - testsuite/integration/microprofile-tck/health
+      notify: [ xstefank ]
+
+    - id: iiop
+      directories: [ iiop-openjdk ]
+      notify: [ tadamski ]
+
+    - id: jaxrs
+      directories: [ jaxrs ]
+      notify: [ jamezp ]
+
+    - id: jdr
+      directories: [ jdr ]
+      notify: [ bmaxwell ]
+
+    - id: jpa
+      directories: [ jpa ]
+      notify: [ scottmarlow ]
+
+    - id: jsf
+      directories: [ jsf ]
+      notify: [ jasondlee ]
+
+    - id: mail
+      directories: [ mail ]
+      notify: [ yersan ]
+
+    - id: messaging-activemq
+      directories: [ messaging-activemq ]
+      notify: [ ehsavoie ]
+
+    - id: metrics
+      directories: [ metrics ]
+      notify: [ jasondlee ]
+      
+    - id: micrometer
+      directories:
+        - observability/micrometer
+        - observability/micrometer-api
+      notify: [ jasondlee ]
+      
+    - id: opentelemtry
+      directories:
+        - observability/opentelemetry
+        - observability/opentelemetry-api
+        - microprofile/telemetry-smallrye
+        - testsuite/integration/microprofile-tck/telemetry
+      notify: [ jasondlee ]
+
+    - id: mod_cluster
+      directories: [ mod_cluster ]
+      notify: [ rhusar ]
+
+    - id: naming
+      directories: [ naming ]
+      notify: [ ropalka ]
+
+    - id: picketlink
+      directories: [ picketlink ]
+      notify: [ fjuma ]
+
+    - id: pojo
+      directories: [ pojo ]
+      notify: [ bstansberry ]
+
+    - id: rts
+      directories: [ rts ]
+      notify: [ mmusgrove ]
+
+    - id: sar
+      directories: [ sar ]
+      notify: [ kabir ]
+
+    - id: security
+      directories: [ security ]
+      notify: [ fjuma ]
+
+    - id: spec-api
+      directories: [ spec-api ]
+      notify: [ bstansberry ]
+
+    - id: system-jmx
+      directories: [ system-jmx ]
+      notify: [ kabir ]
+
+    - id: microprofile-config
+      directories:
+        - microprofile/config-smallrye
+        - testsuite/integration/microprofile-tck/config
+      notify: [ kabir ]
+      
+    - id: microprofile-fault-tolerance
+      directories:
+        - microprofile/fault-tolerance-smallrye
+        - testsuite/integration/microprofile-tck/fault-tolerance
+      notify: [ rhusar ]
+      
+    - id: microprofile-jwt
+      directories:
+        - microprofile/jwt-smallrye
+        - testsuite/integration/microprofile-tck/jwt
+      notify: [ fjuma ]
+      
+    - id: microprofile-lra
+      directories:
+        - microprofile/lra
+        - testsuite/integration/microprofile-tck/lra
+      notify: [ xstefank ]
+      
+    - id: microprofile-openapi
+      directories:
+        - microprofile/openapi-smallrye
+        - testsuite/integration/microprofile-tck/openapi
+      notify: [ pferraro ]
+      
+    - id: microprofile-reactive
+      directories:
+        - microprofile/reactive-messaging-smallrye
+        - microprofile/reactive-streams-operators-smallrye
+        - testsuite/integration/microprofile-tck/reactive-messaging
+        - testsuite/integration/microprofile-tck/reactive-streams-operators
+      notify: [ kabir ]
+      
+    - id: microprofile-rest-client
+      directories:
+        - testsuite/integration/microprofile-tck/rest-client
+      notify: [ jamezp ]
+      
+    - id: testsuite-domain
+      directories:
+        - testsuite/domain
+      notify: [ yersan ]
+      
+    - id: testsuite-galleon
+      directories:
+        - testsuite/galleon
+      notify: [ jfdenise ]
+      
+    - id: testsuite-multinode
+      directories:
+        - testsuite/integration/multinode
+      notify: [ chengfang ]
+      
+    - id: testsuite-rbac
+      directories:
+        - testsuite/integration/rbac
+      notify: [ yersan ]
+      
+    - id: testsuite-vdx
+      directories:
+        - testsuite/integration/vdx
+      notify: [ bstansberry ]
+      
+    - id: testsuite-ws
+      directories:
+        - testsuite/integration/ws
+      notify: [ jimma ]
+      
+    - id: testsuite-mixed-domain
+      directories:
+        - testsuite/mixed-domain
+      notify: [ yersan ]
+
+    - id: transactions
+      directories: 
+        - transactions
+        - testsuite/integration/rts
+        - testsuite/integration/xts
+      notify: [ mmusgrov ]
+
+    - id: undertow
+      directories: [ undertow ]
+      notify: [ fl4via ]
+
+    - id: web-common
+      directories: [ web-common ]
+      notify: [ pferraro, fl4via ]
+
+    - id: webservices
+      directories: [ webservices ]
+      notify: [ jimma ]
+
+    - id: weld
+      directories: [ weld ]
+      notify: [ manovotn ]
+
+    - id: xts
+      directories: [ xts ]
+      notify: [ mmusgrov ]
+
+  emails:
+    - mstefank@redhat.com
+    - pberan@redhat.com
+    - rbudinsk@redhat.com
+    - brian.stansberry@redhat.com
+  
+  format:
+    description:
+      regexes:
+        - pattern: "https://issues.redhat.com/browse/WFLY-\\d+"
+          message: "The description must contain a link to the JIRA issue \n(https://issues.redhat.com/browse/WFLY-XYZ)"
+

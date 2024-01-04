@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ejb3.component;
@@ -58,14 +41,13 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
         for(ViewDescription view : description.getViews()) {
             if(view.getViewClassName().equals(description.getComponentClassName())) {
                 noInterface = true;
+                break;
             }
         }
 
-        EjbValidationsUtil.getBusinessMethods(configuration.getComponentClass());
-
         EjbValidationsUtil.verifyEjbClassAndDefaultConstructor(ctor, configuration.getComponentClass().getEnclosingClass(), noInterface, description.getComponentName(), description.getComponentClassName(), configuration.getComponentClass().getModifiers());
-        EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(configuration.getComponentClass().getDeclaredMethods(),description.getComponentClassName());
+        EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(configuration.getComponentClass().getMethods(),description.getComponentClassName());
         for ( Class<?> interfaceClass : configuration.getComponentClass().getInterfaces())
-            EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(interfaceClass.getDeclaredMethods(), interfaceClass.getCanonicalName());
+            EjbValidationsUtil.verifyEjbPublicMethodAreNotFinalNorStatic(interfaceClass.getMethods(), interfaceClass.getCanonicalName());
     }
 }

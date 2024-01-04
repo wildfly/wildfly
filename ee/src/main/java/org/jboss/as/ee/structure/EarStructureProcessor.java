@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.ee.structure;
@@ -125,12 +108,12 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         String relativeName = child.getPathNameRelativeTo(deploymentRoot.getRoot());
                         MountedDeploymentOverlay overlay = overlays.get(relativeName);
                         final MountHandle mountHandle;
-                        if(overlay != null) {
+                        if (overlay != null) {
                             overlay.remountAsZip(false);
-                            mountHandle = new MountHandle(null);
+                            mountHandle = MountHandle.create(null);
                         } else {
                             final Closeable closable = child.isFile() ? mount(child, false) : null;
-                            mountHandle = new MountHandle(closable);
+                            mountHandle = MountHandle.create(closable);
                         }
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_EXTENSION)) {
@@ -250,7 +233,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static Closeable mount(VirtualFile moduleFile, boolean explode) throws IOException {
         return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
-                : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
+                : VFS.mountZip(moduleFile.getPhysicalFile(), moduleFile, TempFileProviderService.provider());
     }
 
     /**
@@ -269,7 +252,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
     private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file, final boolean markAsSubDeployment, final boolean explodeDuringMount) throws IOException {
         final boolean war = file.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
         final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : exportExplodedWar(war, file, deploymentUnit);
-        final MountHandle mountHandle = new MountHandle(closable);
+        final MountHandle mountHandle = MountHandle.create(closable);
         final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
         if (markAsSubDeployment) {

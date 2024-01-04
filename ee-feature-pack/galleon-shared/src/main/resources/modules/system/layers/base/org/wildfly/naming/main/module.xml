@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.naming">
+    <properties>
+        <property name="jboss.api" value="public"/>
+    </properties>
+
+    <dependencies>
+        <module name="org.jboss.as.naming" export="true">
+            <imports>
+                <include-set>
+                    <path name="org/wildfly/naming/java/permission"/>
+                </include-set>
+            </imports>
+        </module>
+    </dependencies>
+</module>

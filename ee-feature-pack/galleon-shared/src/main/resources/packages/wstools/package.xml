@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="wstools">
+    <dependencies>
+        <package name="bin.wstools"/>
+        <package name="org.jboss.ws.tools.wsconsume"/>
+        <package name="org.jboss.ws.tools.wsprovide"/>
+    </dependencies>
+</package-spec>

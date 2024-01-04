@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.ejb.infinispan.bean;
@@ -40,12 +23,10 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.ee.Key;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
-import org.wildfly.clustering.ejb.cache.bean.BeanCreationMetaDataKey;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.infinispan.listener.ListenerRegistration;
 import org.wildfly.clustering.infinispan.listener.PostActivateBlockingListener;
-import org.wildfly.clustering.infinispan.listener.PostPassivateBlockingListener;
 import org.wildfly.clustering.infinispan.listener.PrePassivateBlockingListener;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.service.AsyncServiceConfigurator;
@@ -91,7 +72,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
             this.executor = this.getBlockingManager().asExecutor(this.getClass().getName());
             this.postActivateListenerRegistration = new PostActivateBlockingListener<>(this.getCache(), this::postActivate).register(BeanGroupKey.class);
             this.prePassivateListenerRegistration = new PrePassivateBlockingListener<>(this.getCache(), this::prePassivate).register(BeanGroupKey.class);
-            this.postPassivateListenerRegistration = new PostPassivateBlockingListener<>(this.getCache(), this::cascadeEvict).register(BeanCreationMetaDataKey.class);
         }
     }
 
@@ -133,7 +113,7 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
                     instance.prePassivate();
                     passivated.add(instance);
                     // Cascade eviction to creation meta data entry
-                    this.executor.execute(() -> cache.evict(new InfinispanBeanCreationMetaDataKey<>(id)));
+                    this.executor.execute(() -> cache.evict(new InfinispanBeanMetaDataKey<>(id)));
                 }
             } catch (RuntimeException | Error e) {
                 // Restore state of pre-passivated beans
@@ -151,11 +131,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
         } catch (IOException e) {
             InfinispanEjbLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
         }
-    }
-
-    void cascadeEvict(BeanCreationMetaDataKey<K> key) {
-        // Cascade eviction to access meta data entry
-        this.getCache().evict(new InfinispanBeanAccessMetaDataKey<>(key.getId()));
     }
 
     @SuppressWarnings("unchecked")

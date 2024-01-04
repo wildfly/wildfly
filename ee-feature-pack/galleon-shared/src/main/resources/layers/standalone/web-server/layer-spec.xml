@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="web-server">
+    <dependencies>
+        <layer name="naming"/>
+        <layer name="ee"/>
+        <layer name="deployment-scanner" optional="true"/>
+        <layer name="servlet"/>
+    </dependencies>
+</layer-spec>

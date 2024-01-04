@@ -1,22 +1,6 @@
 /*
- * Copyright (C) 2019 Red Hat, inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301  USA
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.jaxrs.cfg;
 
@@ -43,6 +27,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.jaxrs.JaxrsAttribute;
 import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.test.integration.jaxrs.packaging.war.WebXml;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -109,6 +94,7 @@ public class ResteasyAttributeTestCase {
         @Override
         protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
             setAttributeValues(client.getControllerClient());
+            ServerReload.reloadIfRequired(client);
         }
     }
     /**
@@ -267,6 +253,11 @@ public class ResteasyAttributeTestCase {
     public void testAttributes() throws IOException {
         WebTarget target = jaxrsClient.target(url.toString() + "myjaxrs/attribute");
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
+            // Ignore these attributes as they are not set in the context as the attributes are not public. These are
+            // also tested elsewhere
+            if ("tracing-type".equals(attribute.getName()) || "tracing-threshold".equals(attribute.getName())) {
+                continue;
+            }
             testAttribute(target, attribute);
         }
     }
@@ -279,33 +270,34 @@ public class ResteasyAttributeTestCase {
             resteasyName = changeHyphensToDots(resteasyName);
         }
         Response response = target.path(resteasyName).request().get();
-        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Failed to get value for " + resteasyName,200, response.getStatus());
         Object result = response.readEntity(modelTypeMap.get(attribute.getType()));
 
+        final String msg = "Invalid value found for " + resteasyName;
         switch (attribute.getType()) {
 
             case BOOLEAN:
-                Assert.assertEquals(expectedValues.get(attribute).asBoolean(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asBoolean(), result);
                 return;
 
             case INT:
-                Assert.assertEquals(expectedValues.get(attribute).asInt(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asInt(), result);
                 return;
 
             case STRING:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             case LIST:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             case OBJECT:
-                Assert.assertEquals(expectedValues.get(attribute).asString(), result);
+                Assert.assertEquals(msg, expectedValues.get(attribute).asString(), result);
                 return;
 
             default:
-                Assert.fail("Unexpected ModelNode type");
+                Assert.fail("Unexpected ModelNode type for " + resteasyName);
         }
      }
 
@@ -319,8 +311,8 @@ public class ResteasyAttributeTestCase {
     @Test
     public void testBadSyntax() throws Exception {
         for (AttributeDefinition attribute : JaxrsAttribute.ATTRIBUTES) {
-            // RESTEasy accepts any string for "resteasy-media-type-param-mapping".
-            if (JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.equals(attribute)) {
+            // Strings need to be ignored
+            if (attribute.getType() == ModelType.STRING) {
                 continue;
             }
             ModelNode op = Operations.createWriteAttributeOperation(ADDRESS, attribute.getName(), mangleAttribute(attribute));

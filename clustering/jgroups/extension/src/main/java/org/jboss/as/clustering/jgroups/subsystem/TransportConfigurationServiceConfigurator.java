@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.jgroups.subsystem;
@@ -50,6 +33,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.DiagnosticsHandler;
 import org.jgroups.util.DefaultThreadFactory;
+import org.jgroups.util.ThreadPool;
 import org.wildfly.clustering.jgroups.spi.TransportConfiguration;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -64,7 +48,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 public class TransportConfigurationServiceConfigurator<T extends TP> extends AbstractProtocolConfigurationServiceConfigurator<T, TransportConfiguration<T>> implements TransportConfiguration<T> {
 
     private final ServiceNameProvider provider;
-    private final SupplierDependency<ThreadPoolFactory> threadPoolFactory;
+    private final SupplierDependency<ThreadPoolConfiguration> threadPoolConfiguration;
 
     private volatile SupplierDependency<SocketBinding> socketBinding;
     private volatile SupplierDependency<SocketBinding> diagnosticsSocketBinding;
@@ -73,7 +57,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
     public TransportConfigurationServiceConfigurator(PathAddress address) {
         super(address.getLastElement().getValue());
         this.provider = new SingletonProtocolServiceNameProvider(address);
-        this.threadPoolFactory = new ServiceSupplierDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()));
+        this.threadPoolConfiguration = new ServiceSupplierDependency<>(new ThreadPoolServiceNameProvider(address, ThreadPoolResourceDefinition.DEFAULT.getPathElement()));
     }
 
     @Override
@@ -88,7 +72,7 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
 
     @Override
     public <B> ServiceBuilder<B> register(ServiceBuilder<B> builder) {
-        return super.register(new CompositeDependency(this.threadPoolFactory, this.socketBinding, this.diagnosticsSocketBinding).register(builder));
+        return super.register(new CompositeDependency(this.threadPoolConfiguration, this.socketBinding, this.diagnosticsSocketBinding).register(builder));
     }
 
     @Override
@@ -152,8 +136,16 @@ public class TransportConfigurationServiceConfigurator<T extends TP> extends Abs
             }
         }
 
-        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useFibers(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
-        protocol.setThreadPool(this.threadPoolFactory.get().apply(protocol.getThreadFactory()));
+        ThreadPoolConfiguration threadPoolConfiguration = this.threadPoolConfiguration.get();
+        ThreadPool threadPool = protocol.getThreadPool();
+        threadPool.setMinThreads(threadPoolConfiguration.getMinThreads());
+        threadPool.setMaxThreads(threadPoolConfiguration.getMaxThreads());
+        threadPool.setKeepAliveTime(threadPoolConfiguration.getKeepAliveTime());
+        // Let JGroups retransmit if pool is full
+        threadPool.setRejectionPolicy("discard");
+
+        // JGroups propagates this to the ThreadPool
+        protocol.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true).useVirtualThreads(protocol.useVirtualThreads()), JChannelFactory.class.getClassLoader()));
 
         SocketBinding diagnosticsBinding = this.diagnosticsSocketBinding.get();
         if (diagnosticsBinding != null) {

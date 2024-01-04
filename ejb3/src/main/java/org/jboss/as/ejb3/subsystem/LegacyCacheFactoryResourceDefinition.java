@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ejb3.subsystem;
 
@@ -64,10 +47,10 @@ public class LegacyCacheFactoryResourceDefinition extends SimpleResourceDefiniti
     private static final LegacyCacheFactoryRemove REMOVE_HANDLER = new LegacyCacheFactoryRemove(ADD_HANDLER);
 
     LegacyCacheFactoryResourceDefinition() {
-        super(PathElement.pathElement(EJB3SubsystemModel.CACHE),
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE),
-                ADD_HANDLER, REMOVE_HANDLER,
-                OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EJB3SubsystemModel.CACHE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CACHE))
+                .setAddHandler(ADD_HANDLER)
+                .setRemoveHandler(REMOVE_HANDLER)
+                .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
         this.setDeprecated(EJB3Model.VERSION_10_0_0.getVersion());
     }
 

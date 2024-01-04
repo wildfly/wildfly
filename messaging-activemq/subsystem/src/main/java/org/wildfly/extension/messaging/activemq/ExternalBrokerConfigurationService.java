@@ -1,17 +1,6 @@
 /*
- * Copyright 2018 JBoss by Red Hat.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.extension.messaging.activemq;
 
@@ -38,6 +27,7 @@ public class ExternalBrokerConfigurationService implements Service<ExternalBroke
     private final Map<String, String> clusterNames;
     // mapping between the {broadcast|discovery}-groups and the command dispatcher factory they use
     private final Map<String, ServiceName> commandDispatcherFactories;
+    private final Map<String, String> sslContextNames;
 
     public ExternalBrokerConfigurationService(final Map<String, TransportConfiguration> connectors,
             Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations,
@@ -45,7 +35,8 @@ public class ExternalBrokerConfigurationService implements Service<ExternalBroke
             Map<String, ServiceName> outboundSocketBindings,
             Map<String, ServiceName> groupBindings,
             Map<String, ServiceName> commandDispatcherFactories,
-            Map<String, String> clusterNames) {
+            Map<String, String> clusterNames,
+            Map<String, String> sslContextNames) {
         this.connectors = connectors;
         this.discoveryGroupConfigurations = discoveryGroupConfigurations;
         this.clusterNames = clusterNames;
@@ -53,6 +44,7 @@ public class ExternalBrokerConfigurationService implements Service<ExternalBroke
         this.groupBindings = groupBindings;
         this.outboundSocketBindings = outboundSocketBindings;
         this.socketBindings = socketBindings;
+        this.sslContextNames = sslContextNames;
     }
 
     @Override
@@ -89,6 +81,10 @@ public class ExternalBrokerConfigurationService implements Service<ExternalBroke
 
     public Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations() {
         return discoveryGroupConfigurations;
+    }
+
+    public Map<String, String> getSslContextNames() {
+        return sslContextNames;
     }
 
     @Override

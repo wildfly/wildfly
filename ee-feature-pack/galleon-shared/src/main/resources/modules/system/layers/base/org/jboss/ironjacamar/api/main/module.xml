@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ironjacamar.api">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-api}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-spi}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-core-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.resource.api"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.threads"/>
+        <module name="java.xml"/>
+    </dependencies>
+</module>

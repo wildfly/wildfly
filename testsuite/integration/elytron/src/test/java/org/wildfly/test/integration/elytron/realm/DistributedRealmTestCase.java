@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.test.integration.elytron.realm;
 
@@ -26,20 +9,29 @@ import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithTokenAuthn;
+import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Encoder;
+import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -50,6 +42,7 @@ import org.wildfly.test.security.common.AbstractElytronSetupTask;
 import org.wildfly.test.security.common.elytron.ConfigurableElement;
 import org.wildfly.test.security.common.elytron.DirContext;
 import org.wildfly.test.security.common.elytron.DistributedRealm;
+import org.wildfly.test.security.common.elytron.FileAuditLog;
 import org.wildfly.test.security.common.elytron.LdapRealm;
 import org.wildfly.test.security.common.elytron.MechanismConfiguration;
 import org.wildfly.test.security.common.elytron.PropertiesRealm;
@@ -81,13 +74,19 @@ public class DistributedRealmTestCase {
     private static final String DEPLOYMENT_FOR_CREDENTIALS = "DistributedRealmDeployment-Credentials";
     private static final String DEPLOYMENT_FOR_EVIDENCE = "DistributedRealmDeployment-Evidence";
     private static final String DEPLOYMENT_FOR_UNAVAILABLE_REALM = "DistributedRealmDeployment-UnavailableRealm";
+    private static final String DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_FALSE = "DistributedRealmDeployment-IgnoreUnavailableRealmFalse";
+    private static final String DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM = "DistributedRealmDeployment-IgnoreUnavailableRealm";
+    private static final String DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_DISABLED = "DistributedRealmDeployment-IgnoreUnavailableRealmDisabled";
     private static final String INDEX_PAGE_CONTENT = "index page content";
+    private static final String SECURITY_REALM_UNAVAILABLE_EVENT = "SecurityRealmUnavailableEvent";
 
     private static final Encoder B64_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final String JWT_HEADER_B64 = B64_ENCODER
             .encodeToString("{\"alg\":\"none\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
     private static final String JWT_ISSUER_1 = "issuer1.wildfly.org";
     private static final String JWT_ISSUER_2 = "issuer2.wildfly.org";
+
+    private static final File AUDIT_LOG_FILE = Paths.get("target", DistributedRealmTestCase.class.getSimpleName() + "-test-audit.log").toFile();
 
     @Deployment(name = DEPLOYMENT_FOR_CREDENTIALS)
     public static WebArchive deployment() {
@@ -102,6 +101,21 @@ public class DistributedRealmTestCase {
     @Deployment(name = DEPLOYMENT_FOR_UNAVAILABLE_REALM)
     public static WebArchive deploymentForUnavailableRealm() {
         return deployment(DEPLOYMENT_FOR_UNAVAILABLE_REALM, "distributed-realm-web.xml");
+    }
+
+    @Deployment(name = DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_FALSE)
+    public static WebArchive deploymentForIgnoreUnavailableRealmFalse() {
+        return deployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_FALSE, "distributed-realm-web.xml");
+    }
+
+    @Deployment(name = DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM)
+    public static WebArchive deploymentForIgnoreUnavailableRealm() {
+        return deployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM, "distributed-realm-web.xml");
+    }
+
+    @Deployment(name = DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_DISABLED)
+    public static WebArchive deploymentForIgnoreUnavailableRealmDisabled() {
+        return deployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_DISABLED, "distributed-realm-web.xml");
     }
 
     private static WebArchive deployment(String name, String webXml) {
@@ -170,6 +184,54 @@ public class DistributedRealmTestCase {
     }
 
     @Test
+    @OperateOnDeployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_FALSE)
+    public void testIdentityPerRealm_UnavailableRealmFalse(@ArquillianResource URL webAppUrl) throws Exception {
+        // user1 and user2 are in the realms that are before  the unavailable realm
+        String result = Utils.makeCallWithBasicAuthn(webAppUrl, "user1", "password1", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user2", "password2", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+
+        // user3 is in the realm that is after the unavailable realm
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user3", "password3", SC_INTERNAL_SERVER_ERROR);
+        assertNotEquals(INDEX_PAGE_CONTENT, result);
+    }
+
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM)
+    public void testIdentityPerRealm_IgnoreUnavailableRealm(@ArquillianResource URL webAppUrl) throws Exception {
+        // user1 and user2 are in the realms that are before  the unavailable realm
+        String result = Utils.makeCallWithBasicAuthn(webAppUrl, "user1", "password1", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user2", "password2", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+
+        cleanAuditLog();
+        // user3 is in the realm that is after the unavailable realm
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user3", "password3", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+
+        assertTrue("SecurityRealmUnavailableEvent should be logged", isSecurityRealmUnavailableEventLogged("unavailable_ldap_realm"));
+    }
+
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_DISABLED)
+    public void testIdentityPerRealm_IgnoreUnavailableRealmDisabled(@ArquillianResource URL webAppUrl) throws Exception {
+        // user1 and user2 are in the realms that are before  the unavailable realm
+        String result = Utils.makeCallWithBasicAuthn(webAppUrl, "user1", "password1", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user2", "password2", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+
+        cleanAuditLog();
+        // user3 is in the realm that is after the unavailable realm
+        result = Utils.makeCallWithBasicAuthn(webAppUrl, "user3", "password3", SC_OK);
+        assertEquals(INDEX_PAGE_CONTENT, result);
+
+        assertFalse("SecurityRealmUnavailableEvent should not be logged", isSecurityRealmUnavailableEventLogged("unavailable_ldap_realm"));
+    }
+
+    @Test
     @OperateOnDeployment(DEPLOYMENT_FOR_EVIDENCE)
     public void testIdentityPerRealm_Evidence(@ArquillianResource URL webAppUrl) throws Exception {
         String result = makeCallWithTokenAuthn(webAppUrl, createJwtToken("userA", JWT_ISSUER_1), SC_OK);
@@ -193,11 +255,33 @@ public class DistributedRealmTestCase {
         return JWT_HEADER_B64 + "." + B64_ENCODER.encodeToString(jwtPayload.getBytes(StandardCharsets.UTF_8)) + ".";
     }
 
+    private static boolean isSecurityRealmUnavailableEventLogged(String realmName) throws Exception {
+        List<String> lines = Files.readAllLines(AUDIT_LOG_FILE.toPath(), StandardCharsets.UTF_8);
+        for (String line : lines) {
+            if (line.contains(SECURITY_REALM_UNAVAILABLE_EVENT) && line.contains(realmName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void cleanAuditLog() throws Exception {
+        try (PrintWriter writer = new PrintWriter(AUDIT_LOG_FILE)) {
+            writer.print("");
+        }
+    }
+
     static class ServerSetup extends AbstractElytronSetupTask {
 
         @Override
         protected ConfigurableElement[] getConfigurableElements() {
             ArrayList<ConfigurableElement> configurableElements = new ArrayList<>();
+
+            // this audit log is checked for presence of SecurityRealmUnavailableEvent
+            configurableElements.add(FileAuditLog.builder()
+                    .withName("audit_log_for_distributed_realm")
+                    .withPath(asAbsolutePath(AUDIT_LOG_FILE))
+                    .build());
 
             // properties-realm for credential based authn, used by all distributed-realm
             configurableElements.add(PropertiesRealm.builder()
@@ -302,7 +386,74 @@ public class DistributedRealmTestCase {
                     .withSecurityDomain("distributed_realm_domain_with_unavailable_realm")
                     .build());
 
+            // a deployment backed by a distributed-realm with an unavailable ldap-realm (RealmUnavailableException), ignore set to false
+            configurableElements.add(DistributedRealm.builder("distributed_realm_with_ignore_unavailable_realm_false")
+                    .withRealms("properties_realm_1", "properties_realm_2", "unavailable_ldap_realm", "properties_realm_3")
+                    .withIgnoreUnavailableRealms(false)
+                    .build());
+            configurableElements.add(SimpleSecurityDomain.builder()
+                    .withName("distributed_realm_domain_with_ignore_unavailable_realm_false")
+                    .withDefaultRealm("distributed_realm_with_ignore_unavailable_realm_false")
+                    .withPermissionMapper("default-permission-mapper")
+                    .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
+                            .withRealm("distributed_realm_with_ignore_unavailable_realm_false")
+                            .withRoleDecoder("groups-to-roles")
+                            .build())
+                    .build());
+            configurableElements.add(UndertowApplicationSecurityDomain.builder()
+                    .withName(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_FALSE)
+                    .withSecurityDomain("distributed_realm_domain_with_ignore_unavailable_realm_false")
+                    .build());
+
+            // a deployment backed by a distributed-realm with an unavailable ldap-realm (RealmUnavailableException), ignore set to true, emiting enabled
+            configurableElements.add(DistributedRealm.builder("distributed_realm_with_ignore_unavailable_realm")
+                    .withRealms("properties_realm_1", "properties_realm_2", "unavailable_ldap_realm", "properties_realm_3")
+                    .withIgnoreUnavailableRealms(true)
+                    .withEmitEvents(true)
+                    .build());
+            configurableElements.add(SimpleSecurityDomain.builder()
+                    .withName("distributed_realm_domain_with_ignore_unavailable_realm")
+                    .withDefaultRealm("distributed_realm_with_ignore_unavailable_realm")
+                    .withPermissionMapper("default-permission-mapper")
+                    .withSecurityEventListener("audit_log_for_distributed_realm")
+                    .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
+                            .withRealm("distributed_realm_with_ignore_unavailable_realm")
+                            .withRoleDecoder("groups-to-roles")
+                            .build())
+                    .build());
+            configurableElements.add(UndertowApplicationSecurityDomain.builder()
+                    .withName(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM)
+                    .withSecurityDomain("distributed_realm_domain_with_ignore_unavailable_realm")
+                    .build());
+
+            // a deployment backed by a distributed-realm with an unavailable ldap-realm (RealmUnavailableException), ignore set to true, emiting disabled
+            configurableElements.add(DistributedRealm.builder("distributed_realm_with_ignore_unavailable_realm_disabled")
+                    .withRealms("properties_realm_1", "properties_realm_2", "unavailable_ldap_realm", "properties_realm_3")
+                    .withIgnoreUnavailableRealms(true)
+                    .withEmitEvents(false)
+                    .build());
+            configurableElements.add(SimpleSecurityDomain.builder()
+                    .withName("distributed_realm_domain_with_ignore_unavailable_realm_disabled")
+                    .withDefaultRealm("distributed_realm_with_ignore_unavailable_realm_disabled")
+                    .withPermissionMapper("default-permission-mapper")
+                    .withSecurityEventListener("audit_log_for_distributed_realm")
+                    .withRealms(SimpleSecurityDomain.SecurityDomainRealm.builder()
+                            .withRealm("distributed_realm_with_ignore_unavailable_realm_disabled")
+                            .withRoleDecoder("groups-to-roles")
+                            .build())
+                    .build());
+            configurableElements.add(UndertowApplicationSecurityDomain.builder()
+                    .withName(DEPLOYMENT_FOR_IGNORE_UNAVAILABLE_REALM_DISABLED)
+                    .withSecurityDomain("distributed_realm_domain_with_ignore_unavailable_realm_disabled")
+                    .build());
+
             return configurableElements.toArray(new ConfigurableElement[configurableElements.size()]);
+        }
+
+        @Override
+        protected void tearDown(ModelControllerClient modelControllerClient) throws Exception {
+            super.tearDown(modelControllerClient);
+            Files.deleteIfExists(AUDIT_LOG_FILE.toPath());
         }
     }
 }

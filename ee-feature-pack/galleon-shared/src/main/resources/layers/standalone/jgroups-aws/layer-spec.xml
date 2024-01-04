@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="jgroups-aws">
+    <props>
+        <prop name="org.wildfly.rule.add-on-depends-on" value="only:jgroups"/>
+        <prop name="org.wildfly.rule.add-on" value="clustering,jgroups-aws"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Brings in JBoss Modules modules required to configure the 'aws.S3_PING' discovery protocol."/>
+    </props>
+    <!--
+    This layer only brings in modules required to configure the 'aws.S3_PING' discovery protocol:
+    <protocol name="org.jgroups.protocols.aws.S3_PING" module="org.jgroups.aws">
+    -->
+
+    <packages>
+        <package name="org.jgroups.aws"/>
+    </packages>
+
+</layer-spec>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2022, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ejb3.subsystem;
 
@@ -32,19 +15,14 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.security.IdentityEJBClientInterceptor;
 import org.jboss.as.ejb3.security.IdentityInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.ejb.client.EJBClientInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * A {@link DeploymentUnitProcessor} that adds interceptors to EJB deployments that will always
@@ -57,14 +35,7 @@ class IdentityInterceptorProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        registerIdentityEJBClientInterceptor(deploymentUnit);
         registerIdentityInterceptor(deploymentUnit);
-    }
-
-    private static void registerIdentityEJBClientInterceptor(final DeploymentUnit deploymentUnit) {
-        // this EJBClientInterceptor will get used when invoking remote EJBs
-        final List<EJBClientInterceptor> clientInterceptors = new ArrayList<>(Arrays.asList(IdentityEJBClientInterceptor.INSTANCE));
-        deploymentUnit.putAttachment(org.jboss.as.ejb3.subsystem.Attachments.STATIC_EJB_CLIENT_INTERCEPTORS, clientInterceptors);
     }
 
     private static void registerIdentityInterceptor(final DeploymentUnit deploymentUnit) {

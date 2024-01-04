@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="io.agroal">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.agroal:agroal-api}"/>
+        <artifact name="${io.agroal:agroal-narayana}"/>
+        <artifact name="${io.agroal:agroal-pool}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.security.jgss"/>
+        <module name="java.sql"/>
+        <module name="java.transaction.xa"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="org.jboss.jboss-transaction-spi"/>
+    </dependencies>
+</module>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.iiop.openjdk.service;
@@ -27,11 +10,12 @@ import java.security.AccessController;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -39,7 +23,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.Constants;
 import org.wildfly.iiop.openjdk.IIOPExtension;
@@ -66,11 +49,10 @@ public class CorbaORBService implements Service<ORB> {
 
     private static final Properties properties = new Properties();
 
-    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
-
-    private final InjectedValue<SocketBinding> iiopSocketBindingInjector = new InjectedValue<SocketBinding>();
-
-    private final InjectedValue<SocketBinding> iiopSSLSocketBindingInjector = new InjectedValue<SocketBinding>();
+    private final Consumer<ORB> serviceConsumer;
+    private final Supplier<ExecutorService> executorServiceSupplier;
+    private final Supplier<SocketBinding> iiopSocketBindingSupplier;
+    private final Supplier<SocketBinding> iiopSSLSocketBindingSupplier;
 
     private volatile ORB orb;
 
@@ -81,10 +63,14 @@ public class CorbaORBService implements Service<ORB> {
      *
      * @param props a {@code Properties} instance containing the IIOP subsystem configuration properties.
      */
-    public CorbaORBService(Properties props) {
+    public CorbaORBService(Properties props, final Consumer<ORB> serviceConsumer, final Supplier<ExecutorService> executorServiceSupplier, final Supplier<SocketBinding> iiopSocketBindingSupplier, final Supplier<SocketBinding> iiopSSLSocketBindingSupplier) {
         if (props != null) {
             properties.putAll(props);
         }
+        this.serviceConsumer = serviceConsumer;
+        this.executorServiceSupplier = executorServiceSupplier;
+        this.iiopSocketBindingSupplier = iiopSocketBindingSupplier;
+        this.iiopSSLSocketBindingSupplier = iiopSSLSocketBindingSupplier;
     }
 
     @Override
@@ -103,11 +89,11 @@ public class CorbaORBService implements Service<ORB> {
             properties.setProperty(ORBConstants.IOR_TO_SOCKET_INFO_CLASS_PROPERTY, CSIV2IORToSocketInfo.class.getName());
 
             // set the IIOP and IIOP/SSL ports from the respective socket bindings.
-            final SocketBinding socketBinding = iiopSocketBindingInjector.getOptionalValue();
-            final SocketBinding sslSocketBinding = this.iiopSSLSocketBindingInjector.getOptionalValue();
+            final SocketBinding socketBinding = iiopSocketBindingSupplier.get();
+            final SocketBinding sslSocketBinding = iiopSSLSocketBindingSupplier.get();
 
             if (socketBinding != null) {
-                InetSocketAddress address = this.iiopSocketBindingInjector.getValue().getSocketAddress();
+                InetSocketAddress address = this.iiopSocketBindingSupplier.get().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
@@ -115,7 +101,7 @@ public class CorbaORBService implements Service<ORB> {
                 socketBinding.getSocketBindings().getNamedRegistry().registerBinding(ManagedBinding.Factory.createSimpleManagedBinding(socketBinding));
             }
             if (sslSocketBinding != null) {
-                InetSocketAddress address = this.iiopSSLSocketBindingInjector.getValue().getSocketAddress();
+                InetSocketAddress address = this.iiopSSLSocketBindingSupplier.get().getSocketAddress();
                 properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, address.getAddress().getHostAddress());
                 properties.setProperty(Constants.ORB_SSL_PORT, String.valueOf(address.getPort()));
                 final String sslSocket = new StringBuilder().append(Constants.SSL_SOCKET_TYPE).append(':')
@@ -151,6 +137,8 @@ public class CorbaORBService implements Service<ORB> {
             throw new StartException(e);
         }
 
+        serviceConsumer.accept(this.orb);
+
         CorbaUtils.setOrbProperties(properties);
 
         IIOPLogger.ROOT_LOGGER.corbaORBServiceStarted();
@@ -162,8 +150,8 @@ public class CorbaORBService implements Service<ORB> {
             IIOPLogger.ROOT_LOGGER.debugf("Stopping service %s", context.getController().getName().getCanonicalName());
         }
 
-        final SocketBinding socketBinding = iiopSocketBindingInjector.getOptionalValue();
-        final SocketBinding sslSocketBinding = iiopSSLSocketBindingInjector.getOptionalValue();
+        final SocketBinding socketBinding = iiopSocketBindingSupplier.get();
+        final SocketBinding sslSocketBinding = iiopSSLSocketBindingSupplier.get();
         if (socketBinding != null) {
             socketBinding.getSocketBindings().getNamedRegistry().unregisterBinding(socketBinding.getName());
         }
@@ -173,53 +161,18 @@ public class CorbaORBService implements Service<ORB> {
         // stop the ORB asynchronously.
         final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
         try {
-            executorInjector.getValue().execute(destroyer);
+            executorServiceSupplier.get().execute(destroyer);
         } catch (RejectedExecutionException e) {
             destroyer.run();
         } finally {
             context.asynchronous();
         }
+        serviceConsumer.accept(null);
     }
 
     @Override
     public ORB getValue() throws IllegalStateException, IllegalArgumentException {
         return this.orb;
-    }
-
-    /**
-     * <p>
-     * Obtains a reference to the IIOP socket binding injector. This injector is used to inject a {@code ServiceBinding}
-     * containing the IIOP socket properties.
-     * </p>
-     *
-     * @return a reference to the {@code Injector<SocketBinding>} used to inject the IIOP socket properties.
-     */
-    public Injector<SocketBinding> getIIOPSocketBindingInjector() {
-        return this.iiopSocketBindingInjector;
-    }
-
-    /**
-     * <p>
-     * Obtains a reference to the IIOP/SSL socket binding injector. This injector is used to inject a
-     * {@code ServiceBinding} containing the IIOP/SSL socket properties.
-     * </p>
-     *
-     * @return a reference to the {@code Injector<SocketBinding>} used to inject the IIOP/SSL socket properties.
-     */
-    public Injector<SocketBinding> getIIOPSSLSocketBindingInjector() {
-        return this.iiopSSLSocketBindingInjector;
-    }
-
-    /**
-     * <p>
-     * Obtains a reference to the executor service injector. This injector is used to inject a
-     * {@link ExecutorService} for use in blocking tasks during startup or shutdown.
-     * </p>
-     *
-     * @return a reference to the {@code Injector<Executor>} used to inject the executor service.
-     */
-    public InjectedValue<ExecutorService> getExecutorInjector() {
-        return executorInjector;
     }
 
     /**

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.pojo.service;
@@ -32,7 +15,6 @@ import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.value.ImmediateValue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -78,13 +60,13 @@ public final class BeanUtils {
                     Class<?> factoryClazz = Class.forName(factoryClass, false, module.getClassLoader());
                     Method method = Configurator.findMethod(index, factoryClazz, factoryMethod, types, true, true, true);
                     MethodJoinpoint mj = new MethodJoinpoint(method);
-                    mj.setTarget(new ImmediateValue<Object>(null)); // null, since this is static call
+                    mj.setTarget(() -> null); // null, since this is static call
                     mj.setParameters(parameters);
                     instantiateJoinpoint = mj;
                 } else if (factory != null) {
                     ReflectionJoinpoint rj = new ReflectionJoinpoint(factory.getBeanInfo(), factoryMethod, types);
                     // null type is ok, as this should be plain injection
-                    rj.setTarget(new ImmediateValue<Object>(factory.getValue(null)));
+                    rj.setTarget(() -> factory.getValue(null));
                     rj.setParameters(parameters);
                     instantiateJoinpoint = rj;
                 }
@@ -176,7 +158,7 @@ public final class BeanUtils {
             params = parameters;
         }
         MethodJoinpoint joinpoint = new MethodJoinpoint(method);
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(() -> bean);
         joinpoint.setParameters(params);
         return joinpoint;
     }
@@ -194,7 +176,7 @@ public final class BeanUtils {
         MethodJoinpoint joinpoint = new MethodJoinpoint(setter);
         ValueConfig param = (nullify == false) ? value : null;
         joinpoint.setParameters(new ValueConfig[]{param});
-        joinpoint.setTarget(new ImmediateValue<Object>(bean));
+        joinpoint.setTarget(() -> bean);
         joinpoint.dispatch();
     }
 

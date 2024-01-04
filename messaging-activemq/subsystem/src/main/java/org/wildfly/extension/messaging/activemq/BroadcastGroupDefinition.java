@@ -1,25 +1,7 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
@@ -56,7 +38,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceDefinition;
 
 /**
@@ -66,6 +48,7 @@ import org.wildfly.extension.messaging.activemq.shallow.ShallowResourceDefinitio
  * @deprecated Use JGroupsBroadcastGroupDefinition or SocketBroadcastGroupDefinition.
  */
 public class BroadcastGroupDefinition extends ShallowResourceDefinition {
+
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
             .setRequired(true)
             .setElementValidator(new StringLengthValidator(1))
@@ -75,7 +58,7 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
             .setRestartAllServices()
             .build();
 
-     /**
+    /**
      * @see ActiveMQDefaultConfiguration#getDefaultBroadcastPeriod
      */
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
@@ -93,8 +76,8 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
-            BROADCAST_PERIOD, CONNECTOR_REFS };
+    public static final AttributeDefinition[] ATTRIBUTES = {JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER, SOCKET_BINDING,
+        BROADCAST_PERIOD, CONNECTOR_REFS};
 
     public static final String GET_CONNECTOR_PAIRS_AS_JSON = "get-connector-pairs-as-json";
 
@@ -111,7 +94,6 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
     }
-
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
@@ -130,33 +112,33 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
     }
 
     static void validateConnectors(OperationContext context, ModelNode operation, ModelNode connectorRefs) throws OperationFailedException {
-        final Set<String> availableConnectors =  getAvailableConnectors(context,operation);
+        final Set<String> availableConnectors = getAvailableConnectors(context, operation);
         final List<ModelNode> operationAddress = operation.get(ModelDescriptionConstants.ADDRESS).asList();
-        if(connectorRefs.isDefined()) {
-            for(ModelNode connectorRef:connectorRefs.asList()){
+        if (connectorRefs.isDefined()) {
+            for (ModelNode connectorRef : connectorRefs.asList()) {
                 final String connectorName = connectorRef.asString();
-                if(!availableConnectors.contains(connectorName)){
-                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(getBroadCastGroupName(operationAddress.get(operationAddress.size()-1)), connectorName, availableConnectors);
+                if (!availableConnectors.contains(connectorName)) {
+                    throw MessagingLogger.ROOT_LOGGER.wrongConnectorRefInBroadCastGroup(getBroadCastGroupName(operationAddress.get(operationAddress.size() - 1)), connectorName, availableConnectors);
                 }
             }
         }
     }
 
     private static String getBroadCastGroupName(ModelNode node) {
-        if(node.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.BROADCAST_GROUP)) {
             return node.get(CommonAttributes.BROADCAST_GROUP).asString();
         }
-        if(node.hasDefined(CommonAttributes.SOCKET_BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.SOCKET_BROADCAST_GROUP)) {
             return node.get(CommonAttributes.SOCKET_BROADCAST_GROUP).asString();
         }
-        if(node.hasDefined(CommonAttributes.JGROUPS_BROADCAST_GROUP)) {
+        if (node.hasDefined(CommonAttributes.JGROUPS_BROADCAST_GROUP)) {
             return node.get(CommonAttributes.JGROUPS_BROADCAST_GROUP).asString();
         }
         return ModelType.UNDEFINED.name();
     }
 
     // FIXME use capabilities & requirements
-    private static Set<String> getAvailableConnectors(final OperationContext context,final ModelNode operation) throws OperationFailedException{
+    private static Set<String> getAvailableConnectors(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
         PathAddress active = MessagingServices.getActiveMQServerPathAddress(address);
         Set<String> availableConnectors = new HashSet<>();
@@ -197,5 +179,10 @@ public class BroadcastGroupDefinition extends ShallowResourceDefinition {
             ignoredAttributes.add(JGROUPS_CLUSTER.getName());
         }
         return ignoredAttributes;
+    }
+
+    @Override
+    protected boolean isUsingSocketBinding(PathAddress targetAddress) {
+        return CommonAttributes.SOCKET_BROADCAST_GROUP.equals(targetAddress.getLastElement().getKey());
     }
 }

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.clustering.infinispan.subsystem;
@@ -33,6 +16,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -40,6 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.management.MBeanServer;
 
+import org.infinispan.commands.module.ModuleCommandExtensions;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -69,7 +54,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
-import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.Dependency;
 import org.wildfly.clustering.service.FunctionalService;
@@ -156,7 +140,8 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
             }
         });
 
-        builder.classLoader(modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader());
+        ClassLoader loader = modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader();
+        builder.classLoader(loader);
 
         builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
         builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
@@ -176,7 +161,7 @@ public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNam
         // * The 2LC stack already overrides the interceptor for distribution caches
         // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
         // See ISPN-12252 for details
-        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(marshaller.mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE));
+        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
 
         String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
         ServerEnvironment environment = this.environment.get();

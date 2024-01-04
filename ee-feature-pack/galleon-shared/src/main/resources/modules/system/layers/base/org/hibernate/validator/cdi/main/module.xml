@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.hibernate.validator.cdi">
+
+  <resources>
+    <artifact name="${org.hibernate.validator:hibernate-validator-cdi}"/>
+  </resources>
+
+  <dependencies>
+    <module name="jakarta.annotation.api"/>
+    <module name="jakarta.enterprise.api"/>
+    <module name="jakarta.validation.api"/>
+    <module name="org.hibernate.validator"/>
+  </dependencies>
+</module>

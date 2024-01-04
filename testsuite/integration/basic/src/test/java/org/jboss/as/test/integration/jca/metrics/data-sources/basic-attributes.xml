@@ -1,4 +1,9 @@
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:jboss:domain:datasources:7.1">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/DS"
                     pool-name="DS" enabled="true" statistics-enabled="true">

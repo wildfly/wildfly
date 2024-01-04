@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
@@ -62,6 +45,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.connector.metadata.api.resourceadapter.WorkManagerSecurity;
 import org.jboss.as.connector.metadata.resourceadapter.WorkManagerSecurityImpl;
 import org.jboss.as.connector.util.ParserException;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
 import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
@@ -82,7 +66,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     /**
      * The bundle
      */
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static final CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
 
     public void parse(final XMLExtendedStreamReader reader, final ModelNode subsystemAddOperation, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
@@ -146,12 +130,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         operation.get(OP).set(ADD);
 
         String archiveOrModuleName = null;
-        HashMap<String, ModelNode> configPropertiesOperations = new HashMap<String, ModelNode>();
-        HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<String, ModelNode>();
-        HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+        HashMap<String, ModelNode> configPropertiesOperations = new HashMap<>();
+        HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<>();
+        HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<>();
 
-        HashMap<String, ModelNode> adminObjectsOperations = new HashMap<String, ModelNode>();
-        HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
+        HashMap<String, ModelNode> adminObjectsOperations = new HashMap<>();
+        HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<>();
 
 
         boolean archiveOrModuleMatched = false;
@@ -293,7 +277,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case BEAN_VALIDATION_GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(BEANVALIDATION_GROUPS.getName()).add(BEANVALIDATIONGROUP.parse(value, reader));
+                            operation.get(BEANVALIDATION_GROUPS.getName()).add(parse(BEANVALIDATIONGROUP, value, reader));
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
@@ -312,7 +296,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             }
                             String value = rawElementText(reader);
                             TRANSACTION_SUPPORT.parseAndSetParameter(value, operation, reader);
-                            ModelNode transactionSupport = TRANSACTION_SUPPORT.parse(value, reader);
+                            ModelNode transactionSupport = parse(TRANSACTION_SUPPORT, value, reader);
                             // so we need to know the transaction support level to give a chance to throw XMLStreamException for
                             // unexpectedElement when parsing connection-definitions in CommonIronJacamarParser ?
                             String transactionSupportResolved = transactionSupport.resolve().asString();
@@ -357,8 +341,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         throw new ParserException(bundle.unexpectedEndOfDocument());
     }
 
-    protected WorkManager parseWorkManager(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException, ParserException,
-            ValidateException {
+    protected WorkManager parseWorkManager(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException, ParserException {
         WorkManagerSecurity security = null;
 
         while (reader.hasNext()) {
@@ -376,7 +359,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                 case START_ELEMENT: {
                     switch (WorkManager.Tag.forName(reader.getLocalName())) {
                         case SECURITY: {
-                            WM_SECURITY.parseAndSetParameter("true", operation, reader);
                             switch (Namespace.forUri(reader.getNamespaceURI())) {
                                 case RESOURCEADAPTERS_1_0:
                                 case RESOURCEADAPTERS_1_1:
@@ -385,8 +367,13 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                                 case RESOURCEADAPTERS_4_0:
                                     security = parseWorkManagerSecurity(operation, reader);
                                     break;
-                                default: // If the switch statement contains a default it does not need to be revisited each time a new schema is added unless it actually affects it.
+                                case RESOURCEADAPTERS_5_0:
+                                case RESOURCEADAPTERS_6_0:
+                                case RESOURCEADAPTERS_6_1:
                                     security = parseWorkManagerSecurity_5_0(operation, reader);
+                                    break;
+                                default: // If the switch statement contains a default it does not need to be revisited each time a new schema is added unless it actually affects it.
+                                    security = parseWorkManagerSecurity_7_0(operation, reader);
                             }
                             break;
                         }
@@ -400,7 +387,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     }
 
     protected WorkManagerSecurity parseWorkManagerSecurity(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
-            ParserException, ValidateException {
+            ParserException {
         boolean mappingRequired = false;
         String domain = null;
         String defaultPrincipal = null;
@@ -409,6 +396,8 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         Map<String, String> groupMappings = null;
 
         boolean userMappingEnabled = false;
+
+        WM_SECURITY.parseAndSetParameter("true", operation, reader);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -447,7 +436,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.parse(value, reader));
+                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(parse(WM_SECURITY_DEFAULT_GROUP, value, reader));
                             break;
                         }
                         case USERS: {
@@ -495,23 +484,44 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     }
 
     protected WorkManagerSecurity parseWorkManagerSecurity_5_0(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
-            ParserException, ValidateException {
+            ParserException {
+        WM_SECURITY.parseAndSetParameter("true", operation, reader);
+        return parseWorkManagerSecurityElements(operation, reader);
+    }
+
+    protected WorkManagerSecurity parseWorkManagerSecurity_7_0(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
+            ParserException {
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case ENABLED: {
+                    String value = reader.getAttributeValue(i);
+                    WM_SECURITY.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default:
+                    throw new ParserException(bundle.unexpectedAttribute(reader.getAttributeLocalName(i), reader.getLocalName()));
+            }
+        }
+        return parseWorkManagerSecurityElements(operation, reader);
+    }
+
+    /**
+     * Parses the common elements of Work Manager Security of the Resource Adapter subsystem version 5.0, 6.0, 6.1 and 7.0
+     */
+    private WorkManagerSecurity parseWorkManagerSecurityElements(final ModelNode operation, final XMLStreamReader reader) throws XMLStreamException,
+            ParserException {
         boolean mappingRequired = false;
         String domain = null;
         boolean elytronEnabled = false;
-        String defaultPrincipal = null;
-        List<String> defaultGroups = null;
-        Map<String, String> userMappings = null;
-        Map<String, String> groupMappings = null;
-
         boolean userMappingEnabled = false;
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
                     if (WorkManager.Tag.forName(reader.getLocalName()) == WorkManager.Tag.SECURITY) {
-                        return new WorkManagerSecurityImpl(mappingRequired, domain, elytronEnabled, defaultPrincipal,
-                                defaultGroups, userMappings, groupMappings);
+                        return new WorkManagerSecurityImpl(mappingRequired, domain, elytronEnabled, null,
+                                null, null, null);
                     } else {
                         if (WorkManagerSecurity.Tag.forName(reader.getLocalName()) == WorkManagerSecurity.Tag.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
@@ -549,7 +559,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(WM_SECURITY_DEFAULT_GROUP.parse(value, reader));
+                            operation.get(WM_SECURITY_DEFAULT_GROUPS.getName()).add(parse(WM_SECURITY_DEFAULT_GROUP, value, reader));
                             break;
                         }
                         case USERS: {
@@ -561,27 +571,18 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case MAP: {
+                            String from = rawAttributeText(reader, WorkManagerSecurity.Attribute.FROM.getLocalName());
+                            if (from == null || from.trim().equals(""))
+                                throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.FROM.getLocalName(), reader.getLocalName()));
+                            String to = rawAttributeText(reader, WorkManagerSecurity.Attribute.TO.getLocalName());
+                            if (to == null || to.trim().equals(""))
+                                throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.TO.getLocalName(), reader.getLocalName()));
+                            ModelNode object = new ModelNode();
+                            WM_SECURITY_MAPPING_FROM.parseAndSetParameter(from, object, reader);
+                            WM_SECURITY_MAPPING_TO.parseAndSetParameter(to, object, reader);
                             if (userMappingEnabled) {
-                                String from = rawAttributeText(reader, WorkManagerSecurity.Attribute.FROM.getLocalName());
-                                if (from == null || from.trim().equals(""))
-                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.FROM.getLocalName(), reader.getLocalName()));
-                                String to = rawAttributeText(reader, WorkManagerSecurity.Attribute.TO.getLocalName());
-                                if (to == null || to.trim().equals(""))
-                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.TO.getLocalName(), reader.getLocalName()));
-                                ModelNode object = new ModelNode();
-                                WM_SECURITY_MAPPING_FROM.parseAndSetParameter(from, object, reader);
-                                WM_SECURITY_MAPPING_TO.parseAndSetParameter(to, object, reader);
                                 operation.get(WM_SECURITY_MAPPING_USERS.getName()).add(object);
                             } else {
-                                String from = rawAttributeText(reader, WorkManagerSecurity.Attribute.FROM.getLocalName());
-                                if (from == null || from.trim().equals(""))
-                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.FROM.getLocalName(), reader.getLocalName()));
-                                String to = rawAttributeText(reader, WorkManagerSecurity.Attribute.TO.getLocalName());
-                                if (to == null || to.trim().equals(""))
-                                    throw new ParserException(bundle.requiredAttributeMissing(WorkManagerSecurity.Attribute.TO.getLocalName(), reader.getLocalName()));
-                                ModelNode object = new ModelNode();
-                                WM_SECURITY_MAPPING_FROM.parseAndSetParameter(from, object, reader);
-                                WM_SECURITY_MAPPING_TO.parseAndSetParameter(to, object, reader);
                                 operation.get(WM_SECURITY_MAPPING_GROUPS.getName()).add(object);
                             }
                             break;
@@ -597,7 +598,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     }
 
     protected void parseReportDirectory(final XMLStreamReader reader, final ModelNode subsystemAddOperation) throws XMLStreamException,
-            ParserException, ValidateException {
+            ParserException {
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
@@ -622,6 +623,10 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                     throw new ParserException(bundle.unexpectedElement(reader.getLocalName()));
             }
         }
+    }
+
+    private static ModelNode parse(AttributeDefinition ad, String value, XMLStreamReader reader) throws XMLStreamException {
+        return ad.getParser().parse(ad, value, reader);
     }
 
     /**
@@ -665,7 +670,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         private static final Map<String, Tag> MAP;
 
         static {
-            final Map<String, Tag> map = new HashMap<String, Tag>();
+            final Map<String, Tag> map = new HashMap<>();
             for (Tag element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)
@@ -709,7 +714,11 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         /**
          * path
          */
-        PATH("path");
+        PATH("path"),
+        /**
+         * enabled attribute
+         */
+        ENABLED("enabled");
 
         private String name;
 
@@ -741,7 +750,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         private static final Map<String, Attribute> MAP;
 
         static {
-            final Map<String, Attribute> map = new HashMap<String, Attribute>();
+            final Map<String, Attribute> map = new HashMap<>();
             for (Attribute element : values()) {
                 final String name = element.getLocalName();
                 if (name != null)

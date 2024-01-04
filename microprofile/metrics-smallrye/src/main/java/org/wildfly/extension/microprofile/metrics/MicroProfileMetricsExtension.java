@@ -1,30 +1,15 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.microprofile.metrics;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.Extension;
+import java.util.Collections;
+import java.util.Set;
+
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -32,14 +17,14 @@ import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2018 Red Hat inc.
  */
-public class MicroProfileMetricsExtension implements Extension {
+public class MicroProfileMetricsExtension extends AbstractLegacyExtension {
 
     static final String EXTENSION_NAME = "org.wildfly.extension.microprofile.metrics.smallrye";
 
@@ -66,7 +51,7 @@ public class MicroProfileMetricsExtension implements Extension {
     static ResourceDescriptionResolver getResourceDescriptionResolver(final boolean useUnprefixedChildTypes, final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder();
         for (String kp : keyPrefix) {
-            if (prefix.length() > 0){
+            if (prefix.length() > 0) {
                 prefix.append('.');
             }
             prefix.append(kp);
@@ -74,17 +59,22 @@ public class MicroProfileMetricsExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, MicroProfileMetricsExtension.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
+    public MicroProfileMetricsExtension() {
+        super(EXTENSION_NAME, SUBSYSTEM_NAME);
+    }
+
     @Override
-    public void initialize(ExtensionContext context) {
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(final ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystem.registerXMLElementWriter(CURRENT_PARSER);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicroProfileMetricsSubsystemDefinition());
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        return Collections.singleton(registration);
     }
 
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    public void initializeLegacyParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_1_0.NAMESPACE, MicroProfileMetricsParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MicroProfileMetricsParser_2_0.NAMESPACE, CURRENT_PARSER);
     }

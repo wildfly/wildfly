@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
@@ -33,6 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -85,10 +69,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
 
     static final Optional<Object> NO_SUCH_SERVICE = Optional.of(NoSuchService.INSTANCE);
     static final ExceptionSupplier<Object, Exception> NO_SUCH_SERVICE_SUPPLIER = Functions.constantExceptionSupplier(NoSuchService.INSTANCE);
+    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(ChannelCommandDispatcherFactory.class);
 
     private final ConcurrentMap<Address, Node> members = new ConcurrentHashMap<>();
     private final Map<Object, CommandDispatcherContext<?, ?>> contexts = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
+    private final ExecutorService executorService = Executors.newCachedThreadPool(THREAD_FACTORY);
     private final ServiceExecutor executor = new StampedLockServiceExecutor();
     private final Map<GroupListener, ExecutorService> listeners = new ConcurrentHashMap<>();
     private final AtomicReference<View> view = new AtomicReference<>();
@@ -195,6 +180,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     @Override
     public Group getGroup() {
         return this;
+    }
+
+    @Override
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
+        return this.createCommandDispatcher(id, context, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 
     @Override

@@ -1,25 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -34,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>28.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -64,8 +47,20 @@
             <!-- Bom-specific dependencies. Keep sorted -->
 
             <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${version.org.apache.avro}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
@@ -74,10 +69,21 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- Import the MVC runtime deps -->
             <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>${version.io.micrometer}</version>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>zip</type>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -86,9 +92,21 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-registry-prometheus</artifactId>
-                <version>${version.io.micrometer}</version>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-subsystem</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.deployment</groupId>
+                <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+                <version>${preview.version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -97,9 +115,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient</artifactId>
-                <version>${version.io.prometheus}</version>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>transformer</artifactId>
+                <version>${version.org.wildfly.galleon-plugins}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -107,49 +125,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
             <dependency>
-                <groupId>io.prometheus</groupId>
-                <artifactId>simpleclient_common</artifactId>
-                <version>${version.io.prometheus}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.latencyutils</groupId>
-                <artifactId>LatencyUtils</artifactId>
-                <version>${version.org.latencyutils}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-micrometer</artifactId>
-                <version>${full.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-micrometer-api</artifactId>
-                <version>${full.maven.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

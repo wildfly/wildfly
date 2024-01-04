@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow.deployment;
@@ -31,7 +14,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -42,17 +24,16 @@ import org.jboss.modules.ModuleLoader;
  */
 public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
+    private static final String JSTL = "jakarta.servlet.jstl.api";
 
-    private static final ModuleIdentifier UNDERTOW_CORE = ModuleIdentifier.create("io.undertow.core");
-    private static final ModuleIdentifier UNDERTOW_SERVLET = ModuleIdentifier.create("io.undertow.servlet");
-    private static final ModuleIdentifier UNDERTOW_JSP = ModuleIdentifier.create("io.undertow.jsp");
-    private static final ModuleIdentifier UNDERTOW_WEBSOCKET = ModuleIdentifier.create("io.undertow.websocket");
-    private static final ModuleIdentifier CLUSTERING_API = ModuleIdentifier.create("org.wildfly.clustering.web.api");
+    private static final String UNDERTOW_CORE = "io.undertow.core";
+    private static final String UNDERTOW_SERVLET = "io.undertow.servlet";
+    private static final String UNDERTOW_JSP = "io.undertow.jsp";
+    private static final String UNDERTOW_WEBSOCKET = "io.undertow.websocket";
 
-    private static final ModuleIdentifier SERVLET_API = ModuleIdentifier.create("javax.servlet.api");
-    private static final ModuleIdentifier JSP_API = ModuleIdentifier.create("javax.servlet.jsp.api");
-    private static final ModuleIdentifier WEBSOCKET_API = ModuleIdentifier.create("javax.websocket.api");
+    private static final String SERVLET_API = "jakarta.servlet.api";
+    private static final String JSP_API = "jakarta.servlet.jsp.api";
+    private static final String WEBSOCKET_API = "jakarta.websocket.api";
 
     static {
         Module module = Module.forClass(UndertowDependencyProcessor.class);
@@ -84,6 +65,5 @@ public class UndertowDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_SERVLET, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_JSP, false, false, true, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, UNDERTOW_WEBSOCKET, false, false, true, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, CLUSTERING_API, true, false, false, false));
     }
 }

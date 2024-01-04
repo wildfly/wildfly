@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.test.integration.ejb.mdb.ejb2x;
 
@@ -43,7 +26,7 @@ import jakarta.jms.Queue;
 import javax.naming.InitialContext;
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import jakarta.jms.QueueRequestor;
 import jakarta.jms.QueueSession;
@@ -95,7 +78,7 @@ public class MDB20MessageSelectorTestCase extends AbstractMDB2xTestCase {
         ejbJar.addClasses(JmsQueueSetup.class, TimeoutUtil.class);
         ejbJar.addAsManifestResource(MDB20MessageSelectorTestCase.class.getPackage(), "ejb-jar-20-message-selector.xml", "ejb-jar.xml");
         ejbJar.addAsManifestResource(MDB20MessageSelectorTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr,  org.apache.activemq.artemis\n"), "MANIFEST.MF");
+        ejbJar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.apache.activemq.artemis.client\n"), "MANIFEST.MF");
         ejbJar.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
         return ejbJar;
     }

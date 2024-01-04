@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
@@ -67,10 +50,10 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         return String.format(pattern, version.getMavenGavVersion());
     }
 
-    private static InfinispanModel getModelVersion(ModelTestControllerVersion controllerVersion) {
+    private static InfinispanSubsystemModel getModelVersion(ModelTestControllerVersion controllerVersion) {
         switch (controllerVersion) {
             case EAP_7_4_0:
-                return InfinispanModel.VERSION_14_0_0;
+                return InfinispanSubsystemModel.VERSION_14_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -158,7 +141,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
 
     private static ModelFixer createModelFixer(ModelVersion version) {
         return model -> {
-            if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+            if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
                 @SuppressWarnings("deprecation")
                 Map<String, List<PathElement>> containers = Map.ofEntries(Map.entry("minimal", List.of(DistributedCacheResourceDefinition.pathElement("dist"))),
                         Map.entry("maximal", List.of(DistributedCacheResourceDefinition.pathElement("dist"), LocalCacheResourceDefinition.pathElement("local"), ReplicatedCacheResourceDefinition.pathElement("cache-with-jdbc-store"), ScatteredCacheResourceDefinition.pathElement("scattered"))));
@@ -236,17 +219,17 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
-        if (InfinispanModel.VERSION_16_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
             config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
         }
 
-        if (InfinispanModel.VERSION_15_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress, new FailedOperationTransformationConfig.NewAttributesConfig(CacheContainerResourceDefinition.Attribute.MARSHALLER.getDefinition()));
             rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.Attribute.MARSHALLER.getName());
         }
 
-        if (InfinispanModel.VERSION_14_0_0.requiresTransformation(version)) {
+        if (InfinispanSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
             rejectedRemoteContainerAttributes.add(RemoteCacheContainerResourceDefinition.ListAttribute.MODULES.getName());
         }
 

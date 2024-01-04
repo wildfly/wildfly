@@ -1,0 +1,17 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:2.0" default-tracer="jaeger">
+    <jaeger-tracer name="jaeger">
+        <tags>
+            <property name="test" value="simple"/>
+        </tags>
+        <codec-configuration propagation="JAEGER"/>
+        <sampler-configuration sampler-type="const" sampler-param="1.0"/>
+        <sender-configuration sender-endpoint="http://jaeger-collector:14268/api/traces"
+                              sender-auth-password="password"
+                              sender-auth-user="user"/>
+    </jaeger-tracer>
+</subsystem>

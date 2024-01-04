@@ -1,25 +1,7 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_NONE;
@@ -76,6 +58,27 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
             .setFlags(RESTART_NONE)
             .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
             .build();
+    static final SimpleAttributeDefinition BROWSE = SimpleAttributeDefinitionBuilder.create("browse", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
+    static final SimpleAttributeDefinition CREATE_ADDRESS = SimpleAttributeDefinitionBuilder.create("create-address", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
+    static final SimpleAttributeDefinition DELETE_ADDRESS = SimpleAttributeDefinitionBuilder.create("delete-address", BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
+            .setRequired(false)
+            .setFlags(RESTART_NONE)
+            .setStorageRuntime()
+            .addAccessConstraint(MessagingExtension.MESSAGING_MANAGEMENT_SENSITIVE_TARGET)
+            .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
         SEND,
@@ -92,10 +95,6 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
 
     private final boolean runtimeOnly;
 
-    static final SecurityRoleDefinition RUNTIME_INSTANCE = new SecurityRoleDefinition(true);
-
-    static final SecurityRoleDefinition INSTANCE = new SecurityRoleDefinition(false);
-
     static Role transform(final OperationContext context, final String name, final ModelNode node) throws OperationFailedException {
         final boolean send = SEND.resolveModelAttribute(context, node).asBoolean();
         final boolean consume = CONSUME.resolveModelAttribute(context, node).asBoolean();
@@ -104,10 +103,12 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
         final boolean createNonDurableQueue = CREATE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
         final boolean deleteNonDurableQueue = DELETE_NON_DURABLE_QUEUE.resolveModelAttribute(context, node).asBoolean();
         final boolean manage = MANAGE.resolveModelAttribute(context, node).asBoolean();
-        return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage);
+        return new Role(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue,
+                deleteNonDurableQueue, manage, consume, createDurableQueue || createNonDurableQueue,
+                deleteDurableQueue || deleteNonDurableQueue);
     }
 
-    private SecurityRoleDefinition(final boolean runtimeOnly) {
+    SecurityRoleDefinition(final boolean runtimeOnly) {
         super(MessagingExtension.ROLE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SECURITY_ROLE),
                 runtimeOnly ? null : SecurityRoleAdd.INSTANCE,
@@ -132,6 +133,9 @@ public class SecurityRoleDefinition extends PersistentResourceDefinition {
                         .build();
                 registry.registerReadOnlyAttribute(readOnlyAttr, SecurityRoleReadAttributeHandler.INSTANCE);
             }
+            registry.registerReadOnlyAttribute(BROWSE, SecurityRoleReadAttributeHandler.INSTANCE);
+            registry.registerReadOnlyAttribute(CREATE_ADDRESS, SecurityRoleReadAttributeHandler.INSTANCE);
+            registry.registerReadOnlyAttribute(DELETE_ADDRESS, SecurityRoleReadAttributeHandler.INSTANCE);
         } else {
             for (AttributeDefinition attr : ATTRIBUTES) {
                 if (!attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {

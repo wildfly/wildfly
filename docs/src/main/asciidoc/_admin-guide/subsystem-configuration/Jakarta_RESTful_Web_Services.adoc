@@ -1,6 +1,14 @@
 [[JAXRS]]
 == JAXRS Subsystem Configuration
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 The `jaxrs` subsystem represents https://projects.eclipse.org/projects/ee4j.jaxrs[Jakarta RESTful Web Services].
 https://resteasy.github.io[RESTEasy] is the implementation.
 

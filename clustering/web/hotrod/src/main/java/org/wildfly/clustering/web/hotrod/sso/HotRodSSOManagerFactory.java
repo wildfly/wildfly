@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.web.hotrod.sso;
@@ -25,11 +8,10 @@ package org.wildfly.clustering.web.hotrod.sso;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.IdentifierFactory;
 import org.wildfly.clustering.ee.cache.SimpleIdentifierFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
-import org.wildfly.clustering.ee.hotrod.tx.HotRodBatcher;
+import org.wildfly.clustering.ee.hotrod.HotRodConfiguration;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
@@ -48,19 +30,18 @@ import org.wildfly.clustering.web.sso.SSOManagerFactory;
  */
 public class HotRodSSOManagerFactory<A, D, S> implements SSOManagerFactory<A, D, S, TransactionBatch> {
 
-    private final HotRodSSOManagerFactoryConfiguration configuration;
+    private final HotRodConfiguration configuration;
 
-    public HotRodSSOManagerFactory(HotRodSSOManagerFactoryConfiguration configuration) {
+    public HotRodSSOManagerFactory(HotRodConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
     public <L> SSOManager<A, D, S, L, TransactionBatch> createSSOManager(SSOManagerConfiguration<L> config) {
-        SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration.getRemoteCache());
+        SessionsFactory<Map<D, S>, D, S> sessionsFactory = new CoarseSessionsFactory<>(this.configuration);
         Marshaller<A, MarshalledValue<A, ByteBufferMarshaller>> marshaller = new MarshalledValueMarshaller<>(new ByteBufferMarshalledValueFactory(config.getMarshaller()));
-        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration.getRemoteCache(), marshaller, config.getLocalContextFactory(), sessionsFactory);
+        SSOFactory<Map.Entry<A, AtomicReference<L>>, Map<D, S>, A, D, S, L> factory = new HotRodSSOFactory<>(this.configuration, marshaller, config.getLocalContextFactory(), sessionsFactory);
         IdentifierFactory<String> identifierFactory = new SimpleIdentifierFactory<>(config.getIdentifierFactory());
-        Batcher<TransactionBatch> batcher = new HotRodBatcher(this.configuration.getRemoteCache());
-        return new CompositeSSOManager<>(factory, identifierFactory, batcher);
+        return new CompositeSSOManager<>(factory, identifierFactory, this.configuration.getBatcher());
     }
 }

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.apache.activemq.artemis.protocol.hornetq">
+
+    <properties>
+        <!--
+            END USER MODULE USAGE: Subsystem configuration plug points
+
+            End users may depend on this module for access to APIs needed to
+            implement custom plug points exposed by a subsystem's supported
+            management API (in this case the messaging-activemq subsystem).
+            Typically such plug points involve classname and module name
+            configuration attribute pairs where the end user specifies a module and
+            class that they provide to implement an API provided by the subsystem.
+
+            Such APIs and the name of this module are stable API. All other resources
+            exposed by this module are subject to change or removal at any time.
+
+            This module should not be directly depended upon by deployments.
+        -->
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.apache.activemq:artemis-hornetq-protocol}"/>
+    </resources>
+
+    <dependencies>
+        <!-- required to load ActiveMQ protocol SPI -->
+        <module name="org.apache.activemq.artemis" optional="true"/>
+        <module name="org.apache.activemq.artemis.client"/>
+        <module name="org.slf4j"/>
+        <!--<module name="io.netty"/>-->
+        <module name="io.netty.netty-buffer"/>
+        <module name="io.netty.netty-transport"/>
+        <module name="io.netty.netty-handler"/>
+        <module name="io.netty.netty-handler-proxy"/>
+        <module name="io.netty.netty-codec"/>
+        <module name="io.netty.netty-codec-socks"/>
+        <module name="io.netty.netty-common"/>
+        <module name="io.netty.netty-resolver"/>
+        <module name="io.netty.netty-transport-native-epoll"/>
+        <module name="io.netty.netty-transport-native-kqueue"/>
+        <module name="io.netty.netty-codec-http"/>
+    </dependencies>
+</module>

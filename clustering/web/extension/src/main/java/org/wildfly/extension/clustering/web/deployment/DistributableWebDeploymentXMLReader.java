@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2018, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.clustering.web.deployment;
@@ -32,7 +15,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
@@ -49,7 +31,7 @@ import org.wildfly.extension.clustering.web.session.infinispan.InfinispanSession
  * Parser for both jboss-all.xml distributable-web namespace parsing its standalone deployment descriptor counterpart.
  * @author Paul Ferraro
  */
-public class DistributableWebDeploymentXMLReader implements XMLElementReader<MutableDistributableDeploymentConfiguration>, JBossAllXMLParser<DistributableWebDeploymentConfiguration> {
+public class DistributableWebDeploymentXMLReader implements XMLElementReader<MutableDistributableWebDeploymentConfiguration> {
 
     private static final String SESSION_MANAGEMENT = "session-management";
     private static final String NAME = "name";
@@ -68,6 +50,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     private static final String DELIMITER = "delimiter";
     private static final String MAX_ROUTES = "max-routes";
     private static final String IMMUTABLE_CLASS = "immutable-class";
+    private static final String EXPIRATION_THREAD_POOL_SIZE = "expiration-thread-pool-size";
 
     private final DistributableWebDeploymentSchema schema;
 
@@ -76,14 +59,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
     }
 
     @Override
-    public DistributableWebDeploymentConfiguration parse(XMLExtendedStreamReader reader, DeploymentUnit unit) throws XMLStreamException {
-        MutableDistributableDeploymentConfiguration configuration = new MutableDistributableDeploymentConfiguration(unit);
-        this.readElement(reader, configuration);
-        return configuration;
-    }
-
-    @Override
-    public void readElement(XMLExtendedStreamReader reader, MutableDistributableDeploymentConfiguration configuration) throws XMLStreamException {
+    public void readElement(XMLExtendedStreamReader reader, MutableDistributableWebDeploymentConfiguration configuration) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
 
         Set<String> names = new TreeSet<>();
@@ -122,7 +98,7 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
         }
     }
 
-    private void readSessionManagement(XMLExtendedStreamReader reader, MutableDistributableDeploymentConfiguration configuration) throws XMLStreamException {
+    private void readSessionManagement(XMLExtendedStreamReader reader, MutableDistributableWebDeploymentConfiguration configuration) throws XMLStreamException {
 
         for (int i = 0; i < reader.getAttributeCount(); ++i) {
             String name = reader.getAttributeLocalName(i);
@@ -260,6 +236,12 @@ public class DistributableWebDeploymentXMLReader implements XMLElementReader<Mut
                 case CACHE_CONFIGURATION: {
                     configuration.setConfigurationName(value);
                     break;
+                }
+                case EXPIRATION_THREAD_POOL_SIZE: {
+                    if (this.schema.since(DistributableWebDeploymentSchema.VERSION_4_0)) {
+                        configuration.setExpirationThreadPoolSize(Integer.parseInt(value));
+                        break;
+                    }
                 }
                 default: {
                     this.readSessionManagementAttribute(reader, i, configuration);

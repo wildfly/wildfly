@@ -1,3 +1,8 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.integration.ejb.mdb.resourceadapter;
 
 import jakarta.annotation.Resource;
@@ -25,7 +30,7 @@ import org.junit.runner.RunWith;
 
 import java.util.PropertyPermission;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 @RunWith(Arquillian.class)
 @ServerSetup({ConfiguredResourceAdapterNameTestCase.JmsQueueSetup.class})

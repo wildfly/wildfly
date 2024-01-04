@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="urn:wildfly:microprofile-lra-coordinator:1.0"
+           xmlns="urn:wildfly:microprofile-lra-coordinator:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+
+  <!-- The lra-coordinator subsystem root element -->
+  <xs:element name="subsystem" type="lraCoordinatorSubsystemType"/>
+
+  <xs:complexType name="lraCoordinatorSubsystemType">
+    <xs:annotation>
+      <xs:documentation>
+        <![CDATA[
+                The configuration of the LRA Coordinator subsystem.
+                The "server" attribute defines the Undertow subsystem 'server' resource the coordinator is started at.
+                The "host" attribute defines the Undertow subsystem 'host' resource the coordinator is started at.
+            ]]>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="server" type="xs:string" use="optional" default="default-server"/>
+    <xs:attribute name="host" type="xs:string" use="optional" default="default-host"/>
+  </xs:complexType>
+</xs:schema>

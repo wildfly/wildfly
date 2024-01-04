@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.deployers.ds.processors;
@@ -31,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.metadata.api.common.SecurityMetadata;
 import org.jboss.as.connector.metadata.api.ds.DsSecurity;
 import org.jboss.as.connector.services.datasources.statistics.DataSourceStatisticsService;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
@@ -126,8 +108,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
         final List<DataSources> dataSourcesList = deploymentUnit.getAttachmentList(DsXmlDeploymentParsingProcessor.DATA_SOURCES_ATTACHMENT_KEY);
 
-        final boolean legacySecurityPresent = support.hasCapability("org.wildfly.legacy-security");
-
         for(DataSources dataSources : dataSourcesList) {
             if (dataSources.getDrivers() != null && !dataSources.getDrivers().isEmpty()) {
                 ConnectorLogger.DS_DEPLOYER_LOGGER.driversElementNotSupported(deploymentUnit.getName());
@@ -146,10 +126,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             final String dsName = ds.getJndiName();
                             final PathAddress addr = getDataSourceAddress(dsName, deploymentUnit, false);
                             installManagementModel(ds, deploymentUnit, addr);
-                            // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
-                            boolean useLegacySecurity = legacySecurityPresent && isLegacySecurityRequired(ds.getSecurity());
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget,
-                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, useLegacySecurity, ds.isJTA(), support);
+                                    getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName, ds.isJTA(), support);
                         } catch (DeploymentUnitProcessingException dupe) {
                             throw dupe;
                         } catch (Exception e) {
@@ -174,10 +152,8 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             installManagementModel(xads, deploymentUnit, addr);
                             final Credential credential = xads.getRecovery() == null? null: xads.getRecovery().getCredential();
                             // TODO why have we been ignoring a configured legacy security domain but no legacy security present?
-                            boolean useLegacySecurity = legacySecurityPresent && (isLegacySecurityRequired(xads.getSecurity())
-                                                        || isLegacySecurityRequired(credential));
                             startDataSource(xds, jndiName, xads.getDriver(), serviceTarget,
-                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, useLegacySecurity, true, support);
+                                    getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName, true, support);
 
                         } catch (Exception e) {
                             throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
@@ -298,7 +274,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                  final ManagementResourceRegistration registration,
                                  final Resource resource,
                                  final String managementName,
-                                 boolean requireLegacySecurity,
                                  final boolean isTransactional,
                                  final CapabilityServiceSupport support) throws DeploymentUnitProcessingException {
 
@@ -320,10 +295,6 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getDriverRegistryInjector());
         dataSourceServiceBuilder.requires(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(DEFAULT_NAME));
         dataSourceServiceBuilder.requires(support.getCapabilityServiceName(NamingService.CAPABILITY_NAME));
-
-        if (requireLegacySecurity) {
-            throw ConnectorLogger.DS_DEPLOYER_LOGGER.legacySecurityNotAvailableForDsXml(managementName);
-        }
 
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
         if (registration.isAllowsOverride()) {
@@ -448,14 +419,5 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
             }
             return subModel;
         }
-    }
-
-    private static boolean isLegacySecurityRequired(org.jboss.jca.common.api.metadata.common.SecurityMetadata config) {
-        boolean result = config != null && config instanceof SecurityMetadata && !((SecurityMetadata) config).isElytronEnabled();
-        if (result) {
-            String domain = config.resolveSecurityDomain();
-            result = domain != null && domain.trim().length() > 0;
-        }
-        return result;
     }
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.resteasy.resteasy-tracing-api">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.jboss.resteasy:resteasy-tracing-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="org.jboss.logging"/>
+    </dependencies>
+</module>

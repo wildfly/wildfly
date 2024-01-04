@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ejb3.remote;
 
@@ -29,7 +12,9 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -263,10 +248,36 @@ public class LocalEjbReceiver extends EJBReceiver {
             }
             receiverContext.resultReady(new CloningResultProducer(invocation, resultCloner, result, allowPassByReference));
 
-            for(Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
-                if (entry.getValue() instanceof Serializable) {
-                    invocation.getContextData().put(entry.getKey(), entry.getValue());
-                }
+            handleReturningContextData(invocation, interceptorContext);
+        }
+    }
+
+    /**
+     * WFLY-16567 - ContextData not kept in sync when EJB modifies it
+     *
+     * @param invocation
+     * @param interceptorContext
+     */
+    private static void handleReturningContextData(EJBClientInvocationContext invocation,
+            InterceptorContext interceptorContext) {
+
+        // WFLY-16567 - clear out all returnKeys
+        Set<String> returnKeys = (Set<String>) invocation.getAttachments()
+                .get(EJBClientInvocationContext.RETURNED_CONTEXT_DATA_KEY);
+        if (returnKeys != null)
+            invocation.getContextData().keySet().removeAll(returnKeys);
+        // WFLY-16567 - the local receiver copies the contextData back, it should remove what the EJB removed
+        // keys in context data when client sent request
+        Set<String> keysRemovedOnServerSide = new HashSet<>(invocation.getContextData().keySet());
+        // remove keys returned, leaving keys on the client side that should be cleared
+        keysRemovedOnServerSide.removeAll(interceptorContext.getContextData().keySet());
+        // remove the keys that existed before but do not exist in the response
+        invocation.getContextData().keySet().removeAll(keysRemovedOnServerSide);
+
+        // copy the returned context data into the invocation
+        for (Map.Entry<String, Object> entry : interceptorContext.getContextData().entrySet()) {
+            if (entry.getValue() instanceof Serializable) {
+                invocation.getContextData().put(entry.getKey(), entry.getValue());
             }
         }
     }

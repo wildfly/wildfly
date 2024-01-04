@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -32,19 +15,25 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.DOUBLE;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
+import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_SSL_CONTEXT_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.jms.Validators.noDuplicateElements;
 
+import org.apache.activemq.artemis.api.config.ActiveMQDefaultConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeMarshallers;
 import org.jboss.as.controller.AttributeParser;
+import org.jboss.as.controller.AttributeParsers;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -192,9 +181,9 @@ public interface CommonAttributes {
             .build();
 
     PropertiesAttributeDefinition PARAMS = new PropertiesAttributeDefinition.Builder("params", true)
-            .setWrapXmlElement(false)
             .setAllowExpression(true)
-            .setXmlName("param")
+            .setAttributeParser(new AttributeParsers.PropertiesParser(null, "param", false))
+            .setAttributeMarshaller(new AttributeMarshallers.PropertiesAttributeMarshaller(null, "param", false))
             .build();
 
     @Deprecated SimpleAttributeDefinition JGROUPS_CHANNEL_FACTORY = create("jgroups-stack", ModelType.STRING)
@@ -333,6 +322,12 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
+    SimpleAttributeDefinition SSL_CONTEXT = new SimpleAttributeDefinitionBuilder("ssl-context", ModelType.STRING, true)
+            .setCapabilityReference(ELYTRON_SSL_CONTEXT_CAPABILITY.getName())
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new StringLengthValidator(1))
+            .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SSL_REF)
+            .build();
 
     String ACCEPTOR = "acceptor";
     String ACCEPTORS = "acceptors";

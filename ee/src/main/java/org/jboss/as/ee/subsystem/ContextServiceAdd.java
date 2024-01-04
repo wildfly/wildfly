@@ -1,31 +1,14 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ee.concurrent.ContextServiceTypesConfiguration;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.dmr.ModelNode;
@@ -45,17 +28,11 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final ModelNode model = resource.getModel();
         final String name = context.getCurrentAddressValue();
-
         final String jndiName = ContextServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
-        final boolean useTransactionSetupProvider = ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
-
+        // WFLY-16705 deprecated USE_TRANSACTION_SETUP_PROVIDER_AD is ignored since it's of no use anymore (replaced by spec's context service config of context type Transaction)
+        // TODO https://issues.redhat.com/browse/WFLY-17912 -- allow Context Service configuration via the subsystem management API
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), useTransactionSetupProvider);
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY);
-        if (useTransactionSetupProvider) {
-            serviceBuilder.requires(context.getCapabilityServiceSupport().getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
-        }
-        serviceBuilder.setInstance(contextServiceService);
-        serviceBuilder.install();
+        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), ContextServiceTypesConfiguration.DEFAULT);
+        context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY).setInstance(contextServiceService).install();
     }
 }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.faces.impl">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <dependencies>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.ejb.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.faces.api"/>
+        <module name="jakarta.json.api"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.servlet.jsp.api"/>
+        <module name="jakarta.servlet.jstl.api"/>
+        <module name="jakarta.validation.api" export="true"/>
+        <module name="jakarta.websocket.api" />
+        <module name="jakarta.xml.bind.api"/>
+
+        <module name="java.desktop"/>
+        <module name="java.logging"/>
+        <module name="java.naming"/>
+        <module name="java.sql"/>
+        <module name="java.xml"/>
+
+
+        <module name="org.glassfish.expressly"/>
+        <module name="org.jboss.weld.core"/>
+        <module name="org.jboss.weld.spi"/>
+    </dependencies>
+
+    <resources>
+        <artifact name="${org.glassfish:jakarta.faces}"/>
+    </resources>
+</module>

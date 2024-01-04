@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
@@ -55,7 +38,6 @@ import org.jboss.as.connector.services.resourceadapters.AdminObjectService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
-import org.jboss.as.connector.services.workmanager.NamedWorkManager;
 import org.jboss.as.connector.subsystems.common.jndi.Util;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
@@ -293,11 +275,11 @@ public abstract class AbstractResourceAdapterDeploymentService {
         if (result == null) {
             // We added injection of the server executor late in WF 8, so in case some
             // add-on projects don't know to inject it....
-            final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
+
             final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
             final ThreadFactory threadFactory = doPrivileged(new PrivilegedAction<JBossThreadFactory>() {
                 public JBossThreadFactory run() {
-                    return new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null);
+                    return new JBossThreadFactory(ThreadGroupHolder.THREAD_GROUP, Boolean.FALSE, null, namePattern, null, null);
                 }
             });
             result = Executors.newSingleThreadExecutor(threadFactory);
@@ -687,7 +669,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     String[] defaultGroups = wms.getDefaultGroups() != null ?
                             wms.getDefaultGroups().toArray(new String[workManagerSecurity.getDefaultGroups().size()]) : null;
 
-                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(), wms.isElytronEnabled(),
+                    return new CallbackImpl(wms.isMappingRequired(), wms.getDomain(),
                             wms.getDefaultPrincipal(), defaultGroups, wms.getUserMappings(), wms.getGroupMappings());
                 } else {
                     return super.createCallback(workManagerSecurity);
@@ -700,8 +682,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
         @Override
         protected void setCallbackSecurity(org.jboss.jca.core.api.workmanager.WorkManager workManager, Callback cb) {
             if (cb instanceof  CallbackImpl) {
-                if (((CallbackImpl) cb).isElytronEnabled() != ((NamedWorkManager) workManager).isElytronEnabled())
-                    throw ConnectorLogger.ROOT_LOGGER.invalidElytronWorkManagerSetting();
                 workManager.setCallbackSecurity(cb);
 
             } else {
@@ -762,5 +742,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
         public String getJndiViewInstanceValue() {
             return String.valueOf(getReference().getInstance());
         }
+    }
+
+    // Wrapper class to delay thread group creation until when it's needed.
+    private static class ThreadGroupHolder {
+        private static final ThreadGroup THREAD_GROUP = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
     }
 }

@@ -1,6 +1,14 @@
 [[JTA_Reference]]
 = JTA Reference
 
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 WildFly uses http://narayana.io[Narayana] as the implementation of the JTA specification.
 Narayana manages transactions in the application server.
 
@@ -496,5 +504,5 @@ or list all the configuration options of the subsystem in `jboss-cli`
 ----
 
 NOTE: References in this document to CDI refer to Jakarta Contexts and Dependency Injection unless otherwise noted.
-      References in this document to Java Transaction API(JTA) refer to Jakarta Transactions unless otherwise noted.
-      References in this document to Enterprise JavaBeans(EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.
+      References in this document to Java Transaction API (JTA) refer to Jakarta Transactions unless otherwise noted.
+      References in this document to Enterprise JavaBeans (EJB) refer to the Jakarta Enterprise Beans unless otherwise noted.

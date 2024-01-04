@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="servlet.misc.common">
+    <dependencies>
+        <package name="LICENSE.txt"/>
+        <package name="README.txt"/>
+        <package name="copyright.txt"/>
+        <package name="core.misc.common"/>
+    </dependencies>
+</package-spec>

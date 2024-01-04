@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.messaging.activemq;
@@ -57,7 +40,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Handler for adding a bridge.
@@ -99,7 +82,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
             BridgeConfiguration bridgeConfig = createBridgeConfiguration(context, name, model);
 
             //noinspection RedundantClassCall
-            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
             createBridge(bridgeConfig, server);
 
         }
@@ -189,7 +172,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
         return result;
     }
 
-    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQServer server) throws OperationFailedException {
+    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQBroker broker) throws OperationFailedException {
+        ActiveMQServer server = ActiveMQServer.class.cast(broker.getDelegate());
         checkStarted(server);
         clearIO(server);
 

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
 
@@ -20,6 +25,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port:8787}</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
 
@@ -36,6 +42,7 @@
                 <!-- AS7-4070 -->
                 <property name="waitForPorts">${as.debug.port.node1} 10090</property>
                 <property name="waitForPortsTimeoutInSeconds">8</property>
+                <property name="javaHome">${container.java.home}</property>
             </configuration>
         </container>
     </group>

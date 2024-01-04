@@ -1,11 +1,15 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package org.jboss.as.test.shared.util;
 
 import static org.junit.Assume.assumeTrue;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.function.Supplier;
-
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -39,6 +43,7 @@ public class AssumeTestGroupUtil {
      * in-container where Shrinkwrap is not available.
      * </p>
      */
+    private static final Logger logger = Logger.getLogger(AssumeTestGroupUtil.class);
     private static JavaArchive EMPTY_JAR;
     /** Same as {@link #EMPTY_JAR} but is a {@link WebArchive}. */
     private static WebArchive EMPTY_WAR;
@@ -239,9 +244,18 @@ public class AssumeTestGroupUtil {
      * Assume for tests that require a docker installation.
      *
      * @throws AssumptionViolatedException if a docker client cannot be initialized
+     * @throws RuntimeException if a docker client is required but is unavailable or not properly configured
      */
     public static void assumeDockerAvailable() {
-        assumeCondition("Docker is not available.", AssumeTestGroupUtil::isDockerAvailable);
+        try {
+            assumeCondition("Docker is not available.", AssumeTestGroupUtil::isDockerAvailable);
+        } catch (AssumptionViolatedException ex) {
+            if (System.getProperty("org.wildfly.test.require.docker") != null && System.getProperty("org.wildfly.test.require.docker").equals("true")){
+                throw new RuntimeException("Docker is required but it is not available or is not properly configured");
+            } else {
+                throw ex;
+            }
+        }
     }
 
     /**
@@ -254,6 +268,7 @@ public class AssumeTestGroupUtil {
             DockerClientFactory.instance().client();
             return true;
         } catch (Throwable ex) {
+            logger.error("Could not initialize docker",ex);
             return false;
         }
     }
@@ -274,7 +289,16 @@ public class AssumeTestGroupUtil {
     }
 
     public static boolean isWildFlyPreview() {
-        return System.getProperty("ts.ee9") != null || System.getProperty("ts.bootable.ee9") != null;
+        return System.getProperty("ts.preview") != null || System.getProperty("ts.bootable.preview") != null;
+    }
+
+    public static void assumeBootableJar() {
+        assumeCondition("Some tests require bootable jar packaging",
+                AssumeTestGroupUtil::isBootableJar);
+    }
+
+    public static boolean isBootableJar() {
+        return System.getProperty("ts.bootable") != null || System.getProperty("ts.bootable.preview") != null;
     }
 
     private static int getJavaSpecificationVersion() {

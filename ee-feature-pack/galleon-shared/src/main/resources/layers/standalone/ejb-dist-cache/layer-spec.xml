@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="ejb-dist-cache">
+
+    <!-- Infinispan cache configuration used for distributed SFSB caching -->
+    <props>
+        <prop name="org.wildfly.rule.profile-ha" value="ejb-local-cache"/>
+    </props>
+    <dependencies>
+        <layer name="transactions"/>
+    </dependencies>
+
+    <feature-group name="ejb3-sfsb"/>
+
+    <feature-group name="private-interface"/>
+
+    <!-- distributable-ejb subsystem providing distributed clustering abstractions for ejb3 subsystem-->
+    <feature-group name="distributable-ejb"/>
+    <!-- Infinispan cache configuration used for distributed SFSB caching -->
+    <feature-group name="infinispan-dist-ejb"/>
+    <feature-group name="jgroups-all"/>
+</layer-spec>

@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.txn.service;
@@ -25,6 +8,8 @@ package org.jboss.as.txn.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.arjuna.ats.internal.jta.recovery.arjunacore.SubordinateAtomicActionRecoveryModule;
 import com.arjuna.ats.internal.jta.recovery.jts.JCAServerTransactionRecoveryModule;
@@ -35,13 +20,11 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.suspend.RecoverySuspendController;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.omg.CORBA.ORB;
 
 import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
@@ -71,20 +54,35 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
     @SuppressWarnings("deprecation")
     public static final ServiceName SERVICE_NAME = TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER;
 
-    private final InjectedValue<ORB> orbInjector = new InjectedValue<ORB>();
-    private final InjectedValue<SocketBinding> recoveryBindingInjector = new InjectedValue<SocketBinding>();
-    private final InjectedValue<SocketBinding> statusBindingInjector = new InjectedValue<SocketBinding>();
-    private final InjectedValue<SuspendController> suspendControllerInjector = new InjectedValue<>();
-    private final InjectedValue<ProcessStateNotifier> processStateInjector = new InjectedValue<>();
+    private final Consumer<RecoveryManagerService> consumer;
+    private final Supplier<ORB> orbSupplier;
+    private final Supplier<SocketBinding> recoveryBindingSupplier;
+    private final Supplier<SocketBinding> statusBindingSupplier;
+    private final Supplier<SuspendController> suspendControllerSupplier;
+    private final Supplier<ProcessStateNotifier> processStateSupplier;
 
     private RecoveryManagerService recoveryManagerService;
     private RecoverySuspendController recoverySuspendController;
     private boolean recoveryListener;
     private final boolean jts;
-    private InjectedValue<SocketBindingManager> bindingManager = new InjectedValue<SocketBindingManager>();
+    private final Supplier<SocketBindingManager> bindingManagerSupplier;
 
-    public ArjunaRecoveryManagerService(final boolean recoveryListener, final boolean jts) {
+    public ArjunaRecoveryManagerService(final Consumer<RecoveryManagerService> consumer,
+                                        final Supplier<SocketBinding> recoveryBindingSupplier,
+                                        final Supplier<SocketBinding> statusBindingSupplier,
+                                        final Supplier<SocketBindingManager> bindingManagerSupplier,
+                                        final Supplier<SuspendController> suspendControllerSupplier,
+                                        final Supplier<ProcessStateNotifier> processStateSupplier,
+                                        final Supplier<ORB> orbSupplier,
+                                        final boolean recoveryListener, final boolean jts) {
+        this.consumer = consumer;
+        this.recoveryBindingSupplier = recoveryBindingSupplier;
+        this.statusBindingSupplier = statusBindingSupplier;
+        this.suspendControllerSupplier = suspendControllerSupplier;
+        this.bindingManagerSupplier = bindingManagerSupplier;
+        this.processStateSupplier = processStateSupplier;
         this.recoveryListener = recoveryListener;
+        this.orbSupplier = orbSupplier;
         this.jts = jts;
     }
 
@@ -92,17 +90,17 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
         // Recovery env bean
         final RecoveryEnvironmentBean recoveryEnvironmentBean = recoveryPropertyManager.getRecoveryEnvironmentBean();
-        final SocketBinding recoveryBinding = recoveryBindingInjector.getValue();
+        final SocketBinding recoveryBinding = recoveryBindingSupplier.get();
         recoveryEnvironmentBean.setRecoveryInetAddress(recoveryBinding.getSocketAddress().getAddress());
         recoveryEnvironmentBean.setRecoveryPort(recoveryBinding.getSocketAddress().getPort());
-        final SocketBinding statusBinding = statusBindingInjector.getValue();
+        final SocketBinding statusBinding = statusBindingSupplier.get();
         recoveryEnvironmentBean.setTransactionStatusManagerInetAddress(statusBinding.getSocketAddress().getAddress());
         recoveryEnvironmentBean.setTransactionStatusManagerPort(statusBinding.getSocketAddress().getPort());
         recoveryEnvironmentBean.setRecoveryListener(recoveryListener);
 
         if (recoveryListener){
             ManagedBinding binding = ManagedBinding.Factory.createSimpleManagedBinding(recoveryBinding);
-            bindingManager.getValue().getNamedRegistry().registerBinding(binding);
+            bindingManagerSupplier.get().getNamedRegistry().registerBinding(binding);
         }
 
         final List<String> recoveryExtensions = new ArrayList<String>();
@@ -138,7 +136,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
 
             this.recoveryManagerService = recoveryManagerService;
         } else {
-            final ORB orb = orbInjector.getValue();
+            final ORB orb = orbSupplier.get();
             new PostInitLoader(PostInitLoader.generateORBPropertyName("com.arjuna.orbportability.orb"), orb);
 
             recoveryExtensions.add(TopLevelTransactionRecoveryModule.class.getName());
@@ -162,15 +160,16 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
-
         recoverySuspendController = new RecoverySuspendController(recoveryManagerService);
-        processStateInjector.getValue().addPropertyChangeListener(recoverySuspendController);
-        suspendControllerInjector.getValue().registerActivity(recoverySuspendController);
+        processStateSupplier.get().addPropertyChangeListener(recoverySuspendController);
+        suspendControllerSupplier.get().registerActivity(recoverySuspendController);
+        consumer.accept(recoveryManagerService);
     }
 
     public synchronized void stop(StopContext context) {
-        suspendControllerInjector.getValue().unRegisterActivity(recoverySuspendController);
-        processStateInjector.getValue().removePropertyChangeListener(recoverySuspendController);
+        consumer.accept(null);
+        suspendControllerSupplier.get().unRegisterActivity(recoverySuspendController);
+        processStateSupplier.get().removePropertyChangeListener(recoverySuspendController);
         try {
             recoveryManagerService.stop();
         } catch (Exception e) {
@@ -185,27 +184,4 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
         return recoveryManagerService;
     }
 
-    public Injector<ORB> getOrbInjector() {
-        return orbInjector;
-    }
-
-    public Injector<SocketBinding> getRecoveryBindingInjector() {
-        return recoveryBindingInjector;
-    }
-
-    public Injector<SocketBinding> getStatusBindingInjector() {
-        return statusBindingInjector;
-    }
-
-    public Injector<SuspendController> getSuspendControllerInjector() {
-        return suspendControllerInjector;
-    }
-
-    public Injector<ProcessStateNotifier> getProcessStateInjector() {
-        return processStateInjector;
-    }
-
-    public Injector<SocketBindingManager> getBindingManager() {
-        return bindingManager;
-    }
 }

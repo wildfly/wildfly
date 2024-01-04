@@ -1,34 +1,21 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.marshalling.protostream;
 
 import java.security.PrivilegedAction;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ImmutableSerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -105,23 +92,32 @@ public class SerializationContextBuilder {
     }
 
     private boolean tryLoad(ClassLoader loader) {
-        PrivilegedAction<Boolean> action = new PrivilegedAction<>() {
+        PrivilegedAction<Collection<SerializationContextInitializer>> action = new PrivilegedAction<>() {
             @Override
-            public Boolean run() {
-                Iterator<SerializationContextInitializer> initializers = ServiceLoader.load(SerializationContextInitializer.class, loader).iterator();
-                boolean init = false;
-                while (initializers.hasNext()) {
-                    SerializationContextInitializer initializer = initializers.next();
-                    // Do not load initializers from protostream-types
-                    if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
-                        SerializationContextBuilder.this.init(initializer);
-                        init = true;
-                    }
-                }
-                return init;
+            public Collection<SerializationContextInitializer> run() {
+                return ServiceLoader.load(SerializationContextInitializer.class, loader).stream().map(Supplier::get).collect(Collectors.toList());
             }
         };
-        return WildFlySecurityManager.doUnchecked(action);
+        return this.init(WildFlySecurityManager.doUnchecked(action));
+    }
+
+    private boolean init(Collection<SerializationContextInitializer> initializers) {
+        boolean init = false;
+        Collection<SerializationContextInitializer> retries = new LinkedList<>();
+        for (SerializationContextInitializer initializer : initializers) {
+            // Do not load initializers from protostream-types
+            if (!initializer.getClass().getName().startsWith(PROTOSTREAM_BASE_PACKAGE_NAME)) {
+                try {
+                    SerializationContextBuilder.this.init(initializer);
+                    init = true;
+                } catch (DescriptorParserException e) {
+                    // Descriptor might fail to parse due to dependency ordering issues
+                    retries.add(initializer);
+                }
+            }
+        }
+        // Retry an failed initializers
+        return retries.isEmpty() || retries.size() == initializers.size() ? init : this.init(retries) || init;
     }
 
     void init(SerializationContextInitializer initializer) {

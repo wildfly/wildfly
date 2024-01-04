@@ -1,92 +1,82 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
 import java.time.Duration;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
+import java.util.Optional;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.ee.infinispan.CacheEntryComputeMutator;
+import org.wildfly.clustering.ejb.cache.timer.DefaultImmutableTimerMetaData;
+import org.wildfly.clustering.ejb.cache.timer.DefaultTimerMetaData;
+import org.wildfly.clustering.ejb.cache.timer.MutableTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.RemappableTimerMetaDataEntry;
+import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
+import org.wildfly.clustering.ejb.cache.timer.TimerIndexKey;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataConfiguration;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataEntryFunction;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
+import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerMetaDataFactory<I, V> implements TimerMetaDataFactory<I, V> {
+public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> {
 
     private final Cache<TimerIndexKey, I> indexCache;
-    private final Cache<TimerCreationMetaDataKey<I>, TimerCreationMetaData<V>> creationMetaDataReadCache;
-    private final Cache<TimerCreationMetaDataKey<I>, TimerCreationMetaData<V>> creationMetaDataWriteCache;
-    private final Cache<TimerAccessMetaDataKey<I>, Duration> accessMetaDataCache;
-    private final TimerMetaDataConfiguration<V> config;
+    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readCache;
+    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> writeCache;
+    private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> removeCache;
+    private final TimerMetaDataConfiguration<C> config;
 
-    public InfinispanTimerMetaDataFactory(TimerMetaDataConfiguration<V> config) {
+    public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
         this.config = config;
         this.indexCache = config.getCache();
-        this.creationMetaDataReadCache = config.getReadForUpdateCache();
-        this.creationMetaDataWriteCache = config.getSilentWriteCache();
-        this.accessMetaDataCache = config.getSilentWriteCache();
+        this.readCache = config.getReadForUpdateCache();
+        this.writeCache = config.getSilentWriteCache();
+        this.removeCache = config.getCache();
     }
 
     @Override
-    public Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> createValue(I id, Map.Entry<TimerCreationMetaData<V>, TimerIndex> entry) {
-        TimerCreationMetaData<V> creationMetaData = entry.getKey();
+    public RemappableTimerMetaDataEntry<C> createValue(I id, Map.Entry<RemappableTimerMetaDataEntry<C>, TimerIndex> entry) {
+        RemappableTimerMetaDataEntry<C> metaData = entry.getKey();
         TimerIndex index = entry.getValue();
         // If an timer with the same index already exists, return null;
-        if ((index != null) && (this.indexCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).putIfAbsent(new TimerIndexKey(index), id) != null)) return null;
+        if ((index != null) && (this.indexCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).putIfAbsent(new InfinispanTimerIndexKey(index), id) != null)) return null;
 
-        this.creationMetaDataWriteCache.put(new TimerCreationMetaDataKey<>(id), creationMetaData);
-        TimerAccessMetaData accessMetaData = new TimerAccessMetaDataEntry<>(this.accessMetaDataCache, new TimerAccessMetaDataKey<>(id));
-        return new SimpleImmutableEntry<>(creationMetaData, accessMetaData);
+        this.writeCache.put(new InfinispanTimerMetaDataKey<>(id), metaData);
+        return metaData;
     }
 
     @Override
-    public Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> findValue(I id) {
-        TimerCreationMetaData<V> creationMetaData = this.creationMetaDataReadCache.get(new TimerCreationMetaDataKey<>(id));
-        return (creationMetaData != null) ? new SimpleImmutableEntry<>(creationMetaData, new TimerAccessMetaDataEntry<>(this.accessMetaDataCache, new TimerAccessMetaDataKey<>(id))) : null;
+    public RemappableTimerMetaDataEntry<C> findValue(I id) {
+        return this.readCache.get(new InfinispanTimerMetaDataKey<>(id));
     }
 
     @Override
     public boolean remove(I id) {
-        TimerCreationMetaDataKey<I> key = new TimerCreationMetaDataKey<>(id);
-        TimerCreationMetaData<V> creationMetaData = this.creationMetaDataReadCache.get(key);
-        if (creationMetaData != null) {
-            this.accessMetaDataCache.remove(new TimerAccessMetaDataKey<>(id));
-            this.creationMetaDataWriteCache.remove(key);
-            return true;
-        }
-        return false;
+        return this.removeCache.remove(new InfinispanTimerMetaDataKey<>(id)) != null;
     }
 
     @Override
-    public TimerMetaData createTimerMetaData(I id, Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> entry) {
-        return new CompositeTimerMetaData<>(this.config, entry.getKey(), entry.getValue());
+    public TimerMetaData createTimerMetaData(I id, RemappableTimerMetaDataEntry<C> entry) {
+        Duration lastTimeout = entry.getLastTimeout();
+        OffsetValue<Duration> lastTimeoutOffset = OffsetValue.from(Optional.ofNullable(lastTimeout).orElse(Duration.ZERO));
+        Mutator mutator = new CacheEntryComputeMutator<>(this.writeCache, new InfinispanTimerMetaDataKey<>(id), new TimerMetaDataEntryFunction<>(lastTimeoutOffset));
+        return new DefaultTimerMetaData<>(this.config, (lastTimeout != null) ? new MutableTimerMetaDataEntry<>(entry, lastTimeoutOffset) : entry, mutator);
     }
 
     @Override
-    public ImmutableTimerMetaData createImmutableTimerMetaData(Map.Entry<TimerCreationMetaData<V>, TimerAccessMetaData> entry) {
-        return new CompositeImmutableTimerMetaData<>(this.config, entry.getKey(), entry.getValue());
+    public ImmutableTimerMetaData createImmutableTimerMetaData(RemappableTimerMetaDataEntry<C> entry) {
+        return new DefaultImmutableTimerMetaData<>(this.config, entry);
     }
 }

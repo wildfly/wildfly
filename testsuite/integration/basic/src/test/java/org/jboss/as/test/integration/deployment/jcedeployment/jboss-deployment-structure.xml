@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.1">
     <deployment>
         <resources>
@@ -5,13 +10,5 @@
         </resources>
     </deployment>
     <sub-deployment name="test.war">
-        <dependencies>
-            <module name="javax.api" />
-            <system>
-                <paths>
-                    <path name="sun/security/validator"/>
-                </paths>
-            </system>
-        </dependencies>
     </sub-deployment>
 </jboss-deployment-structure>

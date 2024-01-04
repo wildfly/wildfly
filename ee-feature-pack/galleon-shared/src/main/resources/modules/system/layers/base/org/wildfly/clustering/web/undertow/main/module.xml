@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.undertow">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-clustering-web-undertow}"/>
+    </resources>
+
+    <dependencies>
+        <module name="jakarta.servlet.api"/>
+
+        <module name="io.undertow.core"/>
+        <module name="io.undertow.servlet"/>
+        <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.protostream"/>
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.metadata.web"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.clustering.ee.spi"/>
+        <module name="org.wildfly.clustering.marshalling.jboss"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.web.container"/>
+        <module name="org.wildfly.clustering.web.service"/>
+        <module name="org.wildfly.clustering.web.spi"/>
+        <module name="org.wildfly.common"/>
+        <module name="org.wildfly.extension.undertow"/>
+        <module name="org.wildfly.security.elytron-base"/>
+        <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server"/>
+        <module name="org.wildfly.security.elytron-web.undertow-server-servlet"/>
+    </dependencies>
+</module>

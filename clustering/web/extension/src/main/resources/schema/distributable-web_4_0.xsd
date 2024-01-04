@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<xs:schema targetNamespace="urn:jboss:distributable-web:4.0"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="urn:jboss:distributable-web:4.0"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="4.0">
+
+    <xs:element name="distributable-web" type="tns:distributable-web"></xs:element>
+
+    <xs:complexType name="distributable-web">
+        <xs:choice>
+            <xs:element name="session-management" type="tns:session-management">
+                <xs:annotation>
+                    <xs:documentation>References an existing session management provider</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="infinispan-session-management" type="tns:infinispan-session-management">
+                <xs:annotation>
+                    <xs:documentation>Defines a deployment specific Infinispan cache-based session management provider</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="hotrod-session-management" type="tns:hotrod-session-management">
+                <xs:annotation>
+                    <xs:documentation>Defines a deployment specific HotRod remote cache-based session management provider</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="session-management">
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>References the name of an existing session management provider</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="abstract-session-management" abstract="true">
+        <xs:attribute name="granularity" type="tns:granularity" use="required">
+            <xs:annotation>
+                <xs:documentation>Defines the granularity of cache entry mapping for the attributes of a session.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="marshaller" type="tns:marshaller" default="JBOSS">
+            <xs:annotation>
+                <xs:documentation>Indicates the marshalling implementation used for serializing attributes of a session.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="infinispan-session-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-session-management">
+                <xs:sequence>
+                    <xs:choice>
+                        <xs:group ref="tns:affinity"/>
+                        <xs:element name="primary-owner-affinity" type="tns:empty">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Web requests will have an affinity for the primary owner of a given session.
+                                    Behaves the same as local-affinity if the backing cache is not distributed nor replicated.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="ranked-affinity" type="tns:ranked-affinity">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Web requests will have an affinity for the first available node in a list comprised of: primary owner, backup nodes, local node (if not a primary nor backup owner).
+                                    Behaves the same as local-affinity if the cache is not distributed, nor replicated.
+                                    Must be explicitly supported by the load balancer.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:choice>
+                    <xs:group ref="tns:immutability"/>
+                </xs:sequence>
+                <xs:attribute name="cache-container" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References a cache-container defined by the Infinispan subsystem.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cache" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            References a cache within the associated cache-container.
+                            If unspecified, the default cache of the associated cache-container is assumed.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="hotrod-session-management">
+        <xs:complexContent>
+            <xs:extension base="tns:abstract-session-management">
+                <xs:choice>
+                    <xs:element name="no-affinity" type="tns:empty">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Web requests not have an affinity for any particular server.
+                                Intended for use cases where web session state is not maintained within the application server.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="local-affinity" type="tns:empty">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Web requests have an affinity for the member that last handled a given session.
+                                This option corresponds to traditional sticky session behavior.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+                <xs:attribute name="remote-cache-container" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>References a remote-cache-container defined by the Infinispan subsystem.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="cache-configuration" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>References a named configuration on the remote server.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="expiration-thread-pool-size" type="xs:positiveInteger">
+                    <xs:annotation>
+                        <xs:documentation>Configures the number of threads dedicated to processing expiration events from the remote Infinispan cluster.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="granularity">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="SESSION">
+                <xs:annotation>
+                    <xs:documentation>
+                        Stores all session attributes within a single cache entry.
+                        Generally more expensive than ATTRIBUTE granularity, but preserves any cross-attribute object references.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ATTRIBUTE">
+                <xs:annotation>
+                    <xs:documentation>
+                        Stores each session attribute within a separate cache entry.
+                        Generally more efficient than SESSION granularity, but does not preserve any cross-attribute object references.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="marshaller">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="JBOSS">
+                <xs:annotation>
+                    <xs:documentation>
+                        Session attributes will be marshalled using JBoss Marshalling.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="PROTOSTREAM">
+                <xs:annotation>
+                    <xs:documentation>
+                        Session attributes will be marshalled using ProtoStream.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:group name="affinity">
+        <xs:choice>
+            <xs:element name="no-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests not have an affinity for any particular server.
+                        Intended for use cases where web session state is not maintained within the application server.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="local-affinity" type="tns:empty">
+                <xs:annotation>
+                    <xs:documentation>
+                        Web requests have an affinity for the member that last handled a given session.
+                        This option corresponds to traditional sticky session behavior.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="ranked-affinity">
+        <xs:attribute name="delimiter" type="xs:string" default=".">
+            <xs:annotation>
+                <xs:documentation>The delimiter used to separate ranked routes within the session ID.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-routes" type="xs:string" default="3">
+            <xs:annotation>
+                <xs:documentation>The maximum number of routes to append to the session ID.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:group name="immutability">
+        <xs:sequence>
+            <xs:element name="immutable-class" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifies an immutable session attribute class.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:complexType name="empty">
+        <xs:sequence/>
+    </xs:complexType>
+</xs:schema>

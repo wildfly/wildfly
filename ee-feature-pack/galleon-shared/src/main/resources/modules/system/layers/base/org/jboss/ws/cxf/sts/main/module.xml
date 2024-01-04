@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.ws.cxf.sts">
+    
+    <resources>
+        <artifact name="${org.wildfly:wildfly-webservices-opensaml-sysconfig}"/>
+    </resources>
+    <dependencies>
+        <module name="org.apache.cxf.ws-security" services="export" export="true">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+        <module name="org.apache.cxf.services-sts" services="export" export="true">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
+        <module name="org.opensaml" />
+    </dependencies>
+</module>

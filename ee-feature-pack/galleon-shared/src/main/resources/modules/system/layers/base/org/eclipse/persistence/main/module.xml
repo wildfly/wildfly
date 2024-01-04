@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<!-- Represents the EclipseLink module  -->
+<module xmlns="urn:jboss:module:1.9" name="org.eclipse.persistence">
+    <properties>
+        <property name="jboss.api" value="public"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:jipijapa-eclipselink}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="java.naming"/>
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.json.api" optional="true"/>
+        <module name="jakarta.persistence.api"/>
+        <module name="jakarta.transaction.api"/>
+        <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
+        <module name="org.antlr"/>
+        <module name="org.jboss.as.jpa.spi"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
+    </dependencies>
+</module>

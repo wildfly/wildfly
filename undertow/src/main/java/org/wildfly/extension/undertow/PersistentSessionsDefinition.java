@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2017, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.extension.undertow;
@@ -28,11 +11,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.RestartParentResourceAddHandler;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.Services;
@@ -54,8 +39,7 @@ import java.util.function.Supplier;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class PersistentSessionsDefinition extends PersistentResourceDefinition {
-
-    static final PersistentSessionsDefinition INSTANCE = new PersistentSessionsDefinition();
+    static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.PERSISTENT_SESSIONS);
 
     protected static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING, true)
@@ -69,31 +53,28 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            PATH,
-            RELATIVE_TO
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(PATH, RELATIVE_TO);
 
-    private PersistentSessionsDefinition() {
-        super(UndertowExtension.PATH_PERSISTENT_SESSIONS,
-                UndertowExtension.getResolver(UndertowExtension.PATH_PERSISTENT_SESSIONS.getKeyValuePair()),
-                new PersistentSessionsAdd(),
-                new PersistentSessionsRemove());
+    PersistentSessionsDefinition() {
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKeyValuePair()))
+                .setAddHandler(new PersistentSessionsAdd())
+                .setRemoveHandler(new PersistentSessionsRemove())
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return List.of(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
-    public static boolean isEnabled(final OperationContext context, final ModelNode model) throws OperationFailedException {
+    public static boolean isEnabled(final ModelNode model) throws OperationFailedException {
         return model.isDefined();
     }
 
 
     private static class PersistentSessionsAdd extends RestartParentResourceAddHandler {
         protected PersistentSessionsAdd() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -116,7 +97,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         }
 
         private void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (isEnabled(context, model)) {
+            if (isEnabled(model)) {
                 final ModelNode pathValue = PATH.resolveModelAttribute(context, model);
                 final ServiceBuilder<?> sb = context.getServiceTarget().addService(AbstractPersistentSessionManager.SERVICE_NAME);
                 final Consumer<SessionPersistenceManager> sConsumer = sb.provides(AbstractPersistentSessionManager.SERVICE_NAME);
@@ -146,7 +127,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override
@@ -158,7 +139,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
     private static class PersistentSessionsRemove extends RestartParentResourceRemoveHandler {
 
         protected PersistentSessionsRemove() {
-            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+            super(ServletContainerDefinition.PATH_ELEMENT.getKey());
         }
 
         @Override
@@ -169,7 +150,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel) throws OperationFailedException {
-            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, parentAddress.getLastElement().getValue());
+            ServletContainerAdd.installRuntimeServices(context.getCapabilityServiceTarget(), context, parentAddress, parentModel);
         }
 
         @Override

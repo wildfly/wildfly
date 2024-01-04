@@ -1,20 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- *
- * Copyright 2018 Red Hat, Inc., and individual contributors
- * as indicated by the @author tags.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.wildfly.test.scripts;
@@ -36,20 +22,29 @@ public class AppClientScriptTestCase extends ScriptTestCase {
 
     @Override
     void testScript(final ScriptProcess script) throws InterruptedException, TimeoutException, IOException {
+        // First check the standard script
         script.start(MAVEN_JAVA_OPTS, "-v");
-        Assert.assertNotNull("The process is null and may have failed to start.", script);
+        testScript(script, 0);
 
-        validateProcess(script);
+        // Test with the security manager enabled
+        script.start(MAVEN_JAVA_OPTS, "-v", "-secmgr");
+        testScript(script, jvmVersion() >= 17 ? 4 : 0);
+    }
 
-        final List<String> lines = script.getStdout();
-        int count = 2;
-        for (String stdout : lines) {
-            if (stdout.startsWith("Picked up")) {
-                count += 1;
+    private void testScript(final ScriptProcess script, final int additionalLines) throws InterruptedException, IOException {
+        try (script) {
+            validateProcess(script);
+
+            final List<String> lines = script.getStdout();
+            int count = 2 + additionalLines;
+            for (String stdout : lines) {
+                if (stdout.startsWith("Picked up")) {
+                    count += 1;
+                }
             }
+            final int expectedLines = (script.getShell() == Shell.BATCH ? 3 + additionalLines : count);
+            Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
+                    lines.size());
         }
-        final int expectedLines = (script.getShell() == Shell.BATCH ? 3 : count );
-        Assert.assertEquals(script.getErrorMessage(String.format("Expected %d lines.", expectedLines)), expectedLines,
-                lines.size());
     }
 }

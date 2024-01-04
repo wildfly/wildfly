@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<feature-group-spec name="adjust-standalone-ha-config" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="adjust-standalone-config-common"/>
+    <feature spec="subsystem.ejb3">
+        <unset param="default-resource-adapter-name"/>
+        <unset param="default-mdb-instance-pool"/>
+    </feature>
+</feature-group-spec>

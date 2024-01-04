@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<licenseSummary>
+    <dependencies>
+        <dependency>
+            <groupId>net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <licenses>
+                <license>
+                    <name>Apache License 2.0</name>
+                </license>
+                <license>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-transaction-spi</artifactId>
+            <licenses>
+                <license>
+                    <name>GNU Lesser General Public License v2.1 only</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.common</groupId>
+            <artifactId>jboss-common-beans</artifactId>
+            <licenses>
+                <license>
+                    <name>GNU Lesser General Public License v2.1 or later</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>gnu.getopt</groupId>
+            <artifactId>java-getopt</artifactId>
+            <licenses>
+                <license>
+                    <name>GNU Library General Public License v2 only</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <licenses>
+                <license>
+                    <name>Creative Commons Attribution 2.5</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <licenses>
+                <license>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <licenses>
+                <license>
+                    <name>BSD 3-Clause "New" or "Revised" License</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
+            <licenses>
+                <license>
+                    <name>BSD 2-clause "Simplified" License</name>
+                </license>
+            </licenses>
+        </dependency>
+        <dependency>
+            <groupId>org.cryptacular</groupId>
+            <artifactId>cryptacular</artifactId>
+            <licenses>
+                <license>
+                    <name>GNU Lesser General Public License v3.0 only</name>
+                </license>
+                <license>
+                    <name>Apache License 2.0</name>
+                </license>
+            </licenses>
+        </dependency>
+    </dependencies>
+</licenseSummary>

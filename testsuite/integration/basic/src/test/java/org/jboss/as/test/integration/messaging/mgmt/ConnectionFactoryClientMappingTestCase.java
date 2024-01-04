@@ -1,17 +1,6 @@
 /*
- * Copyright 2017 Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.test.integration.messaging.mgmt;
@@ -25,7 +14,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -73,8 +61,6 @@ public class ConnectionFactoryClientMappingTestCase {
             ModelNode attr = new ModelNode();
             attr.get("connectors").add("http-test-connector");
             ops.addJmsConnectionFactory("TestConnectionFactory", CONNECTION_FACTORY_JNDI_NAME, attr);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         private ModelNode clientMapping(String destAddr, String destPort) {
@@ -128,7 +114,7 @@ public class ConnectionFactoryClientMappingTestCase {
                 "<jboss-deployment-structure>\n" +
                         "  <deployment>\n" +
                         "    <dependencies>\n" +
-                        "      <module name=\"org.apache.activemq.artemis\"/>\n" +
+                        "      <module name=\"org.apache.activemq.artemis.client\"/>\n" +
                         "    </dependencies>\n" +
                         "  </deployment>\n" +
                         "</jboss-deployment-structure>"), "META-INF/jboss-deployment-structure.xml");

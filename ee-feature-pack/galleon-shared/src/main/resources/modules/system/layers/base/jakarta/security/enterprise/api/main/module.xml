@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.security.enterprise.api">
+
+    <properties>
+        <property name="jboss.api" value="public"/>
+    </properties>
+
+    <resources>
+        <artifact name="${jakarta.security.enterprise:jakarta.security.enterprise-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.logging"/>
+        <module name="java.desktop"/>
+        <module name="jakarta.servlet.api"/>
+        <module name="jakarta.enterprise.api"/>
+        <module name="jakarta.security.auth.message.api" />
+        <module name="jakarta.interceptor.api" />
+        <module name="jakarta.annotation.api" />
+        <module name="jakarta.inject.api" />
+        <module name="jakarta.json.api" />
+    </dependencies>
+</module>

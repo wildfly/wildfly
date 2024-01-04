@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package org.jboss.as.connector.deployers.ra.processors;
@@ -33,17 +16,16 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JMS_ID = ModuleIdentifier.create("javax.jms.api");
-    private static ModuleIdentifier IRON_JACAMAR_ID = ModuleIdentifier.create("org.jboss.ironjacamar.api");
-    private static ModuleIdentifier IRON_JACAMAR_IMPL_ID = ModuleIdentifier.create("org.jboss.ironjacamar.impl");
-    private static ModuleIdentifier VALIDATION_ID = ModuleIdentifier.create("javax.validation.api");
-    private static ModuleIdentifier HIBERNATE_VALIDATOR_ID = ModuleIdentifier.create("org.hibernate.validator");
-    private static ModuleIdentifier RESOURCE_API_ID = ModuleIdentifier.create("javax.resource.api");
+    private static String JMS_ID = "jakarta.jms.api";
+    private static String IRON_JACAMAR_ID = "org.jboss.ironjacamar.api";
+    private static String IRON_JACAMAR_IMPL_ID = "org.jboss.ironjacamar.impl";
+    private static String VALIDATION_ID = "jakarta.validation.api";
+    private static String HIBERNATE_VALIDATOR_ID = "org.hibernate.validator";
+    private static String RESOURCE_API_ID = "jakarta.resource.api";
 
 
     private final boolean appclient;

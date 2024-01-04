@@ -1,23 +1,6 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
- *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
  */
 package org.jboss.as.appclient.service;
 
@@ -27,19 +10,19 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 
@@ -49,13 +32,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author Stuart Douglas
  */
-public class ApplicationClientStartService implements Service<ApplicationClientStartService> {
+public class ApplicationClientStartService implements Service {
 
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("appClientStart");
 
-    private final InjectedValue<ApplicationClientDeploymentService> applicationClientDeploymentServiceInjectedValue = new InjectedValue<ApplicationClientDeploymentService>();
-    private final InjectedValue<Component> applicationClientComponent = new InjectedValue<Component>();
+    private final Supplier<ApplicationClientDeploymentService> applicationClientDeploymentServiceSupplier;
+    private final Supplier<Component> applicationClientComponentSupplier;
     private final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue;
     private final List<SetupAction> setupActions;
     private final Method mainMethod;
@@ -65,12 +48,18 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private Thread thread;
     private ComponentInstance instance;
 
-    public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions) {
+    public ApplicationClientStartService(final Method mainMethod, final String[] parameters,
+                                         final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue,
+                                         final ClassLoader classLoader,  final List<SetupAction> setupActions,
+                                         final Supplier<ApplicationClientDeploymentService> applicationClientDeploymentServiceSupplier,
+                                         final Supplier<Component> applicationClientComponentSupplier) {
         this.mainMethod = mainMethod;
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.setupActions = setupActions;
+        this.applicationClientComponentSupplier = applicationClientComponentSupplier;
+        this.applicationClientDeploymentServiceSupplier = applicationClientDeploymentServiceSupplier;
     }
     @Override
     public synchronized void start(final StartContext context) throws StartException {
@@ -85,7 +74,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                         Throwable originalException = null;
                         try {
                             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-                            applicationClientDeploymentServiceInjectedValue.getValue().getDeploymentCompleteLatch().await();
+                            applicationClientDeploymentServiceSupplier.get().getDeploymentCompleteLatch().await();
                             NamespaceContextSelector.setDefault(namespaceContextSelectorInjectedValue);
 
                             try {
@@ -95,7 +84,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                                 }
 
                                 //do static injection etc
-                                instance = applicationClientComponent.getValue().createInstance();
+                                instance = applicationClientComponentSupplier.get().createInstance();
 
                                 mainMethod.invoke(null, new Object[]{parameters});
                             } catch (Throwable ex) {
@@ -158,19 +147,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         }
         thread.interrupt();
         thread = null;
-    }
-
-    @Override
-    public ApplicationClientStartService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    public InjectedValue<ApplicationClientDeploymentService> getApplicationClientDeploymentServiceInjectedValue() {
-        return applicationClientDeploymentServiceInjectedValue;
-    }
-
-    public InjectedValue<Component> getApplicationClientComponent() {
-        return applicationClientComponent;
     }
 
 }

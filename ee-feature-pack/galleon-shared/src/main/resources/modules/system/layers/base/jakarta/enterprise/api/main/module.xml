@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<module xmlns="urn:jboss:module:1.9" name="jakarta.enterprise.api">
+
+    <resources>
+        <artifact name="${jakarta.enterprise:jakarta.enterprise.cdi-api}"/>
+        <artifact name="${jakarta.enterprise:jakarta.enterprise.lang-model}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.glassfish.expressly" export="true"/>
+        <module name="jakarta.inject.api" export="true"/>
+        <module name="jakarta.interceptor.api" export="true"/>
+        <!-- This is so that all modules depending on CDI automatically get access to annotations such as @PreDestroy -->
+        <module name="jakarta.annotation.api" export="true" />
+
+        <!-- CDIProvider -->
+        <module name="org.jboss.as.weld" services="import" optional="true"/>
+        <module name="org.jboss.weld.core" optional="true"/>
+    </dependencies>
+</module>
