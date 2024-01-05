@@ -6,6 +6,8 @@
 package org.jboss.as.test.integration.deployment.xml.datasource;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -50,6 +52,8 @@ public class DeployedXmlDataSourceManagementTestCase {
 
     public static final String TEST_DS_XML = "test-ds.xml";
     public static final String JPA_DS_XML = "jpa-ds.xml";
+    public static final String TEST2_DS_NAME = "test2-ds";
+    public static final String TEST2_DS_XML = "test2-ds.xml";
 
     static class DeployedXmlDataSourceManagementTestCaseSetup implements ServerSetupTask {
 
@@ -60,21 +64,25 @@ public class DeployedXmlDataSourceManagementTestCase {
             DeploymentPlan plan = manager.newDeploymentPlan()
                     .add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy()
                     .build();
-            Future<ServerDeploymentPlanResult> future = manager.execute(plan);
-            ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
-            ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
-            if (actionResult != null) {
-                final Throwable deploymentException = actionResult.getDeploymentException();
-                if (deploymentException != null) {
-                    throw new RuntimeException(deploymentException);
-                }
-            }
+            executePlan(manager, plan);
+
             plan = manager.newDeploymentPlan()
                     .add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + JPA_DS_XML)).andDeploy()
                     .build();
-            future = manager.execute(plan);
-            future.get(20, TimeUnit.SECONDS);
-            actionResult = result.getDeploymentActionResult(plan.getId());
+            executePlan(manager, plan);
+
+            URL url = DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST2_DS_XML);
+            InputStream inputStream = url.openConnection().getInputStream();
+            plan = manager.newDeploymentPlan()
+                    .add(TEST2_DS_NAME, TEST2_DS_XML, inputStream).andDeploy()
+                    .build();
+            executePlan(manager, plan);
+        }
+
+        private void executePlan(ServerDeploymentManager manager, DeploymentPlan plan) throws Exception {
+            Future<ServerDeploymentPlanResult> future = manager.execute(plan);
+            ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
+            ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
                 final Throwable deploymentException = actionResult.getDeploymentException();
                 if (deploymentException != null) {
@@ -93,6 +101,11 @@ public class DeployedXmlDataSourceManagementTestCase {
 
             undeployPlan = manager.newDeploymentPlan()
                     .undeploy(JPA_DS_XML).andRemoveUndeployed()
+                    .build();
+            manager.execute(undeployPlan).get();
+
+            undeployPlan = manager.newDeploymentPlan()
+                    .undeploy(TEST2_DS_NAME).andRemoveUndeployed()
                     .build();
             manager.execute(undeployPlan).get();
         }
@@ -122,6 +135,22 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
         Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
+    }
+
+    @Test
+    public void testDeployedDatasourceInManagementModelWithDifferentRuntimeName() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("deployment", TEST2_DS_NAME);
+        address.add("subsystem", "datasources");
+        address.add("data-source", "java:jboss/datasources/Deployed2DS");
+        address.protect();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource");
+        operation.get(OP_ADDR).set(address);
+        operation.get(INCLUDE_RUNTIME).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertEquals("jdbc:h2:mem:test2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", result.get("connection-url").asString());
     }
 
     @Test
