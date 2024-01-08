@@ -443,7 +443,7 @@
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.1</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.jboss.jaxbintros>2.0.1</version.jboss.jaxbintros>
-        <version.joda-time>2.12.5</version.joda-time>
+        <version.joda-time>2.12.6</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
         <version.org.apache.activemq.artemis>2.31.2</version.org.apache.activemq.artemis>
