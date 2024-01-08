@@ -12,7 +12,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>21.0.2-17-PSI</version>
+        <version>21.0.2-17-PSI-SNAPSHOT</version>
     </parent>
 
 
