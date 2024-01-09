@@ -502,7 +502,7 @@ public class RaOperationUtil {
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
 
                 if (deployerService == null) {
-                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support, false);
+                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support);
                     builder.requires(raServiceName);
                     newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }

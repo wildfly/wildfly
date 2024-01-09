@@ -65,11 +65,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private final boolean appclient;
-
-    public ParsedRaDeploymentProcessor(final boolean appclient) {
-        this.appclient = appclient;
-    }
+    private static final String RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY = "org.wildfly.resource-adapters";
 
     /**
      * Process a deployment for a Connector. Will install a {@Code
@@ -108,7 +104,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         Map<ResourceRoot, Index> annotationIndexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
 
-        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(),registration, deploymentResource, support, appclient);
+        ServiceBuilder builder = process(connectorXmlDescriptor, ironJacamarXmlDescriptor, classLoader, serviceTarget, annotationIndexes, deploymentUnit.getServiceName(),registration, deploymentResource, support);
         if (builder != null) {
             String bootstrapCtx = null;
 
@@ -144,7 +140,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static ServiceBuilder<ResourceAdapterDeployment> process(final ConnectorXmlDescriptor connectorXmlDescriptor, final IronJacamarXmlDescriptor ironJacamarXmlDescriptor, final ClassLoader classLoader,
                                          final ServiceTarget serviceTarget, final Map<ResourceRoot, Index> annotationIndexes, final ServiceName duServiceName,
-                                         final ManagementResourceRegistration registration, Resource deploymentResource, final CapabilityServiceSupport support, final boolean appclient) throws DeploymentUnitProcessingException {
+                                         final ManagementResourceRegistration registration, Resource deploymentResource, final CapabilityServiceSupport support) throws DeploymentUnitProcessingException {
 
         Connector cmd = connectorXmlDescriptor != null ? connectorXmlDescriptor.getConnector() : null;
         final Activation activation = ironJacamarXmlDescriptor != null ? ironJacamarXmlDescriptor.getIronJacamar() : null;
@@ -197,7 +193,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector());
 
-            if (!appclient) {
+            if (support.hasCapability(RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY)) {
                 builder.addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, raDeploymentService.getResourceAdaptersSubsystem());
             }
 
