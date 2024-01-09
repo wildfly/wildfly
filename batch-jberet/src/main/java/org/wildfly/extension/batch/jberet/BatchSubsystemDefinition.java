@@ -47,6 +47,7 @@ import org.wildfly.extension.batch.jberet.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_1_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_2_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_3_0;
+import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentDescriptorParser_4_0;
 import org.wildfly.extension.batch.jberet.deployment.BatchDeploymentResourceProcessor;
 import org.wildfly.extension.batch.jberet.deployment.BatchEnvironmentProcessor;
 import org.wildfly.extension.batch.jberet.job.repository.InMemoryJobRepositoryDefinition;
@@ -176,6 +177,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
                             .addParser(BatchDeploymentDescriptorParser_1_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_1_0())
                             .addParser(BatchDeploymentDescriptorParser_2_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_2_0())
                             .addParser(BatchDeploymentDescriptorParser_3_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_3_0())
+                            .addParser(BatchDeploymentDescriptorParser_4_0.ROOT_ELEMENT, BatchAttachments.BATCH_ENVIRONMENT_META_DATA, new BatchDeploymentDescriptorParser_4_0())
                             .build();
 
                     processorTarget.addDeploymentProcessor(BatchSubsystemDefinition.NAME,

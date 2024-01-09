@@ -36,12 +36,4 @@ public class BatchDeploymentDescriptorParser_3_0 extends BatchDeploymentDescript
         }
         return executionRecordsLimit;
     }
-
-    @Override
-    String parseJpaJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final String dataSourceName = readRequiredAttribute(reader, Attribute.DATA_SOURCE);
-        ParseUtils.requireNoContent(reader);
-        return dataSourceName;
-    }
-
 }

@@ -6,12 +6,12 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:batch-jberet:3.0"
-           targetNamespace="urn:jboss:domain:batch-jberet:3.0"
+           xmlns="urn:jboss:domain:batch-jberet:4.0"
+           targetNamespace="urn:jboss:domain:batch-jberet:4.0"
            xmlns:threads="urn:jboss:domain:threads:1.1"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="3.0">
+           version="4.0">
 
     <xs:import namespace="urn:jboss:domain:threads:1.1" schemaLocation="jboss-as-threads_1_1.xsd"/>
 
@@ -81,6 +81,7 @@
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="in-memory" type="in-memoryType"/>
             <xs:element name="jdbc" type="jdbcType"/>
+            <xs:element name="jpa" type="jpaType"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="execution-records-limit" type="xs:int"/>
@@ -97,6 +98,17 @@
     </xs:complexType>
 
     <xs:complexType name="jdbcType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        Used to describe how the job repository should connect to a database.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="data-source" type="xs:token" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="jpaType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
