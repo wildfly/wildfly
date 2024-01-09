@@ -62,6 +62,8 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
                             ParseUtils.requireNoContent(reader);
                         } else if (jobRepositoryElement == Element.JDBC) {
                             dataSourceName = parseJdbcJobRepository(reader);
+                        } else if (jobRepositoryElement == Element.JPA) {
+                            dataSourceName = parseJpaJobRepository(reader);
                         } else {
                             throw ParseUtils.unexpectedElement(reader);
                         }
@@ -103,6 +105,10 @@ public class BatchDeploymentDescriptorParser_1_0 implements XMLStreamConstants, 
             throw ParseUtils.unexpectedAttribute(reader, 0);
         }
         return null;
+    }
+
+    String parseJpaJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     static String readRequiredAttribute(final XMLExtendedStreamReader reader, final Attribute attribute) throws XMLStreamException {

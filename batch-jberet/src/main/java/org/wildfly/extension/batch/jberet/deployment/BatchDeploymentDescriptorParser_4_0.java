@@ -5,23 +5,23 @@
 
 package org.wildfly.extension.batch.jberet.deployment;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.wildfly.extension.batch.jberet.Attribute;
 
-/**
- * A parser for batch deployment descriptors ({@code batch-jberet:2.0}) in {@code jboss-all.xml}.
- */
-public class BatchDeploymentDescriptorParser_2_0 extends BatchDeploymentDescriptorParser_1_0 {
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
-    public static final String NAMESPACE = "urn:jboss:domain:batch-jberet:2.0";
+/**
+ * A parser for batch deployment descriptors ({@code batch-jberet:4.0}) in {@code jboss-all.xml}.
+ */
+public class BatchDeploymentDescriptorParser_4_0 extends BatchDeploymentDescriptorParser_3_0 {
+
+    public static final String NAMESPACE = "urn:jboss:domain:batch-jberet:4.0";
     public static final QName ROOT_ELEMENT = new QName(NAMESPACE, "batch");
 
     @Override
-    String parseJdbcJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    String parseJpaJobRepository(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String dataSourceName = readRequiredAttribute(reader, Attribute.DATA_SOURCE);
         ParseUtils.requireNoContent(reader);
         return dataSourceName;

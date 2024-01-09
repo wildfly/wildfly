@@ -696,6 +696,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-commons</artifactId>
@@ -739,7 +740,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>artemis-hqclient-protocol</artifactId>
@@ -1060,8 +1060,8 @@
             <artifactId>cxf-tools-wsdlto-frontend-jaxws</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
+                    <groupId>*</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1175,6 +1175,7 @@
             </exclusions>
         </dependency>
 
+        <!-- RTS -->
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>proton-j</artifactId>
@@ -1823,6 +1824,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <dependency>
+                <groupId>org.jberet</groupId>
+                <artifactId>jberet-jpa-repository</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
@@ -1834,7 +1846,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-iiop-client</artifactId>
@@ -1845,7 +1856,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>

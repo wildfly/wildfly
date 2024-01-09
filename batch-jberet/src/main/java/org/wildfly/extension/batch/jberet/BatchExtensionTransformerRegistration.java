@@ -32,7 +32,7 @@ public class BatchExtensionTransformerRegistration implements ExtensionTransform
 
         registerV3Transformers(builder.createBuilder(BatchSubsystemExtension.VERSION_3_0_0, BatchSubsystemExtension.VERSION_2_0_0));
 
-        builder.buildAndRegister(registration, new ModelVersion[] {BatchSubsystemExtension.VERSION_1_0_0, BatchSubsystemExtension.VERSION_2_0_0, BatchSubsystemExtension.VERSION_3_0_0});
+        builder.buildAndRegister(registration, new ModelVersion[] {BatchSubsystemExtension.VERSION_1_0_0, BatchSubsystemExtension.VERSION_2_0_0, BatchSubsystemExtension.VERSION_3_0_0, BatchSubsystemExtension.VERSION_4_0_0});
     }
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {
