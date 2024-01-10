@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.1">
+<subsystem xmlns="urn:jboss:domain:datasources:8.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
                     use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}"
@@ -99,6 +99,9 @@
                 <allocation-retry-wait-millis>
                     ${test.expr:3000}
                 </allocation-retry-wait-millis>
+                <validation-query-timeout>
+                    ${test.expr:110}
+                </validation-query-timeout>
             </timeout>
             <statement>
                 <track-statements>${test.expr:nowarn}</track-statements>
@@ -218,6 +221,9 @@
                 <xa-resource-timeout>
                     ${test.expr:120}
                 </xa-resource-timeout>
+                <validation-query-timeout>
+                    ${test.expr:110}
+                </validation-query-timeout>
             </timeout>
             <statement>
                 <track-statements>${test.expr:nowarn}</track-statements>
