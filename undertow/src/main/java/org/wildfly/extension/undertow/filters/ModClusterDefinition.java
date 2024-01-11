@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow.filters;
 
 import static org.jboss.as.controller.PathElement.pathElement;
-import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_MOD_CLUSTER_FILTER;
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 
 import java.util.Collection;
@@ -71,21 +70,6 @@ import org.wildfly.extension.undertow.UndertowService;
 public class ModClusterDefinition extends AbstractFilterDefinition {
 
     public static final PathElement PATH_ELEMENT = pathElement(Constants.MOD_CLUSTER);
-
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        MOD_CLUSTER_FILTER_CAPABILITY(CAPABILITY_MOD_CLUSTER_FILTER, HandlerWrapper.class),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name, Class<?> serviceValueType) {
-            this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType).setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-    }
 
     public static final AttributeDefinition MANAGEMENT_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.MANAGEMENT_SOCKET_BINDING, ModelType.STRING)
             .setAllowExpression(true)
@@ -319,7 +303,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(ATTRIBUTES)
-                .addCapabilities(Capability.class)
+                .addCapabilities(FilterCapabilities.FILTER_CAPABILITY)
                 .addRequiredSingletonChildren(SingleAffinityResourceDefinition.PATH)
                 .setResourceTransformation(ModClusterResource::new)
                 ;
@@ -347,17 +331,17 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
         @Override
         public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
 
-            String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(context, model).asStringOrNull();
-            Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, this.getClass().getClassLoader()) : null;
+            final String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(context, model).asStringOrNull();
+            final Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, this.getClass().getClassLoader()) : null;
 
-            ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(context.getCurrentAddress());
+            final ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(context.getCurrentAddress());
             configurator.configure(context, model).build(context.getServiceTarget()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-            RuntimeCapability<Void> capability = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
-            CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
-            Consumer<HandlerWrapper> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
-            Supplier<ModCluster> serviceRequirement = builder.requires(configurator.getServiceName());
-            Supplier<MCMPConfig> configRequirement = builder.requires(configurator.getConfigServiceName());
+            final RuntimeCapability<Void> capability = FilterCapabilities.FILTER_CAPABILITY.getDefinition();
+            final CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
+            final Consumer<HandlerWrapper> filter = builder.provides(capability, UndertowService.FILTER.append(context.getCurrentAddressValue()));
+            final Supplier<ModCluster> serviceRequirement = builder.requires(configurator.getServiceName());
+            final Supplier<MCMPConfig> configRequirement = builder.requires(configurator.getConfigServiceName());
 
             HandlerWrapper wrapper = new HandlerWrapper() {
                 @Override
@@ -395,7 +379,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(serviceName)).getServiceName());
             context.removeService(serviceName);
 
-            context.removeService(ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(context.getCurrentAddress()));
+            context.removeService(FilterCapabilities.FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(context.getCurrentAddress()));
         }
     }
 
