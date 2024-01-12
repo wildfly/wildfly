@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
@@ -44,7 +42,7 @@ class AjpListenerAdd extends ListenerAdd<AjpListenerService> {
     void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, AjpListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
-            service.getRedirectSocket().set(serviceBuilder.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, redirectBindingRef.asString()));
+            service.getRedirectSocket().set(serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, redirectBindingRef.asString()));
         }
     }
 }

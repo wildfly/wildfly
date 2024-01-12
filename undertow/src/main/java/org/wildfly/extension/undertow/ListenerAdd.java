@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
-import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
@@ -90,7 +89,7 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
 
         sb.setInstance(service);
         service.getWorker().set(sb.requiresCapability(REF_IO_WORKER, XnioWorker.class, workerName));
-        service.getBinding().set(sb.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, bindingRef));
+        service.getBinding().set(sb.requires(SocketBinding.SERVICE_DESCRIPTOR, bindingRef));
         service.getBufferPool().set(sb.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, bufferPoolName));
         service.getServerService().set(sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName));
 
