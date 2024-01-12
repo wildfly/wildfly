@@ -80,7 +80,7 @@ class RuntimeInitialization extends DefaultInitialization {
             this.start(target, UndertowService.filterRefName("some-server", "other-host", "headers"));
             this.record(target, UndertowService.DEFAULT_HOST);
             this.record(target, UndertowService.DEFAULT_SERVER);
-            this.record(target, UndertowService.accessLogServiceName("some-server", "default-virtual-host"));
+            this.record(target, AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host"));
             this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("undertow-server"));
             this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("default-server"));
         }

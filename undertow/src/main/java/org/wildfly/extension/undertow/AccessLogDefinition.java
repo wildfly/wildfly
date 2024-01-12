@@ -10,6 +10,7 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -113,7 +114,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
     AccessLogDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AccessLogAdd.INSTANCE)
-                .setRemoveHandler(AccessLogRemove.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(AccessLogAdd.INSTANCE))
                 .setCapabilities(ACCESS_LOG_CAPABILITY)
         );
         SensitivityClassification sc = new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
@@ -128,6 +129,6 @@ class AccessLogDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         //noinspection unchecked
-        return (Collection) ATTRIBUTES;
+        return ATTRIBUTES;
     }
 }
