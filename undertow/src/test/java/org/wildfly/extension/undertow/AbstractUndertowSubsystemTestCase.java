@@ -152,7 +152,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Server defaultServer = (Server) this.values.get(UndertowService.DEFAULT_SERVER).get();
         Assert.assertNotNull("Default host should exist", defaultServer);
 
-        AccessLogService accessLogService = (AccessLogService) this.values.get(UndertowService.accessLogServiceName("some-server", "default-virtual-host")).get();
+        AccessLogService accessLogService = (AccessLogService) this.values.get(AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host")).get();
         Assert.assertNotNull(accessLogService);
         Assert.assertFalse(accessLogService.isRotate());
 

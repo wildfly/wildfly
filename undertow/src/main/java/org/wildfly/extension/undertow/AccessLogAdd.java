@@ -53,7 +53,7 @@ final class AccessLogAdd extends AbstractAddStepHandler {
         final String hostName = hostAddress.getLastElement().getValue();
 
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(AccessLogDefinition.ACCESS_LOG_CAPABILITY);
-        final Consumer<AccessLogService> sConsumer = sb.provides(AccessLogDefinition.ACCESS_LOG_CAPABILITY, UndertowService.accessLogServiceName(serverName, hostName));
+        final Consumer<AccessLogService> sConsumer = sb.provides(AccessLogDefinition.ACCESS_LOG_CAPABILITY);
         final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
         final Supplier<XnioWorker> wSupplier = sb.requiresCapability(Capabilities.REF_IO_WORKER, XnioWorker.class, worker);
         final Supplier<PathManager> pmSupplier = sb.requires(PathManager.SERVICE_DESCRIPTOR);

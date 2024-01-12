@@ -117,8 +117,9 @@ public class UndertowService implements Service<UndertowService> {
         return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
     }
 
+    @Deprecated(forRemoval = true)
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
-        return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
+        return AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
