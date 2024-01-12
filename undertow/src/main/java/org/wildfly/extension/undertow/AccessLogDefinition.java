@@ -16,7 +16,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -29,7 +29,7 @@ import org.jboss.dmr.ValueExpression;
 class AccessLogDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
-              .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
+              .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
               .build();
 
 
