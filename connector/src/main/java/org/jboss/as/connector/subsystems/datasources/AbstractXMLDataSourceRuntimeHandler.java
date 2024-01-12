@@ -38,7 +38,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         String opName = operation.require(ModelDescriptionConstants.OP).asString();
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        final T dataSource = getDataSourceConfig(address);
+        final T dataSource = getDataSourceConfig(context, address);
 
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
@@ -62,11 +62,15 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         throw ConnectorLogger.ROOT_LOGGER.unknownOperation(opName);
     }
 
-    private T getDataSourceConfig(final PathAddress operationAddress) throws OperationFailedException {
+    private T getDataSourceConfig(final OperationContext context, final PathAddress operationAddress) throws OperationFailedException {
 
         final List<PathElement> relativeAddress = new ArrayList<PathElement>();
         for (int i = operationAddress.size() - 1; i >= 0; i--) {
             PathElement pe = operationAddress.getElement(i);
+            if (ModelDescriptionConstants.DEPLOYMENT.equals(pe.getKey())) {
+                String runtimeName = getRuntimeName(context, pe);
+                pe = PathElement.pathElement(pe.getKey(), runtimeName);
+            }
             relativeAddress.add(0, pe);
             if (ModelDescriptionConstants.DEPLOYMENT.equals(pe.getKey())) {
                 break;
@@ -88,6 +92,14 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         return config;
     }
 
+    private static String getRuntimeName(final OperationContext context, final PathElement element) throws OperationFailedException {
+        final ModelNode deploymentModel = context.readResourceFromRoot(PathAddress.pathAddress(element), false).getModel();
+        if (!deploymentModel.hasDefined(ModelDescriptionConstants.RUNTIME_NAME)) {
+            String exceptionMessage = ConnectorLogger.ROOT_LOGGER.noDataSourceRegisteredForAddress(context.getCurrentAddress());
+            throw new OperationFailedException(exceptionMessage);
+        }
+        return deploymentModel.get(ModelDescriptionConstants.RUNTIME_NAME).asString();
+    }
 
     protected void setLongIfNotNull(final OperationContext context, final Long value) {
         if (value != null) {
