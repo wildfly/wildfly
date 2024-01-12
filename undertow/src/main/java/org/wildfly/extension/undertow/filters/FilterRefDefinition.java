@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
-import io.undertow.server.HandlerWrapper;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -116,7 +115,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
             final ServiceBuilder<?> sb = target.addService(sn);
             final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
-            final Supplier<HandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
+            final Supplier<PredicateHandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
             final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
             sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
             sb.install();

@@ -5,7 +5,9 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import io.undertow.server.HandlerWrapper;
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.EncodingHandler;
 import io.undertow.server.handlers.encoding.GzipEncodingProvider;
@@ -24,8 +26,13 @@ public class GzipFilterDefinition extends SimpleFilterDefinition {
         super(PATH_ELEMENT, GzipFilterDefinition::createHandlerWrapper);
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
-        ContentEncodingRepository repository = new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50);
-        return next -> new EncodingHandler(next, repository);
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
+        return new PredicateHandlerWrapper() {
+            @Override
+            public HttpHandler wrap(Predicate predicate, HttpHandler next) {
+                ContentEncodingRepository repository = new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate != null ? predicate : Predicates.truePredicate());
+                return new EncodingHandler(next, repository);
+            }
+        };
     }
 }
