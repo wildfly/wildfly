@@ -17,6 +17,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -74,9 +75,9 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
 
     private AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "ajp"),
-                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "http"),
-                RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SOCKET_BINDING, "https"),
+                RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "ajp"),
+                RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "http"),
+                RuntimeCapability.resolveCapabilityName(SocketBinding.SERVICE_DESCRIPTOR, "https"),
                 RuntimeCapability.buildDynamicCapabilityName(Capabilities.REF_SSL_CONTEXT, "ssl")
                 );
     }

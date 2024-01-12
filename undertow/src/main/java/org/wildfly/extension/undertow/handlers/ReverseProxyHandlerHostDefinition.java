@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import static org.wildfly.extension.undertow.Capabilities.REF_OUTBOUND_SOCKET;
 import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 import static org.wildfly.extension.undertow.Capabilities.CAPABILITY_REVERSE_PROXY_HANDLER_HOST;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
@@ -54,6 +53,7 @@ import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowSubsystemModel;
 import org.wildfly.extension.undertow.deployment.GlobalRequestControllerHandler;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;
@@ -77,7 +77,7 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
             .setAllowExpression(true)
             .setRestartAllServices()
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(REF_OUTBOUND_SOCKET)
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     public static final AttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder("scheme", ModelType.STRING)
@@ -177,7 +177,7 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
             final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY);
             final Consumer<ReverseProxyHostService> serviceConsumer = sb.provides(REVERSE_PROXY_HOST_RUNTIME_CAPABILITY);
             final Supplier<HttpHandler> phSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, proxyName);
-            final Supplier<OutboundSocketBinding> sbSupplier = sb.requiresCapability(Capabilities.REF_OUTBOUND_SOCKET, OutboundSocketBinding.class, socketBinding);
+            final Supplier<OutboundSocketBinding> sbSupplier = sb.requires(OutboundSocketBinding.SERVICE_DESCRIPTOR, socketBinding);
             final Supplier<SSLContext> scSupplier = sslContext.isDefined() ? sb.requiresCapability(REF_SSL_CONTEXT, SSLContext.class, sslContext.asString()) : null;
             sb.setInstance(new ReverseProxyHostService(serviceConsumer, phSupplier, sbSupplier, scSupplier, scheme, jvmRoute, path, enableHttp2));
             sb.install();
