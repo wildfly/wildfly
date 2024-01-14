@@ -15,6 +15,7 @@ public final class Capabilities {
     public static final String CAPABILITY_UNDERTOW = "org.wildfly.undertow";
     public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
     public static final String CAPABILITY_SERVER = "org.wildfly.undertow.server";
+    public static final String CAPABILITY_SERVER_LISTENER = "org.wildfly.undertow.server.listener";
     public static final String CAPABILITY_HOST = "org.wildfly.undertow.host";
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
