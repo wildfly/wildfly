@@ -273,7 +273,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
-        final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
+        final ServiceName hostServiceName = capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverInstanceName, hostName);
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
 
