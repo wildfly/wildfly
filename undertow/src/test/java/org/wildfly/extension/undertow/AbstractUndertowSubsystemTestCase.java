@@ -110,7 +110,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals(3, host.getAllAliases().size());
         Assert.assertTrue(host.getAllAliases().contains("default-alias"));
 
-        LocationService locationService = (LocationService) this.values.get(UndertowService.locationServiceName("some-server", "default-virtual-host", "/")).get();
+        LocationService locationService = (LocationService) this.values.get(LocationDefinition.LOCATION_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host", "/")).get();
         Assert.assertNotNull(locationService);
 
         JSPConfig jspConfig = ((ServletContainerService) this.values.get(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName("myContainer")).get()).getJspConfig();
