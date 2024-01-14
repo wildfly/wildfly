@@ -14,8 +14,8 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.TernaryCapabilityNameResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
@@ -27,7 +27,7 @@ class LocationDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.LOCATION);
     static final RuntimeCapability<Void> LOCATION_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LOCATION, true, LocationService.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
+            .setDynamicNameMapper(TernaryCapabilityNameResolver.GRANDPARENT_PARENT_CHILD)
             .build();
 
     static final AttributeDefinition HANDLER = new SimpleAttributeDefinitionBuilder(Constants.HANDLER, ModelType.STRING)
