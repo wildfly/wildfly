@@ -98,7 +98,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY);
         Consumer<UndertowService> captor = this.registry.add(ServiceDependency.on(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()));
-        final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY, UndertowService.UNDERTOW);
+        final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY);
         csb.setInstance(new UndertowService(usConsumer.andThen(captor), defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
         csb.install();
 
