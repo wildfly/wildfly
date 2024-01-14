@@ -25,10 +25,6 @@ import java.util.function.Supplier;
  */
 final class AccessLogAdd extends AbstractAddStepHandler {
 
-    private AccessLogAdd() {
-        super(AccessLogDefinition.ATTRIBUTES);
-    }
-
     static final AccessLogAdd INSTANCE = new AccessLogAdd();
 
     @Override

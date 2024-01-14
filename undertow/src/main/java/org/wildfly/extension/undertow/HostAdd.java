@@ -42,10 +42,6 @@ final class HostAdd extends AbstractAddStepHandler {
 
     static final HostAdd INSTANCE = new HostAdd();
 
-    private HostAdd() {
-        super(HostDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.recordCapabilitiesAndRequirements(context, operation, resource);

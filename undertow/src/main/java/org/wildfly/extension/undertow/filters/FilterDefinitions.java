@@ -28,7 +28,7 @@ public class FilterDefinitions extends PersistentResourceDefinition {
 
     public FilterDefinitions() {
         super(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()),
-                new ModelOnlyAddStepHandler(),
+                ModelOnlyAddStepHandler.INSTANCE,
                 ModelOnlyRemoveStepHandler.INSTANCE
         );
     }

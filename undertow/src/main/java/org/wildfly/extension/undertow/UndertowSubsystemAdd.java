@@ -60,11 +60,9 @@ import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER
  */
 class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-
     private final Predicate<String> knownSecurityDomain;
 
     UndertowSubsystemAdd(Predicate<String> knownSecurityDomain) {
-        super(UndertowRootDefinition.ATTRIBUTES);
         this.knownSecurityDomain = knownSecurityDomain;
     }
 

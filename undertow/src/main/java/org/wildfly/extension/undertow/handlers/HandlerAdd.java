@@ -5,14 +5,12 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.undertow.server.HttpHandler;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -28,8 +26,7 @@ import org.wildfly.extension.undertow.Capabilities;
 final class HandlerAdd extends AbstractAddStepHandler {
     private HandlerFactory factory;
 
-    HandlerAdd(HandlerFactory factory, Collection<AttributeDefinition> attributes) {
-        super(attributes);
+    HandlerAdd(HandlerFactory factory) {
         this.factory = factory;
     }
 

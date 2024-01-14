@@ -40,7 +40,7 @@ abstract class HandlerDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        HandlerAdd add = new HandlerAdd(this.factory, this.getAttributes());
+        HandlerAdd add = new HandlerAdd(this.factory);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

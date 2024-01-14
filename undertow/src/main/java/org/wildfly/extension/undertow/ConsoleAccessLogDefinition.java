@@ -81,10 +81,6 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
     private static class AddHandler extends AbstractAddStepHandler {
         static final AddHandler INSTANCE = new AddHandler();
 
-        private AddHandler() {
-            super(ATTRIBUTES);
-        }
-
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
             final PathAddress address = context.getCurrentAddress();
