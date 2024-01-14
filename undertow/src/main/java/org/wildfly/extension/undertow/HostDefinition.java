@@ -17,7 +17,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -36,8 +36,7 @@ class HostDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            //addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
-            .setDynamicNameMapper(DynamicNameMappers.PARENT)
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
             .build();
 
 

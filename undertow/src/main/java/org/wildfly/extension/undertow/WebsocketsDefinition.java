@@ -26,6 +26,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -40,9 +41,7 @@ import org.jboss.msc.service.ServiceName;
 class WebsocketsDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.WEBSOCKETS);
     private static final RuntimeCapability<Void> WEBSOCKET_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_WEBSOCKET, true, UndertowListener.class)
-            .setDynamicNameMapper(pathElements -> new String[]{
-                    pathElements.getParent().getLastElement().getValue()
-            })
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
             .build();
 
     protected static final SimpleAttributeDefinition BUFFER_POOL =
