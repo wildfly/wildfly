@@ -39,10 +39,6 @@ import java.util.function.Supplier;
  */
 final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
-    ServletContainerAdd() {
-        super(ServletContainerDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         installRuntimeServices(context.getCapabilityServiceTarget(), context, context.getCurrentAddress(), Resource.Tools.readModel(resource));

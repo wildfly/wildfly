@@ -25,7 +25,7 @@ abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        FilterAdd add = new FilterAdd(this.factory, this.getAttributes());
+        FilterAdd add = new FilterAdd(this.factory);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

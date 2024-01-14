@@ -140,7 +140,7 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        ReverseProxyHostAdd add = new ReverseProxyHostAdd(this.getAttributes());
+        ReverseProxyHostAdd add = new ReverseProxyHostAdd();
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(add) {
             @Override
@@ -151,9 +151,6 @@ public class ReverseProxyHandlerHostDefinition extends PersistentResourceDefinit
     }
 
     private static class ReverseProxyHostAdd extends AbstractAddStepHandler {
-        public ReverseProxyHostAdd(Collection<AttributeDefinition> attributes) {
-            super(attributes);
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

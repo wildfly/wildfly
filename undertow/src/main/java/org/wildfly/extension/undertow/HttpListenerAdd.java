@@ -7,7 +7,6 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.ListenerRegistry;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -15,7 +14,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.xnio.OptionMap;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
@@ -23,10 +21,6 @@ import java.util.function.Consumer;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class HttpListenerAdd extends ListenerAdd<HttpListenerService> {
-
-    HttpListenerAdd(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
 
     @Override
     HttpListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {

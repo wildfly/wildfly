@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow.filters;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -16,7 +15,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.UndertowService;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
@@ -27,8 +25,7 @@ class FilterAdd extends AbstractAddStepHandler {
 
     private PredicateHandlerWrapperFactory factory;
 
-    FilterAdd(PredicateHandlerWrapperFactory factory, Collection<AttributeDefinition> attributes) {
-        super(attributes);
+    FilterAdd(PredicateHandlerWrapperFactory factory) {
         this.factory = factory;
     }
 

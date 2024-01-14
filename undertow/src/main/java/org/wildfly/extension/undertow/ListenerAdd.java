@@ -9,7 +9,6 @@ import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +20,6 @@ import io.undertow.server.handlers.PeerNameResolvingHandler;
 import io.undertow.servlet.handlers.MarkSecureHandler;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,10 +36,6 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHandler {
-
-    ListenerAdd(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {

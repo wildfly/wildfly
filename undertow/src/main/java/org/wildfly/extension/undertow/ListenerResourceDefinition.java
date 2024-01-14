@@ -16,7 +16,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
@@ -235,13 +234,13 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         return Collections.unmodifiableCollection(attributes);
     }
 
-    private final Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory;
+    private final AbstractAddStepHandler addHandler;
     private final Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers;
 
-    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
+    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler addHandler, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
         // this Persistent Parameters will be cast to Parameters
         super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
-        this.addHandlerFactory = addHandlerFactory;
+        this.addHandler = addHandler;
         this.writeAttributeHandlers = new HashMap<>();
         this.writeAttributeHandlers.putAll(writeAttributeHandlers);
         this.writeAttributeHandlers.put(ENABLED, new EnabledAttributeHandler());
@@ -249,18 +248,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        AbstractAddStepHandler addHandler = this.addHandlerFactory.apply(this.getAttributes());
-        super.registerAddOperation(resourceRegistration, addHandler, OperationEntry.Flag.RESTART_NONE);
-        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(addHandler), OperationEntry.Flag.RESTART_NONE);
+        super.registerAddOperation(resourceRegistration, this.addHandler, OperationEntry.Flag.RESTART_NONE);
+        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(this.addHandler), OperationEntry.Flag.RESTART_NONE);
         resourceRegistration.registerOperationHandler(ResetConnectorStatisticsHandler.DEFINITION, ResetConnectorStatisticsHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        Collection<AttributeDefinition> attributes = this.getAttributes();
-        OperationStepHandler defaultWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
-        for (AttributeDefinition attribute : attributes) {
-            OperationStepHandler writeAttributeHandler = this.writeAttributeHandlers.getOrDefault(attribute, defaultWriteAttributeHandler);
+        for (AttributeDefinition attribute : this.getAttributes()) {
+            OperationStepHandler writeAttributeHandler = this.writeAttributeHandlers.getOrDefault(attribute, ReloadRequiredWriteAttributeHandler.INSTANCE);
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
         }
 
@@ -326,10 +322,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     private static class EnabledAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {
-
-        protected EnabledAttributeHandler() {
-            super(ListenerResourceDefinition.ENABLED);
-        }
 
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {

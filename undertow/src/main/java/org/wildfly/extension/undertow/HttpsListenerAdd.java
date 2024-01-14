@@ -11,14 +11,12 @@ import javax.net.ssl.SSLContext;
 
 import io.undertow.server.ListenerRegistry;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.xnio.OptionMap;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -29,10 +27,6 @@ import java.util.function.Supplier;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class HttpsListenerAdd extends ListenerAdd<HttpsListenerService> {
-
-    HttpsListenerAdd(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
 
     @Override
     HttpsListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
