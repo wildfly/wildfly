@@ -84,10 +84,6 @@
             <groupId>org.jboss.metadata</groupId>
             <artifactId>jboss-metadata-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -132,6 +128,10 @@
                     <artifactId>jboss-invocation</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
 
         <dependency>
