@@ -62,7 +62,7 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
         OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
         String serverName = parent.getLastElement().getValue();
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY);
-        final Consumer<ListenerService> serviceConsumer = sb.provides(ListenerResourceDefinition.LISTENER_CAPABILITY);
+        final Consumer<ListenerService> serviceConsumer = sb.provides(ListenerResourceDefinition.LISTENER_CAPABILITY, ListenerResourceDefinition.SERVER_LISTENER_CAPABILITY);
         final S service = createService(serviceConsumer, name, serverName, context, model, listenerOptions,socketOptions);
         if (peerHostLookup) {
             service.addWrapperHandler(PeerNameResolvingHandler::new);

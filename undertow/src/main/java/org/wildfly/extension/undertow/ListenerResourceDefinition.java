@@ -38,7 +38,9 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
@@ -62,8 +64,13 @@ import org.xnio.Options;
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LISTENER, true, UndertowListener.class)
-            //.addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
-            .setAllowMultipleRegistrations(true) //hack to support mod_cluster's legacy profiles
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
+            .setAllowMultipleRegistrations(true)
+            .build();
+
+    static final RuntimeCapability<Void> SERVER_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER_LISTENER, true, UndertowListener.class)
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
+            .setAllowMultipleRegistrations(true)
             .build();
 
     // only used by the subclasses Http(s)ListenerResourceDefinition
@@ -239,7 +246,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler addHandler, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
         // this Persistent Parameters will be cast to Parameters
-        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
+        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY, SERVER_LISTENER_CAPABILITY));
         this.addHandler = addHandler;
         this.writeAttributeHandlers = new HashMap<>();
         this.writeAttributeHandlers.putAll(writeAttributeHandlers);
