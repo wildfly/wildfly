@@ -103,18 +103,19 @@ public class UndertowService implements Service<UndertowService> {
      * @param contextPath The context path
      * @return The legacy deployment service alias
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName deploymentServiceName(final String serverName, final String virtualHost, final String contextPath) {
         return WEB_DEPLOYMENT_BASE.append(serverName).append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
         return SERVER.append(server).append(virtualHost);
     }
 
+    @Deprecated(forRemoval = true)
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
-        return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
+        return LocationDefinition.LOCATION_CAPABILITY.getCapabilityServiceName(server, virtualHost, locationName);
     }
 
     @Deprecated(forRemoval = true)
