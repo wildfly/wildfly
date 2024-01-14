@@ -43,7 +43,7 @@ public class UndertowService implements Service<UndertowService> {
     /**
      * @deprecated Replaced by capability reference {@link HostDefinition.HOST_CAPABILITY}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
      * service name under which default server is bound.
@@ -57,8 +57,9 @@ public class UndertowService implements Service<UndertowService> {
 
     public static final ServiceName UNDERTOW_DEPLOYMENT = ServiceName.of("undertow-deployment");
     /**
-     * The base name for listener/handler/filter services.
+     * @deprecated Replaced by capability reference {@link Capabilities#CAPABILITY_HANDLER}.
      */
+    @Deprecated(forRemoval = true)
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
 

@@ -22,7 +22,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -42,7 +41,7 @@ abstract class HandlerDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         HandlerAdd add = new HandlerAdd(this.factory);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     @Override
