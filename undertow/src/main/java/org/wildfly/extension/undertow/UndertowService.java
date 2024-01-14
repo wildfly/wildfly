@@ -164,9 +164,9 @@ public class UndertowService implements Service<UndertowService> {
         return serviceName;
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName listenerName(String listenerName) {
-        return UNDERTOW.append(Constants.LISTENER).append(listenerName);
+        return ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(listenerName);
     }
 
     @Override
