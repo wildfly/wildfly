@@ -245,7 +245,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 
@@ -262,7 +262,7 @@ class JspDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 }

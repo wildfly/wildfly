@@ -38,7 +38,7 @@ public class UndertowService implements Service<UndertowService> {
     /**
      * @deprecated Replaced by capability reference {@link ServletContainerDefinition#SERVLET_CONTAINER_CAPABILITY}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
     /**
      * @deprecated Replaced by capability reference {@link HostDefinition.HOST_CAPABILITY}.
