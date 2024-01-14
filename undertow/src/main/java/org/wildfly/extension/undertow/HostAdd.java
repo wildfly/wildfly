@@ -84,11 +84,9 @@ final class HostAdd extends AbstractAddStepHandler {
         Consumer<Host> hostConsumer;
         if (isDefaultHost) {
             addCommonHost(context, aliases, serverName, virtualHostServiceName);
-            final RuntimeCapability<?>[] capabilitiesParam = new RuntimeCapability<?>[] {HostDefinition.HOST_CAPABILITY};
-            final ServiceName[] serviceNamesParam = new ServiceName[] {UndertowService.virtualHostName(serverName, name), UndertowService.DEFAULT_HOST};
-            hostConsumer = csb.provides(capabilitiesParam, serviceNamesParam);
+            hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY, UndertowService.DEFAULT_HOST);
         } else {
-            hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY, UndertowService.virtualHostName(serverName, name));
+            hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY);
         }
         final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
         final Supplier<UndertowService> usSupplier = csb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);

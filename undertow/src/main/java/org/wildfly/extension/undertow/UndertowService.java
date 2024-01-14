@@ -110,7 +110,7 @@ public class UndertowService implements Service<UndertowService> {
 
     @Deprecated(forRemoval = true)
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
-        return SERVER.append(server).append(virtualHost);
+        return HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
     @Deprecated(forRemoval = true)
