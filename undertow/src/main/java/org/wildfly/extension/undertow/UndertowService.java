@@ -28,14 +28,13 @@ import io.undertow.Version;
  * @author Stuart Douglas
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@SuppressWarnings("ALL")
 public class UndertowService implements Service<UndertowService> {
 
     /**
      * @deprecated Replaced by capability reference {@link UndertowRootDefinition#UNDERTOW_CAPABILITY}.
      */
-    @Deprecated
-    public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
+    @Deprecated(forRemoval = true)
+    public static final ServiceName UNDERTOW = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
     /**
      * @deprecated Replaced by capability reference {@link ServletContainerDefinition#SERVLET_CONTAINER_CAPABILITY}.
      */

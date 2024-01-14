@@ -289,7 +289,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final ServiceName legacyDeploymentInfoServiceName = legacyDeploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         final RequirementServiceBuilder<?> builder = serviceTarget.addService();
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
-        final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
+        final Supplier<UndertowService> undertowService = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW));
         final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
