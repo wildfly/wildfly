@@ -24,7 +24,9 @@
         <module name="jakarta.batch.api"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.transaction.api"/>
+        <module name="jakarta.persistence.api"/>
         <module name="org.jberet.jberet-core" services="import"/>
+        <module name="org.jberet.jberet-jpa-repository"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>

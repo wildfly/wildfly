@@ -50,6 +50,10 @@
             <artifactId>jberet-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jberet</groupId>
+            <artifactId>jberet-jpa-repository</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.batch</groupId>
             <artifactId>jakarta.batch-api</artifactId>
         </dependency>
@@ -64,6 +68,10 @@
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.weld</groupId>

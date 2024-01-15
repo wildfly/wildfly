@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:batch-jberet:3.0">
+<subsystem xmlns="urn:jboss:domain:batch-jberet:4.0">
     <default-job-repository name="in-memory"/>
     <default-thread-pool name="batch"/>
     <restart-jobs-on-resume value="false"/>

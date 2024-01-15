@@ -18,6 +18,7 @@ public enum Element {
     DEFAULT_THREAD_POOL("default-thread-pool"),
     JOB_REPOSITORY("job-repository"),
     JDBC("jdbc"),
+    JPA("jpa"),
     IN_MEMORY("in-memory"),
     NAMED("named"),
     RESTART_JOBS_ON_RESUME("restart-jobs-on-resume"),
