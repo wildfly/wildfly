@@ -26,7 +26,6 @@ import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -37,34 +36,20 @@ import org.wildfly.test.integration.observability.container.OpenTelemetryCollect
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class MicrometerOtelIntegrationTestCase {
-    protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static final int REQUEST_COUNT = 5;
     @ArquillianResource
     private URL url;
     @Inject
     private MeterRegistry meterRegistry;
 
-    static final String WEB_XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n"
-                    + "           xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\"\n"
-                    + "         xsi:schemaLocation=\"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd\" \n"
-                    + "              version=\"4.0\">\n"
-                    + "    <servlet-mapping>\n"
-                    + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
-                    + "        <url-pattern>/*</url-pattern>\n"
-                    + "    </servlet-mapping>"
-                    + "</web-app>\n";
-
     @Deployment
     public static Archive<?> deploy() {
-        return dockerAvailable ?
+        return AssumeTestGroupUtil.isDockerAvailable() ?
                 ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
                         .addClasses(ServerSetupTask.class,
+                                RestActivator.class,
                                 MetricResource.class,
                                 AssumeTestGroupUtil.class)
-                        .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
                         .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
                 AssumeTestGroupUtil.emptyWar();
     }
@@ -86,13 +71,14 @@ public class MicrometerOtelIntegrationTestCase {
     @Test
     @RunAsClient
     @InSequence(2)
-    public void makeRequests() throws URISyntaxException {
+    public void makeRequests() throws URISyntaxException, InterruptedException {
         try (Client client = getClient()) {
             WebTarget target = client.target(url.toURI());
             for (int i = 0; i < REQUEST_COUNT; i++) {
                 target.request().get();
             }
         }
+        Thread.sleep(1000); // Give time to publish
     }
 
     @Test

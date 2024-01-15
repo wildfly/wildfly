@@ -31,7 +31,7 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     }
 
     @NotNull
-    public static synchronized JaegerContainer getInstance() {
+    public static JaegerContainer getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new JaegerContainer()
                     .withNetwork(Network.SHARED)
@@ -50,7 +50,7 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     }
 
     @Override
-    public synchronized void stop() {
+    public void stop() {
         INSTANCE = null;
         super.stop();
     }

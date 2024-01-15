@@ -8,7 +8,6 @@ import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.CLI
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MANAGEMENT_EXECUTOR;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_COLLECTOR_RUNTIME_CAPABILITY;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.PROCESS_STATE_NOTIFIER;
 
 import java.util.concurrent.Executor;
@@ -24,7 +23,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 /**
  * Service to create a metric collector
@@ -34,29 +33,29 @@ class MicrometerCollectorService implements Service {
     private final Supplier<ModelControllerClientFactory> modelControllerClientFactory;
     private final Supplier<Executor> managementExecutor;
     private final Supplier<ProcessStateNotifier> processStateNotifier;
-    private final Supplier<WildFlyRegistry> registrySupplier;
     private final Consumer<MicrometerCollector> metricCollectorConsumer;
+    private final WildFlyCompositeRegistry wildFlyRegistry;
 
     private LocalModelControllerClient modelControllerClient;
 
     /**
      * Installs a service that provides {@link MicrometerCollector}, and provides a {@link Supplier} the
      * subsystem can use to obtain that collector.
-     * @param context the management operation context to use to install the service. Cannot be {@code null}
+     *
+     * @param context         the management operation context to use to install the service. Cannot be {@code null}
+     * @param wildFlyRegistry
      * @return the {@link Supplier}. Will not return {@code null}.
      */
-    static Supplier<MicrometerCollector> install(OperationContext context) {
+    static Supplier<MicrometerCollector> install(OperationContext context, WildFlyCompositeRegistry wildFlyRegistry) {
         CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY);
         Supplier<ModelControllerClientFactory> modelControllerClientFactory =
                 serviceBuilder.requiresCapability(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class);
         Supplier<Executor> managementExecutor = serviceBuilder.requiresCapability(MANAGEMENT_EXECUTOR, Executor.class);
         Supplier<ProcessStateNotifier> processStateNotifier =
                 serviceBuilder.requiresCapability(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class);
-        Supplier<WildFlyRegistry> registrySupplier =
-                serviceBuilder.requiresCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getName(), WildFlyRegistry.class);
         MicrometerCollectorSupplier collectorSupplier = new MicrometerCollectorSupplier(serviceBuilder.provides(MICROMETER_COLLECTOR));
         MicrometerCollectorService service = new MicrometerCollectorService(modelControllerClientFactory, managementExecutor,
-                processStateNotifier, registrySupplier, collectorSupplier);
+                processStateNotifier, wildFlyRegistry, collectorSupplier);
         serviceBuilder.setInstance(service)
                 .install();
         return collectorSupplier;
@@ -65,12 +64,12 @@ class MicrometerCollectorService implements Service {
     MicrometerCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory,
                                Supplier<Executor> managementExecutor,
                                Supplier<ProcessStateNotifier> processStateNotifier,
-                               Supplier<WildFlyRegistry> registrySupplier,
+                               WildFlyCompositeRegistry registrySupplier,
                                Consumer<MicrometerCollector> metricCollectorConsumer) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.processStateNotifier = processStateNotifier;
-        this.registrySupplier = registrySupplier;
+        this.wildFlyRegistry = registrySupplier;
         this.metricCollectorConsumer = metricCollectorConsumer;
     }
 
@@ -79,8 +78,8 @@ class MicrometerCollectorService implements Service {
         // [WFLY-11933] if RBAC is enabled, the local client does not have enough privileges to read metrics
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
-        MicrometerCollector micrometerCollector = new MicrometerCollector(modelControllerClient, processStateNotifier.get(),
-                registrySupplier.get());
+        MicrometerCollector micrometerCollector = new MicrometerCollector(modelControllerClient,
+                processStateNotifier.get(), wildFlyRegistry);
 
         metricCollectorConsumer.accept(micrometerCollector);
     }

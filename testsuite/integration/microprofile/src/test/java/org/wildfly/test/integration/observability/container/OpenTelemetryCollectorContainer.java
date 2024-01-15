@@ -24,11 +24,6 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
 
     public static final String OTEL_COLLECTOR_CONFIG_YAML = "/etc/otel-collector-config.yaml";
 
-    private String otlpGrpcEndpoint;
-    private String otlpHttpEndpoint;
-    private String prometheusUrl;
-
-
     private OpenTelemetryCollectorContainer() {
         super("OpenTelemetryCollector",
                 "otel/opentelemetry-collector",
@@ -56,30 +51,29 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
     @Override
     public void start() {
         super.start();
-        otlpGrpcEndpoint = "http://localhost:" + getMappedPort(OTLP_GRPC_PORT);
-        otlpHttpEndpoint = "http://localhost:" + getMappedPort(OTLP_HTTP_PORT);
-        prometheusUrl = "http://localhost:" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
     }
 
     @Override
-    public synchronized void stop() {
-        if (jaegerContainer != null) {
-            jaegerContainer.stop();
+    public void stop() {
+        synchronized(this) {
+            INSTANCE = null;
+            if (jaegerContainer != null) {
+                jaegerContainer.stop();
+            }
+            super.stop();
         }
-        INSTANCE = null;
-        super.stop();
     }
 
     public String getOtlpGrpcEndpoint() {
-        return otlpGrpcEndpoint;
+        return "http://localhost:" + getMappedPort(OTLP_GRPC_PORT);
     }
 
     public String getOtlpHttpEndpoint() {
-        return otlpHttpEndpoint;
+        return "http://localhost:" + getMappedPort(OTLP_HTTP_PORT);
     }
 
     public String getPrometheusUrl() {
-        return prometheusUrl;
+        return "http://localhost:" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
     }
 
     public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {

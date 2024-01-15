@@ -27,14 +27,14 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
-    MicrometerSubsystemAdd() {
-        super(MicrometerSubsystemDefinition.ATTRIBUTES);
-    }
+    private final WildFlyCompositeRegistry wildFlyRegistry;
 
-    public static final MicrometerSubsystemAdd INSTANCE = new MicrometerSubsystemAdd();
+    MicrometerSubsystemAdd(WildFlyCompositeRegistry wildFlyRegistry) {
+        this.wildFlyRegistry = wildFlyRegistry;
+    }
 
     /**
      * {@inheritDoc}
@@ -45,14 +45,9 @@ class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         List<String> exposedSubsystems = MicrometerSubsystemDefinition.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         boolean exposeAnySubsystem = exposedSubsystems.remove("*");
-        String endpoint = MicrometerSubsystemDefinition.ENDPOINT.resolveModelAttribute(context, model)
-                .asStringOrNull();
-        Long step = MicrometerSubsystemDefinition.STEP.resolveModelAttribute(context, model)
-                .asLong();
 
-        WildFlyMicrometerConfig config = new WildFlyMicrometerConfig(endpoint, step);
-        Supplier<WildFlyRegistry> registrySupplier = MicrometerRegistryService.install(context, config);
-        Supplier<MicrometerCollector> collectorSupplier = MicrometerCollectorService.install(context);
+        MicrometerRegistryService.install(context, wildFlyRegistry);
+        Supplier<MicrometerCollector> collectorSupplier = MicrometerCollectorService.install(context, wildFlyRegistry);
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -60,7 +55,7 @@ class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
                         new MicrometerDependencyProcessor());
                 processorTarget.addDeploymentProcessor(SUBSYSTEM_NAME, POST_MODULE, POST_MODULE_MICROMETER,
-                        new MicrometerDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, registrySupplier));
+                        new MicrometerDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, wildFlyRegistry));
             }
         }, RUNTIME);
 

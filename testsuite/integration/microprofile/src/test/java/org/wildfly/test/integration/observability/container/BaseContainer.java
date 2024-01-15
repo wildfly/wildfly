@@ -16,7 +16,7 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
             System.getProperty("testsuite.integration.container.startup.attempts", "1"));
     private static final Duration ATTEMPT_DURATION = Duration.parse(
             System.getProperty("testsuite.integration.container.attempt.duration", "PT5S"));
-    protected final Boolean enableLogging = true; // Default: null/false
+    protected final Boolean enableLogging; // Default: null/false
 
     public BaseContainer(String containerName,
                          String imageName,
@@ -32,9 +32,9 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
         setExposedPorts(exposedPorts);
         setStartupAttempts(STARTUP_ATTEMPTS);
 
-//        enableLogging =
-//                Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
-//                Boolean.parseBoolean(System.getProperty("testsuite.integration.container." + containerName.toLowerCase() + ".logging"));
+        enableLogging =
+                Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
+                Boolean.parseBoolean(System.getProperty("testsuite.integration.container." + containerName.toLowerCase() + ".logging"));
 
         if (enableLogging) {
             setLogConsumers(List.of(outputFrame -> {
