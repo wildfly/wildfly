@@ -14,9 +14,11 @@
         <artifact name="${io.micrometer:micrometer-commons}"/>
         <artifact name="${io.micrometer:micrometer-core}"/>
         <artifact name="${io.micrometer:micrometer-registry-otlp}"/>
+        <artifact name="${io.micrometer:micrometer-registry-prometheus}"/>
     </resources>
 
     <dependencies>
+        <module name="io.prometheus.client"/>
         <module name="io.opentelemetry.otlp"/>
         <module name="io.opentelemetry.proto"/>
         <module name="com.google.protobuf"/>

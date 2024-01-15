@@ -8,7 +8,6 @@ import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROME
 import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MICROMETER_REGISTRY_RUNTIME_CAPABILITY;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -17,57 +16,39 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
-import org.wildfly.extension.micrometer.registry.NoOpRegistry;
-import org.wildfly.extension.micrometer.registry.WildFlyOtlpRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 class MicrometerRegistryService implements Service {
-    private final Consumer<WildFlyRegistry> registriesConsumer;
-    private final WildFlyMicrometerConfig config;
-    private WildFlyRegistry registry;
+    private WildFlyCompositeRegistry registry;
 
     /**
      * Installs a service that provides {@link WildFlyRegistry}, and provides a {@link Supplier} the
      * subsystem can use to obtain that registry.
      *
-     * @param context  the management operation context to use to install the service. Cannot be {@code null}
-     * @param config the configuration object for the registry
+     * @param context         the management operation context to use to install the service. Cannot be {@code null}
+     * @param wildFlyRegistry
      * @return the {@link Supplier}. Will not return {@code null}.
      */
-    static Supplier<WildFlyRegistry> install(OperationContext context, WildFlyMicrometerConfig config) {
+    static void install(OperationContext context, WildFlyCompositeRegistry wildFlyRegistry) {
         CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
                 .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY);
 
-        RegistrySupplier registrySupplier =
-                new RegistrySupplier(serviceBuilder.provides(MICROMETER_REGISTRY_RUNTIME_CAPABILITY.getCapabilityServiceName()));
-        serviceBuilder.setInstance(new MicrometerRegistryService(registrySupplier, config))
+        serviceBuilder.setInstance(new MicrometerRegistryService(wildFlyRegistry))
                 .install();
-
-        return registrySupplier;
     }
 
-    private MicrometerRegistryService(Consumer<WildFlyRegistry> registriesConsumer, WildFlyMicrometerConfig config) {
-        this.registriesConsumer = registriesConsumer;
-        this.config = config;
+    private MicrometerRegistryService(WildFlyCompositeRegistry wildFlyRegistry) {
+        this.registry = wildFlyRegistry;
     }
 
     @Override
     public void start(StartContext context) {
-        if (config.url() != null) {
-            registry = new WildFlyOtlpRegistry(config);
-        } else {
-            MICROMETER_LOGGER.noOpRegistryChosen();
-            registry = new NoOpRegistry();
-        }
-
         try {
-            // register metrics from JMX MBeans for base metrics
             new JmxMicrometerCollector(registry).init();
         } catch (IOException e) {
             throw MICROMETER_LOGGER.failedInitializeJMXRegistrar(e);
         }
-
-        registriesConsumer.accept(registry);
     }
 
     @Override
@@ -75,30 +56,6 @@ class MicrometerRegistryService implements Service {
         if (registry != null) {
             registry.close();
             registry = null;
-        }
-
-        registriesConsumer.accept(null);
-    }
-
-    /* Caches the WildFlyRegistry created in Service.start for use by the subsystem. */
-    private static final class RegistrySupplier implements Consumer<WildFlyRegistry>, Supplier<WildFlyRegistry> {
-        private final Consumer<WildFlyRegistry> wrapped;
-        private volatile WildFlyRegistry registry;
-
-        private RegistrySupplier(Consumer<WildFlyRegistry> wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        @Override
-        public void accept(WildFlyRegistry registry) {
-            this.registry = registry;
-            // Pass the registry on to MSC's consumer
-            wrapped.accept(registry);
-        }
-
-        @Override
-        public WildFlyRegistry get() {
-            return registry;
         }
     }
 }

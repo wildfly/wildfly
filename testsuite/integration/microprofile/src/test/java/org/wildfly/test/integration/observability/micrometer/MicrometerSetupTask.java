@@ -19,8 +19,7 @@ import org.wildfly.test.integration.observability.setuptask.AbstractSetupTask;
  * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
  */
 public class MicrometerSetupTask extends AbstractSetupTask {
-    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
+    public static final ModelNode ADDRESS_OTLP_REGISTRY = Operations.createAddress("subsystem", "micrometer", "registry", "otlp");
     private final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
     private boolean extensionAdded = false;
@@ -37,17 +36,18 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         }
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
-            ModelNode addOp = Operations.createAddOperation(micrometerSubsystem);
-            addOp.get("endpoint").set("http://localhost:4318/v1/metrics"); // Default endpoint
-            executeOp(managementClient, addOp);
+            executeOp(managementClient, Operations.createAddOperation(micrometerSubsystem));
             subsystemAdded = true;
         }
 
-        if (dockerAvailable) {
+        if (AssumeTestGroupUtil.isDockerAvailable()) {
             otelCollector = OpenTelemetryCollectorContainer.getInstance();
-            executeOp(managementClient, writeAttribute("micrometer", "endpoint",
-                    otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
-            executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
+
+            // /subsystem=micrometer/registry=otlp:add(endpoint=http://localhost:4317)
+            ModelNode op = Operations.createAddOperation(ADDRESS_OTLP_REGISTRY);
+            op.get("endpoint").set(otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"); // Default endpoint
+            op.get("step").set("1");
+            executeOp(managementClient, op);
         }
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
@@ -55,7 +55,7 @@ public class MicrometerSetupTask extends AbstractSetupTask {
 
     @Override
     public void tearDown(final ManagementClient managementClient, String containerId) throws Exception {
-        if (dockerAvailable) {
+        if (AssumeTestGroupUtil.isDockerAvailable()) {
             otelCollector.stop();
         }
 

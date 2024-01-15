@@ -2,14 +2,14 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.extension.micrometer;
+package org.wildfly.extension.micrometer.otlp;
 
 import java.time.Duration;
 import java.util.Map;
 
 import io.micrometer.registry.otlp.OtlpConfig;
 
-public final class WildFlyMicrometerConfig implements OtlpConfig {
+final class WildFlyOtlpConfig implements OtlpConfig {
     /**
      * The OTLP endpoint to which to push metrics
      */
@@ -19,7 +19,7 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
      */
     private final Long step;
 
-    public WildFlyMicrometerConfig(String endpoint, Long step) {
+    public WildFlyOtlpConfig(String endpoint, Long step) {
         this.endpoint = endpoint;
         this.step = step;
     }

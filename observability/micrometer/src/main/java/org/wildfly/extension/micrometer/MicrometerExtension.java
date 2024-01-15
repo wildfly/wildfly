@@ -23,23 +23,26 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 public class MicrometerExtension implements Extension {
     public static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
     public static final String SUBSYSTEM_NAME = "micrometer";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
-    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME,
-            MicrometerExtension.class);
+    public static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER =
+            new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicrometerExtension.class);
 
     private final PersistentResourceXMLDescription currentDescription = MicrometerSubsystemSchema.CURRENT.getXMLDescription();
 
     @Override
     public void initialize(ExtensionContext context) {
+        WildFlyCompositeRegistry wildFlyRegistry = new WildFlyCompositeRegistry();
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MicrometerSubsystemModel.CURRENT.getVersion());
         subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(this.currentDescription));
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition());
+        final ManagementResourceRegistration registration =
+                subsystem.registerSubsystemModel(new MicrometerSubsystemDefinition(wildFlyRegistry));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 

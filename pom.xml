@@ -425,6 +425,7 @@
         <version.io.opentelemetry.proto>0.20.0-alpha</version.io.opentelemetry.proto>
         <version.io.opentelemetry.opentelemetry-semconv>1.21.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
         <version.io.perfmark>0.23.0</version.io.perfmark>
+        <version.io.prometheus.client>0.16.0</version.io.prometheus.client>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.1.8</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>3.10.0</version.io.smallrye.open-api>

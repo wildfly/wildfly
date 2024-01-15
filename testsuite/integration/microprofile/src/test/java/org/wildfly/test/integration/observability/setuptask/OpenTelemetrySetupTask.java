@@ -12,8 +12,6 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
-    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static OpenTelemetryCollectorContainer otelCollectorContainer;
 
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
@@ -40,7 +38,7 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "sampler-type", "on"));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "max-queue-size", "1"));
 
-        if (dockerAvailable) {
+        if (AssumeTestGroupUtil.isDockerAvailable()) {
             otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
             executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
                     otelCollectorContainer.getOtlpGrpcEndpoint()));
@@ -51,7 +49,7 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (dockerAvailable) {
+        if (AssumeTestGroupUtil.isDockerAvailable()) {
             otelCollectorContainer.stop();
         }
         if (subsystemAdded) {

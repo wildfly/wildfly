@@ -28,14 +28,14 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.micrometer.metrics.MetricRegistration;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 class MicrometerDeploymentService implements Service {
     private final Resource rootResource;
     private final ManagementResourceRegistration managementResourceRegistration;
     private final PathAddress deploymentAddress;
     private final Supplier<MicrometerCollector> metricCollector;
-    private final Supplier<WildFlyRegistry> registrySupplier;
+    private final WildFlyCompositeRegistry wildFlyRegistry;
     private final boolean exposeAnySubsystem;
     private final List<String> exposedSubsystems;
 
@@ -45,7 +45,7 @@ class MicrometerDeploymentService implements Service {
                         DeploymentPhaseContext deploymentPhaseContext,
                         Resource rootResource,
                         ManagementResourceRegistration managementResourceRegistration,
-                        Supplier<WildFlyRegistry> registrySupplier,
+                        WildFlyCompositeRegistry wildFlyRegistry,
                         boolean exposeAnySubsystem,
                         List<String> exposedSubsystems) {
         MICROMETER_LOGGER.processingDeployment();
@@ -66,7 +66,7 @@ class MicrometerDeploymentService implements Service {
          */
         sb.requires(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName()));
         sb.setInstance(new MicrometerDeploymentService(rootResource, managementResourceRegistration, deploymentAddress,
-                        metricCollectorSupplier, registrySupplier, exposeAnySubsystem, exposedSubsystems))
+                        metricCollectorSupplier, wildFlyRegistry, exposeAnySubsystem, exposedSubsystems))
                 .install();
     }
 
@@ -75,14 +75,14 @@ class MicrometerDeploymentService implements Service {
                                         ManagementResourceRegistration managementResourceRegistration,
                                         PathAddress deploymentAddress,
                                         Supplier<MicrometerCollector> metricCollectorSupplier,
-                                        Supplier<WildFlyRegistry> registrySupplier,
+                                        WildFlyCompositeRegistry wildFlyRegistry,
                                         boolean exposeAnySubsystem,
                                         List<String> exposedSubsystems) {
         this.rootResource = rootResource;
         this.managementResourceRegistration = managementResourceRegistration;
         this.deploymentAddress = deploymentAddress;
         this.metricCollector = metricCollectorSupplier;
-        this.registrySupplier = registrySupplier;
+        this.wildFlyRegistry = wildFlyRegistry;
         this.exposeAnySubsystem = exposeAnySubsystem;
         this.exposedSubsystems = exposedSubsystems;
     }
