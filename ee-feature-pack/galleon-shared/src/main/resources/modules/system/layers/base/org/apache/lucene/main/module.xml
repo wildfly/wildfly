@@ -25,6 +25,7 @@
 
     <dependencies>
         <module name="java.logging"/>
+        <module name="jdk.management"/> <!-- WFLY-18922: necessary for Lucene's memory usage estimates -->
         <module name="com.carrotsearch.hppc" />
         <module name="java.xml"/>
     </dependencies>
