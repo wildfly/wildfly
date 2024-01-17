@@ -39,7 +39,7 @@
             <socket-discovery-protocol type="TCPPING" socket-bindings="node1 node2"/>
             <protocol type="MERGE3"/>
             <socket-protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd" client-socket-binding="jgroups-client-fd"/>
-            <protocol type="FD"/>
+            <protocol type="FD_ALL2"/>
             <protocol type="VERIFY_SUSPECT"/>
             <encrypt-protocol type="SYM_ENCRYPT" key-store="my-key-store" key-alias="${jgroups.maximal.key-alias:alias}">
                 <key-credential-reference store="my-credential-store" alias="credential-alias" type="PASSWORD"/>
