@@ -444,9 +444,7 @@
                             <version>${testsuite.ee.galleon.pack.version}</version>
                         </feature-pack>
                     </feature-packs>
-                    <profiles>
-                        <profile>ha</profile>
-                    </profiles>
+                    <profile>ha</profile>
                 </configuration>
                 <executions>
                     <execution>
@@ -1524,9 +1522,7 @@
                                     <version>${testsuite.ee.galleon.pack.version}</version>
                                 </feature-pack>
                             </feature-packs>
-                            <profiles>
-                                <profile>ha</profile>
-                            </profiles>
+                            <profile>ha</profile>
                         </configuration>
                         <executions>
                             
@@ -1819,9 +1815,7 @@
                                 <phase>test-compile</phase>
                                 <configuration>
                                     <expected-discovery>[standalone][servlet, web-passivation]==>ee-core-profile-server,web-passivation</expected-discovery>
-                                    <profiles>
-                                        <profile>standalone</profile>
-                                    </profiles>
+                                    <profile>standalone</profile>
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.web-passivation</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
@@ -1835,9 +1829,7 @@
                                 <phase>test-compile</phase>
                                 <configuration>
                                     <expected-discovery>[standalone][servlet, singleton-local]==>ee-core-profile-server,singleton-local</expected-discovery>
-                                    <profiles>
-                                        <profile>standalone</profile>
-                                    </profiles>
+                                    <profile>standalone</profile>
                                     <surefireExecutionForIncludedClasses>ts.surefire.clustering.singleton-local</surefireExecutionForIncludedClasses>
                                 </configuration>
                             </execution>
