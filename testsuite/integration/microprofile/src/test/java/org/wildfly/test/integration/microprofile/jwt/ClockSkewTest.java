@@ -4,49 +4,39 @@
  */
 package org.wildfly.test.integration.microprofile.jwt;
 
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivateKey;
+
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.RSASSASigner;
-
 import jakarta.json.Json;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
-
-import java.io.File;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import java.security.PrivateKey;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.pem.Pem;
 import org.wildfly.test.integration.microprofile.jwt.norealm.App;
-
-import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
 /**
  * Tests for mp.jwt.verify.clock.skew property introduced in MP JWT 2.1
@@ -62,11 +52,10 @@ public class ClockSkewTest {
     public static WebArchive createDeployment() {
         return ShrinkWrap
                 .create(WebArchive.class, "ClockSkewTest.war")
-                .addClasses(App.class, SampleEndPoint.class, BaseCase.class)
+                .addClasses(App.class, SampleEndPoint.class, BaseJWTCase.class)
                 .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml")
-                .addAsManifestResource(new FileAsset(new File("src/test/resources/jwt/microprofile-config-with-clock-skew.properties")),
-                        "microprofile-config.properties")
-                .addAsManifestResource(new FileAsset(new File("src/test/resources/jwt/public.pem")), "public.pem");
+                .addAsManifestResource(ClockSkewTest.class.getPackage(), "microprofile-config-with-clock-skew.properties", "microprofile-config.properties")
+                .addAsManifestResource(ClockSkewTest.class.getPackage(), "public.pem", "public.pem");
     }
 
     @Test
@@ -112,7 +101,7 @@ public class ClockSkewTest {
         JWSObject jwsObject = new JWSObject(new JWSHeader.Builder(JWSAlgorithm.RS256)
                 .type(new JOSEObjectType("jwt")).build(), new Payload(claimsBuilder.build().toString()));
 
-        String pemContent = Files.readString(Path.of("src/test/resources/jwt/private.pem"));
+        String pemContent = Files.readString(Path.of(ClockSkewTest.class.getResource("private.pem").toURI()));
         PrivateKey privateKey = Pem.parsePemContent(CodePointIterator.ofString(pemContent)).next().tryCast(PrivateKey.class);
         jwsObject.sign(new RSASSASigner(privateKey));
 

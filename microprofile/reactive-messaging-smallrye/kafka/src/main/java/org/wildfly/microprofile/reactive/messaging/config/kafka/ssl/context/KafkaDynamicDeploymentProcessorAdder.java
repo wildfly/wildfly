@@ -21,6 +21,6 @@ public class KafkaDynamicDeploymentProcessorAdder implements DynamicDeploymentPr
         target.addDeploymentProcessor(subsystemName,
                 Phase.POST_MODULE,
                 POST_MODULE_MICROPROFILE_REACTIVE_MESSAGING,
-                new ReactiveMessagingSslConfigProcessor());
+                new KafkaReactiveMessagingSslConfigProcessor());
     }
 }

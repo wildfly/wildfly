@@ -17,7 +17,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.extension.messaging.activemq.MessagingServices;

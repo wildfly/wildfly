@@ -33,7 +33,7 @@ application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
 lightweight and powerful implementation of the Jakarta
 Enterprise Edition 10 specifications. WildFly's modular architecture built on the
 JBoss Modules and JBoss Modular Service Container projects enables services on-demand when your
-application requires them. The table below lists the technologies available in WildFly {wildflyVersion}
+application requires them. The table below lists the Jakarta technologies available in WildFly {wildflyVersion}
 server configuration profiles.
 
 [cols=",,,,",options="header"]
@@ -78,6 +78,9 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 |Jakarta Mail 2.1 |X |-- |X |X
 
 |Jakarta Messaging 3.1 |X |-- |X |--
+
+| Jakarta MVC 2.1
+(_WildFly Preview only_)|--|--|--|--
 
 |Jakarta Persistence 3.1 |X |X |X |X
 

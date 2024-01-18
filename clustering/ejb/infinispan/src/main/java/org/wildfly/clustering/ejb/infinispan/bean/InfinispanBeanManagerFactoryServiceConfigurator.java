@@ -15,6 +15,7 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ejb.bean.BeanConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.ejb.cache.bean.BeanGroupManagerServiceNameProvider
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;

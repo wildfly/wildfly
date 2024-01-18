@@ -8,6 +8,7 @@ package org.jboss.as.clustering.controller;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.wildfly.clustering.service.UnaryRequirement;
 
 /**

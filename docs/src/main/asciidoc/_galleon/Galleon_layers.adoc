@@ -423,6 +423,11 @@ link:#gal.microprofile-config[microprofile-config] +
 link:#gal.cdi[cdi] +
 link:#gal.microprofile-reactive-streams-operators[reactive-streams-operators] +
 
+|[[gal.microprofile-reactive-messaging-amqp]]microprofile-reactive-messaging-amqp
+|Support for MicroProfile Reactive Messaging AMQP connector
+|
+link:#gal.microprofile-reactive-messaging[reactive-messaging] +
+
 |[[gal.microprofile-reactive-messaging-kafka]]microprofile-reactive-messaging-kafka
 |Support for MicroProfile Reactive Messaging Kafka connector
 |
@@ -457,6 +462,13 @@ link:#gal.opentelemetry[opentelemetry]
 |Support for mod_cluster subsystem.
 |
 link:#gal.web-server[web-server] +
+
+|[[gal.mvc-krazo]]mvc-krazo
+|Support for Jakarta MVC (_WildFly Preview only unless the  link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] is used_)
+|
+link:#gal.bean-validation[bean-validation] +
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs-core[jaxrs-core] +
 
 |[[gal.naming]]naming
 |Support for JNDI.

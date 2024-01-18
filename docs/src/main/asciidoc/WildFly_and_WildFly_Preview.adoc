@@ -57,8 +57,8 @@ The zip or tar.gz file for WildFly Preview is available at link:https://wildfly.
 right next to the main WildFly release files for the same version.
 
 For bootable jar users and Galleon CLI users, we provide a Galleon feature pack for WildFly Preview. The
-Galleon feature pack location for the feature pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
-This feature pack is the WildFly Preview analogue to main WildFly's ``wildfly@maven(org.jboss.universe:community-universe)``.
+Galleon feature pack location for the feature pack is ``wildfly-preview@maven(org.jboss.universe:community-universe)`` and the Maven coordinate is ``org.wildlfly:wildfly-preview-feature-pack``.
+This feature pack is the WildFly Preview analogue to main WildFly's ``wildfly@maven(org.jboss.universe:community-universe)`` (Maven coordinate ``org.wildfly:wildfly-galleon-pack``).
 
 == WildFly Preview and Jakarta EE
 
@@ -90,7 +90,7 @@ content into the internal content repo. For unmanaged deployments we use the ori
 and WildFly Preview won't modify those files as we don't regard them as being 'owned' by the server.
 
 Note that the deployment transformation feature will not update the deployment to adapt to any API differences between
-Jakarta EE 9 and EE 10. It only covers the javax to jakarta name changes that came with EE 9.
+Jakarta EE 9 and EE 10 or later. It only covers the javax to jakarta name changes that came with EE 9.
 
 In the long run it's better for users if they either convert their application source to EE 10 APIs, or use build-time
 tooling that we expect the Jakarta ecosystem to provide over time to do transformation at build time.  But some
@@ -117,6 +117,7 @@ configuration to act as a primary or backup. An embedded messaging broker also h
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
 embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
+* WildFly Preview provides out of the box support for link:https://jakarta.ee/specifications/mvc[Jakarta MVC]. However, `preview` stability level support for Jakarta MVC can be added to standard WildFly by including the link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] Galleon feature pack in your server provisioning configuration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as coordination strategy for automatic indexing.
 * The extensions providing the legacy subsystems 'cmp', 'config-admin', 'jacorb', 'jaxr', 'jsr-77', 'messaging' (HornetQ based),
 'security' (not 'elytron'), and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control

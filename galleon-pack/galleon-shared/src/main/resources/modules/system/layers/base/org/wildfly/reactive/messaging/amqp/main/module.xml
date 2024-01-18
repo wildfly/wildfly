@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="org.wildfly.reactive.messaging.amqp">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${org.wildfly:wildfly-microprofile-reactive-messaging-amqp}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.smallrye.common.annotation"/>
+        <module name="io.vertx.client.amqp"/>
+        <module name="io.vertx.core"/>
+        <module name="io.vertx.proton"/>
+        <module name="javax.enterprise.api" optional="true"/>
+        <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.weld.common"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.wildfly.reactive.messaging.common"/>
+        <module name="org.wildfly.reactive.messaging.config"/>
+    </dependencies>
+</module>

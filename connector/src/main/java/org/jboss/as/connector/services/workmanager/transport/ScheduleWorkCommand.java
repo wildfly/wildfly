@@ -12,7 +12,7 @@ import org.jboss.jca.core.spi.workmanager.Address;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#scheduleWork(Address, DistributableWork)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#scheduleWork(Address, DistributableWork).
  * @author Paul Ferraro
  */
 public class ScheduleWorkCommand implements Command<Void, CommandDispatcherTransport> {

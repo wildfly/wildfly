@@ -8,7 +8,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.FunctionExecutor;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
@@ -16,6 +15,7 @@ import org.jboss.as.clustering.controller.OperationExecutor;
 import org.jboss.as.clustering.controller.OperationFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;

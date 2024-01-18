@@ -10,9 +10,9 @@ import java.util.function.UnaryOperator;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.jgroups.auth.BinaryAuthToken;
 import org.jboss.as.clustering.jgroups.auth.CipherAuthToken;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.conf.ClassConfigurator;
 

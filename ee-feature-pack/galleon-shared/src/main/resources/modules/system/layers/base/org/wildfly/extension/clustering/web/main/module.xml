@@ -18,8 +18,8 @@
     <dependencies>
         <module name="java.xml"/>
 
-        <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.clustering.common"/>

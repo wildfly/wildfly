@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>31.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-preview</artifactId>
@@ -56,6 +56,8 @@
         <!-- Use the WildFly Preview EE dependency set. Child modules that test expansion capabilities can override. -->
         <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
         <container.java.home>${java.home}</container.java.home>
+        
+        <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
     </properties>
 
     <dependencies>
@@ -408,7 +410,7 @@
                     <!-- Copy users and roles config from shared resources. -->
                     <execution>
                         <id>ts.config-as.copy-mgmt-users</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>${ts.config-as.copy-mgmt-users.phase}</phase>
                         <goals><goal>copy-resources</goal></goals>
                         <inherited>true</inherited>
                         <configuration>

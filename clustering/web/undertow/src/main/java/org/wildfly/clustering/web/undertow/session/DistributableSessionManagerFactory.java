@@ -35,7 +35,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
 
     private final SessionManagerFactory<ServletContext, Map<String, Object>, Batch> factory;
     private final SessionManagerFactoryConfiguration config;
-    private final SessionListeners listeners = new SessionListeners();
 
     public DistributableSessionManagerFactory(SessionManagerFactory<ServletContext, Map<String, Object>, Batch> factory, SessionManagerFactoryConfiguration config) {
         this.factory = factory;
@@ -48,7 +47,9 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
         boolean statisticsEnabled = info.getMetricsCollector() != null;
         RecordableInactiveSessionStatistics inactiveSessionStatistics = statisticsEnabled ? new DistributableInactiveSessionStatistics() : null;
         Supplier<String> factory = new IdentifierFactoryAdapter(info.getSessionIdGenerator());
-        Consumer<ImmutableSession> expirationListener = new UndertowSessionExpirationListener(deployment, this.listeners, inactiveSessionStatistics);
+        // Session listeners are application-specific
+        SessionListeners listeners = new SessionListeners();
+        Consumer<ImmutableSession> expirationListener = new UndertowSessionExpirationListener(deployment, listeners, inactiveSessionStatistics);
         SessionManagerConfiguration<ServletContext> configuration = new SessionManagerConfiguration<>() {
             @Override
             public ServletContext getServletContext() {
@@ -86,7 +87,6 @@ public class DistributableSessionManagerFactory implements io.undertow.servlet.a
                 };
             }
         });
-        SessionListeners listeners = this.listeners;
         RecordableSessionManagerStatistics statistics = (inactiveSessionStatistics != null) ? new DistributableSessionManagerStatistics(manager, inactiveSessionStatistics, this.config.getMaxActiveSessions()) : null;
         io.undertow.server.session.SessionManager result = new DistributableSessionManager(new DistributableSessionManagerConfiguration() {
             @Override

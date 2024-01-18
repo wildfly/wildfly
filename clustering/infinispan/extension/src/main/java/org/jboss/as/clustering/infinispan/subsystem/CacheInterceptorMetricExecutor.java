@@ -7,8 +7,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.interceptors.AsyncInterceptor;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 
 /**
  * Executor for metrics based on a cache interceptor.

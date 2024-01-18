@@ -9,6 +9,7 @@
     <resources>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-api}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-cdi}"/>
+        <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-exporters}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-propagation}"/>
         <artifact name="${io.smallrye.opentelemetry:smallrye-opentelemetry-rest}"/>
     </resources>
@@ -21,6 +22,11 @@
 
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="io.vertx.core" />
+        <module name="io.vertx.grpc-client" />
+        <module name="io.vertx.grpc-common" />
+        <module name="io.netty.netty-buffer" />
+
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="org.jboss.weld.api"/>

@@ -28,7 +28,6 @@ import org.jboss.ejb.protocol.remote.RemoteTransportProvider;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -103,7 +102,6 @@ public class LastNodeToLeaveRemoteEJBTestCase extends AbstractClusteringTestCase
         return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
                 .addPackage(EJBDirectory.class.getPackage())
                 .addClasses(Result.class, Incrementor.class, IncrementorBean.class, StatelessIncrementorBean.class)
-                .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"))
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
                 ;
     }

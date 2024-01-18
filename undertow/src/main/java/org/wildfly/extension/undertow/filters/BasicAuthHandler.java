@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import io.undertow.security.handlers.AuthenticationCallHandler;
-import io.undertow.server.HandlerWrapper;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
@@ -41,7 +41,7 @@ public class BasicAuthHandler extends SimpleFilterDefinition {
         return Collections.singleton(SECURITY_DOMAIN);
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
-        return AuthenticationCallHandler::new;
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) {
+        return PredicateHandlerWrapper.filter(AuthenticationCallHandler::new);
     }
 }

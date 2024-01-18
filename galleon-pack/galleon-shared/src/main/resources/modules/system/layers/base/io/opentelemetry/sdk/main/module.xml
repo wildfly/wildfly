@@ -21,7 +21,7 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
-        <module name="io.smallrye.opentelemetry"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
 
         <module name="java.logging"/>
         <module name="jdk.unsupported"/>

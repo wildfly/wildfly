@@ -8,16 +8,16 @@ import java.util.Arrays;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
-import org.wildfly.extension.micrometer.metrics.MetricMetadata;
-import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
+import org.wildfly.extension.micrometer.metrics.MetricMetadata;
+import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 
 public interface WildFlyRegistry {
     Meter remove(Meter.Id mappedId);

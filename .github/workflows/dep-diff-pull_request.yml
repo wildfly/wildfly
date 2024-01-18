@@ -38,14 +38,14 @@ jobs:
           path: base
 
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 11
 
       # Run the caching against the base version only
       - name: Cache local Maven repository
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -185,7 +185,7 @@ jobs:
           done
           echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: input-artifacts
           path: ${{ steps.prepare.outputs.artifacts }}

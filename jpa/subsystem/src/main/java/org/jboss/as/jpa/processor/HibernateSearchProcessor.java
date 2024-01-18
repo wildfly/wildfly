@@ -41,8 +41,8 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier MODULE_MAPPER_ORM_DEFAULT =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM);
 
-    private static final ModuleIdentifier MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING =
-            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING);
+    private static final ModuleIdentifier MODULE_MAPPER_ORM_OUTBOXPOLLING =
+            ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING);
     private static final ModuleIdentifier MODULE_BACKEND_LUCENE =
             ModuleIdentifier.fromString(Configuration.HIBERNATE_SEARCH_MODULE_BACKEND_LUCENE);
     private static final ModuleIdentifier MODULE_BACKEND_ELASTICSEARCH =
@@ -128,7 +128,7 @@ public class HibernateSearchProcessor implements DeploymentUnitProcessor {
         List<String> coordinationStrategies = HibernateSearchDeploymentMarker.getCoordinationStrategies(deploymentUnit);
         if (coordinationStrategies != null) {
             if (coordinationStrategies.contains(Configuration.HIBERNATE_SEARCH_COORDINATION_STRATEGY_VALUE_OUTBOX_POLLING)) {
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING,
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, MODULE_MAPPER_ORM_OUTBOXPOLLING,
                         false, true, true, false));
             }
         }

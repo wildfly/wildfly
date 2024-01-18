@@ -8,7 +8,7 @@ package org.jboss.as.connector.services.workmanager.transport;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#localPing()}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#localPing().
  * @author Paul Ferraro
  */
 public class PingCommand implements Command<Long, CommandDispatcherTransport> {

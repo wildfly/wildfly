@@ -233,7 +233,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
 
     private static Closeable mount(VirtualFile moduleFile, boolean explode) throws IOException {
         return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
-                : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
+                : VFS.mountZip(moduleFile.getPhysicalFile(), moduleFile, TempFileProviderService.provider());
     }
 
     /**

@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.SetHeaderHandler;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -47,9 +48,14 @@ public class ResponseHeaderFilterDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = NAME.resolveModelAttribute(context, model).asString();
         String value = VALUE.resolveModelAttribute(context, model).asString();
-        return next -> new SetHeaderHandler(next, name, value);
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler next) {
+                return new SetHeaderHandler(next, name, value);
+            }
+        });
     }
 }

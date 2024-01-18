@@ -16,9 +16,9 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
 
-    private final HandlerWrapperFactory factory;
+    private final PredicateHandlerWrapperFactory factory;
 
-    protected SimpleFilterDefinition(PathElement path, HandlerWrapperFactory factory) {
+    protected SimpleFilterDefinition(PathElement path, PredicateHandlerWrapperFactory factory) {
         super(path);
         this.factory = factory;
     }

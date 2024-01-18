@@ -8,6 +8,7 @@
 <config xmlns="urn:jboss:galleon:config:1.0" model="standalone">
     <packages>
         <package name="product.conf" optional="true"/>
+        <package name="org.jboss.as.product" optional="true"/>
         <package name="misc.standalone"/>
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>

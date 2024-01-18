@@ -16,6 +16,7 @@
     </props>
     <packages>
         <package name="product.conf" optional="true"/>
+        <package name="org.jboss.as.product" optional="true"/>
         <package name="misc.standalone"/>
         <package name="org.jboss.as.standalone"/>
         <package name="org.jboss.as.domain-management"/>

@@ -186,7 +186,7 @@ public class Configuration {
     /**
      * name of the Hibernate Search module providing the outbox-polling coordination strategy
      */
-    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_COORDINATION_OUTBOXPOLLING = "org.hibernate.search.mapper.orm.coordination.outboxpolling";
+    public static final String HIBERNATE_SEARCH_MODULE_MAPPER_ORM_OUTBOXPOLLING = "org.hibernate.search.mapper.orm.outboxpolling";
 
     /**
      * name of the Hibernate Search module providing the Lucene backend

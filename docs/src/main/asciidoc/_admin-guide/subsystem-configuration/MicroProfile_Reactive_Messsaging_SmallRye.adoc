@@ -1,8 +1,8 @@
 [[MicroProfile_Reactive_Messaging_SmallRye]]
 = MicroProfile Reactive Messaging Subsystem Configuration
 ----
-:smallrye-reactive-messaging-version:       3.6
-:smallrye-reactive-messaging-tag:           {smallrye-reactive-messaging-version}.0
+:smallrye-reactive-messaging-version:       4.5.0
+:smallrye-reactive-messaging-tag:           {smallrye-reactive-messaging-version}
 :eclipse-mp-reactive-messaging-api-version: 2.0
 ----
 
@@ -15,7 +15,7 @@ ifdef::env-github[]
 endif::[]
 
 Support for https://microprofile.io/project/eclipse/microprofile-reactive-messaging[MicroProfile Reactive Messaging] is
-provided as a Tech Preview feature by the _microprofile-reactive-messaging-smallrye_ subsystem.
+provided by the _microprofile-reactive-messaging-smallrye_ subsystem.
 
 [[required-extension-microprofile-reactive-messaging-smallrye]]
 == Required Extension
@@ -46,6 +46,8 @@ To use this subsystem, you must also enable the <<MicroProfile_Reactive_Streams_
 If you provision your own server and include the `microprofile-reactive-messaging` Galleon layer, you will get the required modules, and the extension and subsystem will be added to your configuration.
 
 If you provision the `microprofile-reactive-messaging-kafka` Galleon layer it includes the modules to enable the Kafka connector functionality. The `microprofile-reactive-messaging-kafka` layer includes the `microprofile-reactive-messaging` layer which provides the core MicroProfile Reactive Messaging functionality.
+
+Similarly, to enable the AMQP connector functionality, you need to provision the `microprofile-reactive-messaging-amqp` layer, which in turn includes the `microprofile-reactive-messaging` layer.
 
 == Specification
 
@@ -116,7 +118,7 @@ User's applications intended to return published values to users via e.g. Jakart
 === Connectors
 MicroProfile Reactive Messaging is designed to be flexible enough to integrate with a wide variety of external messaging systems. This functionality is provided via 'connectors'.
 
-The only included connector at the moment is the Kafka connector.
+The only included connectors at the moment are the Kafka connector, and the AMQP connector.
 
 Connectors are configured using MicroProfile Config. The property keys for the methods have some prefixes mandated by the MicroProfile Reactive Messaging Specification which lists these as:
 
@@ -181,7 +183,7 @@ Next we will briefly discuss each of these entries. Remember the `to` channel is
 
 `mp.messaging.incoming.from.value.deserializer=org.apache.kafka.common.serialization.IntegerDeserializer` tells the connector to use `IntegerDeserializer` to deserialize the values from the topic before calling the `receive()` method. You may implement your own deserializer by writing a class implementing `org.apache.kafka.common.serialization.Deserializer` and including it in the deployment.
 
-In addition to the above, Apache Kafka, and SmallRye Reactive Messaging's Kafka connector understand a lot more properties. These can be found in the SmallRye Reactive Messaging Kafka connector https://smallrye.io/smallrye-reactive-messaging/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/kafka/kafka.html[documentation], and in the Apache Kafka documentation for the https://kafka.apache.org/documentation/#producerconfigs[producers] and the https://kafka.apache.org/documentation/#consumerconfigs[consumers].
+In addition to the above, Apache Kafka, and SmallRye Reactive Messaging's Kafka connector understand a lot more properties. These can be found in the SmallRye Reactive Messaging Kafka connector https://smallrye.io/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/kafka/kafka/[documentation], and in the Apache Kafka documentation for the https://kafka.apache.org/documentation/#producerconfigs[producers] and the https://kafka.apache.org/documentation/#consumerconfigs[consumers].
 
 The prefixes discussed above are stripped off before passing the property to Kafka. The same happens for other configuration properties. See the Kafka documentation for more details about how to configure Kafka consumers and producers.
 
@@ -289,6 +291,72 @@ While we do expose the Kafka Clients jar in our BOMs, its usage is limited to
 ** `org.apache.kafka.common.serialization.Serializer`
 ** Implementatations of `org.apache.kafka.common.serialization.Deserializer` and `org.apache.kafka.common.serialization.Serializer` in the `org.apache.kafka.common.serialization` package
 
+// New
+==== AMQP Connector
+
+An example of a minimal `microprofile-config.properties` file for AMQP for the example application shown previously:
+
+```
+amqp-host=localhost
+amqp-port=5672
+amqp-username=artemis
+amqp-password=artemis
+
+mp.messaging.outgoing.to.connector=smallrye-amqp
+mp.messaging.outgoing.to.address=my-topic
+
+mp.messaging.incoming.from.connector=smallrye-amqp
+mp.messaging.incoming.from.address=my-topic
+```
+
+Next we will briefly discuss each of these entries. Remember the `to` channel is on the `send()` method, and the `from` channel is on the `receive()` method.
+
+The entries `amqp-host=localhost` and `amqp-port=5672` point the connector to an AMQP broker running on `localhost:5672`. As before we could also have done these for an individual channel by for example specifying  `mp.messaging.outgoing.to.host=localhost` instead. If the host is not specified, it defaults to `localhost`.
+
+`mp.messaging.outgoing.to.connector=smallrye-amqp` says that we want to use AMQP to back the `to` channel. Note that the value `smallrye-amqp` is SmallRye Reactive Messaging specific, and will only be understood if the AMQP connector is enabled.
+
+`mp.messaging.outgoing.to.address=my-topic` says that we will send data via `to` channel to the AMQP queue on address called `my-topic`.
+
+`mp.messaging.incoming.from.connector=smallrye-amqp` says that we want to use AMQP to back the `from` channel. As above, the value `smallrye-amqp` is SmallRye Reactive Messaging specific.
+
+`mp.messaging.incoming.from.address=my-topic` says says that the channel named `from` will read data from the AMQP topic (or queue) on address called `my-topic`.
+
+
+The full set of properties understood by the SmallRye Reactive Messaging's AMQP connector can be found in the SmallRye Reactive Messaging AMQP connector https://smallrye.io/smallrye-reactive-messaging/{smallrye-reactive-messaging-version}/amqp/amqp/[documentation].
+
+The prefixes discussed above are stripped off before passing the property to the AMQP connector.
+
+
+===== Connecting to a secure AMQP broker
+
+If connecting to a Kafka instance secured with SSL and SASL, the following example 'microprofile-config.properties' will help you get started. There are a few new properties. We are showing them on the connector level but they could equally well be defined on the channel level (i.e. with the `mp.messaging.outgoing.to-amqp.` and `mp.messaging.incoming.from-amqp.` prefixes from the previous examples rather than the connector-wide `mp.messaging.connector.smallrye-kafka` prefix).
+
+[source]
+----
+# As seen above
+amqp-host=localhost
+amqp-port=5672
+amqp-username=artemis
+amqp-password=artemis
+
+# New entries
+amqp-use-ssl=true
+mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test
+
+# Channel configuration would follow here, but is left out for brevity
+----
+//
+//mp.messaging.outgoing.to.connector=smallrye-amqp
+//mp.messaging.outgoing.to.address=my-topic
+//
+//mp.messaging.incoming.from.connector=smallrye-amqp
+//mp.messaging.incoming.from.address=my-queue
+Each of the new lines has the following meaning:
+
+* `amqp-use-ssl=true` - specifies that we want to use a secure connection when connecting to the broker.
+* `mp.messaging.connector.smallrye-amqp.wildfly.elytron.ssl.context=test` - this is not needed if AMQ broker is secured with a CA signed certificate. If you are using self-signed certificates, you will need to specify a truststore in the Elytron subsystem, and create an `SSLContext` referencing that. The value of this property is used to look up the `SSLContext` in the Elytron subsystem under `/subsystem=elytron/client-ssl-context=*` in the WildFly management model. In this case the property value is `test`, so we look up the `SSLContext` defined by `/subsystem=elytron/client-ssl-context=test` and use that configure the truststore to use for the connection to AMQ broker.
+
+Instead of configuring these properties on the connector level, we could also have defined them on the individual channels. E.g.: `mp.messaging.incoming.from.wildfly.elytron.ssl.context=test` would choose the `test` SSLContext for the `from` incoming channel.
 
 == Component Reference
 

@@ -640,7 +640,7 @@ principal from _ksRealm_ but other approaches may also be used.
 
 [source,options="nowrap"]
 ----
-/subsystem=elytron/http-authentication-factory=exampleCertHttpAuth:add(http-server-mechanism-factory=global,security-domain=exampleCertSD,mechanism-configurations=[{mechanism-name=CLIENT_CERT,mechanism-realm-configurations=[{realm-name=exampleApplicationDomain}]}])
+/subsystem=elytron/http-authentication-factory=exampleCertHttpAuth:add(http-server-mechanism-factory=global,security-domain=exampleCertSD,mechanism-configurations=[{mechanism-name=CLIENT_CERT}])
 ----
 
 [[configure-an-application-security-domain-in-the-undertow-subsystem.]]

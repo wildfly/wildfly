@@ -17,11 +17,12 @@ import jakarta.inject.Singleton;
 @Singleton
 @Priority(Integer.MAX_VALUE)
 public class TestOpenTelemetryConfig implements OpenTelemetryConfig {
-    private Map<String, String> properties = new HashMap<>();
+    private final Map<String, String> properties = new HashMap<>();
 
     @Override
     public Map<String, String> properties() {
-//        properties.put("otel.service.name", BaseOpenTelemetryTest.SERVICE_NAME);
+        properties.put("otel.metrics.exporter", "none");
+        properties.put("otel.logs.exporter", "none");
         properties.put("otel.traces.exporter", "in-memory");
         return properties;
     }

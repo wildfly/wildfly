@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import io.undertow.server.HandlerWrapper;
+import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 
@@ -30,6 +30,7 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.wildfly.extension.undertow.filters.PredicateHandlerWrapper;
 
 public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemSchemaTest<UndertowSubsystemSchema> {
     final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
@@ -74,18 +75,18 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
 
-        HandlerWrapper connectionLimiterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("limit-connections")).get();
-        HttpHandler connectionLimiterHandler = connectionLimiterService.wrap(new PathHandler());
+        PredicateHandlerWrapper connectionLimiterService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("limit-connections")).get();
+        HttpHandler connectionLimiterHandler = connectionLimiterService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", connectionLimiterHandler);
 
-        HandlerWrapper headersService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("headers")).get();
-        HttpHandler headerHandler = headersService.wrap(new PathHandler());
+        PredicateHandlerWrapper headersService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("headers")).get();
+        HttpHandler headerHandler = headersService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
-        HandlerWrapper modClusterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("mod-cluster")).get();
+        PredicateHandlerWrapper modClusterService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("mod-cluster")).get();
         Assert.assertNotNull(modClusterService);
 
-        HttpHandler modClusterHandler = modClusterService.wrap(new PathHandler());
+        HttpHandler modClusterHandler = modClusterService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", modClusterHandler);
 
         UndertowService undertowService = (UndertowService) this.values.get(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()).get();

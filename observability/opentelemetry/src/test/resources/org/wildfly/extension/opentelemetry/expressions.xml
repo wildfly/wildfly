@@ -5,8 +5,8 @@
 
 <subsystem xmlns="urn:wildfly:opentelemetry:1.0"
            service-name="${test.service-name:test-service}">
-    <exporter type="${test.exporter-type:jaeger}"
-              endpoint="${test.endpoint:http://localhost:14250}"/>
+    <exporter type="${test.exporter-type:otlp}"
+              endpoint="${test.endpoint:http://localhost:4317}"/>
     <span-processor type="${test.span-processor-type:batch}"
                     batch-delay="${test.batch-delay:5000}"
                     max-queue-size="${test.max-queue-size:2048}"

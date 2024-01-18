@@ -11,7 +11,7 @@ import org.jboss.jca.core.spi.workmanager.Address;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#getAddresses(org.jgroups.Address)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#getAddresses(org.jgroups.Address).
  * @author Paul Ferraro
  */
 public class GetWorkManagersCommand implements Command<Set<Address>, CommandDispatcherTransport> {
