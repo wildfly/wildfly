@@ -18,7 +18,7 @@
     <!-- The base server already includes the packages to provision JsonP modules.
          We add them here just to ensure they are provisioned if base-server changes -->
     <packages>
-        <package name="javax.json.api"/>
+        <package name="jakarta.json.api"/>
         <package name="org.eclipse.parsson"/>
     </packages>
 </layer-spec>
