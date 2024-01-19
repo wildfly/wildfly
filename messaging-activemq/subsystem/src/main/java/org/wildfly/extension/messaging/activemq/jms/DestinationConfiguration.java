@@ -84,13 +84,24 @@ public class DestinationConfiguration {
             connection.start();
             QueueRequestor requestor = new QueueRequestor((QueueSession) session, managementQueue);
             Message m = session.createMessage();
+            org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createAddress", queueName, RoutingType.ANYCAST.name());
+            Message reply = requestor.request(m);
+            ROOT_LOGGER.debugf("Creating address %s returned %s", queueName, reply);
+            if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
+                String body = reply.getBody(String.class);
+                if (!destinationAlreadyExist(body)) {
+                    throw ROOT_LOGGER.remoteDestinationCreationFailed(queueName, body);
+                }
+            }
+            ROOT_LOGGER.debugf("Address %s has been created", queueName);
+            m = session.createMessage();
             if (getSelector() != null && !getSelector().isEmpty()) {
                 org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", queueName, queueName, getSelector(), isDurable(), RoutingType.ANYCAST.name());
             } else {
                 org.apache.activemq.artemis.api.jms.management.JMSManagementHelper.putOperationInvocation(m, ResourceNames.BROKER, "createQueue", queueName, queueName, isDurable(), RoutingType.ANYCAST.name());
             }
-            Message reply = requestor.request(m);
-            ROOT_LOGGER.infof("Creating queue %s returned %s", queueName, reply);
+            reply = requestor.request(m);
+            ROOT_LOGGER.debugf("Creating queue %s returned %s", queueName, reply);
             requestor.close();
             if (!reply.getBooleanProperty("_AMQ_OperationSucceeded")) {
                 String body = reply.getBody(String.class);
@@ -98,7 +109,7 @@ public class DestinationConfiguration {
                     throw ROOT_LOGGER.remoteDestinationCreationFailed(queueName, body);
                 }
             }
-            ROOT_LOGGER.infof("Queue %s has been created", queueName);
+            ROOT_LOGGER.debugf("Queue %s has been created", queueName);
         }
     }
 
