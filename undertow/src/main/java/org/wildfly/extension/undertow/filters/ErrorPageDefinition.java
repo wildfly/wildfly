@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -48,9 +49,14 @@ public class ErrorPageDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         int code = CODE.resolveModelAttribute(context, model).asInt();
         String path = PATH.resolveModelAttribute(context, model).asStringOrNull();
-        return next -> new FileErrorPageHandler(next, Paths.get(path), code);
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler next) {
+                return new FileErrorPageHandler(next, Paths.get(path), code);
+            }
+        });
     }
 }

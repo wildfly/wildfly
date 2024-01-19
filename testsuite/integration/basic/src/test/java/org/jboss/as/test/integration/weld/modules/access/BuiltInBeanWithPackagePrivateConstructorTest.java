@@ -12,6 +12,7 @@ import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -51,8 +52,11 @@ public class BuiltInBeanWithPackagePrivateConstructorTest {
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
-        doSetup();
-        return ShrinkWrap.create(WebArchive.class).addClasses(InjectedBean.class, BuiltInBeanWithPackagePrivateConstructorTest.class)
+        // No actual setup when scanning the deployment prior to test execution.
+        if (!GlowUtil.isGlowScan()) {
+            doSetup();
+        }
+        return ShrinkWrap.create(WebArchive.class).addClasses(InjectedBean.class, BuiltInBeanWithPackagePrivateConstructorTest.class, GlowUtil.class)
                 .addClass(TestModule.class)
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.module-accessibility meta-inf\n"), "MANIFEST.MF");

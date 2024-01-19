@@ -260,11 +260,18 @@ not be exposed to manage the realm. However other services that depend
 on the realm will still be able to perform a type check and cast to gain
 access to the modification API.
 
+|<<distributed-security-realm, distributed-realm>> |A security realm definition for authentication and authorization identities distributed between multiple security realms.
+
+|<<failover-security-realm, failover-realm>> |A realm definition that is an aggregation of two realms, one for default behaviour and
+second for cases when first realm is unavailable.
+
 |<<filesystem-security-realm, filesystem-realm>> |A simple security realm definition backed by the
 filesystem.
 
 |identity-realm |A security realm definition where identities are
 represented in the management model.
+
+|<<jaas-security-realm, jaas-realm>> |A security realm definition that uses JAAS configuration file to initialize LoginContext that is used to obtain identities.
 
 |<<jdbc-security-realm, jdbc-realm>> |A security realm definition backed by database using JDBC.
 
@@ -277,13 +284,6 @@ files.
 
 |token-realm |A security realm definition capable of validating and
 extracting identities from security tokens.
-
-|distributed-realm |A security realm definition for authentication and authorization identities distributed between multiple security realms.
-
-|failover-realm |A realm definition that is an aggregation of two realms, one for default behaviour and
-second for cases when first realm is unavailable.
-
-|<<jaas-security-realm, jaas-realm>> |A security realm definition that uses JAAS configuration file to initialize LoginContext that is used to obtain identities.
 |=======================================================================
 
 [[permission-mappers]]

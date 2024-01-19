@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.OperationContext;
@@ -17,6 +16,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;

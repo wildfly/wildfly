@@ -12,7 +12,7 @@ import org.jboss.jca.core.spi.workmanager.Address;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#startWork(Address, DistributableWork)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#startWork(Address, DistributableWork).
  * @author Paul Ferraro
  */
 public class StartWorkCommand implements Command<Long, CommandDispatcherTransport> {

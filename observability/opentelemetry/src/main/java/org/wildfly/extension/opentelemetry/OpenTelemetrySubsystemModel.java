@@ -9,9 +9,10 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemModel;
 
 public enum OpenTelemetrySubsystemModel implements SubsystemModel {
-    VERSION_1_0_0(1, 0, 0);
+    VERSION_1_0_0(1, 0, 0),
+    VERSION_1_1_0(1, 1, 0);
 
-    public static final OpenTelemetrySubsystemModel CURRENT = VERSION_1_0_0;
+    public static final OpenTelemetrySubsystemModel CURRENT = VERSION_1_1_0;
 
     private final ModelVersion version;
 

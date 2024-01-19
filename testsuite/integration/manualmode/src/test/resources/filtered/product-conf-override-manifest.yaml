@@ -1,0 +1,10 @@
+---
+schemaVersion: "1.0.0"
+name: "Manifest for testing overriding org.wildfly:wildfly-ee-feature-pack-product-conf artifact"
+id: "org.wildfly:wildfly-ee-feature-pack-product-conf"
+description: "Manifest for testing overriding the org.wildfly:wildfly-ee-feature-pack-product-conf artifact\
+  \ via a channel to control product name and version data."
+streams:
+  - groupId: "${project.groupId}"
+    artifactId: "wildfly-ee-feature-pack-product-conf"
+    version: "100000.0.1.Final-SNAPSHOT"

@@ -21,7 +21,7 @@
 #    steps:
 #      - uses: actions/checkout@v4
 #      - name: Set up JDK
-#        uses: actions/setup-java@v3
+#        uses: actions/setup-java@v4
 #        with:
 #          java-version: '11'
 #          distribution: 'temurin'
@@ -35,7 +35,7 @@
 #        run:  |
 #          cd ~
 #          find ./.m2/repository -type d -name "*SNAPSHOT" -print0 | xargs -0 tar -czf ~/my-dependency-maven-repository.tar.gz  
-#      - uses: actions/upload-artifact@v3
+#      - uses: actions/upload-artifact@v4
 #        with:
 #          name: my-dependency-maven-repository
 #          path: ~/my-dependency-maven-repository.tar.gz
@@ -98,7 +98,7 @@ jobs:
         with:
           repository: wildfly/wildfly
       - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
@@ -134,13 +134,13 @@ jobs:
           } >> "$GITHUB_ENV"
         shell: bash
       - name: Upload Test Reports on Failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
           path: ${{ env.SUREFIRE_REPORTS }}
       - name: Upload Server Logs on Failure
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}

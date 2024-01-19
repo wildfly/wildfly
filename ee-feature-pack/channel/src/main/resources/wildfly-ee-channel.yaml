@@ -1,0 +1,12 @@
+---
+schemaVersion: "2.0.0"
+repositories:
+  - id: "central"
+    url: "https://repo1.maven.org/maven2/"
+  - id: "jboss-public"
+    url: "https://repository.jboss.org/nexus/content/groups/public/"
+manifest:
+  maven:
+    groupId: ${project.groupId}
+    artifactId: ${project.artifactId}
+    version: ${project.version}

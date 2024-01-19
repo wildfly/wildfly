@@ -354,7 +354,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
                 @Override
                 public Integer getMaxActiveSessions() {
-                    return maxActiveSessions;
+                    // Value must be positive
+                    return (maxActiveSessions != null) && (maxActiveSessions > 0) ? maxActiveSessions : null;
                 }
 
                 @Override

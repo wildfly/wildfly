@@ -5,10 +5,10 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanManagerConfiguration;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**

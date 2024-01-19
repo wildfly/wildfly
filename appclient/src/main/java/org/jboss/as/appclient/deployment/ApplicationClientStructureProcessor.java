@@ -82,7 +82,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
     private static Closeable mount(VirtualFile moduleFile, boolean explode) throws DeploymentUnitProcessingException {
         try {
             return explode ? VFS.mountZipExpanded(moduleFile, moduleFile, TempFileProviderService.provider())
-                    : VFS.mountZip(moduleFile, moduleFile, TempFileProviderService.provider());
+                    : VFS.mountZip(moduleFile.getPhysicalFile(), moduleFile, TempFileProviderService.provider());
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }

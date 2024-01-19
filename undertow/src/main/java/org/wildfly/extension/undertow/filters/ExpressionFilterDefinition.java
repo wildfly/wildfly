@@ -10,6 +10,7 @@ import java.util.List;
 
 import io.undertow.Handlers;
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.builder.PredicatedHandlersParser;
 
@@ -54,7 +55,7 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         String expression = EXPRESSION.resolveModelAttribute(context, model).asString();
         String moduleName = MODULE.resolveModelAttribute(context, model).asStringOrNull();
         ClassLoader loader = ExpressionFilterDefinition.class.getClassLoader();
@@ -71,6 +72,11 @@ public class ExpressionFilterDefinition extends SimpleFilterDefinition {
         List<PredicatedHandler> handlers = PredicatedHandlersParser.parse(expression, loader);
         UndertowLogger.ROOT_LOGGER.debugf("Creating http handler %s from module %s", expression, moduleName);
 
-        return next -> Handlers.predicates(handlers, next);
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler next) {
+                return Handlers.predicates(handlers, next);
+            }
+        });
     }
 }

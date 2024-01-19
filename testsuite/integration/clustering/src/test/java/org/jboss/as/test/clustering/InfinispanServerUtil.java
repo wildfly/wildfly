@@ -18,6 +18,7 @@ import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
+import org.jboss.as.test.shared.GlowUtil;
 import org.junit.rules.TestRule;
 
 /**
@@ -36,12 +37,16 @@ public class InfinispanServerUtil {
         } catch (URISyntaxException ignore) {
         }
 
-        INFINISPAN_SERVER_RULE = InfinispanServerRuleBuilder
-                .config(absoluteConfigurationFile)
-                .property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME)
-                .property("infinispan.client.rest.auth_username", "testsuite-driver-user")
+        InfinispanServerRuleBuilder builder = InfinispanServerRuleBuilder
+                .config(absoluteConfigurationFile);
+        // When WildFly Glow is instantiating the deployment outside of the test excution, INFINISPAN_SERVER_HOME is null
+        if (!GlowUtil.isGlowScan()) {
+            builder.property(TestSystemPropertyNames.INFINISPAN_TEST_SERVER_DIR, INFINISPAN_SERVER_HOME);
+        }
+        INFINISPAN_SERVER_RULE = builder.property("infinispan.client.rest.auth_username", "testsuite-driver-user")
                 .property("infinispan.client.rest.auth_password", "testsuite-driver-password")
-                .numServers(1)
+                // When WildFly Glow is instantiating the deployment, we don't want to start any server.
+                .numServers(GlowUtil.isGlowScan() ? 0 : 1)
                 .runMode(ServerRunMode.FORKED)
                 .build();
     }

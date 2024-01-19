@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>31.0.0.Beta1-SNAPSHOT</version>
+        <version>31.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -60,7 +60,7 @@
 
             <dependency>
                 <groupId>org.hibernate.search</groupId>
-                <artifactId>hibernate-search-mapper-orm-coordination-outbox-polling-orm6</artifactId>
+                <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
@@ -69,6 +69,40 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- Import the MVC runtime deps -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-subsystem</artifactId>
+                <version>${preview.version.org.wildfly.mvc.krazo}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>org.wildfly.deployment</groupId>
                 <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
@@ -90,6 +124,12 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
+                <version>${ee.maven.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

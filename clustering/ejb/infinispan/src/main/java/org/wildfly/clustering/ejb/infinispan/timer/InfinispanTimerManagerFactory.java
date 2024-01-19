@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
@@ -25,7 +26,6 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValue;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueMarshaller;
 import org.wildfly.clustering.marshalling.spi.Marshaller;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**

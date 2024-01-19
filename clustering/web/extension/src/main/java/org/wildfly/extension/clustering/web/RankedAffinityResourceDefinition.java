@@ -10,12 +10,12 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.service.UnaryRequirement;

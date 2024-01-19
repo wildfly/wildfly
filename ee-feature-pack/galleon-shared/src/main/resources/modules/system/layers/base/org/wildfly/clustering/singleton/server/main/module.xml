@@ -16,8 +16,8 @@
     </resources>
 
     <dependencies>
-        <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.logging"/>
@@ -35,7 +35,6 @@
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.infinispan" services="import"/>
         <module name="org.wildfly.clustering.server.service"/>
-        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.clustering.singleton.service"/>

@@ -6,11 +6,11 @@
 package org.wildfly.clustering.ejb.infinispan.timer;
 
 import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerManagerFactoryConfiguration;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 
 /**

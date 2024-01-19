@@ -15,6 +15,7 @@ import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -72,7 +73,10 @@ public class ExportedModuleTestCase {
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
-        doSetup();
+        // No actual setup when scanning the deployment prior to test execution.
+        if (!GlowUtil.isGlowScan()) {
+            doSetup();
+        }
         return ShrinkWrap.create(WebArchive.class)
                 .addClass(ExportedModuleTestCase.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")

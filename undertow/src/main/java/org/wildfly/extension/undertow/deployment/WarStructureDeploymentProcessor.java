@@ -198,7 +198,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                     if(overlay != null) {
                         overlay.remountAsZip(false);
                     } else if (archive.isFile()) {
-                        closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                        closable = VFS.mountZip(archive.getPhysicalFile(), archive, TempFileProviderService.provider());
                     } else {
                         closable = null;
                     }

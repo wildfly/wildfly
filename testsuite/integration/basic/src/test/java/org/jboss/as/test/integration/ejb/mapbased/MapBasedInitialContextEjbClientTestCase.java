@@ -29,7 +29,8 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class MapBasedInitialContextEjbClientTestCase {
 
-    private static final String ARCHIVE_NAME = "map-based-client-1";
+    private static final String BASE_NAME = "map-based-client-1";
+    private static final String ARCHIVE_NAME = BASE_NAME + ".jar";
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -48,10 +49,10 @@ public class MapBasedInitialContextEjbClientTestCase {
     public void testScopedEJBClientContexts() throws Exception {
         InitialContext ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 8080));
         try {
-            String lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
+            String lookupName = "ejb:/" + BASE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
             StatelessIface beanStateless = (StatelessIface) ctx.lookup(lookupName);
             Assert.assertEquals("Unexpected EJB client context used for invoking stateless bean", CustomCallbackHandler.USER_NAME, beanStateless.getCallerPrincipalName());
-            lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulIface.class.getCanonicalName() + "?stateful";
+            lookupName = "ejb:/" + BASE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulIface.class.getCanonicalName() + "?stateful";
             StatefulIface beanStateful = (StatefulIface) ctx.lookup(lookupName);
             Assert.assertEquals("Unexpected EJB client context used for invoking stateful bean", CustomCallbackHandler.USER_NAME, beanStateful.getCallerPrincipalName());
             ctx.close();

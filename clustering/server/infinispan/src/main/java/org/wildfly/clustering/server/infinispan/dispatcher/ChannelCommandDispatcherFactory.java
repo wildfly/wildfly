@@ -183,6 +183,11 @@ public class ChannelCommandDispatcherFactory implements AutoCloseableCommandDisp
     }
 
     @Override
+    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
+        return this.createCommandDispatcher(id, context, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+    }
+
+    @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C commandContext, ClassLoader loader) {
         ByteBufferMarshaller dispatcherMarshaller = this.marshallerFactory.apply(loader);
         MarshalledValueFactory<ByteBufferMarshaller> factory = new ByteBufferMarshalledValueFactory(dispatcherMarshaller);

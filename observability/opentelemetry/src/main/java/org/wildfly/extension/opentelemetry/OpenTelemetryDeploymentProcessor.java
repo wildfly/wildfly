@@ -51,6 +51,7 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
                 OTEL_LOGGER.debug("The deployment does not have Jakarta Contexts and Dependency Injection enabled. Skipping OpenTelemetry integration.");
                 return;
             }
+
             Map<String, String> config = new HashMap<>(serverConfig.properties());
             config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
 

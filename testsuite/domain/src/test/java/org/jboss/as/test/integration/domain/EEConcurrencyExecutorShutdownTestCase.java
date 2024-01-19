@@ -107,7 +107,10 @@ public class EEConcurrencyExecutorShutdownTestCase {
     @AfterClass
     public static void tearDownDomain() {
         try {
-            testSupport.stop();
+            if (testSupport != null) {
+                testSupport.close();
+                testSupport = null;
+            }
             domainPrimaryLifecycleUtil = null;
         } finally {
             cleanFile(tmpDir);

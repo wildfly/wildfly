@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Invoker;
 import org.wildfly.clustering.ee.Scheduler;
 import org.wildfly.clustering.ee.cache.retry.RetryingInvoker;
 import org.wildfly.clustering.ee.infinispan.logging.Logger;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.ExceptionSupplier;
 
 /**

@@ -76,7 +76,7 @@
                 <xsl:element name="source">
                     <xsl:call-template name="substring-after-last">
                         <xsl:with-param name="string" select="$fileName"/>
-                        <xsl:with-param name="delimiter" select="$fileSeparator"/>
+                        <xsl:with-param name="delimiter" select="'/'"/>
                     </xsl:call-template>
                 </xsl:element>
             </xsl:copy>

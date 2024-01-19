@@ -34,7 +34,6 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -93,12 +92,13 @@ public class EjbJarRuntimeResourceTestBase {
     @ContainerResource
     private ManagementClient managementClient;
 
-    public static Archive<?> getEJBJar() {
+    public static JavaArchive getEJBJar() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
-        jar.addPackage(EjbJarRuntimeResourcesTestCase.class.getPackage());
+        jar.addClasses(AbstractManagedBean.class, BusinessInterface.class, ManagedSingletonBean.class,
+                ManagedStatefulBean.class, ManagedStatefulBean2.class, ManagedStatelessBean.class,
+                NoTimerSingletonBean.class, NoTimerStatelessBean.class, WaitTimeSingletonBean.class);
         jar.addClass(TimeoutUtil.class);
         jar.addAsManifestResource(EjbJarRuntimeResourcesTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addAsManifestResource(EjbJarRuntimeResourcesTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
     }
 
@@ -106,16 +106,6 @@ public class EjbJarRuntimeResourceTestBase {
 
     protected EjbJarRuntimeResourceTestBase(final PathAddress baseAddress) {
         this.baseAddress = baseAddress;
-    }
-
-    @Test
-    public void testMDB() throws Exception {
-        testComponent(MESSAGE_DRIVEN, ManagedMDB.class.getSimpleName(), true);
-    }
-
-    @Test
-    public void testNoTimerMDB() throws Exception {
-        testComponent(MESSAGE_DRIVEN, NoTimerMDB.class.getSimpleName(), false);
     }
 
     @Test
@@ -151,7 +141,7 @@ public class EjbJarRuntimeResourceTestBase {
     }
     */
 
-    private void testComponent(String type, String name, boolean expectTimer) throws Exception {
+    protected void testComponent(String type, String name, boolean expectTimer) throws Exception {
 
         ModelNode address = getComponentAddress(type, name).toModelNode();
         address.protect();

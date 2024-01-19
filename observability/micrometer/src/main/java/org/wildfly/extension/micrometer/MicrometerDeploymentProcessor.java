@@ -11,6 +11,7 @@ import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROME
 import java.util.List;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
@@ -21,7 +22,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
-import io.micrometer.core.instrument.MeterRegistry;
 
 class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
     private final boolean exposeAnySubsystem;

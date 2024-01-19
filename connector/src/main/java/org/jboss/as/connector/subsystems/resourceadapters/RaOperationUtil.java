@@ -486,7 +486,7 @@ public class RaOperationUtil {
                 }
                 final List<VirtualFile> jarChildren = deploymentRoot.getChildren(new SuffixMatchFilter(".jar", VisitorAttributes.LEAVES_ONLY));
                 for (VirtualFile subJarRoot: jarChildren) {
-                    Closeable subClosable = VFS.mountZip(subJarRoot, subJarRoot, TempFileProviderService.provider());
+                    Closeable subClosable = VFS.mountZip(subJarRoot.getPhysicalFile(), subJarRoot, TempFileProviderService.provider());
                     ResourceRoot subResRoot = new ResourceRoot(subJarRoot, MountHandle.create(subClosable));
                     ResourceRootIndexer.indexResourceRoot(subResRoot);
                     Index subIndex = subResRoot.getAttachment(Attachments.ANNOTATION_INDEX);
@@ -502,7 +502,7 @@ public class RaOperationUtil {
                 final ServiceController<?> deployerService = context.getServiceRegistry(true).getService(deployerServiceName);
 
                 if (deployerService == null) {
-                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support, false);
+                    ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(name), null, null, support);
                     builder.requires(raServiceName);
                     newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
                 }

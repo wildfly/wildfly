@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<datasources xmlns="http://www.jboss.org/ironjacamar/schema">
+    <datasource jndi-name="java:jboss/datasources/Deployed2DS" enabled="true" use-java-context="true"
+                pool-name="H2DS">
+        <connection-url>jdbc:h2:mem:test2;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
+        <driver>h2</driver>
+        <pool></pool>
+        <security>
+            <user-name>sa</user-name>
+            <password>sa</password>
+        </security>
+    </datasource>
+</datasources>

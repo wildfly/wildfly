@@ -16,11 +16,11 @@ import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Manager;
 import org.wildfly.clustering.ee.cache.ConcurrentManager;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -65,7 +65,7 @@ public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCom
     @Override
     public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
         CommandDispatcherFactory dispatcherFactory = this.factory;
-        Function<Runnable, CommandDispatcher<?>> factory = new Function<Runnable, CommandDispatcher<?>>() {
+        Function<Runnable, CommandDispatcher<?>> factory = new Function<>() {
             @Override
             public CommandDispatcher<C> apply(Runnable closeTask) {
                 CommandDispatcher<C> dispatcher = dispatcherFactory.createCommandDispatcher(id, context, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));

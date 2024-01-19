@@ -6,9 +6,9 @@
 package org.wildfly.extension.undertow;
 
 import org.jboss.as.clustering.controller.AdminOnlyOperationStepHandlerTransformer;
-import org.jboss.as.clustering.controller.BinaryCapabilityNameResolver;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 /**

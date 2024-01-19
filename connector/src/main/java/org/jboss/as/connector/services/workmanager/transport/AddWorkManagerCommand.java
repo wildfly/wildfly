@@ -10,7 +10,7 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#addWorkManager(java.util.Map, org.jgroups.Address)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#addWorkManager(java.util.Map, org.jgroups.Address).
  * @author Paul Ferraro
  */
 public class AddWorkManagerCommand implements Command<Void, CommandDispatcherTransport> {

@@ -283,14 +283,6 @@ would run:
 ./integration-tests.sh -DallTests -Djboss.dist=/opt/eap6
 ----
 
-For further information on building EAP and running the testsuite
-against it, see the official EAP documentation (link to be added)
-https://docspace.corp.redhat.com/docs/DOC-86875[.]
-
-How-to for EAP QA can be found
-https://docspace.corp.redhat.com/docs/DOC-89200[here] (Red Hat internal
-only).
-
 [[running-with-a-debugger]]
 === Running with a debugger
 

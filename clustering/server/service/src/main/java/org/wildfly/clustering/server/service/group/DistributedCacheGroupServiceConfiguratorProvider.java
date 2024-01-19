@@ -5,11 +5,10 @@
 
 package org.wildfly.clustering.server.service.group;
 
-import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
 
 /**
- * Provides service configurators for a distributed cache {@link Group}.
+ * Provides service configurators for a distributed cache {@link org.wildfly.clustering.group.Group}.
  * @author Paul Ferraro
  */
 public interface DistributedCacheGroupServiceConfiguratorProvider extends DistributedCacheServiceConfiguratorProvider {

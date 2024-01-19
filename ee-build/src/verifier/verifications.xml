@@ -12,12 +12,11 @@
        'ee.dist.product.slot' property
     3) jboss-modules.jar must exist
     4) standalone/configuration/standalone.xml must exist
-    5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF exists
-    6) JBoss-Product-Release-Name key in manifest.mf above has value equal to the value of the
-       'ee.dist.product.release.name' property
-    7) JBoss-Product-Release-Version key in manifest.mf has value starting with the value of the
-       'verifier.product.release.version' property
-    8) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    5) modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml exists
+    6) the module.xml above contains to 'org.wildfly:wildfly-ee-feature-pack-product-conf'
+    7) Various modules provided by the feature pack that provides the complete MicroProfile feature set are not present
+    8) the .galleon dir exists
+    9) no .galleon/history dir exists
 -->
   <files>
     <file>
@@ -29,12 +28,12 @@
       <contains>slot=${ee.dist.product.slot}</contains>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/dir/META-INF/MANIFEST.MF</location>
-      <contains>JBoss-Product-Release-Name: ${ee.dist.product.release.name}</contains>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/product/${ee.dist.product.slot}/module.xml</location>
+      <contains>org.wildfly:wildfly-ee-feature-pack-product-conf</contains>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>
@@ -90,6 +89,14 @@
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/security/elytron-jwt/main</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/.galleon/history</location>
       <exists>false</exists>
     </file>
   </files>

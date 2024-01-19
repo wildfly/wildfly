@@ -34,6 +34,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.TimeoutUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -83,7 +84,12 @@ public class PooledEJBLifecycleTestCase {
         archive.addClass(TimeoutUtil.class);
         archive.addClass(PointlesMathInterface.class);
         archive.addClass(Constants.class);
-        archive.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read")), "jboss-permissions.xml");
+        archive.addClass(AssumeTestGroupUtil.class);
+        archive.addAsManifestResource(
+                createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
+                        new PropertyPermission("ts.preview", "read"),
+                        new PropertyPermission("ts.bootable.preview", "read")),
+                "jboss-permissions.xml");
         return archive;
     }
 
@@ -126,6 +132,8 @@ public class PooledEJBLifecycleTestCase {
     @SuppressWarnings("static-access")
     @Test
     public void testMDB() throws Exception {
+        // WildFly Preview doesn't configure a messaging broker
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
         boolean requiresUndeploy = false;
         try {
             // do the deployment of the MDB
@@ -238,6 +246,8 @@ public class PooledEJBLifecycleTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            // WildFly Preview doesn't configure a messaging broker
+            AssumeTestGroupUtil.assumeNotWildFlyPreview();
             // create the JMS queue
             final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
             jmsOperations.createJmsQueue(QUEUE_NAME, Constants.QUEUE_JNDI_NAME);
@@ -245,6 +255,8 @@ public class PooledEJBLifecycleTestCase {
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+            // WildFly Preview doesn't configure a messaging broker
+            AssumeTestGroupUtil.assumeNotWildFlyPreview();
             // destroy the JMS queue
             final JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient);
             jmsOperations.removeJmsQueue(QUEUE_NAME);

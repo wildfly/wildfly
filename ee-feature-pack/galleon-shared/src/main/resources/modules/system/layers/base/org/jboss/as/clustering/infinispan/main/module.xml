@@ -32,7 +32,7 @@
         <module name="io.netty.netty-transport-native-kqueue"/>
         <module name="io.reactivex.rxjava3.rxjava"/>
         <module name="net.jcip"/>
-        <module name="org.infinispan" services="import"/>
+        <module name="org.infinispan.core" services="import"/>
         <module name="org.infinispan.persistence.jdbc"/>
         <module name="org.infinispan.persistence.remote"/>
         <module name="org.infinispan.client.hotrod"/>
@@ -67,7 +67,6 @@
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>
-        <module name="org.wildfly.clustering.server.spi"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.common"/>

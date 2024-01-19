@@ -7,6 +7,7 @@ package org.wildfly.extension.opentelemetry;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
@@ -67,4 +68,7 @@ interface OpenTelemetryExtensionLogger extends BasicLogger {
 
     @Message(id = 12, value = "Invalid ratio. Must be between 0.0 and 1.0 inclusive")
     IllegalArgumentException invalidRatio();
+
+    @Message(id = 13, value = "The 'jaeger' exporter is no longer supported. Please update the system to use " + EXPORTER_OTLP + ".")
+    String jaegerIsNoLongerSupported();
 }
