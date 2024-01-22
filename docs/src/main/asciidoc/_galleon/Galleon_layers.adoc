@@ -469,6 +469,7 @@ link:#gal.web-server[web-server] +
 link:#gal.bean-validation[bean-validation] +
 link:#gal.cdi[cdi] +
 link:#gal.jaxrs-core[jaxrs-core] +
+link:#gal.jsf[jsf] (optional) +
 
 |[[gal.naming]]naming
 |Support for JNDI.
