@@ -481,6 +481,7 @@ link:#gal.base-server[base-server] +
 |
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
+link:#gal.microprofile-telemetry[microprofile-telemetry] (optional) +
 
 |[[gal.opentelemetry]]opentelemetry
 |Support for OpenTelemetry
