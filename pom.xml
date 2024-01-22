@@ -335,7 +335,7 @@
         <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
         <version.org.apache.openjpa>2.4.2</version.org.apache.openjpa>
         <version.org.apache.qpid.proton>0.33.2</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>2.2.3</version.org.apache.santuario>
+        <version.org.apache.santuario>2.2.6</version.org.apache.santuario>
         <version.org.apache.thrift>0.14.1</version.org.apache.thrift>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
         <version.org.apache.ws.security>2.3.3</version.org.apache.ws.security>
