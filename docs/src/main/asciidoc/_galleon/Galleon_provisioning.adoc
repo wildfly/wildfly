@@ -21,22 +21,49 @@ Releases of the Galleon command line tool are available on the Galleon link:http
 
 Download and unzip the release zip and add the `bin` dir to your system path. Use `galleon.sh` or `galleon.bat` to launch the tool.
 
+[[WildFly_Galleon_feature-packs]]
 == WildFly Galleon feature-packs
 
-WildFly provides a Galleon feature-pack maven artifact (a zipped file that contains 
-everything needed to dynamically provision a server). 
-This feature-pack, as well as the feature-packs on which its depends,
-are deployed in public maven repositories. 
+The WildFly project provides a number of Galleon https://docs.wildfly.org/galleon/#_feature_packs[feature-pack] maven artifacts. A feature-pack is a zipped file that contains everything needed to dynamically provision a server.
+These feature-packs are deployed in public maven repositories.
 
-When Galleon is used to install WildFly, WildFly feature-packs are retrieved and 
+When Galleon is used to install WildFly, the desired WildFly feature-packs are retrieved and
 their content is assembled to create an installation.
+
+The main WildFly project provides the following feature-packs for use with xref:WildFly_and_WildFly_Preview.adoc[standard WildFly]:
+
+[cols="~,~,~",options="header"]
+|=======================================================================
+|Maven GroupId:ArifactId |Short name|Use
+
+|*org.wildfly:wildfly-galleon-pack*|*wildfly*|The feature-pack most WildFly users use. Provisions a standard WildFly installation. Internally depends on the `wildfly-ee` feature-pack, but also provides integration of technologies like MicroProfile, Micrometer and Open Telemetry that are evolving rapidly, possibly in incompatible ways.
+|*org.wildfly:wildfly-ee-galleon-pack*|*wildfly-ee*|Provisions the most long-term stable functionality of standard WildFly. Does not include MicroProfile or other rapidly evolving technologies that may frequently introduce incompatible changes.
+|*org.wildfly.cloud:wildfly-cloud-galleon-pack*|-|Provisions a set of additional features allowing you to better configure a standard WildFly server to work on the cloud. It brings to the server some configuration aspects that are generally expected in a cloud context. See the feature-pack https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/doc/index.md[documentation] for more details.
+|*org.wildfly:wildfly-datasources-galleon-pack*|-|Easy integration of popular JDBC drivers and associated datasources into a standard WildFly installation. See the feature-pack project https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/blob/main/README.md[README] for more details.
+|*org.wildfly:wildfly-myfaces-feature-pack*|-|Provides MyFaces 4.x support for standard WildFly. See the feature-pack project https://github.com/wildfly-extras/wildfly-myfaces-feature-pack/blob/master/README.md[README] for more details.
+|=======================================================================
+
+The main WildFly project also provides feature-packs for use with xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview]:
+
+[cols="~,~,~",options="header"]
+|=======================================================================
+|Maven GroupId:ArifactId |Short name|Use
+
+|*org.wildfly:wildfly-preview-feature-pack*|*wildfly-preview*|Provides a technology preview of things that may be coming in standard WildFly. Likely to have significant incompatible changes with every release.
+|*org.wildfly.cloud:wildfly-preview-cloud-galleon-pack*|-|WildFly Preview analogue to *wildfly-cloud-galleon-pack*.
+|*org.wildfly:wildfly-datasources-preview-galleon-pack*|-|WildFly Preview analogue to *wildfly-datasources-galleon-pack*.
+|=======================================================================
+
+There are also a number of feature-packs of varying levels of stability available from the https://github.com/orgs/wildfly-extras/repositories[*wildfly-extras* GitHub organization].
+
+In most cases, people working with WildFly are using the `wildfly` feature-pack, so that is the one used in most of the examples in this document.
 
 == Installing WildFly using Galleon
 
 The Galleon maven plugin or Galleon CLI are used to install WildFly. The latest CLI and documentation can be downloaded 
 from the Galleon releases https://github.com/wildfly/galleon/releases[page].
 
-To install the latest final version of WildFly into the directory _my-wildfly-server_ call:
+To install the latest final version of standard WildFly into the directory _my-wildfly-server_ call:
 
 [source,options="nowrap"]
 ----
@@ -90,7 +117,7 @@ The _configuration name_ is the XML configuration file name (e.g.: _standalone.x
 [[wildfly_galleon_layers]]
 == WildFly Galleon layers
 
-WildFly Galleon feature-packs expose some link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers]. 
+WildFly Galleon feature-packs expose link:++https://docs.wildfly.org/galleon/#_layers++[Galleon layers].
 A layer identifies one or more server capabilities that can be installed on its own or
 in combination with other layers. For example, if your application (e.g. a microservice)
 is only making use of _Jakarta-RESTful-Web-Services_, MicroProfile Config and _CDI_ server capabilities, you can choose to only install
@@ -123,7 +150,7 @@ galleon.sh install wildfly:current --dir=my-wildfly-server --layers=cdi,jaxrs,-b
 [NOTE]
 ====
 
-* Tools (jboss-cli, add-user, ...) are not always installed when installing WildFly using layers.
+Tools (jboss-cli, add-user, ...) are not always installed when installing WildFly using layers.
 In some cases, depending on what layers you use, only server launcher scripts are installed into the _bin_ directory.
 To include these tools include the _core-tools_ layer.
 ====
