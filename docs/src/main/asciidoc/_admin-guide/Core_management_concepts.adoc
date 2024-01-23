@@ -19,6 +19,8 @@ ifdef::basebackend-html[toc::[]]
 
 include::Operating_modes.adoc[]
 
+include::Feature_stability_levels.adoc[]
+
 include::General_configuration_concepts.adoc[]
 
 include::Management_resources.adoc[]

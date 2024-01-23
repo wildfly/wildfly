@@ -212,6 +212,9 @@ versioned history is maintained of the file.
 |--git-branch |master |The Git branch or tag to be used. If a `tag` name is used then the future commits will go into the detached state.
 
 |--git-auth |- |A URL to an Elytron configuration file containing the credentials to be used for connecting to the Git repository.
+
+|--stability |community (__standard__ WildFly)
+preview (WildFly _Preview_)|Minimum xref:Feature_stability_levels.adoc#Feature_stability_levels[feature stability level] that the server should support. Features with a lower stability level will not be exposed by the management API.
 |=======================================================================
 
 [[managed-domain-1]]
@@ -245,6 +248,10 @@ relative to jboss.domain.config.dir. This is similar to --host-config
 but if this alternative is specified the host controller will not
 overwrite the file when the management model is changed. However, a full
 versioned history is maintained of the file.
+
+|--stability |community (__standard__ WildFly)
+preview (WildFly _Preview_)|Minimum xref:Feature_stability_levels.adoc#Feature_stability_levels[feature stability level] that the server should support. Features with a lower stability level will not be exposed by the management API. All
+Host Controllers in the domain must have the same `stability` setting.
 |=======================================================================
 
 The following parameters take no value and are only usable on secondary host
