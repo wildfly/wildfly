@@ -542,7 +542,7 @@
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.core>23.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.6.Final</version.org.wildfly.http-client>
-        <preview.version.org.wildfly.mvc.krazo>0.8.0.Final</preview.version.org.wildfly.mvc.krazo>
+        <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.3.Final</version.org.wildfly.transaction.client>

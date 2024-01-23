@@ -469,6 +469,7 @@ link:#gal.web-server[web-server] +
 link:#gal.bean-validation[bean-validation] +
 link:#gal.cdi[cdi] +
 link:#gal.jaxrs-core[jaxrs-core] +
+link:#gal.jsf[jsf] (optional) +
 
 |[[gal.naming]]naming
 |Support for JNDI.
@@ -480,6 +481,7 @@ link:#gal.base-server[base-server] +
 |
 link:#gal.microprofile-config[microprofile-config] (optional) +
 link:#gal.microprofile-health[microprofile-health] (optional) +
+link:#gal.microprofile-telemetry[microprofile-telemetry] (optional) +
 
 |[[gal.opentelemetry]]opentelemetry
 |Support for OpenTelemetry
