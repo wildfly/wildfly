@@ -393,11 +393,6 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implement
     }
 
     @Override
-    public K keyAsObjectIfNeeded(Object key) {
-        return this.cache.keyAsObjectIfNeeded(key);
-    }
-
-    @Override
     public byte[] keyToBytes(Object object) {
         return this.cache.keyToBytes(object);
     }
