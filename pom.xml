@@ -296,16 +296,16 @@
         <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.4</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.11</version.org.jacoco>
-        <version.org.jboss.galleon>5.2.2.Final</version.org.jboss.galleon>
-        <version.org.wildfly.glow>1.0.0.Beta5</version.org.wildfly.glow>
+        <version.org.jboss.galleon>6.0.0.Beta2</version.org.jboss.galleon>
+        <version.org.wildfly.glow>1.0.0.Beta7</version.org.wildfly.glow>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>6.5.4.Final</version.org.wildfly.galleon-plugins>
-        <version.org.wildfly.jar.plugin>10.0.0.Final</version.org.wildfly.jar.plugin>
+        <version.org.wildfly.galleon-plugins>7.0.0.Beta2</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.0.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>4.2.1.Final</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>5.0.0.Beta3</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
