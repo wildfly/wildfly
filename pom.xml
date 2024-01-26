@@ -148,7 +148,22 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.6.0</maven.min.version>
-        <!-- Require Java 11 -->
+
+        <!--
+             To build, we require a Java 17 or higher compiler, but with a Java 11
+             source and binary level. This means we can compile against Java 17
+             dependencies, but our own code and binaries only require Java 11.
+             We allow builds with a compiler version higher than 17 to allow
+             testing on later SE releases.
+
+             But, if the 'deploy' phase is executed, we restrict to only SE 17.
+             WildFly releases are built with SE 17.
+
+             See this pom's maven-enforcer-plugin configuration for the rules
+             that restrict the SE version used when building and deploying.
+         -->
+        <required.java.build.version>[17,)</required.java.build.version>
+        <required.java.deploy.version>[17,18)</required.java.deploy.version>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.release>11</maven.compiler.release>
@@ -1102,7 +1117,21 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>require-java11</id>
+                            <id>require-java17-build</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <phase>compile</phase>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <version>${required.java.build.version}</version>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>require-java17-deploy</id>
                             <goals>
                                 <goal>enforce</goal>
                             </goals>
@@ -1110,7 +1139,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[11,12)</version>
+                                        <version>${required.java.deploy.version}</version>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
@@ -1706,6 +1735,11 @@
                     <name>noCompile</name>
                 </property>
             </activation>
+            <properties>
+                <!-- Allow SE 11 and later. We don't actually compile, so we just need
+                     to be able to execute tests using supported-at-runtime SE versions -->
+                <required.java.build.version>[11,)</required.java.build.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
