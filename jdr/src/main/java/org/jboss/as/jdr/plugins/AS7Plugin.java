@@ -45,8 +45,10 @@ public class AS7Plugin implements JdrPlugin {
             new CollectFiles("*.properties").sanitizer(passwordSanitizer),
             new CollectFiles("*.xml").sanitizer(xmlSanitizer),
             new CollectFiles("*/modules/system/*/.overlays/.overlays"),
-            new CollectFiles("*/.installation/*.conf"),
+            new CollectFiles("*/.installation/*.conf"), // TODO there are no such files
             new CollectFiles("*/.installation/*.txt"),
+            new CollectFiles("*/.installation/*.yaml"),
+            new CollectFiles("*/.installation/*.yml"), // currently none without the 'a', but having this makes collection more future proof
             new SystemProperties().sanitizer(systemPropertiesPasswordSanitizer),
             new DeploymentDependencies(),
             new LocalModuleDependencies()
