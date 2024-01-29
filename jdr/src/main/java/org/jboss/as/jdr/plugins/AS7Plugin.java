@@ -47,6 +47,8 @@ public class AS7Plugin implements JdrPlugin {
             new CollectFiles("*/modules/system/*/.overlays/.overlays"),
             new CollectFiles("*/.installation/*.conf"),
             new CollectFiles("*/.installation/*.txt"),
+            new CollectFiles("*/.installation/*.yaml"),
+            new CollectFiles("*/.installation/*.xml"),
             new SystemProperties().sanitizer(systemPropertiesPasswordSanitizer),
             new DeploymentDependencies(),
             new LocalModuleDependencies()
