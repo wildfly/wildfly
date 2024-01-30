@@ -129,7 +129,7 @@ First open the host.xml in the primary host for editing:
 vi domain/configuration/host.xml
 ----
 
-The default settings for interface in this file is like:
+The default settings for interfaces in this file are:
 
 [source,xml,options="nowrap"]
 ----
