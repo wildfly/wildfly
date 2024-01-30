@@ -140,9 +140,6 @@ The default settings for interfaces in this file are:
     <interface name="public">
        <inet-address value="${jboss.bind.address:127.0.0.1}"/>
     </interface>
-    <interface name="unsecured">
-       <inet-address value="127.0.0.1" />
-    </interface>
 </interfaces>
 ----
 
@@ -160,9 +157,6 @@ config to:
     </interface>
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.7}"/>
-    </interface>
-    <interface name="unsecured">
-       <inet-address value="10.211.55.7" />
     </interface>
 </interfaces>
 ----
@@ -233,9 +227,6 @@ management ports to public address:
     </interface>
     <interface name="public">
        <inet-address value="${jboss.bind.address:10.211.55.2}"/>
-    </interface>
-    <interface name="unsecured">
-       <inet-address value="10.211.55.2" />
     </interface>
 </interfaces>
 ----
