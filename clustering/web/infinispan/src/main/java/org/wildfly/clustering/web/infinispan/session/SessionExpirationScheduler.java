@@ -53,7 +53,6 @@ public class SessionExpirationScheduler<MV> extends AbstractExpirationScheduler<
 
         @Override
         public boolean test(String sessionId) {
-            System.out.println(String.format("Expiring web session %s", sessionId));
             InfinispanWebLogger.ROOT_LOGGER.debugf("Expiring web session %s", sessionId);
             try (Batch batch = this.batcher.createBatch()) {
                 try {
