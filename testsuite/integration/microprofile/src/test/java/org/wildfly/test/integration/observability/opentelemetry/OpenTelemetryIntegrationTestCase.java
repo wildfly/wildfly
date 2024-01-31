@@ -5,39 +5,63 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import java.net.URISyntaxException;
+import static org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask.SERVICE_NAME;
 
-import io.opentelemetry.api.common.AttributeKey;
+import java.util.List;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
+import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerTrace;
+import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTask;
+import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
 @RunWith(Arquillian.class)
-@ServerSetup(OpenTelemetrySetupTask.class)
-@Ignore
+@ServerSetup({OpenTelemetrySetupTask.class})
+@RunAsClient
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
+    @ContainerResource
+    ManagementClient managementClient;
+
     @Deployment
-    public static Archive getDeployment() {
+    public static WebArchive getDeployment() {
         return buildBaseArchive(OpenTelemetryIntegrationTestCase.class.getSimpleName());
     }
 
     @Test
-    public void testServiceNameOverride() throws URISyntaxException {
+    @InSequence(1)
+    public void setup() throws Exception {
+        new ServiceNameSetupTask().setup(managementClient, null);
+    }
+
+    @Test
+    @InSequence(2)
+    public void testServiceNameOverride() throws Exception {
         try (Client client = ClientBuilder.newClient()) {
-            client.target(url.toURI())
-                    .request().get();
+            Response response = client.target(url.toURI()).request().get();
+            Assert.assertEquals(200, response.getStatus());
         }
 
-        AttributeKey<String> key = AttributeKey.stringKey("service.name");
-        spanExporter.getFinishedSpanItems(3).forEach(spanData -> {
-            Assert.assertEquals(SERVICE_NAME, spanData.getResource().getAttribute(key));
-        });
+        List<JaegerTrace> traces = OpenTelemetryCollectorContainer.getInstance()
+                .getTraces(SERVICE_NAME);
+        Assert.assertFalse("Traces not found for service", traces.isEmpty());
+    }
+
+    @Test
+    @InSequence(3)
+    public void tearDown() throws Exception {
+        new ServiceNameSetupTask().tearDown(managementClient, null);
     }
 }
