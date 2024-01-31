@@ -70,7 +70,6 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
     public static final WildFlyOpenTelemetryConfigSupplier CONFIG_SUPPLIER = new WildFlyOpenTelemetryConfigSupplier();
     static final RuntimeCapability<WildFlyOpenTelemetryConfigSupplier> OPENTELEMETRY_CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_MODULE + ".config", false, CONFIG_SUPPLIER).build();
-    @Deprecated
     public static final SimpleAttributeDefinition SERVICE_NAME = SimpleAttributeDefinitionBuilder
             .create(OpenTelemetryConfigurationConstants.SERVICE_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
