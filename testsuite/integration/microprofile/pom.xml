@@ -326,6 +326,11 @@
             <artifactId>smallrye-opentelemetry-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Other test dependencies -->
         <dependency>
@@ -356,6 +361,11 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-p-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

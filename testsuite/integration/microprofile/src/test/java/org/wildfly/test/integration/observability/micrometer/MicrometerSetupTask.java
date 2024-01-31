@@ -5,74 +5,61 @@
 package org.wildfly.test.integration.observability.micrometer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
-import org.testcontainers.utility.MountableFile;
-
-import java.io.File;
-import java.io.IOException;
+import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
+import org.wildfly.test.integration.observability.setuptask.AbstractSetupTask;
 
 /**
  * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
  * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
  */
-public class MicrometerSetupTask implements ServerSetupTask {
-    static OpenTelemetryCollectorContainer otelCollector;
+public class MicrometerSetupTask extends AbstractSetupTask {
+    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
 
     private final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
     private boolean extensionAdded = false;
     private boolean subsystemAdded = false;
-    private boolean containerStarted = false;
+    private OpenTelemetryCollectorContainer otelCollector;
 
     @Override
     public void setup(final ManagementClient managementClient, String containerId) throws Exception {
-        try {
-            startOpenTelemetryCollector();
-        } catch (Exception e) {
-            System.err.println("OpenTelemetry Container failed to start.");
-        }
+        executeOp(managementClient, writeAttribute("undertow", STATISTICS_ENABLED, "true"));
 
-        executeOp(managementClient, enableStatistics(true));
-
-        ModelNode outcome = executeRead(managementClient, micrometerExtension);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerExtension))) {
             executeOp(managementClient, Operations.createAddOperation(micrometerExtension));
             extensionAdded = true;
         }
 
-        outcome = executeRead(managementClient, micrometerSubsystem);
-        if (!Operations.isSuccessfulOutcome(outcome)) {
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
             ModelNode addOp = Operations.createAddOperation(micrometerSubsystem);
             addOp.get("endpoint").set("http://localhost:4318/v1/metrics"); // Default endpoint
             executeOp(managementClient, addOp);
             subsystemAdded = true;
         }
 
-        if (containerStarted) {
-            executeOp(managementClient, writeAttribute("micrometer", "endpoint", otelCollector.getOtlpEndpoint()));
+        if (dockerAvailable) {
+            otelCollector = OpenTelemetryCollectorContainer.getInstance();
+            executeOp(managementClient, writeAttribute("micrometer", "endpoint",
+                    otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
+            executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
         }
-        executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, String containerId) throws Exception {
-        if (containerStarted) {
+        if (dockerAvailable) {
             otelCollector.stop();
-            otelCollector = null;
-            containerStarted = false;
         }
 
-        executeOp(managementClient, enableStatistics(false));
+        executeOp(managementClient, clearAttribute("undertow", STATISTICS_ENABLED));
         if (subsystemAdded) {
             executeOp(managementClient, Operations.createRemoveOperation(micrometerSubsystem));
         }
@@ -81,42 +68,5 @@ public class MicrometerSetupTask implements ServerSetupTask {
         }
 
         ServerReload.reloadIfRequired(managementClient);
-    }
-
-    private void startOpenTelemetryCollector() {
-        String otelCollectorConfigFile = getClass().getPackage().getName().replaceAll("\\.", File.separator) +
-                File.separator + "otel-collector-config.yaml";
-        otelCollector = new OpenTelemetryCollectorContainer()
-                .withCopyFileToContainer(MountableFile.forClasspathResource(otelCollectorConfigFile),
-                        OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
-                .withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
-        ;
-
-        otelCollector.start();
-        containerStarted = true;
-    }
-
-    private ModelNode enableStatistics(boolean enabled) {
-        return writeAttribute("undertow", STATISTICS_ENABLED, String.valueOf(enabled));
-    }
-
-    private ModelNode writeAttribute(String subsystem, String name, String value) {
-        return Operations.createWriteAttributeOperation(Operations.createAddress(SUBSYSTEM, subsystem), name, value);
-    }
-
-    private void executeOp(final ManagementClient client, final ModelNode op) throws IOException {
-        executeOp(client.getControllerClient(), Operation.Factory.create(op));
-    }
-
-    private void executeOp(final ModelControllerClient client, final Operation op) throws IOException {
-        final ModelNode result = client.execute(op);
-        if (!Operations.isSuccessfulOutcome(result)) {
-            throw new RuntimeException("Failed to execute operation: " + Operations.getFailureDescription(result)
-                    .asString());
-        }
-    }
-
-    private ModelNode executeRead(final ManagementClient managementClient, ModelNode address) throws IOException {
-        return managementClient.getControllerClient().execute(Operations.createReadResourceOperation(address));
     }
 }
