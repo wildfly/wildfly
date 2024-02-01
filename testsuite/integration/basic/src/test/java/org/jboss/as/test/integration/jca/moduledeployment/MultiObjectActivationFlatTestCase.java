@@ -17,6 +17,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Locale;
+
 /**
  * AS7-5768 -Support for RA module deployment
  *
@@ -59,7 +61,7 @@ public class MultiObjectActivationFlatTestCase extends
 
         @Override
         protected String getSlot() {
-            return MultiObjectActivationFlatTestCase.class.getSimpleName().toLowerCase();
+            return MultiObjectActivationFlatTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 

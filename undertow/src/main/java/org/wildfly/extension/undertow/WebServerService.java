@@ -6,6 +6,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,7 +37,7 @@ final class WebServerService implements CommonWebServer, Service<WebServerServic
         Map<String, UndertowListener> listeners = getListenerMap();
         UndertowListener listener = null;
         for (Map.Entry<String, UndertowListener> entry : listeners.entrySet()) {
-            if (protocol.toLowerCase().contains(entry.getKey())) {
+            if (protocol.toLowerCase(Locale.ENGLISH).contains(entry.getKey())) {
                 listener = entry.getValue();
             }
         }

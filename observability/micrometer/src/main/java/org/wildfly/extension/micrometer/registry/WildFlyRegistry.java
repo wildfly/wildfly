@@ -5,6 +5,7 @@
 package org.wildfly.extension.micrometer.registry;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,7 @@ public interface WildFlyRegistry {
 
     private String getBaseUnit(MetricMetadata metadata) {
         String measurementUnit = metadata.getBaseMetricUnit();
-        return "none".equalsIgnoreCase(measurementUnit) ? null : measurementUnit.toLowerCase();
+        return "none".equalsIgnoreCase(measurementUnit) ? null : measurementUnit.toLowerCase(Locale.ENGLISH);
     }
 
     private double getMetricValue(WildFlyMetric metric, MeasurementUnit unit) {

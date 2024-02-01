@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -98,11 +99,11 @@ public class JPADeploymentSubsystemOperationsTestCase {
     public void testAddRemoveResource() throws IOException {
         ModelNode removeModelNode = Util.createRemoveOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
         ModelNode removeResult = controllerClient.execute(removeModelNode);
-        checkForFailure(removeResult, REMOVE.toUpperCase(), "WFLYCTL0031");
+        checkForFailure(removeResult, REMOVE.toUpperCase(Locale.ENGLISH), "WFLYCTL0031");
 
         ModelNode addModelNode = Util.createAddOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH));
         ModelNode addResult = controllerClient.execute(addModelNode);
-        checkForFailure(addResult, ADD.toUpperCase(), "WFLYCTL0031");
+        checkForFailure(addResult, ADD.toUpperCase(Locale.ENGLISH), "WFLYCTL0031");
     }
 
     /**
@@ -115,7 +116,7 @@ public class JPADeploymentSubsystemOperationsTestCase {
     public void testWriteAttribute() throws IOException {
         ModelNode writeAttributeModelNode = Util.getWriteAttributeOperation(DEPLOYMENT_PATH.append(SUBSYSTEM_PATH), DEFAULT_DATASOURCE, "Foobar");
         ModelNode writeAttributeResult = controllerClient.execute(writeAttributeModelNode);
-        checkForFailure(writeAttributeResult, WRITE_ATTRIBUTE_OPERATION.toUpperCase(), "WFLYCTL0048");
+        checkForFailure(writeAttributeResult, WRITE_ATTRIBUTE_OPERATION.toUpperCase(Locale.ENGLISH), "WFLYCTL0048");
     }
 
     /**
