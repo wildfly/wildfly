@@ -20,16 +20,18 @@ public class BatchSubsystemExtension implements Extension {
     /**
      * Version numbers for batch subsystem management interface.
      */
+    static final ModelVersion VERSION_4_0_0 = ModelVersion.create(4, 0, 0);
     static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
     static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
     static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    static final ModelVersion CURRENT_MODEL_VERSION = VERSION_3_0_0;
+    static final ModelVersion CURRENT_MODEL_VERSION = VERSION_4_0_0;
 
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, Namespace.BATCH_1_0.getUriString(), BatchSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, Namespace.BATCH_2_0.getUriString(), BatchSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, Namespace.BATCH_3_0.getUriString(), BatchSubsystemParser_3_0::new);
+        context.setSubsystemXmlMapping(BatchSubsystemDefinition.NAME, Namespace.BATCH_4_0.getUriString(), BatchSubsystemParser_4_0::new);
     }
 
     @Override

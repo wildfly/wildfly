@@ -4,10 +4,10 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:batch-jberet:4.0">
-    <default-job-repository name="in-memory"/>
+    <default-job-repository name="jpa"/>
     <default-thread-pool name="batch"/>
-    <job-repository name="in-memory">
-        <in-memory/>
+    <job-repository name="jpa">
+        <jpa data-source="ExampleDS"/>
     </job-repository>
 
     <thread-pool name="batch">
@@ -17,5 +17,4 @@
     </thread-pool>
 
     <thread-factory name="batch" group-name="batch" priority="5" thread-name-pattern="%i-%g"/>
-    <thread-factory name="batch-new" group-name="batch" priority="5" thread-name-pattern="%i-%g"/>
 </subsystem>
