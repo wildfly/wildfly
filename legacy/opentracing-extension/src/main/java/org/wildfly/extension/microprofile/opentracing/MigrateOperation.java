@@ -167,14 +167,16 @@ public class MigrateOperation implements OperationStepHandler {
 
     private void addOpenTelemetrySubsystem(final OperationContext context,
                                            final Map<PathAddress, ModelNode> migrateOperations) {
-        Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
+        PathAddress parentAddress = context.getCurrentAddress().getParent();
+        Resource root = context.readResourceFromRoot(parentAddress, false);
         if (root.hasChild(OPENTELEMETRY_SUBSYSTEM_ELEMENT)) {
             return; // subsystem is already added, nothing to do
+
         }
 
-        PathAddress address =  pathAddress(OPENTELEMETRY_SUBSYSTEM_ELEMENT);
-        final ModelNode operation = Util.createAddOperation(address);
-        migrateOperations.put(address, operation);
+        PathAddress subsystemAddress = parentAddress.append(OPENTELEMETRY_SUBSYSTEM_ELEMENT);
+        final ModelNode operation = Util.createAddOperation(subsystemAddress);
+        migrateOperations.put(subsystemAddress, operation);
     }
 
     private void removeOpentracingSubsystem(final PathAddress address,
