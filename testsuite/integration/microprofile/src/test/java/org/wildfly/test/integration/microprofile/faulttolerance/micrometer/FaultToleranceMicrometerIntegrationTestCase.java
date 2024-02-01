@@ -6,6 +6,8 @@ package org.wildfly.test.integration.microprofile.faulttolerance.micrometer;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -14,6 +16,8 @@ import jakarta.inject.Inject;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.search.Search;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -22,20 +26,20 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
+import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
 import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask;
 
 /**
- * Test case to verify SmallRye Fault Tolerance integration with Micrometer. This invokes a REST application which always
- * times out and Eclipse MP FT @Timeout kicks in, then we verify the counter in the injected Micrometer's MeterRegistry.
+ * Test case to verify basic SmallRye Fault Tolerance integration with Micrometer. The test first invokes a REST
+ * application which always times out, and Eclipse MP FT @Timeout kicks in with a fallback. Then we verify several of
+ * the counters in the injected Micrometer's MeterRegistry.
  *
  * @author Radoslav Husar
  */
@@ -43,12 +47,7 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
 @ServerSetup(MicrometerSetupTask.class)
 public class FaultToleranceMicrometerIntegrationTestCase {
 
-    @BeforeClass
-    public static void beforeClass() {
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-18080 Regular failures of FaultToleranceMicrometerIntegrationTestCase");
-    }
-
-    // Let's use a slightly higher number of invocations, so we can at times differentiate between stale read and or other problems
+    // Let's use a slightly higher number of invocations, so we can at times differentiate between stale read and other problems
     private static final int INVOCATION_COUNT = 10;
 
     @Deployment
@@ -68,7 +67,7 @@ public class FaultToleranceMicrometerIntegrationTestCase {
 
     @Test
     @InSequence(1)
-    public void testClearInjectedRegistry() {
+    public void clearInjectedRegistry() {
         Assert.assertNotNull(meterRegistry);
 
         meterRegistry.clear();
@@ -85,12 +84,24 @@ public class FaultToleranceMicrometerIntegrationTestCase {
 
     @Test
     @InSequence(3)
-    public void checkCounter() {
-        Counter counterInvocations = meterRegistry.get("ft.invocations.total").counter();
-        Assert.assertEquals(0, counterInvocations.count(), 0);
+    public void checkCounters() {
+        // Use specific tags to lookup proper counters - review definitions in io.smallrye.faulttolerance.metrics.MicrometerProvider for reference
+        Iterable<Tag> timeoutServiceMethodTag = Collections.singleton(Tag.of("method", TimeoutService.class.getName().concat(".alwaysTimeout")));
 
-        Counter counterTimeouts = meterRegistry.get("ft.timeout.calls.total").counter();
-        Assert.assertEquals(INVOCATION_COUNT, counterTimeouts.count(), 0);
+        // First verify total invocation count for the method + value returned + fallback applied
+        Collection<Counter> counters = Search.in(meterRegistry).name("ft.invocations.total").tags(timeoutServiceMethodTag).tags("result", "valueReturned", "fallback", "applied").counters();
+        Assert.assertEquals(1, counters.size());
+        Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
+
+        // Verify number of timeouts being equal to number of invocations
+        counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "true").counters();
+        Assert.assertEquals(1, counters.size());
+        Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
+
+        // Verify number of successful invocations to be none, since it always fails
+        counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "false").counters();
+        Assert.assertEquals(1, counters.size());
+        Assert.assertEquals(0, counters.iterator().next().count(), 0);
     }
 
 }
