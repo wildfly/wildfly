@@ -50,7 +50,7 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
         CapabilityServiceBuilder<?> sb = capabilityServiceTarget.addCapability(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY);
         final Consumer<StrictMaxPoolConfig> configConsumer = sb.provides(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY);
         Supplier<Integer> maxThreadsSupplier = null;
-        if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
+        if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             maxThreadsSupplier = sb.requiresCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class);
         }
         final StrictMaxPoolConfigService poolConfigService = new StrictMaxPoolConfigService(configConsumer, maxThreadsSupplier, poolName, maxPoolSize, derive, timeout, TimeUnit.valueOf(unit));
