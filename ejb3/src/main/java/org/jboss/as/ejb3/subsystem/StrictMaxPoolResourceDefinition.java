@@ -82,7 +82,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { MAX_POOL_SIZE, DERIVE_SIZE, INSTANCE_ACQUISITION_TIMEOUT, INSTANCE_ACQUISITION_TIMEOUT_UNIT };
-    private static final StrictMaxPoolAdd ADD_HANDLER = new StrictMaxPoolAdd(ATTRIBUTES);
+    private static final StrictMaxPoolAdd ADD_HANDLER = new StrictMaxPoolAdd();
 
     private static final String NONE_VALUE = "none";
     private static final String FROM_WORKER_POOLS_VALUE = "from-worker-pools";

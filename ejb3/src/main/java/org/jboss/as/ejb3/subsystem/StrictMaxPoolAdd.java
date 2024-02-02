@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
@@ -32,10 +31,6 @@ import org.jboss.dmr.ModelNode;
 public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
     static final String IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME = "org.wildfly.io.max-threads";
-
-    StrictMaxPoolAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
