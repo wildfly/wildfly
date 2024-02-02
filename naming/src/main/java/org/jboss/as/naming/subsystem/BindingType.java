@@ -6,6 +6,7 @@
 package org.jboss.as.naming.subsystem;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.dmr.ModelNode;
@@ -34,8 +35,8 @@ public enum BindingType {
 
     public static BindingType forName(String localName) {
         if (localName == null) return null;
-        final BindingType directoryGrouping = MAP.get(localName.toLowerCase());
-        return directoryGrouping == null ? BindingType.valueOf(localName.toUpperCase()) : directoryGrouping;
+        final BindingType directoryGrouping = MAP.get(localName.toLowerCase(Locale.ENGLISH));
+        return directoryGrouping == null ? BindingType.valueOf(localName.toUpperCase(Locale.ENGLISH)) : directoryGrouping;
     }
 
     private final String localName;

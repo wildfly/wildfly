@@ -5,6 +5,7 @@
 
 package org.wildfly.test.integration.microprofile.reactive.messaging.sanity;
 
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -34,7 +35,7 @@ public class Bean {
     @Incoming("source")
     @Outgoing("processed-a")
     public String toUpperCase(String payload) {
-        return payload.toUpperCase();
+        return payload.toUpperCase(Locale.ENGLISH);
     }
 
     @Incoming("processed-a")

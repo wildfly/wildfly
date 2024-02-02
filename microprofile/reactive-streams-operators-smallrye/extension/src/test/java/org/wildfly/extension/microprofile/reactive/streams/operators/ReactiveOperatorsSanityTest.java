@@ -6,6 +6,7 @@
 package org.wildfly.extension.microprofile.reactive.streams.operators;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -20,7 +21,7 @@ public class ReactiveOperatorsSanityTest {
     @Test
     public void testReactiveApi() throws Exception {
         CompletionStage<List<String>> cs = ReactiveStreams.of("this", "is", "only", "a", "test")
-                .map(String::toUpperCase) // Transform the words
+                .map(s -> s.toUpperCase(Locale.ENGLISH)) // Transform the words
                 .filter(s -> s.length() > 3) // Filter items
                 .collect(Collectors.toList())
                 .run();

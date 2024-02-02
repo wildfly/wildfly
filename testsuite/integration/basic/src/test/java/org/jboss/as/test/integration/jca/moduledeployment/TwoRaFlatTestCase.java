@@ -20,6 +20,8 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Locale;
+
 /**
  * AS7-5768 -Support for RA module deployment
  *
@@ -68,7 +70,7 @@ public class TwoRaFlatTestCase extends AbstractModuleDeploymentTestCase {
 
         @Override
         protected String getSlot() {
-            return TwoRaFlatTestCase.class.getSimpleName().toLowerCase();
+            return TwoRaFlatTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -93,7 +94,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<ByteBufferPool> byteBufferPool = webSocketInfo != null ? builder.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, webSocketInfo.getBufferPool()) : null;
         final Supplier<XnioWorker> xnioWorker = webSocketInfo != null ? builder.requiresCapability(Capabilities.REF_IO_WORKER, XnioWorker.class, webSocketInfo.getWorker()) : null;
 
-        ServletStackTraces traces = ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_'));
+        ServletStackTraces traces = ServletStackTraces.valueOf(stackTracesString.toUpperCase(Locale.ENGLISH).replace('-', '_'));
         ServletContainer container = ServletContainer.Factory.newInstance();
         ServletContainerService service = new ServletContainerService() {
             @Override

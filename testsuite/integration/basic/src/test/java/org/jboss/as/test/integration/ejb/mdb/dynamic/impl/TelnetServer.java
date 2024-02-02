@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -218,7 +219,7 @@ public class TelnetServer implements TtyCodes {
 
                 final Class<?>[] types = method.getParameterTypes();
                 for (Class<?> type : types) {
-                    sb.append("<").append(type.getSimpleName().toLowerCase()).append(">").append(" ");
+                    sb.append("<").append(type.getSimpleName().toLowerCase(Locale.ENGLISH)).append(">").append(" ");
                 }
 
                 if (types.length == 0) {
