@@ -31,7 +31,7 @@ public class JSFResourceDefinition extends PersistentResourceDefinition {
     public static final String DEFAULT_SLOT_ATTR_NAME = "default-jsf-impl-slot";
     public static final String DISALLOW_DOCTYPE_DECL_ATTR_NAME = "disallow-doctype-decl";
     public static final String DEFAULT_SLOT = "main";
-    private static final RuntimeCapability<Void> FACES_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.faces")
+    static final RuntimeCapability<Void> FACES_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.faces")
             .addRequirements(Capabilities.WELD_CAPABILITY_NAME)
             .build();
 
