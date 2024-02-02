@@ -32,10 +32,6 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
 
     static final ManagedScheduledExecutorServiceAdd INSTANCE = new ManagedScheduledExecutorServiceAdd();
 
-    private ManagedScheduledExecutorServiceAdd() {
-        super(ManagedScheduledExecutorServiceResourceDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
@@ -69,7 +65,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
             threadPriority = null;
         }
 
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
+        final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Consumer<ManagedScheduledExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
         String contextService = null;

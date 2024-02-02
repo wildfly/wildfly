@@ -36,10 +36,6 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
     static final ManagedExecutorServiceAdd INSTANCE = new ManagedExecutorServiceAdd();
 
-    private ManagedExecutorServiceAdd() {
-        super(ManagedExecutorServiceResourceDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
         // Add a new step to validate the core-threads, max-threads and queue-length values
@@ -100,7 +96,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
             threadPriority = null;
         }
 
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedExecutorServiceResourceDefinition.CAPABILITY);
+        final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedExecutorServiceResourceDefinition.CAPABILITY);
         final Consumer<ManagedExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedExecutorServiceResourceDefinition.CAPABILITY);
         final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
         String contextService = null;
