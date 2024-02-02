@@ -31,7 +31,7 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
         new ProvidedGroupServiceConfigurator<>(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.LOCAL).configure(context).build(target).install();
 
         // If JGroups subsystem is not available, install default group aliases to local group.
-        if (!context.hasOptionalCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName(), null, null)) {
+        if (!context.getCapabilityServiceSupport().hasCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName())) {
             new ProvidedIdentityGroupServiceConfigurator(null, LocalGroupServiceConfiguratorProvider.LOCAL).configure(context).build(target).install();
         }
     }
@@ -41,7 +41,7 @@ public class InfinispanSubsystemServiceHandler implements ResourceServiceHandler
 
         new ProvidedGroupServiceConfigurator<>(LocalGroupServiceConfiguratorProvider.class, LocalGroupServiceConfiguratorProvider.LOCAL).remove(context);
 
-        if (!context.hasOptionalCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName(), null, null)) {
+        if (!context.getCapabilityServiceSupport().hasCapability(JGroupsRequirement.CHANNEL.getDefaultRequirement().getName())) {
             new ProvidedIdentityGroupServiceConfigurator(null, LocalGroupServiceConfiguratorProvider.LOCAL).remove(context);
         }
     }

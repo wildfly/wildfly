@@ -119,7 +119,7 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
             this.clusters.put(clusterName, bindingDependencies);
         }
 
-        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
+        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION.getDefinition().getDynamicName(context.getCurrentAddress()), null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
 
         this.properties.clear();
         for (Property property : Attribute.PROPERTIES.resolveModelAttribute(context, model).asPropertyListOrEmpty()) {
