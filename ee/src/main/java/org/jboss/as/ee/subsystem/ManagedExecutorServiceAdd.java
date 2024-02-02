@@ -114,7 +114,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
         }
         final Supplier<ManagedThreadFactoryImpl> threadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
         Supplier<RequestController> requestControllerSupplier = null;
-        if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, null, null)) {
+        if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
         final ManagedExecutorServiceService service = new ManagedExecutorServiceService(consumer, contextServiceSupplier, threadFactorySupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
