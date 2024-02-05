@@ -15,6 +15,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REFS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STABILITY;
 
 import java.io.IOException;
 
@@ -24,6 +25,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -78,6 +80,10 @@ public class ReadFeatureDescriptionTestCase extends ContainerResourceMgmtTestBas
                             highestDepth = Math.max(highestDepth, treeDepth);
                         }
                     }
+                    break;
+                case STABILITY:
+                    // Verify validity of stability
+                    Stability.fromString(prop.getValue().asString());
                     break;
                 case ANNOTATION:
                 case PARAMS:
