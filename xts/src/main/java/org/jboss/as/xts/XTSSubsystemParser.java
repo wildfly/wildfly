@@ -14,6 +14,7 @@ import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -175,7 +176,7 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             final String value = reader.getAttributeValue(index);
             switch (attribute) {
                 case ENABLED:
-                    if (value == null || (!value.toLowerCase().equals("true") && !value.toLowerCase().equals("false"))) {
+                    if (value == null || (!value.toLowerCase(Locale.ENGLISH).equals("true") && !value.toLowerCase(Locale.ENGLISH).equals("false"))) {
                         throw ParseUtils.invalidAttributeValue(reader, index);
                     }
                     DEFAULT_CONTEXT_PROPAGATION.parseAndSetParameter(value, subsystem, reader);

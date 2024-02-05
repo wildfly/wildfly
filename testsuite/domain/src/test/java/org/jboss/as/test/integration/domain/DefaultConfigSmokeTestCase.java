@@ -16,6 +16,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Locale;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -102,7 +103,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
                 for (Property property : resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).asPropertyList()) {
                     ModelNode attrdesc = property.getValue();
                     if (!attrdesc.hasDefined(ModelDescriptionConstants.STORAGE) ||
-                            AttributeAccess.Storage.CONFIGURATION.name().toLowerCase().equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase())) {
+                            AttributeAccess.Storage.CONFIGURATION.name().toLowerCase(Locale.ENGLISH).equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase(Locale.ENGLISH))) {
                         StringBuilder sb = new StringBuilder(paString);
                         sb.append(",").append(property.getName());
                         sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());

@@ -6,6 +6,7 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.ported;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,7 +34,7 @@ public class SimpleBean {
     @Incoming("source")
     @Outgoing("processed-a")
     public String toUpperCase(String payload) {
-        return payload.toUpperCase();
+        return payload.toUpperCase(Locale.ENGLISH);
     }
 
     @Incoming("processed-a")

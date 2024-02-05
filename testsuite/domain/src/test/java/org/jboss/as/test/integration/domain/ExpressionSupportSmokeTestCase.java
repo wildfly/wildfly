@@ -40,6 +40,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -590,7 +591,7 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 if (valueType == ModelType.STRING) {
                     checkForUnconvertedExpression(address, attrName, item);
                 }
-                String valueString = timeunit ? fieldValue.asString().toLowerCase() : fieldValue.asString();
+                String valueString = timeunit ? fieldValue.asString().toLowerCase(Locale.ENGLISH) : fieldValue.asString();
                 String expression = "${exp.test:" + valueString + "}";
                 updatedItem.get(fieldName).set(expression);
                 itemToExpect.get(fieldName).set(new ModelNode().set(new ValueExpression(expression)));

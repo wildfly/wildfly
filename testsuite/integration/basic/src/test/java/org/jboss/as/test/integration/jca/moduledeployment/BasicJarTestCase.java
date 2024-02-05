@@ -9,6 +9,8 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.junit.runner.RunWith;
 
+import java.util.Locale;
+
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -43,7 +45,7 @@ public class BasicJarTestCase extends BasicFlatTestCase {
 
         @Override
         protected String getSlot() {
-            return BasicJarTestCase.class.getSimpleName().toLowerCase();
+            return BasicJarTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 }
