@@ -199,7 +199,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ValidatingWriteHandler(ATTRIBUTES);
+        OperationStepHandler writeHandler = new ValidatingWriteHandler();
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
@@ -232,9 +232,6 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     }
 
     static class ValidatingWriteHandler extends ReloadRequiredWriteAttributeHandler {
-        public ValidatingWriteHandler(final AttributeDefinition... definitions) {
-            super(definitions);
-        }
 
         @Override
         protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
