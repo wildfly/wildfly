@@ -23,7 +23,7 @@
         <module name="jakarta.validation.api"/>
         <module name="jakarta.xml.bind.api"/>
 
-        <module name="org.hibernate"/>
+        <module name="org.hibernate" services="import"/>
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.infinispan.core" services="import"/>
         <module name="org.infinispan.protostream"/>
