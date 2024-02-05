@@ -71,7 +71,7 @@ public class ChannelServiceConfigurator extends CapabilityServiceNameProvider im
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
         this.cluster = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.name));
         this.factory = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.name));
-        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), null, null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
+        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), ChannelResourceDefinition.Capability.FORK_CHANNEL_FACTORY.getDefinition().getDynamicName(context.getCurrentAddress()), null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
         return this;
     }
 
