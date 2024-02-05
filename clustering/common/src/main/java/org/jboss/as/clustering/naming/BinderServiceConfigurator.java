@@ -47,7 +47,7 @@ public class BinderServiceConfigurator extends SimpleServiceNameProvider impleme
 
     @Override
     public ServiceConfigurator configure(OperationContext context) {
-        this.enabled = context.hasOptionalCapability(CommonRequirement.NAMING_STORE.getName(), null, null);
+        this.enabled = context.getCapabilityServiceSupport().hasCapability(CommonRequirement.NAMING_STORE.getName());
         return this;
     }
 
