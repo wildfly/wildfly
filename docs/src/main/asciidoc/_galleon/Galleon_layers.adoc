@@ -68,7 +68,6 @@ link:#gal.cdi[cdi] (optional) +
 link:#gal.datasources-web-server[datasources-web-server] +
 link:#gal.jaxrs[jaxrs] (optional) +
 link:#gal.jpa[jpa] (optional) +
-link:#gal.microprofile-rest-client[microprofile-rest-client] (optional) +
 
 |[[gal.cloud-server]]cloud-server
 | An extension of _jaxrs-server_ to address common cloud requirements.
