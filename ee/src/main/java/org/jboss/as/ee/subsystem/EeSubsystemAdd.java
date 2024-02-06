@@ -5,7 +5,6 @@
 
 package org.jboss.as.ee.subsystem;
 
-import static org.jboss.as.ee.subsystem.EeCapabilities.LEGACY_JACC_CAPABILITY;
 import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JACC_CAPABILITY;
 import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
@@ -144,7 +143,6 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         CapabilityServiceSupport capabilitySupport = context.getCapabilityServiceSupport();
         final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
-        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(LEGACY_JACC_CAPABILITY);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -208,8 +206,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new ManagedScheduledExecutorDefinitionDescriptorProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new ManagedThreadFactoryDefinitionDescriptorProcessor());
 
-                if (legacyJacc || elytronJacc) {
-                    processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY, new JaccEarDeploymentProcessor(elytronJacc ? ELYTRON_JACC_CAPABILITY : LEGACY_JACC_CAPABILITY));
+                if (elytronJacc) {
+                    processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JACC_POLICY, new JaccEarDeploymentProcessor(ELYTRON_JACC_CAPABILITY));
                 }
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVE_MESSAGE_DESTINATIONS, new MessageDestinationResolutionProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_COMPONENT_AGGREGATION, new ComponentAggregationProcessor());
