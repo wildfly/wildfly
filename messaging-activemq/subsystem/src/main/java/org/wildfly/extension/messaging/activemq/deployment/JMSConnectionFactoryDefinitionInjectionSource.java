@@ -174,7 +174,6 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
             cfdis.setMaxPoolSize(maxPoolSize);
             cfdis.setMinPoolSize(minPoolSize);
             cfdis.setTransactionSupportLevel(transactional ? TransactionSupport.TransactionSupportLevel.XATransaction : TransactionSupport.TransactionSupportLevel.NoTransaction);
-            cfdis.setLegacySecurityAvailable(legacySecurityAvailable);
             // transfer all the generic properties + the additional properties specific to the JMSConnectionFactoryDefinition
             for (Map.Entry<String, String> property : properties.entrySet()) {
                 cfdis.addProperty(property.getKey(), property.getValue());

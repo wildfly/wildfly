@@ -73,15 +73,13 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
 
     private final ContextNames.BindInfo bindInfo;
 
-    private boolean legacySecurityAvailable;
-
     /**
      * create an instance *
      */
     public DirectConnectionFactoryActivatorService(String jndiName, String interfaceName, String resourceAdapter,
                                                    String raId, int maxPoolSize, int minPoolSize,
                                                    Map<String, String> properties, TransactionSupport.TransactionSupportLevel transactionSupport,
-                                                   Module module, ContextNames.BindInfo bindInfo, boolean legacySecurityAvailable) {
+                                                   Module module, ContextNames.BindInfo bindInfo) {
         this.jndiName = jndiName;
         this.interfaceName = interfaceName;
         this.resourceAdapter = resourceAdapter;
@@ -94,7 +92,6 @@ public class DirectConnectionFactoryActivatorService implements org.jboss.msc.se
         this.transactionSupport = transactionSupport;
         this.module = module;
         this.bindInfo = bindInfo;
-        this.legacySecurityAvailable = legacySecurityAvailable;
     }
 
     @Override
