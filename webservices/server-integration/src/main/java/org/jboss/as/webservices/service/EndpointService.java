@@ -69,7 +69,6 @@ import org.wildfly.security.auth.server.SecurityDomain;
 public final class EndpointService implements Service {
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE = ServiceName.JBOSS.append("security", "security-domain");
-    private static final String LEGACY_SECURITY_CAPABILITY = "org.wildfly.legacy-security";
     private static final String ELYTRON_SECURITY_CAPABILITY = "org.wildfly.security.elytron";
     private static final String WEB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.undertow.application-security-domain";
     private static final String EJB_APPLICATION_SECURITY_DOMAIN = "org.wildfly.ejb3.application-security-domain";
@@ -330,9 +329,6 @@ public final class EndpointService implements Service {
 
     private static boolean isLegacySecurityDomain(DeploymentUnit unit, Endpoint endpoint, String domainName) {
         CapabilityServiceSupport capabilitySupport = unit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-        if (capabilitySupport != null && !capabilitySupport.hasCapability(LEGACY_SECURITY_CAPABILITY)) {
-            return false;
-        }
         final ServiceName serviceName = SECURITY_DOMAIN_SERVICE.append(domainName);
         return currentServiceContainer().getService(serviceName) != null;
     }
