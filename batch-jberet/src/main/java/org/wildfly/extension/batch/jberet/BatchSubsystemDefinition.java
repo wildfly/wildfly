@@ -18,7 +18,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -125,11 +124,10 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, SECURITY_DOMAIN);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_JOB_REPOSITORY, null, writeHandler);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, writeHandler);
-        resourceRegistration.registerReadWriteAttribute(SECURITY_DOMAIN, null, writeHandler);
-        resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>(RESTART_JOBS_ON_RESUME) {
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_JOB_REPOSITORY, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_THREAD_POOL, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(SECURITY_DOMAIN, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(RESTART_JOBS_ON_RESUME, null, new AbstractWriteAttributeHandler<Boolean>() {
             @Override
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
                 setValue(context, resolvedValue);
@@ -157,7 +155,6 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         private final ContextClassLoaderJobOperatorContextSelector selector;
 
         private BatchSubsystemAdd() {
-            super(DEFAULT_JOB_REPOSITORY, DEFAULT_THREAD_POOL, RESTART_JOBS_ON_RESUME, SECURITY_DOMAIN);
             selector = new ContextClassLoaderJobOperatorContextSelector(() -> JobOperatorContext.create(DefaultBatchEnvironment.INSTANCE));
             JobOperatorContext.setJobOperatorContextSelector(selector);
         }
@@ -166,7 +163,7 @@ public class BatchSubsystemDefinition extends SimpleResourceDefinition {
         protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model)
                 throws OperationFailedException {
             // Check if the request-controller subsystem exists
-            final boolean rcPresent = context.hasOptionalCapability(BatchServiceNames.REQUEST_CONTROLLER_CAPABILITY, null, null);
+            final boolean rcPresent = context.hasOptionalCapability(BatchServiceNames.REQUEST_CONTROLLER_CAPABILITY, Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName(), null);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 public void execute(DeploymentProcessorTarget processorTarget) {
