@@ -36,7 +36,7 @@ qualified `group:artifact:version` reference to the feature pack is required.
 ====
 
 From this point, applications can be configured as described in the
-https://www.keycloak.org/docs/latest/securing_apps/index.html#_jboss_adapter[Keycloak documentation].
+https://www.keycloak.org/docs/latest/securing_apps/index.html#_saml_jboss_adapter[Keycloak documentation].
 
 [[bootable-jar]]
 == Bootable JAR
