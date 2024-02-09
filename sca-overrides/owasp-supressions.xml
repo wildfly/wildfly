@@ -29,7 +29,14 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
       <cpe>cpe:/a:eclipse:glassfish</cpe>
-   </suppress>   
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: jakarta-client-resteasy-3.0.3.Final.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:resteasy</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
