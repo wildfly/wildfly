@@ -74,4 +74,11 @@
       <!-- Disputed by FasterXML that this is a vulnerability https://github.com/FasterXML/jackson-databind/issues/3972 -->
       <cve>CVE-2023-35116</cve>
    </suppress>
+   <suppress until="2025-02-09">
+      <notes><![CDATA[
+      file name: jakarta.security.enterprise-3.0.3.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.glassfish\.soteria/jakarta\.security\.enterprise@.*$</packageUrl>
+      <vulnerabilityName>CVE-2020-1732</vulnerabilityName>
+   </suppress>
 </suppressions>
