@@ -23,6 +23,13 @@
       <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$</packageUrl>
       <cpe>cpe:/a:wildfly:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: expressly-5.0.0.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
+      <cpe>cpe:/a:eclipse:glassfish</cpe>
+   </suppress>   
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
