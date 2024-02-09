@@ -59,4 +59,12 @@
       <!-- Disputed by h2database https://github.com/h2database/h2database/issues/1294 -->
       <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
    </suppress>
+   <suppress until="2025-02-09">
+      <notes><![CDATA[
+      file name: jackson-databind-2.15.3.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+      <!-- Disputed by FasterXML that this is a vulnerability https://github.com/FasterXML/jackson-databind/issues/3972 -->
+      <cve>CVE-2023-35116</cve>
+   </suppress>
 </suppressions>
