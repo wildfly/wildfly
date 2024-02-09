@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+   <!-- CVE Expressions -->
+
+   <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
+
+   <!-- If we specify an until in 12 months time, it will give us an opportunity to check again,
+        also if it no longer triggers after this date we can remove the supression. -->
+   <suppress until="2025-02-09">
+      <notes><![CDATA[
+      file name: apacheds-interceptors-admin-2.0.0.AM26.jar
+      ]]></notes>
+      <!-- The regex was adjusted to match all apacheds artefacts, in most other cases we would use the rule as-proposed. -->
+      <packageUrl regex="true">^pkg:maven/org\.apache\.directory\.server/apacheds\-.*@.*$</packageUrl>
+      <cve>CVE-2010-1151</cve>
+   </suppress>
+</suppressions>
