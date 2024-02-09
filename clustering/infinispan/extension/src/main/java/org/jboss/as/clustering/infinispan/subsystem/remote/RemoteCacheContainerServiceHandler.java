@@ -9,11 +9,12 @@ import static org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheCon
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanBindingFactory;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
@@ -27,6 +28,8 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
  * @author Radoslav Husar
@@ -34,6 +37,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHandler {
 
     private final ServiceValueRegistry<RemoteCacheContainer> registry;
+    private final Map<PathAddress, Consumer<OperationContext>> removers = new ConcurrentHashMap<>();
 
     RemoteCacheContainerServiceHandler(ResourceServiceConfiguratorFactory configuratorFactory, ServiceValueRegistry<RemoteCacheContainer> registry) {
         super(configuratorFactory);
@@ -52,10 +56,9 @@ public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHan
         Module defaultModule = Module.forClass(RemoteCacheContainer.class);
         new ModulesServiceConfigurator(RemoteCacheContainerComponent.MODULES.getServiceName(address), MODULES, Collections.singletonList(defaultModule)).configure(context, model).build(target).setInitialMode(ServiceController.Mode.PASSIVE).install();
 
+        this.removers.put(address, this.registry.capture(ServiceDependency.on(RemoteCacheContainerResourceDefinition.Capability.CONTAINER.getDefinition().getCapabilityServiceName(address))).install(context));
         ServiceConfigurator containerBuilder = new RemoteCacheContainerServiceConfigurator(address).configure(context, model);
         containerBuilder.build(target).install();
-
-        new ServiceValueCaptorServiceConfigurator<>(this.registry.add(containerBuilder.getServiceName())).build(target).install();
 
         new BinderServiceConfigurator(InfinispanBindingFactory.createRemoteCacheContainerBinding(name), containerBuilder.getServiceName()).build(target).install();
     }
@@ -66,7 +69,6 @@ public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHan
         String name = context.getCurrentAddressValue();
 
         context.removeService(InfinispanBindingFactory.createRemoteCacheContainerBinding(name).getBinderServiceName());
-        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(new RemoteCacheContainerServiceConfigurator(address).getServiceName())).getServiceName());
 
         for (RemoteCacheContainerResourceDefinition.Capability component : EnumSet.allOf(RemoteCacheContainerResourceDefinition.Capability.class)) {
             ServiceName serviceName = component.getServiceName(address);
@@ -74,6 +76,11 @@ public class RemoteCacheContainerServiceHandler extends SimpleResourceServiceHan
         }
 
         context.removeService(RemoteCacheContainerComponent.MODULES.getServiceName(address));
+
+        Consumer<OperationContext> remover = this.removers.remove(address);
+        if (remover != null) {
+            remover.accept(context);
+        }
 
         super.removeServices(context, model);
     }

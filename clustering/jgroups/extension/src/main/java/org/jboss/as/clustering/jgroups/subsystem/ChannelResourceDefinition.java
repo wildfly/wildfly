@@ -15,7 +15,6 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -35,6 +34,7 @@ import org.jgroups.JChannel;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * Definition for /subsystem=jgroups/channel=* resources
@@ -123,7 +123,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
-        ServiceValueExecutorRegistry<JChannel> executors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<JChannel> executors = ServiceValueExecutorRegistry.newInstance();
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addCapabilities(Capability.class)

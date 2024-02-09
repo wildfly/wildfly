@@ -12,8 +12,6 @@ import java.util.function.Function;
 import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
 import org.jboss.as.clustering.controller.OperationFunction;
@@ -31,6 +29,9 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Runtime representation of a mod_cluster context
@@ -123,7 +124,7 @@ public class ModClusterLoadBalancingGroupDefinition extends SimpleResourceDefini
         @Override
         public ModelNode execute(OperationContext context, ModelNode op, Operation<Map.Entry<ModClusterStatus.LoadBalancer, String>> operation) throws OperationFailedException {
             PathAddress serviceAddress = context.getCurrentAddress().getParent().getParent();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
+            FunctionExecutor<ModCluster> executor = this.registry.getExecutor(ServiceDependency.on(new ModClusterServiceNameProvider(serviceAddress).getServiceName()));
             Function<ModCluster, Map.Entry<ModClusterStatus.LoadBalancer, String>> mapper = LOAD_BALANCING_GROUP_FUNCTION_FACTORY.apply(context);
             return (executor != null) ? executor.execute(new OperationFunction<>(context, op, mapper, operation)) : null;
         }

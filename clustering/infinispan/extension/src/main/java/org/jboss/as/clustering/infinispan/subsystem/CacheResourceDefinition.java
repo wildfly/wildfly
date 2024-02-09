@@ -14,7 +14,6 @@ import org.infinispan.Cache;
 import org.jboss.as.clustering.controller.BinaryRequirementCapability;
 import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
@@ -33,6 +32,7 @@ import org.wildfly.clustering.server.service.CacheServiceConfiguratorProvider;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.clustering.singleton.SingletonCacheRequirement;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes only.

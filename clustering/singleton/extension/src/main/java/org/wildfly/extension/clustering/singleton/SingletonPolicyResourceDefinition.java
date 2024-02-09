@@ -12,7 +12,6 @@ import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
@@ -28,6 +27,7 @@ import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonRequirement;
+import org.wildfly.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * Definition of a singleton policy resource.
@@ -113,7 +113,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition<M
                 .addRequiredSingletonChildren(SimpleElectionPolicyResourceDefinition.PATH)
                 .setResourceTransformation(SingletonPolicyResource::new)
                 ;
-        ServiceValueExecutorRegistry<Singleton> executors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<Singleton> executors = ServiceValueExecutorRegistry.newInstance();
         ResourceServiceHandler handler = new SingletonPolicyServiceHandler(executors);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 

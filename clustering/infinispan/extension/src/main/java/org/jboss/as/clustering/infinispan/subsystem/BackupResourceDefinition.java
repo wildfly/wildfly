@@ -8,15 +8,14 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
-import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -26,6 +25,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Definition of a backup site resource.

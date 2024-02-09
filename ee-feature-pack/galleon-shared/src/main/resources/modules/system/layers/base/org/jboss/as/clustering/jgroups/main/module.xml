@@ -41,6 +41,8 @@
         <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
 
         <!-- Ensure galleon provisions the default channel module -->
         <module name="org.wildfly.clustering.server"/>

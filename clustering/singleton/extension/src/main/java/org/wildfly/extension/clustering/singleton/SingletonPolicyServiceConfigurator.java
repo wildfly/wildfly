@@ -13,9 +13,7 @@ import static org.wildfly.extension.clustering.singleton.SingletonPolicyResource
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -39,6 +37,7 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 import org.wildfly.clustering.singleton.service.SingletonCacheRequirement;
+import org.wildfly.service.capture.ServiceValueRegistry;
 
 /**
  * Builds a service that provides a {@link SingletonPolicy}.
@@ -110,7 +109,7 @@ public class SingletonPolicyServiceConfigurator extends CapabilityServiceNamePro
         return this.getServiceName().getSimpleName();
     }
 
-    private class SingletonServiceConfigurator implements ServiceConfigurator, LifecycleListener {
+    private class SingletonServiceConfigurator implements ServiceConfigurator {
 
         private final ServiceConfigurator configurator;
         private final LifecycleListener listener;
@@ -129,15 +128,16 @@ public class SingletonPolicyServiceConfigurator extends CapabilityServiceNamePro
 
         @Override
         public ServiceBuilder<?> build(ServiceTarget target) {
-            new ServiceValueCaptorServiceConfigurator<>(this.registry.add(this.getServiceName().append("singleton"))).build(target).install();
-            return this.configurator.build(target).addListener(this.listener).addListener(this);
-        }
-
-        @Override
-        public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
-            if (event == LifecycleEvent.REMOVED) {
-                this.registry.remove(controller.getName());
-            }
+            ServiceName singletonServiceName = this.getServiceName().append("singleton");
+            ServiceController<?> controller = this.registry.capture(singletonServiceName).install(target);
+            return this.configurator.build(target).addListener(this.listener).addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(ServiceController<?> c, LifecycleEvent event) {
+                    if (event == LifecycleEvent.REMOVED) {
+                        controller.setMode(ServiceController.Mode.REMOVE);
+                    }
+                }
+            });
         }
     }
 

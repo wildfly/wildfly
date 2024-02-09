@@ -6,13 +6,13 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Paul Ferraro

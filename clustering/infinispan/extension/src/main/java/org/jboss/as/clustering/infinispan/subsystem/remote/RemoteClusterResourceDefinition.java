@@ -8,7 +8,6 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
@@ -24,6 +23,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.BinaryRequirement;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * /subsystem=infinispan/remote-cache-container=X/remote-cluster=Y

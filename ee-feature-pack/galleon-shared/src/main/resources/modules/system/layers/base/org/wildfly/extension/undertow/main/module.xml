@@ -74,6 +74,8 @@
         <module name="org.wildfly.http-client.common"/>
         <module name="org.wildfly.event.logger" optional="true"/>
         <module name="org.wildfly.common" optional="true"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
     </dependencies>
 
 </module>
