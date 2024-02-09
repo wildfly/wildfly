@@ -1354,7 +1354,21 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+              <groupId>org.owasp</groupId>
+              <artifactId>dependency-check-maven</artifactId>
+              <version>9.0.9</version>
+              <configuration>
+                  <nvdApiServerId>nvd</nvdApiServerId>
+              </configuration>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>aggregate</goal>
+                      </goals>
+                  </execution>
+              </executions>
+            </plugin>
         </plugins>
     </build>
 
