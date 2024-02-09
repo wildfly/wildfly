@@ -9,7 +9,6 @@ import static org.jboss.as.ee.component.Attachments.STARTUP_COUNTDOWN;
 import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.isVirtualDomainRequired;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.isVirtualMechanismFactoryRequired;
-import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
 import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 
 import java.net.MalformedURLException;
@@ -442,8 +441,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         // adding Jakarta Authorization service
         final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY_NAME);
-        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(REF_LEGACY_SECURITY);
-        if(legacyJacc || elytronJacc) {
+        if(elytronJacc) {
             WarJACCDeployer deployer = new WarJACCDeployer();
             JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
             if (jaccService != null) {
