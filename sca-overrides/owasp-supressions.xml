@@ -37,6 +37,13 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@.*$</packageUrl>
       <cpe>cpe:/a:redhat:resteasy</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: jboss-iiop-client-2.0.1.Final.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.jboss/jboss\-iiop\-client@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:jboss-ejb-client</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
