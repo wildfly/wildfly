@@ -50,5 +50,13 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-api@.*$</packageUrl>
       <cve>CVE-2023-44487</cve> <!-- This CVE specifically affects grpc-go not grpc-api -->
-   </suppress>   
+   </suppress>
+   <suppress until="2025-02-09">
+      <notes><![CDATA[
+      file name: h2-2.2.224.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+      <!-- Disputed by h2database https://github.com/h2database/h2database/issues/1294 -->
+      <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
+   </suppress>
 </suppressions>
