@@ -384,6 +384,7 @@
         <version.com.nimbus.jose-jwt>9.31</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
+        <legacy.version.com.squareup.okio>1.17.2</legacy.version.com.squareup.okio>
         <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>

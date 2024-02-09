@@ -351,8 +351,6 @@
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
                                         <testsuite.default.build.project.prefix>${testsuite.default.build.project.prefix}</testsuite.default.build.project.prefix>
                                     </systemPropertyVariables>
-                                    <!-- These include a module to be used which currently uses javax and is not transformed -->
-                                    <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
                                 </configuration>
                             </execution>
                         </executions>
