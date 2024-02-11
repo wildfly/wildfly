@@ -329,7 +329,7 @@ public abstract class LayersTestBase {
      * A HashMap to configure a banned module.
      * They key is the banned module name, the value is an optional List with the installation names that are allowed to
      * provision the banned module. This installations will be ignored.
-     *
+     * <p>
      * Notice the allowed installation names does not distinguish between different parent names, e.g test-all-layers here means
      * allowing root/test-all-layers and servletRoot/test-all-layers.
      */
@@ -337,43 +337,96 @@ public abstract class LayersTestBase {
         put("org.jboss.as.security", Arrays.asList("test-all-layers-jpa-distributed", "test-all-layers", "legacy-security", "test-standalone-reference"));
     }};
 
-    public static String root;
-    public static String defaultConfigsRoot;
+    protected static String root;
+    private static String defaultConfigsRoot;
+    private static LayersTest.ScanContext scanContext;
 
     @BeforeClass
     public static void setUp() {
         root = System.getProperty("layers.install.root");
         defaultConfigsRoot = System.getProperty("std.default.install.root");
+        scanContext = new LayersTest.ScanContext(root);
     }
 
     @AfterClass
     public static void cleanUp() {
-        Boolean delete = Boolean.getBoolean("layers.delete.installations");
+        boolean delete = Boolean.getBoolean("layers.delete.installations");
         if(delete) {
             File[] installations = new File(root).listFiles(File::isDirectory);
-            for(File f : installations) {
-                LayersTest.recursiveDelete(f.toPath());
+            if (installations != null) {
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
             }
             installations = new File(defaultConfigsRoot).listFiles(File::isDirectory);
-            for(File f : installations) {
-                LayersTest.recursiveDelete(f.toPath());
+            if (installations != null) {
+                for (File f : installations) {
+                    LayersTest.recursiveDelete(f.toPath());
+                }
             }
         }
     }
 
+    /**
+     * Checks that the installations found in the given {@code layers.install.root} directory can all be started
+     * without errors, i.e. with the {@code WFLYSRV0025} log message in the server's stdout stream.
+     * <p>
+     * The @{code test-standalone-reference} installation is not tested as that kind of installation is heavily
+     * tested elsewhere.
+     *
+     * @throws Exception on failure
+     */
     @Test
-    public void test() throws Exception {
-        LayersTest.test(root, getExpectedUnreferenced(), getExpectedUnusedInAllLayers());
+    public void testLayersBoot() throws Exception {
+        LayersTest.testLayersBoot(root);
     }
 
+    /**
+     * Checks that all modules that were provisioned in the @{code test-standalone-reference} installation are also
+     * provisioned in @{test-all-layers}, except those included in the {@link #getExpectedUnusedInAllLayers()} set.
+     * The goals of this test are to check for new modules that should be provided by layers but currently are not
+     * and to encourage inclusion of existing modules not used in a layer to have an associated layer.
+     *
+     * @throws Exception on failure
+     */
+    @Test
+    public void testLayersModuleUse() throws Exception {
+        LayersTest.testLayersModuleUse(getExpectedUnusedInAllLayers(), scanContext);
+    }
+
+    /**
+     * Checks that all modules in the @{code test-standalone-reference} installation are referenced from
+     * the installation root module or extension modules configured in standalone.xml, except those
+     * included in the {@link #getExpectedUnreferenced()} set. The goal of this test is to prevent the
+     * accumulation of 'orphaned' modules that are not usable.
+     *
+     * @throws Exception on failure
+     */
+    @Test
+    public void testUnreferencedModules() throws Exception {
+        LayersTest.testUnreferencedModules(getExpectedUnreferenced(), scanContext);
+    }
+
+    /**
+     * Checks that none of the installations found in the given {@code layers.install.root} directory include modules
+     * marked as 'banned'.
+     *
+     * @throws Exception on failure
+     */
     @Test
     public void checkBannedModules() throws Exception {
         final HashMap<String, String> results = LayersTest.checkBannedModules(root, BANNED_MODULES_CONF);
         Assert.assertTrue("The following banned modules were provisioned " + results.toString(), results.isEmpty());
     }
 
+    /**
+     * Checks that the installation found in the given {@code std.default.install.root} directory can be started
+     * without errors, i.e. with the {@code WFLYSRV0025} log message in the server's stdout stream.
+     *
+     * @throws Exception on failure
+     */
     @Test
     public void testDefaultConfigs() throws Exception {
-        LayersTest.testExecution(defaultConfigsRoot);
+        LayersTest.testLayersBoot(defaultConfigsRoot);
     }
 }
