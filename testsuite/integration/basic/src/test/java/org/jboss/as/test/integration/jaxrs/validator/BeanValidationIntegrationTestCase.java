@@ -4,6 +4,8 @@
  */
 package org.jboss.as.test.integration.jaxrs.validator;
 
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
 import java.net.URL;
 
 import jakarta.ws.rs.ApplicationPath;
@@ -14,6 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,7 +53,11 @@ public class BeanValidationIntegrationTestCase {
                 ValidatorResource.class,
                 AnotherValidatorResource.class,
                 YetAnotherValidatorResource.class
-            );
+            )
+            .addAsManifestResource(createPermissionsXmlAsset(
+                    // Required for validation in CDI beans
+                    HibernateValidatorPermission.ACCESS_PRIVATE_MEMBERS
+            ), "permissions.xml");
     }
 
     @ArquillianResource
