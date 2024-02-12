@@ -973,6 +973,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else if (servletContainer.getDefaultEncoding() != null) {
                 d.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
+
+            if (mergedMetaData.getResponseCharacterEncoding() != null) {
+                d.setDefaultResponseEncoding(mergedMetaData.getResponseCharacterEncoding());
+            }
+            if (mergedMetaData.getRequestCharacterEncoding() != null) {
+                d.setDefaultRequestEncoding(mergedMetaData.getRequestCharacterEncoding());
+            }
+
             d.setCrawlerSessionManagerConfig(servletContainer.getCrawlerSessionManagerConfig());
 
             d.setPreservePathOnForward(servletContainer.isPreservePathOnForward());
