@@ -64,10 +64,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
 
-    private final boolean appClientContainerMode;
+    public PersistenceUnitParseProcessor() {
 
-    public PersistenceUnitParseProcessor(boolean appclient) {
-        appClientContainerMode = appclient;
     }
 
     @Override
@@ -84,8 +82,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) &&
-                (!appClientContainerMode || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) ) {
+        if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) ) {
 
             // handle META-INF/persistence.xml
             // ordered list of PUs
@@ -108,7 +105,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!appClientContainerMode && isWarDeployment(deploymentUnit)) {
+        if (isWarDeployment(deploymentUnit)) {
 
             int puCount;
             // ordered list of PUs
