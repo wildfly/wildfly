@@ -4,27 +4,6 @@
    <!-- Sometimes the mapping from GAV to CPE creates a bad match, this section supresses those matches. -->
    <suppress>
       <notes><![CDATA[
-      file name: artemis-wildfly-integration-2.0.2.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$</packageUrl>
-      <cpe>cpe:/a:redhat:integration</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
-      file name: artemis-wildfly-integration-2.0.2.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$</packageUrl>
-      <cpe>cpe:/a:redhat:wildfly</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
-      file name: artemis-wildfly-integration-2.0.2.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$</packageUrl>
-      <cpe>cpe:/a:wildfly:wildfly</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       file name: expressly-5.0.0.jar
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
