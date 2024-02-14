@@ -36,6 +36,13 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.wildfly/mvc\-krazo\-galleon\-shared@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: transformer-7.0.0.Beta2.jar (shaded: org.wildfly.extras.batavia:transformer-api:1.0.12.Final)
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.batavia/transformer\-api@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>   
    <!-- CVE Expressions -->
 
