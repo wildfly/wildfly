@@ -174,6 +174,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.squareup.okio</groupId>
+            <artifactId>okio</artifactId>
+            <version>${legacy.version.com.squareup.okio}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <scope>test</scope>
@@ -392,6 +398,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-testsuite-shared</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-service</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -2765,7 +2776,7 @@
             <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.bootable.preview</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>
@@ -2919,7 +2930,7 @@
             <id>preview.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.preview</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <build>
@@ -2937,7 +2948,7 @@
                                              TODO figure out how to avoid this -->
                                         <exclude>${test-group}/**/ejb/stateful/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/group/*TestCase.java</exclude>
-                                        <exclude>${test-group}/**/infinispan/embedded/*TestCase.java</exclude>
+                                        <exclude>${test-group}/**/ejb/timer/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/infinispan/remote/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/jms/*TestCase.java</exclude>
                                         <exclude>${test-group}/**/web/remote/*TestCase.java</exclude>
@@ -2945,11 +2956,6 @@
                                         <!-- These are run by ts.clustering.cluster.byteman.profile -->
                                         <exclude>${test-group}/**/byteman/*TestCase.java</exclude>
                                         <exclude>%regex[${test-group}/(${ts.surefire.clustering.ha.additionalExcludes})/.*TestCase.class]</exclude>
-
-                                        <!-- TODO see why these aren't working and fix or exclude with a clear explanation -->
-                                        <exclude>${test-group}/ejb/remote/GlobalAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
-                                        <exclude>${test-group}/ejb/remote/ThreadAuthContextRemoteStatelessEJBFailoverTestCase.java</exclude>
-                                        <exclude>${test-group}/jsf/**</exclude> <!-- test hard-codes javax package; need to parameterize -->
                                     </excludes>
                                 </configuration>
                             </execution>

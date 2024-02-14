@@ -136,7 +136,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 scheduledThreadPoolMaxSizeValue = ActiveMQClient.getGlobalScheduledThreadPoolSize();
             }
             MessagingLogger.ROOT_LOGGER.debugf("Setting global client thread pool size to: regular=%s, scheduled=%s", threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
-            ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue);
+            ActiveMQClient.setGlobalThreadPoolProperties(threadPoolMaxSizeValue, scheduledThreadPoolMaxSizeValue, ActiveMQClient.DEFAULT_FLOW_CONTROL_THREAD_POOL_MAX_SIZE);
         }
         context.getServiceTarget().addService(MessagingServices.ACTIVEMQ_CLIENT_THREAD_POOL)
                 .setInstance( new ThreadPoolService())

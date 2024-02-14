@@ -8,8 +8,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
@@ -19,6 +17,9 @@ import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Paul Ferraro
@@ -40,7 +41,7 @@ public abstract class CacheMetricExecutor<C> implements MetricExecutor<C>, Funct
     @Override
     public ModelNode execute(OperationContext context, Metric<C> metric) throws OperationFailedException {
         ServiceName name = InfinispanCacheRequirement.CACHE.getServiceName(context, this.resolver);
-        FunctionExecutor<Cache<?, ?>> executor = this.executors.get(name);
+        FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(name));
         return (executor != null) ? executor.execute(new MetricFunction<>(this, metric)) : null;
     }
 }

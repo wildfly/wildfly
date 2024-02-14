@@ -126,10 +126,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-naming</artifactId>
         </dependency>
-        <!--dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-transactions</artifactId>
-        </dependency-->
 
         <!-- External dependencies -->
         <!-- This is only required for the InfinispanExtension to initialize Netty's InternalLoggerFactory -->
@@ -191,11 +187,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

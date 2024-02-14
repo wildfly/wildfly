@@ -31,6 +31,8 @@
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.clustering.singleton.service"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="java.xml"/>
     </dependencies>
 </module>

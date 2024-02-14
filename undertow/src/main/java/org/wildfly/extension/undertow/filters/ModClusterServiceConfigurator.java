@@ -81,6 +81,7 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
     private volatile boolean useAlias;
     private volatile int maxRetries;
     private volatile FailoverStrategy failoverStrategy;
+    private volatile Consumer<ModCluster> captor;
 
     ModClusterServiceConfigurator(PathAddress address) {
         super(address);
@@ -96,6 +97,8 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
         if (ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(context, model).isDefined()) {
              ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
+
+        this.captor = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
 
         String sslContext = ModClusterDefinition.SSL_CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
         this.sslContext = (sslContext != null) ? new ServiceSupplierDependency<>(CommonUnaryRequirement.SSL_CONTEXT.getServiceName(context, sslContext)) : null;
@@ -153,7 +156,7 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<ModCluster> service = new CompositeDependency(this.worker, this.managementBinding, this.advertiseBinding, this.sslContext).register(builder).provides(name);
+        Consumer<ModCluster> service = new CompositeDependency(this.worker, this.managementBinding, this.advertiseBinding, this.sslContext).register(builder).<ModCluster>provides(name).andThen(this.captor);
         Consumer<MCMPConfig> config = builder.provides(this.getConfigServiceName());
         Consumer<Map.Entry<ModCluster, MCMPConfig>> consumer = new Consumer<>() {
             @Override

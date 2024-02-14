@@ -22,7 +22,6 @@ import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -44,6 +43,7 @@ import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.server.service.ClusteringDefaultCacheRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
 import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X
@@ -187,8 +187,8 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 .setResourceTransformation(CacheContainerResource::new)
                 ;
-        ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = new ServiceValueExecutorRegistry<>();
-        ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = ServiceValueExecutorRegistry.newInstance();
+        ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = ServiceValueExecutorRegistry.newInstance();
         ResourceServiceHandler handler = new CacheContainerServiceHandler(managerExecutors, cacheExecutors);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 

@@ -9,7 +9,6 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ReloadRequiredResourceRegistrar;
@@ -31,6 +30,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} implementation for the core mod_cluster configuration resource.

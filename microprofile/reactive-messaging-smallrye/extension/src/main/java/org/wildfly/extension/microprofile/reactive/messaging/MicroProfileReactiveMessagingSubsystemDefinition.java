@@ -89,7 +89,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performBoottime(context, operation, model);
 
-            installKafkaElytronSSLContextRegistryServiceIfPresent(context);
+            installElytronSSLContextRegistryServiceIfPresent(context);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 @Override
@@ -113,12 +113,12 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
             MicroProfileReactiveMessagingLogger.LOGGER.activatingSubsystem();
         }
 
-        private void installKafkaElytronSSLContextRegistryServiceIfPresent(OperationContext context) {
+        private void installElytronSSLContextRegistryServiceIfPresent(OperationContext context) {
             ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
             if (cl instanceof ModuleClassLoader) {
                 ModuleLoader loader = ((ModuleClassLoader)cl).getModule().getModuleLoader();
                 try {
-                    loader.loadModule("org.wildfly.reactive.messaging.kafka");
+                    loader.loadModule("org.wildfly.reactive.messaging.common");
                     ElytronSSLContextRegistry.setServiceRegistry(context.getServiceRegistry(false));
                 } catch (ModuleLoadException e) {
                     // Ignore, it means the module is not available so we don't install the service

@@ -79,7 +79,7 @@ public class SingletonPartitionTestCase extends AbstractClusteringTestCase {
         war.addClasses(NodeServiceServlet.class, SingletonElectionListenerService.class, NodeServiceExecutorRegistry.class);
         war.addAsServiceProvider(ServiceActivator.class, SingletonServiceActivator.class);
         ClusterTestUtil.addTopologyListenerDependencies(war);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common, org.jgroups, org.infinispan.core\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.service, org.jgroups, org.infinispan.core\n"));
         return war;
     }
 

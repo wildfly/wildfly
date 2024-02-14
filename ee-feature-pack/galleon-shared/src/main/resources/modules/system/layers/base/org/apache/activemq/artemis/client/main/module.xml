@@ -24,7 +24,7 @@
         <!-- Import is required to get  access to SSLContext Factory for Elytron -->
         <module name="org.wildfly.extension.messaging-activemq" services="import" export="true"/>
         <module name="com.google.guava"/>
-        <module name="javax.json.api"/>
+        <module name="jakarta.json.api"/>
         <module name="io.netty.netty-buffer"/>
         <module name="io.netty.netty-transport"/>
         <module name="io.netty.netty-handler"/>

@@ -29,9 +29,9 @@
         <module name="io.vertx.client.amqp"/>
         <module name="io.vertx.core"/>
         <module name="io.vertx.proton"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.enterprise.api" />
-        <module name="javax.inject.api" />
+        <module name="jakarta.annotation.api"/>
+        <module name="jakarta.enterprise.api" />
+        <module name="jakarta.inject.api" />
         <module name="org.apache.qpid.proton"/>
         <module name="org.eclipse.microprofile.config.api"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>

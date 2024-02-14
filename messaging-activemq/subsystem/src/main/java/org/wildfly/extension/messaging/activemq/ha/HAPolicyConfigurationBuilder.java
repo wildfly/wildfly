@@ -45,8 +45,8 @@ import org.apache.activemq.artemis.core.config.ha.ColocatedPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.LiveOnlyPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicaPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicatedPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.SharedStoreMasterPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.SharedStoreSlavePolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.SharedStorePrimaryPolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.SharedStoreBackupPolicyConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -124,7 +124,7 @@ public class HAPolicyConfigurationBuilder {
 
     private HAPolicyConfiguration buildReplicationPrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicatedPolicyConfiguration haPolicyConfiguration = new ReplicatedPolicyConfiguration();
-        haPolicyConfiguration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
+        haPolicyConfiguration.setCheckForActiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
                 .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong());
         ModelNode clusterName = CLUSTER_NAME.resolveModelAttribute(context, model);
         if (clusterName.isDefined()) {
@@ -168,7 +168,7 @@ public class HAPolicyConfigurationBuilder {
         }
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
         HAPolicyConfiguration masterConfiguration = buildReplicationPrimaryConfiguration(context, masterConfigurationModel);
-        haPolicyConfiguration.setLiveConfig(masterConfiguration);
+        haPolicyConfiguration.setPrimaryConfig(masterConfiguration);
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
         HAPolicyConfiguration slaveConfiguration = buildReplicationSecondaryConfiguration(context, slaveConfigurationModel);
         haPolicyConfiguration.setBackupConfig(slaveConfiguration);
@@ -176,12 +176,12 @@ public class HAPolicyConfigurationBuilder {
     }
 
     private HAPolicyConfiguration buildSharedStorePrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new SharedStoreMasterPolicyConfiguration()
+        return new SharedStorePrimaryPolicyConfiguration()
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean());
     }
 
     private HAPolicyConfiguration buildSharedStoreSecondaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new SharedStoreSlavePolicyConfiguration()
+        return new SharedStoreBackupPolicyConfiguration()
                 .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean())
                 .setRestartBackup(RESTART_BACKUP.resolveModelAttribute(context, model).asBoolean())
@@ -198,7 +198,7 @@ public class HAPolicyConfigurationBuilder {
 
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
         HAPolicyConfiguration masterConfiguration = buildSharedStorePrimaryConfiguration(context, masterConfigurationModel);
-        haPolicyConfiguration.setLiveConfig(masterConfiguration);
+        haPolicyConfiguration.setPrimaryConfig(masterConfiguration);
 
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
         HAPolicyConfiguration slaveConfiguration = buildSharedStoreSecondaryConfiguration(context, slaveConfigurationModel);
