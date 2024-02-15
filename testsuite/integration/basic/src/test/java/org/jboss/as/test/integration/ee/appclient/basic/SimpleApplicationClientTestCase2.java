@@ -8,6 +8,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.appclient.util.AppClientWrapper;
+import org.jboss.as.test.integration.jpa.packaging.Employee;
+import org.jboss.as.test.integration.jpa.packaging.PersistenceUnitPackagingTestCase;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -39,6 +41,8 @@ public class SimpleApplicationClientTestCase2 extends AbstractSimpleApplicationC
 
         final JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(AppClientSingletonRemote.class, AppClientWrapper.class, CallbackHandler.class, ClientInterceptor.class);
+        lib.addClasses(Employee.class);
+        lib.addAsManifestResource(PersistenceUnitPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsLibrary(lib);
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejb.addClasses(SimpleApplicationClientTestCase2.class, AppClientStateSingleton.class);
