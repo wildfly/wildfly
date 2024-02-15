@@ -152,6 +152,7 @@ public abstract class LayersTestBase {
             "org.jboss.mod_cluster.container.spi",
             "org.jboss.mod_cluster.core",
             "org.jboss.mod_cluster.load.spi",
+            "org.wildfly.extension.elytron.jaas-realm",
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
