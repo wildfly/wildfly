@@ -5,15 +5,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -23,9 +27,12 @@ import org.infinispan.client.hotrod.ProtocolVersion;
 import org.infinispan.client.hotrod.configuration.ClusterConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.ConfigurationChildBuilder;
 import org.infinispan.client.hotrod.configuration.ConnectionPoolConfiguration;
 import org.infinispan.client.hotrod.configuration.ExecutorFactoryConfiguration;
 import org.infinispan.client.hotrod.configuration.SecurityConfiguration;
+import org.infinispan.client.hotrod.configuration.ServerConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.SslConfiguration;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
@@ -56,6 +63,7 @@ import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.net.Inet;
 
 /**
  * @author Radoslav Husar
@@ -175,24 +183,88 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         builder.connectionPool().read(this.connectionPool.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
 
-        for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> cluster : this.clusters.entrySet()) {
-            String clusterName = cluster.getKey();
-            List<SupplierDependency<OutboundSocketBinding>> bindingDependencies = cluster.getValue();
-
-            if (this.defaultRemoteCluster.equals(clusterName)) {
-                for (Supplier<OutboundSocketBinding> bindingDependency : bindingDependencies) {
-                    OutboundSocketBinding binding = bindingDependency.get();
-                    builder.addServer().host(binding.getUnresolvedDestinationAddress()).port(binding.getDestinationPort());
-                }
-            } else {
-                ClusterConfigurationBuilder clusterConfigurationBuilder = builder.addCluster(clusterName);
-                for (Supplier<OutboundSocketBinding> bindingDependency : bindingDependencies) {
-                    OutboundSocketBinding binding = bindingDependency.get();
-                    clusterConfigurationBuilder.addClusterNode(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
-                }
-            }
+        for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> entry : this.clusters.entrySet()) {
+            String clusterName = entry.getKey();
+            ClusterConfigurator<? extends ConfigurationChildBuilder> configurator = this.defaultRemoteCluster.equals(clusterName) ? DefaultClusterConfigurator.INSTANCE : new NonDefaultClusterConfigurator(clusterName);
+            this.configureCluster(builder, configurator, entry.getValue());
         }
 
         return builder.build();
+    }
+
+    private <C extends ConfigurationChildBuilder> void configureCluster(ConfigurationBuilder builder, ClusterConfigurator<C> configurator, List<SupplierDependency<OutboundSocketBinding>> bindingDependencies) {
+        SslConfiguration ssl = this.security.get().ssl();
+        C cluster = configurator.addCluster(builder);
+        // Track unique source addresses.  Ideally, there are no more than one.
+        Set<InetAddress> sourceAddresses = new HashSet<>(bindingDependencies.size());
+        for (Supplier<OutboundSocketBinding> bindingDependency : bindingDependencies) {
+            OutboundSocketBinding binding = bindingDependency.get();
+            sourceAddresses.add(binding.getSourceAddress());
+            configurator.getBindingConsumer(cluster).accept(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());
+        }
+        if (ssl.enabled()) {
+            // We can only use hostname validation if all socket bindings share the same interface and must specify a host name
+            String hostname = (sourceAddresses.size() == 1) ? Inet.getHostNameIfResolved(sourceAddresses.iterator().next()) : null;
+            if (hostname != null) {
+                // Apply server name indication
+                configurator.getSNIHostNameConsumer(cluster).accept(hostname);
+            } else {
+                // Disable hostname validation if unsupported by configuration
+                builder.security().ssl().hostnameValidation(false);
+            }
+        }
+    }
+
+    interface ClusterConfigurator<B extends ConfigurationChildBuilder> {
+        B addCluster(ConfigurationBuilder builder);
+        ObjIntConsumer<String> getBindingConsumer(B builder);
+        Consumer<String> getSNIHostNameConsumer(B builder);
+    }
+
+    enum DefaultClusterConfigurator implements ClusterConfigurator<ServerConfigurationBuilder> {
+        INSTANCE;
+
+        @Override
+        public ServerConfigurationBuilder addCluster(ConfigurationBuilder builder) {
+            return builder.addServer();
+        }
+
+        @Override
+        public ObjIntConsumer<String> getBindingConsumer(ServerConfigurationBuilder server) {
+            return new ObjIntConsumer<>() {
+                @Override
+                public void accept(String host, int port) {
+                    server.host(host).port(port);
+                }
+            };
+        }
+
+        @Override
+        public Consumer<String> getSNIHostNameConsumer(ServerConfigurationBuilder server) {
+            return server.security().ssl()::sniHostName;
+        }
+    }
+
+    static class NonDefaultClusterConfigurator implements ClusterConfigurator<ClusterConfigurationBuilder> {
+        private final String clusterName;
+
+        NonDefaultClusterConfigurator(String clusterName) {
+            this.clusterName = clusterName;
+        }
+
+        @Override
+        public ClusterConfigurationBuilder addCluster(ConfigurationBuilder builder) {
+            return builder.addCluster(this.clusterName);
+        }
+
+        @Override
+        public ObjIntConsumer<String> getBindingConsumer(ClusterConfigurationBuilder cluster) {
+            return cluster::addClusterNode;
+        }
+
+        @Override
+        public Consumer<String> getSNIHostNameConsumer(ClusterConfigurationBuilder cluster) {
+            return cluster::clusterSniHostName;
+        }
     }
 }
