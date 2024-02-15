@@ -44,4 +44,11 @@
         <!-- If the PostgreSQL JDBC driver classes are accessible, Hibernate ORM will use them to tailor PostgresDialect and CockroachDialect behavior -->
         <module name="org.postgresql.jdbc" optional="true"/>
     </dependencies>
+
+    <provides>
+        <service name="org.hibernate.bytecode.spi.BytecodeProvider">
+            <with-class name="org.hibernate.bytecode.internal.bytebuddy.BytecodeProviderImpl"/>
+        </service>
+    </provides>
+
 </module>

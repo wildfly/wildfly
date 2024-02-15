@@ -115,11 +115,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.kerby</groupId>
-            <artifactId>kerb-server-api-all</artifactId>
-            <version>${version.org.apache.kerby}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kerby</groupId>
             <artifactId>kerb-simplekdc</artifactId>
             <version>${version.org.apache.kerby}</version>
         </dependency>
