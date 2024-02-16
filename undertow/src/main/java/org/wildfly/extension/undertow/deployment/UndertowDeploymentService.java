@@ -89,10 +89,14 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 HttpHandler handler = deploymentManager.start();
                 Deployment deployment = deploymentManager.getDeployment();
                 host.get().registerDeployment(deployment, handler);
-            } catch (Throwable e ) {
-                deploymentManager.undeploy();
-                container.get().getServletContainer().removeDeployment(deploymentInfo);
-                throw e;
+            } catch (Throwable originalException) {
+                try {
+                    deploymentManager.undeploy();
+                    container.get().getServletContainer().removeDeployment(deploymentInfo);
+                } catch(Throwable e) {
+                    originalException.addSuppressed(e);
+                }
+                throw originalException;
             } finally {
                 StartupContext.setInjectionContainer(null);
             }
