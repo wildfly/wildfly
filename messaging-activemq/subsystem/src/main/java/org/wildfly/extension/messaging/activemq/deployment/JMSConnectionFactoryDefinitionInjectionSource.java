@@ -109,7 +109,6 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
     private boolean transactional;
     private int maxPoolSize;
     private int minPoolSize;
-    private boolean legacySecurityAvailable;
 
     public JMSConnectionFactoryDefinitionInjectionSource(String jndiName) {
         super(jndiName);
@@ -149,10 +148,6 @@ public class JMSConnectionFactoryDefinitionInjectionSource extends ResourceDefin
 
     void setMinPoolSize(int minPoolSize) {
         this.minPoolSize = minPoolSize;
-    }
-
-    public void setLegacySecurityAvailable(boolean legacySecurityAvailable) {
-        this.legacySecurityAvailable = legacySecurityAvailable;
     }
 
     @Override
