@@ -778,6 +778,11 @@
             <artifactId>jboss-saaj-api_3.0_spec</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-core-management-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
         </dependency>
@@ -1516,6 +1521,7 @@
                                 <include>org/jboss/as/test/integration/weld/**/*Test.java</include>
                                 <include>org/wildfly/test/integration/microprofile/**/*TestCase.java</include>
                                 <include>org/wildfly/test/integration/microprofile/**/*Test.java</include>
+                                <include>org/wildfly/test/integration/unstable_api_annotation/*TestCase.java</include>
                             </includes>
                             <excludes>
                                 <!-- ee-security subsystem missing, javax.enterprise.security.api not injected -->
