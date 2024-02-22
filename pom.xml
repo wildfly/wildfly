@@ -501,7 +501,7 @@
         <version.org.jberet>2.2.1.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>2.0.2.Final</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
-        <version.org.jboss.ejb-client>5.0.5.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>5.0.6.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.4.0.Final</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.genericjms>3.0.0.Final</version.org.jboss.genericjms>
         <version.org.jboss.hal.console>3.7.0.Final</version.org.jboss.hal.console>
@@ -542,7 +542,7 @@
         <version.org.ow2.asm>9.6</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.core>24.0.0.Beta1</version.org.wildfly.core>
-        <version.org.wildfly.http-client>2.0.6.Final</version.org.wildfly.http-client>
+        <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
