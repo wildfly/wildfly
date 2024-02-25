@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.Attribute;
 import org.jboss.as.clustering.jgroups.subsystem.ProtocolMetricsHandler.FieldType;
@@ -25,6 +24,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jgroups.JChannel;
 import org.jgroups.stack.Protocol;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Operation handler for registration of fork protocol runtime resources.

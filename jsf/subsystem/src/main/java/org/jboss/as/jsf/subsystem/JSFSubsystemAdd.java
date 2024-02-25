@@ -49,7 +49,7 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFComponentProcessor());
 
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JSFAnnotationProcessor());
-                if (context.hasOptionalCapability("org.wildfly.bean-validation", null, null)) {
+                if (context.hasOptionalCapability("org.wildfly.bean-validation", JSFResourceDefinition.FACES_CAPABILITY.getName(), null)) {
                     processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_VALIDATOR_FACTORY, new JSFBeanValidationFactoryProcessor());
                 }
             }

@@ -6,8 +6,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.util.concurrent.locks.impl.DefaultLockManager;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * A handler for cache locking metrics.

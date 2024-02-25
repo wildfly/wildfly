@@ -71,6 +71,8 @@
         <module name="org.wildfly.clustering.singleton.api"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.transaction.client"/>
     </dependencies>
 </module>

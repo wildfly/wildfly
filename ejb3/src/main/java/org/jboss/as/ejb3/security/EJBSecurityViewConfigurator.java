@@ -6,7 +6,6 @@
 package org.jboss.as.ejb3.security;
 
 import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -16,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
@@ -76,7 +74,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         }
 
 
-        if (!legacySecurityAvailable(deploymentUnit) && !elytronSecurityDomain) {
+        if (!elytronSecurityDomain) {
             // the security subsystem is not present and Elytron is not being used for security, we don't apply any security settings
             installAttributeServiceIfRequired(context, viewMethodSecurityAttributesServiceBuilder, viewMethodSecurityAttributesServiceName);
             return;
@@ -166,11 +164,6 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
         }
         installAttributeServiceIfRequired(context, viewMethodSecurityAttributesServiceBuilder, viewMethodSecurityAttributesServiceName);
-    }
-
-    private static boolean legacySecurityAvailable(DeploymentUnit deploymentUnit) {
-        final CapabilityServiceSupport support = deploymentUnit.getAttachment(CAPABILITY_SERVICE_SUPPORT);
-        return support.hasCapability("org.wildfly.legacy-security");
     }
 
     private void installAttributeServiceIfRequired(DeploymentPhaseContext context, EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder, ServiceName viewMethodSecurityAttributesServiceName) {

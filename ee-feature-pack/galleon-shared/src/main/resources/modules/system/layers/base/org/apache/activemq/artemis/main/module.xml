@@ -53,6 +53,7 @@
         <module name="internal.javax.json.api.ee8" services="import"/>
         <module name="org.apache.commons.beanutils" />
         <module name="org.apache.commons.collections" />
+        <module name="org.apache.commons.lang3" />
         <module name="org.apache.activemq.artemis.commons" services="import" export="true"/>
         <module name="org.apache.activemq.artemis.client" services="import"/>
         <module name="org.apache.activemq.artemis.service-extensions" services="import" />

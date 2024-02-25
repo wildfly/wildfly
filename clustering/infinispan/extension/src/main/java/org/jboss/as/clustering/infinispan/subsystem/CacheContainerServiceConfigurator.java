@@ -30,8 +30,6 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
 import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueCaptor;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.manager.DefaultCacheContainer;
 import org.jboss.as.controller.OperationContext;
@@ -53,6 +51,8 @@ import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
  * @author Paul Ferraro
@@ -141,7 +141,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
         String cacheName = event.getCacheName();
         InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, this.name);
         this.registrations.put(cacheName, this.registrar.register(cacheName));
-        ServiceValueCaptor<Cache<?, ?>> captor = this.registry.add(this.createCacheServiceName(cacheName));
+        Consumer<Cache<?, ?>> captor = this.registry.add(ServiceDependency.on(this.createCacheServiceName(cacheName)));
         EmbeddedCacheManager container = event.getCacheManager();
         // Use getCacheAsync(), once available
         @SuppressWarnings("deprecation")
@@ -153,10 +153,7 @@ public class CacheContainerServiceConfigurator extends CapabilityServiceNameProv
     @CacheStopped
     public CompletionStage<Void> cacheStopped(CacheStoppedEvent event) {
         String cacheName = event.getCacheName();
-        ServiceValueCaptor<Cache<?, ?>> captor = this.registry.remove(this.createCacheServiceName(cacheName));
-        if (captor != null) {
-            captor.accept(null);
-        }
+        this.registry.remove(ServiceDependency.on(this.createCacheServiceName(cacheName)));
         try (Registration registration = this.registrations.remove(cacheName)) {
             InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.name);
         }

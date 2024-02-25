@@ -13,8 +13,6 @@ import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus;
 import io.undertow.server.handlers.proxy.mod_cluster.ModClusterStatus.LoadBalancer;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
@@ -32,6 +30,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Runtime representation of a mod_cluster balancer
@@ -134,7 +135,7 @@ class ModClusterBalancerDefinition extends SimpleResourceDefinition {
             PathAddress balancerAddress = context.getCurrentAddress();
             String balancerName = balancerAddress.getLastElement().getValue();
             PathAddress serviceAddress = balancerAddress.getParent();
-            FunctionExecutor<ModCluster> executor = this.registry.get(new ModClusterServiceNameProvider(serviceAddress).getServiceName());
+            FunctionExecutor<ModCluster> executor = this.registry.getExecutor(ServiceDependency.on(new ModClusterServiceNameProvider(serviceAddress).getServiceName()));
             return (executor != null) ? executor.execute(new MetricFunction<>(new LoadBalancerFunction(balancerName), metric)) : null;
         }
     }

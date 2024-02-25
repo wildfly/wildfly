@@ -10,7 +10,6 @@ import static org.wildfly.extension.clustering.singleton.SingletonPolicyResource
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -20,6 +19,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonRequirement;
 import org.wildfly.extension.clustering.singleton.SingletonPolicyResourceDefinition.Capability;
+import org.wildfly.service.capture.ServiceValueRegistry;
 
 /**
  * @author Paul Ferraro

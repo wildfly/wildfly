@@ -6,12 +6,10 @@
 package org.wildfly.extension.undertow.deployment;
 
 import static org.jboss.as.server.security.SecurityMetaData.ATTACHMENT_KEY;
-import static org.wildfly.extension.undertow.Capabilities.REF_LEGACY_SECURITY;
 import static org.wildfly.extension.undertow.deployment.UndertowAttachments.RESOLVED_SECURITY_DOMAIN;
 
 import java.util.function.Predicate;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -77,16 +75,8 @@ public class SecurityDomainResolvingProcessor implements DeploymentUnitProcessor
                     securityMetaData.setSecurityDomain(securityDomainName);
                 }
                 deploymentUnit.putAttachment(RESOLVED_SECURITY_DOMAIN, securityDomain);
-            } else if (legacySecurityInstalled(deploymentUnit)) {
-                deploymentUnit.putAttachment(RESOLVED_SECURITY_DOMAIN, securityDomain);
             }
         }
-    }
-
-    private static boolean legacySecurityInstalled(final DeploymentUnit deploymentUnit) {
-        final CapabilityServiceSupport capabilities = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
-        return capabilities.hasCapability(REF_LEGACY_SECURITY);
     }
 
     @Override

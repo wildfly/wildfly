@@ -20,7 +20,6 @@ import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
@@ -43,6 +42,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
 import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * /subsystem=infinispan/remote-cache-container=X
@@ -230,7 +230,7 @@ public class RemoteCacheContainerResourceDefinition extends ChildResourceDefinit
                 .addRequiredChildren(REQUIRED_CHILDREN)
                 .setResourceTransformation(RemoteCacheContainerResource::new)
                 ;
-        ServiceValueExecutorRegistry<RemoteCacheContainer> executors = new ServiceValueExecutorRegistry<>();
+        ServiceValueExecutorRegistry<RemoteCacheContainer> executors = ServiceValueExecutorRegistry.newInstance();
         ResourceServiceConfiguratorFactory factory = RemoteCacheContainerConfigurationServiceConfigurator::new;
         ResourceServiceHandler handler = new RemoteCacheContainerServiceHandler(factory, executors);
         new SimpleResourceRegistrar(descriptor, handler).register(registration);

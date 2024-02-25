@@ -7,10 +7,10 @@ package org.wildfly.extension.clustering.singleton;
 
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 
 /**
  * Executor for singleton deployment metrics.
@@ -18,7 +18,7 @@ import org.wildfly.clustering.singleton.Singleton;
  */
 public class SingletonDeploymentMetricExecutor extends SingletonMetricExecutor {
 
-    public SingletonDeploymentMetricExecutor(FunctionExecutorRegistry<Singleton> executors) {
+    public SingletonDeploymentMetricExecutor(FunctionExecutorRegistry<ServiceName, Singleton> executors) {
         super(new Function<String, ServiceName>() {
             @Override
             public ServiceName apply(String deployment) {

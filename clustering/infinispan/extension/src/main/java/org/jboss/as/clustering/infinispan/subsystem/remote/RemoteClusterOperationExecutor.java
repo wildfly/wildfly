@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
 import org.jboss.as.clustering.controller.OperationFunction;
@@ -22,6 +20,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Paul Ferraro
@@ -37,7 +38,7 @@ public class RemoteClusterOperationExecutor implements OperationExecutor<Map.Ent
     @Override
     public ModelNode execute(OperationContext context, ModelNode op, Operation<Map.Entry<String, RemoteCacheManagerMXBean>> operation) throws OperationFailedException {
         ServiceName name = InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.PARENT);
-        FunctionExecutor<RemoteCacheContainer> executor = this.executors.get(name);
+        FunctionExecutor<RemoteCacheContainer> executor = this.executors.getExecutor(ServiceDependency.on(name));
         Function<RemoteCacheContainer, Map.Entry<String, RemoteCacheManagerMXBean>> mapper = new Function<>() {
             @Override
             public Map.Entry<String, RemoteCacheManagerMXBean> apply(RemoteCacheContainer container) {

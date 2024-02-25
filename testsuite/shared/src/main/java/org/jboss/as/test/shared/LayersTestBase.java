@@ -46,7 +46,6 @@ public abstract class LayersTestBase {
             // Alternative messaging protocols besides the std Artemis core protocol
             // Use of these depends on an attribute value setting
             "org.apache.activemq.artemis.protocol.amqp",
-            "org.apache.qpid.proton",
             "org.apache.activemq.artemis.protocol.hornetq",
             "org.apache.activemq.artemis.protocol.stomp",
             // Legacy client not associated with any layer
@@ -61,7 +60,11 @@ public abstract class LayersTestBase {
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
-    public static final String[] NO_LAYER_WILDFLY_EE = {};
+    public static final String[] NO_LAYER_WILDFLY_EE = {
+            // In 'wildfly-ee' this is only a dep of org.apache.activemq.artemis.protocol.amqp,
+            // which is not part of test-all-layers. It is used in a layer in 'wildfly' and 'wildfly-preview'
+            "org.apache.qpid.proton"
+    };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
@@ -95,9 +98,6 @@ public abstract class LayersTestBase {
      * Packages that are always expected to be included in the return value of {@link #getExpectedUnreferenced()}.
      */
     public static final String[] NOT_REFERENCED_COMMON = {
-            // injected by logging
-            "org.apache.logging.log4j.api",
-            "org.jboss.logmanager.log4j2",
             // injected by ee
             "org.wildfly.naming",
             // Injected by jaxrs
@@ -152,6 +152,7 @@ public abstract class LayersTestBase {
             "org.jboss.mod_cluster.container.spi",
             "org.jboss.mod_cluster.core",
             "org.jboss.mod_cluster.load.spi",
+            "org.wildfly.extension.elytron.jaas-realm",
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
@@ -164,6 +165,9 @@ public abstract class LayersTestBase {
      * only when testing provisioning directly from the wildfly-ee feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_EE = {
+            // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
+            "org.apache.logging.log4j.api",
+            "org.jboss.logmanager.log4j2",
     };
 
 
@@ -228,9 +232,13 @@ public abstract class LayersTestBase {
      * only when testing provisioning from the wildfly-preview feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY_PREVIEW = {
+            // Extension not included in the default config
             "org.wildfly.extension.metrics",
             // Extension not included in the default config
             "org.wildfly.extension.mvc-krazo",
+            "jakarta.mvc.api",
+            "org.eclipse.krazo.core",
+            "org.eclipse.krazo.resteasy"
     };
 
     /**
@@ -243,8 +251,9 @@ public abstract class LayersTestBase {
             "javax.api",
             "javax.sql.api",
             "javax.xml.stream.api",
-            "sun.jdk",
-            "sun.scripting",
+            // TODO see if org.apache.activemq.artemis.client can use specific JDK module(s)
+            //"sun.jdk",
+            //"sun.scripting",
             // Special support status -- wildfly-elytron-http-stateful-basic
             "org.wildfly.security.http.sfbasic",
             // test-all-layers installation is non-ha and does not include layers that provide jgroups
