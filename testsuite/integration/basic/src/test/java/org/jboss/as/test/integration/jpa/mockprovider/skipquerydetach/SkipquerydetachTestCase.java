@@ -37,6 +37,7 @@ public class SkipquerydetachTestCase {
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         persistenceProvider.addClasses(
+                AbstractTestPersistenceProvider.class,
                 TestClassTransformer.class,
                 TestEntityManagerFactory.class,
                 TestEntityManager.class,

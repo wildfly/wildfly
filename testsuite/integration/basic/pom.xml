@@ -59,6 +59,7 @@
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
+
     </properties>
 
     <dependencies>
@@ -1642,6 +1643,19 @@
                         </configuration>
                     </execution>
 
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <!-- Enable adding a second test source dir for EE-version-specific classes.
+                         The execution is configured in testsuite/pom.xml for use in submodules
+                         like this one that need it. -->
+                    <execution>
+                        <id>add-ee-test-source</id>
+                        <phase>generate-test-sources</phase>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -3427,6 +3441,10 @@
             </activation>
             <dependencies>
                 <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+                <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
@@ -3577,6 +3595,12 @@
                 <!-- The following is needed by PooledEJBLifecycleTestCase due to AssumeTestGroupUtil inside the test -->
                 <extra.server.jvm.args>-Dts.preview</extra.server.jvm.args>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>

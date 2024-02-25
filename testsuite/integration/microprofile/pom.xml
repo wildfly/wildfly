@@ -35,8 +35,6 @@
 
         <ts.glow.phase>none</ts.glow.phase>
         <ts.glow.config-name>standalone-microprofile.xml</ts.glow.config-name>
-        <!-- By default (i.e. Java EE9+) use the following directory as an additional source -->
-        <ts.microprofile.build-helper.source.dir>src/test/jakarta/java</ts.microprofile.build-helper.source.dir>
 
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
