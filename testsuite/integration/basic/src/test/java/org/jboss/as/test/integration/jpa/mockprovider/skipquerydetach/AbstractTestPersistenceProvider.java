@@ -15,11 +15,11 @@ import jakarta.persistence.spi.PersistenceUnitInfo;
 import jakarta.persistence.spi.ProviderUtil;
 
 /**
- * TestPersistenceProvider
+ * Abstract test PersistenceProvider. EE-version-specific subclasses extend this.
  *
  * @author Scott Marlow
  */
-public class TestPersistenceProvider implements PersistenceProvider {
+public abstract class AbstractTestPersistenceProvider implements PersistenceProvider {
 
     // key = pu name
     private static Map<String, PersistenceUnitInfo> persistenceUnitInfo = new HashMap<String, PersistenceUnitInfo>();

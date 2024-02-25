@@ -1813,6 +1813,20 @@
                 </exclusions>
             </dependency>
 
+            <!-- This dependency is not used by the app server itself, but is defined here to allow
+                 user applications to pull in the dependency version as part of the BOM -->
+            <dependency>
+                <groupId>jakarta.faces</groupId>
+                <artifactId>jakarta.faces-api</artifactId>
+                <version>${version.jakarta.faces.jakarta-faces-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
@@ -3174,20 +3188,6 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.faces</artifactId>
                 <version>${version.jakarta.faces}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <!-- This dependency is not used by the app server itself, but is defined here to allow
-                 user applications to pull in the dependency version as part of the BOM -->
-            <dependency>
-                <groupId>jakarta.faces</groupId>
-                <artifactId>jakarta.faces-api</artifactId>
-                <version>${version.jakarta.faces.jakarta-faces-api}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
