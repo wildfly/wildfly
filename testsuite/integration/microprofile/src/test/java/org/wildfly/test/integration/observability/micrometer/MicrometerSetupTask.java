@@ -13,13 +13,16 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
+ * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
+ */
 public class MicrometerSetupTask implements ServerSetupTask {
     static OpenTelemetryCollectorContainer otelCollector;
 
@@ -81,18 +84,16 @@ public class MicrometerSetupTask implements ServerSetupTask {
     }
 
     private void startOpenTelemetryCollector() {
-        if ( AssumeTestGroupUtil.isDockerAvailable()) {
-            String otelCollectorConfigFile = getClass().getPackage().getName().replaceAll("\\.", File.separator) +
-                    File.separator + "otel-collector-config.yaml";
-            otelCollector = new OpenTelemetryCollectorContainer()
-                    .withCopyFileToContainer(MountableFile.forClasspathResource(otelCollectorConfigFile),
-                            OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
-                    .withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
-            ;
+        String otelCollectorConfigFile = getClass().getPackage().getName().replaceAll("\\.", File.separator) +
+                File.separator + "otel-collector-config.yaml";
+        otelCollector = new OpenTelemetryCollectorContainer()
+                .withCopyFileToContainer(MountableFile.forClasspathResource(otelCollectorConfigFile),
+                        OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
+                .withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
+        ;
 
-            otelCollector.start();
-            containerStarted = true;
-        }
+        otelCollector.start();
+        containerStarted = true;
     }
 
     private ModelNode enableStatistics(boolean enabled) {

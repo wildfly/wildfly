@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>31.0.2.Final-SNAPSHOT</version>
+        <version>32.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ</artifactId>
@@ -320,7 +320,7 @@
             </properties>
             <modules>
                 <module>basic</module>
-                <!--<module>clustering</module>-->
+                <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>elytron-oidc-client</module>
@@ -339,7 +339,7 @@
                 <module>basic</module>
                 <module>legacy</module>
                 <module>ws</module>
-                <!--<module>clustering</module>-->
+                <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>secman</module>

@@ -6,7 +6,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.rpc.RpcManagerImpl;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Handler for clustered cache metrics.

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>31.0.2.Final-SNAPSHOT</version>
+        <version>32.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-domain</artifactId>
@@ -351,8 +351,6 @@
                                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Djbossas.ts.dir=${jbossas.ts.dir} ${extra.server.jvm.args}</server.jvm.args>
                                         <testsuite.default.build.project.prefix>${testsuite.default.build.project.prefix}</testsuite.default.build.project.prefix>
                                     </systemPropertyVariables>
-                                    <!-- These include a module to be used which currently uses javax and is not transformed -->
-                                    <excludedGroups>org.jboss.as.test.shared.categories.RequiresTransformedClass</excludedGroups>
                                 </configuration>
                             </execution>
                         </executions>

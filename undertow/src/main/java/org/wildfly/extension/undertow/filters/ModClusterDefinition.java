@@ -11,6 +11,8 @@ import static org.wildfly.extension.undertow.Capabilities.REF_SSL_CONTEXT;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -28,10 +30,6 @@ import io.undertow.server.handlers.proxy.mod_cluster.ModCluster;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueCaptor;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueExecutorRegistry;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
@@ -54,12 +52,14 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
  * mod_cluster front-end handler. This acts like a filter, but does not re-use a lot of the filter code as it
@@ -309,7 +309,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             CONNECTIONS_PER_THREAD, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, REQUEST_QUEUE_SIZE, SECURITY_REALM, SSL_CONTEXT, USE_ALIAS, ENABLE_HTTP2, MAX_AJP_PACKET_SIZE,
             HTTP2_MAX_HEADER_LIST_SIZE, HTTP2_MAX_FRAME_SIZE, HTTP2_MAX_CONCURRENT_STREAMS, HTTP2_INITIAL_WINDOW_SIZE, HTTP2_HEADER_TABLE_SIZE, HTTP2_ENABLE_PUSH, MAX_RETRIES);
 
-    private final ServiceValueExecutorRegistry<ModCluster> registry = new ServiceValueExecutorRegistry<>();
+    private final ServiceValueExecutorRegistry<ModCluster> registry = ServiceValueExecutorRegistry.newInstance();
 
     ModClusterDefinition() {
         super(PATH_ELEMENT);
@@ -339,6 +339,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
     static class ModClusterResourceServiceHandler implements ResourceServiceHandler {
 
         private final ServiceValueRegistry<ModCluster> registry;
+        private final Map<PathAddress, Consumer<OperationContext>> removers = new ConcurrentHashMap<>();
 
         ModClusterResourceServiceHandler(ServiceValueRegistry<ModCluster> registry) {
             this.registry = registry;
@@ -346,12 +347,14 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
 
         @Override
         public void installServices(OperationContext context, ModelNode model) throws OperationFailedException {
-
+            PathAddress address = context.getCurrentAddress();
             String managementAccessPredicateString = ModClusterDefinition.MANAGEMENT_ACCESS_PREDICATE.resolveModelAttribute(context, model).asStringOrNull();
             Predicate managementAccessPredicate = (managementAccessPredicateString != null) ? PredicateParser.parse(managementAccessPredicateString, this.getClass().getClassLoader()) : null;
 
-            ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(context.getCurrentAddress());
+            ModClusterServiceConfigurator configurator = new ModClusterServiceConfigurator(address);
             configurator.configure(context, model).build(context.getServiceTarget()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+
+            this.removers.put(address, this.registry.capture(ServiceDependency.on(configurator.getServiceName())).install(context));
 
             RuntimeCapability<Void> capability = ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition();
             CapabilityServiceBuilder<?> builder = context.getCapabilityServiceTarget().addCapability(capability);
@@ -386,37 +389,17 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             });
 
             builder.setInstance(Service.newInstance(filter, wrapper)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
-            new ServiceValueCaptorServiceConfigurator<>(new ModClusterResourceServiceValueCaptor(context, this.registry.add(configurator.getServiceName()))).build(context.getServiceTarget()).install();
         }
 
         @Override
         public void removeServices(OperationContext context, ModelNode model) {
-            ServiceName serviceName = new ModClusterServiceNameProvider(context.getCurrentAddress()).getServiceName();
-            context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.registry.remove(serviceName)).getServiceName());
-            context.removeService(serviceName);
-
-            context.removeService(ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(context.getCurrentAddress()));
-        }
-    }
-
-    static class ModClusterResourceServiceValueCaptor implements ServiceValueCaptor<ModCluster> {
-        private final ServiceValueCaptor<ModCluster> captor;
-        private final Consumer<ModCluster> consumer;
-
-        ModClusterResourceServiceValueCaptor(OperationContext context, ServiceValueCaptor<ModCluster> captor) {
-            this.captor = captor;
-            this.consumer = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
-        }
-        @Override
-        public ServiceName getServiceName() {
-            return this.captor.getServiceName();
-        }
-
-        @Override
-        public void accept(ModCluster service) {
-            this.captor.accept(service);
-            this.consumer.accept(service);
+            PathAddress address = context.getCurrentAddress();
+            context.removeService(new ModClusterServiceNameProvider(address).getServiceName());
+            context.removeService(ModClusterDefinition.Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition().getCapabilityServiceName(address));
+            Consumer<OperationContext> remover = this.removers.remove(address);
+            if (remover != null) {
+                remover.accept(context);
+            }
         }
     }
 }

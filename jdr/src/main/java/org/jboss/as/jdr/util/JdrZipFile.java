@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
@@ -151,7 +152,7 @@ public class JdrZipFile {
 
     public String getProductDirName() {
         if(this.productDirName == null)
-            this.productDirName = String.format("%s-%s", this.env.getProductName().replace(" ", "_").toLowerCase(), this.env.getProductVersion().split("\\.")[0]);
+            this.productDirName = String.format("%s-%s", this.env.getProductName().replace(" ", "_").toLowerCase(Locale.getDefault()), this.env.getProductVersion().split("\\.")[0]);
         return this.productDirName;
     }
 

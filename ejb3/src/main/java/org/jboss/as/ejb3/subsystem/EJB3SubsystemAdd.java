@@ -173,7 +173,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final String REMOTING_ENDPOINT_CAPABILITY = "org.wildfly.remoting.endpoint";
 
-    private static final String LEGACY_JACC_CAPABILITY = "org.wildfly.legacy-security.jacc";
     private static final String ELYTRON_JACC_CAPABILITY = "org.wildfly.security.jacc-policy";
 
     private final AtomicReference<String> defaultSecurityDomainName;
@@ -334,7 +333,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         CapabilityServiceSupport capabilitySupport = context.getCapabilityServiceSupport();
         final boolean elytronJacc = capabilitySupport.hasCapability(ELYTRON_JACC_CAPABILITY);
-        final boolean legacyJacc = !elytronJacc && capabilitySupport.hasCapability(LEGACY_JACC_CAPABILITY);
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
@@ -363,11 +361,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND, new EJBComponentSuspendDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND + 1, new EjbClientContextSetupProcessor()); //TODO: real phase numbers
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EE_COMPONENT_SUSPEND + 2, new StartupAwaitDeploymentUnitProcessor());
-
-                if (legacyJacc || elytronJacc) {
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_EJB_JACC_PROCESSING, new JaccEjbDeploymentProcessor(elytronJacc ? ELYTRON_JACC_CAPABILITY : LEGACY_JACC_CAPABILITY));
+                if (elytronJacc) {
+                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_EJB_JACC_PROCESSING, new JaccEjbDeploymentProcessor(ELYTRON_JACC_CAPABILITY));
                 }
-
                 processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.CLEANUP, Phase.CLEANUP_EJB, new EjbCleanUpProcessor());
 
                 if (!appclient) {

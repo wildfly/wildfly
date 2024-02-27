@@ -43,7 +43,7 @@ public class SingletonServiceTestCase {
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(NodeServiceServlet.class.getPackage());
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.clustering.common\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.service\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, NodeServiceActivator.class);
         return war;
     }

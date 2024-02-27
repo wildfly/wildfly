@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>31.0.2.Final-SNAPSHOT</version>
+        <version>32.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -107,11 +107,6 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-test-framework</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kerby</groupId>
-            <artifactId>kerb-server-api-all</artifactId>
-            <version>${version.org.apache.kerby}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.kerby</groupId>

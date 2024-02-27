@@ -8,8 +8,6 @@ package org.wildfly.extension.clustering.singleton;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
@@ -19,6 +17,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 
 /**
  * Generic executor for singleton metrics.
@@ -27,9 +27,9 @@ import org.wildfly.common.function.ExceptionFunction;
 public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
 
     private final Function<String, ServiceName> serviceNameFactory;
-    private final FunctionExecutorRegistry<Singleton> executors;
+    private final FunctionExecutorRegistry<ServiceName, Singleton> executors;
 
-    public SingletonMetricExecutor(Function<String, ServiceName> serviceNameFactory, FunctionExecutorRegistry<Singleton> executors) {
+    public SingletonMetricExecutor(Function<String, ServiceName> serviceNameFactory, FunctionExecutorRegistry<ServiceName, Singleton> executors) {
         this.serviceNameFactory = serviceNameFactory;
         this.executors = executors;
     }
@@ -37,7 +37,7 @@ public class SingletonMetricExecutor implements MetricExecutor<Singleton> {
     @Override
     public ModelNode execute(OperationContext context, Metric<Singleton> metric) throws OperationFailedException {
         ServiceName name = this.serviceNameFactory.apply(context.getCurrentAddressValue());
-        FunctionExecutor<Singleton> executor = this.executors.get(name.append("singleton"));
+        FunctionExecutor<Singleton> executor = this.executors.getExecutor(name.append("singleton"));
         return ((executor != null) ? executor : new LegacySingletonFunctionExecutor(context, name)).execute(new MetricFunction<>(Function.identity(), metric));
     }
 

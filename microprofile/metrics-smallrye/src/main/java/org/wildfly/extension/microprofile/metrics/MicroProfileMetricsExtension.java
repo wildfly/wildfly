@@ -26,7 +26,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class MicroProfileMetricsExtension extends AbstractLegacyExtension {
 
-    static final String EXTENSION_NAME = "org.wildfly.extension.microprofile.metrics.smallrye";
+    static final String EXTENSION_NAME = "org.wildfly.extension.microprofile.metrics-smallrye";
 
     /**
      * The name of our subsystem within the model.

@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Binding;
@@ -55,7 +56,7 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     @Override
     public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
         String cacheString = (String) environment.get(CACHE_CONTEXT);
-        boolean cache = cacheString != null && cacheString.toLowerCase().equals("true");
+        boolean cache = cacheString != null && cacheString.toLowerCase(Locale.ENGLISH).equals("true");
         if (cache) {
             if (cachedObject == null) {
                 synchronized (this) {

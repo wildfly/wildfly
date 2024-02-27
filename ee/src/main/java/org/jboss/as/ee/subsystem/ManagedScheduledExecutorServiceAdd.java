@@ -32,10 +32,6 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
 
     static final ManagedScheduledExecutorServiceAdd INSTANCE = new ManagedScheduledExecutorServiceAdd();
 
-    private ManagedScheduledExecutorServiceAdd() {
-        super(ManagedScheduledExecutorServiceResourceDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
@@ -69,7 +65,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
             threadPriority = null;
         }
 
-        final CapabilityServiceBuilder serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
+        final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Consumer<ManagedScheduledExecutorServiceAdapter> consumer = serviceBuilder.provides(ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY);
         final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService = serviceBuilder.requires(ConcurrentServiceNames.HUNG_TASK_PERIODIC_TERMINATION_SERVICE_NAME);
         String contextService = null;
@@ -83,7 +79,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         }
         final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
         Supplier<RequestController> requestControllerSupplier = null;
-        if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, null, null)) {
+        if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
         final ManagedScheduledExecutorServiceService service = new ManagedScheduledExecutorServiceService(consumer, contextServiceSupplier, managedThreadFactorySupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);

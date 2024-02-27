@@ -101,7 +101,7 @@ public abstract class AbstractCertificateLoginModuleTestCase {
             assertEquals("Secured page was not reached", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
 
             String principal = makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_OK);
-            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase());
+            assertEquals("Unexpected principal", "cn=client", principal.toLowerCase(Locale.ENGLISH));
 
             responseBody = makeCallWithHttpClient(unsecuredUrl, httpClientUntrusted, HttpServletResponse.SC_OK);
             assertEquals("Secured page was not reached", SimpleServlet.RESPONSE_BODY, responseBody);

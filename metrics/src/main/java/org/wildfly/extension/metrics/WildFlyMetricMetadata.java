@@ -11,6 +11,7 @@ import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerExceptio
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,9 +120,9 @@ public class WildFlyMetricMetadata implements MetricMetadata {
         Matcher m = SNAKE_CASE_PATTERN.matcher(in);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            m.appendReplacement(sb, "_" + m.group().toLowerCase());
+            m.appendReplacement(sb, "_" + m.group().toLowerCase(Locale.ENGLISH));
         }
         m.appendTail(sb);
-        return sb.toString().toLowerCase();
+        return sb.toString().toLowerCase(Locale.ENGLISH);
     }
 }

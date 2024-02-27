@@ -64,7 +64,7 @@ public class CacheServiceHandler<P extends CacheServiceConfiguratorProvider> imp
 
         ServiceName cacheServiceName = CACHE.getServiceName(cacheAddress);
         new CacheServiceConfigurator<>(cacheServiceName, containerName, cacheName).configure(context).build(target).install();
-        if (context.hasOptionalCapability(XA_RESOURCE_RECOVERY_REGISTRY.getName(), null, null)) {
+        if (context.hasOptionalCapability(XA_RESOURCE_RECOVERY_REGISTRY.getName(), CacheResourceDefinition.Capability.CACHE.getDefinition().getDynamicName(cacheAddress), null)) {
             new XAResourceRecoveryServiceConfigurator(cacheAddress).configure(context).build(target).install();
         }
 

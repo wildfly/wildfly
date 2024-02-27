@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ResourceCapabilityReference;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
@@ -23,6 +22,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.server.service.DistributedCacheServiceConfiguratorProvider;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes and clustered cache attributes.

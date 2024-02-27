@@ -135,7 +135,7 @@ final class HostAdd extends AbstractAddStepHandler {
             }
         }
         serviceNamesParam[serviceNamesParam.length - 1] = WebHost.SERVICE_NAME.append(context.getCurrentAddressValue());
-        final boolean rqCapabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, null, null);
+        final boolean rqCapabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, WebHost.CAPABILITY.getDynamicName(context.getCurrentAddress()), null);
 
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(WebHost.CAPABILITY);
         final Consumer<WebHost> whConsumer = sb.provides(capabilitiesParam, serviceNamesParam);

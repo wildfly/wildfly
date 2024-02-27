@@ -12,14 +12,14 @@ import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourc
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.controller.Capability;
 import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.clustering.naming.BinderServiceConfigurator;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +34,8 @@ import org.wildfly.clustering.infinispan.lifecycle.WildFlyInfinispanModuleLifecy
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.server.service.ProvidedIdentityCacheServiceConfigurator;
 import org.wildfly.clustering.service.IdentityServiceConfigurator;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
  * @author Paul Ferraro
@@ -42,6 +44,7 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
 
     private final ServiceValueRegistry<EmbeddedCacheManager> containerRegistry;
     private final ServiceValueRegistry<Cache<?, ?>> cacheRegistry;
+    private final Map<PathAddress, Consumer<OperationContext>> removers = new ConcurrentHashMap<>();
 
     public CacheContainerServiceHandler(ServiceValueRegistry<EmbeddedCacheManager> containerRegistry, ServiceValueRegistry<Cache<?, ?>> cacheRegistry) {
         this.containerRegistry = containerRegistry;
@@ -60,14 +63,14 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
         GlobalConfigurationServiceConfigurator configBuilder = new GlobalConfigurationServiceConfigurator(address);
         configBuilder.configure(context, model).build(target).install();
 
-        CacheContainerServiceConfigurator containerBuilder = new CacheContainerServiceConfigurator(address, this.cacheRegistry).configure(context, model);
-        containerBuilder.build(target).install();
+        ServiceName containerServiceName = CacheContainerResourceDefinition.Capability.CONTAINER.getDefinition().getCapabilityServiceName(address);
+        this.removers.put(address, this.containerRegistry.capture(ServiceDependency.on(containerServiceName)).install(context));
 
-        new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.add(containerBuilder.getServiceName())).build(target).install();
+        new CacheContainerServiceConfigurator(address, this.cacheRegistry).configure(context, model).build(target).install();
 
         new KeyAffinityServiceFactoryServiceConfigurator(address).build(target).install();
 
-        new BinderServiceConfigurator(InfinispanBindingFactory.createCacheContainerBinding(name), containerBuilder.getServiceName()).build(target).install();
+        new BinderServiceConfigurator(InfinispanBindingFactory.createCacheContainerBinding(name), containerServiceName).build(target).install();
 
         String defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asString(null);
         if (defaultCache != null) {
@@ -113,6 +116,9 @@ public class CacheContainerServiceHandler implements ResourceServiceHandler {
             context.removeService(capability.getServiceName(address));
         }
 
-        context.removeService(new ServiceValueCaptorServiceConfigurator<>(this.containerRegistry.remove(CacheContainerResourceDefinition.Capability.CONTAINER.getServiceName(address))).getServiceName());
+        Consumer<OperationContext> remover = this.removers.remove(address);
+        if (remover != null) {
+            remover.accept(context);
+        }
     }
 }

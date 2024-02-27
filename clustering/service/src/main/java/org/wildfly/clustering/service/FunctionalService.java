@@ -58,6 +58,7 @@ public class FunctionalService<T, V> implements Service {
             LOGGER.warn(e.getLocalizedMessage(), e);
         } finally {
             this.value = null;
+            this.consumer.accept(null);
         }
     }
 }

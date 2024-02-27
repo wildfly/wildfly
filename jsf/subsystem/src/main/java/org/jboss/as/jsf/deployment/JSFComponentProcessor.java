@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,7 +84,7 @@ public class JSFComponentProcessor implements DeploymentUnitProcessor {
         private final String tagName;
 
         JsfTag() {
-            tagName = this.name().toLowerCase().replaceAll("_", "-");
+            tagName = this.name().toLowerCase(Locale.ENGLISH).replaceAll("_", "-");
         }
 
         public String getTagName() {

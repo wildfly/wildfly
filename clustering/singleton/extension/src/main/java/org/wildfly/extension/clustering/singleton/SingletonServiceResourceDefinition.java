@@ -6,12 +6,12 @@
 package org.wildfly.extension.clustering.singleton;
 
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Paul Ferraro
@@ -28,9 +28,9 @@ public class SingletonServiceResourceDefinition extends ChildResourceDefinition<
         return PathElement.pathElement("service", name);
     }
 
-    private final FunctionExecutorRegistry<Singleton> executors;
+    private final FunctionExecutorRegistry<ServiceName, Singleton> executors;
 
-    public SingletonServiceResourceDefinition(FunctionExecutorRegistry<Singleton> executors) {
+    public SingletonServiceResourceDefinition(FunctionExecutorRegistry<ServiceName, Singleton> executors) {
         super(new Parameters(WILDCARD_PATH, SingletonExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH)).setRuntime());
         this.executors = executors;
     }
