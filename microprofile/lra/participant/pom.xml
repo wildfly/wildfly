@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-microprofile-lra</artifactId>
-    <version>31.0.1.Final-SNAPSHOT</version>
+    <version>31.0.1.Final</version>
   </parent>
 
   <artifactId>wildfly-microprofile-lra-participant</artifactId>
