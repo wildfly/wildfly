@@ -19,18 +19,26 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * Subsystem parsing test case.
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
+@RunWith(Parameterized.class)
 public class OidcTestCase extends AbstractSubsystemTest {
 
     private OidcConfigService configService;
     private KernelServices services = null;
 
-    public OidcTestCase() {
+    @Parameterized.Parameters
+    public static Iterable<ElytronOidcSubsystemSchema> parameters() {
+        return ElytronOidcSubsystemSchema.CURRENT.values();
+    }
+
+    public OidcTestCase(ElytronOidcSubsystemSchema schema) {
         super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
     }
 

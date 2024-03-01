@@ -37,11 +37,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -60,6 +62,7 @@ import org.wildfly.security.http.oidc.Oidc;
  */
 class SecureServerDefinition extends SimpleResourceDefinition {
 
+    static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(SECURE_SERVER), Stability.DEFAULT);
     private static String HTTP_MANAGEMENT_CONTEXT = "http-management-context";
 
     SecureServerDefinition() {
