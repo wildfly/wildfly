@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;

@@ -16,10 +16,15 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A {@link ResourceDefinition} for a Keycloak realm definition.
@@ -28,6 +33,9 @@ import org.jboss.dmr.ModelNode;
  */
 class RealmDefinition extends SimpleResourceDefinition {
 
+    static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.REALM), Stability.DEFAULT);
+    static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder("type", ModelType.STRING)
+            .build();
     RealmDefinition() {
         super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.REALM),
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.REALM))
