@@ -7,10 +7,12 @@ package org.wildfly.extension.elytron.oidc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceXMLDescriptionWriter;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -34,13 +36,6 @@ public class ElytronOidcExtension implements Extension {
 
     private static final String RESOURCE_NAME = ElytronOidcExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    protected static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_2_0_0;
-
-    private static final ElytronOidcSubsystemParser_1_0 ELYTRON_OIDC_SUBSYSTEM_PARSER_1_0 = new ElytronOidcSubsystemParser_1_0();
-    private static final ElytronOidcSubsystemParser_2_0 CURRENT_PARSER = new ElytronOidcSubsystemParser_2_0();
-
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefixes) {
         StringBuilder sb = new StringBuilder(SUBSYSTEM_NAME);
         if (keyPrefixes != null) {
@@ -51,19 +46,17 @@ public class ElytronOidcExtension implements Extension {
         return new StandardResourceDescriptionResolver(sb.toString(), RESOURCE_NAME, ElytronOidcExtension.class.getClassLoader(),
                 true, false);
     }
+
     @Override
     public void initialize(ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        subsystem.registerXMLElementWriter(CURRENT_PARSER);
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, ElytronOidcClientSubsystemModel.CURRENT.getVersion());
+        subsystem.registerXMLElementWriter(new PersistentResourceXMLDescriptionWriter(ElytronOidcSubsystemSchema.CURRENT.get(context.getStability())));
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ElytronOidcSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_1_0.NAMESPACE_1_0, ELYTRON_OIDC_SUBSYSTEM_PARSER_1_0);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemParser_2_0.NAMESPACE_2_0, CURRENT_PARSER);
+        context.setSubsystemXmlMappings(SUBSYSTEM_NAME, EnumSet.allOf(ElytronOidcSubsystemSchema.class));
     }
-
-
 }
