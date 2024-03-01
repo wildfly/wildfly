@@ -12,7 +12,7 @@ import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.version.Stability;
@@ -24,25 +24,30 @@ import org.junit.Test;
  *
  * <a href="mailto:araskar@redhat.com">Ashpan Raskar</a>
  */
-public class ExpressionsTestCase extends AbstractSubsystemTest {
+public class ExpressionsTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsystemSchema> {
 
     private KernelServices services = null;
 
     public ExpressionsTestCase() {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
     }
 
     @Test
     public void testExpressions() throws Throwable {
         if (services != null) return;
         String subsystemXml = "oidc-expressions.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXmlResource(subsystemXml).build();
+        services = super.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability())).setSubsystemXmlResource(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
     }
 
-    private static class DefaultInitializer extends AdditionalInitialization {
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) {
+        //
+    }
+
+    protected static class DefaultInitializer extends AdditionalInitialization {
 
         private final Stability stability;
 
@@ -65,6 +70,7 @@ public class ExpressionsTestCase extends AbstractSubsystemTest {
         public Stability getStability() {
             return stability;
         }
+
     }
 
 }

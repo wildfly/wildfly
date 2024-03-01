@@ -17,7 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.jboss.as.controller.*;
+import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -163,7 +174,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
     private static final String WAR_FILE_EXTENSION = ".war";
 
     SecureDeploymentDefinition() {
-        super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT))
                 .setAddHandler(SecureDeploymentAddHandler.INSTANCE)
                 .setRemoveHandler(SecureDeploymentRemoveHandler.INSTANCE)

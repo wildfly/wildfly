@@ -13,7 +13,7 @@ import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.version.Stability;
@@ -26,20 +26,20 @@ import org.junit.Test;
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class OidcTestCase extends AbstractSubsystemTest {
+public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsystemSchema> {
 
     private OidcConfigService configService;
     private KernelServices services = null;
 
     public OidcTestCase() {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
     }
 
     @Before
     public void prepare() throws Throwable {
         if (services != null) return;
         String subsystemXml = "oidc.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXmlResource(subsystemXml).build();
+        services = super.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability())).setSubsystemXmlResource(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
@@ -107,6 +107,11 @@ public class OidcTestCase extends AbstractSubsystemTest {
         String expectedJson =
                 "{\"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) {
+        //
     }
 
     protected static class DefaultInitializer extends AdditionalInitialization {

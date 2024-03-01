@@ -16,7 +16,7 @@ import org.jboss.as.controller.SubsystemModel;
 enum ElytronOidcClientSubsystemModel implements SubsystemModel {
     VERSION_1_0_0(1, 0, 0),
     VERSION_2_0_0(2, 0, 0),
-    VERSION_3_0_0(3, 0, 0),
+    VERSION_3_0_0(3, 0, 0), // WildFly 32.0-present
     ;
     static final ElytronOidcClientSubsystemModel CURRENT = VERSION_3_0_0;
 
