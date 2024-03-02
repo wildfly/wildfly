@@ -32,30 +32,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
     public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
     private static final String DISALLOW_DOCTYPE_DECL = "com.sun.faces.disallowDoctypeDecl";
     private static final String LAZY_BEAN_VALIDATION_PARAM = "com.sun.faces.enableLazyBeanValidation";
-
-
-    private static final int defaultBufferSize;
-
-    // This is copied from org.wildfly.extension.undertow.ByteBufferPoolDefinition to come up with a decent default for
-    // the jakarta.faces.FACELETS_BUFFER_SIZE property. We calculate this because the default is 1024, which is very
-    // small, https://jakarta.ee/specifications/faces/4.0/jakarta-faces-4.0.html#a6088. Per the spec we could use -1
-    // as the default, but Mojarra does not currently support that. Once https://github.com/eclipse-ee4j/mojarra/issues/5262
-    // is resolved, and we can upgrade, we should be able to default to -1.
-    static {
-        long maxMemory = Runtime.getRuntime().maxMemory();
-        //smaller than 64mb of ram we use 512b buffers
-        if (maxMemory < 64 * 1024 * 1024) {
-            //use 512b buffers
-            defaultBufferSize = 512;
-        } else if (maxMemory < 128 * 1024 * 1024) {
-            //use 1k buffers
-            defaultBufferSize = 1024;
-        } else {
-            //use 16k buffers for best performance
-            //as 16k is generally the max amount of data that can be sent in a single write() call
-            defaultBufferSize = 1024 * 16;
-        }
-    }
+    private static final int DEFAULT_BUFFERS_IZE = -1;
 
     private final Boolean disallowDoctypeDecl;
 
@@ -113,7 +90,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         // First check the legacy facelets.BUFFER_SIZE property which is required for backwards compatibility
         if (!hasContextParam(webMetaData, "facelets.BUFFER_SIZE")) {
             // The legacy parameter has not been set, set a default buffer if the current parameter name has not been set.
-            setContextParameterIfAbsent(webMetaData, ViewHandler.FACELETS_BUFFER_SIZE_PARAM_NAME, Integer.toString(defaultBufferSize));
+            setContextParameterIfAbsent(webMetaData, ViewHandler.FACELETS_BUFFER_SIZE_PARAM_NAME, Integer.toString(DEFAULT_BUFFERS_IZE));
         }
     }
 
