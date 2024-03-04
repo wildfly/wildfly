@@ -51,6 +51,14 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-audit@.*$</packageUrl>
       <cpe>cpe:/a:linux_audit_project:linux_audit</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      Match all components from WildFly Core, these should use CPE redhat:wildfly-core
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
