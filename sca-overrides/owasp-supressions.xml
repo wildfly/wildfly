@@ -73,6 +73,13 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-ee-9-deployment-transformer-1.0.0.Final.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.deployment/wildfly\-ee\-9\-deployment\-transformer@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
 
    <!-- CVE Expressions -->
 
