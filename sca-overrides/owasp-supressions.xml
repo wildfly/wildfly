@@ -66,6 +66,13 @@
       <cpe>cpe:/a:redhat:wildfly</cpe>
       <cpe>cpe:/a:redhat:wildfly_core</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: transformer-7.0.0.Beta2.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
 
    <!-- CVE Expressions -->
 
