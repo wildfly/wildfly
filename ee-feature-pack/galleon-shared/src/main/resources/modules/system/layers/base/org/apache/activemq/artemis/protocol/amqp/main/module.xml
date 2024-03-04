@@ -31,6 +31,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.management"/>
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
         <module name="jakarta.transaction.api"/>
