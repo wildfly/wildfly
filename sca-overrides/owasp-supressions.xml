@@ -152,4 +152,11 @@
       <cve>CVE-2011-5245</cve> <!-- CVE within Rest Easy not RestEasy Tracing API -->
       <cve>CVE-2012-0818</cve> <!-- CVE within Rest Easy not RestEasy Tracing API -->
    </suppress>
+   <suppress until="2025-03-04">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.12.Final.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2016-6311</vulnerabilityName>
+   </suppress>
 </suppressions>
