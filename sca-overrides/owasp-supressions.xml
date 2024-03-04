@@ -110,5 +110,13 @@
       <cve>CVE-2024-25710</cve>
       <cve>CVE-2024-26308</cve>
    </suppress>
-
+   <suppress until="2025-03-04">
+      <notes><![CDATA[
+      file name: opentelemetry-proto-0.20.0-alpha.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.proto/opentelemetry\-proto@.*$</packageUrl>
+      <cve>CVE-2023-43810</cve> <!-- CVE within the Python library. -->
+      <cve>CVE-2023-45142</cve> <!-- CVE within the Go library. -->
+      <cve>CVE-2023-47108</cve> <!-- CVE within the Go library. -->
+   </suppress>
 </suppressions>
