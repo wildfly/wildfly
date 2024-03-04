@@ -102,4 +102,13 @@
       <packageUrl regex="true">^pkg:maven/org\.jgroups\.aws/jgroups\-aws@.*$</packageUrl>
       <cve>CVE-2016-2141</cve>
    </suppress>
+   <suppress until="2025-03-04">
+      <notes><![CDATA[
+      file name: commons-compress-1.24.0.jar
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$</packageUrl>
+      <cve>CVE-2024-25710</cve>
+      <cve>CVE-2024-26308</cve>
+   </suppress>
+
 </suppressions>
