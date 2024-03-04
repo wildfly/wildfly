@@ -62,10 +62,16 @@ To delete existing identity from filesystem realm:
 It's possible to update the ``key-store`` or ``key-store-alias`` to use for integrity checking using the ``update-key-pair`` command as shown below. These commands will also update the signature in any existing identity files.
 [source, options="nowrap"]
 ----
+batch
 /subsystem=elytron/filesystem-realm=fsRealm:write-attribute(name=key-store, value=newKeystore)
 /subsystem=elytron/filesystem-realm=fsRealm:write-attribute(name=key-store-alias, value=newKeystoreAlias)
+run-batch
+reload
 /subsystem=elytron/filesystem-realm=fsRealm:update-key-pair()
 ----
+
+IMPORTANT: An update of attributes requires a reload or restart
+to take effect. Otherwise, the ``update-key-pair`` operation can result in an inconsistent state.
 
 === Programmatic approach
 

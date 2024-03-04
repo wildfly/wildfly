@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "31.";
+    private static final String MAJOR = "32.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -198,14 +198,15 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.web"
                 ), true),
         WILDFLY_30_0("WildFly30.0", WILDFLY_29_0, List.of(), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_30_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_31_0("WildFly31.0", WILDFLY_30_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_31_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of();
+            return List.of("org.wildfly.extension.elytron.jaas-realm");
         }
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.

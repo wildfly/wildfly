@@ -41,7 +41,7 @@ $JBOSS_HOME/bin/domain.sh --properties=/some/location/jboss.properties
 $JBOSS_HOME/bin/domain.sh -P=/some/location/jboss.properties
 ----
 
-Note however, that properties set this way are not processed as part of
+Note however, that properties set this way (`-D` and `-P`) are not processed as part of
 JVM launch. They are processed early in the boot process, but this
 mechanism should not be used for setting properties that control JVM
 behavior (e.g. java.net.perferIPv4Stack) or the behavior of the JBoss

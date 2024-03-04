@@ -39,15 +39,13 @@ public class UseCaseValidator implements Serializable {
 
     private void init() {
 
-        int i = 1;
-
         // *) We should probably clear the entire ContextData before the client unmarshalls the response, but we are going to try
         // this upstream since we do not wnat to potentially break some customer in EAP 7
         // - we also need to make sure there is no CDI stuff that needs to keep it.
         // Document special keys, like jboss.returned.keys, jboss.source.address, etc Make sure these are in
 
         // Use Case 1 - client interceptor sends data to EJB , but it is not sent back
-        useCases.add(new UseCase(i++, "client interceptor sends data to EJB , but it is not sent back") {
+        useCases.add(new UseCase(1, "client interceptor sends data to EJB , but it is not sent back") {
             @Override
             public void init() {
                 // add data to UseCase1 key in the client interceptor and expect to see it until the server interceptor finishes
@@ -59,7 +57,7 @@ public class UseCaseValidator implements Serializable {
 
                 // we will set the value on the client side and expect it to never change
                 if(iface == Interface.REMOTE) {
-                    super.addExpectation(InvocationPhase.CLIENT_INT_HANDLE_INVOCATION);
+                    super.addExpectation(InvocationPhase.CLIENT_INT_HANDLE_INVOCATION, InvocationPhase.SERVER_INT_AFTER);
                 } else { // local interface is getting the returned value since it is inVM, so we will expect it to change
                     super.addExpectation(InvocationPhase.CLIENT_INT_HANDLE_INVOCATION, InvocationPhase.SERVER_INT_AFTER);
                     super.addExpectation(InvocationPhase.SERVER_INT_AFTER, serverUpdatedValue);
@@ -76,8 +74,7 @@ public class UseCaseValidator implements Serializable {
             }
         });
 
-        // Use Case 2
-        getUseCases().add(new UseCase(i++, "client interceptor sends data to EJB, EJB sees it and sends back") {
+        getUseCases().add(new UseCase(2, "client interceptor sends data to EJB, EJB sees it and sends back") {
             @Override
             public void init() {
                 // add data to UseCase1 key in the client interceptor and expect to see it until the server interceptor finishes
@@ -101,7 +98,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 3) client interceptor sends data to EJB, EJB modifies and sends back
-        getUseCases().add(new UseCase(i++, "client interceptor sends data to EJB, EJB modifies and sends back") {
+        getUseCases().add(new UseCase(3, "client interceptor sends data to EJB, EJB modifies and sends back") {
             @Override
             public void init() {
                 // we want this key / value sent back from the server
@@ -119,7 +116,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 4) client interceptor sends data to EJB, EJB removes it and client sees it removed
-        getUseCases().add(new UseCase(i++, "client interceptor sends data to EJB, EJB removes it and client sees it removed") {
+        getUseCases().add(new UseCase(4, "client interceptor sends data to EJB, EJB removes it and client sees it removed") {
             @Override
             public void init() {
                 // we want this key / value sent back from the server
@@ -144,7 +141,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 5) client interceptor sends data to EJB, EJB removes it and client sees that the value is null as it was not returned
-        getUseCases().add(new UseCase(i++, "client interceptor sends data to EJB, EJB removes it and client sees that the value is null as it was not returned") {
+        getUseCases().add(new UseCase(5, "client interceptor sends data to EJB, EJB removes it and client sees that the value is null as it was not returned") {
             @Override
             public void init() {
                 // we want this key / value sent back from the server
@@ -168,7 +165,7 @@ public class UseCaseValidator implements Serializable {
 
         // EJB Interceptor setting data:
         // 6) EJB Interceptor sets data, EJB sees it
-        getUseCases().add(new UseCase(i++, "EJB Interceptor sets data, EJB sees it") {
+        getUseCases().add(new UseCase(6, "EJB Interceptor sets data, EJB sees it") {
             @Override
             public void init() {
 
@@ -184,7 +181,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 7) EJB Interceptor sets data, EJB sees it, client sees it sent back
-        getUseCases().add(new UseCase(i++, "EJB Interceptor sets data, EJB sees it, client sees it sent back") {
+        getUseCases().add(new UseCase(7, "EJB Interceptor sets data, EJB sees it, client sees it sent back") {
             @Override
             public void init() {
 
@@ -199,7 +196,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 8) EJB Interceptor sets data, EJB sees it, EJB modifies it, client sees it sent back
-        getUseCases().add(new UseCase(i++, "EJB Interceptor sets data, EJB sees it, EJB modifies it, client sees it sent back") {
+        getUseCases().add(new UseCase(8, "EJB Interceptor sets data, EJB sees it, EJB modifies it, client sees it sent back") {
             @Override
             public void init() {
 
@@ -217,7 +214,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 9) EJB Interceptor sets data, EJB sees it, EJB removes it, client sees it removed
-        getUseCases().add(new UseCase(i++, "EJB Interceptor sets data, EJB sees it, EJB removes it, client sees it removed") {
+        getUseCases().add(new UseCase(9, "EJB Interceptor sets data, EJB sees it, EJB removes it, client sees it removed") {
             @Override
             public void init() {
 
@@ -235,7 +232,7 @@ public class UseCaseValidator implements Serializable {
 
 
         // 10) EJB Interceptor sets data after EJB call, EJB does not it, client sees it
-        getUseCases().add(new UseCase(i++, "EJB Interceptor sets data after EJB call, EJB does not it, client sees it") {
+        getUseCases().add(new UseCase(10, "EJB Interceptor sets data after EJB call, EJB does not it, client sees it") {
             @Override
             public void init() {
 
@@ -251,7 +248,7 @@ public class UseCaseValidator implements Serializable {
 
         // EJB Setting data:
         // 11) EJB sends data, EJB interceptor sees it at end, client interceptor does not it
-        getUseCases().add(new UseCase(i++, "EJB sends data, EJB interceptor sees it at end, client interceptor does not it") {
+        getUseCases().add(new UseCase(11, "EJB sends data, EJB interceptor sees it at end, client interceptor does not it") {
             @Override
             public void init() {
 
@@ -267,7 +264,7 @@ public class UseCaseValidator implements Serializable {
         });
 
         // 12) EJB sends data, EJB interceptor sees it at end, client interceptor sees it
-        getUseCases().add(new UseCase(i++, "EJB sends data, EJB interceptor sees it at end, client interceptor sees it") {
+        getUseCases().add(new UseCase(12, "EJB sends data, EJB interceptor sees it at end, client interceptor sees it") {
             @Override
             public void init() {
 
