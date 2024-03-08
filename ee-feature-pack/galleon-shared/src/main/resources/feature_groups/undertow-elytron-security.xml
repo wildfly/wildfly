@@ -12,4 +12,7 @@
             <param name="security-domain" value="ApplicationDomain"/>
         </feature>
     </feature>
+
+    <feature-group name="application-http-basic"/>
+    <feature-group name="undertow-http-invoker"/>
 </feature-group-spec>
