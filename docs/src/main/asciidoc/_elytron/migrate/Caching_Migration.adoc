@@ -83,7 +83,7 @@ These can then be used in a security domain and subsequently an authentication f
 ./subsystem=elytron/http-authentication-factory=application-security-http:add(http-server-mechanism-factory=global, security-domain=application-security, mechanism-configurations=[{mechanism-name=BASIC}])
 ----
 
-In this final step it is very important that the caching-realm is referenced rather than the original realm otherwise caching will be bypassed.
+In this final step it is very important that the caching-realm is referenced rather than the original realm otherwise caching will be bypassed. When credentials are updated externally in the LDAP server, the user's obsolete credential will be removed when the user successfully authenticates with the updated credential.
 
 This results in the following definitions:
 
