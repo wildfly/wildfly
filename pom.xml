@@ -492,7 +492,7 @@
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate>6.4.4.Final</version.org.hibernate>
-        <version.org.hibernate.search>7.0.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>7.1.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.1.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
         <version.org.infinispan>14.0.24.Final</version.org.infinispan>
