@@ -14,6 +14,9 @@
                         <interleaving/>
                         <no-tx-separate-pools/>
                     </xa-pool>
+                    <security>
+                        <application/>
+                    </security>
                     <recovery/>
                 </connection-definition>
             </connection-definitions>
