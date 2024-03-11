@@ -117,6 +117,10 @@ public class PooledConnectionFactoryDefinition extends PersistentResourceDefinit
     private final boolean deployed;
     private final boolean external;
 
+    /**
+     * Constructor for a pooled connection factory.
+     * @param deployed: indicates if this resource describe a pcf created via a deployment.
+     */
     public PooledConnectionFactoryDefinition(final boolean deployed) {
         this(new SimpleResourceDefinition.Parameters(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY))
                 .setAddHandler(PooledConnectionFactoryAdd.INSTANCE)

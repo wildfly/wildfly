@@ -27,15 +27,15 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING, CommonAttributes.PARAMS };
 
-    static GenericTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(true, registerRuntimeOnly, CommonAttributes.ACCEPTOR);
+    static GenericTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnlyValid) {
+        return new GenericTransportDefinition(true, registerRuntimeOnlyValid, CommonAttributes.ACCEPTOR);
     }
 
-    static GenericTransportDefinition createConnectorDefinition(boolean registerRuntimeOnly) {
-        return new GenericTransportDefinition(false, registerRuntimeOnly, CommonAttributes.CONNECTOR);
+    static GenericTransportDefinition createConnectorDefinition(boolean registerRuntimeOnlyValid) {
+        return new GenericTransportDefinition(false, registerRuntimeOnlyValid, CommonAttributes.CONNECTOR);
     }
 
-    private GenericTransportDefinition(boolean isAcceptor, boolean registerRuntimeOnly, String specificType) {
-        super(isAcceptor, specificType, registerRuntimeOnly, ATTRIBUTES);
+    private GenericTransportDefinition(boolean isAcceptor, boolean registerRuntimeOnlyValid, String specificType) {
+        super(isAcceptor, specificType, registerRuntimeOnlyValid, ATTRIBUTES);
     }
 }

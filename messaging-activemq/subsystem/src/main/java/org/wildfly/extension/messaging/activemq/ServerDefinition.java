@@ -939,22 +939,22 @@ public class ServerDefinition extends PersistentResourceDefinition {
             ADDRESS_QUEUE_SCAN_PERIOD
     };
 
-    private final boolean registerRuntimeOnly;
+    private final boolean registerRuntimeOnlyValid;
 
-    ServerDefinition(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller, boolean registerRuntimeOnly) {
+    ServerDefinition(BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller, boolean registerRuntimeOnlyValid) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.SERVER))
                 .setAddHandler(new ServerAdd(broadcastCommandDispatcherFactoryInstaller))
                 .setRemoveHandler(ServerRemove.INSTANCE)
                 .addCapabilities(Capabilities.ACTIVEMQ_SERVER_CAPABILITY)
                 .setAdditionalPackages(RuntimePackageDependency.required("org.apache.activemq.artemis"), RuntimePackageDependency.required("org.apache.activemq.artemis.journal")));
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.registerRuntimeOnlyValid = registerRuntimeOnlyValid;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        if (registerRuntimeOnly) {
+        if (registerRuntimeOnlyValid) {
             ExportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
             ImportJournalOperation.registerOperation(resourceRegistration, getResourceDescriptionResolver());
             PrintDataOperation.INSTANCE.registerOperation(resourceRegistration, getResourceDescriptionResolver());
@@ -968,8 +968,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ActiveMQServerControlWriteHandler.INSTANCE.registerAttributes(resourceRegistration, registerRuntimeOnly);
-        if (registerRuntimeOnly) {
+        ActiveMQServerControlWriteHandler.INSTANCE.registerAttributes(resourceRegistration, registerRuntimeOnlyValid);
+        if (registerRuntimeOnlyValid) {
             ActiveMQServerControlHandler.INSTANCE.registerAttributes(resourceRegistration);
         }
     }
@@ -985,8 +985,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
         // Static resources
         children.addAll(Arrays.asList(// HA policy
                 new LiveOnlyDefinition(),
-                new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, registerRuntimeOnly),
-                new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, registerRuntimeOnly),
+                new ReplicationPrimaryDefinition(MessagingExtension.REPLICATION_PRIMARY_PATH, false, registerRuntimeOnlyValid),
+                new ReplicationSecondaryDefinition(MessagingExtension.REPLICATION_SECONDARY_PATH, false, registerRuntimeOnlyValid),
                 new ReplicationColocatedDefinition(),
                 new SharedStorePrimaryDefinition(MessagingExtension.SHARED_STORE_PRIMARY_PATH, false),
                 new SharedStoreSecondaryDefinition(MessagingExtension.SHARED_STORE_SECONDARY_PATH, false),
@@ -1008,28 +1008,28 @@ public class ServerDefinition extends PersistentResourceDefinition {
 
         // Dynamic resources (depending on registerRuntimeOnly)
         // acceptors
-        children.add(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
-        children.add(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
-        children.add(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
+        children.add(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnlyValid));
+        children.add(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnlyValid));
+        children.add(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnlyValid));
         // connectors
-        children.add(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        children.add(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        children.add(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        children.add(new HTTPConnectorDefinition(registerRuntimeOnly));
+        children.add(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnlyValid));
+        children.add(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnlyValid));
+        children.add(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnlyValid));
+        children.add(new HTTPConnectorDefinition(registerRuntimeOnlyValid));
 
-        children.add(new BridgeDefinition(registerRuntimeOnly));
-        children.add(new BroadcastGroupDefinition(registerRuntimeOnly));
-        children.add(new SocketBroadcastGroupDefinition(registerRuntimeOnly));
-        children.add(new JGroupsBroadcastGroupDefinition(registerRuntimeOnly));
+        children.add(new BridgeDefinition(registerRuntimeOnlyValid));
+        children.add(new BroadcastGroupDefinition(registerRuntimeOnlyValid));
+        children.add(new SocketBroadcastGroupDefinition(registerRuntimeOnlyValid));
+        children.add(new JGroupsBroadcastGroupDefinition(registerRuntimeOnlyValid));
         // WFLY-10518 - keep discovery-group resource under server
-        children.add(new DiscoveryGroupDefinition(registerRuntimeOnly, false));
-        children.add(new JGroupsDiscoveryGroupDefinition(registerRuntimeOnly, false));
-        children.add(new SocketDiscoveryGroupDefinition(registerRuntimeOnly, false));
-        children.add(new ClusterConnectionDefinition(registerRuntimeOnly));
-        children.add(new QueueDefinition(registerRuntimeOnly, MessagingExtension.QUEUE_PATH));
-        children.add(new JMSQueueDefinition(false, registerRuntimeOnly));
-        children.add(new JMSTopicDefinition(false, registerRuntimeOnly));
-        children.add(new ConnectionFactoryDefinition(registerRuntimeOnly));
+        children.add(new DiscoveryGroupDefinition(registerRuntimeOnlyValid, false));
+        children.add(new JGroupsDiscoveryGroupDefinition(registerRuntimeOnlyValid, false));
+        children.add(new SocketDiscoveryGroupDefinition(registerRuntimeOnlyValid, false));
+        children.add(new ClusterConnectionDefinition(registerRuntimeOnlyValid));
+        children.add(new QueueDefinition(registerRuntimeOnlyValid, MessagingExtension.QUEUE_PATH));
+        children.add(new JMSQueueDefinition(false, registerRuntimeOnlyValid));
+        children.add(new JMSTopicDefinition(false, registerRuntimeOnlyValid));
+        children.add(new ConnectionFactoryDefinition(registerRuntimeOnlyValid));
 
         return children;
     }
@@ -1042,8 +1042,8 @@ public class ServerDefinition extends PersistentResourceDefinition {
         resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_MASTER_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_PRIMARY_PATH));
         resourceRegistration.registerAlias(MessagingExtension.SHARED_STORE_SLAVE_PATH, createAlias(resourceRegistration, MessagingExtension.SHARED_STORE_SECONDARY_PATH));
         // runtime queues and core-address are only registered when it is ok to register runtime resource (ie they are not registered on HC).
-        if (registerRuntimeOnly) {
-            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly, MessagingExtension.RUNTIME_QUEUE_PATH));
+        if (registerRuntimeOnlyValid) {
+            resourceRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnlyValid, MessagingExtension.RUNTIME_QUEUE_PATH));
             resourceRegistration.registerSubModel(new CoreAddressDefinition());
         }
     }
