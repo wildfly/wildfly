@@ -268,6 +268,7 @@ class ActiveMQServerService implements Service<ActiveMQBroker> {
             server = new ActiveMQServerImpl(configuration,
                     mbs,
                     securityManager);
+            server.getAddressSettingsRepository().setDefault(AddressSettingAdd.createDefaultAddressSettings());
             if (ServerDefinition.CLUSTER_PASSWORD.getDefaultValue().asString().equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }

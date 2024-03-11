@@ -43,7 +43,8 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
         final ActiveMQServer server = getActiveMQServer(context, operation);
         if(server != null) {
             final ModelNode model = resource.getModel();
-            final AddressSettings settings = AddressSettingAdd.createSettings(context, model);
+            boolean isRootAddressMatch = server.getConfiguration().getWildcardConfiguration().getAnyWordsString().equals(context.getCurrentAddressValue());
+            final AddressSettings settings = AddressSettingAdd.createSettings(context, model, isRootAddressMatch);
             final HierarchicalRepository<AddressSettings> repository = server.getAddressSettingsRepository();
             final String match = context.getCurrentAddressValue();
             final AddressSettings existingSettings = repository.getMatch(match);
