@@ -303,7 +303,7 @@
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
-        <version.com.nimbus.jose-jwt>8.11</version.com.nimbus.jose-jwt>
+        <version.com.nimbus.jose-jwt>9.37.3</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.sun.activation.jakarta.activation>1.2.2</version.com.sun.activation.jakarta.activation>
@@ -389,7 +389,7 @@
         <version.org.apache.xalan>2.7.3</version.org.apache.xalan>
         <version.org.apache.xerces>2.12.0.SP03</version.org.apache.xerces>
         <version.org.awaitility.awaitility>4.0.2</version.org.awaitility.awaitility>
-        <version.org.bitbucket.jose4j>0.9.3</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.9.4</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.11.12</version.org.bytebuddy>
         <version.org.cryptacular>1.2.5</version.org.cryptacular>
         <version.org.codehaus.woodstox.stax2-api>4.2.1</version.org.codehaus.woodstox.stax2-api>
