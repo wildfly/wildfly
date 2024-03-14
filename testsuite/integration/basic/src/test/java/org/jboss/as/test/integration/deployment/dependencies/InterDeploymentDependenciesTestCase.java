@@ -36,6 +36,8 @@ import org.lkop.minilib.annotations.MiniLib;
 import org.lkop.minilib.annotations.MiniLibAnnotation;
 import org.lkop.minilib.annotations.MiniLibDependenciesFolder;
 import org.lkop.minilib.annotations.MiniLibOutputFolder;
+import org.lkop.minilib.MiniLibEngine;
+
 
 
 /**
@@ -150,6 +152,16 @@ public class InterDeploymentDependenciesTestCase {
         return (StringView) context.lookup("ejb:" + APP_NAME + "/dependent/" + DISTINCT_NAME
                 + "/" + DependentEjb.class.getSimpleName() + "!" + StringView.class.getName());
 
+    }
+
+    @Test
+    public void test() {
+        try{
+	MiniLibEngine me = new MiniLibEngine();
+        me.setOutputFolder("/tmp");
+        me.setDependenciesFolder("/Users/psotirop/m22/repo");
+        me.generateCode(org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor.class, org.jboss.as.jaxrs.deployment.JaxrsIntegrationProcessor.class.getMethod("deploy",org.jboss.as.server.deployment.DeploymentPhaseContext.class));
+        }catch(Exception x) {x.printStackTrace();}
     }
 
 }
