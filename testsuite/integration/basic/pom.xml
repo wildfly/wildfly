@@ -58,10 +58,56 @@
         <!-- Disable the default surefire test execution. -->
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
+        <!-- Adding junit5 properties -->
+        <version.junit>5.9.1</version.junit>
+        <version.org.wildfly.arquillian>5.0.0.Alpha5</version.org.wildfly.arquillian>
+        <version.arquillian>1.7.0.Alpha12</version.arquillian>
+
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.arquillian}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+        <!--junit 5-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-common</artifactId>
+            <version>${version.org.wildfly.arquillian}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
