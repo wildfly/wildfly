@@ -29,8 +29,6 @@ import com.sun.faces.config.WebConfiguration;
 public class JSFMetadataProcessor implements DeploymentUnitProcessor {
 
     public static final String JAVAX_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
-    private static final String DISALLOW_DOCTYPE_DECL = "com.sun.faces.disallowDoctypeDecl";
-    private static final String LAZY_BEAN_VALIDATION_PARAM = "com.sun.faces.enableLazyBeanValidation";
     private static final int DEFAULT_BUFFERS_IZE = -1;
 
     private final Boolean disallowDoctypeDecl;
@@ -62,13 +60,13 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         }
         if (disallowDoctypeDecl != null) {
             // Add the disallowDoctypeDecl context param if it's not already present
-            setContextParameterIfAbsent(webMetaData, DISALLOW_DOCTYPE_DECL, disallowDoctypeDecl.toString());
+            setContextParameterIfAbsent(webMetaData, WebConfiguration.BooleanWebContextInitParameter.DisallowDoctypeDecl.getQualifiedName(), disallowDoctypeDecl.toString());
         }
         if (webMetaData.getDistributable() != null) {
             // Auto-disable lazy bean validation for distributable web application.
             // This can otherwise cause missing @PreDestroy events.
             String disabled = Boolean.toString(false);
-            if (!setContextParameterIfAbsent(webMetaData, LAZY_BEAN_VALIDATION_PARAM, disabled).equals(disabled)) {
+            if (!setContextParameterIfAbsent(webMetaData, WebConfiguration.BooleanWebContextInitParameter.EnableLazyBeanValidation.getQualifiedName(), disabled).equals(disabled)) {
                 JSFLogger.ROOT_LOGGER.lazyBeanValidationEnabled();
             }
 
