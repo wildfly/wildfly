@@ -19,10 +19,9 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.MultipartConfigMetaData;
 
-import com.sun.faces.config.ConfigureListener;
+import com.sun.faces.config.WebConfiguration;
 
 /**
  * @author Stuart Douglas
@@ -76,14 +75,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
             String version = JsfVersionMarker.getVersion(deploymentUnit);
             // Disable counter-productive "distributable" logic in Mojarra implementation
             if (version.equals(JsfVersionMarker.JSF_4_0) && JSFModuleIdFactory.getInstance().getImplModId(version).getSlot().equals(JSFResourceDefinition.DEFAULT_SLOT)) {
-                ListenerMetaData mojarraListenerMetaData = new ListenerMetaData();
-                mojarraListenerMetaData.setListenerClass(ConfigureListener.class.getName());
-                ListenerMetaData workaroundListenerMetaData = new ListenerMetaData();
-                workaroundListenerMetaData.setListenerClass(NonDistributableServletContextListener.class.getName());
-
-                webMetaData.getListeners().add(mojarraListenerMetaData);
-                // Ensure workaround listener runs after Mojarra's bootstrap listener
-                webMetaData.getListeners().add(workaroundListenerMetaData);
+                setContextParameterIfAbsent(webMetaData, WebConfiguration.BooleanWebContextInitParameter.EnableDistributable.getQualifiedName(), Boolean.FALSE.toString());
             }
         }
         // Set a default buffer size as 1024 is too small
