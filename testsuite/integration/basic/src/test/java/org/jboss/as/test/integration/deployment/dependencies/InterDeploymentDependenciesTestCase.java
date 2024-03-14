@@ -32,11 +32,18 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.jboss.arquillian.junit5.ArquillianExtension;
+import org.lkop.minilib.annotations.MiniLib;
+import org.lkop.minilib.annotations.MiniLibAnnotation;
+import org.lkop.minilib.annotations.MiniLibDependenciesFolder;
+import org.lkop.minilib.annotations.MiniLibOutputFolder;
 
 
 /**
  * Tests inter deployment dependencies
  */
+@ExtendWith(MiniLibAnnotation.class)
+@MiniLibDependenciesFolder("/Users/psotirop/m22/repo")
+@MiniLibOutputFolder("/tmp/")
 @ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InterDeploymentDependenciesTestCase {
@@ -55,6 +62,9 @@ public class InterDeploymentDependenciesTestCase {
 
     private static JavaArchive DEPENDENT = ShrinkWrap.create(JavaArchive.class, "dependent.jar")
                 .addClasses(DependentEjb.class, StringView.class)
+                .addPackage(org.lkop.minilib.MiniLibEngine.class.getPackage())
+                .addPackage(org.lkop.minilib.treecomponents.BaseVisitor.class.getPackage())
+                .addPackage(org.lkop.minilib.utils.StringUtils.class.getPackage())                
                 .addAsManifestResource(InterDeploymentDependenciesTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
 
     private static Context context;
@@ -95,6 +105,7 @@ public class InterDeploymentDependenciesTestCase {
     }
 
     @Test
+    @MiniLib
     public void testDeploymentDependencies() throws NamingException, DeploymentException {
 
         try {
@@ -112,6 +123,7 @@ public class InterDeploymentDependenciesTestCase {
     }
 
     @Test
+    @MiniLib
     public void testDeploymentDependenciesWithRestart() throws NamingException, IOException, DeploymentException {
 
         try {

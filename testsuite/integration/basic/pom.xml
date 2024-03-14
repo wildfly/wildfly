@@ -108,6 +108,19 @@
             <version>${version.org.wildfly.arquillian}</version>
             <scope>test</scope>
         </dependency>
+        <!--MiniLib dependencies-->
+        <dependency>
+            <groupId>org.lkop</groupId>
+            <artifactId>minilib</artifactId>
+            <version>0.1.0</version>
+            <scope>system</scope>
+            <systemPath>/Users/psotirop/MiniLib/MiniLib/target/minilib-0.1.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.29.2-GA</version>
+        </dependency>
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
