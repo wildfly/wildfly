@@ -205,11 +205,11 @@ public class ManagedExecutorServiceMetricsTestCase {
     private void testActiveRequestStats(PathAddress pathAddress, ManagedExecutorService executorService) throws IOException, ExecutionException, InterruptedException, BrokenBarrierException {
 
         // assert stats initial values
-        Assert.assertEquals(0, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 0);
 
         // exclusive testing of queue size stat
         final CyclicBarrier barrier1 = new CyclicBarrier(3);
@@ -223,7 +223,7 @@ public class ManagedExecutorServiceMetricsTestCase {
                 Assert.fail();
             }
         });
-        Assert.assertEquals(1, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 1);
         final Future f2 = executorService.submit(() -> {
             logger.info("Executing task #4.2");
             try {
@@ -233,15 +233,15 @@ public class ManagedExecutorServiceMetricsTestCase {
                 Assert.fail();
             }
         });
-        Assert.assertEquals(2, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 2);
         barrier1.await();
         // 2 tasks running, executing a 3rd should place it in queue,
         // cause when core threads is reached executor always prefers queueing than creating a new thread
         final Future f3 = executorService.submit(() -> {
             logger.info("Executing task #4.3");
         });
-        Assert.assertEquals(3, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
-        Assert.assertEquals(1, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 3);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 1);
         // executor is full, the following task will be rejected which should not increase the active request counter
         try {
             final Future f4 = executorService.submit(() -> {
@@ -251,17 +251,17 @@ public class ManagedExecutorServiceMetricsTestCase {
         } catch (RejectedExecutionException e) {
             // expected exception
         }
-        Assert.assertEquals(3, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 3);
         // resume tasks running, ensure all complete and then confirm expected idle stats
         barrier2.await();
         f1.get();
         f2.get();
         f3.get();
-        Assert.assertEquals(0, readStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT));
-        Assert.assertEquals(3, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT));
-        Assert.assertEquals(0, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE));
-        Assert.assertEquals(3, readStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT));
+        assertStatsAttribute(REQUEST_CONTROLLER_PATH_ADDRESS, ACTIVE_REQUEST_ATTRIBUTE_NAME, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT, 3);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE, 0);
+        assertStatsAttribute(pathAddress, ManagedExecutorServiceMetricsAttributes.TASK_COUNT, 3);
     }
 
     private void testRuntimeStats(PathAddress pathAddress, ManagedExecutorService executorService) throws IOException, ExecutionException, InterruptedException, BrokenBarrierException {
