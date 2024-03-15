@@ -327,6 +327,17 @@
         </dependency>
 
         <dependency>
+            <groupId>de.dentrassi.crypto</groupId>
+            <artifactId>pem-keystore</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>gnu.getopt</groupId>
             <artifactId>java-getopt</artifactId>
         </dependency>

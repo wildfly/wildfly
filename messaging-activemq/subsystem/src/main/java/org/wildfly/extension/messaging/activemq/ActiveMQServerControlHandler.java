@@ -113,7 +113,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+        if (READ_ATTRIBUTE_OPERATION.equals(operationName) || GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
             ActiveMQBroker server = null;
             if (context.getRunningMode() == RunningMode.NORMAL) {
                 ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
@@ -122,7 +122,12 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 }
                 server = ActiveMQBroker.class.cast(service.getValue());
             }
-            handleReadAttribute(context, operation, server);
+            if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+                handleReadAttribute(context, operation, server);
+                return;
+            }
+            String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+            context.getResult().set(server.getAddressSettingsAsJSON(addressMatch));
             return;
         }
 
@@ -202,7 +207,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
                 String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.getAddressSettingsAsJSON(addressMatch);
-                context.getResult().set(json);
+                context.getResult().set(ManagementUtil.convertAddressSettingInfosAsJSON(json));
             } else if (FORCE_FAILOVER.equals(operationName)) {
                 serverControl.forceFailover();
                 context.getResult();

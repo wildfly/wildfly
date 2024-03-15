@@ -33,15 +33,6 @@
         <!-- Use only by RemoteNamingResourceDefinition resource -->
         <module name="org.jboss.remoting" optional="true"/>
         <module name="org.jboss.threads"/>
-        <!--
-        The Angus Mail services are required to be able to load the Jakarta Mail Session from this Module context classloader
-        when listing the Mail context stored in the JNDI tree.
-        -->
-        <module name="org.eclipse.angus.mail" services="import" optional="true">
-            <imports>
-                <include path="META-INF"/>
-            </imports>
-        </module>
     </dependencies>
 
 </module>

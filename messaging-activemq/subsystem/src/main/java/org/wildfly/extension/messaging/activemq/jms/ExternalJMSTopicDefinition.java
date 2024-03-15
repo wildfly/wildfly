@@ -29,14 +29,17 @@ public class ExternalJMSTopicDefinition extends PersistentResourceDefinition {
         CommonAttributes.DESTINATION_ENTRIES, External.ENABLE_AMQ1_PREFIX
     };
 
-    private final boolean registerRuntimeOnly;
+    private final boolean deployed;
 
-    public ExternalJMSTopicDefinition(final boolean registerRuntimeOnly) {
+    /**
+     * @param deployed: indicates if this resource describe a JMS topic created via a deployment.
+     */
+    public ExternalJMSTopicDefinition(final boolean deployed) {
         super(MessagingExtension.EXTERNAL_JMS_TOPIC_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.EXTERNAL_JMS_TOPIC),
                 ExternalJMSTopicAdd.INSTANCE,
                 ExternalJMSTopicRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.deployed = deployed;
     }
 
     @Override
@@ -46,7 +49,7 @@ public class ExternalJMSTopicDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
+        if (deployed) {
             registry.registerReadOnlyAttribute(CommonAttributes.DESTINATION_ENTRIES, null);
             // Should this be read only as entries ?
             registry.registerReadOnlyAttribute(External.ENABLE_AMQ1_PREFIX, null);
