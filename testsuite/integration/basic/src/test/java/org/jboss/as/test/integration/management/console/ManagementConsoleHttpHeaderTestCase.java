@@ -42,7 +42,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class XFrameOptionsHeaderTestCase {
+public class ManagementConsoleHttpHeaderTestCase {
 
     private static final int MGMT_PORT = 9990;
 
@@ -53,6 +53,12 @@ public class XFrameOptionsHeaderTestCase {
     public void checkManagementConsoleForXFrameOptionsHeader() throws IOException, URISyntaxException {
         URL url = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, "/console/index.html");
         checkURLForHeader(url, "X-Frame-Options", "SAMEORIGIN");
+    }
+
+    @Test
+    public void checkManagementConsoleForXContentTypeOptionsHeader() throws IOException, URISyntaxException {
+        URL url = new URL("http", managementClient.getMgmtAddress(), MGMT_PORT, "/console/index.html");
+        checkURLForHeader(url, "X-Content-Type-Options", "nosniff");
     }
 
     private void checkURLForHeader(URL url, String headerName, String expectedHeaderValue) throws URISyntaxException, IOException {
