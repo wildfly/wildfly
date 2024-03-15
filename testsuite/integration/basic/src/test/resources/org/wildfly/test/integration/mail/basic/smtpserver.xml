@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<smtpservers>
+    <smtpserver enabled="true">
+        <jmxName>smtpserver-global</jmxName>
+        <bind>0.0.0.0:25</bind>
+        <connectionBacklog>200</connectionBacklog>
+        <tls socketTLS="false" startTLS="true">
+            <privateKey>file://conf/private.key</privateKey>
+            <certificates>file://conf/private.csr</certificates>
+        </tls>
+        <connectiontimeout>360</connectiontimeout>
+        <connectionLimit>0</connectionLimit>
+        <connectionLimitPerIP>0</connectionLimitPerIP>
+        <auth>
+            <announce>never</announce>
+            <requireSSL>false</requireSSL>
+        </auth>
+        <verifyIdentity>false</verifyIdentity>
+        <maxmessagesize>0</maxmessagesize>
+        <addressBracketsEnforcement>true</addressBracketsEnforcement>
+        <smtpGreeting>Apache JAMES awesome SMTP Server</smtpGreeting>
+        <handlerchain>
+            <handler class="org.apache.james.smtpserver.fastfail.ValidRcptHandler"/>
+            <handler class="org.apache.james.smtpserver.CoreCmdHandlerLoader"/>
+        </handlerchain>
+    </smtpserver>
+</smtpservers>
