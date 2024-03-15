@@ -23,6 +23,7 @@
         <module name="org.apache.activemq.artemis" optional="true" export="true"/>
         <!-- Import is required to get  access to SSLContext Factory for Elytron -->
         <module name="org.wildfly.extension.messaging-activemq" services="import" export="true"/>
+        <module name="de.dentrassi.crypto.pem-keystore" services="import" export="true"/>
         <module name="com.google.guava"/>
         <module name="jakarta.json.api"/>
         <module name="io.netty.netty-buffer"/>
@@ -41,7 +42,7 @@
         <module name="jakarta.resource.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.jms.api" />
-        <module name="sun.jdk"/>
+        <module name="java.base"/>
         <!-- supported protocols (in addition to the CORE protocol) -->
         <module name="org.apache.activemq.artemis.protocol.amqp" services="import" optional="true"/>
         <module name="org.apache.activemq.artemis.protocol.hornetq" services="import" optional="true"/>

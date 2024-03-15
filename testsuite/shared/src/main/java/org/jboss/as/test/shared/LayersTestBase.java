@@ -251,9 +251,8 @@ public abstract class LayersTestBase {
             "javax.api",
             "javax.sql.api",
             "javax.xml.stream.api",
-            // TODO see if org.apache.activemq.artemis.client can use specific JDK module(s)
-            //"sun.jdk",
-            //"sun.scripting",
+            "sun.jdk",
+            "sun.scripting",
             // Special support status -- wildfly-elytron-http-stateful-basic
             "org.wildfly.security.http.sfbasic",
             // test-all-layers installation is non-ha and does not include layers that provide jgroups
