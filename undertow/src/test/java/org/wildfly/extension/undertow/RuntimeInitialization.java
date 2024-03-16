@@ -13,8 +13,6 @@ import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 
-import io.undertow.server.DefaultByteBufferPool;
-
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -113,11 +111,6 @@ class RuntimeInitialization extends DefaultInitialization {
             builder2.install();
 
             target.addService(ControlledProcessStateService.SERVICE_NAME).setInstance(new NullService()).install();
-
-            final ServiceBuilder<?> sb0 = target.addService(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
-            final Consumer<DefaultByteBufferPool> dbbpConsumer = sb0.provides(ServiceName.parse(Capabilities.CAPABILITY_BYTE_BUFFER_POOL + ".default"));
-            sb0.setInstance(Service.newInstance(dbbpConsumer, new DefaultByteBufferPool(true, 2048)));
-            sb0.install();
 
             // ListenerRegistry.Listener listener = new ListenerRegistry.Listener("http", "default", "default",
             // InetSocketAddress.createUnresolved("localhost",8080));
