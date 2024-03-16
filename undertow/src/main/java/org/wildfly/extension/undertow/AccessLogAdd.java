@@ -47,6 +47,8 @@ final class AccessLogAdd extends AbstractAddStepHandler {
         final boolean extended = AccessLogDefinition.EXTENDED.resolveModelAttribute(context, model).asBoolean();
         final ModelNode relativeToNode = AccessLogDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
         final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
+        final int closeRetryDelay = AccessLogDefinition.CLOSE_RETRY_DELAY.resolveModelAttribute(context, model).asInt();
+        final int closeRetryCount = AccessLogDefinition.CLOSE_RETRY_COUNT.resolveModelAttribute(context, model).asInt();
 
         Predicate predicate = null;
         ModelNode predicateNode = AccessLogDefinition.PREDICATE.resolveModelAttribute(context, model);
@@ -66,7 +68,7 @@ final class AccessLogAdd extends AbstractAddStepHandler {
         if (useServerLog) {
             service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, extended, predicate);
         } else {
-            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, false, predicate);
+            service = new AccessLogService(sConsumer, hSupplier, wSupplier, pmSupplier, pattern, directory, relativeTo, filePrefix, fileSuffix, rotate, extended, false, predicate, closeRetryCount, closeRetryDelay);
         }
         sb.setInstance(service);
         sb.install();

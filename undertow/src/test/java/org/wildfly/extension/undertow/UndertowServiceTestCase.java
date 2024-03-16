@@ -29,7 +29,7 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String DEFAULT_VIRTUAL_HOST = "default-host";
 
     public UndertowServiceTestCase() {
-        super(UndertowSubsystemSchema.VERSION_12_0);
+        super(UndertowSubsystemSchema.CURRENT);
     }
 
     @Override
