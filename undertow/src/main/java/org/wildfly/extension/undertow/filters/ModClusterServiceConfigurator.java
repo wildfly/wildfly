@@ -95,7 +95,7 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
         if (ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(context, model).isDefined()) {
-             ROOT_LOGGER.runtimeSecurityRealmUnsupported();
+             throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
 
         this.captor = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
