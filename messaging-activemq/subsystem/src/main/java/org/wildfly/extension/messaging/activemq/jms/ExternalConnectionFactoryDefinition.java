@@ -76,14 +76,11 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
         Common.INITIAL_MESSAGE_PACKET_SIZE,
         Common.USE_TOPOLOGY};
 
-    private final boolean registerRuntimeOnly;
-
-    public ExternalConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    public ExternalConnectionFactoryDefinition() {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))
                 .setCapabilities(CAPABILITY)
                 .setAddHandler(ExternalConnectionFactoryAdd.INSTANCE)
                 .setRemoveHandler(ExternalConnectionFactoryRemove.INSTANCE));
-        this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
@@ -94,10 +91,6 @@ public class ExternalConnectionFactoryDefinition extends PersistentResourceDefin
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
-
-        if (registerRuntimeOnly) {
-            ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
-        }
     }
 
     @Override

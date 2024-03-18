@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
@@ -33,10 +32,6 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
 
     static final String IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME = "org.wildfly.io.max-threads";
 
-    StrictMaxPoolAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
@@ -50,7 +45,7 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
         CapabilityServiceBuilder<?> sb = capabilityServiceTarget.addCapability(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY);
         final Consumer<StrictMaxPoolConfig> configConsumer = sb.provides(StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY);
         Supplier<Integer> maxThreadsSupplier = null;
-        if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, null, null)) {
+        if (context.hasOptionalCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, StrictMaxPoolResourceDefinition.STRICT_MAX_POOL_CONFIG_CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             maxThreadsSupplier = sb.requiresCapability(IO_MAX_THREADS_RUNTIME_CAPABILITY_NAME, Integer.class);
         }
         final StrictMaxPoolConfigService poolConfigService = new StrictMaxPoolConfigService(configConsumer, maxThreadsSupplier, poolName, maxPoolSize, derive, timeout, TimeUnit.valueOf(unit));

@@ -25,14 +25,17 @@ import org.wildfly.extension.messaging.activemq.jms.ConnectionFactoryAttributes.
 public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {CommonAttributes.DESTINATION_ENTRIES, External.ENABLE_AMQ1_PREFIX};
-    private final boolean registerRuntimeOnly;
+    private final boolean deployed;
 
-    public ExternalJMSQueueDefinition(boolean registerRuntimeOnly) {
+    /**
+     * @param deployed: indicates if this resource describe a JMS queue created via a deployment.
+     */
+    public ExternalJMSQueueDefinition(boolean deployed) {
         super(MessagingExtension.EXTERNAL_JMS_QUEUE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.EXTERNAL_JMS_QUEUE),
                 ExternalJMSQueueAdd.INSTANCE,
                 ExternalJMSQueueRemove.INSTANCE);
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.deployed = deployed;
     }
 
     @Override
@@ -42,7 +45,7 @@ public class ExternalJMSQueueDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
-        if (registerRuntimeOnly) {
+        if (deployed) {
             registry.registerReadOnlyAttribute(CommonAttributes.DESTINATION_ENTRIES, null);
             // Should this be read only as entries ?
             registry.registerReadOnlyAttribute(External.ENABLE_AMQ1_PREFIX, null);
