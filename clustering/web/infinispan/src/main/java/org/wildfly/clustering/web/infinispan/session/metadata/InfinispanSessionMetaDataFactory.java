@@ -6,11 +6,8 @@
 package org.wildfly.clustering.web.infinispan.session.metadata;
 
 import java.time.Duration;
-import java.util.EnumSet;
-import java.util.Set;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.wildfly.clustering.ee.Mutator;
 import org.wildfly.clustering.ee.cache.CacheProperties;
 import org.wildfly.clustering.ee.infinispan.CacheEntryComputeMutator;
@@ -31,10 +28,9 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
  */
 public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFactory<ContextualSessionMetaDataEntry<L>> {
 
-    private static final Set<Flag> TRY_LOCK_FLAGS = EnumSet.of(Flag.ZERO_LOCK_ACQUISITION_TIMEOUT, Flag.FAIL_SILENTLY);
-
     private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> cache;
     private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> readForUpdateCache;
+    private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> tryReadForUpdateCache;
     private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> writeOnlyCache;
     private final Cache<SessionMetaDataKey, ContextualSessionMetaDataEntry<L>> silentWriteCache;
     private final CacheProperties properties;
@@ -42,6 +38,7 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
     public InfinispanSessionMetaDataFactory(InfinispanConfiguration configuration) {
         this.cache = configuration.getCache();
         this.readForUpdateCache = configuration.getReadForUpdateCache();
+        this.tryReadForUpdateCache = configuration.getTryReadForUpdateCache();
         this.writeOnlyCache = configuration.getWriteOnlyCache();
         this.silentWriteCache = configuration.getSilentWriteCache();
         this.properties = configuration.getCacheProperties();
@@ -57,16 +54,12 @@ public class InfinispanSessionMetaDataFactory<L> implements SessionMetaDataFacto
 
     @Override
     public ContextualSessionMetaDataEntry<L> findValue(String id) {
-        return this.getValue(id, EnumSet.noneOf(Flag.class));
+        return this.readForUpdateCache.get(new SessionMetaDataKey(id));
     }
 
     @Override
     public ContextualSessionMetaDataEntry<L> tryValue(String id) {
-        return this.getValue(id, TRY_LOCK_FLAGS);
-    }
-
-    private ContextualSessionMetaDataEntry<L> getValue(String id, Set<Flag> flags) {
-        return this.readForUpdateCache.getAdvancedCache().withFlags(flags).get(new SessionMetaDataKey(id));
+        return this.tryReadForUpdateCache.get(new SessionMetaDataKey(id));
     }
 
     @Override
