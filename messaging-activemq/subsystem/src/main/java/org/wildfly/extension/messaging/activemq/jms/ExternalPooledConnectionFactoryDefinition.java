@@ -123,6 +123,10 @@ public class ExternalPooledConnectionFactoryDefinition extends PooledConnectionF
 
     public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
 
+    /**
+     * Constructor for an external pooled connection factory.
+     * @param deployed: indicates if this resource describe a pcf created via a deployment.
+     */
     public ExternalPooledConnectionFactoryDefinition(final boolean deployed) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.POOLED_CONNECTION_FACTORY_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.POOLED_CONNECTION_FACTORY))
                 .setAddHandler(ExternalPooledConnectionFactoryAdd.INSTANCE)

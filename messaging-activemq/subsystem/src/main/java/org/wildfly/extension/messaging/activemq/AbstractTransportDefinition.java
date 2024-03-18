@@ -39,7 +39,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
     static final RuntimeCapability<Void> CONNECTOR_CAPABILITY = RuntimeCapability.Builder.of(CONNECTOR_CAPABILITY_NAME, true, ConnectorService.class)
             .setDynamicNameMapper(TransportCapabilityNameMapper.INSTANCE)
             .build();
-    private final boolean registerRuntimeOnly;
+    private final boolean registerRuntimeOnlyValid;
     private final AttributeDefinition[] attrs;
     protected final boolean isAcceptor;
 
@@ -143,7 +143,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
         }
     }
 
-    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnly, AttributeDefinition... attrs) {
+    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnlyValid, AttributeDefinition... attrs) {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(specificType),
                 new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
@@ -158,11 +158,11 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
                 .setAddHandler(isAcceptor ? new ActiveMQReloadRequiredHandlers.AddStepHandler(attrs) : new ConnectorAdd(attrs))
                 .setRemoveHandler(new ActiveMQReloadRequiredHandlers.RemoveStepHandler()));
         this.isAcceptor = isAcceptor;
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.registerRuntimeOnlyValid = registerRuntimeOnlyValid;
         this.attrs = attrs;
     }
 
-    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnly, ModelVersion deprecatedSince, AttributeDefinition... attrs) {
+    protected AbstractTransportDefinition(final boolean isAcceptor, final String specificType, final boolean registerRuntimeOnlyValid, ModelVersion deprecatedSince, AttributeDefinition... attrs) {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(specificType),
                 new StandardResourceDescriptionResolver((isAcceptor ? CommonAttributes.ACCEPTOR : CommonAttributes.CONNECTOR),
                         MessagingExtension.RESOURCE_NAME, MessagingExtension.class.getClassLoader(), true, false) {
@@ -175,7 +175,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
                 .setRemoveHandler(new ActiveMQReloadRequiredHandlers.RemoveStepHandler())
                 .setDeprecatedSince(deprecatedSince));
         this.isAcceptor = isAcceptor;
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.registerRuntimeOnlyValid = registerRuntimeOnlyValid;
         this.attrs = attrs;
     }
 
@@ -200,7 +200,7 @@ public abstract class AbstractTransportDefinition extends PersistentResourceDefi
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
-        if (isAcceptor && registerRuntimeOnly) {
+        if (isAcceptor && registerRuntimeOnlyValid) {
             AcceptorControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
 

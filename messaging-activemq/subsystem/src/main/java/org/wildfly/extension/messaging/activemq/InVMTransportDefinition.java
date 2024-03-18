@@ -38,15 +38,18 @@ public class InVMTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = { SERVER_ID, PARAMS };
 
-    public static InVMTransportDefinition createAcceptorDefinition(final boolean registerRuntimeOnly) {
-        return new InVMTransportDefinition(registerRuntimeOnly, true, CommonAttributes.IN_VM_ACCEPTOR);
+    public static InVMTransportDefinition createAcceptorDefinition(final boolean registerRuntimeOnlyValid) {
+        return new InVMTransportDefinition(registerRuntimeOnlyValid, true, CommonAttributes.IN_VM_ACCEPTOR);
     }
 
-    public static InVMTransportDefinition createConnectorDefinition(final boolean registerRuntimeOnly) {
-        return new InVMTransportDefinition(registerRuntimeOnly, false, CommonAttributes.IN_VM_CONNECTOR);
+    /**
+     * @param registerRuntimeOnlyValid: no effect
+     */
+    public static InVMTransportDefinition createConnectorDefinition(final boolean registerRuntimeOnlyValid) {
+        return new InVMTransportDefinition(registerRuntimeOnlyValid, false, CommonAttributes.IN_VM_CONNECTOR);
     }
 
-    private InVMTransportDefinition(final boolean registerRuntimeOnly, boolean isAcceptor, String specificType) {
-        super(isAcceptor, specificType, registerRuntimeOnly, ATTRIBUTES);
+    private InVMTransportDefinition(final boolean registerRuntimeOnlyValid, boolean isAcceptor, String specificType) {
+        super(isAcceptor, specificType, registerRuntimeOnlyValid, ATTRIBUTES);
     }
 }

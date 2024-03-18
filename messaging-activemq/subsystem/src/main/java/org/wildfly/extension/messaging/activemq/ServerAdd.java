@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
+import static org.wildfly.extension.messaging.activemq.AddressSettingAdd.createDefaulAddressSettings;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
@@ -687,12 +688,20 @@ class ServerAdd extends AbstractAddStepHandler {
          * @throws OperationFailedException
          */
         private void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
+            boolean merged = false;
             if (params.hasDefined(ADDRESS_SETTING)) {
                 for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                     final String match = property.getName();
                     final ModelNode config = property.getValue();
                     final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
+                    if (!merged && configuration.getWildcardConfiguration().getAnyWordsString().equals(match)) {
+                        settings.merge(createDefaulAddressSettings());
+                        merged = true;
+                    }
                     configuration.addAddressSetting(match, settings);
+                }
+                if (!merged) {
+                    configuration.addAddressSetting(configuration.getWildcardConfiguration().getAnyWordsString(), createDefaulAddressSettings());
                 }
             }
         }

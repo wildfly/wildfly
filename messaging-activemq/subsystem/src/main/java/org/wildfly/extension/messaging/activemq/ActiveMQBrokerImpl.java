@@ -11,6 +11,7 @@ import org.apache.activemq.artemis.api.core.TransportConfiguration;
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
 import org.apache.activemq.artemis.core.security.SecurityAuth;
 import org.apache.activemq.artemis.core.server.ActiveMQServer;
+import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 
 /**
  * Implementation of the wrapper over {@link org.apache.activemq.artemis.core.server.ActiveMQServer} and
@@ -81,5 +82,13 @@ public class ActiveMQBrokerImpl implements ActiveMQBroker {
     public ActiveMQServerControl getActiveMQServerControl() {
         return delegate.getActiveMQServerControl();
     }
+
+    @Override
+    public String getAddressSettingsAsJSON(String addressMatch) {
+        AddressSettings settings = delegate.getAddressSettingsRepository().getMatch(addressMatch);
+        settings.merge(delegate.getAddressSettingsRepository().getDefault());
+        return ManagementUtil.convertAddressSettingInfosAsJSON(settings.toJSON());
+    }
+
 
 }
