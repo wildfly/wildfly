@@ -91,9 +91,16 @@ public interface ActiveMQBroker {
     Object[] getResources(Class<?> resourceType);
 
     /**
-     * Returns he {@link org.apache.activemq.artemis.api.core.management.ActiveMQServerControl} to manage the
+     * Returns the {@link org.apache.activemq.artemis.api.core.management.ActiveMQServerControl} to manage the
      * underlying {@link org.apache.activemq.artemis.core.server.ActiveMQServer}.
      * @return the {@link org.apache.activemq.artemis.api.core.management.ActiveMQServerControl}
      */
     ActiveMQServerControl getActiveMQServerControl();
+
+    /**
+     * Returns the JSON description of the address settings of the specified match address.
+     * @param addressMatch the address settings match address.
+     * @return the JSON description of the address settings of the specified match address
+     */
+    String getAddressSettingsAsJSON(String addressMatch);
 }

@@ -485,6 +485,26 @@
                 <module>preview</module>
             </modules>
         </profile>
+        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
+             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
+             based variant of wildfly-test-galleon-pack.
+        -->
+        <profile>
+            <id>test.feature.pack.preview.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+            </properties>
+            <modules>
+                <!-- Ensure the wildfly-test-feature-pack-preview artifact is built -->
+                <module>test-feature-pack-preview</module>
+            </modules>
+        </profile>
 
         <!--
           Debugging profiles.

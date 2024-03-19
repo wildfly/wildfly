@@ -48,15 +48,15 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = concat(Regular.ATTRIBUTES, getDefinitions(Common.ATTRIBUTES));
 
-    private final boolean registerRuntimeOnly;
+    private final boolean registerRuntimeOnlyValid;
 
-    public ConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    public ConnectionFactoryDefinition(final boolean registerRuntimeOnlyValid) {
         super(new SimpleResourceDefinition.Parameters(MessagingExtension.CONNECTION_FACTORY_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTION_FACTORY))
                 .setCapabilities(CAPABILITY)
                 .setAddHandler(ConnectionFactoryAdd.INSTANCE)
                 .setRemoveHandler(ConnectionFactoryRemove.INSTANCE));
-        this.registerRuntimeOnly = registerRuntimeOnly;
+        this.registerRuntimeOnlyValid = registerRuntimeOnlyValid;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class ConnectionFactoryDefinition extends PersistentResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        if (registerRuntimeOnly) {
+        if (registerRuntimeOnlyValid) {
             ConnectionFactoryUpdateJndiHandler.registerOperations(registry, getResourceDescriptionResolver());
         }
    }

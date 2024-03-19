@@ -31,6 +31,8 @@ abstract class AbstractParseAndMarshalModelsTestCase {
 
     private static final File JBOSS_HOME = Paths.get("target", "jbossas-parse-marshal").toFile();
 
+    static final boolean altDistTest = "ee-".equals(System.getProperty("testsuite.default.build.project.prefix"));
+
     protected ModelNode standaloneXmlTest(File original) throws Exception {
         return ModelParserUtils.standaloneXmlTest(original, JBOSS_HOME);
     }
@@ -53,6 +55,23 @@ abstract class AbstractParseAndMarshalModelsTestCase {
         final String path = System.getProperty("jboss.dist");
         Assert.assertNotNull("jboss.dist property was not set", path);
         final Path configDir = Path.of(path, names);
+        Assert.assertTrue(String.format("Directory %s does not exist.", path), Files.exists(configDir));
+        try (Stream<Path> files = Files.list(configDir)) {
+            return files.filter(filter)
+                    .collect(Collectors.toUnmodifiableList());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+    static List<Path> resolveLegacyConfigFiles(final String... names) {
+        return resolveLegacyConfigFiles(p -> p.getFileName().toString().endsWith(".xml"), names);
+    }
+
+    static List<Path> resolveLegacyConfigFiles(final Predicate<Path> filter, final String... names) {
+        final String subDir = System.getProperty("jbossas.ts.submodule.dir");
+        Assert.assertNotNull("\"jbossas.ts.submodule.dir\" property was not set", subDir);
+        final Path path = Path.of(subDir, "src/test/resources/legacy-configs/").toAbsolutePath();
+        final Path configDir = Path.of(path.toString(), names);
         Assert.assertTrue(String.format("Directory %s does not exist.", path), Files.exists(configDir));
         try (Stream<Path> files = Files.list(configDir)) {
             return files.filter(filter)

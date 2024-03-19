@@ -108,7 +108,7 @@ wildfly:
 
     - id: rts
       directories: [ rts ]
-      notify: [ mmusgrove ]
+      notify: [ mmusgrov ]
 
     - id: sar
       directories: [ sar ]
