@@ -709,9 +709,6 @@
                             <systemPropertyVariables>
                                 <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
-                                <!-- -Dnode0 is present in the parent definition of server.jvm.args, it is
-                                        expected by microprofile-config tests -->
-                                <server.jvm.args>${surefire.jpda.args} -Dnode0=${node0} -Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
