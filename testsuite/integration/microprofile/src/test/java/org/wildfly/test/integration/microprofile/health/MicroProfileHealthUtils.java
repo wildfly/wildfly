@@ -77,4 +77,22 @@ public class MicroProfileHealthUtils {
             fail("Probe named " + probeName + " not found in " + result);
         }
     }
+
+    static Integer retrieveHttpEndPointChecks(String healthURL) throws IOException {
+
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+
+            CloseableHttpResponse resp = client.execute(new HttpGet(healthURL));
+            String content = EntityUtils.toString(resp.getEntity());
+            resp.close();
+
+            try (
+                    JsonReader jsonReader = Json.createReader(new StringReader(content))
+            ) {
+                JsonObject payload = jsonReader.readObject();
+
+                return payload.getJsonArray("checks") == null || payload.getJsonArray("checks").isEmpty() ? 0 : payload.getJsonArray("checks").size();
+            }
+        }
+    }
 }
