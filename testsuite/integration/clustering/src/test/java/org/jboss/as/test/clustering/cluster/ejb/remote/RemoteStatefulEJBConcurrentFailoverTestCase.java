@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +38,6 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@Ignore("WFLY-11322")
 public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractClusteringTestCase {
     private static final String MODULE_NAME = RemoteStatefulEJBConcurrentFailoverTestCase.class.getSimpleName();
 
@@ -118,7 +116,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
         }
     }
 
-    private class IncrementTask implements Runnable {
+    private static class IncrementTask implements Runnable {
         private final Incrementor bean;
         private final CountDownLatch latch;
         private final AtomicInteger value;
@@ -139,7 +137,7 @@ public class RemoteStatefulEJBConcurrentFailoverTestCase extends AbstractCluster
             }
         }
     }
-    private class LookupTask implements Runnable {
+    private static class LookupTask implements Runnable {
         private final EJBDirectory directory;
         private final Class<? extends Incrementor> beanClass;
         private final CountDownLatch latch;
