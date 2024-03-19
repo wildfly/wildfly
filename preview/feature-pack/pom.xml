@@ -235,6 +235,8 @@
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
                             <minimum-stability>experimental</minimum-stability>
+                            <config-stability>preview</config-stability>
+                            <package-stability>experimental</package-stability>
                         </configuration>
                     </execution>
                 </executions>
