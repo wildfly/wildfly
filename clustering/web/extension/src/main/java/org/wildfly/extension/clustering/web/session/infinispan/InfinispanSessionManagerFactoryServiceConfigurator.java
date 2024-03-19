@@ -12,7 +12,9 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
@@ -123,6 +125,11 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
             // Only evict creation meta-data entries
             // We will cascade eviction to the remaining entries for a given session
             builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionMetaDataKey.class::isInstance);
+        }
+        PersistenceConfiguration persistence = builder.persistence().create();
+        // If cache is configured to passivate and purge on startup, but application does not define a passivation threshold, then remove useless stores
+        if ((size == null) && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
+            builder.persistence().passivation(false).clearStores();
         }
     }
 
