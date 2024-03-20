@@ -68,6 +68,7 @@ jobs:
           format: 'HTML'
           args: >
             --nvdApiKey ${{ secrets.NVD_API_KEY }}
+            --suppression ${{ github.workspace }}/wildfly-core/owasp-suppression.xml
 
       - name: Run wildfly dependency check
         uses: dependency-check/Dependency-Check_Action@main
@@ -80,6 +81,7 @@ jobs:
           format: 'HTML'
           args: >
             --nvdApiKey ${{ secrets.NVD_API_KEY }}
+            --suppression ${{ github.workspace }}/wildfly/owasp-suppression.xml
           
       - name: Upload Reports
         uses: actions/upload-artifact@v4
