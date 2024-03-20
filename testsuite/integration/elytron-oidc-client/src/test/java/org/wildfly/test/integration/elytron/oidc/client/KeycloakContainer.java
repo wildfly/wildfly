@@ -17,7 +17,7 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     public static final String ADMIN_USER = "admin";
     public static final String ADMIN_PASSWORD = "admin";
 
-    private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:19.0.1";
+    private static final String KEYCLOAK_IMAGE = "quay.io/keycloak/keycloak:24.0.1";
     private static final String SSO_IMAGE = System.getProperty("testsuite.integration.oidc.rhsso.image",KEYCLOAK_IMAGE);
     private static final int PORT_HTTP = 8080;
     private static final int PORT_HTTPS = 8443;

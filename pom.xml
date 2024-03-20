@@ -315,13 +315,13 @@
         <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.11</version.org.jacoco>
-        <version.org.jboss.galleon>6.0.0.Beta3</version.org.jboss.galleon>
+        <version.org.jboss.galleon>6.0.0.Beta4</version.org.jboss.galleon>
         <version.org.wildfly.glow>1.0.0.Beta9</version.org.wildfly.glow>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>7.0.0.Beta4</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>7.0.0.Beta5</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>5.0.0.Beta3</version.org.wildfly.plugin>
@@ -383,7 +383,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.15.3</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.15.4</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>
@@ -403,7 +403,7 @@
         <version.com.nimbus.jose-jwt>9.37.3</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
-        <legacy.version.com.squareup.okio>1.17.2</legacy.version.com.squareup.okio>
+        <legacy.version.com.squareup.okio>1.17.6</legacy.version.com.squareup.okio>
         <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>
@@ -462,7 +462,7 @@
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.1</version.jakarta.xml.bind.jakarta-xml-bind-api>
+        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.2</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.jboss.jaxbintros>2.0.1</version.jboss.jaxbintros>
         <version.joda-time>2.12.6</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>

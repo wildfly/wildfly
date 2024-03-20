@@ -45,7 +45,6 @@
         <version.javax.xml.bind.jaxb-api>2.4.0-b180830.0359</version.javax.xml.bind.jaxb-api>
         <version.org.glassfish.jaxb.jaxb-runtime>2.4.0-b180830.0438</version.org.glassfish.jaxb.jaxb-runtime>
         <version.org.apache.kerby>2.0.3</version.org.apache.kerby>
-        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djboss.bind.address=${node0} -Djboss.bind.address.management=${node0} ${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} ${extra.server.jvm.args}</server.jvm.args>
 
         <maven.local.repo>${settings.localRepository}</maven.local.repo>
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED</modular.jdk.testsuite.args>
@@ -488,7 +487,6 @@
                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                         <jboss.inst>${wildfly.dir}</jboss.inst>
                         <module.path>${wildfly.dir}/modules</module.path>
-                        <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <node0>${node0}</node0>
                     </systemPropertyVariables>
                     <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
@@ -1068,9 +1066,6 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
-                                    <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
-                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
                             <execution>
@@ -1078,7 +1073,7 @@
                                 <phase>test</phase>
                                 <configuration>
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djava.security.properties=${security.properties}</server.jvm.args>
+                                        <server.jvm.args>-Djava.security.properties=${security.properties} ${server.jvm.args}</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

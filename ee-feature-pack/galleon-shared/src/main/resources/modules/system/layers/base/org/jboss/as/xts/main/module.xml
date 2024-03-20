@@ -44,7 +44,6 @@
         <module name="org.jboss.as.ejb3"/>
         <module name="org.jboss.invocation"/>
         <module name="org.jboss.as.naming"/>
-        <module name="org.jboss.narayana.compensations" />
         <module name="org.wildfly.transaction.client" />
         <module name="java.xml"/>
     </dependencies>
