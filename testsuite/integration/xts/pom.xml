@@ -260,11 +260,6 @@
                     <classifier>api</classifier>
                     <scope>test</scope>
                 </dependency>
-                <dependency>
-                    <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations</artifactId>
-                    <scope>test</scope>
-                </dependency>
             </dependencies>
 
             <build>

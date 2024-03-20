@@ -10,6 +10,7 @@ import static org.wildfly.extension.undertow.logging.UndertowLogger.ROOT_LOGGER;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -95,7 +96,7 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
     public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
 
         if (ModClusterDefinition.SECURITY_REALM.resolveModelAttribute(context, model).isDefined()) {
-             ROOT_LOGGER.runtimeSecurityRealmUnsupported();
+             throw ROOT_LOGGER.runtimeSecurityRealmUnsupported();
         }
 
         this.captor = (ModClusterResource) context.readResource(PathAddress.EMPTY_ADDRESS);
@@ -161,8 +162,8 @@ public class ModClusterServiceConfigurator extends ModClusterServiceNameProvider
         Consumer<Map.Entry<ModCluster, MCMPConfig>> consumer = new Consumer<>() {
             @Override
             public void accept(Map.Entry<ModCluster, MCMPConfig> entry) {
-                service.accept(entry.getKey());
-                config.accept(entry.getValue());
+                service.accept(Optional.ofNullable(entry).map(Map.Entry::getKey).orElse(null));
+                config.accept(Optional.ofNullable(entry).map(Map.Entry::getValue).orElse(null));
             }
         };
         return builder.setInstance(new FunctionalService<>(consumer, Function.identity(), this, this));

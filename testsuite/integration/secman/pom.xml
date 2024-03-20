@@ -151,9 +151,6 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
-                                    <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
-                                    </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>

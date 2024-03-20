@@ -947,7 +947,6 @@
             <properties>
                 <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
                 <glow.phase.observability>test-compile</glow.phase.observability>
-                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>
             <build>
                 <plugins>
@@ -1037,9 +1036,6 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
-                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
-                                    </systemPropertyVariables>
                                     <excludes>
                                         <!-- Requires messaging -->
                                         <exclude>org/jboss/as/test/smoke/jms/**/*TestCase.java</exclude>

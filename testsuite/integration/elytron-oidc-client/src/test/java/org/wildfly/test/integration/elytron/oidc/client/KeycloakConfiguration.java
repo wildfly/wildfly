@@ -174,6 +174,8 @@ public class KeycloakConfiguration {
     private static UserRepresentation createUser(String username, String password, List<String> realmRoles) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
+        user.setFirstName(username);
+        user.setLastName(username);
         user.setEnabled(true);
         user.setCredentials(new ArrayList<>());
         user.setRealmRoles(realmRoles);

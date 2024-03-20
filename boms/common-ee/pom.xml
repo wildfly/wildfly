@@ -4125,17 +4125,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.jboss.narayana.compensations</groupId>
-                <artifactId>compensations</artifactId>
-                <version>${version.org.jboss.narayana}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.narayana.jts</groupId>
                 <artifactId>narayana-jts-idlj</artifactId>
                 <version>${version.org.jboss.narayana}</version>
