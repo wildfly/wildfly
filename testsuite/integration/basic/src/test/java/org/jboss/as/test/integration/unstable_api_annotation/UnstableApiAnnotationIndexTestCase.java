@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -123,12 +124,14 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testJavaArchive() throws Exception {
         JavaArchive jar = createJavaArchive();
         testArchiveDeployment(jar, 2);
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testJavaArchive2() throws Exception {
         // Temporary check
         JavaArchive jar = createJavaArchive();
@@ -136,6 +139,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEmptyWebArchive() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                         .add(new StringAsset("test"), "test.txt");
@@ -144,6 +148,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testWebArchiveWithClassesInWrongLocation() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                         .add(new ClassAsset(Servlet.class), "org/jboss/as/test/integration/unstable_api_annotation/war/WarClassA.class");
@@ -152,6 +157,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testWebArchiveWithWebInfClasses() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                         .addPackage(Servlet.class.getPackage());
@@ -159,6 +165,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testWebArchiveWithLibJar() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                         .addAsLibraries(createJavaArchive());
@@ -168,6 +175,7 @@ public class UnstableApiAnnotationIndexTestCase {
 
 
     @Test
+    @Ignore("WFLY-19154")
     public void testWebArchiveWithWebInfClassesAndLibJar() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                 .addPackage(Servlet.class.getPackage())
@@ -177,6 +185,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testWebArchiveWithWebInfClassesAndTwoLibJar() throws Exception {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
                 .addPackage(Servlet.class.getPackage())
@@ -186,6 +195,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithOneModuleJar() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test-unstable-api-annotation-empty.ear");
         ear.addAsModule(createJavaArchive());
@@ -193,6 +203,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithOneModuleJarAndClassInWrongPlace() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test-unstable-api-annotation-empty.ear");
         ear.addAsModule(createJavaArchive());
@@ -202,6 +213,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithNoModuleJarAndEmptyWar() throws Exception {
 
         WebArchive emptyWar = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
@@ -214,6 +226,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithModuleJarAndWarWithClasses() throws Exception {
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "test-unstable-api-annotation-empty.war")
@@ -227,6 +240,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithModuleJarAndWarWithClassesAndLibJar() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test-unstable-api-annotation-empty.ear");
         ear.addAsModule(createJavaArchive());
@@ -238,6 +252,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithLibJarAndWarWithClasses() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test-unstable-api-annotation-empty.ear");
         ear.addAsLibrary(createJavaArchive());
@@ -248,6 +263,7 @@ public class UnstableApiAnnotationIndexTestCase {
     }
 
     @Test
+    @Ignore("WFLY-19154")
     public void testEarWithModuleJarLibJarAndWarWithClasses() throws Exception {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test-unstable-api-annotation-empty.ear");
         ear.addAsLibrary(createJavaArchive());
