@@ -2875,6 +2875,10 @@
                         <executions>
                             <!-- Disable the test executions that are not compatible with this profile. -->
                             <execution>
+                                <id>default-test</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
                                 <id>ts.surefire.clustering.ha</id>
                                 <phase>none</phase>
                             </execution>
@@ -2896,6 +2900,10 @@
                             </execution>
                             <execution>
                                 <id>ts.surefire.clustering.single.manual</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>ts.surefire.clustering.single.testable</id>
                                 <phase>none</phase>
                             </execution>
                             <!-- Run the ts.surefire.clustering.microprofile execution but exclude incompatible tests -->

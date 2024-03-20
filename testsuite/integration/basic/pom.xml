@@ -1142,7 +1142,7 @@
                         </feature-pack>
                         <feature-pack>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                            <artifactId>${testsuite.test.galleon.pack.artifactId}</artifactId>
                             <version>${project.version}</version>
                         </feature-pack>
                     </feature-packs>

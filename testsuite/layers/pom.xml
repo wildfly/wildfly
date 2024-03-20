@@ -83,7 +83,7 @@
 
         <!-- Props to control what phase plugin executions run in.
              Default is none. Profiles set these to other values to enable executions.
-             Provisioning executions using the wildfly-test-galleon-pack are handled separately from others. -->
+             Provisioning executions using the wildfly-preview-galleon-pack are handled separately from others. -->
         <provisioning.phase>none</provisioning.phase>
         <provisioning.phase.preview.excluded>none</provisioning.phase.preview.excluded> <!-- Use for executions that won't work with WildFly Preview -->
         <provisioning.phase.preview.only>none</provisioning.phase.preview.only> <!-- Use for executions that will only work with WildFly Preview -->
