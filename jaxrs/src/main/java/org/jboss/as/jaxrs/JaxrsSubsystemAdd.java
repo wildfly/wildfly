@@ -118,7 +118,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setResteasyMediaTypeParamMapping(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR)) {
-            config.setResteasyPatchfilterDisabled(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR.resolveModelAttribute(context, configuration));
+            config.setResteasyOriginalWebapplicationexceptionBehavior(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED)) {
             config.setResteasyPatchfilterDisabled(JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED.resolveModelAttribute(context, configuration));
@@ -133,7 +133,7 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setResteasyProviders(JaxrsAttribute.RESTEASY_PROVIDERS.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES)) {
-            config.setResteasyRFC7232Preconditions(JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES.resolveModelAttribute(context, configuration));
+            config.setResteasyProxyImplementAllInterfaces(JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS)) {
             config.setResteasyRFC7232Preconditions(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS.resolveModelAttribute(context, configuration));
