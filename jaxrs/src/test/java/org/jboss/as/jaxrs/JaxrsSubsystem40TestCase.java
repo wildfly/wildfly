@@ -55,12 +55,53 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
         transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
-                new FailedOperationTransformationConfig.NewAttributesConfig(JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD));
+                new FailedOperationTransformationConfig.NewAttributesConfig(
+                        JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD,
+                        JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED,
+                        JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE,
+                        JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
+                        JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES
+                        ));
 
-        testRejectingTransformers(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
+        testRejectingTransformers74(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
 
-    private void testRejectingTransformers(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+//    @Test
+    public void testRejectingTransformersEAP80() throws Exception {
+        FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
+
+        transformationConfig.addFailedAttribute(PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH),
+                new FailedOperationTransformationConfig.NewAttributesConfig(
+                        JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED,
+                        JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE,
+                        JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED,
+                        JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY,
+                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
+                        JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES
+                        ));
+
+        testRejectingTransformers80(transformationConfig, ModelTestControllerVersion.EAP_8_0_0);
+    }
+
+    private void testRejectingTransformers74(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(JaxrsExtension.SUBSYSTEM_NAME);
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        LegacyKernelServicesInitializer kernelServicesInitializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
+                .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
+                .dontPersistXml();
+        kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-jaxrs:26.0.0.Final");
+        KernelServices kernelServices = builder.build();
+        assertTrue(kernelServices.isSuccessfulBoot());
+        assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());
+
+        List<ModelNode> operations = builder.parseXmlResource("jaxrs.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(kernelServices, subsystemModelVersion, operations, transformationConfig);
+    }
+
+    private void testRejectingTransformers80(FailedOperationTransformationConfig transformationConfig, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion subsystemModelVersion = controllerVersion.getSubsystemModelVersion(JaxrsExtension.SUBSYSTEM_NAME);
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
