@@ -44,7 +44,7 @@ import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.RE
 class OidcActivationProcessor implements DeploymentUnitProcessor {
 
     private static final String OIDC_AUTH_METHOD = "OIDC";
-    private static final String JSON_CONFIG_UNSUPPORTED_ATTRIBUTE_PARAM = "unsupported-attribute";
+    private static final String JSON_CONFIG_UNSUPPORTED_ATTRIBUTE_PARAM = "org.wildfly.security.http.oidc.json.config.unsupported.attributes";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
