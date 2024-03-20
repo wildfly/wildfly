@@ -1,0 +1,1181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <suppress>
+        <notes><![CDATA[
+   file name: picketbox-infinispan-5.0.3.Final-redhat-00006.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.picketbox/picketbox\-infinispan@.*$</packageUrl>
+        <cve>CVE-2019-10158</cve>
+        <cve>CVE-2016-0750</cve>
+        <cve>CVE-2017-15089</cve>
+        <cve>CVE-2019-10174</cve>
+    </suppress>
+
+    <!-- [wildfly] Apache ActiveMQ is not shipped with wildfly ('ActiveMQ Artemis' is not 'ActiveMQ') -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   file name: artemis-wildfly-jakarta-integration-1.0.5.jar (shaded: org.apache.activemq.tests:unit-tests:2.18.0)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq(/activemq\-artemis\-native|\.tests/.*)@.*$</packageUrl>
+        <cve>CVE-2014-3576</cve>
+        <cve>CVE-2016-3088</cve>
+        <cve>CVE-2018-11775</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: artemis-wildfly-jakarta-integration-1.0.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-jakarta\-integration@.*$</packageUrl>
+        <cve>CVE-2018-14627</cve>
+        <cve>CVE-2019-3805</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+
+    <!-- False-positive. See: https://issues.apache.org/jira/browse/ARTEMIS-2362 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2016-4978</cve>
+    </suppress>
+
+    <!-- The activemq-artemis-native is not responsible for handling UDP/JGroups discovery. Furthermore, WildFly 25 uses Artemis 2.16.0 and fix was introduced in version 2.4.0.", -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2017-12174</cve>
+    </suppress>
+
+    <!-- The activemq-artemis-native is not responsible for handling LDAP login. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2021-26117</cve>
+    </suppress>
+    <!-- This vulnerability affects artemis-core-client not activemq-artemis-native artifact, Apache Artemis has been upgraded to 2.19.1 version which contains fix (https://issues.apache.org/jira/browse/ARTEMIS-3593) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: activemq-artemis-native-1.0.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.activemq/activemq\-artemis\-native@.*$</packageUrl>
+        <cve>CVE-2022-23913</cve>
+    </suppress>
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: artemis-wildfly-integration-1.0.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-integration@.*$</packageUrl>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: artemis-wildfly-integration-1.0.5.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly.*@.*$</packageUrl>
+        <cve>CVE-2020-25640</cve>
+    </suppress>
+
+    <!-- [wildfly] Used only in tests, not deployed  -->
+    <suppress>
+        <notes><![CDATA[
+       file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.directory.api:api-ldap-net-mina:1.0.0)
+       ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.directory\.api/api\-.*@.*$</packageUrl>
+        <cve>CVE-2015-3250</cve>
+        <cve>CVE-2018-1337</cve>
+    </suppress>
+
+    <!-- Vulnerabilities do not apply to xjc plugins -->
+    <suppress>
+        <notes><![CDATA[
+       file name: cxf-xjc-dv-3.3.1.jar
+       file name: cxf-xjc-ts-3.3.1.jar
+       file name: cxf-xjc-bug986-3.3.1.jar
+       file name: cxf-xjc-boolean-3.3.1.jar
+       ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins/cxf\-xjc\-(dv|ts|bug986|boolean)@.*$</packageUrl>
+        <cve>CVE-2019-12406</cve>
+        <cve>CVE-2019-12419</cve>
+        <cve>CVE-2019-12423</cve>
+        <cve>CVE-2019-17573</cve>
+    </suppress>
+
+    <!-- The CVE-2021-22696 affects cxf-rt-rs-security-oauth2 which is not a part of WildFly. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-xjc-dv-3.3.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf.*$</packageUrl>
+        <cve>CVE-2021-22696</cve>
+    </suppress>
+
+    <!-- False positive xjcplugins are not using org.apache.cxf:cxf-rt-rs-json-basic (https://bugzilla.redhat.com/show_bug.cgi?id=1973392). -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-xjc-dv-3.3.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf\.xjcplugins.*$</packageUrl>
+        <cve>CVE-2021-30468</cve>
+    </suppress>
+
+    <!-- [CVE-2020-36518] This vulnerability affects com.fasterxml.jackson.core:jackson-databind not org.codehaus.jackson:jackson-xc artifact. Issue has been fixed in 2.13.2.1 and 2.12.6.1 versions. (https://github.com/advisories/GHSA-57j2-w4cx-62h2) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-xc-1.9.13.redhat-00007.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.jackson/jackson\-.*@.*$</packageUrl>
+        <cve>CVE-2018-14718</cve>
+        <cve>CVE-2018-7489</cve>
+        <cve>CVE-2020-36518</cve>
+    </suppress>
+
+    <!-- [wildfly-core] The vulnerability applies to io.undertow package, undertow-server from org.wildfly.security.elytron-web package is a different module -->
+    <suppress>
+        <notes><![CDATA[
+       file name: undertow-server-1.9.1.Final.jar
+       ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*@.*$</packageUrl>
+        <cve>CVE-2017-12165</cve>
+        <cve>CVE-2017-12196</cve>
+        <cve>CVE-2017-2670</cve>
+        <cve>CVE-2017-7559</cve>
+        <cve>CVE-2018-1067</cve>
+        <cve>CVE-2019-10184</cve>
+        <cve>CVE-2019-3888</cve>
+        <cve>CVE-2019-10212</cve>
+        <cve>CVE-2019-14888</cve>
+        <cve>CVE-2019-19343</cve>
+        <cve>CVE-2020-1745</cve>
+        <cve>CVE-2020-1757</cve>
+        <cve>CVE-2020-10705</cve>
+        <cve>CVE-2020-10719</cve>
+        <cve>CVE-2020-1745</cve>
+    </suppress>
+
+    <!-- [wildfly] This is a false positive because wildfly itself does not use commons-compress. Commons-compress comes with org.testcontainers and it is used only for test purposes  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-compress-1.20.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-compress@.*$</packageUrl>
+        <cve>CVE-2021-35515</cve>
+        <cve>CVE-2021-35516</cve>
+        <cve>CVE-2021-35517</cve>
+        <cve>CVE-2021-36090</cve>
+    </suppress>
+
+    <!-- [wildfly] This is a false positive. Issue does not concern smallrye-mutiny-vertx-*  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: smallrye-mutiny-vertx-core-2.11.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.smallrye\.reactive/smallrye\-mutiny\-vertx\-.*@.*$</packageUrl>
+        <cve>CVE-2013-0136</cve>
+        <cve>CVE-2018-15529</cve>
+    </suppress>
+
+    <!-- [wildfly] WildFly 25.0.0 ships with velocity-engine-core 2.3, velocity-engine-scripting-2.1 comes with mockserver-core and its used in tests  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: velocity-engine-scripting-2.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.velocity/velocity\-engine\-scripting@.*$</packageUrl>
+        <cve>CVE-2020-13936</cve>
+    </suppress>
+
+	<!-- CVE-2019-0231 False positive - Apacheds-all is only used in tests -->
+	<suppress>
+		<notes><![CDATA[
+		file name: apacheds-all-2.0.0-M24.jar (shaded: org.apache.mina:mina-core:2.0.16)
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.mina/mina\-core@.*$</packageUrl>
+		<cve>CVE-2019-0231</cve>
+	</suppress>
+
+    <!-- CVE-2017-12629 False positive - JBoss EAP7 is not affected by this flaw -->
+	<suppress>
+		<notes><![CDATA[
+		file name: lucene-queryparser-5.5.5.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene\-queryparser@.*$</packageUrl>
+		<cve>CVE-2017-12629</cve>
+	</suppress>
+
+    <!-- This is a false positive because wildfly-core itself does not use mockserver libraries. Mockserver is used only for test purposes (wildfly-core-testsuite-shared module). -->
+    <suppress>
+        <notes><![CDATA[
+   file name: mockserver-core-5.8.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.mock\-server/mockserver\-.*$</packageUrl>
+        <cve>CVE-2021-32827</cve>
+    </suppress>
+
+    <!-- wildfly 25.0.0 is shipped with netty 4.1.68.Final and the suppressed CVEs relate to the versions below 4.1.60. Furthermore, netty version 4.1.43 comes from mockserver dependency, which is a part of a testsuite.  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: netty-buffer-4.1.43.Final.jar
+   file name: netty-codec-4.1.43.Final.jar
+   file name: netty-common-4.1.43.Final.jar
+   file name: netty-handler-4.1.43.Final.jar
+   file name: netty-transport-4.1.43.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-.*$</packageUrl>
+        <cve>CVE-2019-20444</cve>
+        <cve>CVE-2019-20445</cve>
+        <cve>CVE-2020-11612</cve>
+        <cve>CVE-2020-7238</cve>
+        <cve>CVE-2021-21290</cve>
+        <cve>CVE-2021-21295</cve>
+        <cve>CVE-2021-21409</cve>
+        <cve>CVE-2021-37136</cve>
+        <cve>CVE-2021-37137</cve>
+    </suppress>
+
+    <!-- [wildfly] WildFly 25.0.0 ships with hibernate 5.3.23, which has a fix for this vulerability(since 5.3.20) https://hibernate.atlassian.net/browse/HHH-14225?jql=project%20%3D%20HHH%20AND%20fixVersion%20in%20(5.3.20)%20ORDER%20BY%20updated -->
+    <suppress>
+        <notes><![CDATA[
+   file name: hibernate-core-5.3.20.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.hibernate/hibernate\-.*$</packageUrl>
+        <cve>CVE-2020-25638</cve>
+    </suppress>
+
+    <!-- [wildfly] The "exampleDS" that uses H2 is removed during hardening -->
+    <!-- [wildfly] WildFly 25 ships with H2 1.4.197 which is not affected by CVE-2021-23463 - no support for SQLXML, vulnerability occurs in higher versions, up to 2.0.202(excluding) -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2018-10054</cve>
+        <cve>CVE-2018-14335</cve>
+        <cve>CVE-2021-23463</cve>
+    </suppress>
+
+    <!-- [wildfly] 'In practice, this issue impacts only H2 databases which are actively using the Web Console and enabled remote access.' WildFly uses on in-memory h2 without remote access. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2022-23221</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <vulnerabilityName>CWE-94: Improper Control of Generation of Code ('Code Injection')</vulnerabilityName>
+    </suppress>
+
+    <!-- [wildfly] 'In practice, this issue impacts only H2 databases which are actively using the Web Console and enabled remote access.' WildFly uses on in-memory h2 without remote access. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: h2-1.4.197.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <cve>CVE-2021-42392</cve>
+    </suppress>
+
+    <!-- [wildfly] False-positive: it was fixed in 2.7.1.jbossorg-4 (https://github.com/jboss/xalan-j/commit/8cd0c151456475f57961b0987d9f985202f81eec) -->
+    <suppress>
+        <notes><![CDATA[
+        file name: serializer-2.7.1.jbossorg-5.jar
+        ]]></notes>
+        <gav regex="true">^xalan:(serializer|xalan):.*$</gav>
+        <cve>CVE-2014-0107</cve>
+    </suppress>
+
+    <!-- This is a false positive because the core itself does not use json-smart or accessors-smart. Those libraries are used by mockserver-netty in test (wildfly-core-testsuite-share) module. -->
+    <suppress>
+        <notes><![CDATA[
+		file name: json-smart-2.3.jar
+		file name: accessors-smart-1.2.jar
+		]]></notes>
+        <packageUrl regex="true">^pkg:maven/net\.minidev/(json-smart|accessors\-smart).*$</packageUrl>
+        <cve>CVE-2021-27568</cve>
+        <cve>CVE-2021-31684</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-legacy-*-6.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.legacy\.test/wildfly\-legacy\-.*@.*$</packageUrl>
+        <cve>CVE-2018-14627</cve>
+        <cve>CVE-2019-3805</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2018-10862</cve>
+        <cve>CVE-2018-14627</cve>
+        <cve>CVE-2019-3805</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-openssl-macosx-x86_64-2.1.0.SP01.jar
+   file name: wildfly-openssl-linux-s390x-2.1.0.Final.jar
+   file name: wildfly-openssl-java-2.1.4.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.openssl/wildfly\-openssl\-.*$</packageUrl>
+        <cve>CVE-2018-14627</cve>
+        <cve>CVE-2019-3805</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-server-17.0.3-1-PSI-SNAPSHOT.jar
+   file name: wildfly-remoting-17.0.3-1-PSI-SNAPSHOT.jar
+   file name: wildfly-discovery-17.0.3-1-PSI-SNAPSHOT.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly.*@.*$</packageUrl>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+
+    <!-- [wildfly] Applies to versions prior to wildfly 25.0.0 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-galleon-plugins-5.2.2.Final.jar
+   file name: transformer-5.2.2.Final.jar
+   file name: transformer-5.2.2.Final.jar (shaded: org.wildfly.extras.batavia:transformer-api:1.0.9.Final)
+   ]]></notes>
+        <packageUrl regex="true">
+            ^pkg:maven/org\.wildfly(\.extras\.batavia/transformer\-api|\.galleon\-plugins(/wildfly\-galleon\-plugins|/transformer))@.*$
+        </packageUrl>
+        <cve>CVE-2018-14627</cve>
+        <cve>CVE-2019-3805</cve>
+        <cve>CVE-2020-10718</cve>
+        <cve>CVE-2020-10740</cve>
+        <cve>CVE-2020-1719</cve>
+        <cve>CVE-2020-25640</cve>
+        <cve>CVE-2020-25689</cve>
+        <cve>CVE-2021-3536</cve>
+    </suppress>
+    <!-- False positive, from RedHat analyze (https://access.redhat.com/security/cve/CVE-2021-31917) only DataGrid is affected but not JBoss EAP. -->
+    <suppress>
+        <notes><![CDATA[
+    file name: infinispan-core-11.0.4.Final.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-.*@.*$</packageUrl>
+        <cve>CVE-2021-31917</cve>
+    </suppress>
+    <!-- ManagedSieve of Apache James not found in WildFly distribution -->
+    <!-- Jazzer of Apache James not found in WildFly distribution  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: apache-mime4j-core-0.8.4.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.james/apache\-mime4j\-.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.annotation-api-2.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.annotation/jakarta\.annotation\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.ejb-api-4.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.ejb/jakarta\.ejb\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.jms-api-2.0.3.jar | jakarta.jms-api-3.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.jms/jakarta\.jms\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.servlet-api-5.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.servlet/jakarta\.servlet\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.servlet.jsp-api-3.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.servlet\.jsp/jakarta\.servlet\.jsp\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.transaction-api-1.3.3.jar | jakarta.transaction-api-2.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.transaction/jakarta\.transaction\-api@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jaxws-undertow-httpspi-1.0.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jboss\.ws\.projects/jaxws\-undertow\-httpspi@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: stax-ex-1.8.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jvnet\.staxex/stax\-ex@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: transformer-5.2.10.Final.jar (shaded: org.eclipse.transformer:org.eclipse.transformer:0.2.0)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.transformer/org\.eclipse\.transformer@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wsdl4j-1.6.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/wsdl4j/wsdl4j@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+    <!--    CVE-2022-31569 does not affect WildFly    -->
+    <suppress>
+        <notes><![CDATA[
+   file name: yasson-1.0.10.jar | yasson-2.0.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse/yasson@.*$</packageUrl>
+        <cve>CVE-2022-31569</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-cli-1.3.1.jar
+   file name: protostream-4.3.4.Final.jar (shaded: commons-cli:commons-cli:1.2)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-cli/commons\-cli@.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-digester-1.8.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-digester/commons\-digester@.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: commons-lang-2.6.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-lang/commons\-lang@.*$</packageUrl>
+        <cve>CVE-2021-40525</cve>
+        <cve>CVE-2021-40110</cve>
+    </suppress>
+    <!-- .NET SDK of Apache Avro not found in Wildfly distribution -->
+    <suppress>
+        <notes><![CDATA[
+   file name: avro-1.7.6.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.avro/avro@.*$</packageUrl>
+        <cve>CVE-2021-43045</cve>
+    </suppress>
+    <!-- [wildfly] WildFly 25 ships with Apache Santuario 2.2.3 which is not affected by CVE-2021-40690 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-core-3.4.4.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf.*$</packageUrl>
+        <cve>CVE-2021-40690</cve>
+    </suppress>
+    <!-- Wildfly21 ships with JGroups 4.2.5.Final which is not affected by CVE-2016-2141  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jgroups-azure-1.3.0.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jgroups\.azure/jgroups\-azure@.*$</packageUrl>
+        <cve>CVE-2016-2141</cve>
+    </suppress>
+    <!-- Wildfly21 ships with JGroups 4.2.5.Final which is not affected by CVE-2016-2141  -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jgroups-kubernetes-1.0.15.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jgroups\.kubernetes/jgroups\-kubernetes@.*$</packageUrl>
+        <cve>CVE-2016-2141</cve>
+    </suppress>
+    <!-- [wildfly] (CVE-2017-18214) Red Hat JBoss Enterprise Application Platform are Not affected -->
+    <suppress>
+        <notes><![CDATA[
+   file name: javascript/bootstrap@3.3.1 (from weld-probe-core-3.1.5.Final.jar)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+        <cve>CVE-2017-18214</cve>
+    </suppress>
+    <!-- According to: https://access.redhat.com/errata/RHSA-2022:1681 and https://access.redhat.com/errata/RHSA-2022:1715, Red Hat Advanced Cluster Management for Kubernetes 2 for RHEL 7/8 x86_64 are affected. Additionally, the usage of moment.locale was not found in weld-probe-core -->
+    <suppress>
+        <notes><![CDATA[
+   file name: weld-probe-core-3.1.5.Final.jar: probe.js
+   ]]></notes>
+        <packageUrl regex="true">^pkg:javascript/bootstrap@.*$</packageUrl>
+        <cve>CVE-2022-24785</cve>
+    </suppress>
+
+    <!-- False-positive, vulnerability detected in Async javascript library https://github.com/caolan/async but Wildfly uses a different lib: https://github.com/IBM/java-async-util -->
+    <suppress>
+       <notes><![CDATA[
+       file name: asyncutil-0.1.0.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/com\.ibm\.async/asyncutil@.*$</packageUrl>
+       <cve>CVE-2021-43138</cve>
+    </suppress>
+
+    <!-- Wildfly uses jboss.resteasy 4.x which is higher than vulnerable ones (before 3.1.2). Mocroprofile comes with appropriate exclusions. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: microprofile-config-1.0.0.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.microprofile/microprofile\-.*@.*$</packageUrl>
+       <cve>CVE-2016-9606</cve>
+    </suppress>
+
+    <!-- According to RedHat this is fixed in the current version https://issues.redhat.com/browse/WFLY-16229, see also: https://github.com/advisories/GHSA-57j2-w4cx-62h2, https://bugzilla.redhat.com/show_bug.cgi?id=2064698 -->
+    <!-- I've double checked with dependency tree and there is only com.fasterxml.jackson.core:jackson-databind:jar:2.12.6.1 used -->
+    <suppress>
+       <notes><![CDATA[
+       file name: wildfly-elytron-1.19.0.Final.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.11.4)
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+       <cve>CVE-2020-36518</cve>
+    </suppress>
+
+    <!-- The io.undertow system is vulnerable, but not org.wildfly.security.elytron-web:undertow-server which integrates Elytron with Undertow -->
+    <!-- The io.undertow is in version 2.2.17 which is higher then vulnerable prior to 2.2.11.Final -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar, undertow-server-servlet-2.0.0.Beta1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+		<cve>CVE-2021-3690</cve>
+        <cve>CVE-2021-3597</cve>
+        <cve>CVE-2020-10687</cve>
+        <cve>CVE-2021-20220</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2021-3629</cve>
+    </suppress>
+
+    <!-- Vulnerability is in wildfly-core up to 17.0 but we are using 18.x.  -->
+    <!-- This is false positive because cve regex matches a different package: wildfly-plugin-core -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-plugin-core-2.0.2.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2021-3717</cve>
+    </suppress>
+
+    <!-- According to author of okhttp this vulnerability can only be exploited when the vulnerable method is called directly, which it isn't in WF. See https://github.com/square/okhttp/issues/6724#issuecomment-866701186  -->
+	<suppress>
+        <notes><![CDATA[
+        file name: okhttp-3.14.9.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.squareup\.okhttp3/okhttp@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-0341</vulnerabilityName>
+    </suppress>
+
+    <!-- This issue touches artifact provisioned in Amazon Linux (https://alas.aws.amazon.com/ALAS-2022-1601.html). Also log4j-cve-2021-44228-hotpatch-1.3.5 is not present in PSI WildFly. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: log4j-api-2.17.2.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j\-api@.*$</packageUrl>
+       <cpe>cpe:/a:apache:log4j</cpe>
+	   <vulnerabilityName>CVE-2022-33915</vulnerabilityName>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: microprofile-config-api-3.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.config/microprofile\-config\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: microprofile-config-api-2.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.config/microprofile\-config\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.resource-api-2.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.resource/jakarta\.resource\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- This is false positive because the affected code is in Payara server and fix is in the catalina web-subystem.
+    The corresponding issue is listed in Payara release notes and points to https://github.com/payara/Payara/pull/5886/files. -->
+    <suppress>
+        <notes><![CDATA[
+   file name: microprofile-jwt-auth-api-2.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.jwt/microprofile\-jwt\-auth\-api@.*$</packageUrl>
+        <cve>CVE-2022-37422</cve>
+    </suppress>
+
+    <!-- Vulnerability fixed in undertow 2.2.18 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-core-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-servlet-2.0.0.Beta1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-servlet-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+
+    <!--  Vulnerability fixed in Undertow 2.2.15 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2021-3859</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-servlet-2.0.0.Beta1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2021-3859</cve>
+    </suppress>
+
+    <!-- CVE-2022-1259 is directly related to undertow-core -->
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-1.10.1.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2022-1259</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-server-servlet-2.0.0.Beta1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2022-1259</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-servlet-jakarta-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet\-jakarta@.*$</packageUrl>
+        <cve>CVE-2022-1259</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: undertow-websockets-jsr-jakarta-2.2.19.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-jsr\-jakarta@.*$</packageUrl>
+        <cve>CVE-2022-1259</cve>
+    </suppress>
+
+    <!-- Suppression after undertow update to 2.2.19.Final -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-websockets-jsr-2.2.19.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-websockets\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-servlet-jakarta-2.2.19.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-servlet\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1319</cve>
+    </suppress>
+
+    <!-- Suppression after undertow update to 2.2.19.Final -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-.*@.*$</packageUrl>
+        <cve>CVE-2022-2053</cve>
+    </suppress>
+
+    <!-- Suppression after xalan update to 2.7.1.jbossorg-6 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: serializer-2.7.1.jbossorg-6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/serializer@.*$</packageUrl>
+        <cve>CVE-2022-34169</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: xalan-2.7.1.jbossorg-6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/xalan@.*$</packageUrl>
+        <cve>CVE-2022-34169</cve>
+    </suppress>
+
+    <!-- Suppression after commit https://github.com/PSI-Polska/wildfly/commit/f73161c76990618cf723c7f30118f12fa21af99a -->
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-core-18.1.2-1-PSI-SNAPSHOT.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-openssl-java-2.2.1.Final.jar
+        file name: wildfly-openssl-linux-s390x-2.2.0.Final.jar
+        file name: wildfly-openssl-linux-x86_64-2.2.0.SP01.jar
+        file name: wildfly-openssl-macosx-x86_64-2.2.0.Final.jar
+        file name: wildfly-openssl-windows-x86_64-2.2.0.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.openssl/wildfly\-openssl\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: artemis-wildfly-integration-1.0.6.jar
+        file name: artemis-wildfly-jakarta-integration-1.0.6.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jboss\.activemq\.artemis\.integration/artemis\-wildfly\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: transformer-5.2.10.Final.jar (shaded: org.wildfly.extras.batavia:transformer-api:1.0.12.Final)
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.extras\.batavia/transformer\-api@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: transformer-5.2.10.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-galleon-plugins-5.2.10.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/wildfly\-galleon\-plugins@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-legacy-spi-7.0.0.Final.jar
+        file name: wildfly-legacy-versions-7.0.0.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.legacy\.test/wildfly\-legacy\-.*@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-plugin-core-2.0.2.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
+        <cve>CVE-2022-1278</cve>
+    </suppress>
+    <!-- False positive, this vulnerability affects module used in wildfly tests only -->
+    <suppress>
+        <notes><![CDATA[
+		file name: commons-text-1.8.jar
+		]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-42889</vulnerabilityName>
+    </suppress>
+	<!-- False positive, H2 web console is used in development process. Not shared in production -->
+	<suppress>
+   		<notes><![CDATA[
+   		file name: h2-1.4.197.jar
+   		]]></notes>
+   		<packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+   		<cve>CVE-2022-45868</cve>
+	</suppress>
+    <!-- [PJFCB-3041] False positive as we don't use Payara -->
+    <suppress>
+        <notes><![CDATA[
+        file name: jakarta.resource-api-2.0.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/jakarta\.resource/jakarta\.resource\-api@.*$</packageUrl>
+        <cve>CVE-2022-45129</cve>
+    </suppress>
+    <!-- [PJFCB-3041] False positive as we don't use Payara -->
+    <suppress>
+        <notes><![CDATA[
+        file name: microprofile-jwt-auth-api-2.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.microprofile\.jwt/microprofile\-jwt\-auth\-api@.*$</packageUrl>
+        <cve>CVE-2022-45129</cve>
+    </suppress>
+	<!-- Vulnerable class is not used in wildfly-core (Wildfly inherits "vulnerable" modules from wildfly-core) -->
+	<suppress>
+		<notes><![CDATA[
+		file name: sshd-core-2.7.0.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-core@.*$</packageUrl>
+		<cve>CVE-2022-45047</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		file name: sshd-common-2.7.0.jar
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.sshd/sshd\-common@.*$</packageUrl>
+		<cve>CVE-2022-45047</cve>
+	</suppress>
+    <!--    Based on https://github.com/wildfly-security/wildfly-elytron/pull/1847#issuecomment-1340075025 wildfly-elytron will be suppressed CVE-2022-42004-->
+    <!--    Based on https://github.com/wildfly-security/wildfly-elytron/pull/1847#issuecomment-1341254539 wildfly-elytron will be suppressed  CVE-2022-42003 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.1.Final.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.13.3)
+   ]]></notes>
+        <filePath regex="true">.*wildfly-elytron-1\.19\..*\.jar.*jackson-databind.*</filePath >
+        <cve>CVE-2022-42003</cve>
+        <cve>CVE-2022-42004</cve>
+    </suppress>
+	<!-- Wildfly uses json-patch from java-json-tools/json-patch. CVE is about Starcounter-Jack/JSON-Patch -->
+    <suppress>
+        <notes><![CDATA[
+    file name: json-patch-1.9.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.github\.fge/json\-patch@.*$</packageUrl>
+        <cve>CVE-2021-4279</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: snakeyaml-1.33.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+	<!-- Based on https://nvd.nist.gov/vuln/detail/CVE-2022-3064 - CVE affects yaml support in GO language which is not part of WildFly -->
+	<cve>CVE-2022-3064</cve>
+    </suppress>
+    <!-- [PJFCB-3564] False positive as we don't use Apacke Kafka and kafka-clients appears not to be affected-->
+    <suppress>
+        <notes><![CDATA[
+   file name: kafka-clients-3.1.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.kafka/kafka\-clients@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-25194</vulnerabilityName>
+    </suppress>
+    <!-- [PJFCB-3778] False positive as we don't use Apache SOAP -->
+    <suppress>
+        <notes><![CDATA[
+   file name: cxf-rt-bindings-soap-3.4.10.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.cxf/cxf\-rt\-bindings\-soap@.*$</packageUrl>
+        <cve>CVE-2022-40705</cve>
+    </suppress>
+    <!-- json-smart is used only in org.wildfly:wildfly-testsuite-shared -->
+    <suppress>
+        <notes><![CDATA[
+   file name: json-smart-2.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/net\.minidev/json\-smart@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-1370</vulnerabilityName>
+    </suppress>
+    <!--    [PJFCB-3757] False positive. We do not have this version in distribution.-->
+    <suppress>
+        <notes><![CDATA[
+   file name: jakarta.el-4.0.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.glassfish/jakarta\.el@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-28170</vulnerabilityName>
+    </suppress>
+    <!--    CVE-2023-35116 This happens with any recursive data structure.-->
+    <!--    Jackson will not detect loops in data structures. -->
+    <!--    False Positive based on: https://github.com/FasterXML/jackson-databind/issues/3972 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.2-1-PSI.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.13.3)
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-35116</vulnerabilityName>
+    </suppress>
+
+    <!--   False positive, based on https://nvd.nist.gov/vuln/detail/CVE-2023-34615 this cve concerns -->
+    <!--   https://github.com/billdavidson/JSONUtil/issues/10 -->
+    <!--   wildfly-elytron-json-util does not contain this JSONUtil -->
+    <!--   CVE was raised based on library name, but it is different library -->
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-json-util-1.19.2-1-PSI.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-json\-util@.*$</packageUrl>
+        <cve>CVE-2023-34615</cve>
+    </suppress>
+
+    <!-- False posititve. CVE is about hamba:avro but WildFly is using org.apache.avro:avro-->
+    <suppress>
+        <notes><![CDATA[
+   file name: avro-1.10.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.avro/avro@.*$</packageUrl>
+        <cve>CVE-2023-37475</cve>
+    </suppress>
+
+    <!-- False posititve. xalan 2.7.3 contains BCEL 6.7.0 which is fixed. -->
+    <suppress>
+        <notes><![CDATA[
+    file name: xalan-2.7.3.jar
+    ]]></notes>
+        <packageUrl regex="true">^pkg:maven/xalan/xalan@.*$</packageUrl>
+        <cve>CVE-2022-42920</cve>
+    </suppress>
+
+    <!-- False positive. Vulnerability is in C++ implementation of gRPC -->
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-core-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-core@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-protobuf-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-protobuf@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-api-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-api@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-protobuf-lite-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-protobuf\-lite@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-stub-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-stub@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-okhttp-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-okhttp@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-context-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-context@.*$</packageUrl>
+        <cve>CVE-2023-33953</cve>
+        <cve>CVE-2023-4785</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
+        <cve>CVE-2023-3223</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-server-servlet-1.10.1.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.elytron\-web/undertow\-server\-servlet@.*$</packageUrl>
+        <cve>CVE-2023-1108</cve>
+        <cve>CVE-2023-3223</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: plexus-component-annotations-1.7.1.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-component\-annotations@.*$</packageUrl>
+        <cve>CVE-2022-4244</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: plexus-interpolation-1.24.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.plexus/plexus\-interpolation@.*$</packageUrl>
+        <cve>CVE-2022-4244</cve>
+    </suppress>
+    <!-- Wildfly turns hostname verification on by default. -->
+    <suppress>
+        <notes><![CDATA[
+        file name: netty-transport-4.1.94.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-.*@.*$</packageUrl>
+        <cve>CVE-2023-4586</cve>
+    </suppress>
+    <!-- False positive, JGit in version 6.6.1.202309021850-r already contains a fix -->
+    <!-- False positive result caused by https://github.com/jeremylong/DependencyCheck/issues/5943 -->
+    <suppress>
+        <notes><![CDATA[
+   file name: org.eclipse.jgit-6.6.1.202309021850-r.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit@.*$</packageUrl>
+        <cve>CVE-2023-4759</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: org.eclipse.jgit.ssh.apache-6.6.1.202309021850-r.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.eclipse\.jgit/org\.eclipse\.jgit\.ssh\.apache@.*$</packageUrl>
+        <cve>CVE-2023-4759</cve>
+    </suppress>
+    <!-- We do not use grpc-netty, Netty is provided by WildFly -->
+    <suppress>
+        <notes><![CDATA[
+   file name: grpc-protobuf-1.38.1.jar
+   file name: grpc-core-1.38.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.grpc/grpc\-.*@.*$</packageUrl>
+        <cve>CVE-2023-44487</cve>
+    </suppress>
+    <!--  False-positive - The problem isn't with dom4j but in underlaying saxreader -->
+    <suppress>
+        <notes><![CDATA[
+   file name: dom4j-2.1.3.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.dom4j/dom4j@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-45960</vulnerabilityName>
+    </suppress>
+    <!-- Red Hat marked CVE-2023-4586 as Moderate Impact -->
+    <suppress>
+        <notes><![CDATA[
+   file name: vertx-core-4.2.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.vertx/vertx\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: infinispan-client-hotrod-13.0.10.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-client\-hotrod@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
+    </suppress>
+    <!-- Dependency used only in test modules -->
+    <suppress>
+        <notes><![CDATA[
+        file name: json-path-2.4.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.jayway\.jsonpath/json\-path@.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-51074</vulnerabilityName>
+    </suppress>
+</suppressions>

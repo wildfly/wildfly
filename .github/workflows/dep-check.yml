@@ -1,0 +1,90 @@
+name: WildFly OWASP Analysis
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  wildfly-dep-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        wildfly-version: ['31']
+
+    steps:
+      - name: Checkout wildfly PSI-${{ matrix.wildfly-version }}.x
+        uses: actions/checkout@v4
+        with:
+          path: 'wildfly'
+          ref: PSI-${{ matrix.wildfly-version }}.x
+
+      - name: Install XMLStarlet
+        run: sudo apt-get install -y xmlstarlet
+
+      - name: Find wildfly-core branch name
+        id: find-wildfly-core-branch-name
+        run: |
+          VERSION=$(xmlstarlet sel -N x=http://maven.apache.org/POM/4.0.0 -t -v '//x:project/x:properties/x:version.org.wildfly.core/text()' ./wildfly/pom.xml)
+          if [ ${VERSION%%.*} -eq 13 ]; then
+            BRANCH_NAME=PSI-13.0.x
+          else 
+            BRANCH_NAME=PSI-${VERSION%%.*}.x
+          fi
+          echo "Branch name: $BRANCH_NAME"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+      - name: Checkout wildfly-core ${{ steps.find-wildfly-core-branch-name.outputs.BRANCH_NAME }}
+        uses: actions/checkout@v4
+        with:
+          repository: 'PSI-Polska/wildfly-core'
+          ref: ${{ steps.find-wildfly-core-branch-name.outputs.BRANCH_NAME }}
+          path: 'wildfly-core'
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build wildfly-core
+        run: |
+          mvn -B -f wildfly-core/pom.xml clean install -DskipTests -Denforcer.skip=true -Dcheckstyle.skip=true
+
+      - name: Build wildfly
+        run: |
+          mvn -B -f wildfly/pom.xml clean install -DskipTests -Denforcer.skip=true -Dcheckstyle.skip=true
+
+      - name: Run wildfly-core dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          # actions/setup-java changes JAVA_HOME so it needs to be reset to match the depcheck image
+          JAVA_HOME: /opt/jdk
+        with:
+          project: wildfly-core
+          path: wildfly-core
+          out: wildfly-core
+          format: 'HTML'
+          args: >
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+
+      - name: Run wildfly dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
+        with:
+          project: wildfly
+          path: wildfly
+          out: wildfly
+          format: 'HTML'
+          args: >
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
+          
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: wildfly-${{ matrix.wildfly-version }}-dependency-check-reports
+          path: |
+            wildfly-core/dependency-check-report.html
+            wildfly/dependency-check-report.html
