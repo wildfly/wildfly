@@ -24,30 +24,30 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
+public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
 
-    public JaxrsSubsystem30TestCase() {
+    public JaxrsSubsystem40TestCase() {
         super(JaxrsExtension.SUBSYSTEM_NAME, new JaxrsExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("jaxrs-3.0.xml");
+        return readResource("jaxrs.xml");
     }
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/jboss-as-jaxrs_3_0.xsd";
+        return "schema/jboss-as-jaxrs_4_0.xsd";
     }
 
     @Override
     public void testSubsystem() throws Exception {
-        standardSubsystemTest(null, false);
+        standardSubsystemTest(null);
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("jaxrs-3.0-expressions.xml", false);
+        standardSubsystemTest("jaxrs-expressions.xml");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class JaxrsSubsystem30TestCase extends AbstractSubsystemBaseTest {
         LegacyKernelServicesInitializer kernelServicesInitializer = builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, subsystemModelVersion)
                 .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
                 .dontPersistXml();
-        kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-jaxrs:26.0.0.Final");
+        kernelServicesInitializer.addMavenResourceURL("org.wildfly:wildfly-jaxrs:31.0.0.Final");
         KernelServices kernelServices = builder.build();
         assertTrue(kernelServices.isSuccessfulBoot());
         assertTrue(kernelServices.getLegacyServices(subsystemModelVersion).isSuccessfulBoot());

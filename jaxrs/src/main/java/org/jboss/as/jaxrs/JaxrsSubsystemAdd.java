@@ -105,17 +105,35 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS)) {
             config.setResteasyLanguageMappings(JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS.resolveModelAttribute(context, configuration));
         }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_MATCH_CACHE_ENABLED)) {
+            config.setResteasyMatchCacheEnabled(JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_MATCH_CACHE_SIZE)) {
+            config.setResteasyMatchCacheSize(JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE.resolveModelAttribute(context, configuration));
+        }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS)) {
             config.setResteasyMediaTypeMappings(JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING)) {
             config.setResteasyMediaTypeParamMapping(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.resolveModelAttribute(context, configuration));
         }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR)) {
+            config.setResteasyPatchfilterDisabled(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED)) {
+            config.setResteasyPatchfilterDisabled(JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_PATCH_FILTER_LEGACY)) {
+            config.setResteasyPatchfilterLegacy(JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY.resolveModelAttribute(context, configuration));
+        }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB)) {
             config.setResteasyPreferJacksonOverJsonB(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_PROVIDERS)) {
             config.setResteasyProviders(JaxrsAttribute.RESTEASY_PROVIDERS.resolveModelAttribute(context, configuration));
+        }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES)) {
+            config.setResteasyRFC7232Preconditions(JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES.resolveModelAttribute(context, configuration));
         }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS)) {
             config.setResteasyRFC7232Preconditions(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS.resolveModelAttribute(context, configuration));

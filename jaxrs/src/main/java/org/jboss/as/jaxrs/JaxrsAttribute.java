@@ -134,6 +134,22 @@ public abstract class JaxrsAttribute {
             .setAttributeMarshaller(MapMarshaller.INSTANCE)
             .build();
 
+    public static final SimpleAttributeDefinition RESTEASY_MATCH_CACHE_ENABLED = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_MATCH_CACHE_ENABLED, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.TRUE)
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
+
+    public static final SimpleAttributeDefinition RESTEASY_MATCH_CACHE_SIZE = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_MATCH_CACHE_SIZE, ModelType.INT)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.INT, false))
+            .setDefaultValue(new ModelNode(2048))
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
+
     public static final PropertiesAttributeDefinition RESTEASY_MEDIA_TYPE_MAPPINGS = new PropertiesAttributeDefinition.Builder(JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS, true)
             .setRequired(false)
             .setAllowExpression(true)
@@ -145,6 +161,30 @@ public abstract class JaxrsAttribute {
             .setRequired(false)
             .setAllowExpression(true)
             .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
+
+    public static final SimpleAttributeDefinition RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
+
+    public static final SimpleAttributeDefinition RESTEASY_PATCH_FILTER_LEGACY = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PATCH_FILTER_LEGACY, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.TRUE)
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
+
+    public static final SimpleAttributeDefinition RESTEASY_PATCH_FILTER_DISABLED = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .build();
 
@@ -162,6 +202,14 @@ public abstract class JaxrsAttribute {
             .setAllowDuplicates(false)
             .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .setAttributeMarshaller(ListMarshaller.INSTANCE)
+            .build();
+
+    public static final SimpleAttributeDefinition RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
             .build();
 
     public static final SimpleAttributeDefinition RESTEASY_RFC7232_PRECONDITIONS = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS, ModelType.BOOLEAN)
@@ -242,10 +290,16 @@ public abstract class JaxrsAttribute {
             RESTEASY_GZIP_MAX_INPUT,
             RESTEASY_JNDI_RESOURCES,
             RESTEASY_LANGUAGE_MAPPINGS,
+            RESTEASY_MATCH_CACHE_ENABLED,
+            RESTEASY_MATCH_CACHE_SIZE,
             RESTEASY_MEDIA_TYPE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
+            RESTEASY_PATCH_FILTER_DISABLED,
+            RESTEASY_PATCH_FILTER_LEGACY,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_PROVIDERS,
+            RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES,
             RESTEASY_RFC7232_PRECONDITIONS,
             RESTEASY_ROLE_BASED_SECURITY,
             RESTEASY_SECURE_RANDOM_MAX_USE,
@@ -265,8 +319,14 @@ public abstract class JaxrsAttribute {
             RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS,
             RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE,
             RESTEASY_GZIP_MAX_INPUT,
+            RESTEASY_MATCH_CACHE_ENABLED,
+            RESTEASY_MATCH_CACHE_SIZE,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
+            RESTEASY_PATCH_FILTER_DISABLED,
+            RESTEASY_PATCH_FILTER_LEGACY,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
+            RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES,
             RESTEASY_RFC7232_PRECONDITIONS,
             RESTEASY_ROLE_BASED_SECURITY,
             RESTEASY_SECURE_RANDOM_MAX_USE,

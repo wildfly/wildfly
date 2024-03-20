@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:jaxrs:4.0">
+<subsystem xmlns="urn:jboss:domain:jaxrs:3.0">
     <jaxrs-2-0-request-matching>true</jaxrs-2-0-request-matching>
     <resteasy-add-charset>false</resteasy-add-charset>
     <resteasy-buffer-exception-entity>false</resteasy-buffer-exception-entity>
@@ -25,21 +25,15 @@
         <entry key="pp">5555</entry>
         <entry key="q">6666</entry>
     </resteasy-language-mappings>
-    <resteasy-match-cache-enabled>false</resteasy-match-cache-enabled>
-    <resteasy-match-cache-size>6677</resteasy-match-cache-size>
     <resteasy-media-type-mappings>
         <entry key="r">77777</entry>
     </resteasy-media-type-mappings>
     <resteasy-media-type-param-mapping>tu</resteasy-media-type-param-mapping>
-    <resteasy-original-webapplicationexception-behavior>true</resteasy-original-webapplicationexception-behavior>
-    <resteasy-patchfilter-disabled>true</resteasy-patchfilter-disabled>
-    <resteasy-patchfilter-legacy>false</resteasy-patchfilter-legacy>
     <resteasy-prefer-jackson-over-jsonb>true</resteasy-prefer-jackson-over-jsonb>
     <resteasy-providers>
       <class> s </class>
       <class> t.t </class>
     </resteasy-providers>
-    <resteasy-proxy-implement-all-interfaces>true</resteasy-proxy-implement-all-interfaces>
     <resteasy-rfc7232preconditions>true</resteasy-rfc7232preconditions>
     <resteasy-role-based-security>true</resteasy-role-based-security>
     <resteasy-secure-random-max-use>2222</resteasy-secure-random-max-use>

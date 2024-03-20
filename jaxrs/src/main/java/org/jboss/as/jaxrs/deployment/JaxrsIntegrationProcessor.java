@@ -522,17 +522,35 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (isSubstantiveList(modelNode = config.getResteasyLanguageMappings())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS, convertMapToString(modelNode));
         }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED, modelNode = config.isResteasyMatchCacheEnabled())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_MATCH_CACHE_ENABLED, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE, modelNode = config.getResteasyMatchCacheSize())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_MATCH_CACHE_SIZE, modelNode.asString());
+        }
         if (isSubstantiveList(modelNode = config.getResteasyMediaTypeMappings())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS, convertMapToString(modelNode));
         }
         if (isTransmittable(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode = config.getResteasyMediaTypeParamMapping())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode.asString());
         }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, modelNode = config.isResteasyOriginalWebapplicationexceptionBehavior())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED, modelNode = config.isResteasyPatchfilterDisabled())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_PATCH_FILTER_DISABLED, modelNode.asString());
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY, modelNode = config.isResteasyPatchfilterLegacy())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_PATCH_FILTER_LEGACY, modelNode.asString());
+        }
         if (isTransmittable(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode = config.isResteasyPreferJacksonOverJsonB())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode.asString());
         }
         if (isSubstantiveList(modelNode = config.getResteasyProviders())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_PROVIDERS, convertListToString(modelNode));
+        }
+        if (isTransmittable(JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES, modelNode = config.isResteasyProxyImplementAllInterfaces())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES, modelNode.asString());
         }
         if (isTransmittable(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, modelNode = config.isResteasyRFC7232Preconditions())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS, modelNode.asString());
