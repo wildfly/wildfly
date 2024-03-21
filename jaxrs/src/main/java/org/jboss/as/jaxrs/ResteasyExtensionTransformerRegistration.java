@@ -41,22 +41,8 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {
         subsystem.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE,
-                        JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD,
-                        JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED,
-                        JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE,
-                        JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED,
-                        JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY,
-                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
-                        JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES)
-                .addRejectCheck(RejectAttributeChecker.DEFINED,
-                        JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD,
-                        JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED,
-                        JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE,
-                        JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED,
-                        JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY,
-                        JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR,
-                        JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES);
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, JaxrsAttribute.TRACING_TYPE, JaxrsAttribute.TRACING_THRESHOLD);
     }
 
     private static void registerV4Transformers(ResourceTransformationDescriptionBuilder subsystem) {
