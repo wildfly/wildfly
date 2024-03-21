@@ -181,6 +181,7 @@
                             <release-name>${ee.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
+                            <wildfly-channel-resolution-mode>REQUIRED</wildfly-channel-resolution-mode>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
                             <minimum-stability>experimental</minimum-stability>
                         </configuration>

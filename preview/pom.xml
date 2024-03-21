@@ -99,7 +99,6 @@
 
             <modules>
                 <module>build</module>
-                <module>channel</module>
                 <module>dist</module>
                 <module>feature-pack</module>
                 <module>galleon-local</module>

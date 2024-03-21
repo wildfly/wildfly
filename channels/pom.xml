@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>32.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <groupId>org.wildfly.channels</groupId>
+    <artifactId>wildfly-channels-parent</artifactId>
+    <description>Parent for WildFly channels modules</description>
+    <packaging>pom</packaging>
+
+    <name>WildFly: Channels Parent</name>
+
+    <modules>
+        <module>wildfly</module>
+        <module>wildfly-ee</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>skip.preview</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+
+            <modules>
+                <module>preview</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

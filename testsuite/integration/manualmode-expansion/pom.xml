@@ -289,15 +289,15 @@
                             <channels>
                                 <channel>
                                     <manifest>
-                                        <groupId>${ee.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-channel</artifactId>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
                                 <channel>
                                     <manifest>
-                                        <groupId>${full.maven.groupId}</groupId>
-                                        <artifactId>wildfly-channel</artifactId>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
                                         <version>${full.maven.version}</version>
                                     </manifest>
                                 </channel>
