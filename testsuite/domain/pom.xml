@@ -341,8 +341,6 @@
                                     <argLine>-Djava.util.logging.manager=org.jboss.logmanager.LogManager ${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.system.args}</argLine>
                                     
                                     <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
-                                        
                                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                         <jboss.home>${project.basedir}/target/wildfly</jboss.home>
                                         <module.path>${jboss.dist}/modules</module.path>

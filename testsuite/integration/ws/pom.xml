@@ -469,7 +469,6 @@
                                         <javax.net.ssl.keyStore>${project.build.testOutputDirectory}/org/jboss/as/test/integration/ws/wsse/trust/client.keystore</javax.net.ssl.keyStore>
                                         <javax.net.ssl.keyStorePassword>changeit</javax.net.ssl.keyStorePassword>
                                         <javax.net.ssl.keyStoreType>jks</javax.net.ssl.keyStoreType>
-                                        <server.jvm.args>${server.jvm.args} -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</server.jvm.args>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
