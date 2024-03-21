@@ -246,6 +246,10 @@
         <testsuite.full.galleon.pack.groupId>${full.maven.groupId}</testsuite.full.galleon.pack.groupId>
         <testsuite.full.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.full.galleon.pack.artifactId>
         <testsuite.full.galleon.pack.version>${full.maven.version}</testsuite.full.galleon.pack.version>
+        <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
+             Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
+        -->
+        <testsuite.test.galleon.pack.artifactId>wildfly-test-galleon-pack</testsuite.test.galleon.pack.artifactId>
 
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
@@ -1432,6 +1436,7 @@
                 <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
