@@ -60,8 +60,11 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                     } else {
                         DEPLOYER_JDBC_LOGGER.deployingNonCompliantJdbcDriver(driverClass, majorVersion, minorVersion);
                     }
-                    String driverName = deploymentUnit.getName();
-                    if ((driverName.contains(".") && ! driverName.endsWith(".jar")) || driverNames.size() != 1) {
+                    final String deploymentName = deploymentUnit.getName();
+                    String driverName = deploymentName;
+                    // in case jdbc drivers are placed in war/ear archives
+                    boolean driverWrapped = deploymentName.contains(".") && ! deploymentName.endsWith(".jar");
+                    if (driverWrapped || driverNames.size() != 1) {
                         driverName += "_" + driverClassName + "_" + majorVersion + "_" + minorVersion;
                     }
                     InstalledDriver driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null, null, majorVersion,
@@ -73,14 +76,13 @@ public final class DriverProcessor implements DeploymentUnitProcessor {
                             .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class,
                                     driverService.getDriverRegistryServiceInjector()).setInitialMode(Mode.ACTIVE).install();
 
-                    if (idx == 0 && driverNames.size() != 1) {
+                    if (idx == 0 && driverNames.size() != 1 && !driverWrapped) {
                         // create short name driver service
-                        driverName = deploymentUnit.getName(); // reset driverName to the deployment unit name
-                        driverMetadata = new InstalledDriver(driverName, driverClass.getName(), null,
+                        driverMetadata = new InstalledDriver(deploymentName, driverClass.getName(), null,
                                 null, majorVersion, minorVersion, compliant);
                         driverService = new DriverService(driverMetadata, driver);
                         phaseContext.getServiceTarget()
-                                .addService(ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_")), driverService)
+                                .addService(ServiceName.JBOSS.append("jdbc-driver", deploymentName.replaceAll("\\.", "_")), driverService)
                                 .addDependency(ConnectorServices.JDBC_DRIVER_REGISTRY_SERVICE, DriverRegistry.class, driverService.getDriverRegistryServiceInjector())
                                 .setInitialMode(Mode.ACTIVE).install();
                     }
