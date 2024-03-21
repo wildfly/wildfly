@@ -8,6 +8,7 @@ package org.jboss.as.clustering.infinispan.persistence.jdbc;
 import javax.sql.DataSource;
 
 import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfiguration;
 import org.infinispan.persistence.jdbc.common.connectionfactory.ConnectionFactory;
 
@@ -31,5 +32,10 @@ public class DataSourceConnectionFactoryConfiguration implements ConnectionFacto
     @Override
     public Class<? extends ConnectionFactory> connectionFactoryClass() {
         return DataSourceConnectionFactory.class;
+    }
+
+    @Override
+    public AttributeSet attributes() {
+        return AttributeSet.EMPTY;
     }
 }
