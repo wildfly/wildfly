@@ -13,6 +13,16 @@
         <package name="appclient"/>
         <package name="bin"/>
     </default-packages>
+
+    <!--
+      When building this feature pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
+      which is used to provision the contents of the 'docs/schema' directory in a WildFly installation.
+      To do this the plugin inspects maven artifacts that would be provisioned by the feature pack,
+      looking for those whose Maven groupId matches one of the groupIds listed below.
+      For all matching artifacts, the plugin checks for the existence of a 'schema' directory at the artifact root.
+      If such a directory is found, the plugin copies out the directory contents and includes them
+      in the feature pack as part of the 'docs.schema' package it generates.
+     -->
     <package-schemas>
         <group name="org.jboss.metadata"/>
         <group name="org.wildfly"/>
