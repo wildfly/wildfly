@@ -52,6 +52,7 @@
         <module>boms/standard-test-expansion</module>
         <module>boms/user</module>
         <module>build</module>
+        <module>channels</module>
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
@@ -129,6 +130,7 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
+        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
         <product.docs.server.version>31</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
@@ -325,6 +327,7 @@
         <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>5.0.0.Beta4</version.org.wildfly.plugin>
+        <version.org.wildfly.wildfly-channel-plugin>1.0.9</version.org.wildfly.wildfly-channel-plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -592,8 +595,8 @@
             <!-- Keep sorted -->
 
             <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly</artifactId>
                 <version>${full.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -621,8 +624,8 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly-ee</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -706,8 +709,8 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly-preview</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -1365,6 +1368,11 @@
                     <groupId>org.wildfly.glow</groupId>
                     <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                     <version>${version.org.wildfly.glow}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-channel-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.wildfly-channel-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
