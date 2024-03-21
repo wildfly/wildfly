@@ -19,6 +19,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -68,7 +69,8 @@ public class JaxrsSubsystem40TestCase extends AbstractSubsystemBaseTest {
         testRejectingTransformers74(transformationConfig, ModelTestControllerVersion.EAP_7_4_0);
     }
 
-//    @Test
+    @Test
+    @Ignore("temporary: https://issues.redhat.com/browse/WFCORE-6700")
     public void testRejectingTransformersEAP80() throws Exception {
         FailedOperationTransformationConfig transformationConfig = new FailedOperationTransformationConfig();
 
