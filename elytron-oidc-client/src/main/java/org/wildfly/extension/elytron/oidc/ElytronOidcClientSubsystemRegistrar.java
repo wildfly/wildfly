@@ -23,8 +23,7 @@ import java.util.Collections;
 
 public class ElytronOidcClientSubsystemRegistrar {
 
-    static final String NAME = "elytron-oidc-client";
-    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(NAME);
+    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(ElytronOidcExtension.SUBSYSTEM_NAME);
     static final AttributeParser SIMPLE_ATTRIBUTE_PARSER = new AttributeElementParser();
     static final AttributeMarshaller SIMPLE_ATTRIBUTE_MARSHALLER = new AttributeElementMarshaller();
 

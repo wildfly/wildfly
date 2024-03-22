@@ -5,18 +5,6 @@
 
 package org.wildfly.extension.elytron.oidc;
 
-
-import org.jboss.as.controller.Feature;
-import org.jboss.as.controller.PersistentSubsystemSchema;
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.SubsystemSchema;
-import org.jboss.as.controller.xml.VersionedNamespace;
-import org.jboss.as.version.Stability;
-import org.jboss.staxmapper.IntVersion;
-
-import java.util.EnumSet;
-import java.util.Map;
-
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemRegistrar.SIMPLE_ATTRIBUTE_MARSHALLER;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemRegistrar.SIMPLE_ATTRIBUTE_PARSER;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ADAPTER_STATE_COOKIE_PATH;
@@ -31,6 +19,17 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TOKE
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.USE_RESOURCE_ROLE_MAPPINGS;
 
+import java.util.EnumSet;
+import java.util.Map;
+
+import org.jboss.as.controller.Feature;
+import org.jboss.as.controller.PersistentSubsystemSchema;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.as.version.Stability;
+import org.jboss.staxmapper.IntVersion;
+
 /**
  * Enumerated the schema versions for the elytron-oidc-client subsystem.
  * @author Prarthona Paul
@@ -39,10 +38,10 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.USE_
 public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<ElytronOidcSubsystemSchema> {
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
-    VERSION_3_0_COMMUNITY(3, 0, Stability.COMMUNITY),
+    VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW),
     ;
 
-    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_3_0_COMMUNITY, VERSION_2_0));
+    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_2_0_PREVIEW, VERSION_2_0));
 
     private final VersionedNamespace<IntVersion, ElytronOidcSubsystemSchema> namespace;
 

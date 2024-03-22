@@ -5,14 +5,13 @@
 
 package org.wildfly.extension.elytron.oidc;
 
+import java.util.EnumSet;
+import java.util.Properties;
+
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.util.EnumSet;
-import java.util.Properties;
-
 
 /**
  * A test class that tests the subsystem parsing of each subsystem
@@ -28,7 +27,7 @@ public class ElytronOidcClientSubsystemTestCase extends AbstractSubsystemSchemaT
     }
 
     public ElytronOidcClientSubsystemTestCase(ElytronOidcSubsystemSchema schema) {
-        super(ElytronOidcClientSubsystemRegistrar.NAME, new ElytronOidcExtension(), schema, ElytronOidcSubsystemSchema.CURRENT.get(schema.getStability()));
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), schema, ElytronOidcSubsystemSchema.CURRENT.get(schema.getStability()));
     }
 
     @Override
