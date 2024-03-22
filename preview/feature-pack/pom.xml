@@ -100,7 +100,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
+                        <id>copy-unpacked-galleon-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -111,28 +111,6 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
-                                    <excludes>
-                                        <!-- We handle system/add-ons separately -->
-                                        <exclude>modules/system/add-ons/mvc-krazo/**</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <!-- The mvc-krazo FP puts things in system/add-ons but for us they are in system/layers/base -->
-                        <id>copy-unpacked-module-addons-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources/modules/system/layers/base</outputDirectory>
-                            <escapeString>\</escapeString>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources/modules/system/add-ons/mvc-krazo</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -210,6 +188,7 @@
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>

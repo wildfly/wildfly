@@ -463,7 +463,7 @@ link:#gal.opentelemetry[opentelemetry]
 link:#gal.web-server[web-server] +
 
 |[[gal.mvc-krazo]]mvc-krazo
-|Support for Jakarta MVC (_WildFly Preview only unless the  link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] is used_)
+|Support for Jakarta MVC (xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability])
 |
 link:#gal.bean-validation[bean-validation] +
 link:#gal.cdi[cdi] +

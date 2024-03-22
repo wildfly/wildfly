@@ -32,7 +32,7 @@ and could be useful to anyone, it is primarily useful for JBoss EAP
 subscribers who would provide the data to Red Hat when requesting
 support.
 
-|mvc-krazo| Provides support for use of Jakarta MVC in deployments. Currently only provided in WildFly Preview, although `preview` stability level support can be added to standard WildFly by including the link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] Galleon feature pack in your server provisioning configuration.
+|mvc-krazo| Provides support for use of Jakarta MVC in deployments. Currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability].
 
 |pojo |Enables the deployment of applications containing JBoss
 Microcontainer services, as supported by previous versions of JBoss
