@@ -1402,6 +1402,26 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${version.org.wildfly.mvc.krazo}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${version.org.wildfly.mvc.krazo}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.security.mp</groupId>
                 <artifactId>wildfly-elytron-jwt</artifactId>
                 <version>${version.org.wildfly.security.elytron-mp}</version>
