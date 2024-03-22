@@ -396,6 +396,8 @@ syntax from $JBOSS_HOME/bin:
 ./standalone.sh --server-config=standalone-full-ha.xml
 ----
 
+_See also:_ <<Admin_Guide#aliases, Configuration File Aliases>>
+
 Similarly to start an alternate configuration in _domain_ mode:
 
 [source,options="nowrap"]
