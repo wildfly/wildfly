@@ -5,6 +5,15 @@
 
 package org.jboss.as.test.multinode.ejb.http;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+
+import jakarta.ejb.NoSuchEJBException;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -29,29 +38,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.net.SocketPermission;
 import java.util.Arrays;
 import java.util.Collections;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.shared.PermissionUtils.createFilePermission;
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-
+import java.util.Hashtable;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(EjbOverHttpTestCase.EjbOverHttpTestCaseServerSetup.class)
-public class EjbOverHttpTestCase {
+@ServerSetup(EjbOverHttpProviderUrlTestCase.EjbOverHttpTestCaseServerSetup.class)
+public class EjbOverHttpProviderUrlTestCase {
     private static final Logger log = Logger.getLogger(EjbOverHttpTestCase.class);
     public static final String ARCHIVE_NAME_SERVER = "ejboverhttp-test-server";
-    public static final String ARCHIVE_NAME_CLIENT = "ejboverhttp-test-client";
     public static final int NO_EJB_RETURN_CODE = -1;
     private static final int serverPort = 8180;
 
@@ -135,10 +136,16 @@ public class EjbOverHttpTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testBasicInvocation(@ArquillianResource InitialContext ctx) throws Exception {
+    public void testProviderUrlInvocation() throws Exception {
         deployer.deploy("server");
 
-        StatelessRemote bean = (StatelessRemote) ctx.lookup("java:module/" + StatelessBean.class.getSimpleName() + "!"
+        Hashtable<String, String> table = new Hashtable<>();
+        table.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
+        table.put(Context.PROVIDER_URL, "http://localhost:8180/wildfly-services");
+
+        InitialContext ctx = new InitialContext(table);
+
+        StatelessRemote bean = (StatelessRemote) ctx.lookup("java:ejboverhttp-test-server/" + StatelessBean.class.getSimpleName() + "!"
                 + StatelessRemote.class.getName());
         Assert.assertNotNull(bean);
 
@@ -149,8 +156,14 @@ public class EjbOverHttpTestCase {
         deployer.undeploy("server");
 
         //  failed discovery after undeploying server deployment
-        int returnValue = bean.remoteCall();
-        Assert.assertEquals(NO_EJB_RETURN_CODE, returnValue);
+        boolean noSuchEjbException = false;
+        try {
+            int returnValue = bean.remoteCall();
+            Assert.assertEquals(NO_EJB_RETURN_CODE, returnValue);
+        } catch(NoSuchEJBException e){
+            noSuchEjbException = true;
+        }
+        Assert.assertTrue(noSuchEjbException);
 
         deployer.deploy("server");
 
