@@ -451,7 +451,6 @@ public class Constants {
                     AUTHENTICATION_CONTEXT_AND_APPLICATION_NAME)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
-            .setDeprecated(ELYTRON_BY_DEFAULT_VERSION)
             .setRestartAllServices()
             .build();
 
