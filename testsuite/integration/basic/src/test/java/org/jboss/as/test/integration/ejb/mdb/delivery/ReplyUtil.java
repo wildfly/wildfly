@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.ejb.mdb.deliveryactive;
+package org.jboss.as.test.integration.ejb.mdb.delivery;
 
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
