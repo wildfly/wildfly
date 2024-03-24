@@ -15,7 +15,7 @@
     <enterprise-beans>
         <message-driven>
             <ejb-name>MDBWithDeliveryActiveDeploymentDescriptor</ejb-name>
-            <ejb-class>org.jboss.as.test.integration.ejb.mdb.deliveryactive.MDBWithDeliveryActiveDeploymentDescriptor</ejb-class>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.delivery.MDBWithDeliveryActiveDeploymentDescriptor</ejb-class>
             <activation-config>
                 <activation-config-property>
                     <activation-config-property-name>destination</activation-config-property-name>

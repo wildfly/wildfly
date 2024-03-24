@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.ejb3.deliveryactive.metadata;
+package org.jboss.as.ejb3.delivery.metadata;
 
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
 
