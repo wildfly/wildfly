@@ -89,6 +89,8 @@ import org.jboss.metadata.ear.jboss.JBossAppMetaData;
  */
 public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
+    private static final int UNUSED_CONSTANT_FOR_A_FAKE_PR = 25;
+
     private final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor;
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
     private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
