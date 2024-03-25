@@ -4,10 +4,17 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
+
 import com.fasterxml.jackson.core.util.JacksonFeature;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,10 +35,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
@@ -98,8 +101,58 @@ public class MicrometerOtelIntegrationTestCase {
     // a few metrics to verify there existence
     @Test
     @RunAsClient
-    @InSequence(Integer.MAX_VALUE)
+    @InSequence(4)
     public void getMetrics() throws InterruptedException {
+        List<String> metricsToTest = Arrays.asList(
+                "demo_counter",
+                "memory_used_heap",
+                "cpu_available_processors",
+                "classloader_loaded_classes_count",
+                "cpu_system_load_average",
+                "gc_time",
+                "thread_count",
+                "undertow_bytes_received"
+        );
+
+        final String response = fetchMetrics(metricsToTest.get(0));
+        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n, response.contains(n)));
+    }
+
+    @Test
+    @RunAsClient
+    @InSequence(5)
+    public void testJmxMetrics() throws InterruptedException {
+        List<String> metricsToTest = Arrays.asList(
+                "thread_max_count",
+                "classloader_loaded_classes",
+                "cpu_system_load_average",
+                "cpu_process_cpu_time",
+                "classloader_unloaded_classes",
+                "classloader_loaded_classes_count",
+                "thread_count",
+                "thread_daemon_count",
+                "cpu_available_processors"
+        );
+        final String response = fetchMetrics(metricsToTest.get(0));
+        Map<String, String> metrics = Arrays.stream(response.split("\n"))
+                .filter(s -> !s.startsWith("#"))
+                .map(this::splitMetric)
+                .collect(Collectors.toMap(e -> e[0], e -> e[1]));
+        metricsToTest.forEach(m -> {
+            Assert.assertNotEquals("Metric value should be non-zero: " + m,
+                    "0", metrics.get(m + "{job=\"wildfly\"}")); // Add the metrics tags to complete the key
+        });
+    }
+
+    private String[] splitMetric(String entry) {
+        int index = entry.lastIndexOf(" ");
+        return new String[]{
+                entry.substring(0, index),
+                entry.substring(index + 1)
+        };
+    }
+
+    private String fetchMetrics(String nameToMonitor) throws InterruptedException {
         WebTarget target = client.target(MicrometerSetupTask.otelCollector.getPrometheusUrl());
 
         int attemptCount = 0;
@@ -112,20 +165,10 @@ public class MicrometerOtelIntegrationTestCase {
             Thread.sleep(1000);
 
             body = target.request().get().readEntity(String.class);
-            found = body.contains("demo_counter");
+            found = body.contains(nameToMonitor);
             attemptCount++;
         }
 
-        final String finalBody = body;
-        Arrays.asList(
-                "demo_counter",
-                "memory_used_heap",
-                "cpu_available_processors",
-                "classloader_loaded_classes_count",
-                "cpu_system_load_average",
-                "gc_time",
-                "thread_count",
-                "undertow_bytes_received"
-        ).forEach(n -> Assert.assertTrue("Missing metric: " + n, finalBody.contains(n)));
+        return body;
     }
 }
