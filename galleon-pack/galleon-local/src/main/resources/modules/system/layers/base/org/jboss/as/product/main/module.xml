@@ -12,6 +12,7 @@
     </properties>
 
     <resources>
+        <resource-root path="."/>
         <artifact name="${org.wildfly:wildfly-feature-pack-product-conf}"/>
     </resources>
 </module>
