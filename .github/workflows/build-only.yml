@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'temurin'
           cache: 'maven'
       - name: Clear any possible SNAPSHOT dependencies in the local maven repository
@@ -32,5 +32,5 @@ jobs:
           echo "Cleaning SNAPSHOTS from $LOCAL_REPO"
           if [ -d "$LOCAL_REPO" ]; then find "$LOCAL_REPO" -name "*SNAPSHOT*" | xargs -I {} rm -rfv "{}"; fi
         shell: bash
-      - name: Build with Maven Java 11 -Dquickly
+      - name: Build with Maven Java 17 -Dquickly
         run: mvn -U -B -Dquickly
