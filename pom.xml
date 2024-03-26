@@ -369,7 +369,7 @@
         <version.org.apache.activemq.artemis>2.19.1-PSI</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>1.0.2</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.3</version.org.apache.avro>
-        <version.org.apache.cxf>3.4.10</version.org.apache.cxf>
+        <version.org.apache.cxf>3.5.8</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>3.3.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M24</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
