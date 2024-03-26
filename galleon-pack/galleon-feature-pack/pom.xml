@@ -149,6 +149,7 @@
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
+                            <wildfly-channel-resolution-mode>REQUIRED</wildfly-channel-resolution-mode>
                             <minimum-stability>experimental</minimum-stability>
                             <config-stability>community</config-stability>
                             <package-stability>experimental</package-stability>
