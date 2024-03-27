@@ -89,42 +89,12 @@
                     <dependenciesToScan>
                         <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
+                    <systemPropertyVariables>
+                        <!-- Disable default procedures as the MP Health TCK must be run without them -->
+                        <!-- https://github.com/eclipse/microprofile-health/blob/master/tck/running_the_tck.asciidoc#disabling-default-vendor-procedures -->
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dmp.health.disable-default-procedures=true</microprofile.jvm.args>
+                    </systemPropertyVariables>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <dependenciesToScan>
-                                <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
-                            </dependenciesToScan>
-                            <systemPropertyVariables>
-                                <!-- Disable default procedures as the MP Metrics TCK must be run without them -->
-                                <!-- https://github.com/eclipse/microprofile-health/blob/master/tck/running_the_tck.asciidoc#disabling-default-vendor-procedures -->
-                                <microprofile.jvm.args>${microprofile.jvm.args} -Dmp.health.disable-default-procedures=true</microprofile.jvm.args>
-                            </systemPropertyVariables>
-                            <excludes>
-                                <exclude>**/DisableDefaultVendorProceduresTest.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>mp-health.surefire.enabled-default-procedures</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <!-- Disable default procedures as the MP Metrics TCK must be run without them -->
-                                <!-- https://github.com/eclipse/microprofile-health/blob/master/tck/running_the_tck.asciidoc#disabling-default-vendor-procedures -->
-                                <microprofile.jvm.args>${microprofile.jvm.args} -Dmp.health.disable-default-procedures=false</microprofile.jvm.args>
-                            </systemPropertyVariables>
-                            <includes>
-                                <include>**/DisableDefaultVendorProceduresTest.java</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
