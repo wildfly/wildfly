@@ -9,5 +9,7 @@
     <packages>
         <package name="product.conf" optional="true"/>
         <package name="misc.domain"/>
+        <!-- Unstable API Annotation Index -->
+        <package name="unstable-api-annotation-index.wildfly-galleon-pack"/>
     </packages>
 </config>

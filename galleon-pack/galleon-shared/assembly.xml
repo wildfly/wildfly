@@ -16,6 +16,10 @@
             <directory>src/main/resources</directory>
             <outputDirectory/>
         </fileSet>
+        <fileSet>
+            <directory>target/index</directory>
+            <outputDirectory>packages/unstable-api-annotation-index.wildfly-galleon-pack/content/</outputDirectory>
+        </fileSet>
     </fileSets>
     <files>
         <file>
