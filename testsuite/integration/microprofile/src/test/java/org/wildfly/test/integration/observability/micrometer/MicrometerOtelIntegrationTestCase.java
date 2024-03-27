@@ -4,10 +4,14 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
+
 import com.fasterxml.jackson.core.util.JacksonFeature;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -22,49 +26,37 @@ import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
+import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class MicrometerOtelIntegrationTestCase {
-
     public static final int REQUEST_COUNT = 5;
     @ArquillianResource
     private URL url;
     @Inject
     private MeterRegistry meterRegistry;
 
-    private final Client client = ClientBuilder.newClient().register(JacksonFeature.class);
-
-    static final String WEB_XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    + "<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n"
-                    + "           xmlns=\"http://xmlns.jcp.org/xml/ns/javaee\"\n"
-                    + "         xsi:schemaLocation=\"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd\" \n"
-                    + "              version=\"4.0\">\n"
-                    + "    <servlet-mapping>\n"
-                    + "        <servlet-name>jakarta.ws.rs.core.Application</servlet-name>\n"
-                    + "        <url-pattern>/*</url-pattern>\n"
-                    + "    </servlet-mapping>"
-                    + "</web-app>\n";
-
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
-                .addClasses(ServerSetupTask.class, MetricResource.class)
-                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
+        return AssumeTestGroupUtil.isDockerAvailable() ?
+                ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+                        .addClasses(ServerSetupTask.class,
+                                RestActivator.class,
+                                MetricResource.class,
+                                AssumeTestGroupUtil.class)
+                        .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
+                AssumeTestGroupUtil.emptyWar();
     }
 
+    // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
+    // Otherwise the org.wildfly.extension.micrometer.registry.NoOpRegistry is installed which will result in 0 counters,
+    // and cause the test fail seemingly intermittently on machines with broken Docker setup.
     @BeforeClass
     public static void checkForDocker() {
         AssumeTestGroupUtil.assumeDockerAvailable();
@@ -79,11 +71,14 @@ public class MicrometerOtelIntegrationTestCase {
     @Test
     @RunAsClient
     @InSequence(2)
-    public void makeRequests() throws URISyntaxException {
-        WebTarget target = client.target(url.toURI());
-        for (int i = 0; i < REQUEST_COUNT; i++) {
-            target.request().get();
+    public void makeRequests() throws URISyntaxException, InterruptedException {
+        try (Client client = getClient()) {
+            WebTarget target = client.target(url.toURI());
+            for (int i = 0; i < REQUEST_COUNT; i++) {
+                target.request().get();
+            }
         }
+        Thread.sleep(1000); // Give time to publish
     }
 
     @Test
@@ -100,32 +95,38 @@ public class MicrometerOtelIntegrationTestCase {
     @RunAsClient
     @InSequence(Integer.MAX_VALUE)
     public void getMetrics() throws InterruptedException {
-        WebTarget target = client.target(MicrometerSetupTask.otelCollector.getPrometheusUrl());
+        try (Client client = getClient()) {
+            WebTarget target = client.target(OpenTelemetryCollectorContainer.getInstance().getPrometheusUrl());
 
-        int attemptCount = 0;
-        boolean found = false;
-        String body = "";
+            int attemptCount = 0;
+            boolean found = false;
+            String body = "";
 
-        // Request counts can vary. Setting high to help ensure test stability
-        while (!found && attemptCount < 30) {
-            // Wait to give Micrometer time to export
-            Thread.sleep(1000);
+            // Request counts can vary. Setting high to help ensure test stability
+            while (!found && attemptCount < 30) {
+                // Wait to give Micrometer time to export
+                Thread.sleep(1000);
 
-            body = target.request().get().readEntity(String.class);
-            found = body.contains("demo_counter");
-            attemptCount++;
+                body = target.request().get().readEntity(String.class);
+                found = body.contains("demo_counter");
+                attemptCount++;
+            }
+
+            final String finalBody = body;
+            Arrays.asList(
+                    "demo_counter",
+                    "memory_used_heap",
+                    "cpu_available_processors",
+                    "classloader_loaded_classes_count",
+                    "cpu_system_load_average",
+                    "gc_time",
+                    "thread_count",
+                    "undertow_bytes_received"
+            ).forEach(n -> Assert.assertTrue("Missing metric: " + n, finalBody.contains(n)));
         }
+    }
 
-        final String finalBody = body;
-        Arrays.asList(
-                "demo_counter",
-                "memory_used_heap",
-                "cpu_available_processors",
-                "classloader_loaded_classes_count",
-                "cpu_system_load_average",
-                "gc_time",
-                "thread_count",
-                "undertow_bytes_received"
-        ).forEach(n -> Assert.assertTrue("Missing metric: " + n, finalBody.contains(n)));
+    private Client getClient() {
+        return ClientBuilder.newClient().register(JacksonFeature.class);
     }
 }

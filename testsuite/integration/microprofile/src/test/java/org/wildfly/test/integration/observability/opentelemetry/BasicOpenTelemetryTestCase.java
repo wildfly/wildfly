@@ -5,19 +5,21 @@
 
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.trace.Tracer;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Tracer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTask;
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
@@ -32,23 +34,23 @@ public class BasicOpenTelemetryTestCase extends BaseOpenTelemetryTest {
     private Baggage baggage;
 
     @Deployment
-    public static Archive getDeployment() {
+    public static WebArchive getDeployment() {
         return buildBaseArchive(BasicOpenTelemetryTestCase.class.getSimpleName());
     }
 
     @Test
     public void openTelemetryInjection() {
-        Assert.assertNotNull(openTelemetry);
+        Assert.assertNotNull("Injection of OpenTelemetry instance failed", openTelemetry);
     }
 
     @Test
     public void traceInjection() {
-        Assert.assertNotNull(tracer);
+        Assert.assertNotNull("Injection of Tracer instance failed", tracer);
     }
 
     @Test
     public void baggageInjection() {
-        Assert.assertNotNull(baggage);
+        Assert.assertNotNull("Injection of Baggage instance failed", baggage);
     }
 
     @Test

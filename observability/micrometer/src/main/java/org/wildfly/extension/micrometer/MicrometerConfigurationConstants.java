@@ -11,4 +11,5 @@ public final class MicrometerConfigurationConstants {
     static final String OTLP_REGISTRY = "otlp-registry";
     public static final String ENDPOINT = "endpoint";
     public static final String STEP = "step";
+    public static final String CONTEXT = "context";
 }
