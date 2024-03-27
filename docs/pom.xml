@@ -177,5 +177,32 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!-- Profile to disable time consuming wildscribe generation -->
+            <id>disable-wildscribe-generation</id>
+            <activation>
+                <property>
+                    <name>disable-wildscribe-generation</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jboss.wildscribe</groupId>
+                        <artifactId>wildscribe-maven-plugin</artifactId>
+                        <version>${version.org.jboss.wildscribe}</version>
+                        <executions>
+                            <execution>
+                                <id>generate-site</id>
+                                <goals>
+                                    <goal>generate-site</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
