@@ -15,6 +15,7 @@ public final class Capabilities {
     public static final String CAPABILITY_UNDERTOW = "org.wildfly.undertow";
     public static final String CAPABILITY_LISTENER = "org.wildfly.undertow.listener";
     public static final String CAPABILITY_SERVER = "org.wildfly.undertow.server";
+    public static final String CAPABILITY_SERVER_LISTENER = "org.wildfly.undertow.server.listener";
     public static final String CAPABILITY_HOST = "org.wildfly.undertow.host";
     public static final String CAPABILITY_HOST_SSO = "org.wildfly.undertow.host.sso";
     public static final String CAPABILITY_LOCATION = "org.wildfly.undertow.host.location";
@@ -38,11 +39,9 @@ public final class Capabilities {
 
     public static final String REF_IO_WORKER = "org.wildfly.io.worker";
     public static final String REF_SECURITY_DOMAIN = "org.wildfly.security.security-domain";
-    public static final String REF_SOCKET_BINDING = "org.wildfly.network.socket-binding";
     public static final String REF_SSL_CONTEXT = "org.wildfly.security.ssl-context";
     public static final String REF_HTTP_AUTHENTICATION_FACTORY = "org.wildfly.security.http-authentication-factory";
     public static final String REF_HTTP_LISTENER_REGISTRY = "org.wildfly.remoting.http-listener-registry";
-    public static final String REF_OUTBOUND_SOCKET = "org.wildfly.network.outbound-socket-binding";
     public static final String REF_REQUEST_CONTROLLER = "org.wildfly.request-controller";
     public static final String REF_SUSPEND_CONTROLLER = "org.wildfly.server.suspend-controller";
 }

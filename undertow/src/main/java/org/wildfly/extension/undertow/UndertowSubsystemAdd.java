@@ -47,6 +47,8 @@ import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.session.SharedSessionConfigSchema;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER_RUNTIME_CAPABILITY;
 
@@ -60,12 +62,12 @@ import static org.wildfly.extension.undertow.UndertowRootDefinition.HTTP_INVOKER
  */
 class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-
+    private final ServiceValueRegistry<UndertowService> registry;
     private final Predicate<String> knownSecurityDomain;
 
-    UndertowSubsystemAdd(Predicate<String> knownSecurityDomain) {
-        super(UndertowRootDefinition.ATTRIBUTES);
+    UndertowSubsystemAdd(Predicate<String> knownSecurityDomain, ServiceValueRegistry<UndertowService> registry) {
         this.knownSecurityDomain = knownSecurityDomain;
+        this.registry = registry;
     }
 
     /**
@@ -95,8 +97,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         DefaultDeploymentMappingProvider.instance().clear();//we clear provider on system boot, as on reload it could cause issues.
 
         final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(UndertowRootDefinition.UNDERTOW_CAPABILITY);
-        final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY, UndertowService.UNDERTOW);
-        csb.setInstance(new UndertowService(usConsumer, defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
+        Consumer<UndertowService> captor = this.registry.add(ServiceDependency.on(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()));
+        final Consumer<UndertowService> usConsumer = csb.provides(UndertowRootDefinition.UNDERTOW_CAPABILITY);
+        csb.setInstance(new UndertowService(usConsumer.andThen(captor), defaultContainer, defaultServer, defaultVirtualHost, instanceId, obfuscateSessionRoute, stats));
         csb.install();
 
         context.addStep(new AbstractDeploymentChainStep() {

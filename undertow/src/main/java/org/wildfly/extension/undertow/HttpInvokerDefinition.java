@@ -26,12 +26,11 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 
 /**
@@ -42,8 +41,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.HTTP_INVOKER);
     static final RuntimeCapability<Void> HTTP_INVOKER_HOST_CAPABILITY =
                 RuntimeCapability.Builder.of(CAPABILITY_HTTP_INVOKER_HOST, true, Void.class)
-                        .setDynamicNameMapper(DynamicNameMappers.PARENT)
-                        //.addDynamicRequirements(Capabilities.CAPABILITY_HOST)
+                        .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
                         .addRequirements(Capabilities.CAPABILITY_HTTP_INVOKER)
                         .build();
 
@@ -79,8 +77,8 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
 
     HttpInvokerDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
-                .setAddHandler(new HttpInvokerAdd())
-                .setRemoveHandler(new HttpInvokerRemove())
+                .setAddHandler(HttpInvokerAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(HttpInvokerAdd.INSTANCE))
                 .setCapabilities(HTTP_INVOKER_HOST_CAPABILITY)
         );
     }
@@ -91,10 +89,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
     }
 
     private static final class HttpInvokerAdd extends AbstractAddStepHandler {
-
-        HttpInvokerAdd() {
-            super(ATTRIBUTES);
-        }
+        static final AbstractAddStepHandler INSTANCE = new HttpInvokerAdd();
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -123,17 +118,6 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             }
             sb.setInstance(new HttpInvokerHostService(hSupplier, hafSupplier, phSupplier, path));
             sb.install();
-        }
-    }
-
-    private static final class HttpInvokerRemove extends ServiceRemoveStepHandler {
-        HttpInvokerRemove() {
-            super(new HttpInvokerAdd());
-        }
-
-        @Override
-        protected ServiceName serviceName(String name, PathAddress address) {
-            return HTTP_INVOKER_HOST_CAPABILITY.getCapabilityServiceName(address);
         }
     }
 }

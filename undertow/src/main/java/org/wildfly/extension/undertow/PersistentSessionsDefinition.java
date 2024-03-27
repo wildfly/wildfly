@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.servlet.api.SessionPersistenceManager;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -19,12 +20,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.Collection;
@@ -99,14 +98,14 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
         private void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             if (isEnabled(model)) {
                 final ModelNode pathValue = PATH.resolveModelAttribute(context, model);
-                final ServiceBuilder<?> sb = context.getServiceTarget().addService(AbstractPersistentSessionManager.SERVICE_NAME);
+                final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addService(AbstractPersistentSessionManager.SERVICE_NAME);
                 final Consumer<SessionPersistenceManager> sConsumer = sb.provides(AbstractPersistentSessionManager.SERVICE_NAME);
                 final Supplier<ModuleLoader> mlSupplier = sb.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
                 if (pathValue.isDefined()) {
                     final String path = pathValue.asString();
                     final ModelNode relativeToValue = RELATIVE_TO.resolveModelAttribute(context, model);
                     final String relativeTo = relativeToValue.isDefined() ? relativeToValue.asString() : null;
-                    final Supplier<PathManager> pmSupplier = sb.requires(PathManagerService.SERVICE_NAME);
+                    final Supplier<PathManager> pmSupplier = sb.requires(PathManager.SERVICE_DESCRIPTOR);
                     sb.setInstance(new DiskBasedModularPersistentSessionManager(sConsumer, mlSupplier, pmSupplier, path, relativeTo));
                 } else {
                     sb.setInstance(new InMemoryModularPersistentSessionManager(sConsumer, mlSupplier));
@@ -132,7 +131,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
     }
 
@@ -155,9 +154,7 @@ class PersistentSessionsDefinition extends PersistentResourceDefinition {
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+            return ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName(parentAddress);
         }
-
-
     }
 }

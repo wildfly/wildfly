@@ -8,7 +8,6 @@ package org.wildfly.extension.undertow;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.COUNTER_METRIC;
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
-import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +16,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import io.undertow.UndertowOptions;
 import io.undertow.server.ConnectorStatistics;
@@ -40,7 +38,9 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
@@ -48,11 +48,13 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.io.OptionAttributeDefinition;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.xnio.Options;
 
 /**
@@ -62,8 +64,13 @@ import org.xnio.Options;
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_LISTENER, true, UndertowListener.class)
-            //.addDynamicRequirements(Capabilities.CAPABILITY_SERVER) -- has no function so don't use it
-            .setAllowMultipleRegistrations(true) //hack to support mod_cluster's legacy profiles
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
+            .setAllowMultipleRegistrations(true)
+            .build();
+
+    static final RuntimeCapability<Void> SERVER_LISTENER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER_LISTENER, true, UndertowListener.class)
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
+            .setAllowMultipleRegistrations(true)
             .build();
 
     // only used by the subclasses Http(s)ListenerResourceDefinition
@@ -76,7 +83,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
@@ -108,7 +115,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setAllowExpression(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(REF_SOCKET_BINDING, LISTENER_CAPABILITY)
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(LISTENER_CAPABILITY, SocketBinding.SERVICE_DESCRIPTOR).build())
             .build();
 
     static final SimpleAttributeDefinition RESOLVE_PEER_ADDRESS = new SimpleAttributeDefinitionBuilder(Constants.RESOLVE_PEER_ADDRESS, ModelType.BOOLEAN)
@@ -234,13 +241,13 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         return Collections.unmodifiableCollection(attributes);
     }
 
-    private final Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory;
+    private final AbstractAddStepHandler addHandler;
     private final Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers;
 
-    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
+    public ListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler addHandler, Map<AttributeDefinition, OperationStepHandler> writeAttributeHandlers) {
         // this Persistent Parameters will be cast to Parameters
-        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY));
-        this.addHandlerFactory = addHandlerFactory;
+        super(parameters.setDescriptionResolver(UndertowExtension.getResolver(Constants.LISTENER)).addCapabilities(LISTENER_CAPABILITY, SERVER_LISTENER_CAPABILITY));
+        this.addHandler = addHandler;
         this.writeAttributeHandlers = new HashMap<>();
         this.writeAttributeHandlers.putAll(writeAttributeHandlers);
         this.writeAttributeHandlers.put(ENABLED, new EnabledAttributeHandler());
@@ -248,18 +255,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        AbstractAddStepHandler addHandler = this.addHandlerFactory.apply(this.getAttributes());
-        super.registerAddOperation(resourceRegistration, addHandler, OperationEntry.Flag.RESTART_NONE);
-        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(addHandler), OperationEntry.Flag.RESTART_NONE);
+        super.registerAddOperation(resourceRegistration, this.addHandler, OperationEntry.Flag.RESTART_NONE);
+        super.registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(this.addHandler), OperationEntry.Flag.RESTART_NONE);
         resourceRegistration.registerOperationHandler(ResetConnectorStatisticsHandler.DEFINITION, ResetConnectorStatisticsHandler.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        Collection<AttributeDefinition> attributes = this.getAttributes();
-        OperationStepHandler defaultWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
-        for (AttributeDefinition attribute : attributes) {
-            OperationStepHandler writeAttributeHandler = this.writeAttributeHandlers.getOrDefault(attribute, defaultWriteAttributeHandler);
+        for (AttributeDefinition attribute : this.getAttributes()) {
+            OperationStepHandler writeAttributeHandler = this.writeAttributeHandlers.getOrDefault(attribute, ReloadRequiredWriteAttributeHandler.INSTANCE);
             resourceRegistration.registerReadWriteAttribute(attribute, null, writeAttributeHandler);
         }
 
@@ -325,10 +329,6 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     }
 
     private static class EnabledAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {
-
-        protected EnabledAttributeHandler() {
-            super(ListenerResourceDefinition.ENABLED);
-        }
 
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {

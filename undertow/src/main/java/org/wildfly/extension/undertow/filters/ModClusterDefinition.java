@@ -48,6 +48,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
@@ -57,6 +58,7 @@ import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
@@ -91,7 +93,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setAllowExpression(true)
             .setRequired(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(Capabilities.REF_SOCKET_BINDING)
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
             .setRestartAllServices()
             .build();
 
@@ -99,7 +101,7 @@ public class ModClusterDefinition extends AbstractFilterDefinition {
             .setAllowExpression(true)
             .setRequired(false)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
-            .setCapabilityReference(Capabilities.REF_SOCKET_BINDING)
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(Capability.MOD_CLUSTER_FILTER_CAPABILITY.getDefinition(), SocketBinding.SERVICE_DESCRIPTOR).build())
             .setRestartAllServices()
             .build();
 

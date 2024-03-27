@@ -5,13 +5,15 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.Capabilities;
 
 /**
  * @author Stuart Douglas
@@ -29,12 +31,13 @@ public class UndertowServletContainerDependencyProcessor implements DeploymentUn
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         if (warMetaData != null) {
+            CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             String servletContainerName = defaultServletContainer;
             final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
             if(metaData != null && metaData.getServletContainerName() != null) {
                 servletContainerName = metaData.getServletContainerName();
             }
-            phaseContext.addDeploymentDependency(UndertowService.SERVLET_CONTAINER.append(servletContainerName), UndertowAttachments.SERVLET_CONTAINER_SERVICE);
+            phaseContext.addDeploymentDependency(support.getCapabilityServiceName(Capabilities.CAPABILITY_SERVLET_CONTAINER, servletContainerName), UndertowAttachments.SERVLET_CONTAINER_SERVICE);
         }
     }
 }

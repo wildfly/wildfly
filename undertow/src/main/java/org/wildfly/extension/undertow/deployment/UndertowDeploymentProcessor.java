@@ -45,13 +45,14 @@ import org.apache.jasper.deploy.TagVariableInfo;
 import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RequirementServiceBuilder;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.StartupCountdown;
 import org.jboss.as.ee.security.JaccService;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -92,7 +93,6 @@ import org.jboss.msc.service.DuplicateServiceException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
@@ -189,7 +189,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         // flag if the app is the default web module for the server/host
         boolean isDefaultWebModule = serverHost != null && serverInstanceName.equals(defaultServerForDeployment) && hostName.equals(defaultHostForDeployment);
 
-        processDeployment(warMetaData, deploymentUnit, phaseContext.getServiceTarget(), deploymentName, hostName, serverInstanceName, isDefaultWebModule);
+        processDeployment(warMetaData, deploymentUnit, phaseContext.getRequirementServiceTarget(), deploymentName, hostName, serverInstanceName, isDefaultWebModule);
     }
 
 
@@ -208,7 +208,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         return hostName;
     }
 
-    private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget,
+    private void processDeployment(final WarMetaData warMetaData, final DeploymentUnit deploymentUnit, final RequirementServiceTarget serviceTarget,
                                    final String deploymentName, final String hostName, final String serverInstanceName, final boolean isDefaultWebModule)
             throws DeploymentUnitProcessingException {
         ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -273,7 +273,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
-        final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
+        final ServiceName hostServiceName = capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverInstanceName, hostName);
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
 
@@ -287,14 +287,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         final ServiceName legacyDeploymentInfoServiceName = legacyDeploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
-        final ServiceBuilder<?> builder = serviceTarget.addService(deploymentInfoServiceName);
+        final RequirementServiceBuilder<?> builder = serviceTarget.addService();
         final Consumer<DeploymentInfo> deploymentInfo = builder.provides(deploymentInfoServiceName, legacyDeploymentInfoServiceName);
-        final Supplier<UndertowService> undertowService = builder.requires(UndertowService.UNDERTOW);
-        final Supplier<ServletContainerService> servletContainerService = builder.requires(UndertowService.SERVLET_CONTAINER.append(servletContainerName));
+        final Supplier<UndertowService> undertowService = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW));
+        final Supplier<ServletContainerService> servletContainerService = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_SERVLET_CONTAINER, servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
         final Supplier<Host> host = builder.requires(hostServiceName);
         final Supplier<SuspendController> suspendController = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
-        final Supplier<ServerEnvironment> serverEnvironment = builder.requires(ServerEnvironmentService.SERVICE_NAME);
+        final Supplier<ServerEnvironment> serverEnvironment = builder.requires(ServerEnvironment.SERVICE_DESCRIPTOR);
         Supplier<SecurityDomain> securityDomain = null;
         Supplier<HttpServerAuthenticationMechanismFactory> mechanismFactorySupplier = null;
         Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction = null;

@@ -21,11 +21,7 @@ import java.util.function.Supplier;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class LocationAdd extends AbstractAddStepHandler {
-    static LocationAdd INSTANCE = new LocationAdd();
-
-    private LocationAdd() {
-        super(LocationDefinition.HANDLER);
-    }
+    static final LocationAdd INSTANCE = new LocationAdd();
 
     @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

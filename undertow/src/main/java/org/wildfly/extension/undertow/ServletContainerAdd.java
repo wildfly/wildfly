@@ -39,10 +39,6 @@ import java.util.function.Supplier;
  */
 final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
 
-    ServletContainerAdd() {
-        super(ServletContainerDefinition.ATTRIBUTES);
-    }
-
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         installRuntimeServices(context.getCapabilityServiceTarget(), context, context.getCurrentAddress(), Resource.Tools.readModel(resource));
@@ -272,7 +268,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 return orphanSessionAllowed;
             }
         };
-        builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, UndertowService.SERVLET_CONTAINER.append(address.getLastElement().getValue())), service));
+        builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY), service));
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         builder.install();
     }

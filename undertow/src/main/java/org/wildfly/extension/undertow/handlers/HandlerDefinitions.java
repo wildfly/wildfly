@@ -26,7 +26,7 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
 
     public HandlerDefinitions() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
-                .setAddHandler(new ModelOnlyAddStepHandler())
+                .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
                 .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
         );
     }

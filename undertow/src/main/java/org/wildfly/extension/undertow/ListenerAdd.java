@@ -6,11 +6,9 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.Capabilities.REF_IO_WORKER;
-import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
 import static org.wildfly.extension.undertow.ListenerResourceDefinition.LISTENER_CAPABILITY;
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +20,6 @@ import io.undertow.server.handlers.PeerNameResolvingHandler;
 import io.undertow.servlet.handlers.MarkSecureHandler;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,10 +36,6 @@ import org.xnio.XnioWorker;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHandler {
-
-    ListenerAdd(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
@@ -69,7 +62,7 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
         OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
         String serverName = parent.getLastElement().getValue();
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(ListenerResourceDefinition.LISTENER_CAPABILITY);
-        final Consumer<ListenerService> serviceConsumer = sb.provides(ListenerResourceDefinition.LISTENER_CAPABILITY, UndertowService.listenerName(name));
+        final Consumer<ListenerService> serviceConsumer = sb.provides(ListenerResourceDefinition.LISTENER_CAPABILITY, ListenerResourceDefinition.SERVER_LISTENER_CAPABILITY);
         final S service = createService(serviceConsumer, name, serverName, context, model, listenerOptions,socketOptions);
         if (peerHostLookup) {
             service.addWrapperHandler(PeerNameResolvingHandler::new);
@@ -90,7 +83,7 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
 
         sb.setInstance(service);
         service.getWorker().set(sb.requiresCapability(REF_IO_WORKER, XnioWorker.class, workerName));
-        service.getBinding().set(sb.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, bindingRef));
+        service.getBinding().set(sb.requires(SocketBinding.SERVICE_DESCRIPTOR, bindingRef));
         service.getBufferPool().set(sb.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, bufferPoolName));
         service.getServerService().set(sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName));
 
