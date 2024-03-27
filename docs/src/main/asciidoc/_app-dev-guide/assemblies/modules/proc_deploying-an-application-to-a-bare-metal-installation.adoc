@@ -1,0 +1,54 @@
+:_content-type: PROCEDURE
+
+[id="deploying-an-application-to-a-bare-metal-installation_{context}"]
+= Building and deploying an application to a bare metal installation
+
+[role="_abstract"]
+You can deploy an application to {ProductShortname} by using the {ProductShortname} deploy plug-in.
+
+.Prerequisites
+
+* You have created an application.
++
+For more information, see xref:creating-a-hello-world-servlet_default[Creating a Hello World servlet].
+* {ProductShortname} is running.
+
+.Procedure
+
+. Navigate to the application root directory.
++
+The application root directory contains the `pom.xml` configuration file.
+
+
+. Add the following build configuration to the `pom.xml` configuration file in the `<project>` section to define the application archive filename.
++
+[source,xml,options="nowrap"]
+----
+<build>
+    ...
+    <finalName>${project.artifactId}</finalName>        <!--1-->
+</build>
+----
+<1> Set the name of the deployment to the project's artifact ID.
+
+. Build and deploy the application by using the {ProductShortName} deploy plug-in.
++
+[source,options="nowrap"]
+----
+$ mvn package wildfly:deploy
+----
+
+.Verification
+
+* To access the application, navigate to the address `http://localhost:8080/{helloworld-QS-artifactId}/` in a browser.
++
+You are redirected to http://localhost:8080/{helloworld-QS-artifactId}/HelloWorld and you get the following message:
++
+----
+Hello World!
+----
+
+[role="_additional-resources"]
+.Next steps
+* xref:testing-an-application-deployed-to-server_default[Testing an application deployed on {ProductShortName}]
+
