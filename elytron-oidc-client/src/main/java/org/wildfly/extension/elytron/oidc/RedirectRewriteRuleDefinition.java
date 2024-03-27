@@ -44,7 +44,7 @@ class RedirectRewriteRuleDefinition extends SimpleResourceDefinition {
             REPLACEMENT).build();
 
     RedirectRewriteRuleDefinition() {
-        super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.REDIRECT_REWRITE_RULE),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(SECURE_DEPLOYMENT, ElytronOidcDescriptionConstants.REDIRECT_REWRITE_RULE))
                 .setAddHandler(RedirectRewriteRuleAddHandler.INSTANCE)
                 .setRemoveHandler(RedirectRewriteRuleRemoveHandler.INSTANCE)

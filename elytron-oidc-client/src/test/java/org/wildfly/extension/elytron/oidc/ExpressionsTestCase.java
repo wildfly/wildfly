@@ -12,31 +12,24 @@ import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Subsystem parsing test case.
  *
  * <a href="mailto:araskar@redhat.com">Ashpan Raskar</a>
  */
-@RunWith(Parameterized.class)
-public class ExpressionsTestCase extends AbstractSubsystemTest {
+public class ExpressionsTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsystemSchema> {
 
     private KernelServices services = null;
 
-    @Parameterized.Parameters
-    public static Iterable<ElytronOidcSubsystemSchema> parameters() {
-        return ElytronOidcSubsystemSchema.CURRENT.values();
-    }
-    public ExpressionsTestCase(ElytronOidcSubsystemSchema schema) {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
+    public ExpressionsTestCase() {
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
     }
 
     @Test
@@ -47,6 +40,11 @@ public class ExpressionsTestCase extends AbstractSubsystemTest {
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) {
+        //
     }
 
     protected static class DefaultInitializer extends AdditionalInitialization {

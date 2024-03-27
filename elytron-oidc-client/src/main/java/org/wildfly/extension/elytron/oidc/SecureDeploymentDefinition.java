@@ -166,7 +166,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
     private static final String WAR_FILE_EXTENSION = ".war";
 
     SecureDeploymentDefinition() {
-        super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT))
                 .setAddHandler(SecureDeploymentAddHandler.INSTANCE)
                 .setRemoveHandler(SecureDeploymentRemoveHandler.INSTANCE)

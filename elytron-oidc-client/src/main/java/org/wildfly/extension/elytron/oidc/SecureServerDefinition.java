@@ -66,7 +66,7 @@ class SecureServerDefinition extends SimpleResourceDefinition {
     private static String HTTP_MANAGEMENT_CONTEXT = "http-management-context";
 
     SecureServerDefinition() {
-        super(new Parameters(PathElement.pathElement(SECURE_SERVER),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(SECURE_SERVER))
                 .setAddHandler(SecureServerDefinition.SecureServerAddHandler.INSTANCE)
                 .setRemoveHandler(SecureServerDefinition.SecureServerRemoveHandler.INSTANCE)

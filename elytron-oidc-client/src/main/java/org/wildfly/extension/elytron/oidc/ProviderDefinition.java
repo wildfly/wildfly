@@ -32,7 +32,7 @@ class ProviderDefinition extends SimpleResourceDefinition {
 
     static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.PROVIDER), Stability.DEFAULT);
     ProviderDefinition() {
-        super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.PROVIDER),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.PROVIDER))
                 .setAddHandler(ProviderAddHandler.INSTANCE)
                 .setRemoveHandler(ProviderRemoveHandler.INSTANCE)

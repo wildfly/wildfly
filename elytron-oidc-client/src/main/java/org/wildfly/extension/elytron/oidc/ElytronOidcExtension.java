@@ -7,6 +7,8 @@ package org.wildfly.extension.elytron.oidc;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -55,8 +57,6 @@ public class ElytronOidcExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemSchema.VERSION_1_0.getNamespace().toString(), ElytronOidcSubsystemSchema.VERSION_1_0);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemSchema.VERSION_2_0.getNamespace().toString(), ElytronOidcSubsystemSchema.VERSION_2_0);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW.getNamespace().toString(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW);
+        context.setSubsystemXmlMappings(SUBSYSTEM_NAME, EnumSet.allOf(ElytronOidcSubsystemSchema.class));
     }
 }
