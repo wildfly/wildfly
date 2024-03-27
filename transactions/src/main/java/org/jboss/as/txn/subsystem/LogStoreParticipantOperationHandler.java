@@ -10,6 +10,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 
 import javax.management.MBeanServer;
@@ -36,7 +37,7 @@ abstract class LogStoreParticipantOperationHandler implements OperationStepHandl
             mbs.invoke(on, operationName, null, null);
 
         } catch (Exception e) {
-            throw new OperationFailedException("JMX error: " + e.getMessage());
+            throw TransactionLogger.ROOT_LOGGER.jmxError(e.getMessage());
         }
 
         // refresh the attributes of this participant (the status attribute should have changed to PREPARED

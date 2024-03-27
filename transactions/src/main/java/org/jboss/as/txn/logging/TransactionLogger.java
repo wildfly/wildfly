@@ -237,4 +237,19 @@ public interface TransactionLogger extends BasicLogger {
 
     @Message(id = 40, value = "There is no active transaction at the current context to register synchronization '%s'")
     IllegalStateException noActiveTransactionToRegisterSynchronization(Synchronization sync);
+
+    @Message(id = 41, value = "JMX error: %s")
+    OperationFailedException jmxError(String message);
+
+    @Message(id = 42, value = "Transaction discovery error")
+    OperationFailedException transactionDiscoveryError(@Cause Exception e);
+
+    @Message(id = 43, value = "InboundTransactionCurrentImpl unable to determine inbound transaction context")
+    RuntimeException unableToDetermineInboundTransactionContext(@Cause Exception e);
+
+    @Message(id = 44, value = "InboundTransactionCurrentImpl unable to suspend inbound transaction context")
+    RuntimeException unableToSuspendInboundTransactionContext(@Cause Exception e);
+
+    @Message(id = 45, value = "Could not register initial reference for InboundTransactionCurrent implementation")
+    RuntimeException cannotRegister(@Cause Exception e);
 }

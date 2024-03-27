@@ -8,6 +8,7 @@ package org.jboss.iiop.tm;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
 
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.omg.CORBA.LocalObject;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
@@ -21,13 +22,13 @@ public class InboundTransactionCurrentImpl extends LocalObject implements Inboun
         try {
             current.importProviderTransaction();
         } catch (SystemException e) {
-            throw new RuntimeException("InboundTransactionCurrentImpl unable to determine inbound transaction context", e);
+            throw TransactionLogger.ROOT_LOGGER.unableToDetermineInboundTransactionContext(e);
         }
 
         try {
             return ContextTransactionManager.getInstance().suspend();
         } catch (SystemException e) {
-            throw new RuntimeException("InboundTransactionCurrentImpl unable to suspend inbound transaction context", e);
+            throw TransactionLogger.ROOT_LOGGER.unableToSuspendInboundTransactionContext(e);
         }
     }
 }
