@@ -1,0 +1,13 @@
+{
+  "client-id" : "PlainTextEncryptedRequestApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "none",
+  "request-object-encryption-algorithm" : "RSA-OAEP",
+  "request-object-content-encryption-algorithm" : "A128CBC-HS256",
+  "credentials" : {
+    "secret" : "secret"
+  }
+}

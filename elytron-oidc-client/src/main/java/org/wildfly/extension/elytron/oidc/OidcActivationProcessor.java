@@ -9,8 +9,11 @@ import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT
 import static org.wildfly.security.http.oidc.Oidc.JSON_CONFIG_CONTEXT_PARAM;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -23,6 +26,16 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.LoginConfigMetaData;
 import org.wildfly.security.http.oidc.OidcConfigurationServletListener;
 
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_ALIAS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE;
+
 /**
  * A {@link DeploymentUnitProcessor} to detect if Elytron OIDC should be activated.
  *
@@ -31,6 +44,7 @@ import org.wildfly.security.http.oidc.OidcConfigurationServletListener;
 class OidcActivationProcessor implements DeploymentUnitProcessor {
 
     private static final String OIDC_AUTH_METHOD = "OIDC";
+    private static final String JSON_CONFIG_UNSUPPORTED_ATTRIBUTE_PARAM = "org.wildfly.security.http.oidc.json.config.unsupported.attributes";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -60,6 +74,17 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
             OidcDeploymentMarker.mark(deploymentUnit);
             VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryRequired(deploymentUnit);
         }
+        Map<String, SimpleAttributeDefinition> unsupportedAttributes = new HashMap<>();
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT, AUTHENTICATION_REQUEST_FORMAT);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM, REQUEST_OBJECT_CONTENT_ENCRYPTION_ALGORITHM);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALGORITHM, REQUEST_OBJECT_ENCRYPTION_ALGORITHM);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM, REQUEST_OBJECT_SIGNING_ALGORITHM);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_ALIAS);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEY_PASSWORD);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_FILE);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD);
+        unsupportedAttributes.put(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE);
+        addUnsupportedAttributesToWebMetaData(deploymentUnit, webMetaData, unsupportedAttributes);
     }
 
     private void addOidcAuthDataAndConfig(DeploymentPhaseContext phaseContext, OidcConfigService service, JBossWebMetaData webMetaData) {
@@ -85,6 +110,28 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         ParamValueMetaData param = new ParamValueMetaData();
         param.setParamName(JSON_CONFIG_CONTEXT_PARAM);
         param.setParamValue(json);
+        contextParams.add(param);
+        webMetaData.setContextParams(contextParams);
+    }
+
+    private static void addUnsupportedAttributesToWebMetaData(DeploymentUnit deploymentUnit, JBossWebMetaData webMetaData, Map<String, SimpleAttributeDefinition> unsupportedAttributes) {
+        ParamValueMetaData param = new ParamValueMetaData();
+        param.setParamName(JSON_CONFIG_UNSUPPORTED_ATTRIBUTE_PARAM);
+        List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+
+        for (Map.Entry<String, SimpleAttributeDefinition> entry : unsupportedAttributes.entrySet()) {
+            if (!deploymentUnit.enables(entry.getValue())) {
+                if (param.getParamValue() == null) {
+                    param.setParamValue(entry.getKey());
+                } else {
+                    param.setParamValue(param.getParamValue() + " " + entry.getKey());
+                }
+            }
+        }
+
+        if (contextParams == null) {
+            contextParams = new ArrayList<>();
+        }
         contextParams.add(param);
         webMetaData.setContextParams(contextParams);
     }
