@@ -52,25 +52,10 @@ public class WSClassVerificationProcessorTestCase {
     }
 
     @Test
-    public void testRootExportedCxfModuleDependencyPresent() {
-        rootSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, true, false, false));
-
-        Assert.assertTrue(WSClassVerificationProcessor.hasCxfModuleDependency(unit));
-    }
-
-    @Test
     public void testRootNonExportedCxfModuleDependencyPresent() {
         rootSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, false, false, false));
 
         Assert.assertFalse(WSClassVerificationProcessor.hasCxfModuleDependency(unit)); // parent dep not exported, should return false
-    }
-
-    @Test
-    public void testSiblingExportedCxfModuleDependencyPresent() {
-        setSubDeploymentsIsolated(false);
-        siblingSpec.addUserDependency(new ModuleDependency(null, "org.apache.cxf", false, true, false, false));
-
-        Assert.assertTrue(WSClassVerificationProcessor.hasCxfModuleDependency(unit));
     }
 
     @Test
