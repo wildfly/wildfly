@@ -1178,4 +1178,113 @@
         <packageUrl regex="true">^pkg:maven/com\.jayway\.jsonpath/json\-path@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-51074</vulnerabilityName>
     </suppress>
+
+    <!-- CVE-2016-2141 is regarding red hat jgroups used in wildfly, while jgroups-aws is addon to jgroups that allows clustering of s3 service in aws  -->
+    <suppress>
+       <notes><![CDATA[
+       file name: jgroups-aws-3.0.0.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.jgroups\.aws/jgroups\-aws@.*$</packageUrl>
+       <cve>CVE-2016-2141</cve>
+    </suppress>
+    
+    
+    <!-- We are not running Glassfish, but use library from it. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: expressly-5.0.0.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
+       <cve>CVE-2023-5763</cve>
+    </suppress>
+    
+    
+    <!-- CVE-2016-9606 is regarding reasteasy (https://github.com/resteasy/resteasy/pull/1092) not  resteasy-tracing-api from reasteasy-extensions. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: resteasy-tracing-api-2.0.1.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-tracing\-api@.*$</packageUrl>
+       <cve>CVE-2016-9606</cve>
+    </suppress>
+    
+    
+    <!-- CVE-2016-9606 is regarding reasteasy (https://github.com/resteasy/resteasy/pull/1092) -->
+    <!-- CVE-2014-3490 this cve is regarding reasteasy (https://github.com/resteasy/Resteasy/pull/521 , https://github.com/resteasy/Resteasy/pull/533) -->
+    <!-- CVE-2020-1695 is regarding reasteasy but it is not inside this jar, it could only work if it would import this resteasy library in older version but thanks to dependency-management it should not. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: resteasy-spring-3.0.4.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.spring/resteasy\-spring@.*$</packageUrl>
+       <cve>CVE-2016-9606</cve>
+       <cve>CVE-2014-3490</cve>
+       <cve>CVE-2020-1695</cve>
+    </suppress>
+    
+    <!-- CVE-2016-9606 is regarding reasteasy (https://github.com/resteasy/resteasy/pull/1092) -->
+    <!-- CVE-2014-3490 is regarding reasteasy (https://github.com/resteasy/Resteasy/pull/521 , https://github.com/resteasy/Resteasy/pull/533) -->
+    <!-- CVE-2020-1695 is regarding reasteasy but it is not inside this jar, it could only work if it would import this resteasy library in older version but thanks to dependency-management it should not. -->
+    <suppress>
+       <notes><![CDATA[
+       file name: jakarta-client-resteasy-3.0.3.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@.*$</packageUrl>
+       <cve>CVE-2016-9606</cve>
+       <cve>CVE-2014-3490</cve>
+       <cve>CVE-2020-1695</cve>
+    </suppress>
+    
+    
+    <!-- CVE-2020-10718 - wildfly-ee-9-deployment-transformer-1.0.0 does not contain  wildfly-embedded-13.0.0.Final -->
+    <!-- CVE-2020-10740 was fixed in wildfly 20 and wildfly-ee-9-deployment-transformer uses wildfly 27 -->
+    <!-- CVE-2022-1278 was fixed in wildfly 27 and wildfly-ee-9-deployment-transformer uses wildfly 27 -->
+    <suppress>
+       <notes><![CDATA[
+       file name: wildfly-ee-9-deployment-transformer-1.0.0.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.wildfly\.deployment/wildfly\-ee\-9\-deployment\-transformer@.*$</packageUrl>
+       <cve>CVE-2020-10718</cve>
+       <cve>CVE-2020-10740</cve>
+       <cve>CVE-2022-1278</cve>
+    </suppress>
+    
+    <!-- CVE-2023-43810 is regarding opentelemetry library for python -->
+    <!-- CVE-2023-45142 is regarding opentelemetry library for golang -->
+    <!-- CVE-2023-47108 is regarding opentelemetry library for golang -->
+    <suppress>
+       <notes><![CDATA[
+       file name: opentelemetry-proto-0.20.0-alpha.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/io\.opentelemetry\.proto/opentelemetry\-proto@.*$</packageUrl>
+       <cve>CVE-2023-43810</cve>
+       <cve>CVE-2023-45142</cve>
+       <cve>CVE-2023-47108</cve>
+    </suppress>
+    
+    <!-- CVE-2020-10718 - Up to (excluding) 13.0.0 - wildfly-core, mvc-krazo-subsystem uses wildfly-core 22.0.2.Final -->
+    <!-- CVE-2020-10740 - Up to (excluding) 20.0.0 - wildfly, mvc-krazo-subsystem uses wildfly-core 30.0.1.Final -->
+    <!-- CVE-2022-1278 - Up to (excluding) 27.0.0 - wildfly, mvc-krazo-subsystem uses wildfly-core 30.0.1.Final -->
+    <suppress>
+       <notes><![CDATA[
+       file name: mvc-krazo-subsystem-0.8.2.Final.jar
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.wildfly/mvc\-krazo\-subsystem@.*$</packageUrl>
+       <cve>CVE-2020-10718</cve>
+       <cve>CVE-2020-10740</cve>
+       <cve>CVE-2022-1278</cve>
+    </suppress>
+
+    <!-- CVE-2020-10718 - Up to (excluding) 13.0.0 - wildfly-core, mvc-krazo-galleon-shared uses wildfly-core 22.0.2.Final -->
+    <!-- CVE-2020-10740 - Up to (excluding) 20.0.0 - wildfly, mvc-krazo-galleon-shared uses wildfly-core 30.0.1.Final -->
+    <!-- CVE-2022-1278 - Up to (excluding) 27.0.0 - wildfly, mvc-krazo-galleon-shared uses wildfly-core 30.0.1.Final -->
+    <suppress>
+       <notes><![CDATA[
+       file name: mvc-krazo-galleon-shared-0.8.2.Final.pom
+       ]]></notes>
+       <packageUrl regex="true">^pkg:maven/org\.wildfly/mvc\-krazo\-galleon\-shared@.*$</packageUrl>
+       <cve>CVE-2020-10718</cve>
+       <cve>CVE-2020-10740</cve>
+       <cve>CVE-2022-1278</cve>
+    </suppress>
 </suppressions>
