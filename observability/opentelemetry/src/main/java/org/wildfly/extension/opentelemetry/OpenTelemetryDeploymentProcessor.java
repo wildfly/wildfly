@@ -53,7 +53,9 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             Map<String, String> config = new HashMap<>(serverConfig.properties());
-            config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
+            if (!config.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
+                config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
+            }
 
             weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(useServerConfig, config), deploymentUnit);
             weldCapability.registerExtensionInstance(new OpenTelemetryExtension(), deploymentUnit);
