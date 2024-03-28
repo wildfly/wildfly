@@ -263,6 +263,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <!-- Needed if people use compression.type=zstd in their Kafka config -->
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
@@ -480,6 +485,7 @@
                                 <!-- In this module default-test runs against standalone-microprofile.xml
                                      Exclude tests from that execution that require functionality not in that config. -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/propagation/JWTIdentityPropagationTestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
