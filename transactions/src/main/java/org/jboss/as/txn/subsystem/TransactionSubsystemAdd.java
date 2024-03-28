@@ -8,9 +8,11 @@ package org.jboss.as.txn.subsystem;
 import static org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY_NAME;
 import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE_NAME;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.DATA_SOURCE_CAPABILITY_NAME;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.REMOTE_TRANSACTION_SERVICE_CAPABILITY;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
@@ -93,6 +95,8 @@ import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
+import javax.sql.DataSource;
+
 /**
  * Adds the transaction management subsystem.
  *
@@ -134,6 +138,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.JOURNAL_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
 
         TransactionSubsystemRootResourceDefinition.STALE_TRANSACTION_TIME.validateAndSet(operation, model);
+
+        TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE_NAME.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -213,8 +219,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
             throw TransactionLogger.ROOT_LOGGER.onlyOneCanBeTrue(USE_JDBC_STORE, USE_JOURNAL_STORE);
         }
         if (operation.hasDefined(USE_JDBC_STORE) && operation.get(USE_JDBC_STORE).asBoolean()
-                && !operation.hasDefined(JDBC_STORE_DATASOURCE)) {
-            throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE, USE_JDBC_STORE);
+                && !(operation.hasDefined(JDBC_STORE_DATASOURCE_NAME) || operation.hasDefined(JDBC_STORE_DATASOURCE))) {
+            throw TransactionLogger.ROOT_LOGGER.mustBeDefinedIfTrue(JDBC_STORE_DATASOURCE_NAME + " or " + JDBC_STORE_DATASOURCE, USE_JDBC_STORE );
         }
     }
 
@@ -327,6 +333,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).asString(): null;
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, model).asString();
         final boolean useJdbcStore = model.hasDefined(USE_JDBC_STORE) && model.get(USE_JDBC_STORE).asBoolean();
+        final String dataSourceName = TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE_NAME.resolveModelAttribute(context, model).asString();
         final String dataSourceJndiName = TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.resolveModelAttribute(context, model).asString();
 
         ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder confiBuilder = new ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder();
@@ -346,11 +353,18 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         CapabilityServiceTarget target = context.getCapabilityServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        DataSource dataSource = null;
+        if (useJdbcStore && dataSourceName != null) {
+            CapabilityServiceBuilder sb = target.addCapability(TRANSACTION_CAPABILITY);
+            Supplier<DataSource> dsSupplier = sb.requiresCapability(DATA_SOURCE_CAPABILITY_NAME, DataSource.class, dataSourceName);
+            dataSource = dsSupplier.get();
+        }
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSource, dataSourceJndiName, confiBuilder.build());
         ServiceBuilder<Void> builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService);
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector());
         builder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
-        if (useJdbcStore) {
+
+        if (useJdbcStore && dataSourceName == null) {
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
             builder.requires(bindInfo.getBinderServiceName());
         }

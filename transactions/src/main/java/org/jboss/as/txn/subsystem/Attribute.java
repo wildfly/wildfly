@@ -29,6 +29,7 @@ enum Attribute {
     STATISTICS_ENABLED("statistics-enabled"),
     PATH("path"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
+    DATASOURCE_NAME("datasource-name"),
     TABLE_PREFIX("table-prefix"),
     DROP_TABLE("drop-table"),
     ENABLE_ASYNC_IO("enable-async-io"),
