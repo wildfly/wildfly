@@ -9,6 +9,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -55,5 +56,8 @@ public interface ElytronOidcLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 8, value = "The 'disable-trust-manager' attribute has been set to 'true' so no trust manager will be used when communicating with the OpenID provider over HTTPS. This value should always be set to 'false' in a production environment.")
     void disableTrustManagerSetToTrue();
+
+    @Message(id = 9, value = "Oidc attribute '%s' is not supported with the current stability level.")
+    DeploymentUnitProcessingException unsupportedAttribute(String attributeName);
 
 }

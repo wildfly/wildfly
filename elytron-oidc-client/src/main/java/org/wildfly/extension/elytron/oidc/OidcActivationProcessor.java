@@ -8,9 +8,15 @@ package org.wildfly.extension.elytron.oidc;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.oidc.Oidc.JSON_CONFIG_CONTEXT_PARAM;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -48,6 +54,20 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         OidcConfigService configService = OidcConfigService.getInstance();
         if (configService.isSecureDeployment(deploymentUnit) && configService.isDeploymentConfigured(deploymentUnit)) {
             addOidcAuthDataAndConfig(phaseContext, configService, webMetaData);
+        } else if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT) != null) {
+            try (InputStream is = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getChild("WEB-INF/oidc.json").openStream()) {
+                String oidcConfigString = readFromInputStream(is);
+
+                for ( SimpleAttributeDefinition attribute : SecureDeploymentDefinition.NON_DEFAULT_ATTRIBUTES) {
+                    if ((!deploymentUnit.enables(attribute)) && oidcConfigString.contains(attribute.getName())) {
+                        throw ROOT_LOGGER.unsupportedAttribute(attribute.getName());
+                    }
+                }
+                addJSONDataAsContextParam(oidcConfigString, webMetaData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
 
         LoginConfigMetaData loginConfig = webMetaData.getLoginConfig();
@@ -87,5 +107,16 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(json);
         contextParams.add(param);
         webMetaData.setContextParams(contextParams);
+    }
+
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+        StringBuilder oidcConfigFileStringBuilder = new StringBuilder();
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                oidcConfigFileStringBuilder.append(line).append("\n");
+            }
+        }
+        return oidcConfigFileStringBuilder.toString();
     }
 }

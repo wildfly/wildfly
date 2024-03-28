@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -86,7 +86,7 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
                 throws OperationFailedException {
-            ServiceTarget target = context.getServiceTarget();
+            ServiceTarget target = context.getCapabilityServiceTarget();
             installService(VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new VirtualSecurityDomainCreationService(), target);
         }
     }
