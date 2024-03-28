@@ -2,9 +2,9 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.test.integration.ejb.mdb.deliveryactive;
+package org.jboss.as.test.integration.ejb.mdb.delivery;
 
-import static org.jboss.as.test.integration.ejb.mdb.deliveryactive.ReplyUtil.reply;
+import static org.jboss.as.test.integration.ejb.mdb.delivery.ReplyUtil.reply;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.MessageDriven;
