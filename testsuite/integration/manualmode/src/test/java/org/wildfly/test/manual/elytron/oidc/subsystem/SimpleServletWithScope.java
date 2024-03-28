@@ -71,6 +71,9 @@ public class SimpleServletWithScope extends SimpleServlet{
         if (scope.contains("email")){
             message.add("email: " + oidcSecurityContext.getToken().getClaimValueAsString("email_verified") + "\n");
         }
+        if (scope.contains("microprofile-jwt")){
+            message.add("microprofile-jwt: " + oidcSecurityContext.getToken().getClaimValueAsString("groups") + "\n");
+        }
     }
 }
 
