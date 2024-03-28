@@ -665,7 +665,7 @@
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>${provisioning.phase.preview.only}</phase>
+                                <phase>${provisioning.phase}</phase>
                                 <configuration>
                                     <install-dir>${layers.install.dir}/mvc-krazo</install-dir>
                                     <feature-packs>
@@ -795,6 +795,11 @@
                                                 <layer>microprofile-rest-client</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
+                                                <!-- TODO WFLY-19175 uncomment when promoted to community stability.
+                                                     This execution runs a standard WF server, so at the OOTB community
+                                                     stability. So, provisioning this layer has no effect.
+                                                <layer>mvc-krazo</layer>
+                                                -->
                                             </layers>
                                         </config>
                                     </configurations>
@@ -904,6 +909,11 @@
                                                 <layer>microprofile-reactive-messaging-kafka</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
+                                                <!-- TODO WFLY-19175 uncomment when promoted to community stability.
+                                                     This execution runs a standard WF server, so at the OOTB community
+                                                     stability. So, provisioning this layer has no effect.
+                                                <layer>mvc-krazo</layer>
+                                                -->
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
@@ -983,7 +993,6 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
-                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remoting</layer>
@@ -1017,6 +1026,7 @@
                                                 <layer>microprofile-rest-client</layer>
                                                 <layer>microprofile-telemetry</layer>
                                                 <layer>microprofile-platform</layer>
+                                                <layer>mvc-krazo</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1089,7 +1099,6 @@
                                                 <layer>messaging-activemq</layer>
                                                 <layer>micrometer</layer>
                                                 <layer>mod_cluster</layer>
-                                                <layer>mvc-krazo</layer>
                                                 <layer>naming</layer>
                                                 <layer>pojo</layer>
                                                 <layer>remote-activemq</layer>
@@ -1115,6 +1124,7 @@
                                                 <layer>microprofile-jwt</layer>
                                                 <layer>microprofile-openapi</layer>
                                                 <layer>microprofile-telemetry</layer>
+                                                <layer>mvc-krazo</layer>
                                             </layers>
                                             <excluded-layers>
                                                 <layer>jpa</layer>
