@@ -105,7 +105,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             operation.get("public-client").set(false);
             operation.get("provider-url").set(KEYCLOAK_CONTAINER.getAuthServerUrl() + "/realms/" + TEST_REALM + "/");
             operation.get("ssl-required").set("EXTERNAL");
-            operation.get("scope").set("profile email phone");
+            operation.get("scope").set("profile email phone microprofile-jwt");
             Utils.applyUpdate(operation, client);
 
             operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + MULTIPLE_SCOPE_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);

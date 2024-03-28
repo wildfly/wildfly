@@ -3,7 +3,7 @@
     "public-client" : "false",
     "provider-url" : "${oidc.provider.url}",
     "ssl-required" : "EXTERNAL",
-    "scope" : "profile email phone",
+    "scope" : "profile email phone microprofile-jwt",
     "credentials" : {
         "secret" : "secret"
     }

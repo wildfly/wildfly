@@ -140,7 +140,7 @@ public abstract class OidcBaseTest {
     @Test
     @OperateOnDeployment(MULTIPLE_SCOPE_APP)
     public void testMultipleScope() throws Exception {
-        String expectedScope = OIDC_SCOPE + "+phone+profile+email";
+        String expectedScope = OIDC_SCOPE + "+phone+profile+microprofile-jwt+email";
         loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                         "/" + MULTIPLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
@@ -183,6 +183,9 @@ public abstract class OidcBaseTest {
                         }
                         if (expectedScope.contains("email")) {
                             assertTrue(responseString.contains("email: " + KeycloakConfiguration.ALICE_EMAIL_VERIFIED));
+                        }
+                        if (expectedScope.contains("microprofile-jwt")) {
+                            assertTrue(responseString.contains("microprofile-jwt: [" + KeycloakConfiguration.JBOSS_ADMIN_ROLE + ", " + KeycloakConfiguration.USER_ROLE + "]"));
                         }
                     }
                 }
