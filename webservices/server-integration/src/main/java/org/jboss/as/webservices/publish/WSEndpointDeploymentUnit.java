@@ -16,6 +16,7 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SimpleAttachable;
+import org.jboss.as.version.Stability;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
@@ -112,6 +113,12 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
     @Override
     public ServiceRegistry getServiceRegistry() {
         return currentServiceContainer();
+    }
+
+    @Override
+    public Stability getStability() {
+        // This is not a "real" deployment unit
+        return Stability.DEFAULT;
     }
 
     //@Override

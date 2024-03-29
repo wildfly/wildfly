@@ -9,8 +9,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.jboss.as.test.shared.CliUtils.asAbsolutePath;
 import static org.junit.Assert.assertEquals;
-import static org.wildfly.security.auth.util.GSSCredentialSecurityFactory.KERBEROS_V5;
-import static org.wildfly.security.auth.util.GSSCredentialSecurityFactory.SPNEGO;
+import static org.wildfly.security.mechanism.gssapi.GSSCredentialSecurityFactory.KERBEROS_V5;
+import static org.wildfly.security.mechanism.gssapi.GSSCredentialSecurityFactory.SPNEGO;
 
 import java.io.File;
 import java.io.IOException;

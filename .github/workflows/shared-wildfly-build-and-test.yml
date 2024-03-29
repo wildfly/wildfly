@@ -23,7 +23,7 @@
 #      - name: Set up JDK
 #        uses: actions/setup-java@v4
 #        with:
-#          java-version: '11'
+#          java-version: '17'
 #          distribution: 'temurin'
 #          cache: 'maven'
 #      - name: Build and Test my-dependency
@@ -103,12 +103,6 @@ jobs:
         with:
           repository: wildfly/wildfly
           ref: '${{ inputs.ref }}'
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-          cache: 'maven'
       - uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.maven-repo-name }}
@@ -117,7 +111,33 @@ jobs:
         shell: bash
         run: |
          tar -xzf ${{ inputs.maven-repo-path }} -C ~
+        # Do not compile with JDK 11. If 11 is specified, we will build with 17 and test with 11
+        # So, setup 17
+      - name: Set up JDK 17 for JDK 11 tests
+        if: matrix.java == 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          cache: 'maven'
+        # For JDK 11 tests, build with 17, skipping tests
+      - name: Build WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with JDK 17 for JDK 11 tests
+        if: matrix.java == 11
+        run: mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -DskipTests
+        shell: bash
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+        # For JDK 11 tests, we already built, so just run the 'test' goal with the -DnoCompile setting to disable recompile
+      - name: Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with -DnoCompile for JDK 11 tests
+        if: matrix.java == 11
+        run: mvn -U -B -ntp test -DnoCompile ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -rf testsuite
+        shell: bash
       - name: Build and Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }}
+        if: matrix.java != 11
         run: mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
         shell: bash
         # We need this due to long file names on Windows: https://github.com/actions/upload-artifact/issues/240

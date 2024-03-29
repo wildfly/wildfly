@@ -53,6 +53,7 @@
         <module name="java.management"/>
         <module name="java.management.rmi"/>
         <module name="java.naming"/>
+        <module name="java.net.http"/>
         <module name="java.rmi"/>
         <module name="java.security.jgss"/>
         <module name="java.xml"/>

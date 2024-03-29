@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+
+<package-spec xmlns="urn:jboss:galleon:package:3.0" name="banner" stability-level="experimental">
+</package-spec>
