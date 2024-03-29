@@ -4,11 +4,11 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.superclass;
 
-import jakarta.annotation.ManagedBean;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@ManagedBean("simpleManagedBean")
-public class SimpleManagedBean {
+@Stateless(name="simpleStatelessBean")
+public class SimpleStatelessBean {
 }

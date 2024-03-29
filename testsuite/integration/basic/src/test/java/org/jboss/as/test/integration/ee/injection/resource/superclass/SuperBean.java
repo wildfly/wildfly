@@ -14,8 +14,8 @@ public class SuperBean {
     /**
      * This should create a binding for java:module/env/org.jboss.as.test.integration.injection.resource.superclass.SuperBean/simpleManagedBean
      */
-    @Resource(lookup = "java:module/simpleManagedBean")
-    protected SimpleManagedBean simpleManagedBean;
+    @Resource(lookup = "java:module/simpleStatelessBean")
+    protected SimpleStatelessBean simpleStatelessBean;
 
 
     private String simpleString;
