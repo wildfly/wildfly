@@ -10,6 +10,7 @@ import jakarta.annotation.Resource;
 /**
  * @author Stuart Douglas
  */
+@SuppressWarnings("deprecation")
 @ManagedBean
 public class EnvEntryManagedBean {
 

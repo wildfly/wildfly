@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A test for injection via env-entry in web.xml
+ * A test for managed bean injection via env-entry in web.xml
  *
  * @author Stuart Douglas
  */
@@ -26,7 +26,6 @@ public class EnvEntryInjectionTestCase {
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addClasses(
-                EnvEntryInjectionServlet.class,
                 EnvEntryManagedBean.class,
                 EnvEntryInjectionTestCase.class
         );
