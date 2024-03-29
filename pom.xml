@@ -449,7 +449,7 @@
         <version.org.apache.activemq.artemis>2.31.2</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.3</version.org.apache.avro>
-        <version.org.apache.cxf>4.0.0</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.4</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.0.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
