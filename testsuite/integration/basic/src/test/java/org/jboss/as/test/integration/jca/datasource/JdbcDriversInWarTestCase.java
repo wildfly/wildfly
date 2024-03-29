@@ -11,6 +11,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.jca.JcaMgmtBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith;
 import java.sql.Driver;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -77,6 +79,14 @@ public class JdbcDriversInWarTestCase extends JcaMgmtBase {
         Assert.assertEquals(1, result.get("driver-minor-version").asInt());
         Assert.assertTrue(result.get("jdbc-compliant").asBoolean());
 
+        // there should not be a driver named with the deployment name
+        operation.get("driver-name").set(driverName);
+        try {
+            executeOperation(operation);
+            Assert.fail("should not be here");
+        } catch (MgmtOperationException e) {
+            Assert.assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().startsWith("WFLYJCA0135"));
+        }
     }
 
     private ModelNode getDatasourceAddress(Datasource datasource) {
