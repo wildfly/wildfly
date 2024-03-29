@@ -39,6 +39,34 @@
             </dependency>
 
             <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-test-galleon-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-test-feature-pack-preview</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>com.beust</groupId>
                 <artifactId>jcommander</artifactId>
                 <version>${version.com.beust}</version>

@@ -1416,6 +1416,18 @@
         </profile>
 
         <profile>
+            <id>normal-build</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <modules>
+                <module>testsuite/test-feature-pack-preview</module>
+            </modules>
+        </profile>
+
+        <profile>
             <id>jdk18</id>
             <activation>
                 <jdk>[18,)</jdk>
