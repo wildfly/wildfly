@@ -1178,4 +1178,19 @@
         <packageUrl regex="true">^pkg:maven/com\.jayway\.jsonpath/json\-path@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-51074</vulnerabilityName>
     </suppress>
+    <!-- Those CVE's are false positives, but issue was resolved here: https://github.com/undertow-io/undertow/pull/1559 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.2.31.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-1635</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.2.31.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-1459</vulnerabilityName>
+    </suppress>
 </suppressions>
