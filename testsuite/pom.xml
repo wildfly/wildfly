@@ -199,6 +199,13 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Ensure the relevant test feature pack is built -->
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>${testsuite.test.galleon.pack.artifactId}</artifactId>
+            <type>zip</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -463,7 +470,6 @@
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
             </properties>
             <modules>
-                <module>test-feature-pack-preview</module>
                 <module>domain</module>
                 <module>integration</module>
                 <module>layers</module>
@@ -480,10 +486,25 @@
                 </property>
             </activation>
             <modules>
-                <module>test-feature-pack-preview</module>
                 <module>integration</module>
                 <module>preview</module>
             </modules>
+        </profile>
+        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
+             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
+             based variant of wildfly-test-galleon-pack.
+        -->
+        <profile>
+            <id>test.feature.pack.preview.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+            </properties>
         </profile>
 
         <!--

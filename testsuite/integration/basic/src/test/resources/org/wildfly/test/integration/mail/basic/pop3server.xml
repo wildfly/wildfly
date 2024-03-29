@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pop3servers>
+    <pop3server enabled="true">
+        <jmxName>pop3server</jmxName>
+        <bind>0.0.0.0:110</bind>
+        <connectionBacklog>200</connectionBacklog>
+        <tls socketTLS="false" startTLS="true">
+            <privateKey>file://conf/private.key</privateKey>
+            <certificates>file://conf/private.csr</certificates>
+        </tls>
+        <connectiontimeout>1200</connectiontimeout>
+        <connectionLimit>0</connectionLimit>
+        <connectionLimitPerIP>0</connectionLimitPerIP>
+        <handlerchain>
+            <handler class="org.apache.james.pop3server.core.CoreCmdHandlerLoader"/>
+        </handlerchain>
+    </pop3server>
+</pop3servers>

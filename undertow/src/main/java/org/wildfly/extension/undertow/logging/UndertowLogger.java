@@ -18,7 +18,6 @@ import java.util.List;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.BasicLogger;
@@ -234,11 +233,11 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 51, value = "Deployment error processing SCI for jar: %s")
     DeploymentUnitProcessingException errorProcessingSCI(String jar, @Cause Exception e);
 
-    @Message(id = 52, value = "Security context creation failed")
-    RuntimeException failToCreateSecurityContext(@Cause Throwable t);
+//    @Message(id = 52, value = "Security context creation failed")
+//    RuntimeException failToCreateSecurityContext(@Cause Throwable t);
 
-    @Message(id = 53, value = "No security context found")
-    IllegalStateException noSecurityContext();
+//    @Message(id = 53, value = "No security context found")
+//    IllegalStateException noSecurityContext();
 
     @Message(id = 54, value = "Unknown metric %s")
     String unknownMetric(Object metric);
@@ -249,14 +248,14 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 56, value = "Null host name")
     IllegalStateException nullHostName();
 
-    @Message(id = 57, value = "Null parameter %s")
-    IllegalArgumentException nullParamter(String id);
+//    @Message(id = 57, value = "Null parameter %s")
+//    IllegalArgumentException nullParamter(String id);
 
-    @Message(id = 58, value = "Cannot activate context: %s")
-    IllegalStateException cannotActivateContext(@Cause Throwable th, ServiceName service);
+//    @Message(id = 58, value = "Cannot activate context: %s")
+//    IllegalStateException cannotActivateContext(@Cause Throwable th, ServiceName service);
 
-    @Message(id = 59, value = "Could not construct handler for class: %s. with parameters %s")
-    RuntimeException cannotCreateHttpHandler(Class<?> handlerClass, ModelNode parameters, @Cause Throwable cause);
+//    @Message(id = 59, value = "Could not construct handler for class: %s. with parameters %s")
+//    RuntimeException cannotCreateHttpHandler(Class<?> handlerClass, ModelNode parameters, @Cause Throwable cause);
 
     @Message(id = 60, value = "Invalid persistent sessions directory %s")
     StartException invalidPersistentSessionDir(File baseDir);
@@ -282,9 +281,9 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 67, value = "Servlet class not defined for servlet %s")
     IllegalArgumentException servletClassNotDefined(final String servletName);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 68, value = "Error obtaining authorization helper")
-    void noAuthorizationHelper(@Cause Exception e);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 68, value = "Error obtaining authorization helper")
+//    void noAuthorizationHelper(@Cause Exception e);
 
     @LogMessage(level = ERROR)
     @Message(id = 69, value = "Ignoring shared-session-config in jboss-all.xml in deployment %s. This entry is only valid in top level deployments.")
@@ -307,22 +306,22 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 74, value = "Could not find TLD %s")
     void tldNotFound(String location);
 
-    @Message(id = 75, value = "Cannot register resource of type %s")
-    IllegalArgumentException cannotRegisterResourceOfType(String type);
+//    @Message(id = 75, value = "Cannot register resource of type %s")
+//    IllegalArgumentException cannotRegisterResourceOfType(String type);
 
-    @Message(id = 76, value = "Cannot remove resource of type %s")
-    IllegalArgumentException cannotRemoveResourceOfType(String type);
+//    @Message(id = 76, value = "Cannot remove resource of type %s")
+//    IllegalArgumentException cannotRemoveResourceOfType(String type);
 
     @LogMessage(level = ERROR)
     @Message(id = 78, value = "Failed to register management view for websocket %s at %s")
     void failedToRegisterWebsocket(Class endpoint, String path, @Cause Exception e);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 77, value = "Error invoking secure response")
-    void errorInvokingSecureResponse(@Cause Exception e);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 77, value = "Error invoking secure response")
+//    void errorInvokingSecureResponse(@Cause Exception e);
 
-    @Message(id = 79, value = "No SSL Context available from security realm '%s'. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
-    IllegalStateException noSslContextInSecurityRealm(String securityRealm);
+//    @Message(id = 79, value = "No SSL Context available from security realm '%s'. Either the realm is not configured for SSL, or the server has not been reloaded since the SSL config was added.")
+//    IllegalStateException noSslContextInSecurityRealm(String securityRealm);
 
     @LogMessage(level = WARN)
     @Message(id = 80, value = "Valves are no longer supported, %s is not activated.")
@@ -382,9 +381,9 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 97, value = "If http-upgrade is enabled, remoting worker and http(s) worker must be the same. Please adjust values if need be.")
     String workerValueInHTTPListenerMustMatchRemoting();
 
-    @LogMessage(level = ERROR)
-    @Message(id = 98, value = "Unexpected Authentication Error: %s")
-    void unexceptedAuthentificationError(String errorMessage, @Cause Throwable t);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 98, value = "Unexpected Authentication Error: %s")
+//    void unexceptedAuthentificationError(String errorMessage, @Cause Throwable t);
 
     @Message(id = 99, value = "Session manager not available")
     OperationFailedException sessionManagerNotAvailable();

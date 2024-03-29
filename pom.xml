@@ -261,6 +261,10 @@
         <testsuite.full.galleon.pack.groupId>${full.maven.groupId}</testsuite.full.galleon.pack.groupId>
         <testsuite.full.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.full.galleon.pack.artifactId>
         <testsuite.full.galleon.pack.version>${full.maven.version}</testsuite.full.galleon.pack.version>
+        <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
+             Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
+        -->
+        <testsuite.test.galleon.pack.artifactId>wildfly-test-galleon-pack</testsuite.test.galleon.pack.artifactId>
 
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
@@ -311,16 +315,16 @@
         <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.11</version.org.jacoco>
-        <version.org.jboss.galleon>6.0.0.Beta3</version.org.jboss.galleon>
-        <version.org.wildfly.glow>1.0.0.Beta9</version.org.wildfly.glow>
+        <version.org.jboss.galleon>6.0.0.Beta5</version.org.jboss.galleon>
+        <version.org.wildfly.glow>1.0.0.Beta11</version.org.wildfly.glow>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>7.0.0.Beta4</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>7.0.0.Beta6</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>5.0.0.Beta3</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>5.0.0.Beta4</version.org.wildfly.plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -342,7 +346,7 @@
         <version.jsoup>1.15.4</version.jsoup>
         <version.junit>4.13.1</version.junit>
         <version.org.apache.ds>2.0.0.AM26</version.org.apache.ds>
-        <version.org.apache.groovy>4.0.19</version.org.apache.groovy>
+        <version.org.apache.groovy>4.0.20</version.org.apache.groovy>
         <version.org.awaitility.awaitility>4.0.3</version.org.awaitility.awaitility>
         <version.org.codehaus.plexus.plexus-utils>3.5.1</version.org.codehaus.plexus.plexus-utils>
         <version.org.eclipse.jetty>9.4.54.v20240208</version.org.eclipse.jetty>
@@ -379,7 +383,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.15.3</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.15.4</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>
@@ -399,7 +403,7 @@
         <version.com.nimbus.jose-jwt>9.37.3</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
-        <legacy.version.com.squareup.okio>1.17.2</legacy.version.com.squareup.okio>
+        <legacy.version.com.squareup.okio>1.17.6</legacy.version.com.squareup.okio>
         <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>
@@ -423,8 +427,8 @@
         <version.io.reactivex.rxjava3>3.1.8</version.io.reactivex.rxjava3>
         <version.io.smallrye.open-api>3.10.0</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
-        <version.io.smallrye.smallrye-common>2.2.0</version.io.smallrye.smallrye-common>
-        <version.io.smallrye.smallrye-config>3.5.4</version.io.smallrye.smallrye-config>
+        <version.io.smallrye.smallrye-common>2.3.0</version.io.smallrye.smallrye-common>
+        <version.io.smallrye.smallrye-config>3.7.1</version.io.smallrye.smallrye-config>
         <version.io.smallrye.smallrye-fault-tolerance>6.2.6</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.4</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
@@ -432,7 +436,7 @@
         <version.io.smallrye.smallrye-mutiny-vertx>3.8.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.0.0</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.6.0</version.io.smallrye.smallrye-opentelemetry>
-        <version.io.smallrye.smallrye-reactive-messaging>4.16.2</version.io.smallrye.smallrye-reactive-messaging>
+        <version.io.smallrye.smallrye-reactive-messaging>4.19.0</version.io.smallrye.smallrye-reactive-messaging>
         <version.io.undertow.jastow>2.2.7.Final</version.io.undertow.jastow>
         <version.io.vertx.vertx>4.5.3</version.io.vertx.vertx>
         <version.io.vertx.vertx-kafka-client>4.4.8</version.io.vertx.vertx-kafka-client>
@@ -458,7 +462,7 @@
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.0-jbossorg-2</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>3.1.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.1</version.jakarta.xml.bind.jakarta-xml-bind-api>
+        <version.jakarta.xml.bind.jakarta-xml-bind-api>4.0.2</version.jakarta.xml.bind.jakarta-xml-bind-api>
         <version.jboss.jaxbintros>2.0.1</version.jboss.jaxbintros>
         <version.joda-time>2.12.6</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>
@@ -466,17 +470,17 @@
         <version.org.apache.activemq.artemis>2.32.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.3</version.org.apache.avro>
-        <version.org.apache.cxf>4.0.0</version.org.apache.cxf>
+        <version.org.apache.cxf>4.0.4</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>4.0.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.httpcomponents.httpasyncclient>4.1.5</version.org.apache.httpcomponents.httpasyncclient>
         <version.org.apache.james.apache-mime4j>0.8.10</version.org.apache.james.apache-mime4j>
-        <version.org.apache.kafka>3.6.1</version.org.apache.kafka>
-        <version.org.apache.lucene>9.8.0</version.org.apache.lucene>
-        <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
+        <version.org.apache.kafka>3.7.0</version.org.apache.kafka>
+        <version.org.apache.lucene>9.9.2</version.org.apache.lucene>
+        <version.org.apache.neethi>3.2.0</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.34.1</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>3.0.3</version.org.apache.santuario>
+        <version.org.apache.santuario>3.0.4</version.org.apache.santuario>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
-        <version.org.apache.wss4j>3.0.2</version.org.apache.wss4j>
+        <version.org.apache.wss4j>3.0.3</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
         <version.org.bitbucket.jose4j>0.9.6</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.14.11</version.org.bytebuddy>
@@ -499,7 +503,7 @@
         <version.org.eclipse.microprofile.telemetry>1.1</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.persistence.eclipselink>4.0.0</version.org.eclipse.persistence.eclipselink>
         <version.org.eclipse.yasson>3.0.2</version.org.eclipse.yasson>
-        <version.org.elasticsearch.client.rest-client>8.11.1</version.org.elasticsearch.client.rest-client>
+        <version.org.elasticsearch.client.rest-client>8.12.2</version.org.elasticsearch.client.rest-client>
         <version.org.glassfish.expressly>5.0.0</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.enterprise.concurrent>3.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.jaxb>4.0.4</version.org.glassfish.jaxb>
@@ -508,10 +512,10 @@
         <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate>6.4.4.Final</version.org.hibernate>
-        <version.org.hibernate.search>7.0.0.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>7.1.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.1.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.24.Final</version.org.infinispan>
+        <version.org.infinispan>14.0.26.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.6.5.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>2.2.1.Final</version.org.jberet>
@@ -528,7 +532,7 @@
         <version.org.jboss.mod_cluster>2.0.4.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.narayana>7.0.1.Final</version.org.jboss.narayana>
         <version.org.jboss.openjdk-orb>10.1.0.Final</version.org.jboss.openjdk-orb>
-        <version.org.jboss.resteasy>6.2.7.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.8.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
         <version.org.jboss.resteasy.microprofile>2.1.5.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.1.2.Final</version.org.jboss.resteasy.spring>
@@ -540,7 +544,7 @@
         <version.org.jboss.ws.api>3.0.0.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>5.0.0.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>2.1.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>7.0.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>7.1.0.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-undertow-httpspi>2.0.0.Final</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.ws.spi>5.0.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.10.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
@@ -557,7 +561,7 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.6</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.core>24.0.0.Beta2</version.org.wildfly.core>
+        <version.org.wildfly.core>24.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
@@ -1121,7 +1125,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[17,)</version>
+                                        <version>${required.java.build.version}</version>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
@@ -1135,7 +1139,7 @@
                             <configuration>
                                 <rules>
                                     <requireJavaVersion>
-                                        <version>[17,18)</version>
+                                        <version>${required.java.deploy.version}</version>
                                     </requireJavaVersion>
                                 </rules>
                             </configuration>
@@ -1412,6 +1416,18 @@
         </profile>
 
         <profile>
+            <id>normal-build</id>
+            <activation>
+                <property>
+                    <name>!quickly</name>
+                </property>
+            </activation>
+            <modules>
+                <module>testsuite/test-feature-pack-preview</module>
+            </modules>
+        </profile>
+
+        <profile>
             <id>jdk18</id>
             <activation>
                 <jdk>[18,)</jdk>
@@ -1461,6 +1477,7 @@
                 <wildfly.build.output.dir>preview/dist/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -1730,6 +1747,11 @@
                     <name>noCompile</name>
                 </property>
             </activation>
+            <properties>
+                <!-- Allow SE 11 and later. We don't actually compile, so we just need
+                     to be able to execute tests using supported-at-runtime SE versions -->
+                <required.java.build.version>[11,)</required.java.build.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
