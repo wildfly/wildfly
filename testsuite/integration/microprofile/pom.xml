@@ -902,9 +902,8 @@
             </dependencies>
             <properties>
                 <ts.glow.phase>test-compile</ts.glow.phase>
+                <ts.glow.config-name>standalone.xml</ts.glow.config-name>
                 <bootable-jar-packaging.phase>test-compile</bootable-jar-packaging.phase>
-                <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
 
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
