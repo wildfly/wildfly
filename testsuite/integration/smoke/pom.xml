@@ -610,6 +610,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <!-- Enable adding a second test source dir for EE-version-specific classes.
+                         The execution is configured in testsuite/pom.xml for use in submodules
+                         like this one that need it. -->
+                    <execution>
+                        <id>add-ee-test-source</id>
+                        <phase>generate-test-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

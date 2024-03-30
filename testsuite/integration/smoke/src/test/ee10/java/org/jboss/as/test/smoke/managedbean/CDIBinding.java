@@ -8,8 +8,10 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import jakarta.interceptor.InterceptorBinding;
@@ -17,8 +19,8 @@ import jakarta.interceptor.InterceptorBinding;
 /**
  * @author Jozef Hartinger
  */
-@Target({ TYPE, METHOD })
-@Retention(RUNTIME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @InterceptorBinding
 public @interface CDIBinding {
