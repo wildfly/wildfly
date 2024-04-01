@@ -2,19 +2,20 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package org.jboss.as.test.integration.ee.injection.resource.persistencecontextref;
 
-import jakarta.annotation.ManagedBean;
 import jakarta.ejb.EJB;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 /**
- * Managed bean with persistence unit definitions.
+ * Abstract superclass for EE components with persistence unit definitions.
+ * Concrete implementations using different component tupes are in src/test/ee10/java and src/test/ee11/java.
+ *
  * @author Stuart Douglas
  */
-@ManagedBean("pcManagedBean")
-public class PcManagedBean {
+public abstract class AbstractPcBean {
 
     @PersistenceContext(unitName = "mypc")
     private EntityManager mypc;
@@ -26,13 +27,7 @@ public class PcManagedBean {
     @EJB
     SFSB sfsb;
 
-
-    //this one is injected via deployment descriptor
-    private EntityManager mypc2;
-
-    public EntityManager getMypc2() {
-        return mypc2;
-    }
+    public abstract EntityManager getMypc2();
 
     public EntityManager getMypc() {
         return mypc;
@@ -49,5 +44,4 @@ public class PcManagedBean {
     public boolean synchronizedIsJoinedToTX() {
         return sfsb.synchronizedIsJoinedToTX();
     }
-
 }

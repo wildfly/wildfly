@@ -5,14 +5,18 @@
 
 package org.jboss.as.test.integration.ee.injection.resource.resourceref;
 
-import jakarta.annotation.ManagedBean;
 import javax.sql.DataSource;
 
+import jakarta.ejb.Singleton;
+
 /**
+ * Used in ResourceRefTestCase to test datasource injection via res-ref.
+ * In the ee11 source tree this is an {@code @ManagedBean}, a type that is not available in EE 11.
+ *
  * @author Stuart Douglas
  */
-@ManagedBean("datasourceManagedBean")
-public class DatasourceManagedBean {
+@Singleton(name="datasourceManagedBean")
+public class DatasourceBean {
 
     private DataSource ds;
 

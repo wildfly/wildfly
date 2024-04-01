@@ -13,7 +13,7 @@
         <res-ref-name>ds</res-ref-name>
         <lookup-name>java:jboss/datasources/ExampleDS</lookup-name>
         <injection-target>
-           <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.resourceref.DatasourceManagedBean</injection-target-class>
+           <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.resourceref.DatasourceBean</injection-target-class>
            <injection-target-name>ds</injection-target-name>
         </injection-target>
     </resource-ref>

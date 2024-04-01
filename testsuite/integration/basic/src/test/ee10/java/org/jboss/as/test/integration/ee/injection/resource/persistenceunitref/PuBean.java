@@ -10,10 +10,14 @@ import jakarta.persistence.PersistenceUnit;
 
 /**
  * Managed bean with persistence unit definitions.
+ * In the ee11 source tree this is an {@code @Singleton} as the {@code @ManagedBean}
+ * annotation is not available in EE 11.
+ *
  * @author Stuart Douglas
  */
+@SuppressWarnings("deprecation")
 @ManagedBean("puManagedBean")
-public class PuManagedBean {
+public class PuBean {
 
     @PersistenceUnit(unitName = "mypc")
     private EntityManagerFactory mypu;
