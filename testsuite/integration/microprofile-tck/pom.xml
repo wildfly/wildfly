@@ -125,7 +125,7 @@
                         <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
                     <surefire-execution-for-included-classes>default-test</surefire-execution-for-included-classes>
-                    <enable-verbose-output>${ts.microprofile-tck-glow.verbose}</enable-verbose-output>
+                    <verbose>${ts.microprofile-tck-glow.verbose}</verbose>
                 </configuration>
                 <executions>
                     <execution>
