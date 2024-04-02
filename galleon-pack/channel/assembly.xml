@@ -12,7 +12,7 @@
     </formats>
     <files>
         <file>
-            <source>../../preview/feature-pack/target/wildfly-preview-feature-pack-${project.version}-manifest.yaml</source>
+            <source>../galleon-feature-pack/target/wildfly-galleon-pack-${project.version}-manifest.yaml</source>
             <outputDirectory>./</outputDirectory>
             <destName>${project.artifactId}-${project.version}-manifest.yaml</destName>
         </file>

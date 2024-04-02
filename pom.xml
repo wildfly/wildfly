@@ -52,7 +52,6 @@
         <module>boms/standard-test-expansion</module>
         <module>boms/user</module>
         <module>build</module>
-        <module>channels</module>
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>

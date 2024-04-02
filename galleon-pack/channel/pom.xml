@@ -11,18 +11,24 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.channels</groupId>
-        <artifactId>wildfly-channels-parent</artifactId>
+        <!--
+        skip wildfly-feature-pack-parent and use wildfly-parent to avoid issues
+        with dependencies imported with groupId ${project.groupId}
+        -->
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>32.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee</artifactId>
+    <groupId>org.wildfly.channels</groupId>
+    <artifactId>wildfly</artifactId>
 
-    <name>WildFly: EE Feature Pack Channel</name>
+    <name>WildFly: Feature Pack Channel</name>
     <packaging>pom</packaging>
 
     <dependencies>
@@ -30,9 +36,9 @@
         <!-- We need the feature pack built first as that generates the manifest -->
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
+            <artifactId>wildfly-galleon-pack</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -61,7 +67,7 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>${project.basedir}/assembly.xml</descriptor>
+                              <descriptor>${project.basedir}/assembly.xml</descriptor>
                             </descriptors>
                             <finalName>assembly</finalName>
                             <workDirectory>${project.build.directory}/assembly-src/work</workDirectory>
@@ -87,7 +93,7 @@
                                 <resource>
                                     <directory>${project.basedir}/src/main/resources</directory>
                                     <includes>
-                                        <include>wildfly-ee-channel.yaml</include>
+                                        <include>wildfly-channel.yaml</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
@@ -152,9 +158,17 @@
                 </executions>
                 <configuration>
                     <manifestPath>${project.build.directory}/assembly-manifest-rename/assembly/${project.artifactId}-${project.version}-manifest.yaml</manifestPath>
-                    <manifestName>Wildfly EE manifest version ${project.version}</manifestName>
+                    <manifestName>WildFly manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
-                    <manifestDescription>Manifest for Wildfly EE feature pack.</manifestDescription>
+                    <manifestDescription>Manifest for WildFly feature pack.</manifestDescription>
+                    <manifestRequirements>
+                        <manifestRequirement>
+                            <id>${project.groupId}:wildfly-ee</id>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>wildfly-ee</artifactId>
+                            <version>${project.version}</version>
+                        </manifestRequirement>
+                    </manifestRequirements>
                 </configuration>
             </plugin>
         </plugins>

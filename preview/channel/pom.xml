@@ -11,15 +11,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.channels</groupId>
-        <artifactId>wildfly-channels-parent</artifactId>
+        <!--
+        skip wildfly-feature-pack-parent and use wildfly-parent to avoid issues
+        with dependencies imported with groupId ${project.groupId}
+        -->
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>32.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <groupId>org.wildfly.channels</groupId>
     <artifactId>wildfly-preview</artifactId>
 
     <name>WildFly: Preview Feature Pack Channel</name>
@@ -31,7 +37,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-preview-feature-pack</artifactId>
-            <version>${project.version}</version>
+            <version>${ee.maven.version}</version>
             <type>zip</type>
             <scope>provided</scope>
         </dependency>
@@ -152,9 +158,9 @@
                 </executions>
                 <configuration>
                     <manifestPath>${project.build.directory}/assembly-manifest-rename/assembly/${project.artifactId}-${project.version}-manifest.yaml</manifestPath>
-                    <manifestName>Wildfly preview manifest version ${project.version}</manifestName>
+                    <manifestName>WildFly preview manifest version ${project.version}</manifestName>
                     <manifestId>${project.groupId}:${project.artifactId}</manifestId>
-                    <manifestDescription>Manifest for Wildfly preview feature pack.</manifestDescription>
+                    <manifestDescription>Manifest for WildFly preview feature pack.</manifestDescription>
                 </configuration>
             </plugin>
         </plugins>
