@@ -1389,7 +1389,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
@@ -1448,6 +1447,35 @@
             <modules>
                 <module>docs</module>
             </modules>
+        </profile>
+
+        <profile>
+            <id>dependency-check</id>
+            <activation>
+                <property>
+                    <name>dependency-check</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                      <groupId>org.owasp</groupId>
+                      <artifactId>dependency-check-maven</artifactId>
+                      <version>9.0.9</version>
+                      <configuration>
+                          <nvdApiServerId>nvd</nvdApiServerId>
+                          <suppressionFile>./sca-overrides/owasp-suppressions.xml</suppressionFile>
+                      </configuration>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>aggregate</goal>
+                              </goals>
+                          </execution>
+                      </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
         <!--
