@@ -53,26 +53,30 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         }
 
         OidcConfigService configService = OidcConfigService.getInstance();
-        if (configService.isSecureDeployment(deploymentUnit) && configService.isDeploymentConfigured(deploymentUnit)) {
+        boolean subsystemConfigured = configService.isSecureDeployment(deploymentUnit) && configService.isDeploymentConfigured(deploymentUnit);
+        if (subsystemConfigured) {
             addOidcAuthDataAndConfig(phaseContext, configService, webMetaData);
         }
 
         LoginConfigMetaData loginConfig = webMetaData.getLoginConfig();
         if (loginConfig != null && OIDC_AUTH_METHOD.equals(loginConfig.getAuthMethod())) {
-            if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT) != null) {
-                VirtualFile oidcConfigurationFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getChild("WEB-INF/oidc.json");
-                if (oidcConfigurationFile.exists()) {
-                    try (InputStream is = oidcConfigurationFile.openStream()) {
-                        String oidcConfigString = readFromInputStream(is);
+            if (! subsystemConfigured) {
+                // check for unsupported attributes in the deployment's oidc.json file
+                if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT) != null) {
+                    VirtualFile oidcConfigurationFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getChild("WEB-INF/oidc.json");
+                    if (oidcConfigurationFile.exists()) {
+                        try (InputStream is = oidcConfigurationFile.openStream()) {
+                            String oidcConfigString = readFromInputStream(is);
 
-                        for (SimpleAttributeDefinition attribute : SecureDeploymentDefinition.NON_DEFAULT_ATTRIBUTES) {
-                            if ((!deploymentUnit.enables(attribute)) && oidcConfigString.contains(attribute.getName())) {
-                                throw ROOT_LOGGER.unsupportedAttribute(attribute.getName());
+                            for (SimpleAttributeDefinition attribute : SecureDeploymentDefinition.NON_DEFAULT_ATTRIBUTES) {
+                                if ((!deploymentUnit.enables(attribute)) && oidcConfigString.contains(attribute.getName())) {
+                                    throw ROOT_LOGGER.unsupportedAttribute(attribute.getName());
+                                }
                             }
+                            addJSONDataAsContextParam(oidcConfigString, webMetaData);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                        addJSONDataAsContextParam(oidcConfigString, webMetaData);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
                     }
                 }
             }
