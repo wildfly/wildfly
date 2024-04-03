@@ -80,7 +80,7 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 |Jakarta Messaging 3.1 |X |-- |X |--
 
 | Jakarta MVC 2.1
-(_WildFly Preview only_)|--|--|--|--
+(xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability])|--|--|--|--
 
 |Jakarta Persistence 3.1 |X |X |X |X
 

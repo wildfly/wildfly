@@ -80,6 +80,8 @@ include::subsystem-configuration/Jakarta_Batch.adoc[]
 
 include::subsystem-configuration/Jakarta_Faces.adoc[]
 
+include::subsystem-configuration/Jakarta_MVC.adoc[]
+
 include::subsystem-configuration/JMX.adoc[]
 
 include::subsystem-configuration/Deployment_Scanner.adoc[]
