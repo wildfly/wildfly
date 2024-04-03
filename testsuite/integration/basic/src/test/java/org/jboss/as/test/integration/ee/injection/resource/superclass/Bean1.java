@@ -4,21 +4,21 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.superclass;
 
-import jakarta.annotation.ManagedBean;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@ManagedBean("bean1")
+@Stateless(name="bean1")
 public class Bean1 extends SuperBean {
 
-    public SimpleManagedBean getBean() {
-        return simpleManagedBean;
+    public SimpleStatelessBean getBean() {
+        return simpleStatelessBean;
     }
 
     /**
      * We override the superclass method. These should be no injection done
-     * @param simpleString
+     * @param simpleString the string
      */
     public void setSimpleString(final String simpleString) {
         super.setSimpleString(simpleString);

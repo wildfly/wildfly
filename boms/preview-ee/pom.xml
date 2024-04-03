@@ -30,6 +30,30 @@
 
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
+    <properties>
+        <version.jakarta.annotation.jakarta-annotation-api>3.0.0-M1</version.jakarta.annotation.jakarta-annotation-api>
+        <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
+        <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
+        -->
+        <version.jakarta.authorization.jakarta-authorization-api>3.0.0-M2</version.jakarta.authorization.jakarta-authorization-api>
+        <version.jakarta.el>6.0.0-RC1</version.jakarta.el>
+        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0-M1</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.enterprise>4.1.0.RC1</version.jakarta.enterprise>
+        <version.jakarta.faces.jakarta-faces-api>4.1.0-M1</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0-RC1</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.persistence>3.2.0-M2</version.jakarta.persistence>
+        <version.jakarta.security.enterprise>4.0.0-M2</version.jakarta.security.enterprise>
+        <version.jakarta.servlet.jakarta-servlet-api>6.1.0-M2</version.jakarta.servlet.jakarta-servlet-api>
+        <!-- TODO requires a Jastow upgrade to remove PageContextImpl.getVariableResolver()
+        <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>4.0.0-M2</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
+        -->
+        <version.jakarta.validation.jakarta-validation-api>3.1.0-M2</version.jakarta.validation.jakarta-validation-api>
+        <version.jakarta.websocket.jakarta-websocket-api>2.2.0-M1</version.jakarta.websocket.jakarta-websocket-api>
+        <version.org.glassfish.jakarta.faces>4.1.0-M1</version.org.glassfish.jakarta.faces>
+        <version.org.jboss.weld.weld>6.0.0.Beta1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>6.0.Beta4</version.org.jboss.weld.weld-api>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
 
@@ -47,6 +71,200 @@
             <!-- Bom-specific dependencies. Keep sorted -->
 
             <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
+            <dependency>
+                <groupId>jakarta.authentication</groupId>
+                <artifactId>jakarta.authentication-api</artifactId>
+                <version>${version.jakarta.authentication.jakarta-authentication-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            -->
+            <dependency>
+                <groupId>jakarta.authorization</groupId>
+                <artifactId>jakarta.authorization-api</artifactId>
+                <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${version.jakarta.el}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                <version>${version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise.concurrent</groupId>
+                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.lang-model</artifactId>
+                <version>${version.jakarta.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- This dependency is not used by the app server itself, but is defined here to allow
+                 user applications to pull in the dependency version as part of the BOM -->
+            <dependency>
+                <groupId>jakarta.faces</groupId>
+                <artifactId>jakarta.faces-api</artifactId>
+                <version>${version.jakarta.faces.jakarta-faces-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.interceptor</groupId>
+                <artifactId>jakarta.interceptor-api</artifactId>
+                <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>${version.jakarta.persistence}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.security.enterprise</groupId>
+                <artifactId>jakarta.security.enterprise-api</artifactId>
+                <version>${version.jakarta.security.enterprise}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${version.jakarta.servlet.jakarta-servlet-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- TODO requires a Jastow upgrade to remove PageContextImpl.getVariableResolver()
+            <dependency>
+                <groupId>jakarta.servlet.jsp</groupId>
+                <artifactId>jakarta.servlet.jsp-api</artifactId>
+                <version>${version.jakarta.servlet.jsp.jakarta-servlet-jsp-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            -->
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${version.jakarta.validation.jakarta-validation-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-api</artifactId>
+                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.websocket</groupId>
+                <artifactId>jakarta.websocket-client-api</artifactId>
+                <version>${version.jakarta.websocket.jakarta-websocket-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${version.org.apache.avro}</version>
@@ -59,9 +277,110 @@
             </dependency>
 
             <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.faces</artifactId>
+                <version>${version.org.glassfish.jakarta.faces}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
                 <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-api</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-core-impl</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-lite-extension-translator</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld</groupId>
+                <artifactId>weld-spi</artifactId>
+                <version>${version.org.jboss.weld.weld-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.module</groupId>
+                <artifactId>weld-ejb</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.module</groupId>
+                <artifactId>weld-jsf</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.module</groupId>
+                <artifactId>weld-jta</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.module</groupId>
+                <artifactId>weld-web</artifactId>
+                <version>${version.org.jboss.weld.weld}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

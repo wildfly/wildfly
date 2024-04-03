@@ -167,6 +167,9 @@
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
+
+        <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
+        <additional.ee.test.source>ee10</additional.ee.test.source>
     </properties>
 
     <dependencyManagement>
@@ -319,6 +322,26 @@
                        <trimStackTrace>false</trimStackTrace>
                    </configuration>
                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <executions combine-children="append">
+                        <!-- If enabled, add a second test source dir for EE-version-specific classes -->
+                        <execution>
+                            <id>add-ee-test-source</id>
+                            <!-- Disabled by default -->
+                            <phase>none</phase>
+                            <goals>
+                                <goal>add-test-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>src/test/${additional.ee.test.source}/java</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
 
                <!-- Disable default site run. -->
                <plugin>
@@ -468,6 +491,8 @@
             <activation><property><name>ts.preview</name></property></activation>
             <properties>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
             <modules>
                 <module>domain</module>
@@ -485,6 +510,10 @@
                     <name>ts.bootable.preview</name>
                 </property>
             </activation>
+            <properties>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
+            </properties>
             <modules>
                 <module>integration</module>
                 <module>preview</module>
@@ -503,7 +532,10 @@
                 </property>
             </activation>
             <properties>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
                 <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
         </profile>
 
