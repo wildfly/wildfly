@@ -15,7 +15,6 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 
-import com.fasterxml.jackson.core.util.JacksonFeature;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,18 +34,18 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class MicrometerOtelIntegrationTestCase {
+    protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
 
     public static final int REQUEST_COUNT = 5;
     @ArquillianResource
     private URL url;
     @Inject
     private MeterRegistry meterRegistry;
-
-    private final Client client = ClientBuilder.newClient().register(JacksonFeature.class);
 
     static final String WEB_XML =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -62,12 +61,19 @@ public class MicrometerOtelIntegrationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
-                .addClasses(ServerSetupTask.class, MetricResource.class)
-                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
+        return dockerAvailable ?
+                ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+                        .addClasses(ServerSetupTask.class,
+                                MetricResource.class,
+                                AssumeTestGroupUtil.class)
+                        .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
+                        .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
+                AssumeTestGroupUtil.emptyWar();
     }
 
+    // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
+    // Otherwise the org.wildfly.extension.micrometer.registry.NoOpRegistry is installed which will result in 0 counters,
+    // and cause the test fail seemingly intermittently on machines with broken Docker setup.
     @BeforeClass
     public static void checkForDocker() {
         AssumeTestGroupUtil.assumeDockerAvailable();
@@ -83,9 +89,11 @@ public class MicrometerOtelIntegrationTestCase {
     @RunAsClient
     @InSequence(2)
     public void makeRequests() throws URISyntaxException {
-        WebTarget target = client.target(url.toURI());
-        for (int i = 0; i < REQUEST_COUNT; i++) {
-            target.request().get();
+        try (Client client = ClientBuilder.newClient()) {
+            WebTarget target = client.target(url.toURI());
+            for (int i = 0; i < REQUEST_COUNT; i++) {
+                target.request().get();
+            }
         }
     }
 
@@ -95,7 +103,6 @@ public class MicrometerOtelIntegrationTestCase {
         Counter counter = meterRegistry.get("demo_counter").counter();
         Assert.assertEquals(counter.count(), REQUEST_COUNT, 0.0);
     }
-
 
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
     // a few metrics to verify there existence
@@ -153,20 +160,22 @@ public class MicrometerOtelIntegrationTestCase {
     }
 
     private String fetchMetrics(String nameToMonitor) throws InterruptedException {
-        WebTarget target = client.target(MicrometerSetupTask.otelCollector.getPrometheusUrl());
-
-        int attemptCount = 0;
-        boolean found = false;
         String body = "";
+        try (Client client = ClientBuilder.newClient()) {
+            WebTarget target = client.target(OpenTelemetryCollectorContainer.getInstance().getPrometheusUrl());
 
-        // Request counts can vary. Setting high to help ensure test stability
-        while (!found && attemptCount < 30) {
-            // Wait to give Micrometer time to export
-            Thread.sleep(1000);
+            int attemptCount = 0;
+            boolean found = false;
 
-            body = target.request().get().readEntity(String.class);
-            found = body.contains(nameToMonitor);
-            attemptCount++;
+            // Request counts can vary. Setting high to help ensure test stability
+            while (!found && attemptCount < 30) {
+                // Wait to give Micrometer time to export
+                Thread.sleep(1000);
+
+                body = target.request().get().readEntity(String.class);
+                found = body.contains(nameToMonitor);
+                attemptCount++;
+            }
         }
 
         return body;
