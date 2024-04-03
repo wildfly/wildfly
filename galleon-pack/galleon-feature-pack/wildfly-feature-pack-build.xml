@@ -26,6 +26,7 @@
                 <include name="standalone-ha.xml" model="standalone"/>
                 <include name="standalone-full.xml" model="standalone"/>
                 <include name="standalone-full-ha.xml" model="standalone"/>
+                <include name="standalone-bdew.xml" model="standalone"/>
             </default-configs>
         </dependency>
     </dependencies>
@@ -89,6 +90,11 @@
         </props>
     </config>
     <config name="host-secondary.xml" model="host">
+        <props>
+            <prop name="--stability" value="community"/>
+        </props>
+    </config>
+    <config name="standalone-bdew.xml" model="standalone">
         <props>
             <prop name="--stability" value="community"/>
         </props>

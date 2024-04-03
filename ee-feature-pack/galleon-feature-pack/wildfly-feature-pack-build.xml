@@ -64,6 +64,11 @@
             <prop name="--stability" value="community"/>
         </props>
     </config>
+    <config name="standalone-bdew.xml" model="standalone">
+        <props>
+            <prop name="--stability" value="community"/>
+        </props>
+    </config>
 
     <plugins>
         <plugin artifact="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>

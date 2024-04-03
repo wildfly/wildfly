@@ -405,6 +405,21 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <id>hardening-standalone-bdew</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <configuration>
+                                    <scripts>
+                                        <script>hardening.cli</script>
+                                    </scripts>
+                                    <systemProperties>
+                                        <config>standalone-bdew.xml</config>
+                                    </systemProperties>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>hardening-domain-host</id>
                                 <phase>prepare-package</phase>
                                 <goals>
@@ -421,7 +436,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>hardening-domain-host-master</id>
+                                <id>hardening-domain-host-primary</id>
                                 <phase>prepare-package</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
@@ -437,7 +452,7 @@
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>hardening-domain-host-slave</id>
+                                <id>hardening-domain-host-secondary</id>
                                 <phase>prepare-package</phase>
                                 <goals>
                                     <goal>execute-commands</goal>
