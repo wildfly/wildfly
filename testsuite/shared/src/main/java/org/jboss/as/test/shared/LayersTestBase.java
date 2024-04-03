@@ -83,7 +83,13 @@ public abstract class LayersTestBase {
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
      * only when testing provisioning from the wildfly feature pack.
      */
-    public static final String[] NO_LAYER_WILDFLY = {};
+    public static final String[] NO_LAYER_WILDFLY = {
+            // Preview stability 'mvc-krazo' layer cannot be provisioned in OOTB standard wildfly
+            "org.wildfly.extension.mvc-krazo",
+            "jakarta.mvc.api",
+            "org.eclipse.krazo.core",
+            "org.eclipse.krazo.resteasy"
+    };
 
     /**
      * Included in the return value of {@link #getExpectedUnusedInAllLayers()}
@@ -209,6 +215,11 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.microprofile.metrics-smallrye",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.opentracing-smallrye",
+            // Extension not included in the default config
+            "org.wildfly.extension.mvc-krazo",
+            "jakarta.mvc.api",
+            "org.eclipse.krazo.core",
+            "org.eclipse.krazo.resteasy",
             // Injected by jaxrs subsystem
             "org.jboss.resteasy.microprofile.config",
             "org.jboss.resteasy.resteasy-client-microprofile",
@@ -216,7 +227,7 @@ public abstract class LayersTestBase {
 
     /**
      * Included in the return value of {@link #getExpectedUnreferenced()}
-     * only when testing provisioning from the wildfly-preview feature pack.
+     * only when testing provisioning from the wildfly feature pack.
      */
     public static final String[] NOT_REFERENCED_WILDFLY = {
             // Extension not included in the default config
@@ -225,6 +236,11 @@ public abstract class LayersTestBase {
             "io.micrometer",
             "com.google.protobuf",
             "io.opentelemetry.proto",
+            // Extension not included in the default config
+            "org.wildfly.extension.mvc-krazo",
+            "jakarta.mvc.api",
+            "org.eclipse.krazo.core",
+            "org.eclipse.krazo.resteasy",
     };
 
     /**

@@ -15,14 +15,24 @@ processors:
   batch:
 
 exporters:
+  logging:
+    verbosity: detailed
   prometheus:
     endpoint: "0.0.0.0:49152"
+  otlp:
+    endpoint: http://jaeger:4317
+    tls:
+      insecure: true
 
 service:
   pipelines:
     metrics:
       receivers: [ otlp ]
       processors: [ batch ]
-      exporters: [ prometheus ]
+      exporters: [ prometheus, logging ]
+    traces:
+      receivers: [ otlp ]
+      processors: [  ]
+      exporters: [ otlp, logging ]
 
   extensions: [ health_check, pprof, zpages ]

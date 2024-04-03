@@ -60,6 +60,18 @@
         <ts.config-as.copy-mgmt-users.phase>generate-test-resources</ts.config-as.copy-mgmt-users.phase>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <!-- Common ARQ related dependencies. -->
@@ -105,6 +117,7 @@
                 <property>
                     <name>!no.preview.integration.tests</name>
                 </property>
+                <jdk>[17,)</jdk>
             </activation>
             <modules>
                 <module>basic</module>
@@ -120,11 +133,22 @@
                 <module>rbac</module>
                 <module>clustering</module>
                 <module>multinode</module>
-                <module>manualmode</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>-->
+            </modules>
+        </profile>
+
+        <profile>
+            <id>preview.profile</id>
+            <activation><property><name>ts.preview</name></property></activation>
+            <properties>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+            </properties>
+            <modules>
+                <module>basic</module>
+                <module>manualmode</module>
             </modules>
         </profile>
 
@@ -134,6 +158,7 @@
                 <property>
                     <name>ts.bootable.preview</name>
                 </property>
+                <jdk>[17,)</jdk>
             </activation>
             <properties>
                 <!-- Re-enable the default surefire execution -->
@@ -151,7 +176,10 @@
         <!-- Run all tests on -DallTests. -->
         <profile>
             <id>ts.preview.allGroups</id>
-            <activation><property><name>allTests</name></property></activation>
+            <activation>
+                <property><name>allTests</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
                 <!--<module>ws</module>
@@ -165,9 +193,9 @@
                 <module>rts</module>
                 <module>rbac</module>
                 <module>clustering</module>
-                <module>multinode</module>
+                <module>multinode</module>-->
                 <module>manualmode</module>
-                <module>secman</module>
+                <!--<module>secman</module>
                 <module>legacy</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>-->
@@ -176,10 +204,13 @@
         <!-- Define ts.integration uber-group. -->
         <profile>
             <id>ts.preview.allGroupsIntegration</id>
-            <activation><property><name>ts.integration</name></property></activation>
+            <activation>
+                <property><name>ts.integration</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
-                <!--><module>ws</module>
+                <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
                 <module>microprofile</module>
@@ -189,9 +220,9 @@
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
-                <module>rbac</module>
-                <module>multinode</module>
+                <module>rbac</module>-->
                 <module>manualmode</module>
+                <!--<module>multinode</module>
                 <module>secman</module>
                 <module>legacy</module>
                 <module>elytron</module>
@@ -213,7 +244,10 @@
         <!-- -Dts.basic -->
         <profile>
             <id>ts.preview.group.basic</id>
-            <activation><property><name>ts.basic</name></property></activation>
+            <activation>
+                <property><name>ts.basic</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <!--<module>ws</module>-->
                 <module>basic</module>
@@ -270,7 +304,7 @@
         </profile>
         -->
 
-        <!-- -Dts.manualmode
+        <!-- -Dts.manualmode. -->
         <profile>
             <id>ts.integ.group.manualmode</id>
             <activation><property><name>ts.manualmode</name></property></activation>
@@ -278,7 +312,6 @@
                 <module>manualmode</module>
             </modules>
         </profile>
-        -->
 
         <!-- -Dts.rbac
         <profile>
@@ -303,7 +336,10 @@
         <!-- -Dts.layers -->
         <profile>
             <id>ts.preview.group.layers</id>
-            <activation><property><name>ts.layers</name></property></activation>
+            <activation>
+                <property><name>ts.layers</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
             </modules>

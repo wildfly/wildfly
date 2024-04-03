@@ -82,6 +82,7 @@
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.mvc-krazo</extension>
                 <extension>org.wildfly.extension.opentelemetry</extension>
             </standalone>
             <domain>
@@ -95,6 +96,7 @@
                 <extension>org.wildfly.extension.microprofile.opentracing-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-messaging-smallrye</extension>
                 <extension>org.wildfly.extension.microprofile.reactive-streams-operators-smallrye</extension>
+                <extension>org.wildfly.extension.mvc-krazo</extension>
                 <extension>org.wildfly.extension.opentelemetry</extension>
             </domain>
         </extensions>

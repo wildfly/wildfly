@@ -29,6 +29,7 @@
     <properties>
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
+        <galleon.unpacked.resources.directory>${project.build.directory}/unpacked-dependency-galleon-resources</galleon.unpacked.resources.directory>
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
     </properties>
@@ -47,6 +48,32 @@
                         <goals>
                             <goal>clean</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <!-- The feature pack build seems to ignore such things anyway, but to be
+                                 robust exclude artifact metadata content -->
+                            <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
+                            <outputDirectory>${galleon.unpacked.resources.directory}</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -108,6 +135,23 @@
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>copy-unpacked-galleon-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <escapeString>\</escapeString>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -125,6 +169,7 @@
                             <generateVersionProperty>true</generateVersionProperty>
                             <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
+                                <licensesConfigFile>${galleon.unpacked.resources.directory}/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/wildfly-feature-pack-licenses.xml</licensesOutputFile>
@@ -197,6 +242,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>mvc-krazo-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -259,6 +311,7 @@
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-local</exclude>
+                                                <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

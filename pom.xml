@@ -129,6 +129,7 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
+        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
         <product.docs.server.version>31</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
@@ -315,16 +316,17 @@
         <version.ant.junit>1.10.14</version.ant.junit>
         <version.asciidoctor.plugin>2.2.6</version.asciidoctor.plugin>
         <version.org.jacoco>0.8.11</version.org.jacoco>
-        <version.org.jboss.galleon>6.0.0.Beta5</version.org.jboss.galleon>
-        <version.org.wildfly.glow>1.0.0.Beta11</version.org.wildfly.glow>
+        <version.org.jboss.galleon>6.0.0.Beta6</version.org.jboss.galleon>
+        <version.org.wildfly.glow>1.0.0.Beta12</version.org.wildfly.glow>
         <version.org.jboss.wildscribe>2.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.galleon-plugins>7.0.0.Beta6</version.org.wildfly.galleon-plugins>
+        <version.org.wildfly.galleon-plugins>7.0.0.Beta7</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>5.0.0.Beta4</version.org.wildfly.plugin>
+        <version.org.wildfly.wildfly-channel-plugin>1.0.9</version.org.wildfly.wildfly-channel-plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
 
@@ -418,7 +420,7 @@
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.grpc>1.58.0</version.io.grpc>
         <version.io.micrometer>1.12.4</version.io.micrometer>
-        <version.io.netty>4.1.107.Final</version.io.netty>
+        <version.io.netty>4.1.108.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.29.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentelemetry.proto>0.20.0-alpha</version.io.opentelemetry.proto>
         <version.io.opentelemetry.opentelemetry-semconv>1.21.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
@@ -452,6 +454,7 @@
         <version.jakarta.jms.jakarta-jms-api>3.1.0</version.jakarta.jms.jakarta-jms-api>
         <version.jakarta.json.bind.api>3.0.0</version.jakarta.json.bind.api>
         <version.jakarta.mail-api>2.1.3</version.jakarta.mail-api>
+        <version.jakarta.mvc.jakarta-mvc-api>2.1.0</version.jakarta.mvc.jakarta-mvc-api>
         <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
         <version.jakarta.resource.jakarta-resource-api>2.1.0</version.jakarta.resource.jakarta-resource-api>
         <version.jakarta.security.enterprise>3.0.0</version.jakarta.security.enterprise>
@@ -515,7 +518,7 @@
         <version.org.hibernate.search>7.1.0.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.1.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.26.Final</version.org.infinispan>
+        <version.org.infinispan>14.0.27.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.6.5.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>2.2.1.Final</version.org.jberet>
@@ -563,7 +566,7 @@
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.core>24.0.0.Beta3</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
-        <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
+        <version.org.wildfly.mvc.krazo>1.0.0.CR2</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
         <version.org.wildfly.security.elytron-mp>2.0.0.Final</version.org.wildfly.security.elytron-mp>
         <version.org.wildfly.transaction.client>3.0.5.Final</version.org.wildfly.transaction.client>
@@ -592,8 +595,8 @@
             <!-- Keep sorted -->
 
             <dependency>
-                <groupId>${full.maven.groupId}</groupId>
-                <artifactId>wildfly-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly</artifactId>
                 <version>${full.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -621,8 +624,8 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly-ee</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -706,8 +709,8 @@
             </dependency>
 
             <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-preview-channel</artifactId>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly-preview</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -1366,6 +1369,11 @@
                     <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                     <version>${version.org.wildfly.glow}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-channel-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.wildfly-channel-plugin}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -1389,7 +1397,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
@@ -1448,6 +1455,35 @@
             <modules>
                 <module>docs</module>
             </modules>
+        </profile>
+
+        <profile>
+            <id>dependency-check</id>
+            <activation>
+                <property>
+                    <name>dependency-check</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                      <groupId>org.owasp</groupId>
+                      <artifactId>dependency-check-maven</artifactId>
+                      <version>9.0.10</version>
+                      <configuration>
+                          <nvdApiServerId>nvd</nvdApiServerId>
+                          <suppressionFile>./sca-overrides/owasp-suppressions.xml</suppressionFile>
+                      </configuration>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>aggregate</goal>
+                              </goals>
+                          </execution>
+                      </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
         <!--

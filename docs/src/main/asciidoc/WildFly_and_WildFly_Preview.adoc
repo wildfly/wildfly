@@ -117,7 +117,6 @@ configuration to act as a primary or backup. An embedded messaging broker also h
 requirements than a server primarily dedicated to handling HTTP requests would have. Note however that running an
 embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
-* WildFly Preview provides out of the box support for link:https://jakarta.ee/specifications/mvc[Jakarta MVC]. However, tech-preview support for Jakarta MVC can also be added to standard WildFly by including the link:https://github.com/wildfly-extras/mvc-krazo-feature-pack/blob/main/README.md[`wildfly-mvc-krazo-feature-pack`] Galleon feature pack in your server provisioning configuration.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as coordination strategy for automatic indexing.
 * The extensions providing the legacy subsystems 'cmp', 'config-admin', 'jacorb', 'jaxr', 'jsr-77', 'messaging' (HornetQ based),
 'security' (not 'elytron'), and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control
