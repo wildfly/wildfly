@@ -4,17 +4,17 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.superclass;
 
-import jakarta.annotation.ManagedBean;
 import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 
 /**
  * @author Stuart Douglas
  */
-@ManagedBean("bean2")
+@Stateless(name="bean2")
 public class Bean2 extends SuperBean {
 
-    public SimpleManagedBean getBean() {
-        return simpleManagedBean;
+    public SimpleStatelessBean getBean() {
+        return simpleStatelessBean;
     }
 
     int setCount = 0;

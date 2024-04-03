@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:2.0">
     <realm name="main">
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
@@ -126,6 +126,20 @@
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>preferred_username</principal-attribute>
     </secure-deployment>
+    <secure-deployment name="wildfly-with-scope">
+        <provider>keycloak</provider>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-deployment>
+    <secure-server name="wildfly-server-with-scope">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-server>
     <secure-server name="wildfly-console">
         <realm>jboss-infra</realm>
         <resource>wildfly-console</resource>
@@ -142,4 +156,3 @@
         <ssl-required>EXTERNAL</ssl-required>
     </secure-server>
 </subsystem>
-
