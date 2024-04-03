@@ -105,6 +105,7 @@
                 <property>
                     <name>!no.preview.integration.tests</name>
                 </property>
+                <jdk>[17,)</jdk>
             </activation>
             <modules>
                 <module>basic</module>
@@ -134,6 +135,7 @@
                 <property>
                     <name>ts.bootable.preview</name>
                 </property>
+                <jdk>[17,)</jdk>
             </activation>
             <properties>
                 <!-- Re-enable the default surefire execution -->
@@ -151,7 +153,10 @@
         <!-- Run all tests on -DallTests. -->
         <profile>
             <id>ts.preview.allGroups</id>
-            <activation><property><name>allTests</name></property></activation>
+            <activation>
+                <property><name>allTests</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
                 <!--<module>ws</module>
@@ -176,7 +181,10 @@
         <!-- Define ts.integration uber-group. -->
         <profile>
             <id>ts.preview.allGroupsIntegration</id>
-            <activation><property><name>ts.integration</name></property></activation>
+            <activation>
+                <property><name>ts.integration</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
                 <!--><module>ws</module>
@@ -213,7 +221,10 @@
         <!-- -Dts.basic -->
         <profile>
             <id>ts.preview.group.basic</id>
-            <activation><property><name>ts.basic</name></property></activation>
+            <activation>
+                <property><name>ts.basic</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <!--<module>ws</module>-->
                 <module>basic</module>
@@ -303,7 +314,10 @@
         <!-- -Dts.layers -->
         <profile>
             <id>ts.preview.group.layers</id>
-            <activation><property><name>ts.layers</name></property></activation>
+            <activation>
+                <property><name>ts.layers</name></property>
+                <jdk>[17,)</jdk>
+            </activation>
             <modules>
                 <module>basic</module>
             </modules>
