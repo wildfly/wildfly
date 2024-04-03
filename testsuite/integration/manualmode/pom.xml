@@ -334,8 +334,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-channel</artifactId>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>32.0.0.Beta1-SNAPSHOT</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
@@ -418,8 +419,8 @@
                         <channels>
                         <channel>
                             <manifest>
-                                <groupId>${ee.maven.groupId}</groupId>
-                                <artifactId>wildfly-ee-channel</artifactId>
+                                <groupId>${channels.maven.groupId}</groupId>
+                                <artifactId>wildfly-ee</artifactId>
                                 <version>${ee.maven.version}</version>
                             </manifest>
                         </channel>
@@ -456,8 +457,8 @@
                             <channels>
                                 <channel>
                                     <manifest>
-                                        <groupId>${ee.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-channel</artifactId>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
