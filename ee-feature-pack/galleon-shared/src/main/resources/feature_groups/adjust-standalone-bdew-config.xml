@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<feature-group-spec name="adjust-standalone-bdew-config" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature-group name="adjust-standalone-full-config"/>
+
+    <feature spec="subsystem.ejb3">
+        <unset param="default-resource-adapter-name"/>
+        <unset param="default-mdb-instance-pool"/>
+    </feature>
+
+    <feature spec="subsystem.elytron.dir-context">
+        <param name="dir-context" value="ldap-connection"/>
+        <param name="url" value="${ldap.address:ldap://localhost:1234}"/>
+        <param name="principal" value="${ldap.search.dn:uid=jobtest1,ou=People,dc=ee,dc=psi}"/>
+        <param name="credential-reference" value="clear-text=${ldap.search.credential:start123}"/>
+    </feature>
+
+    <feature spec="subsystem.elytron.ldap-realm">
+        <param name="ldap-realm" value="LDAPRealm"/>
+        <param name="dir-context" value="ldap-connection"/>
+        <param name="direct-verification" value="true"/>
+        <param name="identity-mapping"
+               value="{rdn-identifier=uid, search-base-dn=${ldap.base.dn:ou=People,dc=ee,dc=psi}}"/>
+    </feature>
+
+    <feature spec="subsystem.elytron.security-domain">
+        <param name="security-domain" value="LDAPDomain"/>
+        <param name="default-realm" value="LDAPRealm"/>
+        <param name="permission-mapper" value="default-permission-mapper"/>
+        <param name="realms" value="[{realm=LDAPRealm}]"/>
+    </feature>
+
+    <feature spec="subsystem.elytron.http-authentication-factory">
+        <param name="http-authentication-factory" value="ldap-http-auth"/>
+        <param name="security-domain" value="LDAPDomain"/>
+        <param name="http-server-mechanism-factory" value="global"/>
+        <param name="mechanism-configurations"
+               value="[{mechanism-name=BASIC, mechanism-realm-configurations=[{realm-name=LDAPRealm}]}]"/>
+    </feature>
+
+    <feature spec="subsystem.elytron.sasl-authentication-factory">
+        <param name="sasl-authentication-factory" value="ldap-sasl-auth"/>
+        <param name="sasl-server-factory" value="configured"/>
+        <param name="security-domain" value="LDAPDomain"/>
+        <param name="mechanism-configurations"
+               value="[{mechanism-name=PLAIN, mechanism-realm-configurations=[{realm-name=LDAPRealm}]}]"/>
+    </feature>
+
+    <feature spec="core-service.management.management-interface.http-interface">
+        <param name="http-authentication-factory" value="ldap-http-auth"/>
+        <feature spec="core-service.management.management-interface.http-interface.http-upgrade">
+            <param name="enabled" value="true"/>
+            <param name="sasl-authentication-factory" value="ldap-sasl-auth"/>
+        </feature>
+    </feature>
+</feature-group-spec>

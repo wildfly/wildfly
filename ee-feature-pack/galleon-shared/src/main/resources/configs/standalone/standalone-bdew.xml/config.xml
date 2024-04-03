@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+
+<config xmlns="urn:jboss:galleon:config:1.0" name="standalone-bdew.xml" model="standalone">
+    <layers>
+        <include name="internal-standalone-full-profile"/>
+    </layers>
+    <feature-group name="adjust-standalone-bdew-config"/>
+</config>
