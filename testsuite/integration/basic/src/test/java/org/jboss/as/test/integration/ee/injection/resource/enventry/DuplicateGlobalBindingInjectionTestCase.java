@@ -30,7 +30,6 @@ public class DuplicateGlobalBindingInjectionTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "dep1.war");
         war.addClasses(
                 EnvEntryInjectionServlet.class,
-                EnvEntryManagedBean.class,
                 DuplicateGlobalBindingInjectionTestCase.class);
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
@@ -43,7 +42,6 @@ public class DuplicateGlobalBindingInjectionTestCase {
         // war.addPackage(DuplicateGlobalBindingInjectionTestCase.class.getPackage());
         war.addClasses(
                 EnvEntryInjectionServlet.class,
-                EnvEntryManagedBean.class,
                 DuplicateGlobalBindingInjectionTestCase.class);
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
@@ -80,12 +78,6 @@ public class DuplicateGlobalBindingInjectionTestCase {
                 "           <injection-target-class>" + EnvEntryInjectionServlet.class.getName() + "</injection-target-class>" +
                 "           <injection-target-name>field</injection-target-name>" +
                 "        </injection-target>\n" +
-                "    </env-entry>\n" +
-                "\n" +
-                "    <env-entry>\n" +
-                "        <env-entry-name>" + EnvEntryManagedBean.class.getName() + "/existingString</env-entry-name>\n" +
-                "        <env-entry-value>bye</env-entry-value>\n" +
-                "        <env-entry-type>java.lang.String</env-entry-type>\n" +
                 "    </env-entry>\n" +
                 "\n" +
                 "</web-app>");

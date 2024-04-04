@@ -5,6 +5,7 @@
 package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,10 +45,19 @@ public class EECleanUpProcessor implements DeploymentUnitProcessor {
             @Override
             public void handleEvent(ServiceController<?> serviceController, LifecycleEvent lifecycleEvent) {
                 if(lifecycleEvent == LifecycleEvent.DOWN) {
-                    FactoryFinderCache.clearClassLoader(module.getClassLoader());
+                    clearFactoryFinderCache(module);
                     controller.removeListener(this);
                 }
             }
         });
+    }
+
+    private void clearFactoryFinderCache(Module module) {
+        try {
+            FactoryFinderCache.clearClassLoader(module.getClassLoader());
+        } catch (NoClassDefFoundError e) {
+            // FactoryFinderCache is only available when the JBoss fork of Jakarta EL is used
+            EeLogger.ROOT_LOGGER.debugf("Cannot load FactoryFinderCache class -- cache clearing will not be performed");
+        }
     }
 }

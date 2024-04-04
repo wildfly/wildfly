@@ -41,6 +41,7 @@ public class ClassFileTransformerTestCase {
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, "testpersistenceprovider.jar");
         persistenceProvider.addClasses(
+                AbstractTestPersistenceProvider.class,
                 TestClassTransformer.class,
                 TestEntityManagerFactory.class,
                 TestPersistenceProvider.class,

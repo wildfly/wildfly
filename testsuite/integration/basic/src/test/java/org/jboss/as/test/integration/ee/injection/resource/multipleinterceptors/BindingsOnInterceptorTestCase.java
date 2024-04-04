@@ -29,15 +29,15 @@ public class BindingsOnInterceptorTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-interceptors.war");
-        war.addClasses(Bean1.class, Bean2.class, BindingsOnInterceptorTestCase.class, MyInterceptor.class, SimpleManagedBean.class);
+        war.addClasses(Bean1.class, Bean2.class, BindingsOnInterceptorTestCase.class, MyInterceptor.class, SimpleStatelessBean.class);
         return war;
     }
 
     @Test
     public void testCorrectBinding() throws NamingException {
         InitialContext context = new InitialContext();
-        Object result = context.lookup("java:module/env/" + MyInterceptor.class.getName() + "/simpleManagedBean");
-        Assert.assertTrue(result instanceof SimpleManagedBean);
+        Object result = context.lookup("java:module/env/" + MyInterceptor.class.getName() + "/simpleStatelessBean");
+        Assert.assertTrue(result instanceof SimpleStatelessBean);
     }
 
 }

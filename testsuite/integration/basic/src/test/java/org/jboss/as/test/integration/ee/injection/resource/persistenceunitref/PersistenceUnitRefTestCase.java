@@ -62,14 +62,14 @@ public class PersistenceUnitRefTestCase {
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation() throws NamingException {
-        PuManagedBean bean = getManagedBean();
+        PuBean bean = getManagedBean();
         bean.getMypu().getMetamodel().entity(PuMyEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation2() throws NamingException {
         try {
-            PuManagedBean bean = getManagedBean();
+            PuBean bean = getManagedBean();
             bean.getMypu().getMetamodel().entity(PuOtherEntity.class);
         } catch (IllegalArgumentException e) {
             //all is fine!
@@ -81,7 +81,7 @@ public class PersistenceUnitRefTestCase {
     @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef() throws NamingException {
         try {
-            PuManagedBean bean = getManagedBean();
+            PuBean bean = getManagedBean();
             bean.getOtherpc().getMetamodel().entity(PuMyEntity.class);
         } catch (IllegalArgumentException e) {
             //all is fine!
@@ -92,20 +92,20 @@ public class PersistenceUnitRefTestCase {
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef2() throws NamingException {
-        PuManagedBean bean = getManagedBean();
+        PuBean bean = getManagedBean();
         bean.getOtherpc().getMetamodel().entity(PuOtherEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget() throws NamingException {
-        PuManagedBean bean = getManagedBean();
+        PuBean bean = getManagedBean();
         bean.getMypu2().getMetamodel().entity(PuMyEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget2() throws NamingException {
         try {
-            PuManagedBean bean = getManagedBean();
+            PuBean bean = getManagedBean();
             bean.getMypu2().getMetamodel().entity(PuOtherEntity.class);
         } catch (IllegalArgumentException e) {
             //all is fine!
@@ -115,9 +115,9 @@ public class PersistenceUnitRefTestCase {
     }
 
 
-    private PuManagedBean getManagedBean() throws NamingException {
+    private PuBean getManagedBean() throws NamingException {
         InitialContext initialContext = new InitialContext();
-        PuManagedBean bean = (PuManagedBean) initialContext.lookup("java:module/puManagedBean");
+        PuBean bean = (PuBean) initialContext.lookup("java:module/puManagedBean");
         assertNotNull(bean);
         return bean;
     }
@@ -140,7 +140,7 @@ public class PersistenceUnitRefTestCase {
                 "        <persistence-unit-ref-name>AnotherPuBinding</persistence-unit-ref-name>\n" +
                 "        <persistence-unit-name>mypc</persistence-unit-name>\n" +
                 "        <injection-target>" +
-                "           <injection-target-class>"+ PuManagedBean.class.getName()+"</injection-target-class>"+
+                "           <injection-target-class>"+ PuBean.class.getName()+"</injection-target-class>"+
                 "           <injection-target-name>mypu2</injection-target-name>" +
                 "        </injection-target>\n" +
                 "    </persistence-unit-ref>\n" +

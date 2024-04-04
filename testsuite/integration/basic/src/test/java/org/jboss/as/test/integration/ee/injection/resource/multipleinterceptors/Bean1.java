@@ -4,13 +4,13 @@
  */
 package org.jboss.as.test.integration.ee.injection.resource.multipleinterceptors;
 
-import jakarta.annotation.ManagedBean;
+import jakarta.ejb.Stateless;
 import jakarta.interceptor.Interceptors;
 
 /**
  * @author Stuart Douglas
  */
-@ManagedBean("bean1")
+@Stateless(name="bean1")
 @Interceptors(MyInterceptor.class)
 public class Bean1 {
 }

@@ -37,17 +37,17 @@ public interface JSFLogger extends BasicLogger {
      */
     JSFLogger ROOT_LOGGER = Logger.getMessageLogger(JSFLogger.class, "org.jboss.as.jsf");
 
-    @LogMessage(level = WARN)
-    @Message(id = 1, value = "WildFlyConversationAwareViewHandler was improperly initialized. Expected ViewHandler parent.")
-    void viewHandlerImproperlyInitialized();
+//    @LogMessage(level = WARN)
+//    @Message(id = 1, value = "WildFlyConversationAwareViewHandler was improperly initialized. Expected ViewHandler parent.")
+//    void viewHandlerImproperlyInitialized();
 
-    @LogMessage(level = ERROR)
-    @Message(id = 2, value = "Could not load Jakarta Server Faces managed bean class: %s")
-    void managedBeanLoadFail(String managedBean);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 2, value = "Could not load Jakarta Server Faces managed bean class: %s")
+//    void managedBeanLoadFail(String managedBean);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 3, value = "Jakarta Server Faces managed bean class %s has no default constructor")
-    void managedBeanNoDefaultConstructor(String managedBean);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 3, value = "Jakarta Server Faces managed bean class %s has no default constructor")
+//    void managedBeanNoDefaultConstructor(String managedBean);
 
     @LogMessage(level = ERROR)
     @Message(id = 4, value = "Failed to parse %s, Jakarta Server Faces artifacts defined in this file will not be available")
@@ -80,8 +80,8 @@ public interface JSFLogger extends BasicLogger {
 //    @Message(id = 12, value = "Thread local injection container not set")
 //    IllegalStateException noThreadLocalInjectionContainer();
 
-    @Message(id = 13, value = "@ManagedBean is only allowed at class level %s")
-    String invalidManagedBeanAnnotation(AnnotationTarget target);
+//    @Message(id = 13, value = "@ManagedBean is only allowed at class level %s")
+//    String invalidManagedBeanAnnotation(AnnotationTarget target);
 
     @Message(id = 14, value = "Default Jakarta Server Faces implementation slot '%s' is invalid")
     DeploymentUnitProcessingException invalidDefaultJSFImpl(String defaultJsfVersion);
