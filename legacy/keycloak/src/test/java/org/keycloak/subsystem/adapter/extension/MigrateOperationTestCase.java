@@ -34,6 +34,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
@@ -275,7 +276,7 @@ public class MigrateOperationTestCase extends AbstractSubsystemTest {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     if (! extensionAdded) {
                         extensionAdded = true;
-                        newSubsystem.initialize(extensionRegistry.getExtensionContext("org.wildfly.extension.elytron-oidc-client",
+                        newSubsystem.initialize(extensionRegistry.getExtensionContext("org.wildfly.extension.elytron-oidc-client", Stability.DEFAULT,
                                 rootRegistration, ExtensionRegistryType.SERVER));
                     }
                 }

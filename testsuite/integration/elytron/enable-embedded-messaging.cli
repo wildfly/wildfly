@@ -1,4 +1,4 @@
-embed-server --admin-only=true --server-config=standalone-full.xml
+embed-server --admin-only=true --server-config=standalone-full.xml --stability==${embedded.stability}
 
 # Remove the default messaging configuration configuration
 if (outcome == success) of /subsystem=messaging-activemq/pooled-connection-factory=activemq-ra:read-resource

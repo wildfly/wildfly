@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:2.0">
     <realm name="main-expressions">
         <realm-public-key>${exp.realm-public-key:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB}</realm-public-key>
         <auth-server-url>${exp.auth-server-url:http://localhost:8080/auth}</auth-server-url>
@@ -171,6 +171,7 @@
         <enable-basic-auth>${exp.enable-basic-auth:false}</enable-basic-auth>
         <public-client>${exp.public-client:false}</public-client>
         <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
+        <scope>${exp.scope:profile email phone}</scope>
     </secure-deployment>
     <secure-server name="wildfly-console">
         <realm>${exp.realm:demo}</realm>
@@ -206,6 +207,7 @@
         <connection-pool-size>${exp.connection-pool-size:20}</connection-pool-size>
         <confidential-port>${exp.confidential-port:443}</confidential-port>
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
+        <scope>${exp.scope:profile email phone}</scope>
     </secure-server>
     <secure-server name="another-wildfly-console">
         <provider>${exp.provider:redhat-sso-expressions}</provider>
@@ -243,4 +245,3 @@
         <proxy-url>${exp.proxy-url:http://localhost:9000}</proxy-url>
     </secure-server>
 </subsystem>
-

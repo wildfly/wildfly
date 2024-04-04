@@ -8,9 +8,15 @@ package org.wildfly.extension.elytron.oidc;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 import static org.wildfly.security.http.oidc.Oidc.JSON_CONFIG_CONTEXT_PARAM;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -21,6 +27,7 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.metadata.web.spec.LoginConfigMetaData;
+import org.jboss.vfs.VirtualFile;
 import org.wildfly.security.http.oidc.OidcConfigurationServletListener;
 
 /**
@@ -46,12 +53,34 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         }
 
         OidcConfigService configService = OidcConfigService.getInstance();
-        if (configService.isSecureDeployment(deploymentUnit) && configService.isDeploymentConfigured(deploymentUnit)) {
+        boolean subsystemConfigured = configService.isSecureDeployment(deploymentUnit) && configService.isDeploymentConfigured(deploymentUnit);
+        if (subsystemConfigured) {
             addOidcAuthDataAndConfig(phaseContext, configService, webMetaData);
         }
 
         LoginConfigMetaData loginConfig = webMetaData.getLoginConfig();
         if (loginConfig != null && OIDC_AUTH_METHOD.equals(loginConfig.getAuthMethod())) {
+            if (! subsystemConfigured) {
+                // check for unsupported attributes in the deployment's oidc.json file
+                if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT) != null) {
+                    VirtualFile oidcConfigurationFile = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot().getChild("WEB-INF/oidc.json");
+                    if (oidcConfigurationFile.exists()) {
+                        try (InputStream is = oidcConfigurationFile.openStream()) {
+                            String oidcConfigString = readFromInputStream(is);
+
+                            for (SimpleAttributeDefinition attribute : SecureDeploymentDefinition.NON_DEFAULT_ATTRIBUTES) {
+                                if ((!deploymentUnit.enables(attribute)) && oidcConfigString.contains(attribute.getName())) {
+                                    throw ROOT_LOGGER.unsupportedAttribute(attribute.getName());
+                                }
+                            }
+                            addJSONDataAsContextParam(oidcConfigString, webMetaData);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+
             ListenerMetaData listenerMetaData = new ListenerMetaData();
             listenerMetaData.setListenerClass(OidcConfigurationServletListener.class.getName());
             webMetaData.getListeners().add(listenerMetaData);
@@ -87,5 +116,16 @@ class OidcActivationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(json);
         contextParams.add(param);
         webMetaData.setContextParams(contextParams);
+    }
+
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+        StringBuilder oidcConfigFileStringBuilder = new StringBuilder();
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                oidcConfigFileStringBuilder.append(line).append("\n");
+            }
+        }
+        return oidcConfigFileStringBuilder.toString();
     }
 }

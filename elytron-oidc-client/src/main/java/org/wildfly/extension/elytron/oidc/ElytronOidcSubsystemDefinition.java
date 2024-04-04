@@ -14,6 +14,7 @@ import java.util.Collections;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -25,6 +26,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
 
 /**
  * Root subsystem definition for the Elytron OpenID Connect subsystem.
@@ -32,6 +34,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
 class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
+    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(ElytronOidcExtension.SUBSYSTEM_NAME);
     static final String CONFIG_CAPABILITY_NAME = "org.wildlfly.elytron.oidc";
     static final String ELYTRON_CAPABILITY_NAME = "org.wildfly.security.elytron";
 
@@ -86,7 +89,7 @@ class ElytronOidcSubsystemDefinition extends PersistentResourceDefinition {
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
                 throws OperationFailedException {
-            ServiceTarget target = context.getServiceTarget();
+            ServiceTarget target = context.getCapabilityServiceTarget();
             installService(VIRTUAL_SECURITY_DOMAIN_CREATION_SERVICE, new VirtualSecurityDomainCreationService(), target);
         }
     }
