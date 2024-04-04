@@ -1351,4 +1351,19 @@
         <packageUrl regex="true">^pkg:maven/org\.infinispan/infinispan\-client\-hotrod@.*$</packageUrl>
         <vulnerabilityName>CVE-2023-4586</vulnerabilityName>
     </suppress>
+    <!-- Those CVE's are false positives, these CVEs were resolved here: https://github.com/undertow-io/undertow/pull/1559 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.2.31.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-1635</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.2.31.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-1459</vulnerabilityName>
+    </suppress>
 </suppressions>
