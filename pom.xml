@@ -269,7 +269,7 @@
         <version.com.google.guava.failureaccess>1.0.1</version.com.google.guava.failureaccess>
         <version.com.h2database>1.4.197</version.com.h2database>
         <version.com.microsoft.azure>8.6.5</version.com.microsoft.azure>
-        <version.com.nimbus.jose-jwt>8.22</version.com.nimbus.jose-jwt>
+        <version.com.nimbus.jose-jwt>9.37.3</version.com.nimbus.jose-jwt>
         <version.com.squareup.okhttp3>3.14.9</version.com.squareup.okhttp3>
         <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
@@ -341,7 +341,7 @@
         <version.org.apache.ws.security>2.3.3</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.2.5</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.redhat-00013</version.org.apache.xalan>
-        <version.org.bitbucket.jose4j>0.9.3</version.org.bitbucket.jose4j>
+        <version.org.bitbucket.jose4j>0.9.4</version.org.bitbucket.jose4j>
         <version.org.bouncycastle>1.69</version.org.bouncycastle>
         <version.org.bytebuddy>1.9.11</version.org.bytebuddy>
         <version.org.codehaus.jackson>1.9.13.redhat-00007</version.org.codehaus.jackson>
