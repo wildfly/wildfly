@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1</version>
+        <version>32.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -360,7 +360,7 @@
         <dependency>
             <groupId>org.wildfly.channels</groupId>
             <artifactId>wildfly-ee</artifactId>
-            <version>32.0.0.Beta1</version>
+            <version>32.0.0.Final-SNAPSHOT</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
