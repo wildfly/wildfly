@@ -1218,34 +1218,5 @@
             </build>
         </profile>
 
-        <profile>
-            <!-- Use the channels specified by the user-provided external.wildfly.channels property
-                 when provisioning. -->
-            <id>external.channel.profile</id>
-            <activation><property><name>external.wildfly.channels</name></property></activation>
-            <properties>
-                <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
-                     if a wildfly.channels pom property is set.
-
-                     Note the user could just directly do -Dwildfly-channels=xxx and get
-                     the same effect, but we use this indirection to leave open the possibility
-                     to have other ways of setting the property, without having to deal with
-                     users having learned to directly use -Dwildfly.channels.
-                 -->
-                <wildfly.channels>${external.wildfly.channels}</wildfly.channels>
-            </properties>
-        </profile>
-
-        <profile>
-            <!-- Use the internally-created channel when provisioning -->
-            <id>internal.channel.profile</id>
-            <activation><property><name>internal.wildfly.channels</name></property></activation>
-            <properties>
-                <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
-                     if a wildfly.channels pom property is set. -->
-                <wildfly.channels>org.wildfly.channels:wildfly:${full.maven.version}</wildfly.channels>
-            </properties>
-        </profile>
-
     </profiles>
 </project>
