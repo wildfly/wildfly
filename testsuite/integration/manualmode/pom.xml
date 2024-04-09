@@ -34,6 +34,7 @@
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
 
+        <oidc.jboss.home>${project.build.directory}/stability-preview</oidc.jboss.home>
         <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
         <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
     </properties>
@@ -582,6 +583,7 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
                         <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>
