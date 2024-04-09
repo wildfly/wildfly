@@ -401,9 +401,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.wildfly.galleon-plugins</groupId>
+                <groupId>org.wildfly.deployment</groupId>
                 <artifactId>transformer</artifactId>
-                <version>${version.org.wildfly.galleon-plugins}</version>
+                <version>${preview.version.org.wildfly.wildfly-ee-9-deployment-transformer}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
