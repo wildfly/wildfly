@@ -43,11 +43,11 @@ public abstract class ProvisioningConsistencyBaseTest {
     private static final String INSTALLATION = ".installation";
     private static final String PROVISIONING = ".wildfly-maven-plugin-provisioning.xml";
     private static final Path JBOSS_HOME = resolveJBossHome();
-    private static final Path CHANNEL_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-from-channel");
-    private static final Path INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
-    private static final Path PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
-    private static final Path SOURCE_HOME = JBOSS_HOME.getParent().getParent().getParent().getParent().getParent();
-    private final Path DIST_INSTALLATION;
+    private final Path CHANNEL_INSTALLATION;
+    private final Path INSTALLATION_METADATA;
+    private final Path PROVISIONING_XML;
+    private final Path SOURCE_HOME = JBOSS_HOME.getParent().getParent().getParent().getParent().getParent();
+    private static final Path DIST_INSTALLATION = JBOSS_HOME.getParent().resolve("wildfly-without-channel");
 
     private static Path resolveJBossHome() {
         try {
@@ -63,7 +63,9 @@ public abstract class ProvisioningConsistencyBaseTest {
 
 
     protected ProvisioningConsistencyBaseTest(String targetDist) {
-        DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+        CHANNEL_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+        INSTALLATION_METADATA = CHANNEL_INSTALLATION.resolve(INSTALLATION);
+        PROVISIONING_XML = CHANNEL_INSTALLATION.resolve(PROVISIONING);
     }
 
     /**
