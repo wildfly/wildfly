@@ -54,6 +54,7 @@ public abstract class LayersTestBase {
             "org.jboss.as.xts",
             // TODO should an undertow layer specify this?
             "org.wildfly.event.logger",
+            "org.wildfly.security.elytron-dynamic-ssl",
     };
 
     /**
