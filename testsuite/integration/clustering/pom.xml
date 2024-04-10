@@ -1507,21 +1507,7 @@
             </properties>
             <build>
                 <plugins>
-                    <!-- Disable the standard copy-based provisioning -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ts.copy-wildfly</id>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Instead provision slimmed installations -->
+                    <!-- Provision slimmed installations -->
                     <plugin>
                         <groupId>org.wildfly.glow</groupId>
                         <artifactId>wildfly-glow-arquillian-plugin</artifactId>
@@ -2499,6 +2485,14 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
                         <executions>
+                            <!-- Disable the standard copy-based provisioning -->
+                            <execution>
+                                <id>ts.copy-wildfly</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
                             <!-- Copy users and roles config from shared resources. -->
                             <execution>
                                 <id>ejb-lite.ts.config-as.copy-mgmt-users</id>
