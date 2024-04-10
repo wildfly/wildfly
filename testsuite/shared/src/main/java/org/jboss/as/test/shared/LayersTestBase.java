@@ -129,6 +129,7 @@ public abstract class LayersTestBase {
             "org.jboss.ws.tools.wsconsume",
             "org.jboss.ws.tools.wsprovide",
             "gnu.getopt",
+            "org.wildfly.security.elytron-dynamic-ssl",
             // Elytron tooling
             "org.wildfly.security.elytron-tool",
             // bootable jar runtime
