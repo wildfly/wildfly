@@ -5,6 +5,9 @@
 
 package org.wildfly.test.manual.elytron.oidc;
 
+import static org.wildfly.test.manual.elytron.oidc.OidcBaseTest.MULTIPLE_SCOPE_APP;
+import static org.wildfly.test.manual.elytron.oidc.OidcBaseTest.SINGLE_SCOPE_APP;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,8 +111,6 @@ public class KeycloakConfiguration {
         for (Map.Entry<String, ClientAppType> entry : clientApps.entrySet()) {
             String clientApp = entry.getKey();
             ClientRepresentation clientRepresentation = createWebAppClient(clientApp, clientSecret, clientHostName, clientPort, clientApp, false);
-//            clientRepresentation.setDefaultClientScopes(List.of("openid"));
-//            clientRepresentation.setOptionalClientScopes(Arrays.asList("profile", "email", "phone"));
             realm.getClients().add(clientRepresentation);
         }
 
@@ -133,6 +134,19 @@ public class KeycloakConfiguration {
         //client.setRedirectUris(Arrays.asList("*"));
         client.setRedirectUris(Arrays.asList("http://" + clientHostName + ":" + clientPort + "/" + clientApp  + "/*"));
         client.setEnabled(true);
+        if (clientId.equals(MULTIPLE_SCOPE_APP) || clientId.equals(SINGLE_SCOPE_APP)) {
+            client.setOptionalClientScopes(new ArrayList<>());
+            client.setDefaultClientScopes(new ArrayList<>());
+            client.getDefaultClientScopes().add("web-origins");
+            client.getDefaultClientScopes().add("acr");
+            client.getOptionalClientScopes().add("address");
+            client.getOptionalClientScopes().add("email");
+            client.getOptionalClientScopes().add("profile");
+            client.getOptionalClientScopes().add("phone");
+            client.getDefaultClientScopes().add("roles");
+            client.getOptionalClientScopes().add("offline_access");
+            client.getOptionalClientScopes().add("microprofile-jwt");
+        }
         client.setDirectAccessGrantsEnabled(directAccessGrantEnabled);
         if (allowedOrigin != null) {
             client.setWebOrigins(Collections.singletonList(allowedOrigin));
