@@ -30,7 +30,7 @@ import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
+import org.wildfly.extension.micrometer._private.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 import org.wildfly.extension.micrometer.registry.WildFlyRegistry;

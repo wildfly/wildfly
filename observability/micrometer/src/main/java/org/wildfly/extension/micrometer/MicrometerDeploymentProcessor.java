@@ -5,14 +5,12 @@
 
 package org.wildfly.extension.micrometer;
 
-import static org.wildfly.extension.micrometer.MicrometerExtension.WELD_CAPABILITY_NAME;
-import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
+import static org.wildfly.extension.micrometer._private.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
 import java.util.List;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -22,6 +20,7 @@ import org.wildfly.extension.micrometer.api.MicrometerCdiExtension;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 
 class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
+    public static final String WELD_CAPABILITY_NAME = "org.wildfly.weld";
     private final boolean exposeAnySubsystem;
     private final List<String> exposedSubsystems;
     private final WildFlyCompositeRegistry wildFlyRegistry;
@@ -38,13 +37,13 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
 
-        MicrometerDeploymentService.install(deploymentPhaseContext.getServiceTarget(),
-                deploymentPhaseContext,
-                deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE),
-                deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT),
-                wildFlyRegistry,
-                exposeAnySubsystem,
-                exposedSubsystems);
+//        MicrometerDeploymentService.install(deploymentPhaseContext.getServiceTarget(),
+//                deploymentPhaseContext,
+//                deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE),
+//                deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT),
+//                wildFlyRegistry,
+//                exposeAnySubsystem,
+//                exposedSubsystems);
 
         registerCdiExtension(deploymentPhaseContext);
     }
@@ -57,7 +56,6 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
         DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         try {
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
 
             final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {

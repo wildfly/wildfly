@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.micrometer.prometheus;
 
-import static org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinition.MICROMETER_PROMETHEUS_CONTEXT_CAPABILITY;
+import static org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar.MICROMETER_PROMETHEUS_CONTEXT_CAPABILITY;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

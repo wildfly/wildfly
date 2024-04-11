@@ -15,7 +15,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
+import org.wildfly.extension.micrometer._private.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 

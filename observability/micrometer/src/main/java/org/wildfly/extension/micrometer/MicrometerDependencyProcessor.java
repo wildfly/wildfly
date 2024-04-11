@@ -4,8 +4,6 @@
  */
 package org.wildfly.extension.micrometer;
 
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.EXPORTED_MODULES;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MODULES;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -17,6 +15,15 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
+    static final String[] MODULES = {
+    };
+
+    static final String[] EXPORTED_MODULES = {
+            "org.wildfly.micrometer.deployment",
+            "io.opentelemetry.otlp",
+            "io.micrometer"
+    };
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         addDependencies(phaseContext.getDeploymentUnit());

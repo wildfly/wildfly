@@ -1,5 +1,8 @@
 package org.wildfly.extension.micrometer.prometheus;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -7,19 +10,28 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
 import org.wildfly.extension.micrometer.MicrometerExtension;
+import org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.ResourceDescriptor;
 
-public class PrometheusRegistryDefinition extends SimpleResourceDefinition {
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement("registry", "prometheus");
+public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar {
+    static final String NAME = "prometheus";
+    public static final PathElement PATH = PathElement.pathElement("registry", NAME);
 
     static final RuntimeCapability<Void> MICROMETER_PROMETHEUS_CONTEXT_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.extension.micrometer.prometheus.http-context", Void.class).build();
@@ -38,15 +50,40 @@ public class PrometheusRegistryDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = {CONTEXT, SECURITY_ENABLED};
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
+    private final ResourceRegistration registration;
+    private final ResourceDescriptor descriptor;
 
-    public PrometheusRegistryDefinition(WildFlyCompositeRegistry wildFlyRegistry) {
+    public PrometheusRegistryDefinitionRegistrar() {
+        registration = ResourceRegistration.of(PATH);
+        descriptor = ResourceDescriptor.builder(MicrometerSubsystemRegistrar.RESOLVER.createChildResolver(PATH))
+                .addAttributes(ATTRIBUTES)
+                .build();
+    }
+
+    @Override
+    public ManagementResourceRegistration register(ManagementResourceRegistration parent, ManagementResourceRegistrationContext context) {
+        ResourceDefinition definition = ResourceDefinition.builder(this.registration, this.descriptor.getResourceDescriptionResolver()).build();
+        ManagementResourceRegistration registration = parent.registerSubModel(definition);
+
+        ManagementResourceRegistrar.of(this.descriptor).register(registration);
+        return registration;
+    }
+
+    /*
+    public PrometheusRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, MicrometerExtension.SUBSYSTEM_RESOLVER)
                 .setAddHandler(new PrometheusRegistryAddHandler(wildFlyRegistry))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );
     }
+    */
 
+    public Stability getStability() {
+        return Stability.COMMUNITY;
+    }
+
+    /*
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
@@ -54,6 +91,7 @@ public class PrometheusRegistryDefinition extends SimpleResourceDefinition {
                     ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
+    */
 
     private static class TempWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
 

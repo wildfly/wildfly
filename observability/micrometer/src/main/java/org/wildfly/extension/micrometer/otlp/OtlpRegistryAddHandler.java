@@ -17,8 +17,8 @@ public class OtlpRegistryAddHandler extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
-        String endpoint = OtlpRegistryDefinition.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
-        Long step = OtlpRegistryDefinition.STEP.resolveModelAttribute(context, model).asLong();
+        String endpoint = OtlpRegistryDefinitionRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
+        Long step = OtlpRegistryDefinitionRegistrar.STEP.resolveModelAttribute(context, model).asLong();
 
         wildFlyRegistry.addRegistry(new WildFlyOtlpRegistry(new WildFlyOtlpConfig(endpoint, step)));
     }

@@ -6,14 +6,14 @@ import org.jboss.as.controller.transform.description.ChainedTransformationDescri
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinition;
-import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinition;
+import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
+import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 
 @MetaInfServices
 public class MicrometerExtensionTransformerRegistration implements ExtensionTransformerRegistration {
     @Override
     public String getSubsystemName() {
-        return MicrometerExtension.SUBSYSTEM_NAME;
+        return MicrometerSubsystemRegistrar.NAME;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class MicrometerExtensionTransformerRegistration implements ExtensionTran
     }
 
     private void registerV_2_0_Transformers(ResourceTransformationDescriptionBuilder builder) {
-        builder.addChildRedirection(OtlpRegistryDefinition.PATH_ELEMENT, MicrometerExtension.SUBSYSTEM_PATH);
-        builder.rejectChildResource(PrometheusRegistryDefinition.PATH_ELEMENT);
+        builder.addChildRedirection(OtlpRegistryDefinitionRegistrar.PATH, MicrometerSubsystemRegistrar.PATH);
+        builder.rejectChildResource(PrometheusRegistryDefinitionRegistrar.PATH);
     }
 }
