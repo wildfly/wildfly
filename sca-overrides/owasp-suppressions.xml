@@ -216,5 +216,15 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.spring/resteasy\-spring@.*$</packageUrl>
       <cve>CVE-2018-1051</cve>
-   </suppress>   
+   </suppress>
+   <suppress until="2025-04-10">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.12.Final.jar
+
+      [WFLY-19224] Since WildFly moved to using WildFly Elytron exclusively for security the
+      authentication mechanism from undertow-core is not used. This is a false positive.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2023-1973</vulnerabilityName>
+   </suppress>
 </suppressions>
