@@ -71,13 +71,13 @@ public class MicrometerDeploymentService implements Service {
 */
 
 
-    private MicrometerDeploymentService(/*Resource rootResource,
+    public MicrometerDeploymentService(/*Resource rootResource,
                                         ManagementResourceRegistration managementResourceRegistration,
                                         PathAddress deploymentAddress,*/
-                                        Supplier<MicrometerCollector> metricCollectorSupplier,
-                                        Supplier<WildFlyCompositeRegistry> wildFlyRegistry,
-                                        boolean exposeAnySubsystem,
-                                        List<String> exposedSubsystems) {
+            Supplier<MicrometerCollector> metricCollectorSupplier,
+            Supplier<WildFlyCompositeRegistry> wildFlyRegistry,
+            boolean exposeAnySubsystem,
+            List<String> exposedSubsystems) {
 //        this.rootResource = rootResource;
 //        this.managementResourceRegistration = managementResourceRegistration;
 //        this.deploymentAddress = deploymentAddress;

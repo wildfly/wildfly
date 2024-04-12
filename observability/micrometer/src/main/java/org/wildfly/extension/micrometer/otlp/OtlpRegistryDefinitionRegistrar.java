@@ -20,7 +20,6 @@ import org.wildfly.subsystem.resource.ChildResourceDefinitionRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
-import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 
 public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar {
     static final String NAME = "otlp";

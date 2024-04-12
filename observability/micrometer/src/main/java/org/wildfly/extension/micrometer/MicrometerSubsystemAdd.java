@@ -5,42 +5,16 @@
 
 package org.wildfly.extension.micrometer;
 
-import static org.jboss.as.controller.OperationContext.Stage.RUNTIME;
-import static org.jboss.as.controller.OperationContext.Stage.VERIFY;
-import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.jboss.as.server.deployment.Phase.DEPENDENCIES;
-import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROMETER;
-import static org.jboss.as.server.deployment.Phase.POST_MODULE;
-import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROMETER;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.micrometer._private.MicrometerExtensionLogger;
-import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
-import org.wildfly.extension.micrometer.service.MicrometerCollectorService;
-import org.wildfly.extension.micrometer.service.MicrometerRegistryService;
 
 class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
+    /*
     private final WildFlyCompositeRegistry wildFlyRegistry;
 
     MicrometerSubsystemAdd(WildFlyCompositeRegistry wildFlyRegistry) {
         this.wildFlyRegistry = wildFlyRegistry;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
@@ -78,4 +52,6 @@ class MicrometerSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         MicrometerExtensionLogger.MICROMETER_LOGGER.activatingSubsystem();
     }
+
+    */
 }

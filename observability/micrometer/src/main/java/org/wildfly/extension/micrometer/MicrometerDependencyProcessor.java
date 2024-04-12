@@ -16,6 +16,7 @@ import org.jboss.modules.ModuleLoader;
 
 class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
     static final String[] MODULES = {
+            ""
     };
 
     static final String[] EXPORTED_MODULES = {

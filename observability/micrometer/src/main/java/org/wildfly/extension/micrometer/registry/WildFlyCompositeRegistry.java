@@ -20,7 +20,7 @@ import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
 
 public class WildFlyCompositeRegistry extends CompositeMeterRegistry implements WildFlyRegistry {
-    private List<WildFlyRegistry> registries = new ArrayList<>();
+    private final List<WildFlyRegistry> registries = new ArrayList<>();
 
     public WildFlyCompositeRegistry() {
         super();

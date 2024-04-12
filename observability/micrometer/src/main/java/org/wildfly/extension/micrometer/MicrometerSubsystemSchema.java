@@ -25,7 +25,7 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
     MicrometerSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicrometerSubsystemRegistrar.NAME,
+        this.namespace = SubsystemSchema.createSubsystemURN(MicrometerConfigurationConstants.NAME,
                 new IntVersion(major, minor));
     }
 

@@ -13,7 +13,7 @@ import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionR
 public class MicrometerExtensionTransformerRegistration implements ExtensionTransformerRegistration {
     @Override
     public String getSubsystemName() {
-        return MicrometerSubsystemRegistrar.NAME;
+        return MicrometerConfigurationConstants.NAME;
     }
 
     @Override

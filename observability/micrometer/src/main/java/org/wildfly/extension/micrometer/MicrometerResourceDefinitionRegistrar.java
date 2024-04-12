@@ -78,7 +78,7 @@ public class MicrometerResourceDefinitionRegistrar implements ChildResourceDefin
     private final ResourceRegistration registration;
     private final ResourceDescriptor descriptor;
     static final ParentResourceDescriptionResolver RESOLVER =
-            new SubsystemResourceDescriptionResolver(MicrometerSubsystemRegistrar.NAME,
+            new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME,
                     MicrometerResourceDefinitionRegistrar.class);
 
     MicrometerResourceDefinitionRegistrar() {

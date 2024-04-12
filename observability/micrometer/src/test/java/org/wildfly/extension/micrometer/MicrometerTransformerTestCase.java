@@ -36,7 +36,7 @@ public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
     }
 
     public MicrometerTransformerTestCase(ModelTestControllerVersion controller) {
-        super(MicrometerExtension.SUBSYSTEM_NAME, new MicrometerExtension());
+        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension());
         this.controller = controller;
         version = getModelVersion().getVersion();
     }

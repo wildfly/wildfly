@@ -5,6 +5,8 @@
 package org.wildfly.extension.micrometer;
 
 public final class MicrometerConfigurationConstants {
+    static final String NAME = "micrometer";
+
     private MicrometerConfigurationConstants() {
     }
 

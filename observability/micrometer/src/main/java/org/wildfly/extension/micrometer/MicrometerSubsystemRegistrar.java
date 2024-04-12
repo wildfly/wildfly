@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -67,10 +66,9 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
     static final String CLIENT_FACTORY_CAPABILITY = "org.wildfly.management.model-controller-client-factory";
     static final String MANAGEMENT_EXECUTOR = "org.wildfly.management.executor";
 
-    static final String NAME = "micrometer";
-    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(NAME);
+    static final PathElement PATH = SubsystemResourceDefinitionRegistrar.pathElement(MicrometerConfigurationConstants.NAME);
     public static final ParentResourceDescriptionResolver RESOLVER =
-            new SubsystemResourceDescriptionResolver(NAME, MicrometerSubsystemRegistrar.class);
+            new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME, MicrometerSubsystemRegistrar.class);
 
     public static final RuntimeCapability<Void> MICROMETER_COLLECTOR_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-collector", MicrometerCollector.class)
@@ -106,6 +104,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                     .setRequired(false)
                     .setRestartAllServices()
                     .build();
+    private static final WildFlyCompositeRegistry wildFlyRegistry = new WildFlyCompositeRegistry();
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent,
@@ -119,7 +118,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
                 .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
                 .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY)
-                .addAttributes(List.of(ENDPOINT, STEP, EXPOSED_SUBSYSTEMS))
+                .addAttributes(List.of(/*ENDPOINT, STEP,*/ EXPOSED_SUBSYSTEMS))
                 .translateAttribute(ENDPOINT, AttributeTranslation.relocate(ENDPOINT, translator))
                 .withAddResourceOperationTransformation(new TranslateOtlpHandler())
                 .withRuntimeHandler(new CollectorServiceConfigurator()) // Install services
@@ -134,14 +133,14 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
 
         @Override
         public void accept(DeploymentProcessorTarget target) {
-            target.addDeploymentProcessor(MicrometerSubsystemRegistrar.NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
+            target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
                     new MicrometerDependencyProcessor());
-            target.addDeploymentProcessor(MicrometerSubsystemRegistrar.NAME, POST_MODULE, POST_MODULE_MICROMETER,
-                    new MicrometerDeploymentProcessor(exposeAnySubsystem, exposedSubsystems, wildFlyRegistry));
+            target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, POST_MODULE, POST_MODULE_MICROMETER,
+                    new MicrometerDeploymentProcessor(true, List.of("*"), wildFlyRegistry));
         }
     }
 
-    private class CollectorServiceConfigurator implements ResourceOperationRuntimeHandler {
+    private static class CollectorServiceConfigurator implements ResourceOperationRuntimeHandler {
 
         @Override
         public void addRuntime(OperationContext context, ModelNode model) throws OperationFailedException {
