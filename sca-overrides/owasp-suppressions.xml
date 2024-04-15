@@ -227,4 +227,13 @@
       <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2023-1973</vulnerabilityName>
    </suppress>
+   <suppress until="2025-04-12">
+      <notes><![CDATA[
+      file name: joda-time-2.12.6.jar
+
+      [WFLY-19237] This CVE is disputed as the only proposed reason for the CVE is a NullPointerException is possible.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-23080</vulnerabilityName>
+   </suppress>   
 </suppressions>
