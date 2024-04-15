@@ -325,7 +325,7 @@
         <version.org.wildfly.galleon-plugins>7.0.0.Beta7</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.0.Beta1</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
-        <version.org.wildfly.plugin>5.0.0.Beta4</version.org.wildfly.plugin>
+        <version.org.wildfly.plugin>5.0.0.Final</version.org.wildfly.plugin>
         <version.org.wildfly.wildfly-channel-plugin>1.0.9</version.org.wildfly.wildfly-channel-plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
