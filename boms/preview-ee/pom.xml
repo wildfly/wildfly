@@ -31,7 +31,7 @@
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
     <properties>
-        <version.jakarta.annotation.jakarta-annotation-api>3.0.0-M1</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
         -->
