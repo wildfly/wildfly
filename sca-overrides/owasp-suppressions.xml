@@ -69,8 +69,10 @@
    <suppress>
       <notes><![CDATA[
       file name: transformer-7.0.0.Beta2.jar
+
+      [WFLY-19236] This component is independent of WildFly so should not be matched against WildFly CVEs.
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.deployment/transformer@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
    <suppress>
