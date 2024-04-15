@@ -21,6 +21,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPL
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 import static org.jboss.as.connector.subsystems.datasources.GetDataSourceClassInfoOperationHandler.dsClsInfoNode;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -58,6 +59,9 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                     ServiceModuleLoader serviceModuleLoader = (ServiceModuleLoader)registry.getRequiredService(Services.JBOSS_SERVICE_MODULE_LOADER).getValue();
                     ModelNode result = new ModelNode();
                     InstalledDriver driver = driverRegistry.getInstalledDriver(name);
+                    if (driver == null) {
+                        throw ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER.jdbcDriverNotInstalled(name);
+                    }
                     ModelNode driverNode = new ModelNode();
                     driverNode.get(INSTALLED_DRIVER_NAME.getName()).set(driver.getDriverName());
                     if (driver.isFromDeployment()) {

@@ -973,4 +973,7 @@ public interface ConnectorLogger extends BasicLogger {
 
     @Message(id = 134, value = "name attribute is mandatory for workmanager element")
     XMLStreamException nameAttributeIsMandatory();
+
+    @Message(id = 135, value = "The jdbc driver: %s is not installed")
+    OperationFailedException jdbcDriverNotInstalled(String jdbcDriver);
 }
