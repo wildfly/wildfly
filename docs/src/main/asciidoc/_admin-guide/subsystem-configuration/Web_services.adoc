@@ -1,5 +1,5 @@
 [[Web_services]]
-= Web services configuration
+= Web services Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

@@ -1,5 +1,5 @@
 [[JMX]]
-= JMX subsystem configuration
+= JMX Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

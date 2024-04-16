@@ -1,5 +1,5 @@
 [[MicroProfile_JWT_SmallRye]]
-= MicroProfile JWT Subsystem Configuration
+= MicroProfile JWT Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

@@ -1,5 +1,5 @@
 [[Observability_Tracing]]
-= OpenTelemetry Subsystem Configuration
+= OpenTelemetry Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
