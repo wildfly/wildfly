@@ -31,7 +31,7 @@
     <name>WildFly Preview: Dependency Management (Base Dependencies)</name>
 
     <properties>
-        <version.jakarta.annotation.jakarta-annotation-api>3.0.0-M1</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.annotation.jakarta-annotation-api>3.0.0</version.jakarta.annotation.jakarta-annotation-api>
         <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
         -->
@@ -40,7 +40,7 @@
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0-M1</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.1.0.RC1</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.1.0-M1</version.jakarta.faces.jakarta-faces-api>
-        <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0-RC1</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0</version.jakarta.interceptor.jakarta-interceptors-api>
         <version.jakarta.persistence>3.2.0-M2</version.jakarta.persistence>
         <version.jakarta.security.enterprise>4.0.0-M2</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>6.1.0-M2</version.jakarta.servlet.jakarta-servlet-api>
