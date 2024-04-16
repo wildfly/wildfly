@@ -133,6 +133,17 @@ using provided `client-ssl-context`. You can skip token signature verification b
 
 It is strongly recommended that you use signed JWTs in order to guarantee authenticity of tokens and make sure they were not tampered.
 
+[NOTE]
+====
+During JWT validation, if the `jku` header is present in a token, it must exactly match one of the values
+from a configured string of allowed values or token validation will fail. The allowed `jku` values for a `token-realm`
+can be specified as a space separated string using the `wildfly.elytron.jwt.allowed.jku.values.<realm-name>` system
+property.
+
+As an example, to set the allowed `jku` values for the `JwtRealm` to `https://somehost.com` and `https://someotherhost.com`,
+we'd need to set the `wildfly.elytron.jwt.allowed.jku.values.JwtRealm` system property to `"https://somehost.com https://someotherhost.com"`.
+====
+
 [[validating-OAuth2-bearer-tokens]]
 == Validating OAuth2 Bearer Tokens
 
