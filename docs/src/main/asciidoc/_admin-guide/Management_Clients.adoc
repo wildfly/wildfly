@@ -216,6 +216,7 @@ standard variants:
 
 [cols=",",options="header"]
 |=======================================================================
+| Configuration file               | Use
 |host-primary.xml |A configuration that specifies the Host Controller
 should become the primary Host Controller, aka the Domain Controller.
 No servers will be started by this Host Controller, which is a recommended
