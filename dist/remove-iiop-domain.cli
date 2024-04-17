@@ -1,0 +1,13 @@
+embed-host-controller
+
+# Remove iiop-openjdk subsystem
+/profile=${profile}/subsystem=iiop-openjdk:remove()
+
+# Remove iiop-openjdk from ejb3
+/profile=${profile}/subsystem=ejb3/service=iiop:remove()
+
+# Remove iiop socket binding
+/socket-binding-group=${profile}-sockets/socket-binding=iiop:remove()
+/socket-binding-group=${profile}-sockets/socket-binding=iiop-ssl:remove()
+
+stop-embedded-host-controller
