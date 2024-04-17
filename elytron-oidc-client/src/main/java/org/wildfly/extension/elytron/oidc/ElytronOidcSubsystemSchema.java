@@ -83,17 +83,22 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         PersistentResourceXMLDescription.Builder credentialDefinitionBuilder =  factory.builder(CredentialDefinition.PATH);
         PersistentResourceXMLDescription.Builder redirectRewriteRuleDefinitionBuilder =  factory.builder(RedirectRewriteRuleDefinition.PATH);
         PersistentResourceXMLDescription.Builder secureDeploymentDefinitionBuilder =  factory.builder(SecureDeploymentDefinition.PATH);
-        SimpleAttributeDefinition[] secureDeploymentAttributes = {ADAPTER_STATE_COOKIE_PATH, BEARER_ONLY, CLIENT_ID, ENABLE_BASIC_AUTH, MIN_TIME_BETWEEN_JWKS_REQUESTS,
-        PROVIDER, PUBLIC_CLIENT, PUBLIC_KEY_CACHE_TTL, REALM, RESOURCE, SCOPE, TOKEN_MINIMUM_TIME_TO_LIVE, TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN, USE_RESOURCE_ROLE_MAPPINGS};
+        SimpleAttributeDefinition[] secureDeploymentDefaultAttributes = {ADAPTER_STATE_COOKIE_PATH, BEARER_ONLY, CLIENT_ID, ENABLE_BASIC_AUTH, MIN_TIME_BETWEEN_JWKS_REQUESTS,
+        PROVIDER, PUBLIC_CLIENT, PUBLIC_KEY_CACHE_TTL, REALM, RESOURCE, TOKEN_MINIMUM_TIME_TO_LIVE, TURN_OFF_CHANGE_SESSION_ID_ON_LOGIN, USE_RESOURCE_ROLE_MAPPINGS};
 
         redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
         Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(secureDeploymentAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-        Stream.of(secureDeploymentAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(ProviderAttributeDefinitions.ATTRIBUTES).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+
+        if (this.since(VERSION_2_0_PREVIEW) && this.enables(SCOPE)) {
+            secureDeploymentDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
+            secureServerDefinitionBuilder.addAttribute(SCOPE, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
+        }
 
         elytronOidcClientBuilder
                 .addChild(realmDefinitionBuilder.build())
