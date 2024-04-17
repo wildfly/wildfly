@@ -1,0 +1,13 @@
+= Clustering in the Cloud
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+This section of the documentation describes topics relating to the deploying and running in a cloud environment.
+
+include::cloud/Kubernetes.adoc[leveloffset=+1]
