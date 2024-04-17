@@ -75,26 +75,20 @@ public class MicrometerResourceDefinitionRegistrar implements ChildResourceDefin
             ENDPOINT, STEP, EXPOSED_SUBSYSTEMS
     };
     private WildFlyCompositeRegistry wildFlyRegistry;
-    private final ResourceRegistration registration;
-    private final ResourceDescriptor descriptor;
     static final ParentResourceDescriptionResolver RESOLVER =
             new SubsystemResourceDescriptionResolver(MicrometerConfigurationConstants.NAME,
                     MicrometerResourceDefinitionRegistrar.class);
 
-    MicrometerResourceDefinitionRegistrar() {
-        ResourceDescriptor.Builder builder =
-                ResourceDescriptor.builder(RESOLVER.createChildResolver(MicrometerSubsystemRegistrar.PATH));
-
-        registration = ResourceRegistration.of(MicrometerSubsystemRegistrar.PATH);
-        descriptor = builder.addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
-                .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY)
-                .build();
-    }
-
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent,
                                                    ManagementResourceRegistrationContext context) {
-        ResourceDefinition definition = ResourceDefinition.builder(registration,
+        ResourceDescriptor descriptor =
+                ResourceDescriptor.builder(RESOLVER.createChildResolver(MicrometerSubsystemRegistrar.PATH))
+                        .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
+                        .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY)
+                        .build();
+        ResourceDefinition definition = ResourceDefinition.builder(
+                        ResourceRegistration.of(MicrometerSubsystemRegistrar.PATH),
                         descriptor.getResourceDescriptionResolver())
                 .build();
         ManagementResourceRegistration registration = parent.registerSubModel(definition);
