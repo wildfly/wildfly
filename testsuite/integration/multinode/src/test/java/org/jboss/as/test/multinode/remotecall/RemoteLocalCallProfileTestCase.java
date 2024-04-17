@@ -60,32 +60,35 @@ public class RemoteLocalCallProfileTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            if ("multinode-client".equals(containerId)) {
+                final ModelNode compositeOp = new ModelNode();
+                compositeOp.get(OP).set(COMPOSITE);
+                compositeOp.get(OP_ADDR).setEmptyList();
+                ModelNode steps = compositeOp.get(STEPS);
 
-            final ModelNode compositeOp = new ModelNode();
-            compositeOp.get(OP).set(COMPOSITE);
-            compositeOp.get(OP_ADDR).setEmptyList();
-            ModelNode steps = compositeOp.get(STEPS);
+                // /subsystem=ejb3/remoting-profile=test-profile:add()
+                ModelNode remotingProfileAddModelNode = Util.createAddOperation(ADDR_REMOTING_PROFILE);
+                steps.add(remotingProfileAddModelNode);
 
-            // /subsystem=ejb3/remoting-profile=test-profile:add()
-            ModelNode remotingProfileAddModelNode = Util.createAddOperation(ADDR_REMOTING_PROFILE);
-            steps.add(remotingProfileAddModelNode);
+                // /subsystem=ejb3/remoting-profile=test-profile/remoting-ejb-receiver=test-receiver:add(outbound-connection-ref=remote-ejb-connection)
+                ModelNode ejbReceiverAddModelNode = Util.createAddOperation(ADDR_REMOTING_EJB_RECEIVER);
+                ejbReceiverAddModelNode.get("outbound-connection-ref").set("remote-ejb-connection");
+                steps.add(ejbReceiverAddModelNode);
 
-            // /subsystem=ejb3/remoting-profile=test-profile/remoting-ejb-receiver=test-receiver:add(outbound-connection-ref=remote-ejb-connection)
-            ModelNode ejbReceiverAddModelNode = Util.createAddOperation(ADDR_REMOTING_EJB_RECEIVER);
-            ejbReceiverAddModelNode.get("outbound-connection-ref").set("remote-ejb-connection");
-            steps.add(ejbReceiverAddModelNode);
-
-            Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
-            ServerReload.reloadIfRequired(managementClient);
+                Utils.applyUpdates(Collections.singletonList(compositeOp), managementClient.getControllerClient());
+                ServerReload.reloadIfRequired(managementClient);
+            }
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            ModelNode remotingProfileRemoveModelNode = Util.createRemoveOperation(ADDR_REMOTING_PROFILE);
-            //remotingProfileRemoveModelNode.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            if ("multinode-client".equals(containerId)) {
+                ModelNode remotingProfileRemoveModelNode = Util.createRemoveOperation(ADDR_REMOTING_PROFILE);
+                //remotingProfileRemoveModelNode.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
 
-            Utils.applyUpdates(Collections.singletonList(remotingProfileRemoveModelNode), managementClient.getControllerClient());
-            ServerReload.reloadIfRequired(managementClient);
+                Utils.applyUpdates(Collections.singletonList(remotingProfileRemoveModelNode), managementClient.getControllerClient());
+                ServerReload.reloadIfRequired(managementClient);
+            }
         }
     }
 
