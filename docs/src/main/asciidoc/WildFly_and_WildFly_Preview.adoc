@@ -95,7 +95,7 @@ The following table lists the various Jakarta technologies offered by WildFly Pr
 
 |Jakarta Connectors| 2.1 |10 & 11
 
-|Jakarta Contexts and Dependency Injection| 4.1.0.RC1 |11
+|Jakarta Contexts and Dependency Injection| 4.1.0 |11
 
 |Jakarta Debugging Support for Other Languages| 2.0 |10 & 11
 
