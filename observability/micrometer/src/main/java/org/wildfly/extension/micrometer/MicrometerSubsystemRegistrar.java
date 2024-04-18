@@ -7,7 +7,6 @@ import static org.jboss.as.server.deployment.Phase.DEPENDENCIES_MICROMETER;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE;
 import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROMETER;
 import static org.wildfly.extension.micrometer.MicrometerResourceDefinitionRegistrar.PROCESS_STATE_NOTIFIER;
-import static org.wildfly.extension.micrometer.MicrometerResourceDefinitionRegistrar.WILDFLY_REGISTRY_NAME;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -111,10 +110,8 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                                                    ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
                 parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(PATH), RESOLVER).build());
-        UnaryOperator<PathAddress> translator = pathElements -> {
-            System.out.println("hi");
-            return null;
-        };
+        UnaryOperator<PathAddress> translator =
+                pathElements -> pathElements.append(OtlpRegistryDefinitionRegistrar.PATH);
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
                 .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
                 .addCapability(MICROMETER_REGISTRY_RUNTIME_CAPABILITY)
@@ -166,7 +163,8 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                     serviceBuilder.requiresCapability(CLIENT_FACTORY_CAPABILITY, ModelControllerClientFactory.class),
                     serviceBuilder.requiresCapability(MANAGEMENT_EXECUTOR, Executor.class),
                     serviceBuilder.requiresCapability(PROCESS_STATE_NOTIFIER, ProcessStateNotifier.class),
-                    serviceBuilder.requiresCapability(WILDFLY_REGISTRY_NAME, WildFlyCompositeRegistry.class),
+                    wildFlyRegistry,
+//                    serviceBuilder.requiresCapability(WILDFLY_REGISTRY_NAME, WildFlyCompositeRegistry.class),
                     new MicrometerCollectorSupplier(serviceBuilder.provides(MICROMETER_COLLECTOR)));
             serviceBuilder.setInstance(service).install();
         }
@@ -215,14 +213,14 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
 
                     ModelNode otlpOperation = Util.createAddOperation(address.append(OtlpRegistryDefinitionRegistrar.PATH));
                     OperationEntry addOperationEntry = context.getResourceRegistration().getOperationEntry(
-                            PathAddress.pathAddress(PathElement.pathElement(PathElement.WILDCARD_VALUE)),
+                            PathAddress.pathAddress(OtlpRegistryDefinitionRegistrar.PATH),
                             ModelDescriptionConstants.ADD);
                     for (AttributeDefinition attribute : addOperationEntry.getOperationDefinition().getParameters()) {
                         String name = attribute.getName();
-                        if (endpoint.hasDefined(name)) {
+                        if (endpoint != null && endpoint.hasDefined(name)) {
                             otlpOperation.get(name).set(endpoint.get(name));
                         }
-                        if (step.hasDefined(name)) {
+                        if (step != null && step.hasDefined(name)) {
                             otlpOperation.get(name).set(step.get(name));
                         }
                     }

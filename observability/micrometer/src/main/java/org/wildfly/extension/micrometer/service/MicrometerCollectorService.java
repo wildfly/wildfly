@@ -26,19 +26,19 @@ public class MicrometerCollectorService implements Service {
     private final Supplier<Executor> managementExecutor;
     private final Supplier<ProcessStateNotifier> processStateNotifier;
     private final Consumer<MicrometerCollector> metricCollectorConsumer;
-    private final Supplier<WildFlyCompositeRegistry> wildFlyRegistry;
+    private final WildFlyCompositeRegistry wildFlyRegistry;
 
     private LocalModelControllerClient modelControllerClient;
 
     public MicrometerCollectorService(Supplier<ModelControllerClientFactory> modelControllerClientFactory,
-                               Supplier<Executor> managementExecutor,
-                               Supplier<ProcessStateNotifier> processStateNotifier,
-                               Supplier<WildFlyCompositeRegistry> registrySupplier,
-                               Consumer<MicrometerCollector> metricCollectorConsumer) {
+                                      Supplier<Executor> managementExecutor,
+                                      Supplier<ProcessStateNotifier> processStateNotifier,
+                                      WildFlyCompositeRegistry wildFlyRegistry,
+                                      Consumer<MicrometerCollector> metricCollectorConsumer) {
         this.modelControllerClientFactory = modelControllerClientFactory;
         this.managementExecutor = managementExecutor;
         this.processStateNotifier = processStateNotifier;
-        this.wildFlyRegistry = registrySupplier;
+        this.wildFlyRegistry = wildFlyRegistry;
         this.metricCollectorConsumer = metricCollectorConsumer;
     }
 
@@ -48,7 +48,7 @@ public class MicrometerCollectorService implements Service {
         modelControllerClient = modelControllerClientFactory.get().createClient(managementExecutor.get());
 
         MicrometerCollector micrometerCollector =
-                new MicrometerCollector(modelControllerClient, processStateNotifier.get(), wildFlyRegistry.get());
+                new MicrometerCollector(modelControllerClient, processStateNotifier.get(), wildFlyRegistry);
 
         metricCollectorConsumer.accept(micrometerCollector);
     }

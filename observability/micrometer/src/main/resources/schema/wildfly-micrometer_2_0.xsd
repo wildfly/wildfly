@@ -56,7 +56,7 @@
 <!--                    </xs:complexType>-->
 <!--                </xs:element>-->
 <!--            </xs:sequence>-->
-            <xs:attribute name="exposed-subsystems" type="xs:string">
+            <xs:attribute name="exposed-subsystems" type="xs:string" default="[&quot;*&quot;]">
                 <xs:annotation>
                     <xs:documentation>
                         The names of the WildFly subsystems that exposes their metrics (or '*' to expose any subsystem metrics).
