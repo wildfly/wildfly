@@ -340,7 +340,7 @@
         <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.dom4j>2.1.4</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
-        <legacy.version.io.netty>4.0.13.Final</legacy.version.io.netty>
+        <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
         <version.io.rest-assured>3.0.7</version.io.rest-assured>
         <legacy.version.jakarta.enterprise>2.0.2</legacy.version.jakarta.enterprise>
         <legacy.version.jakarta.inject.jakarta.inject-api>1.0.5</legacy.version.jakarta.inject.jakarta.inject-api>
