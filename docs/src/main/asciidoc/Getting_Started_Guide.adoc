@@ -107,6 +107,11 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 |Jakarta XML Web Services 4.0 |Optional |-- |X |X
 |=======================================================================
 
+[WARNING]
+====
+WildFly Preview {wildflyVersion} is currently aiming at providing an early look at Jakarta EE 11, and therefore provides different versions of a number of the Jakarta specifications listed above. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee11[EE 11 Support in WildFly Preview] for details.
+====
+
 WildFly {wildflyVersion} also provides support for a number of MicroProfile technologies:
 
 [cols=",,",options="header"]

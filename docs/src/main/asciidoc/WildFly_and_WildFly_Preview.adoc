@@ -62,17 +62,100 @@ This feature pack is the WildFly Preview analogue to main WildFly's ``wildfly@ma
 
 == WildFly Preview and Jakarta EE
 
-Prior to WildFly 27, the primary difference between standard WildFly and WildFly Preview was that standard WildFly
-supported Jakarta EE 8, while WildFly Preview supported Jakarta EE 9. However, beginning with the 27 release both
-standard WildFly and WildFly Preview support Jakarta EE 10, so this is no longer a difference between the two variants.
+Often, but not always, a key difference between standard WildFly and WildFly Preview is support for different versions of Jakarta EE. The WildFly project uses WildFly Preview to showcase full or partial support for new versions of Jakarta EE, including releases like EE 11 that are not yet released for general availability.
 
 Note that formally certifying WildFly Preview as compatible implementation of Jakarta EE is not a priority
 for the WildFly project and may not happen at the time of a release, or ever. Users interested in formal EE
 compliance of WildFly Preview should check the https://github.com/wildfly/certifications/tree/EE10[WildFly Certifications repository].
 
+[wildfly-preview-ee11]
+=== EE 11 Support in WildFly Preview
+
+The 32 release introduces a significant inflection in how we are using WildFly Preview. Beginning with this release we are starting to use WildFly Preview to provide a look at what we're doing for Jakarta EE 11 support.  EE 11 is not yet GA, and standard WildFly won't support EE 11 before the WildFly 34 release, at earliest. But there are milestone, release candidate and final releases of many EE 11 specs and implementations available, so we decided to provide those in WildFly Preview. This means for a number of EE APIs, WildFly Preview no long provides an EE 10 compatible implementation.
+
+However, for a number of specifications that are planning changes for EE 11 we are still offering the EE 10 variant. In future releases we'll shift those to the EE 11 variants.
+
+The following table lists the various Jakarta technologies offered by WildFly Preview 32, along with information about which EE platform version the specification relates to. Note that a number of Jakarta specifications are unchanged between EE 10 and EE 11, while other EE technologies that WildFly offers are not part of EE 11.
+
+[cols=",,",options="header"]
+|=======================================================================
+|Jakarta EE Technology |Specification Version| EE Version
+
+|Jakarta Activation| 2.1 |10 & 11
+
+|Jakarta Annotations| 3.0.0 |11
+
+|Jakarta Authentication| 3.0 |10
+
+|Jakarta Authorization| 3.0.0-M2 |11
+
+|Jakarta Batch| 2.1 |10 & 11
+
+|Jakarta Concurrency| 3.1.0-M1 |11
+
+|Jakarta Connectors| 2.1 |10 & 11
+
+|Jakarta Contexts and Dependency Injection| 4.1.0 |11
+
+|Jakarta Debugging Support for Other Languages| 2.0 |10 & 11
+
+|Jakarta Dependency Injection| 2.0 |10 & 11
+
+|Jakarta Enterprise Beans| 4.0 |10 & 11
+
+|Jakarta Enterprise Web Services| 2.0 |10 xref:note1[^1^]
+
+|Jakarta Expression Language| 6.0.0 |11
+
+|Jakarta Faces| 4.1.0-M1 |11
+
+|Jakarta Interceptors| 2.2.0 |11
+
+|Jakarta JSON Binding| 3.0 |10 & 11
+
+|Jakarta JSON Processing| 2.1 |10 & 11
+
+|Jakarta Mail| 2.1 |10 & 11
+
+|Jakarta Messaging| 3.1 |10 & 11
+
+| Jakarta MVC
+(_preview stability only_)| 2.1| N/A xref:note2[^2^]
+
+|Jakarta Persistence| 3.2.0-M2 |11
+
+|Jakarta RESTful Web Services| 3.1 |10
+
+|Jakarta Security| 4.0.0-M2 |11
+
+|Jakarta Server Pages| 3.1 |10
+
+|Jakarta Servlet| 6.1.0-M2 |11
+
+|Jakarta SOAP with Attachments| 1.3 |10 xref:note1[^1^]
+
+|Jakarta Standard Tag Library| 3.0 |10 & 11
+
+|Jakarta Transactions| 2.0 |10 & 11
+
+|Jakarta Validation| 3.1.0-M2 |11
+
+|Jakarta WebSocket| 2.2.0-M1 |11
+
+|Jakarta XML Binding| 4.0 |10 xref:note1[^1^]
+
+|Jakarta XML Web Services| 4.0 |10 xref:note1[^1^]
+|=======================================================================
+
+Notes:
+
+. [[note1]]This Jakarta EE 10 technology is not part of EE 11 but is still provided by WildFly Preview.
+. [[note2]]Jakarta MVC is an independent specification that is not part of the Jakarta EE Platform or the Web or Core Profile.
+
+
 === WildFly Preview Support for EE 8 Deployments
 
-The APIs that WildFly Preview exposes to deployments are the EE 10 APIs, so all the classes and interfaces are in the
+The APIs that WildFly Preview exposes to deployments are the EE 10 or 11 APIs, so all the classes and interfaces are in the
 jakarta.* packages. But you _may_ be able to run an existing EE 8 application on WildFly Preview.
 
 What we've done is we've added to the server's handling of _managed_ deployments a bytecode and text file transformation
@@ -96,14 +179,23 @@ In the long run it's better for users if they either convert their application s
 tooling that we expect the Jakarta ecosystem to provide over time to do transformation at build time.  But some
 applications just can't be changed, so the server-side solution WildFly Preview provides can handle those cases.
 
-This deployment transformation feature will be removed from WildFly Preview in a future release. However it is likely
+This deployment transformation feature will be removed from WildFly Preview in a future release. However, it is likely
 that the WildFly developers will offer a separate Galleon feature pack that can be used to add this behavior into both
 standard WildFly and WildFly Preview.
+
+== WildFly Preview and Java SE 11
+
+Standard WildFly supports Java SE 11, 17 and 21, but, as a result of this shift to EE 11 APIs, *WildFly Preview no longer supports running on Java SE 11.* Going forward, if you want to use WildFly Preview you'll need to use SE 17 or higher.  A number of EE 11 APIs no longer produce SE 11 compatible binaries, which means an EE 11 runtime can no longer support SE 11.
+
+[NOTE]
+====
+This removal of support for SE 11 has no impact on standard WildFly. Standard WildFly 32 continues to support running on SE 11. We do, however, encourage users to move to SE 17 or later, as the general Java ecosystem is moving away from SE 11 support, and eventually standard WildFly will as well.
+====
 
 == Other Differences in WildFly Preview
 
 WildFly Preview is intended to help get community exposure for other changes we plan to
-make in the server. Here are the key differencs between standard WildFly and WildFly Preview:
+make in the server. Here are the key differences between standard WildFly and WildFly Preview:
 
 * WildFly Preview is not a Jakarta EE 10 compatible implementation. It also is not a MicroProfile platform compatible
 implementation. Most EE 10 and MicroProfile applications are expected to run well on WildFly Preview, but it is not
@@ -118,6 +210,3 @@ requirements than a server primarily dedicated to handling HTTP requests would h
 embedded broker is still supported. We've added to the $WILDFLY_HOME/docs/examples/configs folder an example
 ``standalone-activemq-embedded.xml`` configuration showing its use.
 * The Hibernate ORM integration used by the link:Developer_Guide{outfilesuffix}#JPA_Reference_Guide[JPA subsystem's] Hibernate Search feature supports using outbox polling as coordination strategy for automatic indexing.
-* The extensions providing the legacy subsystems 'cmp', 'config-admin', 'jacorb', 'jaxr', 'jsr-77', 'messaging' (HornetQ based),
-'security' (not 'elytron'), and 'web' (not 'undertow') are removed. These were only used for domain mode to allow a Domain Controller to control
-hosts running much earlier WildFly versions where servers using these subsystems were supported.
