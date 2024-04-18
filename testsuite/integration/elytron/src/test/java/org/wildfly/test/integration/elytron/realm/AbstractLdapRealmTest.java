@@ -293,6 +293,9 @@ public abstract class AbstractLdapRealmTest {
 
         @Override
         public void setup(ManagementClient mc, String string) throws Exception {
+            // https://issues.redhat.com/browse/WFLY-17383 - Note that this one does fail on Java 20+. However, the
+            // other setup does and the rest of the test will not run so there is no point in running this either.
+            AssumeTestGroupUtil.assumeJDKVersionBefore(20);
             String hostname = "ldap://" + TestSuiteEnvironment.getServerAddress() + ":" + LDAP_PORT;
             try (CLIWrapper cli = new CLIWrapper(true)) {
                 cli.sendLine(String.format(
@@ -415,6 +418,8 @@ public abstract class AbstractLdapRealmTest {
         }
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            // https://issues.redhat.com/browse/WFLY-17383
+            AssumeTestGroupUtil.assumeJDKVersionBefore(20);
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
             try {

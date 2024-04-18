@@ -372,7 +372,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.19.7</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
-        <version.org.wildfly.arquillian>5.0.1.Final</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta2</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
