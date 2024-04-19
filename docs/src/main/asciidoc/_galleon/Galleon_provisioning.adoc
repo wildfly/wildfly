@@ -114,6 +114,47 @@ A default configuration is identified by _<configuration model>_/_<configuration
 The _configuration name_ is the XML configuration file name (e.g.: _standalone.xml_, _domain.xml_, _standalone-ha.xml_).
 ====
 
+[[WildFly_Galleon_stability]]
+== Stability levels at provisioning time
+
+In order to support xref:Admin_Guide.adoc#Feature_stability_levels[WildFly feature stability levels], Galleon defines 
+some http://docs.wildfly.org/galleon/#_built_in_and_product_specific_options[options] that can be used at provisioning time 
+to provision server features at a specific stability level.
+
+The `stability-level` option applies to both the features present in the provisioned configuration 
+and the provisioned packages (mainly JBoss Modules modules). You can specify a different stability level for each of them by using 
+the `config-stability-level` and the `package-stability-level` options.
+
+If no stability level is provided, the WildFly feature-pack default stability levels for both configurations (`community`) 
+and packages (`experimental`) apply. When provisioning WildFly with no stability level set, 
+the `community` and `default` features are provisioned, the `preview` and `experimental` features are ignored. 
+The `experimental`, `preview`, `community` and `default` packages are provisioned.
+
+[NOTE]
+====
+Having JBoss Modules modules at a lower stability level present in the installation 
+allows you to modify a provisioned server configuration to contain extensions and subsystems 
+or finer grained configuration elements that are at a lower stability level than what was originally provisioned.
+====
+
+=== Galleon CLI examples
+
+Installing a WildFly server that contains `preview` features and packages 
+(any feature and package at a lower stability level are not provisioned):
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --stability-level=preview
+----
+
+Installing a WildFly server that contains `preview` features and packages 
+at the WildFly feature-pack packages default stability level (`experimental`)
+
+[source,options="nowrap"]
+----
+galleon.sh install wildfly:current --dir=my-wildfly-server --config-stability-level=preview 
+----
+
 [[wildfly_galleon_layers]]
 == WildFly Galleon layers
 
