@@ -7,6 +7,7 @@ package org.jboss.as.ee.managedbean.processors;
 
 import java.util.List;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -41,8 +42,9 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
             hasManagedBean = true;
         } catch (Throwable ignored) {
             // ignore
+            EeLogger.ROOT_LOGGER.info("The @ManagedBean annotation type is not present"); // TODO make this DEBUG
         }
-        HAS_MANAGED_BEAN = hasManagedBean;
+        HAS_MANAGED_BEAN = hasManagedBean || true; // the '|| true' disables all the above without the trouble of deleting it yet
     }
 
     @Override

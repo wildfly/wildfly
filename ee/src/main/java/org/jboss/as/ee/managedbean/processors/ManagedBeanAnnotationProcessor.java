@@ -59,8 +59,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             hasManagedBean = true;
         } catch (Throwable ignored) {
             // ignore
+            EeLogger.ROOT_LOGGER.info("The @ManagedBean annotation type is not present"); // TODO make this DEBUG
         }
-        HAS_MANAGED_BEAN = hasManagedBean;
+        HAS_MANAGED_BEAN = hasManagedBean || true; // the '|| true' disables all the above without the trouble of deleting it yet
     }
 
     /**
