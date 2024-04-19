@@ -1,5 +1,5 @@
 [[Core_Management]]
-= Core Management Subsystem Configuration
+= Core Management Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The core management subsystem is composed services used to manage the
+The core management subsystem is composed of services used to manage the
 server or monitor its status. +
 The core management subsystem configuration may be used to:
 

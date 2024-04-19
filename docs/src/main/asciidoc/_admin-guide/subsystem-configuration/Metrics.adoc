@@ -1,5 +1,5 @@
 [[MicroProfile_Metrics_SmallRye]]
-= Metrics Subsystem Configuration
+= Metrics Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

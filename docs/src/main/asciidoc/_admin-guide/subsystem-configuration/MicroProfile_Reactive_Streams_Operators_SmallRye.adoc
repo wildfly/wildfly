@@ -1,5 +1,5 @@
 [[MicroProfile_Reactive_Streams_Operators_SmallRye]]
-= MicroProfile Reactive Streams Operators Subsystem Configuration
+= MicroProfile Reactive Streams Operators Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

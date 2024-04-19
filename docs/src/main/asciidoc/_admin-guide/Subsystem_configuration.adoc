@@ -1,6 +1,6 @@
 [[Subsystem_configuration]]
 = Subsystem configuration
-Subsystem configuration reference
+
 :author: tcerar@redhat.com
 :icons: font
 :source-highlighter: coderay
@@ -17,80 +17,80 @@ endif::[]
 
 ifdef::basebackend-html[toc::[]]
 
-The following chapters will focus on the high level management use cases
+The following chapters will focus on the high level subsystem management use cases
 that are available through the CLI and the web interface. For a detailed
 description of each subsystem configuration property, please consult the
 respective component reference.
 
-Schema Location
 
-TIP: The configuration schemas can found in `$JBOSS_HOME/docs/schema`.
+TIP: The configuration schemas can found in the `$JBOSS_HOME/docs/schema` directory.
 
 :leveloffset: +1
 
-include::subsystem-configuration/EE.adoc[]
+include::subsystem-configuration/Datasources_Agroal.adoc[]
 
-include::subsystem-configuration/Naming.adoc[]
+include::subsystem-configuration/Core_Management.adoc[]
+
 
 include::subsystem-configuration/DataSource.adoc[]
 
-include::subsystem-configuration/Datasources_Agroal.adoc[]
+include::subsystem-configuration/Deployment_Scanner.adoc[]
 
-include::subsystem-configuration/Logging.adoc[]
+include::subsystem-configuration/EE.adoc[]
 
-include::subsystem-configuration/Jakarta_Enterprise_Beans_3.adoc[]
-
-include::subsystem-configuration/Undertow.adoc[]
-
-include::subsystem-configuration/Messaging.adoc[]
-
-include::subsystem-configuration/Transactions.adoc[]
-
-include::subsystem-configuration/Metrics.adoc[]
-
-include::subsystem-configuration/Micrometer.adoc[]
-
-include::subsystem-configuration/Observability_Tracing.adoc[]
+include::subsystem-configuration/Elytron_OIDC_Client.adoc[]
 
 include::subsystem-configuration/Health.adoc[]
 
-include::subsystem-configuration/MicroProfile_Config_SmallRye.adoc[]
-
-include::subsystem-configuration/MicroProfile_Health.adoc[]
-
-include::subsystem-configuration/MicroProfile_JWT.adoc[]
-
-include::subsystem-configuration/MicroProfile_OpenAPI.adoc[]
-
-include::subsystem-configuration/MicroProfile_Fault_Tolerance_SmallRye.adoc[]
-
-include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRye.adoc[]
-
-include::subsystem-configuration/MicroProfile_Reactive_Messsaging_SmallRye.adoc[]
-
-include::subsystem-configuration/MicroProfile_Telemetry.adoc[]
-
-include::subsystem-configuration/MicroProfile_LRA.adoc[]
-
-include::subsystem-configuration/Web_services.adoc[]
-
-include::subsystem-configuration/Resource_adapters.adoc[]
-
 include::subsystem-configuration/Jakarta_Batch.adoc[]
+
+include::subsystem-configuration/Jakarta_Enterprise_Beans_3.adoc[]
 
 include::subsystem-configuration/Jakarta_Faces.adoc[]
 
 include::subsystem-configuration/Jakarta_MVC.adoc[]
 
-include::subsystem-configuration/JMX.adoc[]
-
-include::subsystem-configuration/Deployment_Scanner.adoc[]
-
-include::subsystem-configuration/Core_Management.adoc[]
-
 include::subsystem-configuration/Jakarta_RESTful_Web_Services.adoc[]
 
-include::subsystem-configuration/Elytron_OIDC_Client.adoc[]
+include::subsystem-configuration/JMX.adoc[]
+
+include::subsystem-configuration/Logging.adoc[]
+
+include::subsystem-configuration/Messaging.adoc[]
+
+include::subsystem-configuration/Metrics.adoc[]
+
+include::subsystem-configuration/Micrometer.adoc[]
+
+include::subsystem-configuration/MicroProfile_Config_SmallRye.adoc[]
+
+include::subsystem-configuration/MicroProfile_Fault_Tolerance_SmallRye.adoc[]
+
+include::subsystem-configuration/MicroProfile_Health.adoc[]
+
+include::subsystem-configuration/MicroProfile_JWT.adoc[]
+
+include::subsystem-configuration/MicroProfile_LRA.adoc[]
+
+include::subsystem-configuration/MicroProfile_OpenAPI.adoc[]
+
+include::subsystem-configuration/MicroProfile_Reactive_Messsaging_SmallRye.adoc[]
+
+include::subsystem-configuration/MicroProfile_Reactive_Streams_Operators_SmallRye.adoc[]
+
+include::subsystem-configuration/MicroProfile_Telemetry.adoc[]
+
+include::subsystem-configuration/Observability_Tracing.adoc[]
+
+include::subsystem-configuration/Naming.adoc[]
+
+include::subsystem-configuration/Resource_adapters.adoc[]
+
+include::subsystem-configuration/Transactions.adoc[]
+
+include::subsystem-configuration/Undertow.adoc[]
+
+include::subsystem-configuration/Web_services.adoc[]
 
 include::subsystem-configuration/Simple_configuration_subsystems.adoc[]
 

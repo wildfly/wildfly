@@ -1,5 +1,5 @@
 [[Elytron_OIDC_Client]]
-= Elytron OpenID Connect Client Subsystem Configuration
+= Elytron OpenID Connect Client Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

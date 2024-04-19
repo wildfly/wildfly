@@ -1,5 +1,5 @@
 [[EJB3]]
-= EJB3 subsystem configuration guide
+= Jakarta Enterprise Beans Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,11 +9,11 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-This page lists the options that are available for configuring the EJB
+The `ejb3` subsystem provides support for Jakarta Enterprise Beans. This page lists the options that are available for configuring the `ejb3`
 subsystem.
 
 A complete example of the config is shown below, with a full explanation
-of each
+of each item.
 
 [source,xml,options="nowrap"]
 ----

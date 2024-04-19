@@ -1,5 +1,5 @@
 [[Undertow]]
-= Undertow subsystem configuration
+= Undertow Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
