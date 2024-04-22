@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ InfinispanServerSetupTask.class, LocalRoutingServerSetup.class })
+@ServerSetup({ InfinispanServerSetupTask.class })
 public class FineTransactionalHotRodWebFailoverTestCase extends AbstractHotRodWebFailoverTestCase {
 
     private static final String DEPLOYMENT_NAME = FineTransactionalHotRodWebFailoverTestCase.class.getSimpleName() + ".war";
