@@ -1,0 +1,21 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:2.0">
+    <secure-server name="wildfly-reject-with-scope.war">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-server>
+    <secure-deployment name="wildfly-reject-deployment-with-scope.war">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-deployment>
+</subsystem>
