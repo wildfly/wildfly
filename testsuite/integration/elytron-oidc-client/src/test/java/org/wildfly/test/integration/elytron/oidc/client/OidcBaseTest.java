@@ -95,7 +95,7 @@ public abstract class OidcBaseTest {
         BASIC
     }
 
-    private static boolean isDockerAvailable() {
+    static boolean isDockerAvailable() {
         try {
             DockerClientFactory.instance().client();
             return true;

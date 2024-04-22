@@ -5,8 +5,11 @@
 package org.wildfly.test.integration.elytron.oidc.client.multitenancy;
 
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
+import static org.jboss.as.test.shared.util.AssumeTestGroupUtil.isDockerAvailable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.getRealmRepresentation;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.TENANT1_ENDPOINT;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.TENANT2_ENDPOINT;
@@ -25,11 +28,14 @@ import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.CLIE
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.CLIENT_PORT;
 import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.KEYCLOAK_CONTAINER;
 
+import java.io.FilePermission;
+import java.lang.reflect.ReflectPermission;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PropertyPermission;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -57,6 +63,7 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -122,6 +129,11 @@ public class OidcWithMultiTenancyTest {
     @ArquillianResource
     protected static Deployer deployer;
 
+    @BeforeClass
+    public static void checkDockerAvailability() {
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
+    }
+
     @Deployment(name = MULTI_TENANCY_PROVIDER_URL_APP, managed = false, testable = false)
     public static WebArchive createMultiTenancyProviderUrlDeployment() {
         return ShrinkWrap.create(WebArchive.class, MULTI_TENANCY_PROVIDER_URL_APP + ".war")
@@ -130,7 +142,16 @@ public class OidcWithMultiTenancyTest {
                 .addClasses(MultiTenantResolverProviderUrl.class)
                 .addAsWebInfResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_PROVIDER_URL_WEB_XML_FILE, "web.xml")
                 .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_PROVIDER_URL_TENANT_1)
-                .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_PROVIDER_URL_TENANT_2);
+                .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_PROVIDER_URL_TENANT_2)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                                // needed for methods called by OidcClientConfigurationBuilder#loadOidcJsonConfiguration
+                                new RuntimePermission("accessDeclaredMembers"),
+                                new RuntimePermission("getClassLoader"),
+                                new ReflectPermission("suppressAccessChecks"),
+                                new PropertyPermission("*", "read, write"),
+                                new FilePermission("<<ALL FILES>>", "read")
+                        ),
+                        "permissions.xml");
     }
 
     @Deployment(name = MULTI_TENANCY_AUTH_SERVER_URL_APP, managed = false, testable = false)
@@ -141,7 +162,16 @@ public class OidcWithMultiTenancyTest {
                 .addClasses(MultiTenantResolverAuthServerUrl.class)
                 .addAsWebInfResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_AUTH_SERVER_URL_WEB_XML_FILE, "web.xml")
                 .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_AUTH_SERVER_URL_TENANT_1)
-                .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_AUTH_SERVER_URL_TENANT_2);
+                .addAsResource(OidcWithMultiTenancyTest.class.getPackage(), MULTI_TENANCY_WITH_AUTH_SERVER_URL_TENANT_2)
+                .addAsManifestResource(createPermissionsXmlAsset(
+                                // needed for methods called by OidcClientConfigurationBuilder#loadOidcJsonConfiguration
+                                new RuntimePermission("accessDeclaredMembers"),
+                                new RuntimePermission("getClassLoader"),
+                                new ReflectPermission("suppressAccessChecks"),
+                                new PropertyPermission("*", "read, write"),
+                                new FilePermission("<<ALL FILES>>", "read")
+                        ),
+                        "permissions.xml");
     }
 
     /**********************************************************
