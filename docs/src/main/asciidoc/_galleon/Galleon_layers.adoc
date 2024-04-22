@@ -250,6 +250,11 @@ link:#gal.undertow[undertow] +
 |Support for using _git_ for configuration management.
 |
 
+|[[gal.health]]health
+|Support for liveness and readiness checks for the server runtime.
+|
+link:#gal.management[management] +
+
 |[[gal.hibernate-search]]hibernate-search
 |Support for Hibernate Search. The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
 |
@@ -366,6 +371,11 @@ link:#gal.elytron[elytron] +
 |Support for connections to a remote Jakarta Messaging broker.
 |
 link:#gal.resource-adapters[resource-adapters] +
+
+|[[gal.metrics]]metrics
+|Support for base server metrics in Prometheus format.
+|
+link:#gal.management[management] +
 
 |[[gal.micrometer]]micrometer
 |Support for Micrometer
