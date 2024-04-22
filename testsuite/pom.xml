@@ -1243,7 +1243,7 @@
             <properties>
                 <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
                      if a wildfly.channels pom property is set. -->
-                <wildfly.channels>${project.groupId}:wildfly-manifest:${project.version}</wildfly.channels>
+                <wildfly.channels>org.wildfly.channels:wildfly:${full.maven.version}</wildfly.channels>
             </properties>
         </profile>
 
