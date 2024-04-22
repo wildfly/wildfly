@@ -1503,6 +1503,41 @@
         </profile>
 
         <profile>
+            <!-- Use the latest version of the standard channels when provisioning. -->
+            <id>latest.standard.channels.profile</id>
+            <activation><property><name>latest.standard.channels</name></property></activation>
+            <properties>
+                <!-- Allow online provisioning so wildfly-maven-plugin can resolve the latest manifests -->
+                <galleon.offline>false</galleon.offline>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <!-- Use the channels specified by the user-provided external.wildfly.channels property
                  when provisioning. -->
             <id>external.channel.profile</id>
