@@ -405,6 +405,21 @@ link:#gal.microprofile-config[microprofile-config] +
 link:#gal.ee-security[ee-security] +
 link:#gal.microprofile-config[microprofile-config] +
 
+|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
+|Support for acting as coordinator of MicroProfile LRA long-running actions.
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.transactions[transactions] +
+link:#gal.microprofile-config[microprofile-config] (optional) +
+
+|[[gal.microprofile-lra-participant]]microprofile-lra-participant
+|Support for acting as a participant in MicroProfile LRA long-running actions.
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.microprofile-config[microprofile-config] (optional) +
+
 |[[gal.microprofile-openapi]]microprofile-openapi
 |Support for MicroProfile OpenAPI.
 |
@@ -446,19 +461,6 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |Support for MicroProfile Reactive Streams Operators
 |
 link:#gal.cdi[cdi] +
-
-|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
-|Support for MicroProfile LRA Coordinator
-|
-link:#gal.cdi[cdi] +
-link:#gal.jaxrs[jaxrs] +
-link:#gal.transactions[transactions] +
-
-|[[gal.microprofile-lra-participant]]microprofile-lra-participant
-|Support for MicroProfile LRA Participant
-|
-link:#gal.cdi[cdi] +
-link:#gal.jaxrs[jaxrs] +
 
 |[[gal.microprofile-telemetry]]microprofile-telemetry
 |Support for MicroProfile Telemetry
