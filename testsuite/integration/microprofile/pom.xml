@@ -261,6 +261,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <!-- Needed if people use compression.type=zstd in their Kafka config -->
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
@@ -408,7 +413,10 @@
                         </goals>
                         <phase>${ts.glow.phase}</phase>
                         <configuration>
-                            <expected-discovery>[cdi, ee-integration, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, opentelemetry, transactions]==>ee-core-profile-server,ejb-lite,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry</expected-discovery>
+                            <expected-errors>
+                                <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <expected-discovery>[cdi, ee-integration, ejb, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, naming, opentelemetry, transactions]==>ee-core-profile-server,ejb,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry</expected-discovery>
                         </configuration>
                     </execution>
                 </executions>
@@ -488,6 +496,7 @@
                                 <!-- In this module default-test runs against standalone-microprofile.xml
                                      Exclude tests from that execution that require functionality not in that config. -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/propagation/JWTIdentityPropagationTestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
