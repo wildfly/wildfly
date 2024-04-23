@@ -44,6 +44,7 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -55,7 +56,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.testcontainers.DockerClientFactory;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -453,16 +453,7 @@ public class OidcIdentityPropagationTestCase {
 
     @BeforeClass
     public static void checkDockerAvailability() {
-        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
-    }
-
-    private static boolean isDockerAvailable() {
-        try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
     /**
@@ -695,6 +686,12 @@ public class OidcIdentityPropagationTestCase {
                     new File(OidcIdentityPropagationTestCase.class.getResource("ejbroles.properties").getFile()).getAbsolutePath(),
                     EJB_SECURITY_DOMAIN_NAME);
         }
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
+            super.setup(managementClient, containerId);
+        }
     }
 
     static class AnotherEJBDomainSetupOverride extends ElytronDomainSetup {
@@ -703,12 +700,19 @@ public class OidcIdentityPropagationTestCase {
                     new File(OidcIdentityPropagationTestCase.class.getResource("ejbroles.properties").getFile()).getAbsolutePath(),
                     ANOTHER_EJB_SECURITY_DOMAIN_NAME);
         }
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
+            super.setup(managementClient, containerId);
+        }
     }
 
     static class PropagationSetup extends SnapshotServerSetupTask {
 
         @Override
         public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
             final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
 
             builder.addStep(getAddEjbApplicationSecurityDomainOp(EJB_SECURITY_DOMAIN_NAME, EJB_SECURITY_DOMAIN_NAME));
