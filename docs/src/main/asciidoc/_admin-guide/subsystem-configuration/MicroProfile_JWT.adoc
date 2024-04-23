@@ -9,6 +9,8 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
+:auth-method: MicroProfile JWT
+
 Support for https://microprofile.io/project/eclipse/microprofile-jwt-auth[MicroProfile JWT RBAC] is provided by the _microprofile-jwt-smallrye_ subsystem.
 
 The MicroProfile JWT specification describes how authentication can be performed using cryptographically signed JWT tokens and the contents of the token to be used to establish a resuting identity without relying on access to external repositories of identities such as databases or directory servers.
@@ -122,5 +124,11 @@ One of the main motivations for using MicroProfile JWT is the ability to describ
 
 As the deployment is configured entirely within the MicroProfile Config properties other than the presence of the _microprofile-jwt-smallrye_ subsystem the virtual `SecurityDomain` means no other managed configuration is required for the deployment.
 
+[NOTE]
+====
+To propagate an identity from a virtual security domain, additional configuration might be required
+depending on your use case. See <<identity_propagation, Identity Propagation>> for more details.
+====
 
+include::Identity_Propagation.adoc[]
 

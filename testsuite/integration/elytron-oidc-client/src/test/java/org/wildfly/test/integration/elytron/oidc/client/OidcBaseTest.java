@@ -95,7 +95,7 @@ public abstract class OidcBaseTest {
         BASIC
     }
 
-    private static boolean isDockerAvailable() {
+    static boolean isDockerAvailable() {
         try {
             DockerClientFactory.instance().client();
             return true;
@@ -577,7 +577,7 @@ public abstract class OidcBaseTest {
         }
     }
 
-    private static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    public static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
