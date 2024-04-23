@@ -265,7 +265,7 @@
         <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
              Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
         -->
-        <testsuite.test.galleon.pack.artifactId>wildfly-test-galleon-pack</testsuite.test.galleon.pack.artifactId>
+        <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
 
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.

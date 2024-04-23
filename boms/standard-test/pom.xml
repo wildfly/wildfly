@@ -40,7 +40,7 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-test-galleon-pack</artifactId>
+                <artifactId>wildfly-test-feature-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
                 <scope>test</scope>

@@ -21,7 +21,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-test-galleon-pack</artifactId>
+    <artifactId>wildfly-test-feature-pack</artifactId>
 
     <name>WildFly: Test Feature Pack</name>
     <packaging>pom</packaging>
