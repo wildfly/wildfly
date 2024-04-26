@@ -5,8 +5,6 @@
 
 package org.jboss.as.clustering.controller;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.NamingService;
@@ -18,10 +16,10 @@ import org.wildfly.service.descriptor.NullaryServiceDescriptor;
  * Enumerates common requirements for clustering resources.
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
     ELYTRON("org.wildfly.security.elytron", Void.class),
-    LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
-    MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
+    MBEAN_SERVER(CommonServiceDescriptor.MBEAN_SERVER),
     NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
     PATH_MANAGER(PathManager.SERVICE_DESCRIPTOR),
     SOCKET_BINDING_MANAGER(SocketBindingManager.SERVICE_DESCRIPTOR),
