@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "32.";
+    private static final String MAJOR = "33.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -199,15 +199,20 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 ), true),
         WILDFLY_30_0("WildFly30.0", WILDFLY_29_0, List.of(), List.of(), true),
         WILDFLY_31_0("WildFly31.0", WILDFLY_30_0, List.of(), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_31_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_32_0("WildFly32.0", WILDFLY_31_0, List.of(
+                "org.wildfly.extension.elytron.jaas-realm",
+                "org.wildfly.extension.mvc-krazo"
+        ), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_32_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
             // to the internal mpExtensions Set defined on this class.
             // Don't add here extensions supplied only by the wildfly-preview-feature-pack because we are not tracking different releases
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
-            return List.of("org.wildfly.extension.elytron.jaas-realm", "org.wildfly.extension.mvc-krazo");
+            return List.of();
         }
+
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
             // See https://issues.redhat.com/browse/WFLY-16686
