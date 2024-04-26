@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -20,7 +21,7 @@ public interface OperationStepHandlerDescriptor {
      * The capabilities provided by this resource, paired with the condition under which they should be [un]registered
      * @return a map of capabilities to predicates
      */
-    default Map<Capability, Predicate<ModelNode>> getCapabilities() {
+    default Map<RuntimeCapability<?>, Predicate<ModelNode>> getCapabilities() {
         return Collections.emptyMap();
     }
 }

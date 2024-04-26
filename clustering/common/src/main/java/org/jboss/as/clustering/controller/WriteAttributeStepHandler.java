@@ -13,6 +13,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -45,24 +46,24 @@ public class WriteAttributeStepHandler extends ReloadRequiredWriteAttributeHandl
 
     @Override
     protected void recordCapabilitiesAndRequirements(OperationContext context, AttributeDefinition attribute, ModelNode newValue, ModelNode oldValue) {
-        Map<Capability, Predicate<ModelNode>> capabilities = this.descriptor.getCapabilities();
+        Map<RuntimeCapability<?>, Predicate<ModelNode>> capabilities = this.descriptor.getCapabilities();
         if (!capabilities.isEmpty()) {
             PathAddress address = context.getCurrentAddress();
             // newValue is already applied to the model
             ModelNode newModel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
             ModelNode oldModel = newModel.clone();
             oldModel.get(attribute.getName()).set(oldValue);
-            for (Map.Entry<Capability, Predicate<ModelNode>> entry : capabilities.entrySet()) {
-                Capability capability = entry.getKey();
+            for (Map.Entry<RuntimeCapability<?>, Predicate<ModelNode>> entry : capabilities.entrySet()) {
+                RuntimeCapability<?> capability = entry.getKey();
                 Predicate<ModelNode> predicate = entry.getValue();
                 boolean registered = predicate.test(oldModel);
                 boolean shouldRegister = predicate.test(newModel);
                 if (!registered && shouldRegister) {
                     // Attribute change enables capability registration
-                    context.registerCapability(capability.resolve(address));
+                    context.registerCapability(capability.isDynamicallyNamed() ? capability.fromBaseCapability(address) : capability);
                 } else if (registered && !shouldRegister) {
                     // Attribute change disables capability registration
-                    context.deregisterCapability(capability.resolve(address).getName());
+                    context.deregisterCapability(capability.isDynamicallyNamed() ? capability.getDynamicName(address) : capability.getName());
                 }
             }
         }
