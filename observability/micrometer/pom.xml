@@ -40,6 +40,10 @@
     
     <dependencies>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-micrometer-deployment</artifactId>
             <version>${project.version}</version>
