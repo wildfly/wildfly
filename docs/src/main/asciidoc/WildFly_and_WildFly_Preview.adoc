@@ -122,17 +122,17 @@ The following table lists the various Jakarta technologies offered by WildFly Pr
 | Jakarta MVC
 (_preview stability only_)| 2.1| N/A xref:note2[^2^]
 
+|Jakarta Pages| 3.1 |10
+
 |Jakarta Persistence| 3.2.0-M2 |11
 
 |Jakarta RESTful Web Services| 3.1 |10
 
 |Jakarta Security| 4.0.0-M2 |11
 
-|Jakarta Server Pages| 3.1 |10
-
 |Jakarta Servlet| 6.1.0-M2 |11
 
-|Jakarta SOAP with Attachments| 1.3 |10 xref:note1[^1^]
+|Jakarta SOAP with Attachments| 3.0 |10 xref:note1[^1^]
 
 |Jakarta Standard Tag Library| 3.0 |10 & 11
 
