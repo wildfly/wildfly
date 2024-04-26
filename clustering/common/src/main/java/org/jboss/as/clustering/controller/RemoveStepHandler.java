@@ -15,6 +15,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -57,9 +58,10 @@ public class RemoveStepHandler extends AbstractRemoveStepHandler implements Mana
         if (removeInCurrentStep(resource)) {
             // We need to remove capabilities *before* removing the resource, since the capability reference resolution might involve reading the resource
             PathAddress address = context.getCurrentAddress();
-            for (Map.Entry<Capability, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
+            for (Map.Entry<RuntimeCapability<?>, Predicate<ModelNode>> entry : this.descriptor.getCapabilities().entrySet()) {
                 if (entry.getValue().test(model)) {
-                    context.deregisterCapability(entry.getKey().resolve(address).getName());
+                    RuntimeCapability<?> capability = entry.getKey();
+                    context.deregisterCapability(capability.isDynamicallyNamed() ? capability.getDynamicName(address) : capability.getName());
                 }
             }
 
