@@ -31,6 +31,11 @@ import org.junit.runner.RunWith;
 @ServerSetup(PassivationTestCaseSetup.class)
 public class PassivationFailedTestCase {
 
+    @org.junit.BeforeClass
+    public static void init() {
+        org.jboss.as.test.shared.IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19293");
+    }
+
     @ArquillianResource
     private InitialContext ctx;
 
