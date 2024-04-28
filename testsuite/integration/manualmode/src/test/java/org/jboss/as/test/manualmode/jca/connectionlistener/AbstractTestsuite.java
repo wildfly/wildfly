@@ -22,7 +22,9 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -34,6 +36,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 
 /**
  * @author <a href="mailto:hsvabek@redhat.com">Hynek Svabek</a>
@@ -96,16 +99,16 @@ public abstract class AbstractTestsuite {
         return ja;
     }
 
-    protected static class TestCaseSetup extends ContainerResourceMgmtTestBase implements ServerSetupTask {
+    protected static class TestCaseSetup extends AbstractMgmtTestBase implements ServerSetupTask {
 
-        public static final TestCaseSetup INSTANCE = new TestCaseSetup();
+        private ManagementClient managementClient;
 
         ModelNode dsAddress;
         ModelNode dsXaAddress;
 
         @Override
         public void setup(final ManagementClient managementClient, String containerId) throws Exception {
-            setManagementClient(managementClient);
+            this.managementClient = managementClient;
             try {
                 tryRemoveConnListenerModule();//before test, in tearDown we cannot connect to CLI....
                 addConnListenerModule();
@@ -120,6 +123,12 @@ public abstract class AbstractTestsuite {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             removeDss();
+        }
+
+        @Override
+        protected ModelControllerClient getModelControllerClient() {
+            Assert.assertNotNull("The management client should not be null.", managementClient);
+            return managementClient.getControllerClient();
         }
 
         public void removeDss() {
@@ -191,7 +200,7 @@ public abstract class AbstractTestsuite {
             operation.get("value").set("true");
             executeOperation(operation);
 
-            ServerReload.executeReloadAndWaitForCompletion(getManagementClient(), 50000);
+            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
 
             return address;
         }

@@ -15,7 +15,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 public class ModuleUtils {
 
-    private static final String[] EE_DEPENDENCIES = new String[] {"javax.enterprise.api", "javax.inject.api", "javax.servlet.api", "javax.servlet.jsp.api"};
+    public static final String[] EE_DEPENDENCIES = new String[] {"javax.enterprise.api", "javax.inject.api", "javax.servlet.api", "javax.servlet.jsp.api"};
     public static TestModule createTestModuleWithEEDependencies(String moduleName) {
         TestModule testModule = new TestModule("test." + moduleName, EE_DEPENDENCIES);
         return testModule;

@@ -8,6 +8,12 @@ import org.junit.Test;
 
 public abstract class AbstractGrantCustomPermissionTestCase {
 
+    private final String moduleName;
+
+    protected AbstractGrantCustomPermissionTestCase(final String moduleName) {
+        this.moduleName = moduleName;
+    }
+
     protected void checkCustomPermission(String customPermName) {
         if (customPermName != null) {
             try {
@@ -29,9 +35,8 @@ public abstract class AbstractGrantCustomPermissionTestCase {
      */
     @Test
     public void testMinimumPermission() throws Exception {
-        String customPermName = "org.jboss.test";
 
-        checkCustomPermission(customPermName);
+        checkCustomPermission(moduleName);
     }
 
     /**

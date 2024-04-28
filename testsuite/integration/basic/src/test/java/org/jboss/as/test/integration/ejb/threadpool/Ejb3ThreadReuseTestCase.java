@@ -55,9 +55,9 @@ public class Ejb3ThreadReuseTestCase extends Ejb3ThreadPoolBase {
                     new ModelNode().get("keepalive-time").set(new ModelNode().add("unit", KEEP_ALIVE_TIME_UNIT)
                             .add("time", KEEEP_ALIVE_TIME)));
 
-            executeOperation(writeMaxThreadsOp);
-            executeOperation(writeCoreThreadsOp);
-            executeOperation(writeKeepAliveTimeOp);
+            Ejb3ThreadPoolBase.executeOperation(writeMaxThreadsOp);
+            Ejb3ThreadPoolBase.executeOperation(writeCoreThreadsOp);
+            Ejb3ThreadPoolBase.executeOperation(writeKeepAliveTimeOp);
         }
     }
 }

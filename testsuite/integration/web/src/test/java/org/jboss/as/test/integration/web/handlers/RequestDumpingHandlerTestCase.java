@@ -9,9 +9,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERIODIC_ROTATING_FILE_HANDLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.io.File;
@@ -24,7 +22,6 @@ import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.PropertyPermission;
 
-import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -33,11 +30,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.security.common.SecurityTestConstants;
-import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.web.websocket.WebSocketTestCase;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
@@ -83,21 +77,6 @@ public class RequestDumpingHandlerTestCase {
         private static final PathAddress ADDR_LOGGER = PathAddress.pathAddress().append(SUBSYSTEM, "logging")
                 .append(LOGGER, LOGGER_NAME);
 
-        private static final File WORK_DIR = new File("https-workdir");
-        public static final File SERVER_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_KEYSTORE);
-        public static final File SERVER_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.SERVER_TRUSTSTORE);
-        public static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
-        public static final File CLIENT_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_TRUSTSTORE);
-        public static final File UNTRUSTED_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.UNTRUSTED_KEYSTORE);
-
-        private static final String HTTPS = "https";
-        private static final String HTTPS_LISTENER_PATH = "subsystem=undertow/server=default-server/https-listener=" + HTTPS;
-
-        private static final String HTTPS_REALM = "httpsRealm";
-        private static final String HTTPS_REALM_PATH = "core-service=management/security-realm=" + HTTPS_REALM;
-        private static final String HTTPS_REALM_AUTH_PATH = HTTPS_REALM_PATH + "/authentication=truststore";
-        private static final String HTTPS_REALM_SSL_PATH = HTTPS_REALM_PATH + "/server-identity=ssl";
-
         @Override
         public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
             // Retrieve original path to server log files
@@ -125,31 +104,6 @@ public class RequestDumpingHandlerTestCase {
             handlers.add(new ModelNode(FILE_HANDLER_NAME));
             op.get("handlers").set(handlers);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            // Set HTTPS listener...
-            FileUtils.deleteDirectory(WORK_DIR);
-            WORK_DIR.mkdirs();
-            Utils.createKeyMaterial(WORK_DIR);
-
-            // add new HTTPS_REALM with SSL
-            ModelNode operation = createOpNode(HTTPS_REALM_PATH, ModelDescriptionConstants.ADD);
-            Utils.applyUpdate(operation, managementClient.getControllerClient());
-
-            operation = createOpNode(HTTPS_REALM_AUTH_PATH, ModelDescriptionConstants.ADD);
-            operation.get("keystore-path").set(SERVER_TRUSTSTORE_FILE.getAbsolutePath());
-            operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
-            Utils.applyUpdate(operation, managementClient.getControllerClient());
-
-            operation = createOpNode(HTTPS_REALM_SSL_PATH, ModelDescriptionConstants.ADD);
-            operation.get(PROTOCOL).set("TLSv1");
-            operation.get("keystore-path").set(SERVER_KEYSTORE_FILE.getAbsolutePath());
-            operation.get("keystore-password").set(SecurityTestConstants.KEYSTORE_PASSWORD);
-            Utils.applyUpdate(operation, managementClient.getControllerClient());
-
-            operation = createOpNode(HTTPS_LISTENER_PATH, ModelDescriptionConstants.ADD);
-            operation.get("socket-binding").set(HTTPS);
-            operation.get("security-realm").set(HTTPS_REALM);
-            Utils.applyUpdate(operation, managementClient.getControllerClient());
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
@@ -157,9 +111,6 @@ public class RequestDumpingHandlerTestCase {
         protected void nonManagementCleanUp() throws Exception {
             // Delete custom server log file
             Files.delete(logFilePath);
-
-            // Delete folder with HTTPS files
-            FileUtils.deleteDirectory(WORK_DIR);
         }
     }
 
