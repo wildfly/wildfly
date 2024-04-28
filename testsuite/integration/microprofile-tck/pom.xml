@@ -35,7 +35,6 @@
              still being easily disabled in profiles where it is not wanted. -->
         <ts.copy-wildfly.phase>generate-test-resources</ts.copy-wildfly.phase>
         <ts.microprofile-tck-provisioning.phase>none</ts.microprofile-tck-provisioning.phase>
-        <ts.bootable-jar-microprofile-tck-packaging.phase>none</ts.bootable-jar-microprofile-tck-packaging.phase>
         <ts.microprofile-tck-glow.phase>none</ts.microprofile-tck-glow.phase>
         <ts.microprofile-tck-glow.config.name>standalone-microprofile.xml</ts.microprofile-tck-glow.config.name>
         <ts.microprofile-tck-glow.expected-discovery>FIXME-must-override</ts.microprofile-tck-glow.expected-discovery>
@@ -175,24 +174,11 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
                     <execution>
-                        <id>bootable-jar-microprofile-tck-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${ts.bootable-jar-microprofile-tck-packaging.phase}</phase>
+                        <id>bootable-jar-packaging</id>
                         <configuration>
                             <output-file-name>test-wildfly-microprofile-tck.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -343,7 +329,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
                         <executions>
                             <execution>
                                 <id>bootable-jar-microprofile-tck-packaging</id>

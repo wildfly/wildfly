@@ -38,7 +38,6 @@
         <bootable.ts.config-as.copy-users.phase>none</bootable.ts.config-as.copy-users.phase>
         <bootable.copy-external-taglib-module-xml.phase>none</bootable.copy-external-taglib-module-xml.phase>
         <bootable.create-external-taglib-module.phase>none</bootable.create-external-taglib-module.phase>
-        <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
         <glow.phase>none</glow.phase>
     </properties>
 
@@ -326,25 +325,12 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
-                    <!-- Package a datasources-web-server -->
+                    <!-- Package a datasources-web-server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-packaging.phase}</phase>
                         <configuration>
                             <output-file-name>test-wildfly-web-profile.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <extra-server-content-dirs>
                                 <extra-content>${basedir}/target/wildfly-users</extra-content>
                                 <extra-content>${basedir}/target/external-taglib-module</extra-content>
@@ -548,7 +534,7 @@
                 <bootable.ts.config-as.copy-users.phase>generate-test-resources</bootable.ts.config-as.copy-users.phase>
                 <bootable.copy-external-taglib-module-xml.phase>generate-test-resources</bootable.copy-external-taglib-module-xml.phase>
                 <bootable.create-external-taglib-module.phase>process-test-classes</bootable.create-external-taglib-module.phase>
-                <bootable-jar-packaging.phase>process-test-classes</bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
             </properties>
             <build>
@@ -648,7 +634,7 @@
                 <bootable.ts.config-as.copy-users.phase>generate-test-resources</bootable.ts.config-as.copy-users.phase>
                 <bootable.copy-external-taglib-module-xml.phase>generate-test-resources</bootable.copy-external-taglib-module-xml.phase>
                 <bootable.create-external-taglib-module.phase>process-test-classes</bootable.create-external-taglib-module.phase>
-                <bootable-jar-packaging.phase>process-test-classes</bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
                 <glow.phase>test-compile</glow.phase>
             </properties>

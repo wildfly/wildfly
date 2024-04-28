@@ -33,8 +33,6 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- properties to enable bootable phases -->
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
-        <bootable-jar-jpa-packaging.phase>none</bootable-jar-jpa-packaging.phase>
-        <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
         <glow.cloud-profile.phase>none</glow.cloud-profile.phase>
         <glow.jdr.phase>none</glow.jdr.phase>
@@ -1430,28 +1428,15 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
-                    <!-- Package a cloud-profile server -->
+                    <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
-                        <id>bootable-jar-cloud-profile-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-cloud-profile-packaging.phase}</phase>
+                        <id>bootable-jar-packaging</id>
                         <configuration>
                             <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -1462,20 +1447,12 @@
                         <goals>
                             <goal>package</goal>
                         </goals>
-                        <phase>${bootable-jar-jpa-packaging.phase}</phase>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
                             <output-file-name>test-wildfly-jpa.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/jpa-layers.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -3292,8 +3269,7 @@
             <properties>
                 <bootable-jar-copy-module-files.phase>test-compile</bootable-jar-copy-module-files.phase>
                 <bootable-jar-maven-jar-plugin.create.modules.phase>test-compile</bootable-jar-maven-jar-plugin.create.modules.phase>
-                <bootable-jar-jpa-packaging.phase>test-compile</bootable-jar-jpa-packaging.phase>
-                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.jpa.phase>test-compile</glow.jpa.phase>
             </properties>
@@ -3453,8 +3429,7 @@
             <properties>
                 <bootable-jar-copy-module-files.phase>test-compile</bootable-jar-copy-module-files.phase>
                 <bootable-jar-maven-jar-plugin.create.modules.phase>test-compile</bootable-jar-maven-jar-plugin.create.modules.phase>
-                <bootable-jar-jpa-packaging.phase>test-compile</bootable-jar-jpa-packaging.phase>
-                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.jpa.phase>test-compile</glow.jpa.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
