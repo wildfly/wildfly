@@ -1,5 +1,5 @@
 [[Logging]]
-= Logging Configuration
+= Logging Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,12 +9,10 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-[abstract]
-
 The overall server logging configuration is represented by the logging
 subsystem. It consists of four notable parts: `handler` configurations,
-`logger`, the `root logger` declarations (aka log categories) and
-logging profiles. Each logger does reference a handler (or set of
+`logger` and the `root logger` declarations (aka log categories) and
+logging profiles. Each logger references a handler (or set of
 handlers). Each handler declares the log format and output:
 
 [source,xml,options="nowrap"]

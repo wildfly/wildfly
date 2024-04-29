@@ -11,7 +11,7 @@
         <properties>
             <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
             <property name="hibernate.show_sql" value="false"/>
-            <!-- property name="hibernate.type.json_format_mapper" value="MyJsonFormatMapper" / -->
+            <property name="hibernate.type.json_format_mapper" value="jsonb"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -43,13 +43,13 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
-import org.testcontainers.DockerClientFactory;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.jose.util.JsonSerialization;
 
@@ -95,15 +95,6 @@ public abstract class OidcBaseTest {
         BASIC
     }
 
-    private static boolean isDockerAvailable() {
-        try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
-    }
-
     public static void sendRealmCreationRequest(RealmRepresentation realm) {
         try {
             String adminAccessToken = KeycloakConfiguration.getAdminAccessToken(KEYCLOAK_CONTAINER.getAuthServerUrl());
@@ -123,7 +114,7 @@ public abstract class OidcBaseTest {
 
     @BeforeClass
     public static void checkDockerAvailability() {
-        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
     @Test
@@ -566,6 +557,7 @@ public abstract class OidcBaseTest {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
             KEYCLOAK_CONTAINER = new KeycloakContainer();
             KEYCLOAK_CONTAINER.start();
         }
@@ -577,7 +569,7 @@ public abstract class OidcBaseTest {
         }
     }
 
-    private static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    public static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();

@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The following subsystems currently have no configuration beyond its root
+The following subsystems currently have no configuration beyond their root
 element in the configuration
 
 [source,xml,options="nowrap"]

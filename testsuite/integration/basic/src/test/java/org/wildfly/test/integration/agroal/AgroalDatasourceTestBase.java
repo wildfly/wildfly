@@ -8,7 +8,6 @@ package org.wildfly.test.integration.agroal;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -65,17 +64,6 @@ public abstract class AgroalDatasourceTestBase extends ContainerResourceMgmtTest
 
             // Reload before continuing
             ServerReload.executeReloadAndWaitForCompletion(client, TimeoutUtil.adjust(50000));
-        }
-
-        private void executeOperation(final ManagementClient client, final Operation op) throws IOException {
-            final ModelNode result = client.getControllerClient().execute(op);
-            if (!isSuccessfulOutcome(result)) {
-                // Throwing an exception does not seem to stop the tests from running, log the error as well for some
-                // better details
-                log.errorf("Failed to execute operation: %s%n%s",
-                        getFailureDescription(result).asString(), op.getOperation());
-                throw new RuntimeException("Failed to execute operation: " + getFailureDescription(result).asString());
-            }
         }
     }
 

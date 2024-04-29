@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1-SNAPSHOT</version>
+        <version>33.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-elytron-oidc-client</artifactId>
@@ -29,8 +29,6 @@
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
-        <!-- properties to enable plugins shared by various bootable jar executions -->
-        <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
         <glow.phase>none</glow.phase>
     </properties>
 
@@ -83,6 +81,11 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -175,7 +178,6 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
                     <!-- Provision a cloud server -->
                     <execution>
@@ -183,19 +185,11 @@
                         <goals>
                             <goal>package</goal>
                         </goals>
-                        <phase>${bootable-jar-packaging.phase}</phase>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
                             <!-- content that is installed in wildfly home -->
                             <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
                             <output-file-name>test-wildfly.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -538,7 +532,7 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-packaging.phase>test-compile</bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
             </properties>
             <build>
@@ -624,7 +618,7 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-packaging.phase>test-compile</bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.phase>test-compile</glow.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
             </properties>

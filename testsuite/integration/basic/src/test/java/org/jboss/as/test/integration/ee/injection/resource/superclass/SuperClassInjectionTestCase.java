@@ -29,7 +29,7 @@ public class SuperClassInjectionTestCase {
     @Deployment
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "multiple-bindings-superclass.war");
-        war.addClasses(Bean1.class, Bean2.class, SuperClassInjectionTestCase.class, SuperBean.class, SimpleManagedBean.class);
+        war.addClasses(Bean1.class, Bean2.class, SuperClassInjectionTestCase.class, SuperBean.class, SimpleStatelessBean.class);
         war.addAsWebInfResource(SuperClassInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
@@ -37,8 +37,8 @@ public class SuperClassInjectionTestCase {
     @Test
     public void testCorrectBinding() throws NamingException {
         InitialContext context = new InitialContext();
-        Object result = context.lookup("java:module/env/" + SuperBean.class.getName() + "/simpleManagedBean");
-        Assert.assertTrue(result instanceof SimpleManagedBean);
+        Object result = context.lookup("java:module/env/" + SuperBean.class.getName() + "/simpleStatelessBean");
+        Assert.assertTrue(result instanceof SimpleStatelessBean);
     }
 
 
@@ -46,14 +46,14 @@ public class SuperClassInjectionTestCase {
     public void testSubClass1Injected() throws NamingException {
         InitialContext context = new InitialContext();
         Bean1 result = (Bean1) context.lookup("java:module/bean1");
-        Assert.assertTrue(result.getBean() instanceof SimpleManagedBean);
+        Assert.assertTrue(result.getBean() instanceof SimpleStatelessBean);
     }
 
     @Test
     public void testSubClass2Injected() throws NamingException {
         InitialContext context = new InitialContext();
         Bean2 result = (Bean2) context.lookup("java:module/bean2");
-        Assert.assertTrue(result.getBean() instanceof SimpleManagedBean);
+        Assert.assertTrue(result.getBean() instanceof SimpleStatelessBean);
     }
 
     //AS7-6500

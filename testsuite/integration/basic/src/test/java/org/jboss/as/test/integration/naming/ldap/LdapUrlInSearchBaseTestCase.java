@@ -172,6 +172,8 @@ public class LdapUrlInSearchBaseTestCase {
          *      java.lang.String)
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            // https://issues.redhat.com/browse/WFLY-17383
+            AssumeTestGroupUtil.assumeJDKVersionBefore(20);
             try {
                 if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
                     Security.addProvider(new BouncyCastleProvider());

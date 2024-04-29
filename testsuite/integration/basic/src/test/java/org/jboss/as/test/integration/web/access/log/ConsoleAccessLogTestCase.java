@@ -365,13 +365,13 @@ public class ConsoleAccessLogTestCase {
             final ModelControllerClient client = managementClient.getControllerClient();
 
             // Get the current console handler formatter name
-            currentFormatter = executeOperation(client, Operations.createReadAttributeOperation(consoleHandlerAddress, "named-formatter"));
+            currentFormatter = executeOperation(managementClient, Operations.createReadAttributeOperation(consoleHandlerAddress, "named-formatter"));
 
             final CompositeOperationBuilder builder = CompositeOperationBuilder.create()
                     .addStep(Operations.createAddOperation(formatterAddress))
                     // Change the current formatter just in case a message is logged so the line will still be valid JSON
                     .addStep(Operations.createWriteAttributeOperation(consoleHandlerAddress, "named-formatter", "json"));
-            executeOperation(client, builder.build(), true);
+            ConsoleAccessLogTestCase.executeOperation(client, builder.build(), true);
         }
 
         @Override
@@ -387,7 +387,7 @@ public class ConsoleAccessLogTestCase {
                 builder.addStep(Operations.createUndefineAttributeOperation(consoleHandlerAddress, "named-formatter"));
             }
             builder.addStep(Operations.createRemoveOperation(formatterAddress));
-            executeOperation(client, builder.build(), true);
+            ConsoleAccessLogTestCase.executeOperation(client, builder.build(), true);
         }
     }
 

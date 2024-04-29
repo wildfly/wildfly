@@ -161,10 +161,33 @@ standard configuration files, e.g. `standalone-full.xml`,
 similar to the default `standalone.xml` file but includes additional
 subsystems not present in the default configuration. If you prefer to
 use one of these files as your server configuration, you can specify it
-with the _[line-through]*c*_ or _-server-config_ command line argument:
+with the *_-c_* or *_--server-config_* command line argument:
 
 * `bin/standalone.sh -c=standalone-full.xml`
 * `bin/standalone.sh --server-config=standalone-ha.xml`
+
+==== Aliases
+
+The configuration files can also be referenced by an alias instead of the file name:
+
+* `bin/standalone.sh -c ha`
+
+.Available aliases
+|===
+| Configuration file               | Aliases
+
+| standalone-full.xml              | full
+
+| standalone-ha.xml                | ha
+
+| standalone-full-ha.xml           | fha, full-ha
+
+| standalone-load-balancer.xml     | lb, load-balancer
+
+| standalone-microprofile.xml      | mp, microprofile
+
+| standalone-microprofile-ha.xml   | mpha, microprofile-ha
+|===
 
 [[managed-domain-configuration-files]]
 === Managed Domain Configuration Files
@@ -193,6 +216,7 @@ standard variants:
 
 [cols=",",options="header"]
 |=======================================================================
+| Configuration file               | Use
 |host-primary.xml |A configuration that specifies the Host Controller
 should become the primary Host Controller, aka the Domain Controller.
 No servers will be started by this Host Controller, which is a recommended

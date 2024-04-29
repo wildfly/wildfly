@@ -89,6 +89,8 @@ public class ExternalContextBindingTestCase {
         @Override
         public void setup(final ManagementClient managementClient, final String containerId)
                 throws Exception {
+            // https://issues.redhat.com/browse/WFLY-17383
+            AssumeTestGroupUtil.assumeJDKVersionBefore(20);
 
             // bind the object factory
             ModelNode address = createAddress("nocache");

@@ -1,5 +1,5 @@
 [[MicroProfile_LRA]]
-= MicroProfile LRA Subsystems Configuration
+= MicroProfile LRA Subsystems
 ----
 :narayana-version: 6.0.0.Final
 :eclipse-mp-lra-api-version: 2.0

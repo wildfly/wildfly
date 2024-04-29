@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1-SNAPSHOT</version>
+        <version>33.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -48,6 +48,7 @@
 
         <maven.local.repo>${settings.localRepository}</maven.local.repo>
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED</modular.jdk.testsuite.args>
+        <embedded.server.stability>community</embedded.server.stability>
     </properties>
 
     <dependencies>
@@ -470,6 +471,7 @@
                         <management.ip>${node0}</management.ip>
                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                         <module.path>${wildfly.dir}/modules</module.path>
+                        <embedded.stability>${embedded.server.stability}</embedded.stability>
                     </system-properties>
                 </configuration>
             </plugin>
@@ -488,6 +490,7 @@
                         <jboss.inst>${wildfly.dir}</jboss.inst>
                         <module.path>${wildfly.dir}/modules</module.path>
                         <node0>${node0}</node0>
+                        <embedded.stability>${embedded.server.stability}</embedded.stability>
                     </systemPropertyVariables>
                     <argLine>${surefire.system.args} ${jvm.args.ip.client}</argLine>
                 </configuration>
@@ -858,6 +861,9 @@
                     <name>ts.bootable</name>
                 </property>
             </activation>
+            <properties>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
@@ -936,27 +942,14 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
                         <executions>
                             <!-- Provision a server with the core functionality we will provide in OpenShift images -->
                             <execution>
                                 <id>bootable-jar-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>true</offline>
                                     <!-- content that is installed in wildfly home -->
                                     <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
                                     <cli-sessions>
                                         <cli-session>
                                             <script-files>
@@ -1040,6 +1033,7 @@
             </activation>
             <properties>
                 <maven.local.repo>${settings.localRepository}</maven.local.repo>
+                <embedded.server.stability>preview</embedded.server.stability>
             </properties>
             <build>
                 <plugins>

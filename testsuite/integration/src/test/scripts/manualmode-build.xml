@@ -119,6 +119,10 @@
         <copy todir="target/jbossas-messaging-ha-server2">
             <fileset dir="target/wildfly"/>
         </copy>
+
+        <copy todir="target/stability-preview">
+            <fileset dir="target/wildfly"/>
+        </copy>
     </target>
 
 </project>

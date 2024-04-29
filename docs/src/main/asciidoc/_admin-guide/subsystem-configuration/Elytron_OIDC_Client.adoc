@@ -1,5 +1,5 @@
 [[Elytron_OIDC_Client]]
-= Elytron OpenID Connect Client Subsystem Configuration
+= Elytron OpenID Connect Client Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -8,6 +8,8 @@ ifdef::env-github[]
 :caution-caption: :fire:
 :warning-caption: :warning:
 endif::[]
+
+:auth-method: OpenID Connect
 
 The ability to secure applications using https://openid.net/specs/openid-connect-core-1_0.html[OpenID Connect] is
 provided by the _elytron-oidc-client_ subsystem.
@@ -56,6 +58,7 @@ Here is an example of an `oidc.json` configuration file:
   "cors-exposed-headers" : "WWW-Authenticate, My-custom-exposed-Header",
   "enable-basic-auth" : false,
   "expose-token" : true,
+  "scope" : "profile email phone",
   "verify-token-audience" : true,
    "credentials" : {
       "secret" : "234234-234234-234234"
@@ -94,6 +97,7 @@ The following example shows how to add configuration to the _elytron-oidc-client
     <secure-deployment name="DEPLOYMENT_RUNTIME_NAME.war">
         <client-id>customer-portal</client-id>
         <provider-url>http://localhost:8180/auth/realms/demo</provider-url>
+        <scope>email profile phone</scope>
         <ssl-required>external</ssl-required>
         <credential name="secret" secret="0aa31d98-e0aa-404c-b6e0-e771dba1e798" />
     </secure-deployment>
@@ -140,6 +144,34 @@ has either been found within the deployment or if there is OIDC configuration fo
 configuration). If the subsystem detects that the `OIDC` mechanism is indeed required, the subsystem will
 activate the authentication mechanism automatically. Otherwise, no activation will occur and deployment
 will continue normally.
+
+=== Scope Configuration
+
+NOTE: Since this attribute is a preview level feature, the WildFly server's stability level must be set to `preview`
+or lower to enable it. The stability level must not be changed to `community` or `default` after configuring the
+`scope` attribute. For more information about the stability levels of the WildFly server, please refer to the
+link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
+
+OpenID Connect allows the client to use scope values to request access to specific privileges for access tokens. An access token's scopes determine what resources will be available when using the access token to access an OAuth2 protected endpoint. The OpenID Connect https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims[specification] defines a few scope values including:
+
+* `profile` : requests access to the End-User's default profile Claims, such as name, family_name, given_name, middle_name, nickname, preferred_username, profile, picture, website, gender, birthday etc. 
+
+* `email` : requests access to the email and email_verified Claims.
+
+* `address` :  requests access to the address Claim. 
+
+* `phone` : requests access to the phone_number and phone_number_verified Claims.
+
+Scopes can be used to request that specific sets of information be made available as Claim Values. The scope values must be added as a space separated, case-sensitive list of ascii values.
+
+==== Subsystem Configuration
+It is possible to configure the scope values that would be used in the OIDC authentication request using the `scope` attribute of a `secure-deployment` or a `secure-server` resource in the `elytron-oidc-client` subsystem.
+
+==== Deployment Configuration
+It is also possible to configure the scope values that would be used via the scope attribute in a deployment's `oidc.json` file.
+
+NOTE: If both the deployment and subsystem configuration is present, then the subsystem configuration will override the deployment values.
 
 == Virtual Security
 
@@ -233,78 +265,7 @@ your application's `web.xml` file, as shown in the example below:
 </web-app>
 ----
 
-[[identity_propagation]]
-== Identity Propagation
-
-When securing an application with OpenID Connect, the `elytron-oidc-client` subsystem will automatically
-create a virtual security domain for you. If your application invokes an EJB, additional configuration
-might be required to propagate the security identity from the virtual security domain depending on how
-the EJB is being secured.
-
-=== Securing an EJB using a different security domain
-
-If your application secured with OpenID Connect invokes an EJB within the same deployment (e.g.,
-within the same WAR or EAR) or invokes an EJB in a separate deployment (e.g., across EARs)
-and you'd like to secure the EJB using a different security domain from your servlet,
-additional configuration will be needed to outflow the security identities established by
-the virtual security domain to another security domain.
-
-The `virtual-security-domain` resource allows you to specify that security identities
-established by a virtual security domain should automatically be outflowed to other
-security domains. A `virtual-security-domain` resource has a few attributes, as
-described below:
-
-* `name` - This is the runtime name of a deployment associated with a virtual security domain (e.g.,
-`DEPLOYMENT_NAME.ear`, a deployment that has a subdeployment that is secured using OpenID Connect).
-
-* `outflow-security-domains` - This is the list of `security-domains` that security identities from
-the virtual security domain should be automatically outflowed to.
-
-* `outflow-anonymous` - When outflowing to a security domain, if outflow is not possible, should the
-anonymous identity be used? Outflow to a security domain might not be possible if the domain does
-not trust this domain or if the identity being outflowed to a domain does not exist in that domain.
-Outflowing anonymous has the effect of clearing any identity already established for that domain.
-This attribute defaults to `false`.
-
-In addition to configuring a `virtual-security-domain` resource, you'll also need to update the
-`security-domain` configuration for your EJB to indicate that it should trust security identities established
-by the `virtual-security-domain`. This can be specified by configuring the `trusted-virtual-security-domains`
-attribute for a `security-domain` (e.g., setting the `trusted-virtual-security-domains` attribute to
-`DEPLOYMENT_NAME.ear` for a `security-domain` would indicate that this `security-domain`
-should trust the virtual security domain associated with the `DEPLOYMENT_NAME.ear` deployment).
-
-The `virtual-security-domain` configuration and `trusted-virtual-security-domains` configuration
-will allow security identities established by a virtual security domain to be successfully
-outflowed to a `security-domain` being used to secure the EJB.
-
-=== Securing an EJB using the same virtual security domain
-
-==== Within the same deployment
-
-If your application secured with OpenID Connect invokes an EJB within the same deployment (e.g.,
-within the same WAR or EAR), and you'd like to secure the EJB using the same virtual security
-domain as your servlet, no additional configuration is required. This means that if no security
-domain configuration has been explicitly specified for the EJB, the virtual security domain will
-automatically be used to secure the EJB.
-
-==== Across deployments
-
-If your application secured with OpenID Connect invokes an EJB in a separate deployment (e.g., across EARs)
-and you'd like to secure the EJB using the same virtual security domain as your servlet,
-additional configuration will be needed. In particular, the EJB will need to reference the virtual
-security domain explicitly.
-
-The `virtual-security-domain` resource allows you to reference the virtual security domain
-from the security domain configuration for the EJB. As an example, a `virtual-security-domain`
-resource could be added as follows:
-
-`/subsystem=elytron/virtual-security-domain=DEPLOYMENT_NAME.ear:add()`
-
-An annotation like `@SecurityDomain(DEPLOYMENT_NAME.ear)` can then be added to the EJB,
-where `DEPLOYMENT_NAME.ear` is a reference to the `virtual-security-domain` defined above.
-
-This configuration indicates that the virtual security domain associated with `DEPLOYMENT_NAME.ear`
-should be used to secure the EJB.
+include::Identity_Propagation.adoc[]
 
 == Securing the management console with OpenID Connect
 

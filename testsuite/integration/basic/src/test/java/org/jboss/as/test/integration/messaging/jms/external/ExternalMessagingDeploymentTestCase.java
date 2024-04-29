@@ -22,13 +22,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -59,7 +60,7 @@ public class ExternalMessagingDeploymentTestCase {
     @ArquillianResource
     private URL url;
 
-    static class SetupTask extends SnapshotRestoreSetupTask {
+    static class SetupTask extends SnapshotServerSetupTask {
 
         private static final Logger logger = Logger.getLogger(ExternalMessagingDeploymentTestCase.SetupTask.class);
 
@@ -100,6 +101,13 @@ public class ExternalMessagingDeploymentTestCase {
             execute(managementClient, op, true);
             ops.close();
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
+        }
+
+        @Override
+        protected void beforeRestore(final ManagementClient managementClient, final String containerId) throws Exception {
+            final JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            ops.removeJmsQueue(QUEUE_NAME);
+            ops.removeJmsTopic(TOPIC_NAME);
         }
 
         private ModelNode execute(final org.jboss.as.arquillian.container.ManagementClient managementClient, final ModelNode op, final boolean expectSuccess) throws IOException {

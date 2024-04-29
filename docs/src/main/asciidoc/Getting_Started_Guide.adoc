@@ -82,6 +82,8 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 | Jakarta MVC 2.1
 (xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability])|--|--|--|--
 
+|Jakarta Pages 3.1 |X |X |X |X
+
 |Jakarta Persistence 3.1 |X |X |X |X
 
 |Jakarta RESTful Web Services 3.1 |X |X |X |X
@@ -90,11 +92,9 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Faces 4.0 |X |X |X |X
 
-|Jakarta Server Pages 3.1 |X |X |X |X
-
 |Jakarta Servlet 6.0 |X |X |X |X
 
-|Jakarta SOAP with Attachments 1.3 |Optional |-- |X |X
+|Jakarta SOAP with Attachments 3.0 |Optional |-- |X |X
 
 |Jakarta Standard Tag Library 3.0 |X |X |X |X
 
@@ -107,6 +107,11 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 |Jakarta XML Web Services 4.0 |Optional |-- |X |X
 |=======================================================================
 
+[WARNING]
+====
+WildFly Preview {wildflyVersion} is currently aiming at providing an early look at Jakarta EE 11, and therefore provides different versions of a number of the Jakarta specifications listed above. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee11[EE 11 Support in WildFly Preview] for details.
+====
+
 WildFly {wildflyVersion} also provides support for a number of MicroProfile technologies:
 
 [cols=",,",options="header"]
@@ -116,6 +121,7 @@ WildFly {wildflyVersion} also provides support for a number of MicroProfile tech
 |MicroProfile Fault Tolerance 4.0 |-- |X
 |MicroProfile Health 4.0 |-- |X
 |MicroProfile JWT Authentication 2.1 |X |X
+|MicroProfile LRA 2.0 |-- |--
 |MicroProfile OpenAPI 3.1 |-- |X
 |MicroProfile Reactive Messaging 3.0 |-- |--
 |MicroProfile Rest Client 3.0|X |X
@@ -395,6 +401,8 @@ syntax from $JBOSS_HOME/bin:
 ----
 ./standalone.sh --server-config=standalone-full-ha.xml
 ----
+
+_See also:_ <<Admin_Guide#aliases, Configuration File Aliases>>
 
 Similarly to start an alternate configuration in _domain_ mode:
 

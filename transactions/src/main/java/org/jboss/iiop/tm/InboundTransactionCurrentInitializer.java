@@ -5,6 +5,7 @@
 
 package org.jboss.iiop.tm;
 
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ORBInitInfoPackage.InvalidName;
@@ -17,8 +18,7 @@ public class InboundTransactionCurrentInitializer extends LocalObject implements
             // Create and register the InboundTransactionCurrent implementation class
             info.register_initial_reference(InboundTransactionCurrent.NAME, new InboundTransactionCurrentImpl());
         } catch (InvalidName e) {
-            throw new RuntimeException("Could not register initial " +
-                "reference for InboundTransactionCurrent implementation: " + e, e);
+            throw TransactionLogger.ROOT_LOGGER.cannotRegister(e);
         }
     }
 

@@ -1,4 +1,4 @@
-embed-server --admin-only=true --server-config=standalone-full.xml
+embed-server --admin-only=true --server-config=standalone-full.xml --stability=${embedded.stability}
 
 /subsystem=datasources/data-source=ExampleDS:undefine-attribute(name=password)
 /subsystem=datasources/data-source=ExampleDS:write-attribute(name=credential-reference,value={clear-text=sa})

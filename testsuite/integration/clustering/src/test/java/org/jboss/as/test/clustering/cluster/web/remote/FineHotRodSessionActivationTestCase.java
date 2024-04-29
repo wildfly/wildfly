@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ InfinispanServerSetupTask.class, LocalRoutingServerSetup.class })
+@ServerSetup({ InfinispanServerSetupTask.class })
 public class FineHotRodSessionActivationTestCase extends AbstractHotRodSessionActivationTestCase {
 
     private static final String MODULE_NAME = FineHotRodSessionActivationTestCase.class.getSimpleName();

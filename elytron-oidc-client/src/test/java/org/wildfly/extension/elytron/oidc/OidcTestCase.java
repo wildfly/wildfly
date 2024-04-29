@@ -13,9 +13,10 @@ import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.version.Stability;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,20 +26,20 @@ import org.junit.Test;
  *
  * <a href="mailto:fjuma@redhat.com">Farah Juma</a>
  */
-public class OidcTestCase extends AbstractSubsystemTest {
+public class OidcTestCase extends AbstractSubsystemSchemaTest<ElytronOidcSubsystemSchema> {
 
     private OidcConfigService configService;
     private KernelServices services = null;
 
     public OidcTestCase() {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension());
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
     }
 
     @Before
     public void prepare() throws Throwable {
         if (services != null) return;
         String subsystemXml = "oidc.xml";
-        services = super.createKernelServicesBuilder(new DefaultInitializer()).setSubsystemXmlResource(subsystemXml).build();
+        services = super.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability())).setSubsystemXmlResource(subsystemXml).build();
         if (! services.isSuccessfulBoot()) {
             Assert.fail(services.getBootError().toString());
         }
@@ -88,14 +89,38 @@ public class OidcTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testSecureDeploymentWithScopes() throws Exception {
+        String expectedJson =
+                "{\"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"ssl-required\" : \"EXTERNAL\"}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-with-scope"));
+    }
+
+    @Test
     public void testSecureServerWithRealm() throws Exception {
         String expectedJson =
                 "{\"realm\" : \"jboss-infra\", \"realm-public-key\" : \"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqKoq+a9MgXepmsPJDmo45qswuChW9pWjanX68oIBuI4hGvhQxFHryCow230A+sr7tFdMQMt8f1l/ysmV/fYAuW29WaoY4kI4Ou1yYPuwywKSsxT6PooTs83hKyZ1h4LZMj5DkLGDDDyVRHob2WmPaYg9RGVRw3iGGsD/p+Yb+L/gnBYQnZZ7lYqmN7h36p5CkzzlgXQA1Ha8sQxL+rJNH8+sZm0vBrKsoII3Of7TqHGsm1RwFV3XCuGJ7S61AbjJMXL5DQgJl9Z5scvxGAyoRLKC294UgMnQdzyBTMPw2GybxkRKmiK2KjQKmcopmrJp/Bt6fBR6ZkGSs9qUlxGHgwIDAQAB\", \"auth-server-url\" : \"http://localhost:8180/auth\", \"resource\" : \"wildfly-console\", \"public-client\" : true, \"adapter-state-cookie-path\" : \"/\", \"ssl-required\" : \"EXTERNAL\", \"confidential-port\" : 443, \"proxy-url\" : \"http://localhost:9000\"}";
         assertEquals(expectedJson, configService.getJSON("wildfly-console"));
     }
 
-    private static class DefaultInitializer extends AdditionalInitialization {
+    @Test
+    public void testSecureServerWithScopes() throws Exception {
+        String expectedJson =
+                "{\"client-id\" : \"wildfly-console\", \"public-client\" : true, \"scope\" : \"profile email phone\", \"provider-url\" : \"http://localhost:8080/realms/WildFly\", \"ssl-required\" : \"EXTERNAL\"}";
+        assertEquals(expectedJson, configService.getJSON("wildfly-server-with-scope"));
+    }
 
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) {
+        //
+    }
+
+    protected static class DefaultInitializer extends AdditionalInitialization {
+
+        private final Stability stability;
+
+        public DefaultInitializer(Stability stability) {
+            this.stability = stability;
+        }
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
@@ -105,6 +130,11 @@ public class OidcTestCase extends AbstractSubsystemTest {
         @Override
         protected RunningMode getRunningMode() {
             return RunningMode.NORMAL;
+        }
+
+        @Override
+        public Stability getStability() {
+            return stability;
         }
 
     }

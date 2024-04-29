@@ -38,6 +38,7 @@ public class TxTimeoutTestCase {
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         persistenceProvider.addClasses(
+                AbstractTestPersistenceProvider.class,
                 TestEntityManagerFactory.class,
                 TestEntityManager.class,
                 TestPersistenceProvider.class

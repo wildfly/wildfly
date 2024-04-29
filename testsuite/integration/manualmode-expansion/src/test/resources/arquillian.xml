@@ -51,7 +51,8 @@
         <!-- A container we launch with the 'stability=preview' setting -->
         <container qualifier="stability-preview" default="false" mode="manual">
             <configuration>
-                <property name="jbossHome">${basedir}/target/wildfly</property>
+                <!-- Use an otherwise unused installation for this -->
+                <property name="jbossHome">${basedir}/target/jbossas-parse-marshal</property>
                 <property name="javaVmArguments">${server.jvm.args} -Djboss.node.name=default-jbossas</property>
                 <property name="serverConfig">${jboss.config.file.name:standalone-ha.xml}</property>
                 <property name="jbossArguments">${jboss.args} --stability=preview</property>

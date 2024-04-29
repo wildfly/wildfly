@@ -1,5 +1,5 @@
 [[JAXRS]]
-== JAXRS Subsystem Configuration
+== Jakarta RESTful Web Services Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

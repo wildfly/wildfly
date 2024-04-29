@@ -1,5 +1,5 @@
 [[MicroProfile_OpenAPI_SmallRye]]
-= MicroProfile OpenAPI Subsystem Configuration
+= MicroProfile OpenAPI Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

@@ -49,7 +49,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
     private volatile Executor executor;
     private volatile ListenerRegistration postActivateListenerRegistration;
     private volatile ListenerRegistration prePassivateListenerRegistration;
-    private volatile ListenerRegistration postPassivateListenerRegistration;
 
     InfinispanBeanGroupListenerServiceConfigurator(ServiceName name, SupplierDependency<Cache<?, ?>> cache, SupplierDependency<C> context) {
         super(name);
@@ -78,7 +77,6 @@ public class InfinispanBeanGroupListenerServiceConfigurator<K, V extends BeanIns
     @Override
     public void stop(StopContext context) {
         if (this.executor != null) {
-            this.postPassivateListenerRegistration.close();
             this.prePassivateListenerRegistration.close();
             this.postActivateListenerRegistration.close();
         }

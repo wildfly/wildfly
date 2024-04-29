@@ -69,8 +69,10 @@
    <suppress>
       <notes><![CDATA[
       file name: transformer-7.0.0.Beta2.jar
+
+      [WFLY-19236] This component is independent of WildFly so should not be matched against WildFly CVEs.
       ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/transformer@.*$</packageUrl>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.deployment/transformer@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
    <suppress>
@@ -216,5 +218,24 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.spring/resteasy\-spring@.*$</packageUrl>
       <cve>CVE-2018-1051</cve>
+   </suppress>
+   <suppress until="2025-04-10">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.12.Final.jar
+
+      [WFLY-19224] Since WildFly moved to using WildFly Elytron exclusively for security the
+      authentication mechanism from undertow-core is not used. This is a false positive.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2023-1973</vulnerabilityName>
+   </suppress>
+   <suppress until="2025-04-12">
+      <notes><![CDATA[
+      file name: joda-time-2.12.6.jar
+
+      [WFLY-19237] This CVE is disputed as the only proposed reason for the CVE is a NullPointerException is possible.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-23080</vulnerabilityName>
    </suppress>   
 </suppressions>

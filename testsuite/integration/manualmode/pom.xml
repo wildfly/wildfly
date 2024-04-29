@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1-SNAPSHOT</version>
+        <version>33.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -34,12 +34,18 @@
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
 
+        <oidc.jboss.home>${project.build.directory}/stability-preview</oidc.jboss.home>
         <multichannel.jboss.home>${project.build.directory}/wildfly-multi-channel</multichannel.jboss.home>
         <channel.provisioning.phase>process-test-resources</channel.provisioning.phase>
     </properties>
 
     <dependencies>
         <!-- These seem to be required first so that jbossws-cxf-client ends up on the class path first. Also required for Java 11 -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
@@ -96,14 +102,33 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -153,6 +178,11 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-model-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-elytron-http-oidc</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -336,7 +366,7 @@
         <dependency>
             <groupId>org.wildfly.channels</groupId>
             <artifactId>wildfly-ee</artifactId>
-            <version>32.0.0.Beta1-SNAPSHOT</version>
+            <version>33.0.0.Beta1-SNAPSHOT</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
@@ -558,6 +588,7 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
                         <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>

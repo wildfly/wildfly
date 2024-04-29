@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1-SNAPSHOT</version>
+        <version>33.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -33,8 +33,6 @@
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <!-- properties to enable bootable phases -->
         <bootable-jar-maven-jar-plugin.create.modules.phase>none</bootable-jar-maven-jar-plugin.create.modules.phase>
-        <bootable-jar-jpa-packaging.phase>none</bootable-jar-jpa-packaging.phase>
-        <bootable-jar-cloud-profile-packaging.phase>none</bootable-jar-cloud-profile-packaging.phase>
         <bootable-jar-copy-module-files.phase>none</bootable-jar-copy-module-files.phase>
         <glow.cloud-profile.phase>none</glow.cloud-profile.phase>
         <glow.jdr.phase>none</glow.jdr.phase>
@@ -59,6 +57,7 @@
         <surefire.default-test.phase>none</surefire.default-test.phase>
 
         <modular.jdk.testsuite.args>${modular.jdk.args} --add-opens=java.base/javax.crypto=ALL-UNNAMED --add-opens=java.base/sun.security.validator=ALL-UNNAMED --add-opens=java.base/sun.security.x509=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED  --add-opens=java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED</modular.jdk.testsuite.args>
+
     </properties>
 
     <dependencies>
@@ -1429,28 +1428,15 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
-                    <!-- Package a cloud-profile server -->
+                    <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
-                        <id>bootable-jar-cloud-profile-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-cloud-profile-packaging.phase}</phase>
+                        <id>bootable-jar-packaging</id>
                         <configuration>
                             <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -1461,20 +1447,12 @@
                         <goals>
                             <goal>package</goal>
                         </goals>
-                        <phase>${bootable-jar-jpa-packaging.phase}</phase>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
                             <output-file-name>test-wildfly-jpa.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                             <provisioning-file>target/glow-scan/jpa-layers.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -1643,6 +1621,19 @@
                         </configuration>
                     </execution>
 
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <!-- Enable adding a second test source dir for EE-version-specific classes.
+                         The execution is configured in testsuite/pom.xml for use in submodules
+                         like this one that need it. -->
+                    <execution>
+                        <id>add-ee-test-source</id>
+                        <phase>generate-test-sources</phase>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -3278,8 +3269,7 @@
             <properties>
                 <bootable-jar-copy-module-files.phase>test-compile</bootable-jar-copy-module-files.phase>
                 <bootable-jar-maven-jar-plugin.create.modules.phase>test-compile</bootable-jar-maven-jar-plugin.create.modules.phase>
-                <bootable-jar-jpa-packaging.phase>test-compile</bootable-jar-jpa-packaging.phase>
-                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.jpa.phase>test-compile</glow.jpa.phase>
             </properties>
@@ -3428,6 +3418,10 @@
             </activation>
             <dependencies>
                 <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+                <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
                     <artifactId>wildfly-arquillian-container-bootable</artifactId>
                 </dependency>
@@ -3435,8 +3429,7 @@
             <properties>
                 <bootable-jar-copy-module-files.phase>test-compile</bootable-jar-copy-module-files.phase>
                 <bootable-jar-maven-jar-plugin.create.modules.phase>test-compile</bootable-jar-maven-jar-plugin.create.modules.phase>
-                <bootable-jar-jpa-packaging.phase>test-compile</bootable-jar-jpa-packaging.phase>
-                <bootable-jar-cloud-profile-packaging.phase>test-compile</bootable-jar-cloud-profile-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
                 <glow.cloud-profile.phase>test-compile</glow.cloud-profile.phase>
                 <glow.jpa.phase>test-compile</glow.jpa.phase>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
@@ -3578,6 +3571,12 @@
                 <!-- The following is needed by PooledEJBLifecycleTestCase due to AssumeTestGroupUtil inside the test -->
                 <extra.server.jvm.args>-Dts.preview</extra.server.jvm.args>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -3669,6 +3668,25 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
+             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
+             based variant of wildfly-test-galleon-pack.
+        -->
+        <profile>
+            <id>test.feature.pack.preview.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.enterprise</groupId>
+                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                </dependency>
+            </dependencies>
         </profile>
 
     </profiles>

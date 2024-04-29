@@ -1,5 +1,5 @@
 [[MicroProfile_Reactive_Messaging_SmallRye]]
-= MicroProfile Reactive Messaging Subsystem Configuration
+= MicroProfile Reactive Messaging Subsystem
 ----
 :smallrye-reactive-messaging-version:       4.5.0
 :smallrye-reactive-messaging-tag:           {smallrye-reactive-messaging-version}

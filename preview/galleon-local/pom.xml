@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>32.0.0.Beta1-SNAPSHOT</version>
+        <version>33.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
@@ -29,6 +29,15 @@
     <packaging>pom</packaging>
 
     <dependencies>
+
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.avro</groupId>
@@ -46,7 +55,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly.galleon-plugins</groupId>
+            <groupId>org.wildfly.deployment</groupId>
             <artifactId>transformer</artifactId>
         </dependency>
 

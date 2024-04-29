@@ -34,7 +34,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
 
     protected abstract Trigger getTrigger() throws Exception;
 
-    protected static JavaArchive getTestArchiveBase() throws Exception {
+    protected static JavaArchive getTestArchiveBase(final String moduleName) throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, Constants.DEPLOYMENT_JAR_NAME_COUNTER);
         jar.addClass(CallCounterSingleton.class);
         jar.addClass(SessionConstants.class);
@@ -42,7 +42,7 @@ public abstract class SessionWhichDependeOnTestCaseBase {
         jar.addClass(SetupModuleServerSetupTask.class);
         jar.addClass(SessionWhichDependeOnTestCaseBase.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
-                + SessionConstants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
+                + moduleName + "\n"), "MANIFEST.MF");
         return jar;
     }
 

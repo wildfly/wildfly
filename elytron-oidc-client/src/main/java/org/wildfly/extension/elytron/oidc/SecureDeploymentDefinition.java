@@ -25,6 +25,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.security.AdvancedSecurityMetaData;
 import org.jboss.as.server.security.VirtualDomainMarkerUtility;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.Service;
@@ -57,6 +59,8 @@ import org.wildfly.security.http.oidc.OidcSecurityRealm;
  */
 class SecureDeploymentDefinition extends SimpleResourceDefinition {
 
+    static final ResourceRegistration PATH = ResourceRegistration.of(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT), Stability.DEFAULT);
+    protected static List<SimpleAttributeDefinition> NON_DEFAULT_ATTRIBUTES = new ArrayList<>();
     protected static final SimpleAttributeDefinition REALM =
             new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.REALM, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -81,6 +85,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .setAlternatives(ElytronOidcDescriptionConstants.RESOURCE)
+                    .build();
+
+    protected static final SimpleAttributeDefinition SCOPE =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.SCOPE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+                    .setStability(Stability.PREVIEW)
                     .build();
 
     protected static final SimpleAttributeDefinition USE_RESOURCE_ROLE_MAPPINGS =
@@ -153,6 +164,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(PUBLIC_KEY_CACHE_TTL);
         ALL_ATTRIBUTES.add(ADAPTER_STATE_COOKIE_PATH);
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
+        ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
@@ -162,12 +174,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
     private static final String WAR_FILE_EXTENSION = ".war";
 
     SecureDeploymentDefinition() {
-        super(new Parameters(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT),
+        super(new Parameters(PATH,
                 ElytronOidcExtension.getResourceDescriptionResolver(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT))
                 .setAddHandler(SecureDeploymentAddHandler.INSTANCE)
                 .setRemoveHandler(SecureDeploymentRemoveHandler.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
+        NON_DEFAULT_ATTRIBUTES.add(SCOPE);
     }
 
     @Override

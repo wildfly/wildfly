@@ -20,13 +20,16 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.version"/>
         <module name="org.jboss.as.web-common"/>
         <module name="org.jboss.metadata.common"/>
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.security.elytron-http-oidc"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>

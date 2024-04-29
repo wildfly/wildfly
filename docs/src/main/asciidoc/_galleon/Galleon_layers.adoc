@@ -250,6 +250,11 @@ link:#gal.undertow[undertow] +
 |Support for using _git_ for configuration management.
 |
 
+|[[gal.health]]health
+|Support for liveness and readiness checks for the server runtime.
+|
+link:#gal.management[management] +
+
 |[[gal.hibernate-search]]hibernate-search
 |Support for Hibernate Search. The _link:#gal.jpa[jpa]_ dependency can be excluded and _link:#gal.jpa-distributed[jpa-distributed]_ used instead.
 |
@@ -367,6 +372,11 @@ link:#gal.elytron[elytron] +
 |
 link:#gal.resource-adapters[resource-adapters] +
 
+|[[gal.metrics]]metrics
+|Support for base server metrics in Prometheus format.
+|
+link:#gal.management[management] +
+
 |[[gal.micrometer]]micrometer
 |Support for Micrometer
 |
@@ -394,6 +404,21 @@ link:#gal.microprofile-config[microprofile-config] +
 |
 link:#gal.ee-security[ee-security] +
 link:#gal.microprofile-config[microprofile-config] +
+
+|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
+|Support for acting as coordinator of MicroProfile LRA long-running actions.
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.transactions[transactions] +
+link:#gal.microprofile-config[microprofile-config] (optional) +
+
+|[[gal.microprofile-lra-participant]]microprofile-lra-participant
+|Support for acting as a participant in MicroProfile LRA long-running actions.
+|
+link:#gal.cdi[cdi] +
+link:#gal.jaxrs[jaxrs] +
+link:#gal.microprofile-config[microprofile-config] (optional) +
 
 |[[gal.microprofile-openapi]]microprofile-openapi
 |Support for MicroProfile OpenAPI.
@@ -436,19 +461,6 @@ link:#gal.microprofile-reactive-messaging[reactive-messaging] +
 |Support for MicroProfile Reactive Streams Operators
 |
 link:#gal.cdi[cdi] +
-
-|[[gal.microprofile-lra-coordinator]]microprofile-lra-coordinator
-|Support for MicroProfile LRA Coordinator
-|
-link:#gal.cdi[cdi] +
-link:#gal.jaxrs[jaxrs] +
-link:#gal.transactions[transactions] +
-
-|[[gal.microprofile-lra-participant]]microprofile-lra-participant
-|Support for MicroProfile LRA Participant
-|
-link:#gal.cdi[cdi] +
-link:#gal.jaxrs[jaxrs] +
 
 |[[gal.microprofile-telemetry]]microprofile-telemetry
 |Support for MicroProfile Telemetry

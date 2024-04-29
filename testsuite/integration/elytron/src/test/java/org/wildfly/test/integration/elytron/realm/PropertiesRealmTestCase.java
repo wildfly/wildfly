@@ -6,24 +6,35 @@
 package org.wildfly.test.integration.elytron.realm;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -78,6 +89,16 @@ public class PropertiesRealmTestCase {
     }
 
     /**
+     * Test a properties realm will reject unauthorized requests.
+     */
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_ENCODED)
+    public void unauthorizedNoUserWithAlternativeCharset(@ArquillianResource URL webAppURL) throws Exception {
+        URL url = prepareURL(webAppURL);
+        Utils.makeCall(url.toURI(), SC_UNAUTHORIZED);
+    }
+
+    /**
      *
      * Test Properties realm correctly handles a password using a different character set to
      * and base64 encoding as the string format for the password if they are not stored in plain text.
@@ -89,11 +110,21 @@ public class PropertiesRealmTestCase {
         Utils.makeCallWithBasicAuthn(url, USER_WITH_CHARSET_ENCODED, CHARSET_PASSWORD, SC_OK);
     }
 
+    /**
+     * Test a properties realm will reject unauthorized requests.
+     */
+    @Test
+    @OperateOnDeployment(DEPLOYMENT_WITH_CHARSET_ENCODED)
+    public void unauthorizedNoUserBase64Encoded(@ArquillianResource URL webAppURL) throws Exception {
+        URL url = prepareURL(webAppURL);
+        Utils.makeCall(url.toURI(), SC_UNAUTHORIZED);
+    }
+
     private URL prepareURL(URL url) throws MalformedURLException {
         return new URL(url.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
     }
 
-    static class SetUpTask implements ServerSetupTask {
+    static class SetUpTask extends SnapshotServerSetupTask {
 
         private static final String REALM_NAME_ENCODED = "propRealmEncoded";
         private static final String REALM_NAME_ENCODING_CHARSET = "propRealmEncodingCharset";
@@ -101,19 +132,35 @@ public class PropertiesRealmTestCase {
         private static final String DOMAIN_NAME_ENCODING_CHARSET = "propDomainEncodingCharset";
         private static final String PREDEFINED_HTTP_SERVER_MECHANISM_FACTORY = "global";
 
+        private final Queue<Path> filesToDelete = new ArrayDeque<>();
+
 
         @Override
-        public void setup(ManagementClient managementClient, java.lang.String s) throws Exception {
+        public void doSetup(ManagementClient managementClient, java.lang.String s) throws Exception {
+            // Copy the files to the configuration directory
+            final Path configDir = Path.of(resolvePath(managementClient, "jboss.server.config.dir"));
+            copyFile(configDir, "users-hashedbase64.properties");
+            copyFile(configDir, "users-hashedbase64charset.properties");
+            copyFile(configDir, "users-hashedbase64-roles.properties");
+
             setUpTestDomain(DOMAIN_NAME_ENCODED, REALM_NAME_ENCODED, DEPLOYMENT_ENCODED, "users-hashedbase64.properties", "base64", "UTF-8");
-            setUpTestDomain(DOMAIN_NAME_ENCODING_CHARSET, REALM_NAME_ENCODING_CHARSET, DEPLOYMENT_WITH_CHARSET_ENCODED, "users-hashedbase64charset", "base64", "GB2312");
+            setUpTestDomain(DOMAIN_NAME_ENCODING_CHARSET, REALM_NAME_ENCODING_CHARSET, DEPLOYMENT_WITH_CHARSET_ENCODED, "users-hashedbase64charset.properties", "base64", "GB2312");
             ServerReload.reloadIfRequired(managementClient);
 
         }
 
+        @Override
+        protected void nonManagementCleanUp() throws Exception {
+            Path toDelete;
+            while ((toDelete = filesToDelete.poll()) != null) {
+                Files.deleteIfExists(toDelete);
+            }
+        }
+
         private void setUpTestDomain(String domainName, String realmName, String deployment, String fileName, String hashEncoding, String hashCharset) throws Exception {
             try (CLIWrapper cli =  new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:add(groups-attribute=groups, user-properties={path=%s, relative-to=jboss.server.config.dir}, " +
-                                "hash-encoding=%s, hash-charset=%s)",
+                cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:add(groups-attribute=groups, users-properties={path=%s, relative-to=jboss.server.config.dir}, " +
+                                "hash-encoding=%s, hash-charset=%s, groups-properties={path=users-hashedbase64-roles.properties, relative-to=jboss.server.config.dir})",
                         realmName, fileName, hashEncoding, hashCharset));
 
                 cli.sendLine(String.format("/subsystem=elytron/security-domain=%1$s:add(realms=[{realm=%2$s,role-decoder=groups-to-roles}],default-realm=%2$s,permission-mapper=default-permission-mapper)",
@@ -128,23 +175,19 @@ public class PropertiesRealmTestCase {
             }
         }
 
-        @Override
-        public void tearDown(ManagementClient managementClient, java.lang.String s) throws Exception {
-            tearDownDomain(DEPLOYMENT_ENCODED, DOMAIN_NAME_ENCODED, REALM_NAME_ENCODED);
-            tearDownDomain(DEPLOYMENT_WITH_CHARSET_ENCODED, DOMAIN_NAME_ENCODING_CHARSET, REALM_NAME_ENCODING_CHARSET);
-            ServerReload.reloadIfRequired(managementClient);
-
+        private void copyFile(final Path configDir, final String fileName) throws IOException {
+            try (InputStream in = SetUpTask.class.getClassLoader().getResourceAsStream(getClass().getPackageName().replace('.', '/') + "/" + fileName)) {
+                Assert.assertNotNull(String.format("Could not find file %s on class path.", fileName), in);
+                final Path file = configDir.resolve(fileName);
+                Files.copy(in, file);
+                filesToDelete.add(file);
+            }
         }
 
-        private void tearDownDomain(String deployment, String domainName, String realmName) throws Exception {
-            try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=undertow/application-security-domain=%s:remove()", deployment));
-                cli.sendLine(String.format("/subsystem=elytron/http-authentication-factory=%s:remove()",
-                        domainName));
-                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()",
-                        domainName));
-                cli.sendLine(String.format("/subsystem=elytron/properties-realm=%s:remove()", realmName));
-            }
+        private String resolvePath(final ManagementClient client, final String pathName) throws IOException {
+            final ModelNode op = Operations.createOperation("path-info", Operations.createAddress("path", pathName));
+            final ModelNode result = executeOperation(client, op);
+            return result.get("path", "resolved-path").asString();
         }
     }
 }
