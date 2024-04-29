@@ -170,6 +170,10 @@
 
         <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
         <additional.ee.test.source>ee10</additional.ee.test.source>
+
+        <!-- properties to enable plugin executions -->
+        <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
+
     </properties>
 
     <dependencyManagement>
@@ -278,6 +282,34 @@
                        </execution>
                    </executions>
                </plugin>
+
+                <!-- Basic configuration for bootable jar packaging, if enabled -->
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-jar-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.jar.plugin}</version>
+                    <configuration>
+                        <hollowJar>true</hollowJar>
+                        <record-state>false</record-state>
+                        <log-time>${galleon.log.time}</log-time>
+                        <offline>true</offline>
+                        <plugin-options>
+                            <jboss-maven-dist/>
+                            <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        </plugin-options>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>bootable-jar-packaging</id>
+                            <goals>
+                                <goal>package</goal>
+                            </goals>
+                            <!-- This execution's phase is controlled by a property that defaults to 'none'.
+                                 Profiles that want it to run set the property to a different phase-->
+                            <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        </execution>
+                    </executions>
+                </plugin>
 
 
                <!-- WFLY-3361 - use external xalan for XML transformations to
@@ -484,6 +516,36 @@
             <id>scripts_.module.profile</id>
             <activation><property><name>ts.scripts</name></property></activation>
             <modules><module>scripts</module></modules>
+        </profile>
+
+        <profile>
+            <!-- Use the latest version of the standard channels when provisioning a bootable jar. -->
+            <id>latest.standard.channels.profile</id>
+            <activation><property><name>latest.standard.channels</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <configuration>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
         <profile>

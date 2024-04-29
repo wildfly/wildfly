@@ -542,7 +542,6 @@
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.jar.plugin}</version>
                         <executions>
                             <!-- Package a server with hibernate-search -->
                             <execution>
@@ -553,19 +552,11 @@
                                 <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly-hibernate-search.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
                                     <extra-server-content-dirs>
                                         <!-- Uncomment if we add extra content
                                         <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                                         -->
                                     </extra-server-content-dirs>
-                                    <offline>true</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
                                     <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
@@ -579,19 +570,11 @@
                                 <phase>process-test-classes</phase>
                                 <configuration>
                                     <output-file-name>test-wildfly-mvc.jar</output-file-name>
-                                    <hollowJar>true</hollowJar>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
                                     <extra-server-content-dirs>
                                         <!-- Uncomment if we add extra content
                                         <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                                         -->
                                     </extra-server-content-dirs>
-                                    <offline>true</offline>
-                                    <plugin-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </plugin-options>
                                     <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>

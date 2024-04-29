@@ -429,7 +429,7 @@
                 <executions>
                     <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
                     <execution>
-                        <id>bootable-jar-microprofile-tck-packaging</id>
+                        <id>bootable-jar-packaging</id>
                         <configuration>
                             <cli-sessions>
                                 <cli-session>
@@ -522,7 +522,7 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
                 <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
             </properties>
             <build>
@@ -557,7 +557,7 @@
             </activation>
             <properties>
                 <!-- Enable bootable jar packaging -->
-                <ts.bootable-jar-microprofile-tck-packaging.phase>process-test-resources</ts.bootable-jar-microprofile-tck-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
                 <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
             </properties>
             <build>
