@@ -519,6 +519,36 @@
         </profile>
 
         <profile>
+            <!-- Use the latest version of the standard channels when provisioning a bootable jar. -->
+            <id>latest.standard.channels.profile</id>
+            <activation><property><name>latest.standard.channels</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <configuration>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>preview.profile</id>
             <activation><property><name>ts.preview</name></property></activation>
             <properties>
