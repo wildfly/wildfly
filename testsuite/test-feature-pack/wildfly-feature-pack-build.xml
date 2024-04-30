@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="org.wildfly:wildfly-test-galleon-pack">
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="org.wildfly:wildfly-test-feature-pack">
     <dependencies>
         <dependency group-id="org.wildfly" artifact-id="wildfly-ee-galleon-pack">
             <name>org.wildfly:wildfly-ee-galleon-pack</name>

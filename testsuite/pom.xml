@@ -209,7 +209,7 @@
         <!-- Ensure the relevant test feature pack is built -->
         <dependency>
             <groupId>${full.maven.groupId}</groupId>
-            <artifactId>${testsuite.test.galleon.pack.artifactId}</artifactId>
+            <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <scope>test</scope>
         </dependency>

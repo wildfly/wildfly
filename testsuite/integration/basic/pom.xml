@@ -1141,7 +1141,7 @@
                         </feature-pack>
                         <feature-pack>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>${testsuite.test.galleon.pack.artifactId}</artifactId>
+                            <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
                             <version>${project.version}</version>
                         </feature-pack>
                     </feature-packs>
