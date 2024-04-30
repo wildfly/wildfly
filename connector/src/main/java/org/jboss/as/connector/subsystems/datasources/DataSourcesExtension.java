@@ -105,11 +105,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -146,7 +148,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 2, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -187,11 +189,41 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_6_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_1.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_2.getUriString(), DataSourceSubsystemParser::new);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
 
+
+        private static final SimpleAttributeDefinition[] COMMON_SIMPLE_DS_ATTRIBUTES = {
+                DATASOURCE_DRIVER, URL_DELIMITER, URL_SELECTOR_STRATEGY_CLASS_NAME, NEW_CONNECTION_SQL, TRANSACTION_ISOLATION
+        };
+
+        private static final SimpleAttributeDefinition[] POOL_ATTRIBUTES = {
+                MIN_POOL_SIZE, INITIAL_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL, POOL_FAIR, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS
+        };
+
+        private static final SimpleAttributeDefinition[] XA_POOL_ATTRIBUTES = {
+                SAME_RM_OVERRIDE, INTERLEAVING, NO_TX_SEPARATE_POOL, PAD_XID, WRAP_XA_RESOURCE
+        };
+
+        private static final SimpleAttributeDefinition[] TIMEOUT_ATTRIBUTES = {
+                SET_TX_QUERY_TIMEOUT, BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, QUERY_TIMEOUT, USE_TRY_LOCK,
+                ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS, XA_RESOURCE_TIMEOUT
+        };
+
+        private static final SimpleAttributeDefinition[] RECOVERY_ATTRIBUTES = {
+                RECOVERY_SECURITY_DOMAIN, RECOVERY_AUTHENTICATION_CONTEXT, RECOVERY_CREDENTIAL_REFERENCE, RECOVERY_ELYTRON_ENABLED
+        };
+
+        private static final SimpleAttributeDefinition[] SECURITY_ATTRIBUTES = {
+                SECURITY_DOMAIN, AUTHENTICATION_CONTEXT, CREDENTIAL_REFERENCE, ELYTRON_ENABLED
+        };
+
+        private static final SimpleAttributeDefinition[] STATEMENT_ATTRIBUTES = {
+                TRACK_STATEMENTS, PREPARED_STATEMENTS_CACHE_SIZE, SHARE_PREPARED_STATEMENTS
+        };
 
         /**
          * {@inheritDoc}
@@ -263,9 +295,7 @@ public class DataSourcesExtension implements Extension {
                 STATISTICS_ENABLED.marshallAsAttribute(dataSourceNode, writer);
 
                 if (!isXADataSource) {
-                    CONNECTION_URL.marshallAsElement(dataSourceNode, writer);
-                    DRIVER_CLASS.marshallAsElement(dataSourceNode, writer);
-                    DATASOURCE_CLASS.marshallAsElement(dataSourceNode, writer);
+                    marshallAsElements(dataSourceNode, writer, CONNECTION_URL, DRIVER_CLASS, DATASOURCE_CLASS);
                     if (dataSourceNode.hasDefined(CONNECTION_PROPERTIES.getName())) {
                         for (Property connectionProperty : dataSourceNode.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
                             writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
@@ -281,57 +311,24 @@ public class DataSourcesExtension implements Extension {
                         }
 
                     }
-                    XA_DATASOURCE_CLASS.marshallAsElement(dataSourceNode, writer);
-
+                    marshallAsElements(dataSourceNode, writer, XA_DATASOURCE_CLASS, URL_PROPERTY);
                 }
-                DATASOURCE_DRIVER.marshallAsElement(dataSourceNode, writer);
+                marshallAsElements(dataSourceNode, writer, COMMON_SIMPLE_DS_ATTRIBUTES);
 
-                if (isXADataSource) {
-                    URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
-                    URL_PROPERTY.marshallAsElement(dataSourceNode, writer);
-                    URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
-                }
-                NEW_CONNECTION_SQL.marshallAsElement(dataSourceNode, writer);
-                TRANSACTION_ISOLATION.marshallAsElement(dataSourceNode, writer);
-
-                if (!isXADataSource) {
-                    URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
-                    URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
-                }
-                boolean poolRequired = INITIAL_POOL_SIZE.isMarshallable(dataSourceNode) ||
-                        MIN_POOL_SIZE.isMarshallable(dataSourceNode) ||
-                        MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
-                        POOL_PREFILL.isMarshallable(dataSourceNode) ||
-                        POOL_FAIR.isMarshallable(dataSourceNode) ||
-                        POOL_USE_STRICT_MIN.isMarshallable(dataSourceNode) ||
-                        POOL_FLUSH_STRATEGY.isMarshallable(dataSourceNode) ||
-                        ALLOW_MULTIPLE_USERS.isMarshallable(dataSourceNode) ||
+                boolean poolRequired = isAnyRequired(dataSourceNode, POOL_ATTRIBUTES) ||
                         CONNECTION_LISTENER_CLASS.isMarshallable(dataSourceNode) ||
                         CONNECTION_LISTENER_PROPERTIES.isMarshallable(dataSourceNode);
                 if (isXADataSource) {
-                    poolRequired = poolRequired
-                            || SAME_RM_OVERRIDE.isMarshallable(dataSourceNode) ||
-                            INTERLEAVING.isMarshallable(dataSourceNode) ||
-                            NO_TX_SEPARATE_POOL.isMarshallable(dataSourceNode) ||
-                            PAD_XID.isMarshallable(dataSourceNode) ||
-                            WRAP_XA_RESOURCE.isMarshallable(dataSourceNode);
+                    poolRequired = poolRequired || isAnyRequired(dataSourceNode, XA_POOL_ATTRIBUTES);
                 }
-                final boolean capacityRequired = CAPACITY_INCREMENTER_CLASS.isMarshallable(dataSourceNode) ||
-                        CAPACITY_INCREMENTER_PROPERTIES.isMarshallable(dataSourceNode) ||
-                        CAPACITY_DECREMENTER_CLASS.isMarshallable(dataSourceNode) ||
-                        CAPACITY_DECREMENTER_PROPERTIES.isMarshallable(dataSourceNode);
+
+                final boolean capacityRequired = isAnyRequired(dataSourceNode, CAPACITY_INCREMENTER_CLASS,
+                        CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_CLASS, CAPACITY_DECREMENTER_PROPERTIES);
                 poolRequired = poolRequired || capacityRequired;
                 if (poolRequired) {
                     writer.writeStartElement(isXADataSource ? XaDataSource.Tag.XA_POOL.getLocalName() : DataSource.Tag.POOL
                             .getLocalName());
-                    MIN_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
-                    INITIAL_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
-                    MAX_POOL_SIZE.marshallAsElement(dataSourceNode, writer);
-                    POOL_PREFILL.marshallAsElement(dataSourceNode, writer);
-                    POOL_FAIR.marshallAsElement(dataSourceNode, writer);
-                    POOL_USE_STRICT_MIN.marshallAsElement(dataSourceNode, writer);
-                    POOL_FLUSH_STRATEGY.marshallAsElement(dataSourceNode, writer);
-                    ALLOW_MULTIPLE_USERS.marshallAsElement(dataSourceNode, writer);
+                    marshallAsElements(dataSourceNode, writer, POOL_ATTRIBUTES);
 
                     if (dataSourceNode.hasDefined(CONNECTION_LISTENER_CLASS.getName())) {
                         writer.writeStartElement(DsPool.Tag.CONNECTION_LISTENER.getLocalName());
@@ -351,77 +348,30 @@ public class DataSourcesExtension implements Extension {
                         writer.writeEndElement();
                     }
 
-
                     if (capacityRequired) {
                         writer.writeStartElement(DsPool.Tag.CAPACITY.getLocalName());
                         if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
                             CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
                             CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
-
                             writer.writeEndElement();
                         }
                         if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
                             CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
                             CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode, writer);
-
                             writer.writeEndElement();
                         }
                         writer.writeEndElement();
                     }
                     if (isXADataSource) {
-                        SAME_RM_OVERRIDE.marshallAsElement(dataSourceNode, writer);
-                        INTERLEAVING.marshallAsElement(dataSourceNode, writer);
-                        NO_TX_SEPARATE_POOL.marshallAsElement(dataSourceNode, writer);
-                        PAD_XID.marshallAsElement(dataSourceNode, writer);
-                        WRAP_XA_RESOURCE.marshallAsElement(dataSourceNode, writer);
+                        marshallAsElements(dataSourceNode, writer, XA_POOL_ATTRIBUTES);
                     }
                     writer.writeEndElement();
                 }
-                boolean securityRequired = USERNAME.isMarshallable(dataSourceNode) ||
-                        PASSWORD.isMarshallable(dataSourceNode) ||
-                        CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
-                        SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
-                        ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
-                        REAUTH_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        REAUTHPLUGIN_PROPERTIES.isMarshallable(dataSourceNode);
-                if (securityRequired) {
-                    writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
-                    USERNAME.marshallAsAttribute(dataSourceNode, writer);
-                    PASSWORD.marshallAsAttribute(dataSourceNode, writer);
-                    SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
-                    CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
-                    ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
-                    AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
-
-                    if (dataSourceNode.hasDefined(REAUTH_PLUGIN_CLASSNAME.getName())) {
-                        writer.writeStartElement(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName());
-                        writer.writeAttribute(
-                                org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                                dataSourceNode.get(REAUTH_PLUGIN_CLASSNAME.getName()).asString());
-
-                        if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
-                            for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
-                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                                .getValue().asString(),
-                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                                .getLocalName());
-                            }
-                        }
-                        writer.writeEndElement();
-                    }
-                    writer.writeEndElement();
-                }
-
-                boolean recoveryRequired = RECOVERY_USERNAME.isMarshallable(dataSourceNode) ||
-                        RECOVERY_PASSWORD.isMarshallable(dataSourceNode) ||
-                        RECOVERY_SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
-                        RECOVERY_ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
-                        RECOVER_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        RECOVERY_CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
-                        NO_RECOVERY.isMarshallable(dataSourceNode) ||
-                        RECOVER_PLUGIN_PROPERTIES.isMarshallable(dataSourceNode);
+                boolean recoveryRequired = isAnyRequired(dataSourceNode, RECOVERY_USERNAME, RECOVERY_PASSWORD,
+                        RECOVERY_SECURITY_DOMAIN, RECOVERY_ELYTRON_ENABLED, RECOVER_PLUGIN_CLASSNAME,
+                        RECOVERY_CREDENTIAL_REFERENCE, NO_RECOVERY, RECOVER_PLUGIN_PROPERTIES);
                 if (recoveryRequired && isXADataSource) {
                     writer.writeStartElement(XaDataSource.Tag.RECOVERY.getLocalName());
                     NO_RECOVERY.marshallAsAttribute(dataSourceNode, writer);
@@ -429,10 +379,7 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
                         RECOVERY_USERNAME.marshallAsAttribute(dataSourceNode, writer);
                         RECOVERY_PASSWORD.marshallAsAttribute(dataSourceNode, writer);
-                        RECOVERY_ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
-                        RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
-                        RECOVERY_SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
-                        RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
+                        marshallAsElements(dataSourceNode, writer, RECOVERY_ATTRIBUTES);
                         writer.writeEndElement();
                     }
                     if (hasAnyOf(dataSourceNode, RECOVER_PLUGIN_CLASSNAME)) {
@@ -453,21 +400,38 @@ public class DataSourcesExtension implements Extension {
                     }
                     writer.writeEndElement();
                 }
+                boolean securityRequired = isAnyRequired(dataSourceNode, USERNAME, PASSWORD, CREDENTIAL_REFERENCE,
+                        SECURITY_DOMAIN, ELYTRON_ENABLED, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                if (securityRequired) {
+                    writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
+                    USERNAME.marshallAsAttribute(dataSourceNode, writer);
+                    PASSWORD.marshallAsAttribute(dataSourceNode, writer);
+                    marshallAsElements(dataSourceNode, writer, SECURITY_ATTRIBUTES);
 
-                boolean validationRequired = VALID_CONNECTION_CHECKER_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        VALID_CONNECTION_CHECKER_MODULE.isMarshallable(dataSourceNode) ||
-                        VALID_CONNECTION_CHECKER_PROPERTIES.isMarshallable(dataSourceNode) ||
-                        CHECK_VALID_CONNECTION_SQL.isMarshallable(dataSourceNode) ||
-                        VALIDATE_ON_MATCH.isMarshallable(dataSourceNode) ||
-                        BACKGROUNDVALIDATION.isMarshallable(dataSourceNode) ||
-                        BACKGROUNDVALIDATIONMILLIS.isMarshallable(dataSourceNode) ||
-                        USE_FAST_FAIL.isMarshallable(dataSourceNode) ||
-                        STALE_CONNECTION_CHECKER_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        STALE_CONNECTION_CHECKER_MODULE.isMarshallable(dataSourceNode) ||
-                        STALE_CONNECTION_CHECKER_PROPERTIES.isMarshallable(dataSourceNode) ||
-                        EXCEPTION_SORTER_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        EXCEPTION_SORTER_MODULE.isMarshallable(dataSourceNode) ||
-                        EXCEPTION_SORTER_PROPERTIES.isMarshallable(dataSourceNode);
+                    if (dataSourceNode.hasDefined(REAUTH_PLUGIN_CLASSNAME.getName())) {
+                        writer.writeStartElement(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName());
+                        writer.writeAttribute(
+                                org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                dataSourceNode.get(REAUTH_PLUGIN_CLASSNAME.getName()).asString());
+
+                        if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
+                            for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
+                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                                .getValue().asString(),
+                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                .getLocalName());
+                            }
+                        }
+                        writer.writeEndElement();
+                    }
+                    writer.writeEndElement();
+                }
+
+                boolean validationRequired = isAnyRequired(dataSourceNode, VALID_CONNECTION_CHECKER_CLASSNAME,
+                        VALID_CONNECTION_CHECKER_MODULE, CHECK_VALID_CONNECTION_SQL,
+                        VALIDATE_ON_MATCH, BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMILLIS, USE_FAST_FAIL,
+                        STALE_CONNECTION_CHECKER_CLASSNAME, STALE_CONNECTION_CHECKER_MODULE, STALE_CONNECTION_CHECKER_PROPERTIES,
+                        EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_MODULE, EXCEPTION_SORTER_PROPERTIES);
                 if (validationRequired) {
                     writer.writeStartElement(DataSource.Tag.VALIDATION.getLocalName());
                     if (dataSourceNode.hasDefined(VALID_CONNECTION_CHECKER_CLASSNAME.getName())) {
@@ -491,11 +455,8 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
                     }
-                    CHECK_VALID_CONNECTION_SQL.marshallAsElement(dataSourceNode, writer);
-                    VALIDATE_ON_MATCH.marshallAsElement(dataSourceNode, writer);
-                    BACKGROUNDVALIDATION.marshallAsElement(dataSourceNode, writer);
-                    BACKGROUNDVALIDATIONMILLIS.marshallAsElement(dataSourceNode, writer);
-                    USE_FAST_FAIL.marshallAsElement(dataSourceNode, writer);
+                    marshallAsElements(dataSourceNode, writer, CHECK_VALID_CONNECTION_SQL, VALIDATE_ON_MATCH,
+                            BACKGROUNDVALIDATION, BACKGROUNDVALIDATIONMILLIS, USE_FAST_FAIL);
                     if (dataSourceNode.hasDefined(STALE_CONNECTION_CHECKER_CLASSNAME.getName())) {
                         writer.writeStartElement(Validation.Tag.STALE_CONNECTION_CHECKER.getLocalName());
                         writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
@@ -540,33 +501,16 @@ public class DataSourcesExtension implements Extension {
                     }
                     writer.writeEndElement();
                 }
-                boolean timeoutRequired = BLOCKING_TIMEOUT_WAIT_MILLIS.isMarshallable(dataSourceNode) ||
-                        IDLETIMEOUTMINUTES.isMarshallable(dataSourceNode) ||
-                        SET_TX_QUERY_TIMEOUT.isMarshallable(dataSourceNode) ||
-                        QUERY_TIMEOUT.isMarshallable(dataSourceNode) ||
-                        USE_TRY_LOCK.isMarshallable(dataSourceNode) ||
-                        ALLOCATION_RETRY.isMarshallable(dataSourceNode) ||
-                        ALLOCATION_RETRY_WAIT_MILLIS.isMarshallable(dataSourceNode) ||
-                        XA_RESOURCE_TIMEOUT.isMarshallable(dataSourceNode);
+                boolean timeoutRequired = isAnyRequired(dataSourceNode, TIMEOUT_ATTRIBUTES);
                 if (timeoutRequired) {
                     writer.writeStartElement(DataSource.Tag.TIMEOUT.getLocalName());
-                    SET_TX_QUERY_TIMEOUT.marshallAsElement(dataSourceNode, writer);
-                    BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsElement(dataSourceNode, writer);
-                    IDLETIMEOUTMINUTES.marshallAsElement(dataSourceNode, writer);
-                    QUERY_TIMEOUT.marshallAsElement(dataSourceNode, writer);
-                    USE_TRY_LOCK.marshallAsElement(dataSourceNode, writer);
-                    ALLOCATION_RETRY.marshallAsElement(dataSourceNode, writer);
-                    ALLOCATION_RETRY_WAIT_MILLIS.marshallAsElement(dataSourceNode, writer);
-                    XA_RESOURCE_TIMEOUT.marshallAsElement(dataSourceNode, writer);
+                    marshallAsElements(dataSourceNode, writer, TIMEOUT_ATTRIBUTES);
                     writer.writeEndElement();
                 }
-                boolean statementRequired = hasAnyOf(dataSourceNode, TRACK_STATEMENTS, PREPARED_STATEMENTS_CACHE_SIZE, SHARE_PREPARED_STATEMENTS);
+                boolean statementRequired = hasAnyOf(dataSourceNode, STATEMENT_ATTRIBUTES);
                 if (statementRequired) {
                     writer.writeStartElement(DataSource.Tag.STATEMENT.getLocalName());
-                    TRACK_STATEMENTS.marshallAsElement(dataSourceNode, writer);
-                    PREPARED_STATEMENTS_CACHE_SIZE.marshallAsElement(dataSourceNode, writer);
-                    SHARE_PREPARED_STATEMENTS.marshallAsElement(dataSourceNode, writer);
-
+                    marshallAsElements(dataSourceNode, writer, STATEMENT_ATTRIBUTES);
                     writer.writeEndElement();
                 }
 
@@ -607,6 +551,11 @@ public class DataSourcesExtension implements Extension {
             }
         }
 
+        private void marshallAsElements(ModelNode node, XMLExtendedStreamWriter writer, SimpleAttributeDefinition... names) throws XMLStreamException {
+            for (SimpleAttributeDefinition attr : names) {
+                attr.marshallAsElement(node, writer);
+            }
+        }
 
         private boolean hasAnyOf(ModelNode node, SimpleAttributeDefinition... names) {
             for (SimpleAttributeDefinition current : names) {
@@ -620,6 +569,10 @@ public class DataSourcesExtension implements Extension {
         private boolean has(ModelNode node, String name) {
             return node.has(name) && node.get(name).isDefined();
         }
+
+        private boolean isAnyRequired(ModelNode node, AttributeDefinition... names) {
+            return Arrays.stream(names).anyMatch(name -> name.isMarshallable(node));
+        };
 
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
