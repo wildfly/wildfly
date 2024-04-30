@@ -69,13 +69,13 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
      * - if connector-ref is not present and connectors is not present, throw an exception
      */
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
         if (operation.hasDefined(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName())) {
             ModelNode connectorRef = operation.remove(EJB3RemoteResourceDefinition.CONNECTOR_REF.getName());
             operation.get(EJB3RemoteResourceDefinition.CONNECTORS.getName()).set(new ModelNode().add(connectorRef));
         }
-        super.populateModel(operation, model);
+        super.populateModel(context, operation, resource);
     }
 
     @Override
