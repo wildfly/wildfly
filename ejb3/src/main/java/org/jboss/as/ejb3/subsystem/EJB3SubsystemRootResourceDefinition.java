@@ -269,7 +269,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault, ATTRIBUTES))
+                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
@@ -342,7 +342,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, this.denyAccessByDefault);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
 
-        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>(DISABLE_DEFAULT_EJB_PERMISSIONS) {
+        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>() {
+            @Override
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                 if (resolvedValue.asBoolean()) {
                     throw EjbLogger.ROOT_LOGGER.disableDefaultEjbPermissionsCannotBeTrue();
@@ -350,12 +351,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 return false;
             }
 
+            @Override
             protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
             }
         });
         resourceRegistration.registerReadWriteAttribute(ENABLE_GRACEFUL_TXN_SHUTDOWN, null, EnableGracefulTxnShutdownWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(SERVER_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(SERVER_INTERCEPTORS));
-        resourceRegistration.registerReadWriteAttribute(CLIENT_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(CLIENT_INTERCEPTORS));
+        resourceRegistration.registerReadWriteAttribute(SERVER_INTERCEPTORS, null,  ReloadRequiredWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(CLIENT_INTERCEPTORS, null,  ReloadRequiredWriteAttributeHandler.INSTANCE);
     }
 
     @Override

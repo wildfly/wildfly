@@ -81,7 +81,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
 
     private static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
 
-    private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
+    private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd();
     private static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
 
     ClusterPassivationStoreResourceDefinition() {
