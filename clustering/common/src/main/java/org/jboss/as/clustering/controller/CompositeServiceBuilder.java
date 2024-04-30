@@ -5,6 +5,8 @@
 
 package org.jboss.as.clustering.controller;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -44,12 +46,14 @@ public class CompositeServiceBuilder<T> extends DelegatingServiceBuilder<T> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ServiceController<T> install() {
+        List<ServiceController<?>> controllers = new LinkedList<>();
         for (ServiceBuilder<?> builder : this.builders) {
-            builder.install();
+            controllers.add(builder.install());
         }
-        return null;
+        return !controllers.isEmpty() ? (ServiceController<T>) controllers.get(0) : null;
     }
 
     @Override
