@@ -11,7 +11,6 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -76,7 +75,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE };
 
-    static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd(ATTRIBUTES);
+    static final PassivationStoreAdd ADD_HANDLER = new PassivationStoreAdd();
 
     PassivationStoreResourceDefinition() {
         super(new Parameters(PathElement.pathElement(EJB3SubsystemModel.PASSIVATION_STORE), EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.PASSIVATION_STORE))
@@ -89,9 +88,8 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition definition: ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(definition, null, writeHandler);
+            resourceRegistration.registerReadWriteAttribute(definition, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 }

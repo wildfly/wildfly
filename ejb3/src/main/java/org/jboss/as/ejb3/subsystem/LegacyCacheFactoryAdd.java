@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -31,10 +30,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 @Deprecated
 public class LegacyCacheFactoryAdd extends AbstractAddStepHandler {
-
-    LegacyCacheFactoryAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
