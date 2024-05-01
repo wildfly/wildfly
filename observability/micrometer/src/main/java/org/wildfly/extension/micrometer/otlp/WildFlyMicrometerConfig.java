@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.extension.micrometer;
+package org.wildfly.extension.micrometer.otlp;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -22,9 +22,9 @@ public final class WildFlyMicrometerConfig implements OtlpConfig {
     /**
      * How frequently, in seconds, to push metrics
      */
-    private final Long step;
+    private final long step;
 
-    public WildFlyMicrometerConfig(String endpoint, Long step) {
+    public WildFlyMicrometerConfig(String endpoint, long step) {
         this.endpoint = endpoint;
         this.step = step;
     }
