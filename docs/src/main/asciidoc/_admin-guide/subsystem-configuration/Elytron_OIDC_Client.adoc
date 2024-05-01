@@ -205,6 +205,16 @@ claim, causing token validation to fail. When using an OpenID provider other tha
 it is possible to disable the `typ` claim validation by setting the `wildfly.elytron.oidc.disable.typ.claim.validation`
 system property to `true`.
 
+=== Query Parameters
+
+In general, having dynamic query strings in redirect URIs isn't recommended because of the potential for things
+like HTTP parameter pollution attacks. For this reason, by default, the _elytron-oidc-client_ subsystem doesn't
+include any query params that were previously present when redirecting back to an application after authentication
+with an OpenID provider. However, it's possible to explicitly allow query params if desired. To specify that any
+query params that were present prior to being redirected to the OpenID provider be included upon being
+redirected back to the application after authentication, the `wildfly.elytron.oidc.allow.query.params` system
+property can be set to `true`.
+
 == Multi-Tenancy Support
 
 In some cases, it might be desirable to secure an application using multiple `oidc.json` configuration files.
