@@ -4,10 +4,7 @@
  */
 package org.wildfly.extension.micrometer.registry;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.OptionalDouble;
-import java.util.stream.Collectors;
+import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
@@ -16,9 +13,13 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.wildfly.extension.micrometer.MicrometerExtensionLogger;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
+
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.OptionalDouble;
+import java.util.stream.Collectors;
 
 public interface WildFlyRegistry {
     Meter remove(Meter.Id mappedId);
@@ -30,7 +31,7 @@ public interface WildFlyRegistry {
             case COUNTER:
                 return addCounter(metric, metadata);
             default:
-                throw MicrometerExtensionLogger.MICROMETER_LOGGER.unsupportedMetricType(metadata.getType().name());
+                throw MICROMETER_LOGGER.unsupportedMetricType(metadata.getType().name());
         }
     }
 
