@@ -13,18 +13,24 @@ import static org.jboss.as.server.deployment.Phase.POST_MODULE_MICROMETER;
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelControllerClientFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.ResourceDefinition;
@@ -35,9 +41,12 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.management.Capabilities;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -46,9 +55,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
-import org.wildfly.extension.micrometer.registry.NoOpRegistry;
-import org.wildfly.extension.micrometer.registry.WildFlyOtlpRegistry;
-import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
+import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
+import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
+import org.wildfly.subsystem.resource.AttributeTranslation;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.ResourceDescriptor;
@@ -78,19 +87,21 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
             "io.micrometer"
     };
 
+    @Deprecated
     public static final SimpleAttributeDefinition ENDPOINT = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.ENDPOINT, ModelType.STRING)
-            .setAttributeGroup(MicrometerConfigurationConstants.OTLP_REGISTRY)
             .setRequired(false)
+            .addFlag(AttributeAccess.Flag.ALIAS)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setAttributeGroup(MicrometerConfigurationConstants.OTLP_REGISTRY)
             .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(1)))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
+            .addFlag(AttributeAccess.Flag.ALIAS)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -102,23 +113,25 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                     .setRestartAllServices()
                     .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = {
-            EXPOSED_SUBSYSTEMS,
-            ENDPOINT,
-            STEP
-    };
+    static final Collection<AttributeDefinition> ATTRIBUTES = List.of(EXPOSED_SUBSYSTEMS);
 
     private final AtomicReference<MicrometerDeploymentConfiguration> deploymentConfig = new AtomicReference<>();
+    private final WildFlyCompositeRegistry wildFlyRegistry = new WildFlyCompositeRegistry();
 
     @Override
     public ManagementResourceRegistration register(SubsystemRegistration parent,
                                                    ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
                 parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(PATH), RESOLVER).build());
+        UnaryOperator<PathAddress> translator =
+                pathElements -> pathElements.append(OtlpRegistryDefinitionRegistrar.PATH);
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
-                .addAttributes(List.of(ENDPOINT, STEP, EXPOSED_SUBSYSTEMS))
+                .addAttributes(ATTRIBUTES)
+                .translateAttribute(ENDPOINT, AttributeTranslation.relocate(ENDPOINT, translator))
+                .translateAttribute(STEP, AttributeTranslation.relocate(STEP, translator))
+                .withAddResourceOperationTransformation(new TranslateOtlpHandler())
                 .withDeploymentChainContributor(target -> {
                     target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
                             new MicrometerDependencyProcessor());
@@ -130,6 +143,7 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                 .build();
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
+        new OtlpRegistryDefinitionRegistrar(wildFlyRegistry).register(registration, context);
 
         return registration;
     }
@@ -138,12 +152,6 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         List<String> exposedSubsystems = MicrometerSubsystemRegistrar.EXPOSED_SUBSYSTEMS.unwrap(context, model);
         boolean exposeAnySubsystem = exposedSubsystems.remove("*");
-        String endpoint = MicrometerSubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
-        Long step = MicrometerSubsystemRegistrar.STEP.resolveModelAttribute(context, model).asLong();
-
-        WildFlyRegistry wildFlyRegistry = endpoint != null ?
-                new WildFlyOtlpRegistry(new WildFlyMicrometerConfig(endpoint, step)) :
-                new NoOpRegistry();
 
         try {
             new JmxMicrometerCollector(wildFlyRegistry).init();
@@ -160,7 +168,7 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
 
         deploymentConfig.set(new MicrometerDeploymentConfiguration() {
             @Override
-            public WildFlyRegistry getRegistry() {
+            public WildFlyCompositeRegistry getRegistry() {
                 return wildFlyRegistry;
             }
 
@@ -193,8 +201,37 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                 .build();
     }
 
+    private static class TranslateOtlpHandler implements UnaryOperator<OperationStepHandler> {
+        @Override
+        public OperationStepHandler apply(OperationStepHandler handler) {
+            return (context, operation) -> {
+                ModelNode endpoint = operation.remove(ENDPOINT.getName());
+                ModelNode step = operation.remove(STEP.getName());
+                Map<String, ModelNode> parameters = new TreeMap<>();
+
+                if (endpoint != null) {
+                    parameters.put(OtlpRegistryDefinitionRegistrar.ENDPOINT.getName(), endpoint);
+                }
+                if (step != null) {
+                    parameters.put(OtlpRegistryDefinitionRegistrar.STEP.getName(), step);
+                }
+
+                if (!parameters.isEmpty()) {
+                    ModelNode otlpOperation = Util.createAddOperation(
+                            context.getCurrentAddress().append(OtlpRegistryDefinitionRegistrar.PATH), parameters);
+                    context.addStep(otlpOperation, context.getResourceRegistration().getOperationEntry(
+                                    PathAddress.pathAddress(OtlpRegistryDefinitionRegistrar.PATH),
+                                    ModelDescriptionConstants.ADD).getOperationHandler(),
+                            OperationContext.Stage.MODEL, true);
+                }
+                handler.execute(context, operation);
+            };
+        }
+    }
+
     public interface MicrometerDeploymentConfiguration {
-        WildFlyRegistry getRegistry();
+        WildFlyCompositeRegistry getRegistry();
+
         Predicate<String> getSubsystemFilter();
     }
 }
