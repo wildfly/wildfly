@@ -13,10 +13,12 @@ import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <V> the timer metadata value type
  */
-public interface TimerFactory<I, V, C> {
+public interface TimerFactory<I, V> {
 
-    TimerMetaDataFactory<I, V, C> getMetaDataFactory();
+    TimerMetaDataFactory<I, V> getMetaDataFactory();
 
     Timer<I> createTimer(I id, ImmutableTimerMetaData metaData, TimerManager<I, TransactionBatch> manager, Scheduler<I, ImmutableTimerMetaData> scheduler);
 }

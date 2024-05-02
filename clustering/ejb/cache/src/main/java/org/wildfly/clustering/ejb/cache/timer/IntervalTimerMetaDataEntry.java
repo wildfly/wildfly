@@ -12,6 +12,7 @@ import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 
 /**
  * An interval-based timer metadata cache entry.
+ * @param <C> the timer context type
  * @author Paul Ferraro
  */
 public class IntervalTimerMetaDataEntry<C> extends AbstractTimerMetaDataEntry<C> implements ImmutableIntervalTimerMetaDataEntry<C> {

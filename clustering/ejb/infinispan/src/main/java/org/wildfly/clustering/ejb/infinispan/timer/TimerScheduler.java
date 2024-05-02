@@ -39,21 +39,23 @@ import org.wildfly.clustering.infinispan.distribution.Locality;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <V> the timer metadata value type
  */
-public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, ImmutableTimerMetaData> {
+public class TimerScheduler<I, V> extends AbstractCacheEntryScheduler<I, ImmutableTimerMetaData> {
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(TimerScheduler.class);
 
-    private final TimerFactory<I, V, C> factory;
+    private final TimerFactory<I, V> factory;
 
-    public TimerScheduler(TimerFactory<I, V, C> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
+    public TimerScheduler(TimerFactory<I, V> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry) {
         this(factory, manager, locality, closeTimeout, registry, new SortedScheduledEntries<>(), Executors.newSingleThreadExecutor(THREAD_FACTORY));
     }
 
-    private TimerScheduler(TimerFactory<I, V, C> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
+    private TimerScheduler(TimerFactory<I, V> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, Duration closeTimeout, TimerRegistry<I> registry, ScheduledEntries<I, Instant> entries, ExecutorService executor) {
         this(entries, new InvokeTask<>(factory, manager, locality, entries, registry, executor), closeTimeout, registry, executor, factory);
     }
 
-    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V, C> factory) {
+    private <T extends Predicate<I> & Consumer<Scheduler<I, ImmutableTimerMetaData>>> TimerScheduler(ScheduledEntries<I, Instant> entries, T invokeTask, Duration closeTimeout, TimerRegistry<I> registry, ExecutorService executor, TimerFactory<I, V> factory) {
         this(new LocalScheduler<>(entries, invokeTask, closeTimeout) {
             @Override
             public void cancel(I id) {
@@ -69,7 +71,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
         }, invokeTask, factory);
     }
 
-    private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V, C> factory) {
+    private TimerScheduler(Scheduler<I, Instant> scheduler, Consumer<Scheduler<I, ImmutableTimerMetaData>> injector, TimerFactory<I, V> factory) {
         super(scheduler, ImmutableTimerMetaData::getNextTimeout);
         this.factory = factory;
         injector.accept(this);
@@ -77,7 +79,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
 
     @Override
     public void schedule(I id) {
-        TimerMetaDataFactory<I, V, C> metaDataFactory = this.factory.getMetaDataFactory();
+        TimerMetaDataFactory<I, V> metaDataFactory = this.factory.getMetaDataFactory();
         V value = metaDataFactory.findValue(id);
         if (value != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(value);
@@ -85,8 +87,8 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
         }
     }
 
-    private static class InvokeTask<I, V, C> implements Predicate<I>, Consumer<Scheduler<I, ImmutableTimerMetaData>> {
-        private final TimerFactory<I, V, C> factory;
+    private static class InvokeTask<I, V> implements Predicate<I>, Consumer<Scheduler<I, ImmutableTimerMetaData>> {
+        private final TimerFactory<I, V> factory;
         private final TimerManager<I, TransactionBatch> manager;
         private final Supplier<Locality> locality;
         private final ScheduledEntries<I, Instant> entries;
@@ -94,7 +96,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
         private final ExecutorService executor;
         private Scheduler<I, ImmutableTimerMetaData> scheduler;
 
-        InvokeTask(TimerFactory<I, V, C> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
+        InvokeTask(TimerFactory<I, V> factory, TimerManager<I, TransactionBatch> manager, Supplier<Locality> locality, ScheduledEntries<I, Instant> entries, TimerRegistry<I> registry, ExecutorService executor) {
             this.factory = factory;
             this.manager = manager;
             this.locality = locality;
@@ -110,7 +112,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
 
         @Override
         public boolean test(I id) {
-            TimerFactory<I, V, C> factory = this.factory;
+            TimerFactory<I, V> factory = this.factory;
             TimerManager<I, TransactionBatch> manager = this.manager;
             Supplier<Locality> locality = this.locality;
             ScheduledEntries<I, Instant> entries = this.entries;
@@ -125,7 +127,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
                 @Override
                 public Boolean call() throws Exception {
                     InfinispanEjbLogger.ROOT_LOGGER.debugf("Initiating timeout for timer %s", id);
-                    TimerMetaDataFactory<I, V, C> metaDataFactory = factory.getMetaDataFactory();
+                    TimerMetaDataFactory<I, V> metaDataFactory = factory.getMetaDataFactory();
                     try (TransactionBatch batch = manager.getBatcher().createBatch()) {
                         V value = metaDataFactory.findValue(id);
                         if (value == null) {

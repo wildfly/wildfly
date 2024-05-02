@@ -9,6 +9,7 @@ import org.wildfly.clustering.marshalling.spi.Marshaller;
 
 /**
  * @author Paul Ferraro
+ * @param <V> the timer metadata value type
  */
 public interface TimerMetaDataConfiguration<V> {
 

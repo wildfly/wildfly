@@ -10,6 +10,7 @@ import org.wildfly.clustering.ee.infinispan.GroupedKey;
 /**
  * Encapsulates the meta data key for a timer
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public class InfinispanTimerMetaDataKey<I> extends GroupedKey<I> implements org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey<I> {
 

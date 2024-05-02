@@ -9,6 +9,7 @@ import org.wildfly.clustering.ee.Key;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
  */
 public interface TimerMetaDataKey<I> extends Key<I> {
 }

@@ -9,6 +9,7 @@ import java.time.Duration;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public interface TimerMetaDataEntry<C> extends ImmutableTimerMetaDataEntry<C> {
 
