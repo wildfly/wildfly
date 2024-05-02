@@ -10,8 +10,10 @@ import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <V> the timer metadata value type
  */
-public interface ImmutableTimerMetaDataFactory<I, V, C> extends Locator<I, V> {
+public interface ImmutableTimerMetaDataFactory<I, V> extends Locator<I, V> {
 
     ImmutableTimerMetaData createImmutableTimerMetaData(V value);
 }

@@ -17,14 +17,16 @@ import org.wildfly.clustering.ejb.timer.TimerRegistry;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <V> the timer metadata value type
  */
-public class InfinispanTimerFactory<I, V, C> implements TimerFactory<I, V, C> {
+public class InfinispanTimerFactory<I, V> implements TimerFactory<I, V> {
 
-    private final TimerMetaDataFactory<I, V, C> factory;
+    private final TimerMetaDataFactory<I, V> factory;
     private final TimeoutListener<I, TransactionBatch> listener;
     private final TimerRegistry<I> registry;
 
-    public InfinispanTimerFactory(TimerMetaDataFactory<I, V, C> factory, TimeoutListener<I, TransactionBatch> listener, TimerRegistry<I> registry) {
+    public InfinispanTimerFactory(TimerMetaDataFactory<I, V> factory, TimeoutListener<I, TransactionBatch> listener, TimerRegistry<I> registry) {
         this.factory = factory;
         this.listener = listener;
         this.registry = registry;
@@ -36,7 +38,7 @@ public class InfinispanTimerFactory<I, V, C> implements TimerFactory<I, V, C> {
     }
 
     @Override
-    public TimerMetaDataFactory<I, V, C> getMetaDataFactory() {
+    public TimerMetaDataFactory<I, V> getMetaDataFactory() {
         return this.factory;
     }
 }

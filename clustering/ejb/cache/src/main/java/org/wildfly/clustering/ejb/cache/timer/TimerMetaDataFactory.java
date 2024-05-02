@@ -13,8 +13,10 @@ import org.wildfly.clustering.ejb.timer.TimerMetaData;
 
 /**
  * @author Paul Ferraro
+ * @param <I> the timer identifier type
+ * @param <V> the timer metadata value type
  */
-public interface TimerMetaDataFactory<I, V, C> extends ImmutableTimerMetaDataFactory<I, V, C>, Creator<I, V, Map.Entry<V, TimerIndex>>, Remover<I> {
+public interface TimerMetaDataFactory<I, V> extends ImmutableTimerMetaDataFactory<I, V>, Creator<I, V, Map.Entry<V, TimerIndex>>, Remover<I> {
 
     TimerMetaData createTimerMetaData(I id, V value);
 }

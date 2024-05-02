@@ -58,7 +58,7 @@ import org.wildfly.clustering.service.SupplierDependency;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerManagerFactoryServiceConfigurator<I, C> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanTimerManagerFactoryConfiguration<I>, Supplier<TimerManagerFactory<I, TransactionBatch>>, Consumer<ConfigurationBuilder> {
+public class InfinispanTimerManagerFactoryServiceConfigurator<I> extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, InfinispanTimerManagerFactoryConfiguration<I>, Supplier<TimerManagerFactory<I, TransactionBatch>>, Consumer<ConfigurationBuilder> {
 
     private final InfinispanTimerManagementConfiguration configuration;
     private final TimerManagerFactoryConfiguration<I> factoryConfiguration;

@@ -13,6 +13,7 @@ import org.wildfly.clustering.ee.cache.offset.Offset;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public interface RemappableTimerMetaDataEntry<C> extends TimerMetaDataEntry<C>, Remappable<RemappableTimerMetaDataEntry<C>, Supplier<Offset<Duration>>> {
 }

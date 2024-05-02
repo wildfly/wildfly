@@ -22,7 +22,7 @@ import org.wildfly.clustering.server.group.Group;
  */
 public interface InfinispanTimerManagerConfiguration<I, C> extends InfinispanConfiguration {
 
-    TimerFactory<I, RemappableTimerMetaDataEntry<C>, C> getTimerFactory();
+    TimerFactory<I, RemappableTimerMetaDataEntry<C>> getTimerFactory();
     TimerRegistry<I> getRegistry();
     Marshaller<Object, C> getMarshaller();
     Supplier<I> getIdentifierFactory();
