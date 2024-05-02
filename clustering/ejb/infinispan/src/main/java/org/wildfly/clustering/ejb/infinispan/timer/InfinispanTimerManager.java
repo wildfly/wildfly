@@ -58,7 +58,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I, Transaction
 
     private final Cache<Key<I>, ?> cache;
     private final CacheProperties properties;
-    private final TimerFactory<I, RemappableTimerMetaDataEntry<C>, C> factory;
+    private final TimerFactory<I, RemappableTimerMetaDataEntry<C>> factory;
     private final Marshaller<Object, C> marshaller;
     private final IdentifierFactory<I> identifierFactory;
     private final Batcher<TransactionBatch> batcher;
@@ -86,7 +86,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I, Transaction
     public void start() {
         Supplier<Locality> locality = () -> new CacheLocality(this.cache);
 
-        TimerScheduler<I, RemappableTimerMetaDataEntry<C>, C> localScheduler = new TimerScheduler<>(this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
+        TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
         this.scheduledTimers = localScheduler;
 
         this.scheduler = this.group.isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(this.dispatcherFactory, this.cache.getName(), localScheduler, new PrimaryOwnerLocator<>(this.cache, this.group), InfinispanTimerMetaDataKey::new, this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new);
@@ -153,7 +153,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I, Transaction
     }
 
     private Timer<I> createTimer(I id, RemappableTimerMetaDataEntry<C> entry, TimerIndex index) {
-        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> metaDataFactory = this.factory.getMetaDataFactory();
+        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> metaDataFactory = this.factory.getMetaDataFactory();
         if (metaDataFactory.createValue(id, new AbstractMap.SimpleImmutableEntry<>(entry, index)) == null) return null; // Timer with index already exists
 
         ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);
@@ -163,7 +163,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I, Transaction
 
     @Override
     public Timer<I> getTimer(I id) {
-        ImmutableTimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> metaDataFactory = this.factory.getMetaDataFactory();
+        ImmutableTimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> metaDataFactory = this.factory.getMetaDataFactory();
         RemappableTimerMetaDataEntry<C> entry = metaDataFactory.findValue(id);
         if (entry != null) {
             ImmutableTimerMetaData metaData = metaDataFactory.createImmutableTimerMetaData(entry);

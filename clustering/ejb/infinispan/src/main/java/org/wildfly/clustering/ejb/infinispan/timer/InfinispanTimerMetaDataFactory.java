@@ -30,7 +30,7 @@ import org.wildfly.clustering.ejb.timer.TimerMetaData;
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> {
+public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> {
 
     private final Cache<TimerIndexKey, I> indexCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readCache;

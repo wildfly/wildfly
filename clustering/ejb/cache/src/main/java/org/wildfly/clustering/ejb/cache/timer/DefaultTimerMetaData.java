@@ -14,6 +14,7 @@ import org.wildfly.clustering.ejb.timer.TimerMetaData;
 /**
  * A timer metadata implementation that triggers a mutator on {@link #setLastTimeout(Instant)}.
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public class DefaultTimerMetaData<C> extends DefaultImmutableTimerMetaData<C> implements TimerMetaData {
 

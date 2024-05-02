@@ -15,6 +15,7 @@ import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public class TimerMetaDataEntryFunction<C> extends RemappingFunction<RemappableTimerMetaDataEntry<C>, Supplier<Offset<Duration>>> {
 

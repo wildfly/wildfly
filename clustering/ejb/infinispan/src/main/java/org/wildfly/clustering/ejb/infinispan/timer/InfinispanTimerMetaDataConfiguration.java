@@ -10,6 +10,7 @@ import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataConfiguration;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public interface InfinispanTimerMetaDataConfiguration<C> extends TimerMetaDataConfiguration<C>, InfinispanConfiguration {
 }

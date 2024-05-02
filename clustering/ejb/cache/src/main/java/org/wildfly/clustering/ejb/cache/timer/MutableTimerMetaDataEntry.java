@@ -15,6 +15,7 @@ import org.wildfly.clustering.ejb.timer.TimerType;
 
 /**
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public class MutableTimerMetaDataEntry<C> implements TimerMetaDataEntry<C> {
 

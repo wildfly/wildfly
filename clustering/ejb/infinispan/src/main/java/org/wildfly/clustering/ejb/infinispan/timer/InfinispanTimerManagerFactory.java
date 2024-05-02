@@ -60,8 +60,8 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I, 
                 return factoryConfiguration.getCache();
             }
         };
-        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> metaDataFactory = new InfinispanTimerMetaDataFactory<>(metaDataFactoryConfig);
-        TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener(), this.configuration.getRegistry());
+        TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> metaDataFactory = new InfinispanTimerMetaDataFactory<>(metaDataFactoryConfig);
+        TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> factory = new InfinispanTimerFactory<>(metaDataFactory, configuration.getListener(), this.configuration.getRegistry());
 
         return new InfinispanTimerManager<>(new InfinispanTimerManagerConfiguration<I, MarshalledValue<Object, ByteBufferMarshaller>>() {
             @Override
@@ -75,7 +75,7 @@ public class InfinispanTimerManagerFactory<I> implements TimerManagerFactory<I, 
             }
 
             @Override
-            public TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>, MarshalledValue<Object, ByteBufferMarshaller>> getTimerFactory() {
+            public TimerFactory<I, RemappableTimerMetaDataEntry<MarshalledValue<Object, ByteBufferMarshaller>>> getTimerFactory() {
                 return factory;
             }
 
