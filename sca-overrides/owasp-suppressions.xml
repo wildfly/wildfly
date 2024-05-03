@@ -89,7 +89,15 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.galleon\-plugins/wildfly\-galleon\-plugins@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-plugin-tools-1.1.0.Final.jar
 
+      [WFLY-19311] wildfly-plugin-tools is an independent plugin so should not map to WildFly server vulnerabilities.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-tools@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
