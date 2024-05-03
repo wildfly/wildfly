@@ -42,7 +42,7 @@ import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ScaleDownConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ColocatedPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.LiveOnlyPolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.PrimaryOnlyPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicaPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicatedPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.SharedStorePrimaryPolicyConfiguration;
@@ -119,7 +119,7 @@ public class HAPolicyConfigurationBuilder {
 
     private HAPolicyConfiguration buildLiveOnlyConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ScaleDownConfiguration scaleDownConfiguration = ScaleDownAttributes.addScaleDownConfiguration(context, model);
-        return new LiveOnlyPolicyConfiguration(scaleDownConfiguration);
+        return new PrimaryOnlyPolicyConfiguration(scaleDownConfiguration);
     }
 
     private HAPolicyConfiguration buildReplicationPrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
