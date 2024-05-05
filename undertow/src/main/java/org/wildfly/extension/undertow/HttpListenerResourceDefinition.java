@@ -25,7 +25,7 @@ public class HttpListenerResourceDefinition extends AbstractHttpListenerResource
 
     HttpListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), HttpListenerAdd::new);
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), new HttpListenerAdd());
     }
 
     @Override

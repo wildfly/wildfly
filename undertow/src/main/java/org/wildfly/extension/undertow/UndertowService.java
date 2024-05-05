@@ -28,23 +28,22 @@ import io.undertow.Version;
  * @author Stuart Douglas
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@SuppressWarnings("ALL")
 public class UndertowService implements Service<UndertowService> {
 
     /**
      * @deprecated Replaced by capability reference {@link UndertowRootDefinition#UNDERTOW_CAPABILITY}.
      */
-    @Deprecated
-    public static final ServiceName UNDERTOW = ServiceName.JBOSS.append("undertow");
+    @Deprecated(forRemoval = true)
+    public static final ServiceName UNDERTOW = UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName();
     /**
      * @deprecated Replaced by capability reference {@link ServletContainerDefinition#SERVLET_CONTAINER_CAPABILITY}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static final ServiceName SERVLET_CONTAINER = UNDERTOW.append(Constants.SERVLET_CONTAINER);
     /**
      * @deprecated Replaced by capability reference {@link HostDefinition.HOST_CAPABILITY}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static final ServiceName SERVER = UNDERTOW.append(Constants.SERVER);
     /**
      * service name under which default server is bound.
@@ -58,8 +57,9 @@ public class UndertowService implements Service<UndertowService> {
 
     public static final ServiceName UNDERTOW_DEPLOYMENT = ServiceName.of("undertow-deployment");
     /**
-     * The base name for listener/handler/filter services.
+     * @deprecated Replaced by capability reference {@link Capabilities#CAPABILITY_HANDLER}.
      */
+    @Deprecated(forRemoval = true)
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
 
@@ -103,22 +103,24 @@ public class UndertowService implements Service<UndertowService> {
      * @param contextPath The context path
      * @return The legacy deployment service alias
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName deploymentServiceName(final String serverName, final String virtualHost, final String contextPath) {
         return WEB_DEPLOYMENT_BASE.append(serverName).append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
-        return SERVER.append(server).append(virtualHost);
+        return HostDefinition.HOST_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
+    @Deprecated(forRemoval = true)
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
-        return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
+        return LocationDefinition.LOCATION_CAPABILITY.getCapabilityServiceName(server, virtualHost, locationName);
     }
 
+    @Deprecated(forRemoval = true)
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
-        return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
+        return AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName(server, virtualHost);
     }
 
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
@@ -162,9 +164,9 @@ public class UndertowService implements Service<UndertowService> {
         return serviceName;
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public static ServiceName listenerName(String listenerName) {
-        return UNDERTOW.append(Constants.LISTENER).append(listenerName);
+        return ListenerResourceDefinition.LISTENER_CAPABILITY.getCapabilityServiceName(listenerName);
     }
 
     @Override

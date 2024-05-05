@@ -10,13 +10,14 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -29,7 +30,7 @@ import org.jboss.dmr.ValueExpression;
 class AccessLogDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     static final RuntimeCapability<Void> ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_ACCESS_LOG, true, AccessLogService.class)
-              .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
+              .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
               .build();
 
 
@@ -113,7 +114,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
     AccessLogDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getValue()))
                 .setAddHandler(AccessLogAdd.INSTANCE)
-                .setRemoveHandler(AccessLogRemove.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(AccessLogAdd.INSTANCE))
                 .setCapabilities(ACCESS_LOG_CAPABILITY)
         );
         SensitivityClassification sc = new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
@@ -128,6 +129,6 @@ class AccessLogDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         //noinspection unchecked
-        return (Collection) ATTRIBUTES;
+        return ATTRIBUTES;
     }
 }

@@ -74,13 +74,13 @@ class RuntimeInitialization extends DefaultInitialization {
             this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("some-server"));
             this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host"));
             this.start(target, HostDefinition.HOST_CAPABILITY.getCapabilityServiceName("some-server", "other-host"));
-            this.record(target, UndertowService.locationServiceName("some-server", "default-virtual-host", "/"));
+            this.record(target, LocationDefinition.LOCATION_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host", "/"));
             this.start(target, ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName("myContainer"));
             this.start(target, UndertowService.filterRefName("some-server", "other-host", "/", "static-gzip"));
             this.start(target, UndertowService.filterRefName("some-server", "other-host", "headers"));
             this.record(target, UndertowService.DEFAULT_HOST);
             this.record(target, UndertowService.DEFAULT_SERVER);
-            this.record(target, UndertowService.accessLogServiceName("some-server", "default-virtual-host"));
+            this.record(target, AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host"));
             this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("undertow-server"));
             this.record(target, ServerDefinition.SERVER_CAPABILITY.getCapabilityServiceName("default-server"));
         }

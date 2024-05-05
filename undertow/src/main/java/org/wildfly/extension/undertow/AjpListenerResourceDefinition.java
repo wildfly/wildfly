@@ -48,7 +48,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE);
 
     AjpListenerResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)), AjpListenerAdd::new, Map.of());
+        super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)), new AjpListenerAdd(), Map.of());
     }
 
     @Override

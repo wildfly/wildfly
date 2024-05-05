@@ -31,9 +31,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
-import org.jboss.msc.service.ServiceController;
+import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
+import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -98,19 +102,21 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     static final Collection<AttributeDefinition> ATTRIBUTES = List.of(DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID,
             OBFUSCATE_SESSION_ROUTE, STATISTICS_ENABLED, DEFAULT_SECURITY_DOMAIN);
 
+    private final FunctionExecutorRegistry<UndertowService> registry;
     private final Set<String> knownApplicationSecurityDomains;
 
     UndertowRootDefinition() {
-        this(new CopyOnWriteArraySet<>());
+        this(new CopyOnWriteArraySet<>(), ServiceValueExecutorRegistry.newInstance());
     }
 
-    private UndertowRootDefinition(Set<String> knownApplicationSecurityDomains) {
+    private UndertowRootDefinition(Set<String> knownApplicationSecurityDomains, ServiceValueExecutorRegistry<UndertowService> registry) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver())
-                .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains))
+                .setAddHandler(new UndertowSubsystemAdd(knownApplicationSecurityDomains::contains, registry))
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addCapabilities(UNDERTOW_CAPABILITY, HTTP_INVOKER_RUNTIME_CAPABILITY)
         );
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
+        this.registry = registry;
     }
 
     @Override
@@ -132,35 +138,29 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(getAttributes());
         for (AttributeDefinition attr : getAttributes()) {
             if (attr == STATISTICS_ENABLED) {
-                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void>(STATISTICS_ENABLED) {
+                ExceptionFunction<UndertowService, UndertowService, RuntimeException> identity = service -> service;
+                resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void>() {
                     @Override
                     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-                        ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
-                        if (controller != null) {
-                            UndertowService service = (UndertowService) controller.getService();
-                            if (service != null) {
-                                service.setStatisticsEnabled(resolvedValue.asBoolean());
-                            }
+                        FunctionExecutor<UndertowService> executor = UndertowRootDefinition.this.registry.getExecutor(ServiceDependency.on(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()));
+                        if (executor != null) {
+                            executor.execute(identity).setStatisticsEnabled(resolvedValue.asBoolean());
                         }
                         return false;
                     }
 
                     @Override
                     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-                        ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.UNDERTOW);
-                        if (controller != null) {
-                            UndertowService service = (UndertowService) controller.getService();
-                            if (service != null) {
-                                service.setStatisticsEnabled(valueToRestore.asBoolean());
-                            }
+                        FunctionExecutor<UndertowService> executor = UndertowRootDefinition.this.registry.getExecutor(ServiceDependency.on(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()));
+                        if (executor != null) {
+                            executor.execute(identity).setStatisticsEnabled(valueToRestore.asBoolean());
                         }
                     }
                 });
             } else {
-                resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+                resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
             }
         }
     }

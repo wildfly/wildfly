@@ -5,9 +5,6 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.wildfly.extension.undertow.Capabilities.REF_SOCKET_BINDING;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -15,7 +12,6 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.xnio.OptionMap;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
@@ -23,10 +19,6 @@ import java.util.function.Consumer;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 class AjpListenerAdd extends ListenerAdd<AjpListenerService> {
-
-    AjpListenerAdd(Collection<AttributeDefinition> attributes) {
-        super(attributes);
-    }
 
     @Override
     AjpListenerService createService(final Consumer<ListenerService> serviceConsumer, final String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
@@ -44,7 +36,7 @@ class AjpListenerAdd extends ListenerAdd<AjpListenerService> {
     void configureAdditionalDependencies(OperationContext context, CapabilityServiceBuilder<?> serviceBuilder, ModelNode model, AjpListenerService service) throws OperationFailedException {
         ModelNode redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model);
         if (redirectBindingRef.isDefined()) {
-            service.getRedirectSocket().set(serviceBuilder.requiresCapability(REF_SOCKET_BINDING, SocketBinding.class, redirectBindingRef.asString()));
+            service.getRedirectSocket().set(serviceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, redirectBindingRef.asString()));
         }
     }
 }

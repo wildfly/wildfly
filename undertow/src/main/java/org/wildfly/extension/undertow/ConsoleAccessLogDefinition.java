@@ -25,7 +25,7 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -43,7 +43,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG);
     private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(
             Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, EventLoggerService.class)
-            .setDynamicNameMapper(DynamicNameMappers.GRAND_PARENT)
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();
 
     static final SimpleAttributeDefinition INCLUDE_HOST_NAME = SimpleAttributeDefinitionBuilder.create("include-host-name", ModelType.BOOLEAN, true)
@@ -80,10 +80,6 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
 
     private static class AddHandler extends AbstractAddStepHandler {
         static final AddHandler INSTANCE = new AddHandler();
-
-        private AddHandler() {
-            super(ATTRIBUTES);
-        }
 
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {

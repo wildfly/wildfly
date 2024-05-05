@@ -77,9 +77,6 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
     }
 
     static class FilterRefAdd extends AbstractAddStepHandler {
-        FilterRefAdd() {
-            super(FilterRefDefinition.PREDICATE, PRIORITY);
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

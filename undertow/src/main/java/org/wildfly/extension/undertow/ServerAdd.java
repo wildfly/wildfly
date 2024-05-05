@@ -32,12 +32,6 @@ import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
  */
 final class ServerAdd extends AbstractAddStepHandler {
 
-    ServerAdd() {
-        super(new Parameters()
-                .addAttribute(ServerDefinition.ATTRIBUTES)
-        );
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         PathAddress address = context.getCurrentAddress();
