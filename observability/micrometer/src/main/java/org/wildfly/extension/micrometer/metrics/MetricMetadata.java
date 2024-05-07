@@ -5,9 +5,9 @@
 
 package org.wildfly.extension.micrometer.metrics;
 
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-
 import java.util.Locale;
+
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 
 public interface MetricMetadata {
     String getMetricName();

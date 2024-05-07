@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.extension.micrometer;
+package org.wildfly.extension.micrometer._private;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
@@ -65,4 +65,7 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11, value = "Micrometer has been enabled, but no endpoint has been configured. A No-op metrics registry has been configured.")
     void noOpRegistryChosen();
+
+    @Message(id = 12, value = "There was an error registerting the metric '%s'")
+    IllegalArgumentException errorRegisteringMetric(String name);
 }

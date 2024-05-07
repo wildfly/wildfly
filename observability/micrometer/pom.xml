@@ -40,6 +40,10 @@
     
     <dependencies>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-micrometer-deployment</artifactId>
             <version>${project.version}</version>
@@ -51,6 +55,10 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-otlp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.proto</groupId>
@@ -120,6 +128,11 @@
                   projects that depend on this project.-->
             <scope>provided</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
