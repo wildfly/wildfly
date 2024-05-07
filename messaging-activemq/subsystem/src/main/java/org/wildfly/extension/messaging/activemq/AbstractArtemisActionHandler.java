@@ -4,7 +4,6 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.jboss.as.controller.AbstractControllerService.PATH_MANAGER_CAPABILITY;
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 
 import java.io.File;
@@ -54,7 +53,7 @@ public abstract class AbstractArtemisActionHandler extends AbstractRuntimeOnlyHa
 
     @SuppressWarnings("unchecked")
     private PathManager getPathManager(OperationContext context) {
-        final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(PATH_MANAGER_CAPABILITY.getCapabilityServiceName());
+        final ServiceController<PathManager> service = (ServiceController<PathManager>) context.getServiceRegistry(false).getService(context.getCapabilityServiceName(PathManager.SERVICE_DESCRIPTOR));
         return service.getService().getValue();
     }
 }
