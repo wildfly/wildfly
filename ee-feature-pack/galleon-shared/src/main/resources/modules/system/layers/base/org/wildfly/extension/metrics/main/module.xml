@@ -18,6 +18,7 @@
     <dependencies>
         <module name="java.desktop"/>
         <module name="java.management"/>
+
         <module name="io.undertow.core"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
@@ -28,5 +29,7 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
     </dependencies>
 </module>
