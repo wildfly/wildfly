@@ -1472,7 +1472,6 @@
                         <ObjectStoreEnvironmentBean.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.objectStoreDir>
                         <ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>target/NarayanaObjectStore</ObjectStoreEnvironmentBean.communicationStore.objectStoreDir>
                         <!-- TODO remove this when https://issues.redhat.com/browse/WFLY-19156 is resolved. -->
-                        <server.jvm.args>${server.jvm.args} -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</server.jvm.args>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
