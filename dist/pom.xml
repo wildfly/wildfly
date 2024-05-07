@@ -345,6 +345,7 @@
                                 <configuration>
                                     <scripts>
                                         <script>hardening.cli</script>
+                                        <script>remove-iiop.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <config>standalone-full.xml</config>
@@ -360,6 +361,7 @@
                                 <configuration>
                                     <scripts>
                                         <script>hardening.cli</script>
+                                        <script>remove-iiop.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <config>standalone-full-ha.xml</config>
@@ -420,6 +422,7 @@
                                 <configuration>
                                     <scripts>
                                         <script>hardening.cli</script>
+                                        <script>remove-iiop.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <config>standalone-bdew.xml</config>
@@ -517,6 +520,7 @@
                                 <configuration>
                                     <scripts>
                                         <script>hardening-domain.cli</script>
+                                        <script>remove-iiop-domain.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <profile>full</profile>
@@ -532,6 +536,8 @@
                                 <configuration>
                                     <scripts>
                                         <script>hardening-domain.cli</script>
+                                        <script>remove-iiop-domain.cli</script>
+                                        <script>remove-iiop-extension-domain.cli</script>
                                     </scripts>
                                     <systemProperties>
                                         <profile>full-ha</profile>

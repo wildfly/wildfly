@@ -1,0 +1,6 @@
+embed-host-controller
+
+# Remove iiop-openjdk extension
+/extension=org.wildfly.iiop-openjdk:remove()
+
+stop-embedded-host-controller
