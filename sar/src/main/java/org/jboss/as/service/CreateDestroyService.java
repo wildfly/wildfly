@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -41,72 +39,46 @@ final class CreateDestroyService extends AbstractService {
     private ManagedReference managedReference;
 
     CreateDestroyService(final Object mBeanInstance, final Method createMethod, final Method destroyMethod, ServiceComponentInstantiator componentInstantiator,
-                         List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer, final Supplier<ExecutorService> executorSupplier) {
-        super(mBeanInstance, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+                         List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer) {
+        super(mBeanInstance, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer);
         this.createMethod = createMethod;
         this.destroyMethod = destroyMethod;
         this.componentInstantiator = componentInstantiator;
     }
 
-    /** {@inheritDoc} */
-    public void start(final StartContext context) {
+    @Override
+    public void start(final StartContext context) throws StartException {
         super.start(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
-            SarLogger.ROOT_LOGGER.tracef("Creating Service: %s", context.getController().getName());
+            SarLogger.ROOT_LOGGER.tracef("Creating Service: %s", context.getController().provides());
         }
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    injectDependencies();
-                    invokeLifecycleMethod(createMethod, context);
-                    if (componentInstantiator != null) {
-                        managedReference = componentInstantiator.initializeInstance(mBeanInstance);
-                    }
-                    context.complete();
-                } catch (Throwable e) {
-                    uninjectDependencies();
-                    context.failed(new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("create()"), e));
-                }
-            }
-        };
         try {
-            executorSupplier.get().submit(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
+            injectDependencies();
+            invokeLifecycleMethod(createMethod, context);
+            if (componentInstantiator != null) {
+                managedReference = componentInstantiator.initializeInstance(mBeanInstance);
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            uninjectDependencies();
+            throw new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("create()"), e);
         }
     }
 
-    /** {@inheritDoc} */
+    @Override
     public void stop(final StopContext context) {
         super.stop(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
-            SarLogger.ROOT_LOGGER.tracef("Destroying Service: %s", context.getController().getName());
+            SarLogger.ROOT_LOGGER.tracef("Destroying Service: %s", context.getController().provides());
         }
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if(managedReference != null) {
-                        managedReference.release();
-                    }
-                    invokeLifecycleMethod(destroyMethod, context);
-                } catch (Exception e) {
-                    SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("destroy()"), e);
-                } finally {
-                    uninjectDependencies();
-                    context.complete();
-                }
-            }
-        };
         try {
-            executorSupplier.get().submit(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
+            if(managedReference != null) {
+                managedReference.release();
+            }
+            invokeLifecycleMethod(destroyMethod, context);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("destroy()"), e);
         } finally {
-            context.asynchronous();
+            uninjectDependencies();
         }
     }
 

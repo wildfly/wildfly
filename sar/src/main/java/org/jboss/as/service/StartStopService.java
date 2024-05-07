@@ -5,11 +5,9 @@
 
 package org.jboss.as.service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.function.Supplier;
 import java.util.function.Consumer;
 
 import org.jboss.as.server.deployment.SetupAction;
@@ -29,62 +27,35 @@ final class StartStopService extends AbstractService {
     private final Method startMethod;
     private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer, final Supplier<ExecutorService> executorSupplier) {
-        super(mBeanInstance, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer) {
+        super(mBeanInstance, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer);
         this.startMethod = startMethod;
         this.stopMethod = stopMethod;
     }
 
-    /** {@inheritDoc} */
-    public void start(final StartContext context) {
+    @Override
+    public void start(final StartContext context) throws StartException {
         super.start(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
-            SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
+            SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().provides());
         }
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-            try {
-                invokeLifecycleMethod(startMethod, context);
-                context.complete();
-            } catch (Throwable e) {
-                context.failed(new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("start()"), e));
-            }
-            }
-        };
         try {
-            executorSupplier.get().submit(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
+            invokeLifecycleMethod(startMethod, context);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new StartException(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("start()"), e);
         }
     }
 
-    /** {@inheritDoc} */
+    @Override
     public void stop(final StopContext context) {
         super.stop(context);
         if (SarLogger.ROOT_LOGGER.isTraceEnabled()) {
-            SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
+            SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().provides());
         }
-        final Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    invokeLifecycleMethod(stopMethod, context);
-                } catch (Exception e) {
-                    SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("stop()"), e);
-                } finally {
-                    context.complete();
-                }
-            }
-        };
         try {
-            executorSupplier.get().submit(task);
-        } catch (RejectedExecutionException e) {
-            task.run();
-        } finally {
-            context.asynchronous();
+            invokeLifecycleMethod(stopMethod, context);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            SarLogger.ROOT_LOGGER.error(SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod("stop()"), e);
         }
     }
 

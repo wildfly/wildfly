@@ -7,20 +7,19 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.controller.AbstractControllerService;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.as.service.logging.SarLogger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.subsystem.service.AsyncServiceBuilder;
 
 /**
  * Services associated with MBean responsible for dependencies & injection management.
@@ -41,7 +40,7 @@ final class MBeanServices {
     private boolean installed;
 
     MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex> mBeanClassHierarchy,
-                  final ServiceTarget target, final ServiceComponentInstantiator componentInstantiator,
+                  final RequirementServiceTarget target, final ServiceComponentInstantiator componentInstantiator,
                   final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final ServiceName mbeanServerServiceName) {
         if (mBeanClassHierarchy == null) {
             throw SarLogger.ROOT_LOGGER.nullVar("mBeanClassHierarchy");
@@ -59,10 +58,9 @@ final class MBeanServices {
         final Method createMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, CREATE_METHOD_NAME);
         final Method destroyMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME);
         ServiceName createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
-        createDestroyServiceBuilder = target.addService(createDestroyServiceName);
+        createDestroyServiceBuilder = new AsyncServiceBuilder<>(target.addService());
         Consumer<Object> mBeanInstanceConsumer = createDestroyServiceBuilder.provides(createDestroyServiceName);
-        Supplier<ExecutorService> executorSupplier = createDestroyServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
-        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod, componentInstantiator, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod, componentInstantiator, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer);
         createDestroyServiceBuilder.setInstance(createDestroyService);
         if(componentInstantiator != null) {
             // the service that starts the EE component needs to start first
@@ -72,10 +70,9 @@ final class MBeanServices {
         final Method startMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, START_METHOD_NAME);
         final Method stopMethod = ReflectionUtils.getNoArgMethod(mBeanClassHierarchy, STOP_METHOD_NAME);
         ServiceName startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
-        startStopServiceBuilder = target.addService(startStopServiceName);
+        startStopServiceBuilder = new AsyncServiceBuilder<>(target.addService());
         mBeanInstanceConsumer = startStopServiceBuilder.provides(startStopServiceName);
-        executorSupplier = startStopServiceBuilder.requires(AbstractControllerService.EXECUTOR_CAPABILITY.getCapabilityServiceName());
-        StartStopService startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer, executorSupplier);
+        StartStopService startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, setupActions, mbeanContextClassLoader, mBeanInstanceConsumer);
         startStopServiceBuilder.setInstance(startStopService);
         startStopServiceBuilder.requires(createDestroyServiceName);
 

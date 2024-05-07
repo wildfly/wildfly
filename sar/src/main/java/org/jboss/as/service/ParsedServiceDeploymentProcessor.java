@@ -20,6 +20,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 import javax.management.StandardMBean;
 
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,7 +43,6 @@ import org.jboss.as.service.logging.SarLogger;
 import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -90,14 +90,14 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         // install services
         final ClassLoader classLoader = module.getClassLoader();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
-        final ServiceTarget target = phaseContext.getServiceTarget();
+        final RequirementServiceTarget target = phaseContext.getRequirementServiceTarget();
         final Map<String,ServiceComponentInstantiator> serviceComponents = deploymentUnit.getAttachment(ServiceAttachments.SERVICE_COMPONENT_INSTANTIATORS);
         for (final JBossServiceConfig serviceConfig : serviceConfigs) {
             addServices(target, serviceConfig, classLoader, reflectionIndex, serviceComponents != null ? serviceComponents.get(serviceConfig.getName()) : null, phaseContext);
         }
     }
 
-    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    private void addServices(final RequirementServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex> mBeanClassHierarchy = getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);

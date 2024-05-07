@@ -10,14 +10,13 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -32,23 +31,20 @@ abstract class AbstractService implements Service {
     private final List<SetupAction> setupActions;
     private final ClassLoader mbeanContextClassLoader;
     private final Consumer<Object> mBeanInstanceConsumer;
-    protected final Supplier<ExecutorService> executorSupplier;
-
 
     /**
      * @param mBeanInstance
      * @param setupActions  actions to setup the thread local context
      */
-    protected AbstractService(final Object mBeanInstance, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer, final Supplier<ExecutorService> executorSupplier) {
+    protected AbstractService(final Object mBeanInstance, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader, final Consumer<Object> mBeanInstanceConsumer) {
         this.mBeanInstance = mBeanInstance;
         this.setupActions = setupActions;
         this.mbeanContextClassLoader = mbeanContextClassLoader;
         this.mBeanInstanceConsumer = mBeanInstanceConsumer;
-        this.executorSupplier = executorSupplier;
     }
 
     @Override
-    public void start(final StartContext context) {
+    public void start(final StartContext context) throws StartException {
         mBeanInstanceConsumer.accept(mBeanInstance);
     }
 
