@@ -171,11 +171,17 @@ public class ResteasyAttributeTestCase {
         setAttributeValue(client, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS, map);
         map.clear();
 
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MATCH_CACHE_ENABLED, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_MATCH_CACHE_SIZE, VALUE_EXPRESSION_INT);
+
         map.add(new Property("unusual", VALUE_EXPRESSION_APPLICATION_UNUSUAL));
         map.add(new Property("xml", new ModelNode("application/xml")));
         setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS, map);
         map.clear();
 
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PATCH_FILTER_DISABLED, VALUE_EXPRESSION_BOOLEAN_TRUE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PATCH_FILTER_LEGACY, VALUE_EXPRESSION_BOOLEAN_FALSE);
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_ORIGINAL_WEBAPPLICATIONEXCEPTION_BEHAVIOR, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, VALUE_EXPRESSION_STRING);
 
@@ -183,6 +189,7 @@ public class ResteasyAttributeTestCase {
         setAttributeValue(client, JaxrsAttribute.RESTEASY_PROVIDERS, list);
         list.clear();
 
+        setAttributeValue(client, JaxrsAttribute.RESTEASY_PROXY_IMPLEMENT_ALL_INTERFACES, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY, VALUE_EXPRESSION_BOOLEAN_TRUE);
         setAttributeValue(client, JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE, VALUE_EXPRESSION_INT);
