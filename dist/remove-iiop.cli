@@ -1,0 +1,16 @@
+embed-server --server-config=${config}
+
+# Remove iiop-openjdk subsystem
+/subsystem=iiop-openjdk:remove()
+
+# Remove iiop-openjdk from ejb3
+/subsystem=ejb3/service=iiop:remove()
+
+# Remove iiop socket binding
+/socket-binding-group=standard-sockets/socket-binding=iiop:remove()
+/socket-binding-group=standard-sockets/socket-binding=iiop-ssl:remove()
+
+# Remove iiop-openjdk extension
+/extension=org.wildfly.iiop-openjdk:remove()
+
+stop-embedded-server
