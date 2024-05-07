@@ -1193,4 +1193,12 @@
         <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
         <vulnerabilityName>CVE-2024-1459</vulnerabilityName>
     </suppress>
+    <!-- Library used only in test classes. It's not provided in our WildFly distribution -->
+    <suppress>
+        <notes><![CDATA[
+        file name: xmlunit-core-2.6.3.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.xmlunit/xmlunit\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-31573</vulnerabilityName>
+    </suppress>
 </suppressions>
