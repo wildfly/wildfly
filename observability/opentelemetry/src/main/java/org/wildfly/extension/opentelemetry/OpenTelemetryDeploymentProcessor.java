@@ -25,12 +25,10 @@ import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    private final boolean useServerConfig;
-    private final WildFlyOpenTelemetryConfig serverConfig;
+    private final OpenTelemetrySubsystemRegistrar.WildFlyOpenTelemetryConfigSupplier configSupplier;
 
-    public OpenTelemetryDeploymentProcessor(boolean useServerConfig, WildFlyOpenTelemetryConfig serverConfig) {
-        this.useServerConfig = useServerConfig;
-        this.serverConfig = serverConfig;
+    public OpenTelemetryDeploymentProcessor(OpenTelemetrySubsystemRegistrar.WildFlyOpenTelemetryConfigSupplier configSupplier) {
+        this.configSupplier = configSupplier;
     }
 
     @Override
@@ -52,12 +50,14 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
                 return;
             }
 
-            Map<String, String> config = new HashMap<>(serverConfig.properties());
+            WildFlyOpenTelemetryConfig openTelemetryConfig = configSupplier.get();
+            Map<String, String> config = new HashMap<>(openTelemetryConfig.properties());
             if (!config.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
                 config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
             }
 
-            weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(useServerConfig, config), deploymentUnit);
+            weldCapability.registerExtensionInstance(
+                    new OpenTelemetryCdiExtension(!openTelemetryConfig.isMpTelemetryInstalled(), config), deploymentUnit);
             weldCapability.registerExtensionInstance(new OpenTelemetryExtension(), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             // We should not be here since the subsystem depends on weld capability. Just in case ...

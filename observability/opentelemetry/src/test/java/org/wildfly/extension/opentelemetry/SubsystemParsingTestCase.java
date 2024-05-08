@@ -36,7 +36,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<OpenTe
     }
 
     public SubsystemParsingTestCase(OpenTelemetrySubsystemSchema schema) {
-        super(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(), schema,
+        super(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension(), schema,
                 OpenTelemetrySubsystemSchema.CURRENT);
     }
 

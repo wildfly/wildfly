@@ -5,8 +5,8 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.API_MODULE;
-import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemDefinition.EXPORTED_MODULES;
+import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemRegistrar.API_MODULE;
+import static org.wildfly.extension.opentelemetry.OpenTelemetrySubsystemRegistrar.EXPORTED_MODULES;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;

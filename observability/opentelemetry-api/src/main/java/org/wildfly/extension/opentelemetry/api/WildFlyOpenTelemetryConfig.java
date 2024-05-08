@@ -30,6 +30,7 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
     public static final String OTEL_TRACES_SAMPLER_ARG = "otel.traces.sampler.arg";
 
     private final Map<String, String> properties;
+    private boolean mpTelemetryInstalled = false;
 
     public WildFlyOpenTelemetryConfig(Map<String, String> properties) {
         this.properties = Collections.unmodifiableMap(properties);
@@ -37,7 +38,8 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
 
     public WildFlyOpenTelemetryConfig(String serviceName, String exporter, String endpoint,
                                       Long batchDelay, Long maxQueueSize, Long maxExportBatchSize,
-                                      Long exportTimeout, String spanProcessorType, String sampler, Double ratio) {
+                                      Long exportTimeout, String spanProcessorType, String sampler, Double ratio,
+                                      boolean mpTelemetryInstalled) {
         Map<String, String> config = new HashMap<>();
         // Default to on
         addValue(config, OTEL_SDK_DISABLED, "false");
@@ -82,11 +84,16 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
 
 
         properties = Collections.unmodifiableMap(config);
+        this.mpTelemetryInstalled = mpTelemetryInstalled;
     }
 
     @Override
     public Map<String, String> properties() {
         return properties;
+    }
+
+    public boolean isMpTelemetryInstalled() {
+        return mpTelemetryInstalled;
     }
 
     /**

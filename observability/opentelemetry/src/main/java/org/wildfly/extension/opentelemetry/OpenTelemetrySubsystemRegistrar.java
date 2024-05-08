@@ -17,38 +17,47 @@ import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationCons
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.GROUP_SPAN_PROCESSOR;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.OPENTELEMETRY_CAPABILITY_NAME;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.SPAN_PROCESSOR_BATCH;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.SUBSYSTEM_PATH;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.SUBSYSTEM_RESOLVER;
+import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.VERTX_DISABLE_DNS_RESOLVER;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.OTEL_LOGGER;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
+import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
+import org.wildfly.subsystem.resource.ResourceDescriptor;
+import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /*
  * For future reference: https://github.com/open-telemetry/opentelemetry-java/tree/main/sdk-extensions/autoconfigure#jaeger-exporter
  */
 
-class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
+class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
     static final String OPENTELEMETRY_MODULE = "org.wildfly.extension.opentelemetry";
     public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
@@ -64,6 +73,7 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
                     .build();
 
     public static final WildFlyOpenTelemetryConfigSupplier CONFIG_SUPPLIER = new WildFlyOpenTelemetryConfigSupplier();
+
     static final RuntimeCapability<WildFlyOpenTelemetryConfigSupplier> OPENTELEMETRY_CONFIG_CAPABILITY =
             RuntimeCapability.Builder.of(OPENTELEMETRY_MODULE + ".config", false, CONFIG_SUPPLIER).build();
     public static final SimpleAttributeDefinition SERVICE_NAME = SimpleAttributeDefinitionBuilder
@@ -157,18 +167,65 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = {
+    public static final List<AttributeDefinition> ATTRIBUTES = List.of(
             SERVICE_NAME, EXPORTER, ENDPOINT, SPAN_PROCESSOR_TYPE, BATCH_DELAY, MAX_QUEUE_SIZE, MAX_EXPORT_BATCH_SIZE,
             EXPORT_TIMEOUT, SAMPLER, RATIO
-    };
+    );
 
-    protected OpenTelemetrySubsystemDefinition() {
-        super(new SimpleResourceDefinition.Parameters(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH,
-                OpenTelemetrySubsystemExtension.SUBSYSTEM_RESOLVER)
-                .setAddHandler(new OpenTelemetrySubsystemAdd())
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-                .setCapabilities(OPENTELEMETRY_CAPABILITY, OPENTELEMETRY_CONFIG_CAPABILITY)
+    @Override
+    public ManagementResourceRegistration register(SubsystemRegistration parent,
+                                                   ManagementResourceRegistrationContext context) {
+        ManagementResourceRegistration registration =
+                parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(SUBSYSTEM_PATH),
+                        SUBSYSTEM_RESOLVER).build());
+        ResourceDescriptor descriptor = ResourceDescriptor.builder(SUBSYSTEM_RESOLVER)
+                .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
+                .addAttributes(ATTRIBUTES)
+                .withAddOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .withRemoveOperationRestartFlag(OperationEntry.Flag.RESTART_ALL_SERVICES)
+                .withDeploymentChainContributor(target -> {
+                    // We need to disable vertx's DNS resolver as it causes failures under k8s
+                    if (System.getProperty(VERTX_DISABLE_DNS_RESOLVER) == null) {
+                        System.setProperty(VERTX_DISABLE_DNS_RESOLVER, "true");
+                    }
+                    target.addDeploymentProcessor(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME,
+                            Phase.DEPENDENCIES,
+                            0x1910,
+                            new OpenTelemetryDependencyProcessor());
+                    target.addDeploymentProcessor(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME,
+                            Phase.POST_MODULE,
+                            0x3810,
+                            new OpenTelemetryDeploymentProcessor(CONFIG_SUPPLIER));
+                })
+                .build();
+
+        ManagementResourceRegistrar.of(descriptor).register(registration);
+
+        return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String exporter = OpenTelemetrySubsystemRegistrar.EXPORTER.resolveModelAttribute(context, model).asString();
+        validateExporter(context, exporter);
+
+        final WildFlyOpenTelemetryConfig config = new WildFlyOpenTelemetryConfig(
+                OpenTelemetrySubsystemRegistrar.SERVICE_NAME.resolveModelAttribute(context, model).asStringOrNull(),
+                exporter,
+                OpenTelemetrySubsystemRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemRegistrar.BATCH_DELAY.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemRegistrar.MAX_QUEUE_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemRegistrar.MAX_EXPORT_BATCH_SIZE.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemRegistrar.EXPORT_TIMEOUT.resolveModelAttribute(context, model).asLongOrNull(),
+                OpenTelemetrySubsystemRegistrar.SPAN_PROCESSOR_TYPE.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemRegistrar.SAMPLER.resolveModelAttribute(context, model).asStringOrNull(),
+                OpenTelemetrySubsystemRegistrar.RATIO.resolveModelAttribute(context, model).asDoubleOrNull(),
+                context.getCapabilityServiceSupport().hasCapability("org.wildfly.extension.microprofile.telemetry")
         );
+
+        CONFIG_SUPPLIER.accept(config);
+        return CapabilityServiceInstaller.builder(OPENTELEMETRY_CAPABILITY, CONFIG_SUPPLIER)
+                .build();
     }
 
     static void validateExporter(OperationContext context, String exporter) throws OperationFailedException {
@@ -183,31 +240,26 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
         }
     }
 
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(ATTRIBUTES);
-    }
+//    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+//        OperationStepHandler handler = new ValidateExporterWriteAttributeHandler();
+//        for (AttributeDefinition attr : getAttributes()) {
+//            if(!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+//                throw ControllerLogger.ROOT_LOGGER.attributeWasNotMarkedAsReloadRequired(attr.getName(), resourceRegistration.getPathAddress());
+//            }
+//            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
+//        }
+//    }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler handler = new ValidateExporterWriteAttributeHandler();
-        for (AttributeDefinition attr : getAttributes()) {
-            if(!attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
-                throw ControllerLogger.ROOT_LOGGER.attributeWasNotMarkedAsReloadRequired(attr.getName(), resourceRegistration.getPathAddress());
-            }
-            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
-        }
-    }
-
-    static class WildFlyOpenTelemetryConfigSupplier implements Supplier<OpenTelemetryConfig>, Consumer<OpenTelemetryConfig> {
-        private OpenTelemetryConfig config;
+    static class WildFlyOpenTelemetryConfigSupplier implements Supplier<WildFlyOpenTelemetryConfig>,
+            Consumer<WildFlyOpenTelemetryConfig> {
+        private WildFlyOpenTelemetryConfig config;
         @Override
-        public void accept(OpenTelemetryConfig openTelemetryConfig) {
+        public void accept(WildFlyOpenTelemetryConfig openTelemetryConfig) {
             this.config = openTelemetryConfig;
         }
 
         @Override
-        public OpenTelemetryConfig get() {
+        public WildFlyOpenTelemetryConfig get() {
             return config;
         }
     }
