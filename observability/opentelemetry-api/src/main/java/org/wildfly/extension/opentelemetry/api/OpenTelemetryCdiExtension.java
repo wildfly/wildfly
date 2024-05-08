@@ -23,7 +23,7 @@ public final class OpenTelemetryCdiExtension implements Extension {
     private final WildFlyOpenTelemetryConfig config;
 
     public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
-        this (useServerConfig, new WildFlyOpenTelemetryConfig(config));
+        this (useServerConfig, new WildFlyOpenTelemetryConfig(config, useServerConfig));
     }
 
     public OpenTelemetryCdiExtension(boolean useServerConfig, WildFlyOpenTelemetryConfig config) {

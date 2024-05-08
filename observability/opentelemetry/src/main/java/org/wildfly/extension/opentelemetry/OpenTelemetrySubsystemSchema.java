@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.opentelemetry;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.factory;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
@@ -22,7 +22,7 @@ public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<Op
     private final VersionedNamespace<IntVersion, OpenTelemetrySubsystemSchema> namespace;
 
     OpenTelemetrySubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME, new IntVersion(major, minor));
     }
 
     @Override
@@ -32,8 +32,9 @@ public enum OpenTelemetrySubsystemSchema implements PersistentSubsystemSchema<Op
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(OpenTelemetrySubsystemExtension.SUBSYSTEM_PATH, this.namespace)
-                .addAttributes(OpenTelemetrySubsystemDefinition.ATTRIBUTES)
+        return factory(this)
+                .builder(OpenTelemetryConfigurationConstants.SUBSYSTEM_PATH)
+                .addAttributes(OpenTelemetrySubsystemRegistrar.ATTRIBUTES.stream())
                 .build();
     }
 }

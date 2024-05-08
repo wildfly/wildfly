@@ -338,7 +338,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-opentelemetry-api</artifactId>
             <scope>test</scope>
         </dependency>
@@ -394,6 +394,13 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian</groupId>
+            <artifactId>arquillian-testcontainers</artifactId>
+            <version>1.0.0.Alpha1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -483,6 +490,7 @@
                     <environmentVariables>
                         <!-- dummy env property for MicroProfile Config testing -->
                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                        <TC_LOGGING>true</TC_LOGGING>
                     </environmentVariables>
                     <systemPropertyVariables>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>

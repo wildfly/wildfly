@@ -5,7 +5,18 @@
 
 package org.wildfly.extension.opentelemetry;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
+
 public final class OpenTelemetryConfigurationConstants {
+
+    public static final String SUBSYSTEM_NAME = "opentelemetry";
+    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, OpenTelemetrySubsystemExtension.class);
+    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    static final String VERTX_DISABLE_DNS_RESOLVER = "vertx.disableDnsResolver";
 
     private OpenTelemetryConfigurationConstants() {}
 

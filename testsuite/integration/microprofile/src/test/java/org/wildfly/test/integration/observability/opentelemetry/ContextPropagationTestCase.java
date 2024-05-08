@@ -2,26 +2,26 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.test.integration.observability.opentelemetry;
 
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.util.List;
+
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
@@ -38,17 +38,15 @@ import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTa
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({OpenTelemetrySetupTask.class})
+@DockerRequired(AssumptionViolatedException.class)
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
-
-    @BeforeClass
-    public static void disableForWFLY19509() {
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19509");
-    }
+    @Testcontainer
+    private OpenTelemetryCollectorContainer otelCollector;
 
     @ArquillianResource
     private Deployer deployer;
 
-    @Deployment(name = "service1")
+    @Deployment(name = "service1", managed = false)
     public static WebArchive getDeployment1() {
         return buildBaseArchive("service1");
     }
@@ -61,18 +59,19 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
     @Test
     @InSequence(1)
     public void deploy() {
+        deployer.deploy("service1");
         deployer.deploy("service2");
     }
 
     @Test
     @InSequence(2)
-    public void testContextPropagation() throws InterruptedException {
+    public void testContextPropagation() throws InterruptedException, MalformedURLException {
         try (Client client = ClientBuilder.newClient()) {
-            Response response = client.target(URI.create(url + "contextProp1")).request().get();
+            Response response = client.target(getDeploymentUrl("service1") + "contextProp1")
+                    .request().get();
             Assert.assertEquals(204, response.getStatus());
 
-            List<JaegerTrace> traces = OpenTelemetryCollectorContainer.getInstance()
-                    .getTraces("service1.war");
+            List<JaegerTrace> traces = otelCollector.getTraces("service1.war");
             Assert.assertFalse("Traces not found for service", traces.isEmpty());
 
             JaegerTrace trace = traces.get(0);
