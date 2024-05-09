@@ -7,7 +7,6 @@ package org.jboss.as.test.integration.mail.basic;
 
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Resource;
 import jakarta.mail.Address;
@@ -24,6 +23,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jboss.as.test.shared.TimeoutUtil;
 
 /**
  * A servlet that sends an email using SMTP and verifies the message is in the recipient inbox using pop3.
@@ -47,27 +47,43 @@ public final class MailTesterServlet extends HttpServlet {
             message.setContent(emailContent, "text/plain");
             Transport.send(message);
 
-            // Wait a bit to ensure the server has processed the message
-            TimeUnit.SECONDS.sleep(1);
-
-            // Read the email using pop3
-            Store store = session.getStore("pop3");
-            store.connect("user02@james.local", "1234");
-            Folder inbox = store.getFolder("Inbox");
-            inbox.open(Folder.READ_ONLY);
-
-            // get the list of inbox messages
-            Message[] messages = inbox.getMessages();
-
-            if (messages.length == 0) {
-                throw new ServletException("no message was found when reading using pop3");
-            }
-
-            if (!emailContent.equals(messages[0].getContent().toString().trim())) {
-                throw new ServletException("Message read is not equals to the message sent");
-            }
+            long endTime = System.currentTimeMillis() + TimeoutUtil.adjust(5000);
+            boolean success = false;
+            do {
+                Thread.sleep(500);
+                try {
+                    tryToReadEmails(emailContent);
+                    return;
+                } catch (ServletException e){
+                    if (e.getMessage().equals("Message read is not equals to the message sent")){
+                        throw e;
+                    }
+                }
+            } while (System.currentTimeMillis() < endTime && !success);
+            throw new ServletException("Reached attempt timeout but no messages were received");
         } catch (MessagingException | InterruptedException e) {
             throw new ServletException(e);
         }
+    }
+
+    private void tryToReadEmails(String emailContent) throws ServletException, MessagingException, IOException {
+
+        // Read the email using pop3
+        Store store = session.getStore("pop3");
+        store.connect("user02@james.local", "1234");
+        Folder inbox = store.getFolder("Inbox");
+        inbox.open(Folder.READ_ONLY);
+
+        // get the list of inbox messages
+        Message[] messages = inbox.getMessages();
+
+        if (messages.length == 0) {
+            throw new ServletException("no message was found when reading using pop3");
+        }
+
+        if (!emailContent.equals(messages[0].getContent().toString().trim())) {
+            throw new ServletException("Message read is not equals to the message sent");
+        }
+
     }
 }

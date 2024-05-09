@@ -10,6 +10,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.IOException;
 import java.net.SocketPermission;
 import java.net.URL;
+import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -21,6 +22,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -48,11 +50,13 @@ public class MailTestCase {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
+                .addClass(TimeoutUtil.class)
                 .addClass(MailTesterServlet.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE,"beans.xml")
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                     new RuntimePermission("getClassLoader"),
-                    new SocketPermission("*", "connect,resolve")
+                    new SocketPermission("*", "connect,resolve"),
+                    new PropertyPermission("ts.timeout.factor", "read")
             ), "permissions.xml");
     }
 
