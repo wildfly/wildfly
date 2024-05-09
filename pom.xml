@@ -564,7 +564,7 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.6</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.core>24.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>25.0.0.Beta1</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
