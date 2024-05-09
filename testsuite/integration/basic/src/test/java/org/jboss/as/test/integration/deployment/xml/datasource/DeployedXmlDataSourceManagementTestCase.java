@@ -52,7 +52,6 @@ public class DeployedXmlDataSourceManagementTestCase {
 
     public static final String TEST_DS_XML = "test-ds.xml";
     public static final String JPA_DS_XML = "jpa-ds.xml";
-    public static final String TEST2_DS_NAME = "test2-ds";
     public static final String TEST2_DS_XML = "test2-ds.xml";
 
     static class DeployedXmlDataSourceManagementTestCaseSetup implements ServerSetupTask {
@@ -74,7 +73,7 @@ public class DeployedXmlDataSourceManagementTestCase {
             URL url = DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST2_DS_XML);
             InputStream inputStream = url.openConnection().getInputStream();
             plan = manager.newDeploymentPlan()
-                    .add(TEST2_DS_NAME, TEST2_DS_XML, inputStream).andDeploy()
+                    .add(TEST2_DS_XML, TEST2_DS_XML, inputStream).andDeploy()
                     .build();
             executePlan(manager, plan);
         }
@@ -105,7 +104,7 @@ public class DeployedXmlDataSourceManagementTestCase {
             manager.execute(undeployPlan).get();
 
             undeployPlan = manager.newDeploymentPlan()
-                    .undeploy(TEST2_DS_NAME).andRemoveUndeployed()
+                    .undeploy(TEST2_DS_XML).andRemoveUndeployed()
                     .build();
             manager.execute(undeployPlan).get();
         }
@@ -140,7 +139,7 @@ public class DeployedXmlDataSourceManagementTestCase {
     @Test
     public void testDeployedDatasourceInManagementModelWithDifferentRuntimeName() throws IOException {
         final ModelNode address = new ModelNode();
-        address.add("deployment", TEST2_DS_NAME);
+        address.add("deployment", TEST2_DS_XML);
         address.add("subsystem", "datasources");
         address.add("data-source", "java:jboss/datasources/Deployed2DS");
         address.protect();
