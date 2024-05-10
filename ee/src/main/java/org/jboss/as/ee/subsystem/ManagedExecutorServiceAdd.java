@@ -15,6 +15,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
@@ -32,6 +33,7 @@ import org.wildfly.extension.requestcontroller.RequestController;
  */
 public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
 
+    private static final String PROCESS_STATE_NOTIFIER_CAPABILITY_NAME = "org.wildfly.management.process-state-notifier";
     private static final String REQUEST_CONTROLLER_CAPABILITY_NAME = "org.wildfly.request-controller";
 
     static final ManagedExecutorServiceAdd INSTANCE = new ManagedExecutorServiceAdd();
@@ -109,11 +111,13 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
             threadFactory = ManagedExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();
         }
         final Supplier<ManagedThreadFactoryImpl> threadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
+
+        final Supplier<ProcessStateNotifier> processStateNotifierSupplier = serviceBuilder.requiresCapability(PROCESS_STATE_NOTIFIER_CAPABILITY_NAME, ProcessStateNotifier.class);
         Supplier<RequestController> requestControllerSupplier = null;
         if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);
         }
-        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(consumer, contextServiceSupplier, threadFactorySupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
+        final ManagedExecutorServiceService service = new ManagedExecutorServiceService(consumer, contextServiceSupplier, threadFactorySupplier, processStateNotifierSupplier, requestControllerSupplier, name, jndiName, hungTaskThreshold, hungTaskTerminationPeriod, longRunningTasks, coreThreads, maxThreads, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueLength, rejectPolicy, threadPriority, hungTasksPeriodicTerminationService);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();
     }
