@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.concurrent.ManagedExecutorServiceImpl;
 import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.as.ee.logging.EeLogger;
@@ -49,6 +50,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     private final DelegatingSupplier<ContextServiceImpl> contextServiceSupplier = new DelegatingSupplier<>();
     private final AbstractManagedExecutorService.RejectPolicy rejectPolicy;
     private final Integer threadPriority;
+    private final Supplier<ProcessStateNotifier> processStateNotifierSupplier;
     private final Supplier<RequestController> requestControllerSupplier;
     private ControlPoint controlPoint;
     private final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService;
@@ -59,6 +61,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
      * @param consumer
      * @param contextServiceSupplier
      * @param managedThreadFactorySupplier
+     * @param processStateNotifierSupplier
      * @param requestControllerSupplier
      * @param name
      * @param jndiName
@@ -78,12 +81,14 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     public ManagedExecutorServiceService(final Consumer<ManagedExecutorServiceAdapter> consumer,
                                          final Supplier<ContextServiceImpl> contextServiceSupplier,
                                          final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier,
+                                         final Supplier<ProcessStateNotifier> processStateNotifierSupplier,
                                          final Supplier<RequestController> requestControllerSupplier,
                                          String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, AbstractManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
         super(jndiName);
         this.consumer = consumer;
         this.contextServiceSupplier.set(contextServiceSupplier);
         this.managedThreadFactorySupplier = managedThreadFactorySupplier;
+        this.processStateNotifierSupplier = processStateNotifierSupplier;
         this.requestControllerSupplier = requestControllerSupplier;
         this.name = name;
         this.hungTaskThreshold = hungTaskThreshold;
@@ -114,7 +119,7 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
             final RequestController requestController = requestControllerSupplier.get();
             controlPoint = requestController != null ? requestController.getControlPoint(name, "managed-executor-service") : null;
         }
-        executorService = new ManagedExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint);
+        executorService = new ManagedExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint, processStateNotifierSupplier.get());
         if (hungTaskThreshold > 0 && hungTaskTerminationPeriod > 0) {
             hungTasksPeriodicTerminationFuture = hungTasksPeriodicTerminationService.get().startHungTaskPeriodicTermination(executorService, hungTaskTerminationPeriod);
         }

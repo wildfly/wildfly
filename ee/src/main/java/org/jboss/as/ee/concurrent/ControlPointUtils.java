@@ -5,6 +5,8 @@
 
 package org.jboss.as.ee.concurrent;
 
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.logging.EeLogger;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RunResult;
@@ -26,13 +28,17 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
  */
 public class ControlPointUtils {
 
-    public static Runnable doWrap(Runnable runnable, ControlPoint controlPoint) {
+    public static Runnable doWrap(Runnable runnable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         if (controlPoint == null || runnable == null) {
             return runnable;
         }
         final RunResult result;
         try {
-            result = controlPoint.forceBeginRequest();
+            if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
+                result = controlPoint.forceBeginRequest();
+            } else {
+                result = controlPoint.beginRequest();
+            }
         } catch (Exception e) {
             throw new RejectedExecutionException(e);
         }
@@ -48,13 +54,17 @@ public class ControlPointUtils {
         }
     }
 
-    public static <T> Callable<T> doWrap(Callable<T> callable, ControlPoint controlPoint) {
+    public static <T> Callable<T> doWrap(Callable<T> callable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         if (controlPoint == null || callable == null) {
             return callable;
         }
         final RunResult result;
         try {
-            result = controlPoint.forceBeginRequest();
+            if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
+                result = controlPoint.forceBeginRequest();
+            } else {
+                result = controlPoint.beginRequest();
+            }
         } catch (Exception e) {
             throw new RejectedExecutionException(e);
         }
@@ -70,20 +80,20 @@ public class ControlPointUtils {
         }
     }
 
-    public static Runnable doScheduledWrap(Runnable runnable, ControlPoint controlPoint) {
+    public static Runnable doScheduledWrap(Runnable runnable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         if (controlPoint == null || runnable == null) {
             return runnable;
         } else {
-            final ControlledScheduledRunnable controlledScheduledRunnable = new ControlledScheduledRunnable(runnable, controlPoint);
+            final ControlledScheduledRunnable controlledScheduledRunnable = new ControlledScheduledRunnable(runnable, controlPoint, processStateNotifier);
             return runnable instanceof ManagedTask ? new ControlledManagedRunnable(controlledScheduledRunnable, (ManagedTask) runnable) : controlledScheduledRunnable;
         }
     }
 
-    public static <T> Callable<T> doScheduledWrap(Callable<T> callable, ControlPoint controlPoint) {
+    public static <T> Callable<T> doScheduledWrap(Callable<T> callable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         if (controlPoint == null || callable == null) {
             return callable;
         } else {
-            final ControlledScheduledCallable<T> controlledScheduledCallable = new ControlledScheduledCallable<>(callable, controlPoint);
+            final ControlledScheduledCallable<T> controlledScheduledCallable = new ControlledScheduledCallable<>(callable, controlPoint, processStateNotifier);
             return callable instanceof ManagedTask ? new ControlledManagedCallable<>(controlledScheduledCallable, (ManagedTask) callable) : controlledScheduledCallable;
         }
     }
@@ -144,10 +154,12 @@ public class ControlPointUtils {
 
         private final Runnable runnable;
         private final ControlPoint controlPoint;
+        private final ProcessStateNotifier processStateNotifier;
 
-        ControlledScheduledRunnable(Runnable runnable, ControlPoint controlPoint) {
+        ControlledScheduledRunnable(Runnable runnable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
             this.runnable = runnable;
             this.controlPoint = controlPoint;
+            this.processStateNotifier = processStateNotifier;
         }
 
         @Override
@@ -157,7 +169,13 @@ public class ControlPointUtils {
             } else {
                 RuntimeException runnableException = null;
                 try {
-                    if (controlPoint.beginRequest() == RunResult.RUN) {
+                    final RunResult result;
+                    if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
+                        result = controlPoint.forceBeginRequest();
+                    } else {
+                        result = controlPoint.beginRequest();
+                    }
+                    if (result == RunResult.RUN) {
                         try {
                             runnable.run();
                         } catch (RuntimeException e) {
@@ -190,10 +208,12 @@ public class ControlPointUtils {
 
         private final Callable<T> callable;
         private final ControlPoint controlPoint;
+        private final ProcessStateNotifier processStateNotifier;
 
-        ControlledScheduledCallable(Callable<T> callable, ControlPoint controlPoint) {
+        ControlledScheduledCallable(Callable<T> callable, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
             this.callable = callable;
             this.controlPoint = controlPoint;
+            this.processStateNotifier = processStateNotifier;
         }
 
         @Override
@@ -202,7 +222,13 @@ public class ControlPointUtils {
                 return callable.call();
             } else  {
                 try {
-                    if (controlPoint.beginRequest() == RunResult.RUN) {
+                    final RunResult result;
+                    if (processStateNotifier.getCurrentState() == ControlledProcessState.State.STARTING) {
+                        result = controlPoint.forceBeginRequest();
+                    } else {
+                        result = controlPoint.beginRequest();
+                    }
+                    if (result == RunResult.RUN) {
                         try {
                             return callable.call();
                         } finally {
