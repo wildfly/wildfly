@@ -373,6 +373,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 || conDef.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName())
                 || conDef.hasDefined(ELYTRON_ENABLED.getName())) {
             streamWriter.writeStartElement(ConnectionDefinition.Tag.SECURITY.getLocalName());
+            ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
             if (conDef.hasDefined(APPLICATION.getName()) && conDef.get(APPLICATION.getName()).getType().equals(ModelType.BOOLEAN) && conDef.get(APPLICATION.getName()).asBoolean()) {
                 streamWriter.writeEmptyElement(APPLICATION.getXmlName());
             } else {
@@ -380,7 +381,6 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             }
             SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
             SECURITY_DOMAIN_AND_APPLICATION.marshallAsElement(conDef, streamWriter);
-            ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
             AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);
             AUTHENTICATION_CONTEXT_AND_APPLICATION.marshallAsElement(conDef, streamWriter);
 
@@ -424,8 +424,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 RECOVERY_USERNAME.marshallAsAttribute(conDef, streamWriter);
                 RECOVERY_PASSWORD.marshallAsAttribute(conDef, streamWriter);
                 RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(conDef, streamWriter);
-                RECOVERY_SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
                 RECOVERY_ELYTRON_ENABLED.marshallAsElement(conDef, streamWriter);
+                RECOVERY_SECURITY_DOMAIN.marshallAsElement(conDef, streamWriter);
                 RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(conDef, streamWriter);
                 streamWriter.writeEndElement();
             }
