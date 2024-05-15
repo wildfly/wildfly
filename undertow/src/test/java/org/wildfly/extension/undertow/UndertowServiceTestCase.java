@@ -40,7 +40,6 @@ public class UndertowServiceTestCase extends AbstractUndertowSubsystemTestCase {
     public UndertowServiceTestCase(UndertowSubsystemSchema schema) {
         super(schema);
     }
-
     @Override
     public void setUp() {
         super.setUp();

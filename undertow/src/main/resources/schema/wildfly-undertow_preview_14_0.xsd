@@ -12,7 +12,6 @@
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
            version="1.0">
-
     <xs:import namespace="urn:wildfly:credential-reference:1.1" schemaLocation="wildfly-credential-reference_1_1.xsd"/>
     <!-- The undertow subsystem root element -->
     <xs:element name="subsystem" type="undertow-subsystemType"/>
@@ -757,6 +756,8 @@
         <xs:attribute name="cached-connections-per-thread" use="optional" type="xs:integer" default="5"/>
         <xs:attribute name="connection-idle-timeout" use="optional" type="xs:integer" default="60000"/>
         <xs:attribute name="max-retries" type="xs:int" use="optional" default="1"/>
+        <xs:attribute name="reuse-x-forwarded-header" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="rewrite-host-header" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="reverse-proxy-hostType">

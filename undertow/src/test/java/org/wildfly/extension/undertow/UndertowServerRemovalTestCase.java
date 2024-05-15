@@ -23,6 +23,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 /**
  *  Tests server and host removal in Undertow subsystem.
  *
@@ -42,7 +44,16 @@ public class UndertowServerRemovalTestCase extends AbstractUndertowSubsystemTest
 
     public UndertowServerRemovalTestCase(UndertowSubsystemSchema schema) {
         super(schema);
-        // TODO Auto-generated constructor stub
+    }
+
+    @Override
+    protected UndertowSubsystemSchema getSubsystemSchema() {
+        return super.getSubsystemSchema();
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return super.getSubsystemXml();
     }
 
     @Override
