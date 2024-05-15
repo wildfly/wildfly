@@ -10,16 +10,53 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ts-integ-mp</artifactId>
+        <artifactId>wildfly-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
         <version>33.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-ts-integ-mp-certification</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile TCK - Certification</name>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <executions><execution><id>default-compile</id><phase>none</phase></execution></executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <executions><execution><id>default-site</id><phase>none</phase></execution></executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <executions><execution><id>default-jar</id><phase>none</phase></execution></executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <executions><execution><id>attach-sources</id><phase>none</phase></execution></executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <profiles>
         <profile>
