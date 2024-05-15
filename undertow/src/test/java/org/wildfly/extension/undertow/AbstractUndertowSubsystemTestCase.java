@@ -34,14 +34,10 @@ import org.wildfly.extension.undertow.filters.PredicateHandlerWrapper;
 
 public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemSchemaTest<UndertowSubsystemSchema> {
     final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
-    private final UndertowSubsystemSchema schema;
-
-    AbstractUndertowSubsystemTestCase() {
-        this(UndertowSubsystemSchema.CURRENT);
-    }
+    protected final UndertowSubsystemSchema schema;
 
     AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
+        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT.get(schema.getStability()));
         this.schema = schema;
     }
 
@@ -67,7 +63,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         // Skip runtime tests for old versions - since legacy SSO is only allowed in admin-only mode
         if (!this.schema.since(UndertowSubsystemSchema.VERSION_14_0)) return;
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values, this.schema)).setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
 
         if (!mainServices.isSuccessfulBoot()) {
@@ -166,6 +162,6 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new DefaultInitialization();
+        return new DefaultInitialization(this.schema);
     }
 }
