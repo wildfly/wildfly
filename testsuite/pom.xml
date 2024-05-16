@@ -558,6 +558,7 @@
             </properties>
             <modules>
                 <module>domain</module>
+                <module>galleon</module>
                 <module>integration</module>
                 <module>layers</module>
                 <module>layers-expansion</module>
