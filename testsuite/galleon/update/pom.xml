@@ -23,6 +23,15 @@
     <packaging>pom</packaging>
     <name>WildFly Test Suite: Galleon update tests</name>
     <description>Install a base version and check that wildfly producers can get updated to the SNAPSHOT version.</description>
+
+    <properties>
+        <!-- We use maven properties to control which phase the xxx-update maven-antrun-plugin executions run in.
+             Use 'none' to disable the execution. Different maven profiles can change the property values. -->
+        <wildfly-ee.update.phase>compile</wildfly-ee.update.phase>
+        <wildfly.update.phase>compile</wildfly.update.phase>
+        <wildfly-preview.update.phase>none</wildfly-preview.update.phase>
+    </properties>
+
     <profiles>
         <profile>
             <id>galleon.profile</id>
@@ -62,7 +71,11 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <phase>compile</phase>
+                                <id>wildfly-ee-update</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>${wildfly-ee.update.phase}</phase>
                                 <configuration>
                                     <tasks>
                                         <exec executable="./run-test.sh" failonerror="true">
@@ -74,6 +87,17 @@
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="jaxrs-server"/>
                                         </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>wildfly-update</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>${wildfly.update.phase}</phase>
+                                <configuration>
+                                    <tasks>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -82,7 +106,18 @@
                                             <env key="WILDFLY_PRODUCER" value="wildfly"/>
                                             <env key="WILDFLY_CHANNEL" value="${galleon.minor.channel}"/>
                                             <env key="GALLEON_LAYERS" value="cloud-server"/>
-                                        </exec>
+                                        </exec>\
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>wildfly-preview-update</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>${wildfly-preview.update.phase}</phase>
+                                <configuration>
+                                    <tasks>
                                         <exec executable="./run-test.sh" failonerror="true">
                                             <env key="GALLEON_VERSION" value="${version.org.jboss.galleon}"/>
                                             <env key="BASE_DIR" value="${project.basedir}"/>
@@ -94,14 +129,37 @@
                                         </exec>
                                     </tasks>
                                 </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>preview.profile</id>
+            <activation><property><name>ts.preview</name></property></activation>
+            <properties>
+                <!-- Enable WFP tests and disable std WF -->
+                <wildfly-ee.update.phase>none</wildfly-ee.update.phase>
+                <wildfly.update.phase>none</wildfly.update.phase>
+                <wildfly-preview.update.phase>compile</wildfly-preview.update.phase>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>ee-galleon-pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-ee-galleon-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Skip the WF feature pack test -->
+                <wildfly.update.phase>none</wildfly.update.phase>
+            </properties>
+        </profile>
     </profiles>
+
 </project>
