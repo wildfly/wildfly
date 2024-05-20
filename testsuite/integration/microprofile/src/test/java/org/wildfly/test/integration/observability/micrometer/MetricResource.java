@@ -36,7 +36,7 @@ public class MetricResource {
 
         timer.record(() -> {
             try {
-                Thread.sleep((long) (Math.random() * 1000L));
+                Thread.sleep((long) (Math.random() * 100L));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

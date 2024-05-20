@@ -22,8 +22,6 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     public static final int PORT_JAEGER_QUERY = 16686;
     public static final int PORT_JAEGER_OTLP = 4317;
 
-    private String jaegerEndpoint;
-
     public JaegerContainer() {
         super("Jaeger", IMAGE_NAME, IMAGE_VERSION, List.of(PORT_JAEGER_QUERY, PORT_JAEGER_OTLP));
         withNetworkAliases("jaeger")
@@ -33,20 +31,25 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
     @Override
     public void start() {
         super.start();
-        jaegerEndpoint = "http://localhost:" + getMappedPort(PORT_JAEGER_QUERY);
         debugLog("Query port: " + getMappedPort(PORT_JAEGER_QUERY));
         debugLog("OTLP port: " + getMappedPort(PORT_JAEGER_OTLP));
         debugLog("port bindings: " + getPortBindings());
     }
 
-    List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {
+
+
+    public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {
         try (Client client = ClientBuilder.newClient()) {
             waitForDataToAppear(serviceName);
-            return client.target(jaegerEndpoint + "/api/traces?service=" + serviceName).request()
+            return client.target(getJaegerEndpoint() + "/api/traces?service=" + serviceName).request()
                     .get()
                     .readEntity(JaegerResponse.class)
                     .getData();
         }
+    }
+
+    private String getJaegerEndpoint() {
+        return "http://localhost:" + getMappedPort(PORT_JAEGER_QUERY);
     }
 
     private void waitForDataToAppear(String serviceName) {
@@ -54,9 +57,10 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
             boolean found = false;
             int count = 0;
             while (count < 30) {
-                String response = client.target(jaegerEndpoint + "/api/services").request()
+                String response = client.target(getJaegerEndpoint() + "/api/services").request()
                         .get()
                         .readEntity(String.class);
+                System.out.println("response = " + response);
                 if (response.contains(serviceName)) {
                     found = true;
                     break;

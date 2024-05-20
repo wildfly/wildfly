@@ -26,18 +26,16 @@ import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
-import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask;
+import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 /**
  * Test case to verify basic SmallRye Fault Tolerance integration with Micrometer. The test first invokes a REST
@@ -68,14 +66,6 @@ public class FaultToleranceMicrometerIntegrationTestCase {
 
     @Inject
     private MeterRegistry meterRegistry;
-
-    // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
-    // Otherwise the org.wildfly.extension.micrometer.registry.NoOpRegistry is installed which will result in 0 counters,
-    // and cause the test fail seemingly intermittently on machines with broken Docker setup.
-    @BeforeClass
-    public static void checkForDocker() {
-        AssumeTestGroupUtil.assumeDockerAvailable();
-    }
 
     @Test
     @InSequence(1)

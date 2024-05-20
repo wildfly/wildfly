@@ -78,10 +78,9 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
             String traceId = trace.getTraceID();
             List<JaegerSpan> spans = trace.getSpans();
 
-            spans.forEach(s -> {
-                Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
-                        traceId, s.getTraceID());
-            });
+            spans.forEach(s ->
+                    Assert.assertEquals("The traceId of the span did not match the first span's. Context propagation failed.",
+                            traceId, s.getTraceID()));
         }
     }
 
