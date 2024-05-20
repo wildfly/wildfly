@@ -5,10 +5,15 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.EnumSet;
+import java.util.Map;
+
+import org.jboss.as.controller.Feature;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
+import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.IntVersion;
 
 /**
@@ -35,10 +40,10 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     VERSION_12_0(12),   // WildFly 23-26.1, EAP 7.4
     VERSION_13_0(13),   // WildFly 27       N.B. There were no schema changes between 12.0 and 13.0!
     VERSION_14_0(14),   // WildFly 28
-    VERSION_15_0(15),   // WildFly 31-present
+    VERSION_14_0_PREVIEW(14, 0, Stability.PREVIEW)   // WildFly 32-present
     ;
-    static final UndertowSubsystemSchema CURRENT = VERSION_15_0;
 
+    static final Map<Stability, UndertowSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_14_0, VERSION_14_0_PREVIEW));
     private final VersionedNamespace<IntVersion, UndertowSubsystemSchema> namespace;
 
     UndertowSubsystemSchema(int major) {
@@ -50,7 +55,15 @@ public enum UndertowSubsystemSchema implements PersistentSubsystemSchema<Underto
     }
 
     UndertowSubsystemSchema(IntVersion version) {
-        this.namespace = SubsystemSchema.createLegacySubsystemURN(UndertowExtension.SUBSYSTEM_NAME, version);
+        this(version, Stability.DEFAULT);
+    }
+
+    UndertowSubsystemSchema(final int major, final int minor, final Stability stability) {
+        this(new IntVersion(major, minor), stability);
+    }
+
+    UndertowSubsystemSchema(final IntVersion version, final Stability stability) {
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(UndertowExtension.SUBSYSTEM_NAME, stability, version);
     }
 
     @Override

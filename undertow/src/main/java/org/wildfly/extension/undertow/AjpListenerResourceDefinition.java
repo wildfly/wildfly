@@ -22,6 +22,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
@@ -51,6 +52,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setRequired(false)
             .setAllowExpression(true)
             .setDefaultValue(null)
+            .setStability(Stability.PREVIEW)
             .build();
 
     static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE, ALLOWED_REQUEST_ATTRIBUTES_PATTERN);
