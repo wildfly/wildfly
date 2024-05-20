@@ -22,6 +22,7 @@ import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
@@ -104,6 +105,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(1))
             .setRestartAllServices()
+            .setStability(Stability.PREVIEW)
             .build();
 
     protected static final SimpleAttributeDefinition CLOSE_RETRY_DELAY = new SimpleAttributeDefinitionBuilder(Constants.CLOSE_RETRY_DELAY, ModelType.INT, true)
@@ -112,6 +114,7 @@ class AccessLogDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(1))
             .setRestartAllServices()
+            .setStability(Stability.PREVIEW)
             .build();
 
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
