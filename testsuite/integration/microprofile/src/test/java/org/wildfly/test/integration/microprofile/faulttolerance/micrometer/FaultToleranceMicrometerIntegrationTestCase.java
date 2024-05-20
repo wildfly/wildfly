@@ -12,12 +12,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import jakarta.inject.Inject;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
+import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -36,7 +35,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
-import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask;
+import org.wildfly.test.integration.observability.arquillian.TestContainer;
+import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
+import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 /**
  * Test case to verify basic SmallRye Fault Tolerance integration with Micrometer. The test first invokes a REST
@@ -47,6 +48,7 @@ import org.wildfly.test.integration.observability.micrometer.MicrometerSetupTask
  */
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
+@TestContainer(OpenTelemetryCollectorContainer.class)
 public class FaultToleranceMicrometerIntegrationTestCase {
 
     // Let's use a slightly higher number of invocations, so we can at times differentiate between stale read and other problems

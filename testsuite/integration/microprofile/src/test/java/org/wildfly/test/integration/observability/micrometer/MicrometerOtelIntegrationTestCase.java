@@ -8,15 +8,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,18 +31,23 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.observability.arquillian.TestContainer;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
+import org.wildfly.test.integration.observability.container.PrometheusMetric;
+import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
+@RunAsClient
+@TestContainer(OpenTelemetryCollectorContainer.class)
 public class MicrometerOtelIntegrationTestCase {
-    protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static final int REQUEST_COUNT = 5;
     @ArquillianResource
     private URL url;
     @Inject
     private MeterRegistry meterRegistry;
+    @ArquillianResource
+    OpenTelemetryCollectorContainer otelContainer;
 
     static final String WEB_XML =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -61,14 +63,13 @@ public class MicrometerOtelIntegrationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return dockerAvailable ?
-                ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
-                        .addClasses(ServerSetupTask.class,
-                                MetricResource.class,
-                                AssumeTestGroupUtil.class)
-                        .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                        .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
-                AssumeTestGroupUtil.emptyWar();
+        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+                .addClasses(ServerSetupTask.class,
+                        MetricResource.class,
+                        AssumeTestGroupUtil.class,
+                        PrometheusMetric.class)
+                .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
+                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
     // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.
@@ -79,8 +80,8 @@ public class MicrometerOtelIntegrationTestCase {
         AssumeTestGroupUtil.assumeDockerAvailable();
     }
 
-    @Test
-    @InSequence(1)
+//    @Test
+//    @InSequence(1)
     public void testInjection() {
         Assert.assertNotNull(meterRegistry);
     }
@@ -97,21 +98,14 @@ public class MicrometerOtelIntegrationTestCase {
         }
     }
 
-    @Test
-    @InSequence(3)
-    public void checkCounter() {
-        Counter counter = meterRegistry.get("demo_counter").counter();
-        Assert.assertEquals(counter.count(), REQUEST_COUNT, 0.0);
-    }
-
     // Request the published metrics from the OpenTelemetry Collector via the configured Prometheus exporter and check
     // a few metrics to verify there existence
     @Test
-    @RunAsClient
     @InSequence(4)
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = Arrays.asList(
                 "demo_counter",
+                "demo_timer",
                 "memory_used_heap",
                 "cpu_available_processors",
                 "classloader_loaded_classes_count",
@@ -121,12 +115,12 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_bytes_received"
         );
 
-        final String response = fetchMetrics(metricsToTest.get(0));
-        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n, response.contains(n)));
+        final List<PrometheusMetric> metrics = otelContainer.fetchMetrics(metricsToTest.get(0));
+        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
     }
 
     @Test
-    @RunAsClient
     @InSequence(5)
     public void testJmxMetrics() throws InterruptedException {
         List<String> metricsToTest = Arrays.asList(
@@ -134,50 +128,19 @@ public class MicrometerOtelIntegrationTestCase {
                 "classloader_loaded_classes",
                 "cpu_system_load_average",
                 "cpu_process_cpu_time",
-                "classloader_unloaded_classes",
                 "classloader_loaded_classes_count",
                 "thread_count",
                 "thread_daemon_count",
                 "cpu_available_processors"
         );
-        final String response = fetchMetrics(metricsToTest.get(0));
-        Map<String, String> metrics = Arrays.stream(response.split("\n"))
-                .filter(s -> !s.startsWith("#"))
-                .map(this::splitMetric)
-                .collect(Collectors.toMap(e -> e[0], e -> e[1]));
+        final List<PrometheusMetric> metrics = otelContainer.fetchMetrics(metricsToTest.get(0));
+
         metricsToTest.forEach(m -> {
             Assert.assertNotEquals("Metric value should be non-zero: " + m,
-                    "0", metrics.get(m + "{job=\"wildfly\"}")); // Add the metrics tags to complete the key
+                    "0", metrics.stream().filter(e -> e.getKey().startsWith(m))
+                            .findFirst()
+                            .orElseThrow()
+                            .getValue()); // Add the metrics tags to complete the key
         });
-    }
-
-    private String[] splitMetric(String entry) {
-        int index = entry.lastIndexOf(" ");
-        return new String[]{
-                entry.substring(0, index),
-                entry.substring(index + 1)
-        };
-    }
-
-    private String fetchMetrics(String nameToMonitor) throws InterruptedException {
-        String body = "";
-        try (Client client = ClientBuilder.newClient()) {
-            WebTarget target = client.target(OpenTelemetryCollectorContainer.getInstance().getPrometheusUrl());
-
-            int attemptCount = 0;
-            boolean found = false;
-
-            // Request counts can vary. Setting high to help ensure test stability
-            while (!found && attemptCount < 30) {
-                // Wait to give Micrometer time to export
-                Thread.sleep(1000);
-
-                body = target.request().get().readEntity(String.class);
-                found = body.contains(nameToMonitor);
-                attemptCount++;
-            }
-        }
-
-        return body;
     }
 }

@@ -5,14 +5,13 @@
 package org.wildfly.test.integration.observability.container;
 
 import java.util.List;
+
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
 import org.junit.Assert;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.wildfly.common.annotation.NotNull;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerResponse;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerTrace;
 
@@ -28,23 +27,13 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
 
     private String jaegerEndpoint;
 
-    private JaegerContainer() {
+    public JaegerContainer() {
         super("Jaeger", "jaegertracing/all-in-one", "latest",
                 List.of(PORT_JAEGER_QUERY, PORT_JAEGER_OTLP),
                 List.of(Wait.forHttp("/").forPort(PORT_JAEGER_QUERY)));
-    }
-
-    @NotNull
-    public static synchronized JaegerContainer getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new JaegerContainer()
-                    .withNetwork(Network.SHARED)
-                    .withNetworkAliases("jaeger")
-                    .withEnv("JAEGER_DISABLED", "true");
-            INSTANCE.start();
-        }
-
-        return INSTANCE;
+        withNetwork(Network.SHARED)
+                .withNetworkAliases("jaeger")
+                .withEnv("JAEGER_DISABLED", "true");
     }
 
     @Override

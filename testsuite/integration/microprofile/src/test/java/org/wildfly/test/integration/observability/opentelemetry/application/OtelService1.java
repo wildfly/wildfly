@@ -6,6 +6,10 @@ package org.wildfly.test.integration.observability.opentelemetry.application;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -17,10 +21,6 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
 
 @RequestScoped
 @Path("/")

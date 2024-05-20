@@ -2,19 +2,17 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.test.integration.observability.micrometer;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
 
 /**
  * @author <a href="mailto:jasondlee@redhat.com">Jason Lee</a>
@@ -38,7 +36,7 @@ public class MetricResource {
 
         timer.record(() -> {
             try {
-                Thread.sleep((long) (Math.random() * 1000L));
+                Thread.sleep((long) (Math.random() * 100L));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
