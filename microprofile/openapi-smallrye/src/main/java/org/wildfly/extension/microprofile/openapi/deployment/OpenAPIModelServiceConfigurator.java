@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import io.smallrye.openapi.api.OpenApiConfig;
+import io.smallrye.openapi.api.OpenApiDocument;
 import io.smallrye.openapi.runtime.OpenApiProcessor;
 import io.smallrye.openapi.runtime.OpenApiStaticFile;
 import io.smallrye.openapi.runtime.io.Format;
@@ -143,24 +144,25 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
         OpenApiConfig config = this.configuration.getOpenApiConfig();
         IndexView indexView = new FilteredIndexView(this.index, config);
 
-        OpenAPIDocumentBuilder builder = new OpenAPIDocumentBuilder();
-        builder.config(config);
+        OpenApiDocument document = OpenApiDocument.newInstance();
+        document.config(config);
+        document.modelFromReader(OpenApiProcessor.modelFromReader(config, this.module.getClassLoader(), indexView));
 
         Map.Entry<VirtualFile, Format> entry = this.configuration.getStaticFile();
         if (entry != null) {
             VirtualFile file = entry.getKey();
             Format format = entry.getValue();
             try (OpenApiStaticFile staticFile = new OpenApiStaticFile(file.openStream(), format)) {
-                builder.staticFileModel(OpenApiProcessor.modelFromStaticFile(config, staticFile));
+                document.modelFromStaticFile(OpenApiProcessor.modelFromStaticFile(config, staticFile));
             } catch (IOException e) {
                 throw MicroProfileOpenAPILogger.LOGGER.failedToLoadStaticFile(e, file.getPathNameRelativeTo(this.root), this.deploymentName);
             }
         }
 
-        builder.annotationsModel(OpenApiProcessor.modelFromAnnotations(config, this.module.getClassLoader(), indexView, Functions.constantSupplier(SCANNERS)));
-        builder.readerModel(OpenApiProcessor.modelFromReader(config, this.module.getClassLoader(), indexView));
-        builder.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader(), indexView));
-        OpenAPI model = builder.build();
+        document.modelFromAnnotations(OpenApiProcessor.modelFromAnnotations(config, this.module.getClassLoader(), indexView, Functions.constantSupplier(SCANNERS)));
+        document.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader(), indexView));
+        document.initialize();
+        OpenAPI model = document.get();
 
         // Generate default title and description based on web metadata
         DescriptionGroupMetaData descriptionMetaData = this.metaData.getDescriptionGroup();
