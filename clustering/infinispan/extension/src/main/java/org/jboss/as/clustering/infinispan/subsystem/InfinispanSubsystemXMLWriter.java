@@ -13,6 +13,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
@@ -152,7 +153,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                     writeAttributes(writer, remoteContainer, RemoteCacheContainerResourceDefinition.ListAttribute.class);
                     writeAttributes(writer, remoteContainer, EnumSet.allOf(RemoteCacheContainerResourceDefinition.DeprecatedAttribute.class));
 
-                    writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ThreadPoolResourceDefinition.CLIENT, writer, remoteContainer);
+                    writeThreadPoolElements(XMLElement.ASYNC_THREAD_POOL, ClientThreadPoolResourceDefinition.ASYNC, writer, remoteContainer);
 
                     ModelNode connectionPool = remoteContainer.get(ConnectionPoolResourceDefinition.PATH.getKeyValuePair());
                     Set<ConnectionPoolResourceDefinition.Attribute> attributes = EnumSet.allOf(ConnectionPoolResourceDefinition.Attribute.class);

@@ -16,8 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 import java.util.EnumSet;
 
@@ -47,8 +46,8 @@ public class DistributableEjbSubsystemTestCase extends AbstractSubsystemSchemaTe
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
-                .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
                 ;
     }
 

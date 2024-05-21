@@ -9,7 +9,7 @@
 
         <feature spec="subsystem.infinispan.cache-container">
             <param name="cache-container" value="web"/>
-            <param name="modules" value="[org.wildfly.clustering.web.infinispan]"/>
+            <param name="modules" value="[org.wildfly.clustering.session.infinispan.embedded]"/>
             <param name="marshaller" value="PROTOSTREAM"/>
             <param name="default-cache" value="dist"/>
             <feature spec="subsystem.infinispan.cache-container.transport.jgroups">

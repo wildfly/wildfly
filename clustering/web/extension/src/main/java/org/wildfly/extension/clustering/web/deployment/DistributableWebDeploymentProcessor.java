@@ -20,7 +20,6 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 
 /**
@@ -32,17 +31,19 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
     private static final String WEB_API = "org.wildfly.clustering.web.api";
     private static final String MARSHALLING_API = "org.wildfly.clustering.marshalling.api";
     private static final String PROTOSTREAM = "org.infinispan.protostream";
+    private static final String EJB_CLIENT = "org.wildfly.clustering.ejb.client";
     private static final String EL_EXPRESSLY = "org.wildfly.clustering.el.expressly";
     private static final String WELD_CORE = "org.wildfly.clustering.weld.core";
     private static final String WELD_EJB = "org.wildfly.clustering.weld.ejb";
     private static final String WELD_WEB = "org.wildfly.clustering.weld.web";
+    private static final String FACES_API = "org.wildfly.clustering.faces.api";
     private static final String FACES_MOJARRA = "org.wildfly.clustering.faces.mojarra";
     private static final String UNDERTOW = "org.wildfly.clustering.web.undertow";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         DeploymentUnit unit = context.getDeploymentUnit();
-        DistributableSessionManagementProvider<DistributableSessionManagementConfiguration<DeploymentUnit>> provider = context.getAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY);
+        DistributableSessionManagementProvider provider = context.getAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY);
         if (provider != null) {
             unit.putAttachment(DistributableSessionManagementProvider.ATTACHMENT_KEY, provider);
 
@@ -60,6 +61,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
                     try {
                         WeldCapability weldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
                         if (weldCapability.isPartOfWeldDeployment(unit)) {
+                            specification.addSystemDependency(new ModuleDependency(loader, EJB_CLIENT, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, WELD_CORE, false, false, true, false));
                             specification.addSystemDependency(new ModuleDependency(loader, WELD_EJB, false, false, true, false));
@@ -75,6 +77,7 @@ public class DistributableWebDeploymentProcessor implements DeploymentUnitProces
 
             if (JsfVersionMarker.getVersion(unit).equals(JsfVersionMarker.JSF_4_0)) {
                 specification.addSystemDependency(new ModuleDependency(loader, EL_EXPRESSLY, false, false, true, false));
+                specification.addSystemDependency(new ModuleDependency(loader, FACES_API, false, false, true, false));
                 specification.addSystemDependency(new ModuleDependency(loader, FACES_MOJARRA, false, false, true, false));
             }
         }

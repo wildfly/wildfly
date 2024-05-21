@@ -5,11 +5,11 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.session.ActiveSessionStatistics;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
+import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * @author Paul Ferraro
@@ -17,12 +17,12 @@ import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 public class DistributableSessionManagerStatistics implements RecordableSessionManagerStatistics {
 
     private final RecordableInactiveSessionStatistics inactiveSessionStatistics;
-    private final ActiveSessionStatistics activeSessionStatistics;
-    private final Integer maxActiveSessions;
+    private final SessionStatistics activeSessionStatistics;
+    private final OptionalInt maxActiveSessions;
     private volatile long startTime = System.currentTimeMillis();
     private final AtomicLong createdSessionCount = new AtomicLong();
 
-    public DistributableSessionManagerStatistics(ActiveSessionStatistics activeSessionStatistics, RecordableInactiveSessionStatistics inactiveSessionStatistics, Integer maxActiveSessions) {
+    public DistributableSessionManagerStatistics(SessionStatistics activeSessionStatistics, RecordableInactiveSessionStatistics inactiveSessionStatistics, OptionalInt maxActiveSessions) {
         this.activeSessionStatistics = activeSessionStatistics;
         this.inactiveSessionStatistics = inactiveSessionStatistics;
         this.maxActiveSessions = maxActiveSessions;
@@ -53,7 +53,7 @@ public class DistributableSessionManagerStatistics implements RecordableSessionM
 
     @Override
     public long getMaxActiveSessions() {
-        return (this.maxActiveSessions != null) ? this.maxActiveSessions.longValue() : -1L;
+        return this.maxActiveSessions.orElse(-1);
     }
 
     @Override

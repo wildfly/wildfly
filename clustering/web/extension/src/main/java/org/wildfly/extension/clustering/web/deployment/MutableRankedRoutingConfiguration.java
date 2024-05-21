@@ -5,16 +5,16 @@
 
 package org.wildfly.extension.clustering.web.deployment;
 
-import org.wildfly.clustering.web.infinispan.routing.RankedRoutingConfiguration;
+import org.wildfly.clustering.session.cache.affinity.NarySessionAffinityConfiguration;
 import org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition;
 
 /**
  * @author Paul Ferraro
  */
-public class MutableRankedRoutingConfiguration implements RankedRoutingConfiguration {
+public class MutableRankedRoutingConfiguration implements NarySessionAffinityConfiguration {
 
     private String delimter = RankedAffinityResourceDefinition.Attribute.DELIMITER.getDefinition().getDefaultValue().asString();
-    private int maxRoutes = RankedAffinityResourceDefinition.Attribute.MAX_ROUTES.getDefinition().getDefaultValue().asInt();
+    private int maxMembers = RankedAffinityResourceDefinition.Attribute.MAX_ROUTES.getDefinition().getDefaultValue().asInt();
 
     @Override
     public String getDelimiter() {
@@ -26,11 +26,11 @@ public class MutableRankedRoutingConfiguration implements RankedRoutingConfigura
     }
 
     @Override
-    public int getMaxRoutes() {
-        return this.maxRoutes;
+    public int getMaxMembers() {
+        return this.maxMembers;
     }
 
-    public void setMaxRoutes(int maxRoutes) {
-        this.maxRoutes = maxRoutes;
+    public void setMaxMembers(int maxMembers) {
+        this.maxMembers = maxMembers;
     }
 }

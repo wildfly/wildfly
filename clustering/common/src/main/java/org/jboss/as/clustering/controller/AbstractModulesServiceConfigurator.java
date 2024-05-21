@@ -5,72 +5,59 @@
 
 package org.jboss.as.clustering.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractModulesServiceConfigurator<T> extends SimpleServiceNameProvider implements ResourceServiceConfigurator, Supplier<List<Module>>, Function<List<Module>, T> {
+public abstract class AbstractModulesServiceConfigurator<T> implements ResourceServiceConfigurator, Function<List<Module>, T> {
 
-    private final Attribute attribute;
-    private final SupplierDependency<ModuleLoader> loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
-    private final Function<ModelNode, List<ModelNode>> toList;
+    private final RuntimeCapability<Void> capability;
+    private final ResourceModelResolver<List<String>> resolver;
 
-    private volatile List<ModelNode> identifiers = Collections.emptyList();
-
-    AbstractModulesServiceConfigurator(ServiceName name, Attribute attribute, Function<ModelNode, List<ModelNode>> toList) {
-        super(name);
-        this.attribute = attribute;
-        this.toList = toList;
+    AbstractModulesServiceConfigurator(RuntimeCapability<Void> capability, ResourceModelResolver<List<String>> resolver) {
+        this.capability = capability;
+        this.resolver = resolver;
     }
 
     @Override
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.identifiers = this.toList.apply(this.attribute.resolveModelAttribute(context, model));
-        return this;
-    }
-
-    @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<T> modules = this.loader.register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(modules, this, this);
-        return builder.setInstance(service);
-    }
-
-    @Override
-    public List<Module> get() {
-        List<ModelNode> identifiers = this.identifiers;
-        List<Module> modules = !identifiers.isEmpty() ? new ArrayList<>(identifiers.size()) : Collections.emptyList();
-        for (ModelNode identifier : identifiers) {
-            try {
-                modules.add(this.loader.get().loadModule(identifier.asString()));
-            } catch (ModuleLoadException e) {
-                throw new IllegalArgumentException(e);
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        List<String> moduleIdentifiers = this.resolver.resolve(context, model);
+        ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
+        Supplier<List<Module>> modules = new Supplier<>() {
+            @Override
+            public List<Module> get() {
+                return moduleIdentifiers.stream().map(this::load).collect(Collectors.toUnmodifiableList());
             }
-        }
-        return modules;
+
+            private Module load(String identifier) {
+                try {
+                    return loader.get().loadModule(identifier);
+                } catch (ModuleLoadException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        return CapabilityServiceInstaller.builder(this.capability, this, modules)
+                .requires(loader)
+                .asPassive()
+                .build();
     }
 }

@@ -51,8 +51,12 @@
 
         <!-- External dependencies -->
         <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
     </dependencies>
 

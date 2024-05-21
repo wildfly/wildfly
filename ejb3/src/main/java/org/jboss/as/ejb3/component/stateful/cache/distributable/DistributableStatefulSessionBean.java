@@ -10,9 +10,8 @@ import java.util.function.Consumer;
 
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBean;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.BatchContext;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.common.function.Functions;
 
@@ -24,16 +23,14 @@ import org.wildfly.common.function.Functions;
  */
 public class DistributableStatefulSessionBean<K, V extends StatefulSessionBeanInstance<K>> implements StatefulSessionBean<K, V> {
 
-    private final Batcher<Batch> batcher;
     private final Bean<K, V> bean;
-    private final Batch batch;
+    private final SuspendedBatch batch;
     private final V instance;
 
     private volatile boolean discarded;
     private volatile boolean removed;
 
-    public DistributableStatefulSessionBean(Batcher<Batch> batcher, Bean<K, V> bean, Batch batch) {
-        this.batcher = batcher;
+    public DistributableStatefulSessionBean(Bean<K, V> bean, SuspendedBatch batch) {
         this.bean = bean;
         // Store reference to bean instance eagerly, so that it is accessible even after removal
         this.instance = bean.getInstance();
@@ -82,23 +79,17 @@ public class DistributableStatefulSessionBean<K, V extends StatefulSessionBeanIn
     }
 
     private void remove(Consumer<V> removeTask) {
-        try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
-            try {
-                this.bean.remove(removeTask);
-            } finally {
-                this.batch.close();
-            }
+        try (Batch batch = this.batch.resume()) {
+            this.bean.remove(removeTask);
         }
     }
 
     @Override
     public void close() {
         if (this.bean.isValid()) {
-            try (BatchContext context = this.batcher.resumeBatch(this.batch)) {
+            try (Batch batch = this.batch.resume()) {
                 this.bean.getMetaData().setLastAccessTime(Instant.now());
                 this.bean.close();
-            } finally {
-                this.batch.close();
             }
         }
     }

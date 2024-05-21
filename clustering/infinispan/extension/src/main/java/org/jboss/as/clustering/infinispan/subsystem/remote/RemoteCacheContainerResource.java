@@ -13,8 +13,8 @@ import org.jboss.as.clustering.controller.ChildResourceProvider;
 import org.jboss.as.clustering.controller.ComplexResource;
 import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
 import org.jboss.as.controller.registry.Resource;
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.server.Registrar;
+import org.wildfly.clustering.server.Registration;
 
 /**
  * @author Paul Ferraro

@@ -6,10 +6,15 @@
 package org.jboss.as.clustering.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
 
 /**
  * @author Paul Ferraro
@@ -18,8 +23,14 @@ public class ModulesServiceConfigurator extends AbstractModulesServiceConfigurat
 
     private final List<Module> defaultModules;
 
-    public ModulesServiceConfigurator(ServiceName name, Attribute attribute, List<Module> defaultModules) {
-        super(name, attribute, ModelNode::asListOrEmpty);
+    public ModulesServiceConfigurator(RuntimeCapability<Void> capability, AttributeDefinition attribute, List<Module> defaultModules) {
+        super(capability, new ResourceModelResolver<>() {
+            @Override
+            public List<String> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+                List<ModelNode> values = attribute.resolveModelAttribute(context, model).asListOrEmpty();
+                return !values.isEmpty() ? values.stream().map(ModelNode::asString).collect(Collectors.toUnmodifiableList()) : List.of();
+            }
+        });
         this.defaultModules = defaultModules;
     }
 

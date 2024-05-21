@@ -8,8 +8,8 @@ package org.wildfly.clustering.ejb.cache.timer;
 import java.time.Duration;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.cache.function.Remappable;
-import org.wildfly.clustering.ee.cache.offset.Offset;
+import org.wildfly.clustering.cache.function.Remappable;
+import org.wildfly.clustering.server.offset.Offset;
 
 /**
  * @author Paul Ferraro

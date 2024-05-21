@@ -5,6 +5,7 @@
 
 package org.jboss.as.connector.services.workmanager.transport;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,16 +24,15 @@ import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.spi.workmanager.Address;
 import org.jboss.jca.core.workmanager.transport.remote.AbstractRemoteTransport;
 import org.jboss.jca.core.workmanager.transport.remote.ProtocolMessages.Request;
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.cache.concurrent.StampedLockServiceExecutor;
-import org.wildfly.clustering.ee.concurrent.ServiceExecutor;
-import org.wildfly.clustering.group.GroupListener;
-import org.wildfly.clustering.group.Membership;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.GroupMembership;
+import org.wildfly.clustering.server.GroupMembershipEvent;
+import org.wildfly.clustering.server.GroupMembershipListener;
+import org.wildfly.clustering.server.GroupMembershipMergeEvent;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.util.BlockingExecutor;
 import org.wildfly.common.function.ExceptionRunnable;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -42,19 +42,29 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * The current implementation is a direct translation of {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport}.
  * @author Paul Ferraro
  */
-public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> implements GroupListener {
+public class CommandDispatcherTransport extends AbstractRemoteTransport<GroupMember> implements GroupMembershipListener<GroupMember> {
 
-    private final ServiceExecutor executor = new StampedLockServiceExecutor();
-    private final CommandDispatcherFactory dispatcherFactory;
+    private final BlockingExecutor executor;
+    private final CommandDispatcherFactory<GroupMember> dispatcherFactory;
     private final String name;
 
-    private volatile CommandDispatcher<CommandDispatcherTransport> dispatcher;
+    private volatile CommandDispatcher<GroupMember, CommandDispatcherTransport> dispatcher;
     private volatile Registration groupListenerRegistration;
     private volatile boolean initialized = false;
 
-    public CommandDispatcherTransport(CommandDispatcherFactory dispatcherFactory, String name) {
+    public CommandDispatcherTransport(CommandDispatcherFactory<GroupMember> dispatcherFactory, String name) {
         this.dispatcherFactory = dispatcherFactory;
         this.name = name;
+        this.executor = BlockingExecutor.newInstance(() -> {
+            try {
+                CommandDispatcherTransport.this.broadcast(new LeaveCommand(this.getOwnAddress()));
+            } catch (WorkException e) {
+                ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+            } finally {
+                this.groupListenerRegistration.close();
+                this.dispatcher.close();
+            }
+        });
     }
 
     @Override
@@ -71,16 +81,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
 
     @Override
     public void shutdown() {
-        this.executor.close(() -> {
-            try {
-                this.broadcast(new LeaveCommand(this.getOwnAddress()));
-            } catch (WorkException e) {
-                ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
-            } finally {
-                this.groupListenerRegistration.close();
-                this.dispatcher.close();
-            }
-        });
+        this.executor.close();
     }
 
     @Override
@@ -94,38 +95,62 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     }
 
     @Override
-    protected Node getOwnAddress() {
+    protected GroupMember getOwnAddress() {
         return this.dispatcherFactory.getGroup().getLocalMember();
     }
 
     @Override
-    protected Serializable sendMessage(Node physicalAddress, Request request, Serializable... parameters) throws WorkException {
-        Command<?, CommandDispatcherTransport> command = createCommand(request, parameters);
-        CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
-        ExceptionSupplier<Optional<Serializable>, WorkException> task = new ExceptionSupplier<>() {
+    public void register(Address address) {
+        // We need to override this method, since base implementation throws ClassCastException
+        this.nodes.put(address, null);
+
+        if (address.getTransportId() == null || address.getTransportId().equals(this.getId())) {
+            Set<GroupMember> sent = new HashSet<>();
+            for (GroupMember member : this.nodes.values()) {
+                if (member != null && !sent.contains(member)) {
+                    sent.add(member);
+                    try {
+                        this.sendMessage(member, Request.WORKMANAGER_ADD, address, this.getOwnAddress());
+                    } catch (WorkException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected Serializable sendMessage(GroupMember physicalAddress, Request request, Serializable... parameters) throws WorkException {
+        return (Serializable) this.sendMessage(physicalAddress, request, (Object[]) parameters);
+    }
+
+    private Object sendMessage(GroupMember physicalAddress, Request request, Object... parameters) throws WorkException {
+        TransportCommand<?> command = createCommand(request, parameters);
+        CommandDispatcher<GroupMember, CommandDispatcherTransport> dispatcher = this.dispatcher;
+        ExceptionSupplier<Optional<Object>, WorkException> task = new ExceptionSupplier<>() {
             @Override
-            public Optional<Serializable> get() throws WorkException {
+            public Optional<Object> get() throws WorkException {
                 try {
-                    CompletionStage<?> response = dispatcher.executeOnMember(command, physicalAddress);
-                    return Optional.ofNullable((Serializable) response.toCompletableFuture().join());
+                    CompletionStage<?> response = dispatcher.dispatchToMember(command, physicalAddress);
+                    return Optional.ofNullable(response.toCompletableFuture().join());
                 } catch (CancellationException e) {
                     return Optional.empty();
-                } catch (CommandDispatcherException | CompletionException e) {
+                } catch (IOException | CompletionException e) {
                     throw new WorkException(e);
                 }
             }
         };
-        Optional<Serializable> val = this.executor.execute(task).orElse(null);
-        return val != null ? val.orElse(null) : null;
+        Optional<Object> value = this.executor.execute(task).orElse(null);
+        return value != null ? value.orElse(null) : null;
     }
 
-    private void broadcast(Command<Void, CommandDispatcherTransport> command) throws WorkException {
-        CommandDispatcher<CommandDispatcherTransport> dispatcher = this.dispatcher;
+    private void broadcast(TransportCommand<Void> command) throws WorkException {
+        CommandDispatcher<GroupMember, CommandDispatcherTransport> dispatcher = this.dispatcher;
         ExceptionRunnable<WorkException> task = new ExceptionRunnable<>() {
             @Override
             public void run() throws WorkException {
                 try {
-                    for (Map.Entry<Node, CompletionStage<Void>> entry : dispatcher.executeOnGroup(command).entrySet()) {
+                    for (Map.Entry<GroupMember, CompletionStage<Void>> entry : dispatcher.dispatchToGroup(command).entrySet()) {
                         // Verify that command executed successfully on all nodes
                         try {
                             entry.getValue().toCompletableFuture().join();
@@ -135,7 +160,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
                             throw new WorkException(e);
                         }
                     }
-                } catch (CommandDispatcherException e) {
+                } catch (IOException e) {
                     throw new WorkException(e);
                 }
             }
@@ -143,7 +168,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
         this.executor.execute(task);
     }
 
-    private static Command<?, CommandDispatcherTransport> createCommand(Request request, Serializable... parameters) {
+    private static TransportCommand<?> createCommand(Request request, Object... parameters) {
         Address address = (parameters.length > 0) ? (Address) parameters[0] : null;
         switch (request) {
             case CLEAR_DISTRIBUTED_STATISTICS: {
@@ -201,7 +226,7 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
                 return new UpdateShortRunningFreeCommand(address, (Long) parameters[1]);
             }
             case WORKMANAGER_ADD: {
-                return new AddWorkManagerCommand(address, (Node) parameters[1]);
+                return new AddWorkManagerCommand(address, (GroupMember) parameters[1]);
             }
             case WORKMANAGER_REMOVE: {
                 return new RemoveWorkManagerCommand(address);
@@ -213,19 +238,19 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
     }
 
     @Override
-    public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+    public void updated(GroupMembershipEvent<GroupMember> event) {
         Runnable task = () -> {
-            Set<Node> leavers = new HashSet<>(previousMembership.getMembers());
-            leavers.removeAll(membership.getMembers());
             // Handle abrupt leavers
-            for (Node leaver : leavers) {
+            for (GroupMember leaver : event.getLeavers()) {
                 this.leave(leaver);
             }
-
-            if (merged) {
-                this.join(membership);
-            }
         };
+        this.executor.execute(task);
+    }
+
+    @Override
+    public void merged(GroupMembershipMergeEvent<GroupMember> event) {
+        Runnable task = () -> this.join(event.getCurrentMembership());
         this.executor.execute(task);
     }
 
@@ -233,19 +258,19 @@ public class CommandDispatcherTransport extends AbstractRemoteTransport<Node> im
         this.join(this.dispatcherFactory.getGroup().getMembership());
     }
 
-    private void join(Membership membership) {
-        Map<Node, CompletionStage<Set<Address>>> futures = new HashMap<>();
-        for (Node member : membership.getMembers()) {
+    private void join(GroupMembership<GroupMember> membership) {
+        Map<GroupMember, CompletionStage<Set<Address>>> futures = new HashMap<>();
+        for (GroupMember member : membership.getMembers()) {
             if (!this.getOwnAddress().equals(member) && !this.nodes.containsValue(member)) {
                 try {
-                    futures.put(member, this.dispatcher.executeOnMember(new GetWorkManagersCommand(), member));
-                } catch (CommandDispatcherException e) {
+                    futures.put(member, this.dispatcher.dispatchToMember(new GetWorkManagersCommand(), member));
+                } catch (IOException e) {
                     ConnectorLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
-        for (Map.Entry<Node, CompletionStage<Set<Address>>> entry : futures.entrySet()) {
-            Node member = entry.getKey();
+        for (Map.Entry<GroupMember, CompletionStage<Set<Address>>> entry : futures.entrySet()) {
+            GroupMember member = entry.getKey();
             try {
                 Set<Address> addresses = entry.getValue().toCompletableFuture().join();
                 for (Address address : addresses) {

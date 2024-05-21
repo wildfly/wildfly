@@ -5,12 +5,17 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+
+import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -20,17 +25,17 @@ public class StoreWriteThroughResourceDefinition extends StoreWriteResourceDefin
     static final PathElement PATH = pathElement("through");
 
     StoreWriteThroughResourceDefinition() {
-        super(PATH);
+        super(PATH, UnaryOperator.identity());
     }
 
     @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
-
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver());
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(StoreWriteThroughServiceConfigurator::new);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
-
-        return registration;
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        Supplier<AsyncStoreConfiguration> configurationFactory = new Supplier<>() {
+            @Override
+            public AsyncStoreConfiguration get() {
+                return new ConfigurationBuilder().persistence().addSoftIndexFileStore().async().disable().create();
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, configurationFactory).build();
     }
 }

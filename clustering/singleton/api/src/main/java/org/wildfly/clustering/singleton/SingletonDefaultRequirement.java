@@ -6,33 +6,36 @@
 package org.wildfly.clustering.singleton;
 
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 /**
  * Enumerates capability requirements for default singleton resources
  * @author Paul Ferraro
  */
+@Deprecated(forRemoval = true)
 public enum SingletonDefaultRequirement implements Requirement {
     /**
-     * @deprecated Use {@link SingletonDefaultRequirement#POLICY} instead.
+     * @deprecated Use {@link org.wildfly.clustering.singleton.SingletonPolicy#DEFAULT_SERVICE_DESCRIPTOR} instead.
      */
-    @Deprecated(forRemoval = true) SINGLETON_POLICY("org.wildfly.clustering.singleton.default-policy", org.wildfly.clustering.singleton.SingletonPolicy.class),
-    POLICY("org.wildfly.clustering.default-singleton-policy", org.wildfly.clustering.singleton.service.SingletonPolicy.class),
+    @Deprecated(forRemoval = true) SINGLETON_POLICY(org.wildfly.clustering.singleton.SingletonPolicy.DEFAULT_SERVICE_DESCRIPTOR),
+    /**
+     * @deprecated Use {@link org.wildfly.clustering.singleton.service.SingletonPolicy#DEFAULT_SERVICE_DESCRIPTOR} instead.
+     */
+    @Deprecated POLICY(org.wildfly.clustering.singleton.service.SingletonPolicy.DEFAULT_SERVICE_DESCRIPTOR),
     ;
-    private final String name;
-    private final Class<?> type;
+    private final NullaryServiceDescriptor<?> descriptor;
 
-    SingletonDefaultRequirement(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
+    SingletonDefaultRequirement(NullaryServiceDescriptor<?> descriptor) {
+        this.descriptor = descriptor;
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return this.descriptor.getName();
     }
 
     @Override
     public Class<?> getType() {
-        return this.type;
+        return this.descriptor.getType();
     }
 }

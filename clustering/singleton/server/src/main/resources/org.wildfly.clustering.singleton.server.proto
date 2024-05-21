@@ -5,13 +5,15 @@ package org.wildfly.clustering.singleton.server;
 /**
  * @TypeId(155)
  */
-message StartCommand {
+enum StartCommand {
+	START_COMMAND_INSTANCE	= 0;
 }
 
 /**
  * @TypeId(156)
  */
-message StopCommand {
+enum StopCommand {
+	STOP_COMMAND_INSTANCE	= 0;
 }
 
 /**
@@ -25,11 +27,13 @@ message SingletonElectionCommand {
 /**
  * @TypeId(158)
  */
-message PrimaryProviderCommand {
+enum PrimaryProviderCommand {
+	PRIMARY_PROVIDER_COMMAND_INSTANCE	= 0;
 }
 
 /**
  * @TypeId(159)
  */
-message SingletonValueCommand {
+enum SingletonValueCommand {
+	SINGLETON_VALUE_COMMAND_INSTANCE	= 0;
 }

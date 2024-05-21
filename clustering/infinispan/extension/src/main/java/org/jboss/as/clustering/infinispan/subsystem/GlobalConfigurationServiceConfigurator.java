@@ -8,7 +8,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.MARSHALLER;
 import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED;
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.Capability.CONFIGURATION;
 
 import java.io.File;
 import java.io.UncheckedIOException;
@@ -16,15 +15,16 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.management.MBeanServer;
 
 import org.infinispan.commands.module.ModuleCommandExtensions;
+import org.infinispan.commons.jmx.MBeanServerLookup;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -35,155 +35,133 @@ import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
-import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
-import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.Dependency;
-import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class GlobalConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<GlobalConfiguration> {
+public class GlobalConfigurationServiceConfigurator implements ResourceServiceConfigurator {
+    private final RuntimeCapability<Void> capability;
 
-    private final SupplierDependency<ModuleLoader> loader;
-    private final SupplierDependency<List<Module>> modules;
-    private final SupplierDependency<TransportConfiguration> transport;
-    private final SupplierDependency<ServerEnvironment> environment;
-    private final Map<ThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
-    private final Map<ScheduledThreadPoolResourceDefinition, SupplierDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
-    private final String name;
+    GlobalConfigurationServiceConfigurator(RuntimeCapability<Void> capability) {
+        this.capability = capability;
+    }
 
-    private volatile SupplierDependency<MBeanServer> server;
-    private volatile String defaultCache;
-    private volatile boolean statisticsEnabled;
-    private volatile InfinispanMarshallerFactory marshallerFactory;
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        String containerName = address.getLastElement().getValue();
 
-    GlobalConfigurationServiceConfigurator(PathAddress address) {
-        super(CONFIGURATION, address);
-        this.name = address.getLastElement().getValue();
-        this.loader = new ServiceSupplierDependency<>(Services.JBOSS_SERVICE_MODULE_LOADER);
-        this.modules = new ServiceSupplierDependency<>(CacheContainerComponent.MODULES.getServiceName(address));
-        this.transport = new ServiceSupplierDependency<>(CacheContainerComponent.TRANSPORT.getServiceName(address));
-        this.environment = new ServiceSupplierDependency<>(ServerEnvironmentService.SERVICE_NAME);
+        ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, this.capability, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
+        ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
+        ServiceDependency<List<Module>> containerModules = ServiceDependency.on(CacheContainerResourceDefinition.CACHE_CONTAINER_MODULES, containerName);
+        ServiceDependency<TransportConfiguration> transport = ServiceDependency.on(TransportResourceDefinition.SERVICE_DESCRIPTOR, containerName);
+        ServiceDependency<ServerEnvironment> environment = ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR);
+        Map<ThreadPoolResourceDefinition, ServiceDependency<ThreadPoolConfiguration>> pools = new EnumMap<>(ThreadPoolResourceDefinition.class);
         for (ThreadPoolResourceDefinition pool : EnumSet.of(ThreadPoolResourceDefinition.LISTENER, ThreadPoolResourceDefinition.BLOCKING, ThreadPoolResourceDefinition.NON_BLOCKING)) {
-            this.pools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
+            pools.put(pool, ServiceDependency.on(pool, containerName));
         }
+        Map<ScheduledThreadPoolResourceDefinition, ServiceDependency<ThreadPoolConfiguration>> scheduledPools = new EnumMap<>(ScheduledThreadPoolResourceDefinition.class);
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
-            this.scheduledPools.put(pool, new ServiceSupplierDependency<>(pool.getServiceName(address)));
+            scheduledPools.put(pool, ServiceDependency.on(pool, containerName));
         }
-    }
 
-    @Override
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), CacheContainerResourceDefinition.Capability.CONFIGURATION.getDefinition().getDynamicName(context.getCurrentAddress()), null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
-        this.defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asStringOrNull();
-        this.statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
-        this.marshallerFactory = InfinispanMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
-        return this;
-    }
+        String defaultCache = DEFAULT_CACHE.resolveModelAttribute(context, model).asStringOrNull();
+        boolean statisticsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
+        BiFunction<ModuleLoader, List<Module>, Marshaller> marshallerFactory = InfinispanMarshallerFactory.valueOf(MARSHALLER.resolveModelAttribute(context, model).asString());
 
-    @Override
-    public GlobalConfiguration get() {
-        org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
-        builder.cacheManagerName(this.name)
-                .defaultCacheName(this.defaultCache)
-                .cacheContainer().statistics(this.statisticsEnabled)
-        ;
-
-        builder.transport().read(this.transport.get());
-
-        List<Module> modules = this.modules.get();
-        Marshaller marshaller = this.marshallerFactory.apply(this.loader.get(), modules);
-        InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", this.name, marshaller.getClass().getName());
-        // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
-        // Otherwise marshaller auto-detection will not work
-        builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
-            @Deprecated
+        Supplier<GlobalConfiguration> global = new Supplier<>() {
             @Override
-            public String getProtoFile() throws UncheckedIOException {
-                return null;
-            }
-
-            @Deprecated
-            @Override
-            public String getProtoFileName() {
-                return null;
-            }
-
-            @Override
-            public void registerMarshallers(SerializationContext context) {
-            }
-
-            @Override
-            public void registerSchema(SerializationContext context) {
-            }
-        });
-
-        ClassLoader loader = modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader();
-        builder.classLoader(loader);
-
-        builder.blockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
-        builder.listenerThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.LISTENER).get());
-        builder.nonBlockingThreadPool().read(this.pools.get(ThreadPoolResourceDefinition.NON_BLOCKING).get());
-        builder.expirationThreadPool().read(this.scheduledPools.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
-
-        builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
-        // Disable registration of MicroProfile Metrics
-        builder.metrics().gauges(false).histograms(false).accurateSize(true);
-        builder.jmx().domain("org.wildfly.clustering.infinispan")
-                .mBeanServerLookup((this.server != null) ? new MBeanServerProvider(this.server.get()) : null)
-                .enabled(this.server != null)
+            public GlobalConfiguration get() {
+                org.infinispan.configuration.global.GlobalConfigurationBuilder builder = new org.infinispan.configuration.global.GlobalConfigurationBuilder();
+                builder.cacheManagerName(containerName)
+                        .defaultCacheName(defaultCache)
+                        .cacheContainer().statistics(statisticsEnabled)
                 ;
 
-        // Disable triangle algorithm - we optimize for originator as primary owner
-        // Do not enable server-mode for the Hibernate 2LC use case:
-        // * The 2LC stack already overrides the interceptor for distribution caches
-        // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
-        // See ISPN-12252 for details
-        builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
+                builder.transport().read(transport.get());
 
-        String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + this.name;
-        ServerEnvironment environment = this.environment.get();
-        builder.globalState().enable()
-                .configurationStorage(ConfigurationStorage.VOLATILE)
-                .persistentLocation(path, environment.getServerDataDir().getPath())
-                .temporaryLocation(path, environment.getServerTempDir().getPath())
-                ;
-        return builder.build();
-    }
+                List<Module> modules = containerModules.get();
+                Marshaller marshaller = marshallerFactory.apply(loader.get(), modules);
+                InfinispanLogger.ROOT_LOGGER.debugf("%s cache-container will use %s", containerName, marshaller.getClass().getName());
+                // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+                // Otherwise marshaller auto-detection will not work
+                builder.serialization().marshaller(marshaller).addContextInitializer(new SerializationContextInitializer() {
+                    @Deprecated
+                    @Override
+                    public String getProtoFile() throws UncheckedIOException {
+                        return null;
+                    }
 
-    @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = target.addService(this.getServiceName());
-        Consumer<GlobalConfiguration> global = new CompositeDependency(this.loader, this.modules, this.transport, this.server, this.environment).register(builder).provides(this.getServiceName());
-        for (Dependency dependency: this.pools.values()) {
-            dependency.register(builder);
-        }
-        for (Dependency dependency: this.scheduledPools.values()) {
-            dependency.register(builder);
-        }
-        Service service = new FunctionalService<>(global, Function.identity(), this);
-        return builder.setInstance(service).setInitialMode(ServiceController.Mode.PASSIVE);
+                    @Deprecated
+                    @Override
+                    public String getProtoFileName() {
+                        return null;
+                    }
+
+                    @Override
+                    public void registerMarshallers(SerializationContext context) {
+                    }
+
+                    @Override
+                    public void registerSchema(SerializationContext context) {
+                    }
+                });
+
+                ClassLoader loader = modules.size() > 1 ? new AggregatedClassLoader(modules.stream().map(Module::getClassLoader).collect(Collectors.toList())) : modules.get(0).getClassLoader();
+                builder.classLoader(loader);
+
+                builder.blockingThreadPool().read(pools.get(ThreadPoolResourceDefinition.BLOCKING).get());
+                builder.listenerThreadPool().read(pools.get(ThreadPoolResourceDefinition.LISTENER).get());
+                builder.nonBlockingThreadPool().read(pools.get(ThreadPoolResourceDefinition.NON_BLOCKING).get());
+                builder.expirationThreadPool().read(scheduledPools.get(ScheduledThreadPoolResourceDefinition.EXPIRATION).get());
+
+                builder.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER);
+                // Disable registration of MicroProfile Metrics
+                builder.metrics().gauges(false).histograms(false).accurateSize(true);
+
+                MBeanServerLookup mbeanServerProvider = Optional.ofNullable(server.get()).map(MBeanServerProvider::new).orElse(null);
+                builder.jmx().domain("org.wildfly.clustering.infinispan")
+                        .mBeanServerLookup(mbeanServerProvider)
+                        .enabled(mbeanServerProvider != null)
+                        ;
+
+                // Disable triangle algorithm - we optimize for originator as primary owner
+                // Do not enable server-mode for the Hibernate 2LC use case:
+                // * The 2LC stack already overrides the interceptor for distribution caches
+                // * This renders Infinispan default 2LC configuration unusable as it results in a default media type of application/unknown for keys and values
+                // See ISPN-12252 for details
+                builder.addModule(PrivateGlobalConfigurationBuilder.class).serverMode(!ServiceLoader.load(ModuleCommandExtensions.class, loader).iterator().hasNext());
+
+                String path = InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName;
+                builder.globalState().enable()
+                        .configurationStorage(ConfigurationStorage.VOLATILE)
+                        .persistentLocation(path, environment.get().getServerDataDir().getPath())
+                        .temporaryLocation(path, environment.get().getServerTempDir().getPath())
+                        ;
+                return builder.build();
+            }
+        };
+        return CapabilityServiceInstaller.builder(this.capability, global)
+                .requires(List.of(server, loader, containerModules, transport, environment))
+                .requires(pools.values())
+                .requires(scheduledPools.values())
+                .asPassive()
+                .build();
     }
 }

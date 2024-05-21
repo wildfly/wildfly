@@ -5,24 +5,26 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
+
+import org.wildfly.clustering.cache.batch.BatchContextualizerFactory;
+import org.wildfly.clustering.context.Contextualizer;
+import org.wildfly.clustering.context.ContextualizerFactory;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 import io.undertow.servlet.api.Deployment;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
-
 /**
  * @author Paul Ferraro
  */
 public class UndertowSessionExpirationListener implements Consumer<ImmutableSession> {
+    private static final ContextualizerFactory BATCH_CONTEXTUALIZER_FACTORY = ServiceLoader.load(BatchContextualizerFactory.class, BatchContextualizerFactory.class.getClassLoader()).findFirst().orElseThrow();
 
     private final Deployment deployment;
     private final SessionListeners listeners;
@@ -41,19 +43,17 @@ public class UndertowSessionExpirationListener implements Consumer<ImmutableSess
         }
         UndertowSessionManager manager = (UndertowSessionManager) this.deployment.getSessionManager();
         Session undertowSession = new DistributableImmutableSession(manager, session);
-        Batcher<Batch> batcher = manager.getSessionManager().getBatcher();
+        Contextualizer contextualizer = BATCH_CONTEXTUALIZER_FACTORY.createContextualizer(this.deployment.getServletContext().getClassLoader());
+        Consumer<Session> notifier = this::notify;
         // Perform listener invocation in isolated batch context
-        Batch batch = batcher.suspendBatch();
-        try {
-            this.listeners.sessionDestroyed(undertowSession, null, SessionListener.SessionDestroyedReason.TIMEOUT);
-        } finally {
-            batcher.resumeBatch(batch);
-        }
+        contextualizer.contextualize(notifier).accept(undertowSession);
         // Trigger attribute listeners
-        ImmutableSessionAttributes attributes = session.getAttributes();
-        for (String name : attributes.getAttributeNames()) {
-            Object value = attributes.getAttribute(name);
-            manager.getSessionListeners().attributeRemoved(undertowSession, name, value);
+        for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
+            manager.getSessionListeners().attributeRemoved(undertowSession, entry.getKey(), entry.getValue());
         }
+    }
+
+    private void notify(Session session) {
+        this.listeners.sessionDestroyed(session, null, SessionListener.SessionDestroyedReason.TIMEOUT);
     }
 }

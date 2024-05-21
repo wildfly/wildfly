@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.infinispan.commons.marshall.Marshaller;
+import org.infinispan.query.remote.client.impl.MarshallerRegistration;
+import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.clustering.infinispan.marshalling.MarshallerFactory;
 
 /**
  * @author Paul Ferraro
@@ -33,17 +35,13 @@ public enum HotRodMarshallerFactory implements BiFunction<ModuleLoader, List<Mod
     JBOSS() {
         @Override
         public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
-            return MarshallerFactory.JBOSS.apply(moduleLoader, modules);
+            return UserMarshallerFactory.JBOSS.createUserMarshaller(moduleLoader, modules.stream().map(Module::getClassLoader).collect(Collectors.toList()));
         }
     },
     PROTOSTREAM() {
-        private final Set<String> clientModules = Set.of("org.infinispan.query.client");
-        private final Predicate<String> infinispanPredicate = this.clientModules::contains;
-
         @Override
         public Marshaller apply(ModuleLoader moduleLoader, List<Module> modules) {
-            // Use default ProtoStream marshaller if container uses remote query
-            return (modules.stream().map(Module::getName).anyMatch(this.infinispanPredicate) ? MarshallerFactory.DEFAULT : MarshallerFactory.PROTOSTREAM).apply(moduleLoader, modules);
+            return (modules.contains(Module.forClass(MarshallerRegistration.class)) ? UserMarshallerFactory.DEFAULT : UserMarshallerFactory.PROTOSTREAM).createUserMarshaller(moduleLoader, modules.stream().map(Module::getClassLoader).collect(Collectors.toList()));
         }
     },
     ;

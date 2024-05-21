@@ -11,13 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import jakarta.ejb.EJBLocalObject;
 import jakarta.ejb.EJBObject;
 import jakarta.ejb.TransactionManagementType;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -37,7 +35,6 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
-import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
@@ -47,7 +44,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
@@ -56,11 +52,10 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ChildTargetService;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * User: jpai
@@ -200,26 +195,26 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 DeploymentUnit unit = context.getDeploymentUnit();
-                CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                 StatefulComponentDescription statefulDescription = (StatefulComponentDescription) description;
-                ServiceTarget target = context.getServiceTarget();
-                ServiceBuilder<?> builder = target.addService(statefulDescription.getCacheFactoryServiceName().append("installer"));
-                Supplier<StatefulSessionBeanCacheProvider<SessionID, StatefulSessionComponentInstance>> provider = builder.requires(this.getCacheFactoryBuilderRequirement(statefulDescription));
-                Service service = new ChildTargetService(new Consumer<ServiceTarget>() {
+                ServiceDependency<StatefulSessionBeanCacheProvider> provider = this.getStatefulSessionBeanCacheProvider(statefulDescription);
+                ServiceInstaller installer = new ServiceInstaller() {
                     @Override
-                    public void accept(ServiceTarget target) {
-                        provider.get().getStatefulBeanCacheFactoryServiceConfigurator(unit, statefulDescription, configuration).configure(support).build(target).install();
+                    public ServiceController<?> install(RequirementServiceTarget target) {
+                        for (ServiceInstaller factoryInstaller : provider.get().getStatefulBeanCacheFactoryServiceInstallers(unit, statefulDescription, statefulComponentConfiguration)) {
+                            factoryInstaller.install(target);
+                        }
+                        return null;
                     }
-                });
-                builder.setInstance(service).install();
+                };
+                ServiceInstaller.builder(installer, unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT)).requires(provider).build().install(context);
             }
 
-            private ServiceName getCacheFactoryBuilderRequirement(StatefulComponentDescription description) {
+            private ServiceDependency<StatefulSessionBeanCacheProvider> getStatefulSessionBeanCacheProvider(StatefulComponentDescription description) {
                 if (!description.isPassivationApplicable()) {
-                    return StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+                    return ServiceDependency.on(StatefulSessionBeanCacheProvider.PASSIVATION_DISABLED_SERVICE_DESCRIPTOR);
                 }
                 CacheInfo cache = description.getCache();
-                return (cache != null) ? new StatefulSessionBeanCacheProviderServiceNameProvider(cache.getName()).getServiceName() : StatefulSessionBeanCacheProviderServiceNameProvider.DEFAULT_CACHE_SERVICE_NAME;
+                return (cache != null) ? ServiceDependency.on(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, cache.getName()) : ServiceDependency.on(StatefulSessionBeanCacheProvider.DEFAULT_SERVICE_DESCRIPTOR);
             }
         });
 

@@ -14,6 +14,7 @@ import org.wildfly.service.descriptor.ServiceDescriptor;
 /**
  * Enumerates common unary requirements for clustering resources
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link CommonServiceDescriptor}.
  */
 @Deprecated(forRemoval = true)
 public enum CommonUnaryRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {

@@ -14,7 +14,9 @@ import org.wildfly.clustering.group.Node;
  *
  * @author Paul Ferraro
  * @param <T> a service type
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.provider.ServiceProviderRegistration}.
  */
+@Deprecated(forRemoval = true)
 public interface ServiceProviderRegistration<T> extends Registration {
 
     /**

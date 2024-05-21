@@ -75,20 +75,12 @@ vi:ts=4:sw=4:expandtab
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -99,24 +91,12 @@ vi:ts=4:sw=4:expandtab
             <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -125,6 +105,11 @@ vi:ts=4:sw=4:expandtab
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-singleton-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-local</artifactId>
         </dependency>
 
         <dependency>
@@ -162,11 +147,6 @@ vi:ts=4:sw=4:expandtab
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
         </dependency>
 
         <dependency>
@@ -396,14 +376,20 @@ projects that depend on this project.-->
             <scope>test</scope>
         </dependency>
 
+        <!-- TODO remove Infinispan dependencies after deprecated passivation store resources are finally removed -->
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons-jakarta</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core-jakarta</artifactId>
+        </dependency>
+
+        <!-- Internal test dependencies -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
             <scope>test</scope>
         </dependency>
 

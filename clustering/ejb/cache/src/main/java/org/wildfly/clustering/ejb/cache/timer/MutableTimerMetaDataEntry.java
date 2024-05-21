@@ -10,7 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Predicate;
 
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.ejb.timer.TimerType;
 
 /**

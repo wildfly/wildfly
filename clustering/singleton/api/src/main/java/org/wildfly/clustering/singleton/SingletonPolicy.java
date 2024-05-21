@@ -8,6 +8,8 @@ package org.wildfly.clustering.singleton;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.service.Builder;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * Defines a singleton policy.
@@ -16,6 +18,8 @@ import org.wildfly.clustering.service.Builder;
  */
 @Deprecated(forRemoval = true)
 public interface SingletonPolicy extends org.wildfly.clustering.singleton.service.SingletonPolicy {
+    NullaryServiceDescriptor<SingletonPolicy> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.singleton.default-policy", SingletonPolicy.class);
+    UnaryServiceDescriptor<SingletonPolicy> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.clustering.singleton.policy", DEFAULT_SERVICE_DESCRIPTOR);
 
     /**
      * Creates a singleton service builder.

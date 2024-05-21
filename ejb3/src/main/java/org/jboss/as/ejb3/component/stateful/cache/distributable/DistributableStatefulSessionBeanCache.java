@@ -15,8 +15,7 @@ import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCache;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstanceFactory;
 import org.jboss.ejb.client.Affinity;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.ejb.bean.Bean;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 
@@ -30,7 +29,7 @@ import org.wildfly.clustering.ejb.bean.BeanManager;
 public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> implements StatefulSessionBeanCache<K, V> {
     private static final Object UNSET = Boolean.TRUE;
 
-    private final BeanManager<K, V, Batch> manager;
+    private final BeanManager<K, V> manager;
     private final StatefulSessionBeanInstanceFactory<V> factory;
 
     public DistributableStatefulSessionBeanCache(DistributableStatefulSessionBeanCacheConfiguration<K, V> configuration) {
@@ -64,8 +63,7 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
         if (newGroup) {
             CURRENT_GROUP.set(UNSET);
         }
-        Batcher<Batch> batcher = this.manager.getBatcher();
-        try (Batch batch = batcher.createBatch()) {
+        try (Batch batch = this.manager.getBatchFactory().get()) {
             try {
                 // This will invoke createStatefulBean() for nested beans
                 // Nested beans will share the same group identifier
@@ -90,25 +88,27 @@ public class DistributableStatefulSessionBeanCache<K, V extends StatefulSessionB
 
     @Override
     public StatefulSessionBean<K, V> findStatefulSessionBean(K id) {
-        Batcher<Batch> batcher = this.manager.getBatcher();
         // Batch is not closed here - it will be closed by the StatefulSessionBean
-        @SuppressWarnings("resource")
-        Batch batch = batcher.createBatch();
+        boolean close = true;
+        Batch batch = this.manager.getBatchFactory().get();
         try {
             // TODO WFLY-14167 Cache lookup timeout should reflect @AccessTimeout of associated bean/invocation
             Bean<K, V> bean = this.manager.findBean(id);
             if (bean == null) {
-                batch.close();
                 return null;
             }
-            return new DistributableStatefulSessionBean<>(batcher, bean, batcher.suspendBatch());
+            StatefulSessionBean<K, V> result = new DistributableStatefulSessionBean<>(bean, batch.suspend());
+            close = false;
+            return result;
         } catch (TimeoutException e) {
-            batch.close();
             throw new ConcurrentAccessTimeoutException(e.getMessage());
         } catch (RuntimeException | Error e) {
             batch.discard();
-            batch.close();
             throw e;
+        } finally {
+            if (close) {
+                batch.close();
+            }
         }
     }
 

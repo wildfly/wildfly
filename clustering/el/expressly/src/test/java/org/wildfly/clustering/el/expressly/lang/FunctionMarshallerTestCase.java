@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.el.expressly.lang;
 
-import java.io.IOException;
-
 import org.glassfish.expressly.lang.FunctionMapperImpl.Function;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link Function}.
@@ -18,10 +18,14 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class FunctionMarshallerTestCase {
 
-    @Test
-    public void test() throws NoSuchMethodException, IOException {
-        Tester<Function> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new Function(null, "foo", this.getClass().getMethod("test")));
-        tester.test(new Function("foo", "bar", this.getClass().getMethod("test")));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) throws NoSuchMethodException {
+        Tester<Function> tester = factory.createTester();
+        tester.accept(new Function(null, "foo", this.getClass().getDeclaredMethod("test")));
+        tester.accept(new Function("foo", "bar", this.getClass().getDeclaredMethod("test")));
+    }
+
+    void test() {
     }
 }

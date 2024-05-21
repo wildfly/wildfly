@@ -6,13 +6,12 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#getShortRunningFree(java.util.Map).
  * @author Paul Ferraro
  */
-public class ShortRunningFreeCommand implements Command<Long, CommandDispatcherTransport> {
+public class ShortRunningFreeCommand implements TransportCommand<Long> {
     private static final long serialVersionUID = 2200993132804378135L;
 
     private final Address address;
