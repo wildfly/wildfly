@@ -5,122 +5,114 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.clustering.controller.Capability;
-import org.jboss.as.clustering.controller.CapabilityServiceNameProvider;
-import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
-import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.service.AsyncServiceConfigurator;
-import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.FunctionalService;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.function.Functions;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Provides a connected channel for use by dependent services.
  * @author Paul Ferraro
  */
-public class ChannelServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<JChannel>, Consumer<JChannel> {
+public class ChannelServiceConfigurator implements ResourceServiceConfigurator {
 
-    private final String name;
+    private final RuntimeCapability<Void> capability;
+    private final ChannelServiceConfiguration configuration;
 
-    private volatile SupplierDependency<ChannelFactory> factory;
-    private volatile SupplierDependency<MBeanServer> server;
-    private volatile SupplierDependency<String> cluster;
-    private volatile boolean statisticsEnabled = false;
-
-    public ChannelServiceConfigurator(Capability capability, PathAddress address) {
-        super(capability, address);
-        this.name = address.getLastElement().getValue();
-    }
-
-    public ChannelServiceConfigurator statisticsEnabled(boolean enabled) {
-        this.statisticsEnabled = enabled;
-        return this;
+    public ChannelServiceConfigurator(RuntimeCapability<Void> capability, ChannelServiceConfiguration configuration) {
+        this.capability = capability;
+        this.configuration = configuration;
     }
 
     @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
-        Consumer<JChannel> channel = new CompositeDependency(this.factory, this.cluster, this.server).register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(channel, Function.identity(), this, this);
-        return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
-    }
-
-    @Override
-    public ServiceConfigurator configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        this.cluster = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_CLUSTER.getServiceName(context, this.name));
-        this.factory = new ServiceSupplierDependency<>(JGroupsRequirement.CHANNEL_SOURCE.getServiceName(context, this.name));
-        this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), ChannelResourceDefinition.Capability.FORK_CHANNEL_FACTORY.getDefinition().getDynamicName(context.getCurrentAddress()), null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
-        return this;
-    }
-
-    @Override
-    public JChannel get() {
-        try {
-            JChannel channel = this.factory.get().createChannel(this.name);
-
-            if (JGroupsLogger.ROOT_LOGGER.isTraceEnabled())  {
-                JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", this.name, channel.getProtocolStack().printProtocolSpec(true));
-            }
-
-            channel.stats(this.statisticsEnabled);
-
-            if (this.server != null) {
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String name = context.getCurrentAddressValue();
+        ChannelServiceConfiguration configuration = this.configuration;
+        ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, this.capability, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
+        Supplier<JChannel> factory = new Supplier<>() {
+            @Override
+            public JChannel get() {
                 try {
-                    JmxConfigurator.registerChannel(channel, this.server.get(), this.name);
+                    JChannel channel = configuration.getChannelFactory().createChannel(name);
+                    if (JGroupsLogger.ROOT_LOGGER.isTraceEnabled())  {
+                        JGroupsLogger.ROOT_LOGGER.tracef("JGroups channel %s created with configuration:%n %s", name, channel.getProtocolStack().printProtocolSpec(true));
+                    }
+                    return channel.stats(configuration.isStatisticsEnabled());
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+        Consumer<JChannel> connect = new Consumer<>() {
+            @Override
+            public void accept(JChannel channel) {
+                TP transport = channel.getProtocolStack().getTransport();
+                JGroupsLogger.ROOT_LOGGER.connecting(name, channel.getName(), configuration.getClusterName(), new InetSocketAddress(transport.getBindAddress(), transport.getBindPort()));
+                try {
+                    channel.connect(configuration.getClusterName());
+                } catch (Exception e) {
+                    channel.close();
+                    throw new IllegalStateException(e);
+                }
+                JGroupsLogger.ROOT_LOGGER.connected(name, channel.getName(), configuration.getClusterName(), channel.getView());
+            }
+        };
+        Consumer<JChannel> disconnect = new Consumer<>() {
+            @Override
+            public void accept(JChannel channel) {
+                JGroupsLogger.ROOT_LOGGER.disconnecting(name, channel.getName(), configuration.getClusterName(), channel.getView());
+                channel.disconnect();
+                JGroupsLogger.ROOT_LOGGER.disconnected(name, channel.getName(), configuration.getClusterName());
+            }
+        };
+        return CapabilityServiceInstaller.builder(this.capability, factory).blocking()
+                .requires(List.of(configuration, server))
+                .onStart(new MBeanRegistrationTask(server, JmxConfigurator::registerChannel, name).andThen(connect))
+                .onStop(disconnect.andThen(new MBeanRegistrationTask(server, JmxConfigurator::unregisterChannel, name)).andThen(Functions.closingConsumer()))
+                .build();
+    }
+
+    private interface MBeanRegistration {
+        void accept(JChannel channel, MBeanServer server, String name) throws Exception;
+    }
+
+    private static class MBeanRegistrationTask implements Consumer<JChannel> {
+        private final Supplier<MBeanServer> server;
+        private final MBeanRegistration registration;
+        private final String name;
+
+        MBeanRegistrationTask(Supplier<MBeanServer> server, MBeanRegistration registration, String name) {
+            this.server = server;
+            this.registration = registration;
+            this.name = name;
+        }
+
+        @Override
+        public void accept(JChannel channel) {
+            MBeanServer server = this.server.get();
+            if (server != null) {
+                try {
+                    this.registration.accept(channel, server, this.name);
                 } catch (Exception e) {
                     JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
                 }
             }
-
-            String clusterName = this.cluster.get();
-            TP transport = channel.getProtocolStack().getTransport();
-            JGroupsLogger.ROOT_LOGGER.connecting(this.name, channel.getName(), clusterName, new InetSocketAddress(transport.getBindAddress(), transport.getBindPort()));
-            channel.connect(clusterName);
-            JGroupsLogger.ROOT_LOGGER.connected(this.name, channel.getName(), clusterName, channel.getView());
-
-            return channel;
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
         }
-    }
-
-    @Override
-    public void accept(JChannel channel) {
-        String clusterName = this.cluster.get();
-        JGroupsLogger.ROOT_LOGGER.disconnecting(this.name, channel.getName(), clusterName, channel.getView());
-        channel.disconnect();
-        JGroupsLogger.ROOT_LOGGER.disconnected(this.name, channel.getName(), clusterName);
-
-        if (this.server != null) {
-            try {
-                JmxConfigurator.unregisterChannel(channel, this.server.get(), this.name);
-            } catch (Exception e) {
-                JGroupsLogger.ROOT_LOGGER.debug(e.getLocalizedMessage(), e);
-            }
-        }
-
-        channel.close();
     }
 }

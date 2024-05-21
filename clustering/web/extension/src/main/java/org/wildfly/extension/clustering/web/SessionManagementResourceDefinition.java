@@ -5,56 +5,45 @@
 
 package org.wildfly.extension.clustering.web;
 
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.service.WebProviderRequirement;
-import org.wildfly.clustering.web.service.WebRequirement;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
 /**
  * Base definition for session management resources.
  * @author Paul Ferraro
  */
-public class SessionManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class SessionManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator, ResourceModelResolver<DistributableSessionManagementConfiguration<DeploymentUnit>> {
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        SESSION_MANAGEMENT_PROVIDER(WebProviderRequirement.SESSION_MANAGEMENT_PROVIDER),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
-                    .addRequirements(WebRequirement.ROUTING_PROVIDER.getName());
-        }
-    }
+    static final RuntimeCapability<Void> SESSION_MANAGEMENT_PROVIDER = RuntimeCapability.Builder.of(DistributableSessionManagementProvider.SERVICE_DESCRIPTOR)
+            .addRequirements(RoutingProvider.SERVICE_DESCRIPTOR.getName())
+            .setAllowMultipleRegistrations(true)
+            .build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         GRANULARITY("granularity", ModelType.STRING, null) {
@@ -88,12 +77,10 @@ public class SessionManagementResourceDefinition extends ChildResourceDefinition
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceConfiguratorFactory factory;
 
-    public SessionManagementResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
+    public SessionManagementResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, DistributableWebExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("session-management")));
         this.configurator = configurator;
-        this.factory = factory;
     }
 
     @Override
@@ -101,14 +88,31 @@ public class SessionManagementResourceDefinition extends ChildResourceDefinition
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(SESSION_MANAGEMENT_PROVIDER))
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
+        ResourceServiceHandler handler = ResourceServiceHandler.of(ResourceOperationRuntimeHandler.configureService(this));
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         new NoAffinityResourceDefinition().register(registration);
         new LocalAffinityResourceDefinition().register(registration);
 
         return registration;
+    }
+
+    @Override
+    public DistributableSessionManagementConfiguration<DeploymentUnit> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        SessionGranularity granularity = SessionGranularity.valueOf(Attribute.GRANULARITY.resolveModelAttribute(context, model).asString());
+        SessionMarshallerFactory marshallerFactory = SessionMarshallerFactory.valueOf(Attribute.MARSHALLER.resolveModelAttribute(context, model).asString());
+        return new DistributableSessionManagementConfiguration<>() {
+            @Override
+            public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
+                return granularity.getAttributePersistenceStrategy();
+            }
+
+            @Override
+            public Function<DeploymentUnit, ByteBufferMarshaller> getMarshallerFactory() {
+                return marshallerFactory;
+            }
+        };
     }
 }

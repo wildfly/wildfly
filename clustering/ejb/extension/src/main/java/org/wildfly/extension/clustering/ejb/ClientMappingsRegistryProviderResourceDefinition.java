@@ -4,20 +4,18 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.RequirementCapability;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.clustering.ejb.remote.RemoteEjbRequirement;
-import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 /**
@@ -26,49 +24,29 @@ import java.util.function.UnaryOperator;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class ClientMappingsRegistryProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class ClientMappingsRegistryProviderResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     static PathElement pathElement(String value) {
         return PathElement.pathElement("client-mappings-registry", value);
     }
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        CLIENT_MAPPINGS_REGISTRY_PROVIDER(RemoteEjbRequirement.CLIENT_MAPPINGS_REGISTRY_PROVIDER),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(Requirement requirement) {
-            this.capability = new RequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setAllowMultipleRegistrations(true);
-        }
-    }
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
 
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
 
-    ClientMappingsRegistryProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+    ClientMappingsRegistryProviderResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
         this.configurator = configurator;
-        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(CAPABILITY))
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.serviceConfiguratorFactory);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
         return registration;
     }
 }

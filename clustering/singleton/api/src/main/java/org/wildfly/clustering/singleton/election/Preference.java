@@ -6,6 +6,12 @@ package org.wildfly.clustering.singleton.election;
 
 import org.wildfly.clustering.group.Node;
 
+/**
+ * An election preference.
+ * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
+ */
+@Deprecated(forRemoval = true)
 public interface Preference {
     boolean preferred(Node node);
 }

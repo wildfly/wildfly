@@ -8,7 +8,7 @@ package org.wildfly.clustering.ejb.cache.timer;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
 
 /**
@@ -19,9 +19,9 @@ import org.wildfly.clustering.ejb.timer.TimerMetaData;
 public class DefaultTimerMetaData<C> extends DefaultImmutableTimerMetaData<C> implements TimerMetaData {
 
     private final TimerMetaDataEntry<C> entry;
-    private final Mutator mutator;
+    private final CacheEntryMutator mutator;
 
-    public DefaultTimerMetaData(TimerMetaDataConfiguration<C> configuration, TimerMetaDataEntry<C> entry, Mutator mutator) {
+    public DefaultTimerMetaData(TimerMetaDataConfiguration<C> configuration, TimerMetaDataEntry<C> entry, CacheEntryMutator mutator) {
         super(configuration, entry);
         this.entry = entry;
         this.mutator = mutator;

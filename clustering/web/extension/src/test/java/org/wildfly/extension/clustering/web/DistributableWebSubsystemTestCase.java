@@ -12,9 +12,8 @@ import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 /**
  * Unit test for distributable-web subsystem.
@@ -35,9 +34,9 @@ public class DistributableWebSubsystemTestCase extends AbstractSubsystemSchemaTe
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
-                .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
-                .require(InfinispanClientRequirement.REMOTE_CONTAINER, "foo")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
+                .require(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, "foo")
                 ;
     }
 }

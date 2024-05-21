@@ -5,49 +5,36 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.io.Externalizable;
-import java.io.Serializable;
 import java.util.function.Function;
 
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
-import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
 
 /**
  * @author Paul Ferraro
  */
 public enum JBossMarshallingVersion implements Function<Module, MarshallingConfiguration> {
 
-    VERSION_1() {
+    @Deprecated VERSION_1() {
         @Override
         public MarshallingConfiguration apply(Module module) {
-            MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-            config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-            return config;
+            return MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).build();
         }
     },
-    VERSION_2() {
+    @Deprecated VERSION_2() {
         @Override
         public MarshallingConfiguration apply(Module module) {
-            MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-            config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-            config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
-            return config;
+            MarshallingConfigurationBuilder builder = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader()));
+            return new org.wildfly.clustering.marshalling.jboss.externalizer.LegacyExternalizerConfiguratorFactory(module.getClassLoader()).apply(builder).build();
         }
     },
     VERSION_3() {
         @Override
         public MarshallingConfiguration apply(Module module) {
-            MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-            config.setClassTable(new DynamicClassTable(module.getClassLoader()));
-            config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
-            return config;
+            MarshallingConfigurationBuilder builder = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).load(module.getClassLoader());
+            return new org.wildfly.clustering.marshalling.jboss.externalizer.LegacyExternalizerConfiguratorFactory(module.getClassLoader()).apply(builder).build();
         }
     },
     ;

@@ -3,8 +3,8 @@ package org.wildfly.clustering.ejb.cache.timer;
 import "java.lang.proto";
 import "java.time.proto";
 import "java.util.proto";
-import "org.wildfly.clustering.ee.cache.offset.proto";
-import "org.wildfly.clustering.marshalling.spi.proto";
+import "org.wildfly.clustering.server.offset.proto";
+import "org.wildfly.clustering.marshalling.proto";
 
 // IDs: 345-349
 
@@ -12,7 +12,7 @@ import "org.wildfly.clustering.marshalling.spi.proto";
  * @TypeId(345)
  */
 message IntervalTimerMetaDataEntry {
-	optional	org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue	info	= 1;
+	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
 	optional	java.time.Instant	start	= 2;
 	optional	java.time.Duration	lastTimeout	= 3;
 	optional	java.time.Duration	interval	= 4;
@@ -22,7 +22,7 @@ message IntervalTimerMetaDataEntry {
  * @TypeId(346)
  */
 message ScheduleTimerMetaDataEntry {
-	optional	org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue	info	= 1;
+	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
 	optional	java.time.Instant	start	= 2;
 	optional	java.time.Duration	lastTimeout	= 3;
 	optional	string	timeoutMatcher	= 4;
@@ -42,7 +42,7 @@ message ScheduleTimerMetaDataEntry {
  * @TypeId(347)
  */
 message TimerMetaDataEntryFunction {
-	optional	org.wildfly.clustering.ee.cache.offset.DurationOffset	lastTimeoutOffset	= 1;
+	optional	org.wildfly.clustering.server.offset.DurationOffset	lastTimeoutOffset	= 1;
 }
 
 /**

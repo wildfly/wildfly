@@ -5,13 +5,16 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.UUIDSessionID;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.cache.infinispan.embedded.persistence.FormatterTesterFactory;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.Tester;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link InfinispanBeanCreationMetaDataKey} marshalling.
@@ -19,10 +22,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class InfinispanBeanMetaDataKeyTestCase {
 
-    @Test
-    public void test() throws IOException {
-        InfinispanBeanMetaDataKey<SessionID> key = new InfinispanBeanMetaDataKey<>(new UUIDSessionID(UUID.randomUUID()));
-
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(key);
+    @ParameterizedTest
+    @TesterFactorySource({ MarshallingTesterFactory.class, FormatterTesterFactory.class })
+    public void test(TesterFactory factory) {
+        Tester<InfinispanBeanMetaDataKey<SessionID>> tester = factory.createKeyTester();
+        tester.accept(new InfinispanBeanMetaDataKey<>(new UUIDSessionID(UUID.randomUUID())));
     }
 }

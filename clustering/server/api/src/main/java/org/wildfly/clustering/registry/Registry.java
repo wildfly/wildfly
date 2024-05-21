@@ -17,7 +17,9 @@ import org.wildfly.clustering.group.Node;
  * @param <K> the type of the registry entry key
  * @param <V> the type of the registry entry value
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.registry.Registry}.
  */
+@Deprecated(forRemoval = true)
 public interface Registry<K, V> extends Registrar<RegistryListener<K, V>>, AutoCloseable {
 
     /**

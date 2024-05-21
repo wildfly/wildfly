@@ -8,7 +8,6 @@ package org.jboss.as.ejb3.timerservice.distributable;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-import java.util.function.Function;
 
 import jakarta.ejb.EJBException;
 import jakarta.ejb.ScheduleExpression;
@@ -21,11 +20,13 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.invocation.InterceptorContext;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.BatchContext;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.common.function.ExceptionConsumer;
+import org.wildfly.common.function.ExceptionFunction;
 
 /**
  * Timer implementation for use outside the context of a timeout event.
@@ -35,29 +36,29 @@ import org.wildfly.common.function.ExceptionConsumer;
  */
 public class OOBTimer<I> implements ManagedTimer {
 
-    private static final Function<ManagedTimer, TimerHandle> GET_HANDLE = ManagedTimer::getHandle;
-    private static final Function<ManagedTimer, Serializable> GET_INFO = ManagedTimer::getInfo;
-    private static final Function<ManagedTimer, Date> GET_NEXT_TIMEOUT = ManagedTimer::getNextTimeout;
-    private static final Function<ManagedTimer, ScheduleExpression> GET_SCHEDULE = ManagedTimer::getSchedule;
-    private static final Function<ManagedTimer, Long> GET_TIME_REMAINING = ManagedTimer::getTimeRemaining;
+    private static final ExceptionFunction<ManagedTimer, TimerHandle, EJBException> GET_HANDLE = ManagedTimer::getHandle;
+    private static final ExceptionFunction<ManagedTimer, Serializable, EJBException> GET_INFO = ManagedTimer::getInfo;
+    private static final ExceptionFunction<ManagedTimer, Date, EJBException> GET_NEXT_TIMEOUT = ManagedTimer::getNextTimeout;
+    private static final ExceptionFunction<ManagedTimer, ScheduleExpression, EJBException> GET_SCHEDULE = ManagedTimer::getSchedule;
+    private static final ExceptionFunction<ManagedTimer, Long, EJBException> GET_TIME_REMAINING = ManagedTimer::getTimeRemaining;
 
-    private static final Function<ManagedTimer, Boolean> IS_ACTIVE = ManagedTimer::isActive;
-    private static final Function<ManagedTimer, Boolean> IS_CALENDAR = ManagedTimer::isCalendarTimer;
-    private static final Function<ManagedTimer, Boolean> IS_CANCELED = ManagedTimer::isCanceled;
-    private static final Function<ManagedTimer, Boolean> IS_EXPIRED = ManagedTimer::isExpired;
-    private static final Function<ManagedTimer, Boolean> IS_PERSISTENT = ManagedTimer::isPersistent;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_ACTIVE = ManagedTimer::isActive;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_CALENDAR = ManagedTimer::isCalendarTimer;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_CANCELED = ManagedTimer::isCanceled;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_EXPIRED = ManagedTimer::isExpired;
+    private static final ExceptionFunction<ManagedTimer, Boolean, EJBException> IS_PERSISTENT = ManagedTimer::isPersistent;
 
     private static final ExceptionConsumer<ManagedTimer, EJBException> ACTIVATE = ManagedTimer::activate;
     private static final ExceptionConsumer<ManagedTimer, EJBException> CANCEL = ManagedTimer::cancel;
     private static final ExceptionConsumer<ManagedTimer, Exception> INVOKE = ManagedTimer::invoke;
     private static final ExceptionConsumer<ManagedTimer, EJBException> SUSPEND = ManagedTimer::suspend;
 
-    private final TimerManager<I, Batch> manager;
+    private final TimerManager<I> manager;
     private final I id;
     private final TimedObjectInvoker invoker;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
 
-    public OOBTimer(TimerManager<I, Batch> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+    public OOBTimer(TimerManager<I> manager, I id, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
         this.manager = manager;
         this.id = id;
         this.invoker = invoker;
@@ -139,7 +140,7 @@ public class OOBTimer<I> implements ManagedTimer {
         return this.invoke(IS_EXPIRED);
     }
 
-    private <R> R invoke(Function<ManagedTimer, R> function) {
+    private <R, E extends Exception> R invoke(ExceptionFunction<ManagedTimer, R, E> function) throws E {
         InterceptorContext interceptorContext = CurrentInvocationContext.get();
         ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
         if ((currentTimer != null) && currentTimer.getId().equals(this.id.toString())) {
@@ -147,56 +148,31 @@ public class OOBTimer<I> implements ManagedTimer {
         }
         Transaction transaction = ManagedTimerService.getActiveTransaction();
         @SuppressWarnings("unchecked")
-        Map.Entry<Timer<I>, Batch> existing = (transaction != null) ? (Map.Entry<Timer<I>, Batch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
+        Map.Entry<Timer<I>, SuspendedBatch> existing = (transaction != null) ? (Map.Entry<Timer<I>, SuspendedBatch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
         if (existing != null) {
             Timer<I> timer = existing.getKey();
-            Batch suspendedBatch = existing.getValue();
+            SuspendedBatch suspendedBatch = existing.getValue();
             return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
         }
-        Batcher<Batch> batcher = this.manager.getBatcher();
-        try (Batch batch = batcher.createBatch()) {
+        try (Batch batch = this.manager.getBatchFactory().get()) {
             Timer<I> timer = this.manager.getTimer(this.id);
             if (timer == null) {
                 throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
             }
-            Batch suspendedBatch = batcher.suspendBatch();
-            try {
-                return function.apply(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-            } finally {
-                batcher.resumeBatch(suspendedBatch);
+            try (BatchContext<SuspendedBatch> context = batch.suspendWithContext()) {
+                return function.apply(new DistributableTimer<>(this.manager, timer, context.get(), this.invoker, this.synchronizationFactory));
             }
         }
     }
 
     private <E extends Exception> void invoke(ExceptionConsumer<ManagedTimer, E> consumer) throws E {
-        InterceptorContext interceptorContext = CurrentInvocationContext.get();
-        ManagedTimer currentTimer = (interceptorContext != null) ? (ManagedTimer) interceptorContext.getTimer() : null;
-        if ((currentTimer != null) && currentTimer.getId().equals(this.id.toString())) {
-            consumer.accept(currentTimer);
-        } else {
-            Transaction transaction = ManagedTimerService.getActiveTransaction();
-            @SuppressWarnings("unchecked")
-            Map.Entry<Timer<I>, Batch> existing = (transaction != null) ? (Map.Entry<Timer<I>, Batch>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.id) : null;
-            if (existing != null) {
-                Timer<I> timer = existing.getKey();
-                Batch suspendedBatch = existing.getValue();
-                consumer.accept(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-            } else {
-                Batcher<Batch> batcher = this.manager.getBatcher();
-                try (Batch batch = batcher.createBatch()) {
-                    Timer<I> timer = this.manager.getTimer(this.id);
-                    if (timer == null) {
-                        throw EjbLogger.ROOT_LOGGER.timerWasCanceled(this.id.toString());
-                    }
-                    Batch suspendedBatch = batcher.suspendBatch();
-                    try {
-                        consumer.accept(new DistributableTimer<>(this.manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory));
-                    } finally {
-                        batcher.resumeBatch(suspendedBatch);
-                    }
-                }
+        this.invoke(new ExceptionFunction<ManagedTimer, Void, E>() {
+            @Override
+            public Void apply(ManagedTimer timer) throws E {
+                consumer.accept(timer);
+                return null;
             }
-        }
+        });
     }
 
     @Override

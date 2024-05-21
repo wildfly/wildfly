@@ -30,8 +30,6 @@
 
     <modules>
         <module>common</module>
-        <module>context</module>
-        <module>ee</module>
         <module>ejb</module>
         <module>el</module>
         <module>faces</module>
@@ -95,6 +93,16 @@
                     <artifactId>tools</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

@@ -28,18 +28,17 @@
     </description>
 
     <dependencies>
+        <!-- Specification dependencies -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-spi</artifactId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
 
         <!-- External dependencies -->
@@ -52,17 +51,12 @@
             <artifactId>jboss-metadata-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-spi</artifactId>
         </dependency>
-
-        <!-- Test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
     </dependencies>
 

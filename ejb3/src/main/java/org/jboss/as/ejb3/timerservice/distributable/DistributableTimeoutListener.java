@@ -12,8 +12,9 @@ import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.BatchContext;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
@@ -23,32 +24,30 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
  * @author Paul Ferraro
  * @param <I> the timer identifier type
  */
-public class DistributableTimeoutListener<I> implements TimeoutListener<I, Batch> {
+public class DistributableTimeoutListener<I> implements TimeoutListener<I> {
 
     private final TimedObjectInvoker invoker;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
 
-    DistributableTimeoutListener(TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+    public DistributableTimeoutListener(TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
         this.invoker = invoker;
         this.synchronizationFactory = synchronizationFactory;
     }
 
     @Override
-    public void timeout(TimerManager<I, Batch> manager, Timer<I> timer) throws ExecutionException {
-        Batcher<Batch> batcher = manager.getBatcher();
-        Batch suspendedBatch = batcher.suspendBatch();
-        try {
-            ManagedTimer managedTimer = new DistributableTimer<>(manager, timer, suspendedBatch, this.invoker, this.synchronizationFactory);
-            try {
-                invoke(managedTimer);
-            } catch (ExecutionException e) {
-                EjbLogger.EJB3_TIMER_LOGGER.errorInvokeTimeout(managedTimer, e);
-                // Retry once on execution failure
-                EjbLogger.EJB3_TIMER_LOGGER.timerRetried(managedTimer);
-                invoke(managedTimer);
+    public void timeout(TimerManager<I> manager, Timer<I> timer) throws ExecutionException {
+        try (Batch batch = manager.getBatchFactory().get()) {
+            try (BatchContext<SuspendedBatch> context = batch.suspendWithContext()) {
+                ManagedTimer managedTimer = new DistributableTimer<>(manager, timer, context.get(), this.invoker, this.synchronizationFactory);
+                try {
+                    invoke(managedTimer);
+                } catch (ExecutionException e) {
+                    EjbLogger.EJB3_TIMER_LOGGER.errorInvokeTimeout(managedTimer, e);
+                    // Retry once on execution failure
+                    EjbLogger.EJB3_TIMER_LOGGER.timerRetried(managedTimer);
+                    invoke(managedTimer);
+                }
             }
-        } finally {
-            batcher.resumeBatch(suspendedBatch);
         }
     }
 

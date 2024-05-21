@@ -9,12 +9,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
-import org.infinispan.protostream.SerializationContext;
 import org.jboss.weld.ejb.api.SessionObjectReference;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.module.ejb.EnterpriseBeanInstance;
 import org.jboss.weld.serialization.spi.BeanIdentifier;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.reflect.TernaryFieldMarshaller;
 import org.wildfly.clustering.marshalling.protostream.reflect.TriFunction;
 import org.wildfly.security.ParametricPrivilegedAction;
@@ -23,6 +25,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class WeldModuleEJBSerializationContextInitializer extends AbstractSerializationContextInitializer implements ParametricPrivilegedAction<Class<?>, String> {
 
     public WeldModuleEJBSerializationContextInitializer() {

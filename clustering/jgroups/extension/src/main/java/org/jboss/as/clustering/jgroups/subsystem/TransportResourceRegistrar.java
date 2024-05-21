@@ -8,14 +8,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 
 import org.jboss.as.clustering.controller.ManagementRegistrar;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Registers transport definitions, including any definition overrides.
  * @author Paul Ferraro
  */
-public class TransportResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
+public enum TransportResourceRegistrar implements ManagementRegistrar<ManagementResourceRegistration> {
+    INSTANCE;
 
     enum MulticastTransport {
         UDP;
@@ -25,22 +25,16 @@ public class TransportResourceRegistrar implements ManagementRegistrar<Managemen
         TCP, TCP_NIO2;
     }
 
-    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
-
-    public TransportResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
-    }
-
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new TransportResourceDefinition(this.parentServiceConfiguratorFactory).register(registration);
+        new TransportResourceDefinition<>().register(registration);
 
         for (MulticastTransport transport : EnumSet.allOf(MulticastTransport.class)) {
-            new TransportResourceDefinition(transport.name(), MulticastTransportConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+            new MulticastSocketTransportResourceDefinition(transport.name()).register(registration);
         }
 
         for (SocketTransport transport : EnumSet.allOf(SocketTransport.class)) {
-            new SocketTransportResourceDefinition(transport.name(), SocketTransportConfigurationServiceConfigurator::new, this.parentServiceConfiguratorFactory).register(registration);
+            new SocketTransportResourceDefinition<>(transport.name()).register(registration);
         }
     }
 }

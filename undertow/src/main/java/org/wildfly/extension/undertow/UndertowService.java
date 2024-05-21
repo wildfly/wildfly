@@ -20,6 +20,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 import io.undertow.Version;
 
@@ -29,6 +30,7 @@ import io.undertow.Version;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class UndertowService implements Service<UndertowService> {
+    public static NullaryServiceDescriptor<UndertowService> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
 
     /**
      * @deprecated Replaced by capability reference {@link UndertowRootDefinition#UNDERTOW_CAPABILITY}.

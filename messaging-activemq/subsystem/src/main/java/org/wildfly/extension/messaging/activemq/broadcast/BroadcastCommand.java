@@ -5,13 +5,15 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
-import org.wildfly.clustering.dispatcher.Command;
+import java.io.Serializable;
+
+import org.wildfly.clustering.server.dispatcher.Command;
 
 /**
  * A {@link Command} that receives a broadcast.
  * @author Paul Ferraro
  */
-public class BroadcastCommand implements Command<Void, BroadcastReceiver> {
+public class BroadcastCommand implements Command<Void, BroadcastReceiver, RuntimeException>, Serializable {
     private static final long serialVersionUID = 4354035602902924182L;
 
     private final byte[] data;

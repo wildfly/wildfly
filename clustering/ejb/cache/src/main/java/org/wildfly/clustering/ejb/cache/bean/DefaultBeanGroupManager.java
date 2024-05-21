@@ -8,19 +8,20 @@ package org.wildfly.clustering.ejb.cache.bean;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Manager;
-import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.MutatorFactory;
-import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.ee.cache.ConcurrentManager;
+import org.wildfly.clustering.cache.CacheEntryCreator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.marshalling.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
+import org.wildfly.clustering.server.cache.Cache;
+import org.wildfly.clustering.server.cache.CacheStrategy;
+import org.wildfly.clustering.server.manager.Manager;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -33,12 +34,13 @@ import org.wildfly.common.function.Functions;
 public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements BeanGroupManager<K, V> {
     static final Logger LOGGER = Logger.getLogger(DefaultBeanGroupManager.class);
 
-    private final Creator<K, MarshalledValue<Map<K, V>, C>, MarshalledValue<Map<K, V>, C>> creator;
-    private final MutatorFactory<K, MarshalledValue<Map<K, V>, C>> mutatorFactory;
+    private final CacheEntryCreator<K, MarshalledValue<Map<K, V>, C>, MarshalledValue<Map<K, V>, C>> creator;
+    private final CacheEntryMutatorFactory<K, MarshalledValue<Map<K, V>, C>> mutatorFactory;
     private final MarshalledValueFactory<C> factory;
-    private final Manager<K, MutableBeanGroup<K, V>> manager;
+    private final Cache<K, MutableBeanGroup<K, V>> cache;
     private final Consumer<Map<K, V>> postActivateTask;
     private final Consumer<Map<K, V>> prePassivateTask;
+    private final BiFunction<K, Runnable, MutableBeanGroup<K, V>> beanGroupFactory;
 
     public DefaultBeanGroupManager(DefaultBeanGroupManagerConfiguration<K, V, C> configuration) {
         this.creator = configuration.getCreator();
@@ -47,35 +49,27 @@ public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements
         boolean persistent = configuration.getCacheProperties().isPersistent();
         this.postActivateTask = persistent ? new MapValuesTask<>(BeanInstance::postActivate) : Functions.discardingConsumer();
         this.prePassivateTask = persistent ? new MapValuesTask<>(BeanInstance::prePassivate) : Functions.discardingConsumer();
-        this.manager = new ConcurrentManager<>(Functions.discardingConsumer(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
+        this.cache = CacheStrategy.CONCURRENT.createCache(Functions.discardingConsumer(), new NewBeanGroupCloseTask<>(configuration.getRemover()));
+        this.beanGroupFactory = (id, closeTask) -> {
+            Map<K, V> instances = new ConcurrentHashMap<>();
+            MarshalledValue<Map<K, V>, C> newValue = this.factory.createMarshalledValue(instances);
+            MarshalledValue<Map<K, V>, C> value = this.creator.createValue(id, newValue);
+            if (value != newValue) {
+                try {
+                    instances = value.get(this.factory.getMarshallingContext());
+                    this.postActivateTask.accept(instances);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+            CacheEntryMutator mutator = this.mutatorFactory.createMutator(id, value);
+            return new DefaultBeanGroup<>(id, instances, this.prePassivateTask, mutator, closeTask);
+        };
     }
 
     @Override
     public BeanGroup<K, V> getBeanGroup(K id) {
-        Creator<K, MarshalledValue<Map<K, V>, C>, MarshalledValue<Map<K, V>, C>> creator = this.creator;
-        MutatorFactory<K, MarshalledValue<Map<K, V>, C>> mutatorFactory = this.mutatorFactory;
-        MarshalledValueFactory<C> factory = this.factory;
-        Consumer<Map<K, V>> postActivateTask = this.postActivateTask;
-        Consumer<Map<K, V>> prePassivateTask = this.prePassivateTask;
-        Function<Runnable, MutableBeanGroup<K, V>> beanGroupFactory = new Function<>() {
-            @Override
-            public MutableBeanGroup<K, V> apply(Runnable closeTask) {
-                Map<K, V> instances = new ConcurrentHashMap<>();
-                MarshalledValue<Map<K, V>, C> newValue = factory.createMarshalledValue(instances);
-                MarshalledValue<Map<K, V>, C> value = creator.createValue(id, newValue);
-                if (value != newValue) {
-                    try {
-                        instances = value.get(factory.getMarshallingContext());
-                        postActivateTask.accept(instances);
-                    } catch (IOException e) {
-                        throw new IllegalStateException(e);
-                    }
-                }
-                Mutator mutator = mutatorFactory.createMutator(id, value);
-                return new DefaultBeanGroup<>(id, instances, prePassivateTask, mutator, closeTask);
-            }
-        };
-        return this.manager.apply(id, beanGroupFactory);
+        return this.cache.computeIfAbsent(id, this.beanGroupFactory);
     }
 
     private static class MapValuesTask<K, V> implements Consumer<Map<K, V>> {
@@ -92,9 +86,9 @@ public class DefaultBeanGroupManager<K, V extends BeanInstance<K>, C> implements
     }
 
     private static class NewBeanGroupCloseTask<K, V extends BeanInstance<K>, C> implements Consumer<MutableBeanGroup<K, V>> {
-        private final Remover<K> remover;
+        private final CacheEntryRemover<K> remover;
 
-        NewBeanGroupCloseTask(Remover<K> remover) {
+        NewBeanGroupCloseTask(CacheEntryRemover<K> remover) {
             this.remover = remover;
         }
 

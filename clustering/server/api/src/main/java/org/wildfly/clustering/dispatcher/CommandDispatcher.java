@@ -14,7 +14,9 @@ import org.wildfly.clustering.group.Node;
  *
  * @param <C> the command context type
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.server.dispatcher.CommandDispatcher}.
  */
+@Deprecated(forRemoval = true)
 public interface CommandDispatcher<C> extends AutoCloseable {
 
     /**

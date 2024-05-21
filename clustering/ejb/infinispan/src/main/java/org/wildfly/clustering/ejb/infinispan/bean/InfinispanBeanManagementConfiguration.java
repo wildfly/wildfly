@@ -5,8 +5,8 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.wildfly.clustering.ee.infinispan.InfinispanCacheConfiguration;
 import org.wildfly.clustering.ejb.bean.BeanManagementConfiguration;
+import org.wildfly.clustering.infinispan.service.InfinispanCacheConfiguration;
 
 /**
  * Configuration of an Infinispan-based bean management provider.

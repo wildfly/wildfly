@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.cache.offset.Offset;
+import org.wildfly.clustering.server.offset.Offset;
 import org.wildfly.clustering.ejb.timer.TimerConfiguration;
 
 /**

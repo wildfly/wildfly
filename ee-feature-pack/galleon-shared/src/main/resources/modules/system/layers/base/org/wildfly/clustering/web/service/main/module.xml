@@ -21,8 +21,11 @@
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.metadata.web"/>
         <module name="org.jboss.msc"/>
-        <module name="org.wildfly.clustering.service"/>
-        <module name="org.wildfly.clustering.web.spi"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+        <module name="org.wildfly.clustering.session.spi"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
 
         <!-- Enable dynamic installation of legacy session management provider -->
         <module name="org.wildfly.extension.clustering.web" services="import" optional="true"/>

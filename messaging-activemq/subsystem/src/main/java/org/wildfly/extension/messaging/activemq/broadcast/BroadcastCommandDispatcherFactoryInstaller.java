@@ -9,18 +9,15 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
-import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 import org.wildfly.extension.messaging.activemq.MessagingServices;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Installs a distinct {@link BroadcastCommandDispatcherFactory} service per channel.
@@ -35,11 +32,12 @@ public class BroadcastCommandDispatcherFactoryInstaller implements BiConsumer<Op
         ServiceName name = MessagingServices.getBroadcastCommandDispatcherFactoryServiceName(channelName);
         // N.B. BroadcastCommandDispatcherFactory implementations are shared across multiple server resources
         if (this.names.add(name)) {
-            ServiceBuilder<?> builder = context.getServiceTarget().addService(name);
-            Consumer<BroadcastCommandDispatcherFactory> injector = builder.provides(name);
-            Supplier<CommandDispatcherFactory> factory = builder.requires(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context, channelName));
-            Service service = new FunctionalService<>(injector, ConcurrentBroadcastCommandDispatcherFactory::new, factory);
-            builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            ServiceDependency<CommandDispatcherFactory<GroupMember>> factory = ServiceDependency.on(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY, channelName);
+            ServiceInstaller.builder(ConcurrentBroadcastCommandDispatcherFactory::new, factory)
+                    .provides(name)
+                    .requires(factory)
+                    .build()
+                    .install(context);
         }
     }
 }

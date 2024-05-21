@@ -17,6 +17,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.infinispan.subsystem.TableResourceDefinition.ColumnAttribute;
+import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.ConnectionPoolResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
 
 /**
  * XML reader for the Infinispan subsystem.
@@ -1812,7 +1812,7 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case ASYNC_THREAD_POOL: {
-                    this.parseThreadPool(ThreadPoolResourceDefinition.CLIENT, reader, address, operations);
+                    this.parseThreadPool(ClientThreadPoolResourceDefinition.ASYNC, reader, address, operations);
                     break;
                 }
                 case CONNECTION_POOL: {

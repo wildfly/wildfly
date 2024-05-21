@@ -11,9 +11,9 @@ import java.lang.reflect.InvocationHandler;
 import org.jboss.as.ee.component.ProxyInvocationHandler;
 import org.jboss.invocation.proxy.ProxyFactory;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.security.ParametricPrivilegedAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
  * Immutability test for EJB proxies, whose serializable placeholders are immutable.

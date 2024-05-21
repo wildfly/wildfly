@@ -7,13 +7,13 @@ package org.wildfly.clustering.ejb.cache.timer;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.UUID;
 
 import org.mockito.Mockito;
-import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * Schedule variant of Unit test for {@link TimerMetaDataEntryFunction}
@@ -21,7 +21,7 @@ import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
  */
 public class ScheduleTimerMetaDataEntryFunctionTestCase extends AbstractScheduleTimerMetaDataEntryTestCase {
 
-    public ScheduleTimerMetaDataEntryFunctionTestCase(Entry<ScheduleTimerConfiguration, Method> entry) {
+    public ScheduleTimerMetaDataEntryFunctionTestCase(Map.Entry<ScheduleTimerConfiguration, Method> entry) {
         super(entry);
     }
 

@@ -15,6 +15,4 @@ public interface ThreadPoolDefinition extends ScheduledThreadPoolDefinition {
     Attribute getMaxThreads();
 
     Attribute getQueueLength();
-
-    boolean isNonBlocking();
 }

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import org.wildfly.clustering.ee.Locator;
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 
 /**
@@ -13,7 +13,7 @@ import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
  * @param <I> the timer identifier type
  * @param <V> the timer metadata value type
  */
-public interface ImmutableTimerMetaDataFactory<I, V> extends Locator<I, V> {
+public interface ImmutableTimerMetaDataFactory<I, V> extends CacheEntryLocator<I, V> {
 
     ImmutableTimerMetaData createImmutableTimerMetaData(V value);
 }

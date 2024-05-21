@@ -9,9 +9,9 @@ import java.time.Duration;
 import java.util.UUID;
 
 import org.mockito.Mockito;
-import org.wildfly.clustering.ee.Key;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * Interval variant of Unit test for {@link TimerMetaDataEntryFunction}

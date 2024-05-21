@@ -9,10 +9,11 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -38,8 +39,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     AdditionalInitialization createAdditionalInitialization() {
         return new JGroupsSubsystemInitialization()
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
-                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS", "new-datasource")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-1")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-2")
+                .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
+                .require(CommonServiceDescriptor.DATA_SOURCE, "new-datasource")
                 ;
     }
 

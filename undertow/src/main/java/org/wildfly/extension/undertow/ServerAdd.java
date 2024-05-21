@@ -26,7 +26,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
+import org.wildfly.extension.undertow.session.DistributableServerServiceInstallerFactory;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -65,8 +65,8 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.install();
         }
 
-        for (DistributableServerRuntimeHandler handler : ServiceLoader.load(DistributableServerRuntimeHandler.class, DistributableServerRuntimeHandler.class.getClassLoader())) {
-            handler.execute(context, name);
+        for (DistributableServerServiceInstallerFactory factory : ServiceLoader.load(DistributableServerServiceInstallerFactory.class, DistributableServerServiceInstallerFactory.class.getClassLoader())) {
+            factory.getServiceInstaller(context, name).install(context);
         }
     }
 

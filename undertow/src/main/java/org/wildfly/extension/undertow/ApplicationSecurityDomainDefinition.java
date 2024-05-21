@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -33,13 +31,14 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -57,20 +56,13 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementConfiguration;
-import org.wildfly.clustering.web.container.SecurityDomainSingleSignOnManagementProvider;
 import org.wildfly.elytron.web.undertow.server.servlet.AuthenticationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
-import org.wildfly.extension.undertow.sso.elytron.NonDistributableSingleSignOnManagementProvider;
-import org.wildfly.extension.undertow.sso.elytron.SingleSignOnIdentifierFactory;
 import org.wildfly.security.auth.server.HttpAuthenticationFactory;
 import org.wildfly.security.auth.server.MechanismConfiguration;
 import org.wildfly.security.auth.server.MechanismConfigurationSelector;
@@ -93,6 +85,7 @@ import org.wildfly.security.http.util.sso.SingleSignOnServerMechanismFactory;
 import org.wildfly.security.http.util.sso.SingleSignOnConfiguration;
 import org.wildfly.security.http.util.sso.SingleSignOnSessionFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
@@ -103,7 +96,7 @@ import io.undertow.servlet.api.LoginConfig;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ApplicationSecurityDomainDefinition extends PersistentResourceDefinition {
+public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.APPLICATION_SECURITY_DOMAIN);
     private static final Predicate<String> SERVLET_MECHANISM;
 
@@ -170,33 +163,51 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
     private static final AttachmentKey<KnownDeploymentsApi> KNOWN_DEPLOYMENTS_KEY = AttachmentKey.create(KnownDeploymentsApi.class);
 
     private final Set<String> knownApplicationSecurityDomains;
+    private final ResourceOperationRuntimeHandler handler;
 
     ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains) {
         this(knownApplicationSecurityDomains, new AddHandler(knownApplicationSecurityDomains));
     }
 
-    private ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains, AbstractAddStepHandler addHandler) {
+    private ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains, AddHandler addHandler) {
+        this(knownApplicationSecurityDomains, addHandler, new RemoveHandler(knownApplicationSecurityDomains, addHandler));
+    }
+
+    private ApplicationSecurityDomainDefinition(Set<String> knownApplicationSecurityDomains, AddHandler addHandler, RemoveHandler removeHandler) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(PATH_ELEMENT.getKey()))
                 .setCapabilities(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY)
                 .addAccessConstraints(new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN, false, false, false)),
                         new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig(UndertowExtension.SUBSYSTEM_NAME, Constants.APPLICATION_SECURITY_DOMAIN)))
                 .setAddHandler(addHandler)
-                .setRemoveHandler(new RemoveHandler(knownApplicationSecurityDomains, addHandler))
+                .setRemoveHandler(removeHandler)
         );
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
+        this.handler = new ResourceOperationRuntimeHandler() {
+            @Override
+            public void addRuntime(OperationContext context, ModelNode model) throws OperationFailedException {
+                addHandler.performRuntime(context, null, model);
+            }
+
+            @Override
+            public void removeRuntime(OperationContext context, ModelNode model) throws OperationFailedException {
+                removeHandler.performRemove(context, null, model);
+            }
+        };
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attribute, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        }
         if (resourceRegistration.getProcessType().isServer()) {
             resourceRegistration.registerReadOnlyAttribute(REFERENCING_DEPLOYMENTS, new ReferencingDeploymentsHandler());
         }
     }
 
     @Override
-    protected List<? extends PersistentResourceDefinition> getChildren() {
-        return Collections.singletonList(new ApplicationSecurityDomainSingleSignOnDefinition());
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        new ApplicationSecurityDomainSingleSignOnDefinition(this.handler).register(resourceRegistration, null);
     }
 
     private static class ReferencingDeploymentsHandler implements OperationStepHandler {
@@ -221,14 +232,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
     }
 
-    private static class AddHandler extends AbstractAddStepHandler {
+    static class AddHandler extends AbstractAddStepHandler {
         private final Set<String> knownApplicationSecurityDomains;
-        private final SecurityDomainSingleSignOnManagementProvider provider;
 
         private AddHandler(Set<String> knownApplicationSecurityDomains) {
             this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
-            Iterator<SecurityDomainSingleSignOnManagementProvider> providers = ServiceLoader.load(SecurityDomainSingleSignOnManagementProvider.class, SecurityDomainSingleSignOnManagementProvider.class.getClassLoader()).iterator();
-            this.provider = providers.hasNext() ? providers.next() : NonDistributableSingleSignOnManagementProvider.INSTANCE;
         }
 
         /* (non-Javadoc)
@@ -251,8 +259,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            ModelNode model = resource.getModel();
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             CapabilityServiceTarget target = context.getCapabilityServiceTarget();
 
             final String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
@@ -264,12 +271,9 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
             String securityDomainName = context.getCurrentAddressValue();
 
-            ServiceName applicationSecurityDomainName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress());
-            ServiceName securityDomainServiceName = applicationSecurityDomainName.append(Constants.SECURITY_DOMAIN);
+            ServiceName securityDomainServiceName = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress()).append(Constants.SECURITY_DOMAIN);
 
-            ServiceBuilder<?> serviceBuilder = target
-                    .addService(applicationSecurityDomainName)
-                    .setInitialMode(Mode.LAZY);
+            CapabilityServiceBuilder<?> serviceBuilder = target.addCapability(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY).setInitialMode(Mode.ON_DEMAND);
 
             final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
             final Supplier<SecurityDomain> securityDomainSupplier;
@@ -281,63 +285,37 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
                 httpAuthenticationFactorySupplier = null;
             }
 
-            final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> transformerSupplier;
-            final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
-            if (resource.hasChild(SingleSignOnDefinition.PATH_ELEMENT)) {
-                ModelNode ssoModel = resource.getChild(SingleSignOnDefinition.PATH_ELEMENT).getModel();
-
-                String cookieName = SingleSignOnDefinition.Attribute.COOKIE_NAME.resolveModelAttribute(context, ssoModel).asString();
-                String domain = null;
-                if (SingleSignOnDefinition.Attribute.DOMAIN.resolveModelAttribute(context, ssoModel).isDefined()) {
-                    domain = SingleSignOnDefinition.Attribute.DOMAIN.resolveModelAttribute(context, ssoModel).asString();
-                }
-                String path = SingleSignOnDefinition.Attribute.PATH.resolveModelAttribute(context, ssoModel).asString();
-                boolean httpOnly = SingleSignOnDefinition.Attribute.HTTP_ONLY.resolveModelAttribute(context, ssoModel).asBoolean();
-                boolean secure = SingleSignOnDefinition.Attribute.SECURE.resolveModelAttribute(context, ssoModel).asBoolean();
-                SingleSignOnConfiguration singleSignOnConfiguration = new SingleSignOnConfiguration(cookieName, domain, path, httpOnly, secure);
-
-                ServiceName managerServiceName = new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName();
-                Supplier<String> generator = new SingleSignOnIdentifierFactory();
-
-                SecurityDomainSingleSignOnManagementConfiguration configuration = new SecurityDomainSingleSignOnManagementConfiguration() {
+            UnaryOperator<HttpServerAuthenticationMechanismFactory> transformer = UnaryOperator.identity();
+            BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier = null;
+            if (context.hasOptionalCapability(ApplicationSecurityDomainSingleSignOnDefinition.SSO_SESSION_FACTORY, securityDomainName, APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY, null)) {
+                Supplier<SingleSignOnConfiguration> singleSignOnConfiguration = serviceBuilder.requires(ApplicationSecurityDomainSingleSignOnDefinition.SSO_CONFIGURATION, securityDomainName);
+                Supplier<SingleSignOnSessionFactory> singleSignOnSessionFactorySupplier = serviceBuilder.requires(ApplicationSecurityDomainSingleSignOnDefinition.SSO_SESSION_FACTORY, securityDomainName);
+                transformer = new UnaryOperator<>() {
                     @Override
-                    public String getSecurityDomainName() {
-                        return securityDomainName;
-                    }
-
-                    @Override
-                    public Supplier<String> getIdentifierGenerator() {
-                        return generator;
+                    public HttpServerAuthenticationMechanismFactory apply(HttpServerAuthenticationMechanismFactory factory) {
+                        return new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration.get());
                     }
                 };
-                this.provider.getServiceConfigurator(managerServiceName, configuration).configure(context).build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-                ServiceConfigurator factoryConfigurator = new SingleSignOnSessionFactoryServiceConfigurator(securityDomainName).configure(context, ssoModel);
-                factoryConfigurator.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
-                Supplier<SingleSignOnSessionFactory> singleSignOnSessionFactorySupplier = serviceBuilder.requires(factoryConfigurator.getServiceName());
-                UnaryOperator<HttpServerAuthenticationMechanismFactory> transformer = (factory) -> new SingleSignOnServerMechanismFactory(factory, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
-
-                identityCacheSupplier = (HttpExchangeSpi httpExchangeSpi, String mechanismName) -> ProgrammaticSingleSignOnCache.newInstance(httpExchangeSpi, mechanismName, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration);
-                transformerSupplier = () -> transformer;
-
-            } else {
-                identityCacheSupplier = null;
-                transformerSupplier = () -> null;
+                identityCacheSupplier = new BiFunction<>() {
+                    @Override
+                    public IdentityCache apply(HttpExchangeSpi httpExchangeSpi, String mechanismName) {
+                        return ProgrammaticSingleSignOnCache.newInstance(httpExchangeSpi, mechanismName, singleSignOnSessionFactorySupplier.get(), singleSignOnConfiguration.get());
+                    }
+                };
             }
 
-            Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer = serviceBuilder.provides(applicationSecurityDomainName);
+            Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer = serviceBuilder.provides(APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY);
             Consumer<SecurityDomain> securityDomainConsumer = serviceBuilder.provides(securityDomainServiceName);
             ApplicationSecurityDomainService service = new ApplicationSecurityDomainService(overrideDeploymentConfig,
                     enableJacc, enableJaspi, integratedJaspi, httpAuthenticationFactorySupplier, securityDomainSupplier,
-                    transformerSupplier, identityCacheSupplier, deploymentConsumer, securityDomainConsumer);
+                    transformer, identityCacheSupplier, deploymentConsumer, securityDomainConsumer);
             serviceBuilder.setInstance(service);
             serviceBuilder.install();
 
             KnownDeploymentsApi knownDeploymentsApi = context.getAttachment(KNOWN_DEPLOYMENTS_KEY);
             knownDeploymentsApi.setApplicationSecurityDomainService(service);
         }
-
     }
 
     private static HttpAuthenticationFactory toHttpAuthenticationFactory(final SecurityDomain securityDomain, final String realmName) {
@@ -383,26 +361,11 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         }
 
         @Override
-        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-            super.performRuntime(context, operation, model);
-            if (context.isResourceServiceRestartAllowed()) {
-                final String securityDomainName = context.getCurrentAddressValue();
-                context.removeService(new SingleSignOnManagerServiceNameProvider(securityDomainName).getServiceName());
-                context.removeService(new SingleSignOnSessionFactoryServiceNameProvider(securityDomainName).getServiceName());
-            }
-        }
-
-        @Override
         protected ServiceName serviceName(String name) {
             RuntimeCapability<?> dynamicCapability = APPLICATION_SECURITY_DOMAIN_RUNTIME_CAPABILITY.fromBaseCapability(name);
             return dynamicCapability.getCapabilityServiceName(BiFunction.class); // no-arg getCapabilityServiceName() would be fine too
         }
 
-    }
-
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
     }
 
     Predicate<String> getKnownSecurityDomainPredicate() {
@@ -413,7 +376,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier;
         private final Supplier<SecurityDomain> securityDomainSupplier;
-        private final Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier;
+        private final UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer;
         private final BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier;
 
         private final Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer;
@@ -430,7 +393,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
 
         private ApplicationSecurityDomainService(final boolean overrideDeploymentConfig, boolean enableJacc, boolean enableJaspi, boolean integratedJaspi,
                 final Supplier<HttpAuthenticationFactory> httpAuthenticationFactorySupplier, final Supplier<SecurityDomain> securityDomainSupplier,
-                Supplier<UnaryOperator<HttpServerAuthenticationMechanismFactory>> singleSignOnTransformerSupplier, BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier,
+                UnaryOperator<HttpServerAuthenticationMechanismFactory> singleSignOnTransformer, BiFunction<HttpExchangeSpi, String, IdentityCache> identityCacheSupplier,
                 Consumer<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> deploymentConsumer, Consumer<SecurityDomain> securityDomainConsumer) {
             this.overrideDeploymentConfig = overrideDeploymentConfig;
             this.enableJacc = enableJacc;
@@ -438,7 +401,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             this.integratedJaspi = integratedJaspi;
             this.httpAuthenticationFactorySupplier = httpAuthenticationFactorySupplier;
             this.securityDomainSupplier = securityDomainSupplier;
-            this.singleSignOnTransformerSupplier = singleSignOnTransformerSupplier;
+            this.singleSignOnTransformer = singleSignOnTransformer;
             this.identityCacheSupplier = identityCacheSupplier;
             this.deploymentConsumer = deploymentConsumer;
             this.securityDomainConsumer = securityDomainConsumer;
@@ -467,7 +430,7 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
             AuthenticationManager.Builder builder = AuthenticationManager.builder()
                     .setHttpAuthenticationFactory(httpAuthenticationFactory)
                     .setOverrideDeploymentConfig(overrideDeploymentConfig)
-                    .setHttpAuthenticationFactoryTransformer(singleSignOnTransformerSupplier.get())
+                    .setHttpAuthenticationFactoryTransformer(singleSignOnTransformer)
                     .setIdentityCacheSupplier(identityCacheSupplier)
                     .setRunAsMapper(runAsMapper)
                     .setEnableJaspi(enableJaspi)

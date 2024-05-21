@@ -5,54 +5,47 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.bean.BeanProviderRequirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
+import org.wildfly.clustering.ejb.bean.BeanManagementConfiguration;
+import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
+import org.wildfly.clustering.ejb.cache.bean.BeanMarshallerFactory;
+import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
 /**
  * Common resource definition for bean management resources.
  * @author Paul Ferraro
  */
-public class BeanManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class BeanManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator, ResourceModelResolver<BeanManagementConfiguration> {
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        BEAN_MANAGEMENT_PROVIDER(BeanProviderRequirement.BEAN_MANAGEMENT_PROVIDER),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT)
-                    .addRequirements(ClientMappingsRegistryProviderResourceDefinition.Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER.getName());
-        }
-    }
+    static final RuntimeCapability<Void> BEAN_MANAGEMENT_PROVIDER = RuntimeCapability.Builder.of(BeanManagementProvider.SERVICE_DESCRIPTOR)
+            .addRequirements(ClientMappingsRegistryProvider.SERVICE_DESCRIPTOR.getName())
+            .setAllowMultipleRegistrations(true)
+            .build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         MAX_ACTIVE_BEANS("max-active-beans", ModelType.INT) {
@@ -78,12 +71,10 @@ public class BeanManagementResourceDefinition extends ChildResourceDefinition<Ma
     }
 
     private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceConfiguratorFactory factory;
 
-    BeanManagementResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory factory) {
+    BeanManagementResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, PathElement.pathElement("bean-management")));
         this.configurator = configurator;
-        this.factory = factory;
     }
 
     @Override
@@ -92,13 +83,30 @@ public class BeanManagementResourceDefinition extends ChildResourceDefinition<Ma
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(BEAN_MANAGEMENT_PROVIDER))
                 ;
 
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this.factory);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
 
-        new SimpleResourceRegistrar(this.configurator.apply(descriptor), handler).register(registration);
+        new SimpleResourceRegistrar(this.configurator.apply(descriptor), ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public BeanManagementConfiguration resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        OptionalInt maxActiveBeans = Optional.ofNullable(Attribute.MAX_ACTIVE_BEANS.getDefinition().resolveModelAttribute(context, model).asIntOrNull()).map(OptionalInt::of).orElse(OptionalInt.empty());
+        return new BeanManagementConfiguration() {
+            @Override
+            public OptionalInt getMaxActiveBeans() {
+                return maxActiveBeans;
+            }
+
+            @Override
+            public Function<BeanDeploymentMarshallingContext, ByteBufferMarshaller> getMarshallerFactory() {
+                // Currently hard-coded to use JBoss Marshalling
+                return BeanMarshallerFactory.JBOSS;
+            }
+        };
     }
 }

@@ -5,14 +5,15 @@
 
 package org.wildfly.clustering.el.expressly.lang;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 
 import org.glassfish.expressly.lang.FunctionMapperImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link FunctionMapperImpl}.
@@ -20,14 +21,20 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class FunctionMapperImplMarshallerTestCase {
 
-    @Test
-    public void test() throws NoSuchMethodException, IOException {
-        Tester<FunctionMapperImpl> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) throws NoSuchMethodException {
+        Tester<FunctionMapperImpl> tester = factory.createTester(Assertions::assertNotSame);
         FunctionMapperImpl mapper = new FunctionMapperImpl();
-        tester.test(mapper, Assert::assertNotSame);
-        mapper.addFunction(null, "foo", this.getClass().getMethod("test"));
-        mapper.addFunction("foo", "bar", this.getClass().getMethod("test"));
-        tester.test(mapper, FunctionMapperImplMarshallerTestCase::assertEquals);
+        tester.accept(mapper);
+
+        tester = factory.createTester(FunctionMapperImplMarshallerTestCase::assertEquals);
+        mapper.addFunction(null, "foo", this.getClass().getDeclaredMethod("test"));
+        mapper.addFunction("foo", "bar", this.getClass().getDeclaredMethod("test"));
+        tester.accept(mapper);
+    }
+
+    void test() {
     }
 
     static void assertEquals(FunctionMapperImpl mapper1, FunctionMapperImpl mapper2) {
@@ -38,8 +45,8 @@ public class FunctionMapperImplMarshallerTestCase {
     static void assertEquals(FunctionMapperImpl mapper1, FunctionMapperImpl mapper2, String prefix, String localName) {
         Method method1 = mapper1.resolveFunction(prefix, localName);
         Method method2 = mapper2.resolveFunction(prefix, localName);
-        Assert.assertNotNull(method1);
-        Assert.assertNotNull(method2);
-        Assert.assertEquals(method1, method2);
+        Assertions.assertNotNull(method1);
+        Assertions.assertNotNull(method2);
+        Assertions.assertEquals(method1, method2);
     }
 }

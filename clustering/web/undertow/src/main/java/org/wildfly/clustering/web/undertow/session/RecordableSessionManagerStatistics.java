@@ -4,10 +4,9 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import io.undertow.server.session.SessionManagerStatistics;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 
-import org.wildfly.clustering.ee.Recordable;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
+import io.undertow.server.session.SessionManagerStatistics;
 
 /**
  * Recordable {@link SessionManagerStatistics}.

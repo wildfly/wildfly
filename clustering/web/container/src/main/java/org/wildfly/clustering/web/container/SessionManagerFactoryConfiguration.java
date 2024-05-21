@@ -5,6 +5,7 @@
 package org.wildfly.clustering.web.container;
 
 import java.time.Duration;
+import java.util.OptionalInt;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 
@@ -18,7 +19,7 @@ public interface SessionManagerFactoryConfiguration extends WebDeploymentConfigu
      * Returns the maximum number of sessions that should be active at any given time.
      * @return a positive integer; or null if there should be no limit to the number of active sessions.
      */
-    Integer getMaxActiveSessions();
+    OptionalInt getMaxActiveSessions();
 
     /**
      * Returns the default session timeout.

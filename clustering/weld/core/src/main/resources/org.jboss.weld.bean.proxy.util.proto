@@ -1,0 +1,11 @@
+package org.jboss.weld.bean.proxy.util;
+
+import "java.lang.proto";
+
+/**
+ * @TypeId(479)
+ */
+message SerializableClientProxy {
+	optional	bytes	beanId	 = 1;
+	optional	string	contextId	 = 2;
+}

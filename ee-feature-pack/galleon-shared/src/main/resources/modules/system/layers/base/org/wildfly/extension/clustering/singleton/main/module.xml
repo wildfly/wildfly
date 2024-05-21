@@ -16,6 +16,8 @@
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
+
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
@@ -27,12 +29,13 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.clustering.server.api"/>
+        <module name="org.wildfly.clustering.server.service"/>
         <module name="org.wildfly.clustering.service"/>
         <module name="org.wildfly.clustering.singleton.api"/>
-        <module name="org.wildfly.clustering.singleton.service"/>
+        <module name="org.wildfly.clustering.singleton.compat"/>
+        <module name="org.wildfly.clustering.singleton.server"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.subsystem"/>
-        <module name="java.xml"/>
     </dependencies>
 </module>

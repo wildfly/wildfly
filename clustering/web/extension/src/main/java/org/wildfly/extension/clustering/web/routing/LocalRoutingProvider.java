@@ -5,19 +5,22 @@
 
 package org.wildfly.extension.clustering.web.routing;
 
-import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
 public class LocalRoutingProvider implements RoutingProvider {
+    static final UnaryServiceDescriptor<String> LOCAL_ROUTE = UnaryServiceDescriptor.of("org.wildfly.clustering.web.local-route", String.class);
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String serverName, SupplierDependency<String> route) {
-        return Collections.singleton(new LocalRouteServiceConfigurator(serverName, route));
+    public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String serverName, ServiceDependency<String> route) {
+        return List.of(ServiceInstaller.builder(route).provides(support.getCapabilityServiceName(LOCAL_ROUTE, serverName)).build());
     }
 }

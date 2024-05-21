@@ -4,9 +4,9 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -14,35 +14,46 @@ import java.util.stream.Stream;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.controller.CapabilityProvider;
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.MetricHandler;
+import org.jboss.as.clustering.controller.ModulesServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
+import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.marshall.InfinispanMarshallerFactory;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
-import org.wildfly.clustering.server.service.ClusteringDefaultCacheRequirement;
-import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
+import org.jboss.modules.Module;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.cache.infinispan.embedded.lifecycle.WildFlyClusteringModuleLifecycle;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.clustering.server.service.DefaultCacheServiceInstallerProvider;
+import org.wildfly.clustering.server.service.ProvidedBinaryServiceInstallerProvider;
+import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
@@ -51,7 +62,7 @@ import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class CacheContainerResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class CacheContainerResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -59,35 +70,21 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         return PathElement.pathElement("cache-container", containerName);
     }
 
-    enum Capability implements CapabilityProvider {
-        CONTAINER(InfinispanRequirement.CONTAINER),
-        CONFIGURATION(InfinispanRequirement.CONFIGURATION),
-        KEY_AFFINITY_FACTORY(InfinispanRequirement.KEY_AFFINITY_FACTORY),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
+    @SuppressWarnings("unchecked")
+    static final UnaryServiceDescriptor<List<Module>> CACHE_CONTAINER_MODULES = UnaryServiceDescriptor.of("org.wildfly.clustering.infinispan.cache-container-modules", (Class<List<Module>>) (Class<?>) List.class);
 
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement);
-        }
+    private static final RuntimeCapability<Void> CACHE_CONTAINER_CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.CACHE_CONTAINER).build();
+    private static final RuntimeCapability<Void> CACHE_CONTAINER_CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION).build();
+    private static final RuntimeCapability<Void> CACHE_CONTAINER_MODULES_CAPABILITY = RuntimeCapability.Builder.of(CACHE_CONTAINER_MODULES).build();
 
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-    }
-
-    static final Map<InfinispanCacheRequirement, org.jboss.as.clustering.controller.Capability> DEFAULT_CAPABILITIES = new EnumMap<>(InfinispanCacheRequirement.class);
-    static {
-        for (InfinispanCacheRequirement requirement : EnumSet.allOf(InfinispanCacheRequirement.class)) {
-            DEFAULT_CAPABILITIES.put(requirement, new UnaryRequirementCapability(requirement.getDefaultRequirement()));
-        }
-    }
+    private static final RuntimeCapability<Void> DEFAULT_CACHE_CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.DEFAULT_CACHE).build();
+    private static final RuntimeCapability<Void> DEFAULT_CACHE_CONFIGURATION_CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         DEFAULT_CACHE("default-cache", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setAllowExpression(false).setCapabilityReference(new CapabilityReference(DEFAULT_CAPABILITIES.get(InfinispanCacheRequirement.CONFIGURATION), InfinispanCacheRequirement.CONFIGURATION, WILDCARD_PATH));
+                return builder.setAllowExpression(false).setCapabilityReference(org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder.builder(DEFAULT_CACHE_CONFIGURATION_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentPath(WILDCARD_PATH).build());
             }
         },
         STATISTICS_ENABLED(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN) {
@@ -164,55 +161,93 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         }
     }
 
-    static final Set<PathElement> REQUIRED_CHILDREN = Stream.concat(EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT)).stream(), EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).stream()).map(ResourceDefinitionProvider::getPathElement).collect(Collectors.toSet());
+    static final Set<PathElement> REQUIRED_CHILDREN = Stream.concat(EnumSet.allOf(ThreadPoolResourceDefinition.class).stream(), EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class).stream()).map(ResourceDefinitionProvider::getPathElement).collect(Collectors.toSet());
     static final Set<PathElement> REQUIRED_SINGLETON_CHILDREN = Set.of(NoTransportResourceDefinition.PATH);
+
+    private final ServiceValueExecutorRegistry<EmbeddedCacheManager> containerRegistry = ServiceValueExecutorRegistry.newInstance();
+    private final ServiceValueExecutorRegistry<Cache<?, ?>> cacheRegistry = ServiceValueExecutorRegistry.newInstance();
 
     CacheContainerResourceDefinition() {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({ "deprecation", "removal" })
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
+        RuntimeCapability<Void> defaultRegistryFactory = RuntimeCapability.Builder.of(ClusteringServiceDescriptor.DEFAULT_REGISTRY_FACTORY).build();
+        RuntimeCapability<Void> defaultLegacyRegistryFactory = RuntimeCapability.Builder.of(org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor.DEFAULT_REGISTRY_FACTORY).build();
+        RuntimeCapability<Void> defaultServiceProviderRegistrar = RuntimeCapability.Builder.of(ClusteringServiceDescriptor.DEFAULT_SERVICE_PROVIDER_REGISTRAR).build();
+        RuntimeCapability<Void> defaultLegacyServiceProviderRegistry = RuntimeCapability.Builder.of(org.wildfly.clustering.server.service.LegacyClusteringServiceDescriptor.DEFAULT_SERVICE_PROVIDER_REGISTRY).build();
+        RuntimeCapability<Void> defaultSingletonServiceTargetFactory = RuntimeCapability.Builder.of(SingletonServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR).build();
+        RuntimeCapability<Void> defaultSingletonServiceConfiguratorFactory = RuntimeCapability.Builder.of(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.DEFAULT_SERVICE_DESCRIPTOR).build();
+        RuntimeCapability<Void> defaultSingletonServiceBuilderFactory = RuntimeCapability.Builder.of(org.wildfly.clustering.singleton.SingletonServiceBuilderFactory.DEFAULT_SERVICE_DESCRIPTOR).build();
+
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
                 .addAttributes(ListAttribute.class)
-                .addCapabilities(Capability.class)
-                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), DEFAULT_CAPABILITIES.values())
-                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(ClusteringDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
-                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), EnumSet.allOf(SingletonDefaultCacheRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
+                .addCapabilities(List.of(CACHE_CONTAINER_CAPABILITY, CACHE_CONTAINER_CONFIGURATION_CAPABILITY, CACHE_CONTAINER_MODULES_CAPABILITY))
+                .addCapabilities(model -> model.hasDefined(Attribute.DEFAULT_CACHE.getName()), List.of(DEFAULT_CACHE_CAPABILITY, DEFAULT_CACHE_CONFIGURATION_CAPABILITY, defaultRegistryFactory, defaultLegacyRegistryFactory, defaultServiceProviderRegistrar, defaultLegacyServiceProviderRegistry, defaultSingletonServiceTargetFactory, defaultSingletonServiceConfiguratorFactory, defaultSingletonServiceBuilderFactory))
                 .addRequiredChildren(REQUIRED_CHILDREN)
                 .addRequiredSingletonChildren(REQUIRED_SINGLETON_CHILDREN)
                 .setResourceTransformation(CacheContainerResource::new)
                 ;
-        ServiceValueExecutorRegistry<EmbeddedCacheManager> managerExecutors = ServiceValueExecutorRegistry.newInstance();
-        ServiceValueExecutorRegistry<Cache<?, ?>> cacheExecutors = ServiceValueExecutorRegistry.newInstance();
-        ResourceServiceHandler handler = new CacheContainerServiceHandler(managerExecutors, cacheExecutors);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
-            new MetricHandler<>(new CacheContainerMetricExecutor(managerExecutors), CacheContainerMetric.class).register(registration);
-            new CacheRuntimeResourceDefinition(cacheExecutors).register(registration);
+            new MetricHandler<>(new CacheContainerMetricExecutor(this.containerRegistry), CacheContainerMetric.class).register(registration);
+            new CacheRuntimeResourceDefinition(this.cacheRegistry).register(registration);
         }
 
         new JGroupsTransportResourceDefinition().register(registration);
         new NoTransportResourceDefinition().register(registration);
 
-        for (ThreadPoolResourceDefinition pool : EnumSet.complementOf(EnumSet.of(ThreadPoolResourceDefinition.CLIENT))) {
+        for (ThreadPoolResourceDefinition pool : EnumSet.allOf(ThreadPoolResourceDefinition.class)) {
             pool.register(registration);
         }
         for (ScheduledThreadPoolResourceDefinition pool : EnumSet.allOf(ScheduledThreadPoolResourceDefinition.class)) {
             pool.register(registration);
         }
 
-        new LocalCacheResourceDefinition(cacheExecutors).register(registration);
-        new InvalidationCacheResourceDefinition(cacheExecutors).register(registration);
-        new ReplicatedCacheResourceDefinition(cacheExecutors).register(registration);
-        new DistributedCacheResourceDefinition(cacheExecutors).register(registration);
-        new ScatteredCacheResourceDefinition(cacheExecutors).register(registration);
+        new LocalCacheResourceDefinition(this.cacheRegistry).register(registration);
+        new InvalidationCacheResourceDefinition(this.cacheRegistry).register(registration);
+        new ReplicatedCacheResourceDefinition(this.cacheRegistry).register(registration);
+        new DistributedCacheResourceDefinition(this.cacheRegistry).register(registration);
+        new ScatteredCacheResourceDefinition(this.cacheRegistry).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        String name = context.getCurrentAddressValue();
+        List<ResourceServiceInstaller> installers = new LinkedList<>();
+
+        installers.add(new ModulesServiceConfigurator(CACHE_CONTAINER_MODULES_CAPABILITY, ListAttribute.MODULES.getDefinition(), List.of(Module.forClass(WildFlyClusteringModuleLifecycle.class))).configure(context, model));
+        installers.add(new GlobalConfigurationServiceConfigurator(CACHE_CONTAINER_CONFIGURATION_CAPABILITY).configure(context, model));
+        installers.add(this.containerRegistry.capture(ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER, name)));
+        installers.add(new CacheContainerServiceConfigurator(CACHE_CONTAINER_CAPABILITY, this.cacheRegistry).configure(context, model));
+        installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheContainerBinding(name), context.getCapabilityServiceName(InfinispanServiceDescriptor.CACHE_CONTAINER, name)));
+
+        String defaultCache = Attribute.DEFAULT_CACHE.resolveModelAttribute(context, model).asStringOrNull();
+        if (defaultCache != null) {
+            BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(name, defaultCache);
+            installers.add(CapabilityServiceInstaller.builder(DEFAULT_CACHE_CONFIGURATION_CAPABILITY, configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONFIGURATION)).build());
+            installers.add(CapabilityServiceInstaller.builder(DEFAULT_CACHE_CAPABILITY, configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE)).build());
+
+            if (!defaultCache.equals(ModelDescriptionConstants.DEFAULT)) {
+                ServiceName lazyCacheServiceName = configuration.resolveServiceName(InfinispanServiceDescriptor.CACHE).append("lazy");
+                BinaryServiceConfiguration defaultConfiguration = configuration.withChildName(ModelDescriptionConstants.DEFAULT);
+                installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheBinding(defaultConfiguration), lazyCacheServiceName));
+                installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheConfigurationBinding(defaultConfiguration), DEFAULT_CACHE_CONFIGURATION_CAPABILITY.getCapabilityServiceName(address)));
+            }
+
+            new ProvidedBinaryServiceInstallerProvider<>(DefaultCacheServiceInstallerProvider.class, DefaultCacheServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), configuration).forEach(installers::add);
+        }
+
+        return ResourceServiceInstaller.combine(installers);
     }
 }

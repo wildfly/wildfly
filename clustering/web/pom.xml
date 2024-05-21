@@ -29,13 +29,9 @@
 
     <modules>
         <module>api</module>
-        <module>spi</module>
-        <module>service</module>
-        <module>cache</module>
         <module>container</module>
-        <module>hotrod</module>
-        <module>infinispan</module>
         <module>extension</module>
+        <module>service</module>
         <module>undertow</module>
     </modules>
 

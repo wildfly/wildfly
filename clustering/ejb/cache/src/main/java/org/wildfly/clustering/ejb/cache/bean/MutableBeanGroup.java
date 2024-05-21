@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
-import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 
 /**
@@ -14,6 +14,6 @@ import org.wildfly.clustering.ejb.bean.BeanInstance;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface MutableBeanGroup<K, V extends BeanInstance<K>> extends BeanGroup<K, V>, Mutator {
+public interface MutableBeanGroup<K, V extends BeanInstance<K>> extends BeanGroup<K, V>, CacheEntryMutator {
 
 }

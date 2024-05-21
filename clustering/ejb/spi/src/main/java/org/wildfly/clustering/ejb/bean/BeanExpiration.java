@@ -7,7 +7,7 @@ package org.wildfly.clustering.ejb.bean;
 
 import java.time.Duration;
 
-import org.wildfly.clustering.ee.expiration.Expiration;
+import org.wildfly.clustering.server.expiration.Expiration;
 
 /**
  * Encapsulates the expiration criteria for a bean.

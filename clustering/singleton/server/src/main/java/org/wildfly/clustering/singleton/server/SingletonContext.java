@@ -5,11 +5,12 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import org.wildfly.clustering.singleton.Singleton;
-import org.wildfly.clustering.singleton.SingletonElectionListener;
+import org.wildfly.clustering.server.manager.Service;
+import org.wildfly.clustering.singleton.SingletonStatus;
+import org.wildfly.clustering.singleton.election.SingletonElectionListener;
 
 /**
  * @author Paul Ferraro
  */
-public interface SingletonContext extends Lifecycle, Singleton, SingletonElectionListener {
+public interface SingletonContext extends Service, SingletonStatus, SingletonElectionListener {
 }

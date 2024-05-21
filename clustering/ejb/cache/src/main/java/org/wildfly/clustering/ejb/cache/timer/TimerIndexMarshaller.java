@@ -16,8 +16,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 /**
  * @author Paul Ferraro
  */
-public enum TimerIndexMarshaller implements ProtoStreamMarshaller<TimerIndex> {
-    INSTANCE;
+public class TimerIndexMarshaller implements ProtoStreamMarshaller<TimerIndex> {
 
     private static final int CLASS_NAME_INDEX = 1;
     private static final int TIMEOUT_DESCRIPTOR_INDEX = 2;

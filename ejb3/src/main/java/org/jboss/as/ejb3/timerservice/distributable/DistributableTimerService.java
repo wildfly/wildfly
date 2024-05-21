@@ -40,8 +40,8 @@ import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.invocation.InterceptorContext;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.ImmutableScheduleExpression;
 import org.wildfly.clustering.ejb.timer.IntervalTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
@@ -57,12 +57,12 @@ public class DistributableTimerService<I> implements ManagedTimerService {
 
     private final TimerServiceRegistry registry;
     private final TimedObjectInvoker invoker;
-    private final TimerManager<I, Batch> manager;
+    private final TimerManager<I> manager;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
     private final Function<String, I> identifierParser;
     private final Predicate<TimerConfig> filter;
 
-    public DistributableTimerService(DistributableTimerServiceConfiguration<I> configuration, TimerManager<I, Batch> manager) {
+    public DistributableTimerService(DistributableTimerServiceConfiguration<I> configuration, TimerManager<I> manager) {
         this.invoker = configuration.getInvoker();
         this.identifierParser = configuration.getIdentifierParser();
         this.filter = configuration.getTimerFilter();
@@ -83,7 +83,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         // Create and start auto-timers, if they do not already exist
         Supplier<I> identifierFactory = this.manager.getIdentifierFactory();
         EJBComponent component = this.invoker.getComponent();
-        try (Batch batch = this.manager.getBatcher().createBatch()) {
+        try (Batch batch = this.manager.getBatchFactory().get()) {
             for (Map.Entry<Method, List<AutoTimer>> entry : component.getComponentDescription().getScheduleMethods().entrySet()) {
                 Method method = entry.getKey();
                 ListIterator<AutoTimer> timers = entry.getValue().listIterator();
@@ -117,7 +117,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         }
         try {
             I id = this.identifierParser.apply(timerId);
-            try (Batch batch = this.manager.getBatcher().createBatch()) {
+            try (Batch batch = this.manager.getBatchFactory().get()) {
                 Timer<I> timer = this.manager.getTimer(id);
                 return (timer != null) ? new OOBTimer<>(this.manager, timer.getId(), this.invoker, this.synchronizationFactory) : null;
             }
@@ -142,16 +142,15 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         return this.createEJBTimer(new IntervalTimerFactory<>(expiration.toInstant(), null, config.getInfo()));
     }
 
-    private jakarta.ejb.Timer createEJBTimer(BiFunction<TimerManager<I, Batch>, I, Timer<I>> factory) {
+    private jakarta.ejb.Timer createEJBTimer(BiFunction<TimerManager<I>, I, Timer<I>> factory) {
         Timer<I> timer = this.createTimer(factory);
         return new OOBTimer<>(this.manager, timer.getId(), this.invoker, this.synchronizationFactory);
     }
 
-    private Timer<I> createTimer(BiFunction<TimerManager<I, Batch>, I, Timer<I>> factory) {
+    private Timer<I> createTimer(BiFunction<TimerManager<I>, I, Timer<I>> factory) {
         Transaction transaction = ManagedTimerService.getActiveTransaction();
         boolean close = true;
-        Batcher<Batch> batcher = this.manager.getBatcher();
-        Batch batch = batcher.createBatch();
+        Batch batch = this.manager.getBatchFactory().get();
         try {
             I id = this.manager.getIdentifierFactory().get();
             Timer<I> timer = factory.apply(this.manager, id);
@@ -159,8 +158,8 @@ public class DistributableTimerService<I> implements ManagedTimerService {
                 if (transaction != null) {
                     // Transactional case: Activate timer on tx commit
                     // Cancel timer on tx rollback
-                    Batch suspendedBatch = batcher.suspendBatch();
-                    transaction.registerSynchronization(this.synchronizationFactory.createActivateSynchronization(timer, suspendedBatch, batcher));
+                    SuspendedBatch suspendedBatch = batch.suspend();
+                    transaction.registerSynchronization(this.synchronizationFactory.createActivateSynchronization(timer, this.manager.getBatchFactory(), suspendedBatch));
                     TransactionSynchronizationRegistry tsr = this.invoker.getComponent().getTransactionSynchronizationRegistry();
                     // Store suspended batch in TSR so we can resume it later, if necessary
                     tsr.putResource(id, new SimpleImmutableEntry<>(timer, suspendedBatch));
@@ -227,7 +226,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         return String.format("%s(%s)", this.getClass().getSimpleName(), this.invoker.getTimedObjectId());
     }
 
-    static class IntervalTimerFactory<I> implements BiFunction<TimerManager<I, Batch>, I, Timer<I>>, IntervalTimerConfiguration {
+    static class IntervalTimerFactory<I> implements BiFunction<TimerManager<I>, I, Timer<I>>, IntervalTimerConfiguration {
         private final Instant start;
         private final Duration interval;
         private final Object info;
@@ -249,7 +248,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         }
 
         @Override
-        public Timer<I> apply(TimerManager<I, Batch> manager, I id) {
+        public Timer<I> apply(TimerManager<I> manager, I id) {
             return manager.createTimer(id, this, this.info);
         }
     }
@@ -267,7 +266,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         }
     }
 
-    static class ScheduleTimerFactory<I> implements BiFunction<TimerManager<I, Batch>, I, Timer<I>> {
+    static class ScheduleTimerFactory<I> implements BiFunction<TimerManager<I>, I, Timer<I>> {
         private final ScheduleTimerConfiguration configuration;
         private final Object info;
 
@@ -277,7 +276,7 @@ public class DistributableTimerService<I> implements ManagedTimerService {
         }
 
         @Override
-        public Timer<I> apply(TimerManager<I, Batch> manager, I id) {
+        public Timer<I> apply(TimerManager<I> manager, I id) {
             return manager.createTimer(id, this.configuration, this.info);
         }
     }

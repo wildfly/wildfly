@@ -6,26 +6,32 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.EnumSet;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.stack.Protocol;
+import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
+import org.wildfly.common.function.Functions;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
 /**
  * @author Paul Ferraro
  */
-public class ProtocolResourceDefinition extends AbstractProtocolResourceDefinition {
+public class ProtocolResourceDefinition<P extends Protocol> extends AbstractProtocolResourceDefinition<P, ProtocolConfiguration<P>> {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -33,20 +39,7 @@ public class ProtocolResourceDefinition extends AbstractProtocolResourceDefiniti
         return PathElement.pathElement("protocol", name);
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        PROTOCOL("org.wildfly.clustering.jgroups.protocol"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD).setAllowMultipleRegistrations(true).build();
-        }
-
-        @Override
-        public RuntimeCapability<?> getDefinition() {
-            return this.definition;
-        }
-    }
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(ProtocolConfiguration.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
 
     static final UnaryOperator<OperationStepHandler> LEGACY_OPERATION_TRANSFORMER = new UnaryOperator<>() {
         @Override
@@ -113,20 +106,12 @@ public class ProtocolResourceDefinition extends AbstractProtocolResourceDefiniti
         }
     }
 
-    private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
-        private final UnaryOperator<ResourceDescriptor> configurator;
-
-        ResourceDescriptorConfigurator(UnaryOperator<ResourceDescriptor> configurator) {
-            this.configurator = configurator;
-        }
-
-        @Override
-        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return this.configurator.apply(descriptor).addCapabilities(Capability.class);
-        }
+    ProtocolResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfigurator parentServiceConfigurator) {
+        super(new Parameters(path, path.isWildcard() ? JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path) : JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH)).setOrderedChild(), CAPABILITY, configurator, parentServiceConfigurator);
     }
 
-    ProtocolResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(new Parameters(path, path.isWildcard() ? JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path) : JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH)).setOrderedChild(), new ResourceDescriptorConfigurator(configurator), serviceConfiguratorFactory, parentServiceConfiguratorFactory);
+    @Override
+    public Map.Entry<Function<ProtocolConfiguration<P>, ProtocolConfiguration<P>>, Consumer<RequirementServiceBuilder<?>>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+        return Map.entry(UnaryOperator.identity(), Functions.discardingConsumer());
     }
 }

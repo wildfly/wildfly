@@ -12,6 +12,7 @@
     </properties>
 
     <resources>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-marshalling-protostream}"/>
         <artifact name="${org.wildfly:wildfly-clustering-marshalling-protostream}"/>
     </resources>
 
@@ -21,9 +22,7 @@
         <module name="org.infinispan.protostream"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>
-        <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
         <module name="org.wildfly.common"/>
-        <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

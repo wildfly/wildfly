@@ -5,12 +5,12 @@
 
 package org.wildfly.clustering.el.expressly;
 
-import java.io.IOException;
-
 import org.glassfish.expressly.MethodExpressionLiteral;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link MethodExpressionLiteral}.
@@ -18,10 +18,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class MethodExpressionLiteralMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<MethodExpressionLiteral> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new MethodExpressionLiteral("foo", String.class, new Class[0]));
-        tester.test(new MethodExpressionLiteral("bar", String.class, new Class[] { Boolean.class, Integer.class}));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<MethodExpressionLiteral> tester = factory.createTester();
+        tester.accept(new MethodExpressionLiteral("foo", String.class, new Class[0]));
+        tester.accept(new MethodExpressionLiteral("bar", String.class, new Class[] { Boolean.class, Integer.class}));
     }
 }
