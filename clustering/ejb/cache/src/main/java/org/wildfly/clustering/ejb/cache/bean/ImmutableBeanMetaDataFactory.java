@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
-import org.wildfly.clustering.ee.Locator;
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
 
 /**
@@ -14,6 +14,6 @@ import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
  * @param <K> the bean identifier type
  * @param <V> the bean metadata value type
  */
-public interface ImmutableBeanMetaDataFactory<K, V> extends Locator<K, V> {
+public interface ImmutableBeanMetaDataFactory<K, V> extends CacheEntryLocator<K, V> {
     ImmutableBeanMetaData<K> createImmutableBeanMetaData(K id, V value);
 }

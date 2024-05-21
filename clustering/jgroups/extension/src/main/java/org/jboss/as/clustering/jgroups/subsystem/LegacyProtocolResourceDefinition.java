@@ -8,19 +8,21 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jgroups.stack.Protocol;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
 
 /**
  * Resource definition for legacy protocols.
  * @author Paul Ferraro
  */
-public class LegacyProtocolResourceDefinition extends ProtocolResourceDefinition {
+public class LegacyProtocolResourceDefinition<P extends Protocol> extends ProtocolResourceDefinition<P> {
 
     private static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
         private final UnaryOperator<OperationStepHandler> operationTransformation;
@@ -61,8 +63,13 @@ public class LegacyProtocolResourceDefinition extends ProtocolResourceDefinition
         }
     }
 
-    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsSubsystemModel deprecation, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null, parentServiceConfiguratorFactory);
+    LegacyProtocolResourceDefinition(String name, String targetName, JGroupsSubsystemModel deprecation, UnaryOperator<ResourceDescriptor> configurator) {
+        super(pathElement(name), new ResourceDescriptorConfigurator(targetName, configurator), null);
         this.setDeprecated(deprecation.getVersion());
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return ResourceServiceInstaller.combine();
     }
 }

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
-import org.wildfly.clustering.ee.Key;
+import org.wildfly.clustering.cache.Key;
 
 /**
  * The key used to cache a group of beans.

@@ -25,14 +25,14 @@ public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationC
 
     private final String contextId;
     private final BeanIdentifier identifier;
-    private B instance;
+    private final B instance;
 
     public PassivationCapableSerializableBean(String contextId, B instance) {
         this(contextId, Beans.getIdentifier(instance, Container.instance(contextId).services().get(ContextualStore.class)), instance);
     }
 
     PassivationCapableSerializableBean(String contextId, BeanIdentifier identifier) {
-        this(contextId, identifier, null);
+        this(contextId, identifier, Container.instance(contextId).services().get(ContextualStore.class).getContextual(identifier));
     }
 
     private PassivationCapableSerializableBean(String contextId, BeanIdentifier identifier, B instance) {
@@ -58,12 +58,6 @@ public class PassivationCapableSerializableBean<B extends Bean<I> & PassivationC
 
     @Override
     public B get() {
-        // Resolve contextual lazily
-        if (this.instance == null) {
-            Container container = Container.instance(this.contextId);
-            ContextualStore store = container.services().get(ContextualStore.class);
-            this.instance = store.getContextual(this.identifier);
-        }
         return this.instance;
     }
 

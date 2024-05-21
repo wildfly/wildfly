@@ -7,9 +7,9 @@ package org.jboss.as.ejb3.component.stateful.cache;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.ee.Restartable;
 import org.wildfly.clustering.ejb.bean.BeanStatistics;
 import org.wildfly.clustering.ejb.remote.AffinitySupport;
+import org.wildfly.clustering.server.manager.Service;
 
 /**
  * A stateful session bean cache.
@@ -18,7 +18,7 @@ import org.wildfly.clustering.ejb.remote.AffinitySupport;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends Restartable, BeanStatistics, AffinitySupport<K> {
+public interface StatefulSessionBeanCache<K, V extends StatefulSessionBeanInstance<K>> extends Service, BeanStatistics, AffinitySupport<K> {
     ThreadLocal<Object> CURRENT_GROUP = new ThreadLocal<>();
 
     /**

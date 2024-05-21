@@ -8,28 +8,25 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.ManagementRegistrar;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.LifecycleEvent;
-import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.service.CountDownLifecycleListener;
-import org.wildfly.clustering.service.FunctionalService;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Operation handler for protocol stack diagnostic runtime operations.
@@ -50,7 +47,6 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
     protected synchronized void executeRuntimeStep(OperationContext context, ModelNode op) throws OperationFailedException {
         String name = op.get(ModelDescriptionConstants.OP).asString();
         Operation<ChannelFactory> operation = this.operations.get(name);
-        ServiceName serviceName = JGroupsRequirement.CHANNEL_FACTORY.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
         Function<ChannelFactory, ModelNode> operationFunction = new Function<>() {
             @Override
             public ModelNode apply(ChannelFactory factory) {
@@ -61,18 +57,19 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
                 }
             }
         };
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(serviceName.append(this.getClass().getSimpleName()));
-        Supplier<ChannelFactory> factory = builder.requires(serviceName);
-        Reference<ModelNode> reference = new Reference<>();
+        ServiceDependency<ChannelFactory> factory = ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, context.getCurrentAddressValue());
+        AtomicReference<ModelNode> reference = new AtomicReference<>();
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch removeLatch = new CountDownLatch(1);
-        ServiceController<?> controller = builder
-                .addListener(new CountDownLifecycleListener(startLatch, EnumSet.of(LifecycleEvent.UP, LifecycleEvent.FAILED)))
-                .addListener(new CountDownLifecycleListener(removeLatch, EnumSet.of(LifecycleEvent.REMOVED)))
-                .setInstance(new FunctionalService<>(reference, operationFunction, factory))
-                // Force ChannelFactory service to start
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
+        ServiceController<?> controller = ServiceInstaller.builder(operationFunction, factory)
+                .withCaptor(reference::set)
+                .requires(factory)
+                .build()
+                .install(context.getCapabilityServiceTarget());
+        controller.addListener(new CountDownLifecycleListener(startLatch, EnumSet.of(LifecycleEvent.UP, LifecycleEvent.FAILED)));
+        controller.addListener(new CountDownLifecycleListener(removeLatch, EnumSet.of(LifecycleEvent.REMOVED)));
+        // Force ChannelFactory service to start
+        controller.setMode(ServiceController.Mode.ACTIVE);
         try {
             startLatch.await();
             ModelNode result = reference.get();
@@ -103,17 +100,20 @@ public class StackOperationHandler extends AbstractRuntimeOnlyHandler implements
         }
     }
 
-    static class Reference<T> implements Consumer<T>, Supplier<T> {
-        private volatile T value;
+    private static class CountDownLifecycleListener implements LifecycleListener {
+        private final Set<LifecycleEvent> targetEvents;
+        private final CountDownLatch latch;
 
-        @Override
-        public T get() {
-            return this.value;
+        CountDownLifecycleListener(CountDownLatch latch, Set<LifecycleEvent> targetEvents) {
+            this.targetEvents = targetEvents;
+            this.latch = latch;
         }
 
         @Override
-        public void accept(T value) {
-            this.value = value;
+        public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+            if (this.targetEvents.contains(event)) {
+                this.latch.countDown();
+            }
         }
     }
 }

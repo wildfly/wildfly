@@ -9,17 +9,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -28,8 +29,7 @@ import org.jboss.dmr.ModelNode;
 import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Test cases for transformers used in the Infinispan subsystem
@@ -93,15 +93,22 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     @Override
     AdditionalInitialization createAdditionalInitialization() {
         return new InfinispanSubsystemInitialization()
-                .require(CommonRequirement.PATH_MANAGER)
-                .require(CommonUnaryRequirement.PATH, ServerEnvironment.SERVER_TEMP_DIR)
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2", "jdg1", "jdg2", "jdg3", "jdg4", "jdg5", "jdg6")
-                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
-                .require(CommonUnaryRequirement.SSL_CONTEXT, "hotrod-elytron")
-                .require(JGroupsRequirement.CHANNEL_FACTORY, "maximal-channel")
-                .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
-                .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
-                .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
+                .require(PathManager.SERVICE_DESCRIPTOR)
+                .require(PathManager.PATH_SERVICE_DESCRIPTOR, ServerEnvironment.SERVER_TEMP_DIR)
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-1")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-2")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg1")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg2")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg3")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg4")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg5")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "jdg6")
+                .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
+                .require(CommonServiceDescriptor.SSL_CONTEXT, "hotrod-elytron")
+                .require(ChannelFactory.SERVICE_DESCRIPTOR, "maximal-channel")
+                .require(ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
+                .require(TransactionResourceDefinition.LOCAL_TRANSACTION_PROVIDER)
+                .require(TransactionResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 

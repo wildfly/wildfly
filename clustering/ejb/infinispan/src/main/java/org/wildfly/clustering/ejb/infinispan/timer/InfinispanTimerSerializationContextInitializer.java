@@ -7,21 +7,23 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import java.util.UUID;
 
-import org.infinispan.protostream.SerializationContext;
-import org.wildfly.clustering.ejb.cache.timer.TimerIndexMarshaller;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class InfinispanTimerSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanTimerMetaDataKey.class, UUID.class, InfinispanTimerMetaDataKey<UUID>::getId, InfinispanTimerMetaDataKey::new));
-        context.registerMarshaller(new FunctionalMarshaller<>(InfinispanTimerIndexKey.class, TimerIndexMarshaller.INSTANCE, InfinispanTimerIndexKey::getId, InfinispanTimerIndexKey::new));
-        context.registerMarshaller(new EnumMarshaller<>(TimerMetaDataKeyFilter.class));
+        context.registerMarshaller(context.getMarshaller(UUID.class).wrap(InfinispanTimerMetaDataKey.class, InfinispanTimerMetaDataKey<UUID>::getId, InfinispanTimerMetaDataKey::new));
+        context.registerMarshaller(context.getMarshaller(TimerIndex.class).wrap(InfinispanTimerIndexKey.class, InfinispanTimerIndexKey::getId, InfinispanTimerIndexKey::new));
+        context.registerMarshaller(ProtoStreamMarshaller.of(TimerMetaDataKeyFilter.class));
     }
 }

@@ -15,7 +15,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.configuration.AbstractJdbcStoreConfigurationChildBuilder;
 import org.infinispan.persistence.jdbc.common.configuration.ConnectionFactoryConfigurationBuilder;
-import org.wildfly.clustering.service.SimpleSupplierDependency;
+import org.wildfly.common.function.Functions;
 
 /**
  * Builds a {@link DataSourceConnectionFactoryConfiguration}.
@@ -51,7 +51,7 @@ public class DataSourceConnectionFactoryConfigurationBuilder<S extends AbstractJ
 
     @Override
     public DataSourceConnectionFactoryConfigurationBuilder<S> read(DataSourceConnectionFactoryConfiguration template, Combine combine) {
-        this.dependency = new SimpleSupplierDependency<>(template.getDataSource());
+        this.dependency = Functions.constantSupplier(template.getDataSource());
         return this;
     }
 

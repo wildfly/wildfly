@@ -5,18 +5,19 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.server.manager.Service;
 
 /**
  * Command to stop a singleton service.
  * @author Paul Ferraro
  */
-public class StopCommand implements Command<Void, Lifecycle> {
-    private static final long serialVersionUID = 3194143912789013071L;
+public enum StopCommand implements Command<Void, Service, RuntimeException> {
+    INSTANCE;
 
     @Override
-    public Void execute(Lifecycle context) throws Exception {
-        context.stop();
+    public Void execute(Service service) {
+        service.stop();
         return null;
     }
 }

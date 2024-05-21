@@ -4,31 +4,41 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.RemoteSiteConfiguration;
+import org.wildfly.common.function.Functions;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Resource definition for subsystem=jgroups/stack=X/relay=RELAY/remote-site=Y
  *
  * @author Paul Ferraro
  */
-public class RemoteSiteResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class RemoteSiteResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -36,26 +46,14 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         return PathElement.pathElement("remote-site", name);
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability {
-        REMOTE_SITE("org.wildfly.clustering.jgroups.remote-site"),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_CHILD).build();
-        }
-
-        @Override
-        public RuntimeCapability<Void> getDefinition() {
-            return this.definition;
-        }
-    }
+    static final BinaryServiceDescriptor<RemoteSiteConfiguration> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.clustering.jgroups.remote-site", RemoteSiteConfiguration.class);
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_CHILD).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CHANNEL("channel", ModelType.STRING) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setCapabilityReference(new CapabilityReference(Capability.REMOTE_SITE, JGroupsRequirement.CHANNEL_SOURCE));
+                return builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, ChannelFactory.SERVICE_DESCRIPTOR).build());
             }
         },
         ;
@@ -75,11 +73,11 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
         }
     }
 
-    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
+    private final ResourceServiceConfigurator parentServiceConfigurator;
 
-    RemoteSiteResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
+    RemoteSiteResourceDefinition(ResourceServiceConfigurator parentServiceConfigurator) {
         super(WILDCARD_PATH, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
+        this.parentServiceConfigurator = parentServiceConfigurator;
     }
 
     @Override
@@ -88,11 +86,38 @@ public class RemoteSiteResourceDefinition extends ChildResourceDefinition<Manage
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(CAPABILITY))
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(RemoteSiteConfigurationServiceConfigurator::new);
-        new RestartParentResourceRegistrar(this.parentServiceConfiguratorFactory, descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.combine(ResourceOperationRuntimeHandler.configureService(this), ResourceOperationRuntimeHandler.restartParent(ResourceOperationRuntimeHandler.configureService(this.parentServiceConfigurator)));
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String name = context.getCurrentAddressValue();
+        String channel = Attribute.CHANNEL.resolveModelAttribute(context, model).asString();
+        ServiceDependency<ChannelFactory> channelFactory = ServiceDependency.on(ChannelResourceDefinition.CHANNEL_SOURCE, channel);
+        ServiceDependency<String> clusterName = ServiceDependency.on(ChannelResourceDefinition.CHANNEL_CLUSTER, channel);
+        RemoteSiteConfiguration configuration = new RemoteSiteConfiguration() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public ChannelFactory getChannelFactory() {
+                return channelFactory.get();
+            }
+
+            @Override
+            public String getClusterName() {
+                return clusterName.get();
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, Functions.constantSupplier(configuration))
+                .requires(List.of(channelFactory, clusterName))
+                .build();
     }
 }

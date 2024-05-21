@@ -78,7 +78,8 @@ public class PassivationCapableSerializableMarshaller<SC extends SerializableCon
             return this.resolvedFactory.apply(contextId, contextual);
         }
         if (identifier == null) {
-            BeanIdentifierIndex index = Container.instance(contextId).services().get(BeanIdentifierIndex.class);
+            Container container = Container.instance(contextId);
+            BeanIdentifierIndex index = container.services().get(BeanIdentifierIndex.class);
             identifier = index.getIdentifier(beanIndex);
         }
         return this.unresolvedFactory.apply(contextId, identifier);
@@ -93,7 +94,8 @@ public class PassivationCapableSerializableMarshaller<SC extends SerializableCon
             writer.writeAny(CONTEXTUAL_INDEX, instance);
         } else {
             BeanIdentifier identifier = contextual.getIdentifier();
-            BeanIdentifierIndex index = Container.instance(contextId).services().get(BeanIdentifierIndex.class);
+            Container container = Container.instance(contextId);
+            BeanIdentifierIndex index = container.services().get(BeanIdentifierIndex.class);
             Integer beanIndex = (index != null) && index.isBuilt() ? index.getIndex(identifier) : null;
             if (beanIndex != null) {
                 int value = beanIndex.intValue();

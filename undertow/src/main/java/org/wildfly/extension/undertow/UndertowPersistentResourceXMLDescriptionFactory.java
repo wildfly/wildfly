@@ -7,9 +7,11 @@ package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.jboss.as.clustering.controller.Attribute;
@@ -147,7 +149,7 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
             builder.addChild(builder(ConsoleAccessLogDefinition.PATH_ELEMENT).addAttributes(ConsoleAccessLogDefinition.ATTRIBUTES.stream()));
         }
         builder.addChild(filterRefBuilder());
-        builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(Attribute.stream(SingleSignOnDefinition.Attribute.class)));
+        builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream().map(Supplier::get)));
         if (schema.since(UndertowSubsystemSchema.VERSION_4_0)) {
             builder.addChild(builder(HttpInvokerDefinition.PATH_ELEMENT).addAttributes(HttpInvokerDefinition.ATTRIBUTES.stream()));
         }
@@ -244,7 +246,7 @@ public enum UndertowPersistentResourceXMLDescriptionFactory implements Function<
     private static PersistentResourceXMLDescription.PersistentResourceXMLBuilder applicationSecurityDomainBuilder(UndertowSubsystemSchema schema) {
         PersistentResourceXMLDescription.PersistentResourceXMLBuilder builder = builder(ApplicationSecurityDomainDefinition.PATH_ELEMENT).setXmlWrapperElement(Constants.APPLICATION_SECURITY_DOMAINS);
 
-        Stream<AttributeDefinition> ssoAttributes = Stream.concat(Attribute.stream(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.class), Attribute.stream(SingleSignOnDefinition.Attribute.class));
+        Stream<AttributeDefinition> ssoAttributes = Stream.concat(EnumSet.allOf(ApplicationSecurityDomainSingleSignOnDefinition.Attribute.class).stream(), EnumSet.allOf(SingleSignOnDefinition.Attribute.class).stream()).map(Supplier::get);
         builder.addChild(builder(SingleSignOnDefinition.PATH_ELEMENT).addAttributes(ssoAttributes));
 
         Stream<AttributeDefinition> attributes = ApplicationSecurityDomainDefinition.ATTRIBUTES.stream();

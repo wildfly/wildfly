@@ -5,19 +5,32 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.infinispan.persistence.remote.configuration.RemoteStoreConfiguration;
+import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.clustering.server.util.MapEntry;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
  * Resource description for the addressable resource and its alias
@@ -29,7 +42,7 @@ import org.jboss.dmr.ModelType;
  * @deprecated Use {@link org.jboss.as.clustering.infinispan.subsystem.HotRodStoreResourceDefinition} instead.
  */
 @Deprecated
-public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
+public class RemoteStoreResourceDefinition extends StoreResourceDefinition<RemoteStoreConfiguration, RemoteStoreConfigurationBuilder> {
 
     static final PathElement PATH = pathElement("remote");
 
@@ -53,7 +66,7 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
         Attribute(String name) {
             this.definition = new StringListAttributeDefinition.Builder(name)
-                    .setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING))
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, OutboundSocketBinding.SERVICE_DESCRIPTOR).build())
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setMinSize(1)
                     .build();
@@ -66,7 +79,41 @@ public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     RemoteStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), RemoteStoreServiceConfigurator::new);
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(Attribute.class), RemoteStoreConfigurationBuilder.class);
         this.setDeprecated(InfinispanSubsystemModel.VERSION_7_0_0.getVersion());
+    }
+
+    @Override
+    public Map.Entry<Map.Entry<Supplier<RemoteStoreConfigurationBuilder>, Consumer<RemoteStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> resolve(OperationContext context, ModelNode model) throws OperationFailedException {
+
+        String remoteCacheName = Attribute.CACHE.resolveModelAttribute(context, model).asString();
+        long socketTimeout = Attribute.SOCKET_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        boolean tcpNoDelay = Attribute.TCP_NO_DELAY.resolveModelAttribute(context, model).asBoolean();
+        List<String> bindingNames = StringListAttributeDefinition.unwrapValue(context, Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, model));
+        List<ServiceDependency<OutboundSocketBinding>> bindings = new ArrayList<>(bindingNames.size());
+        for (String bindingName : bindingNames) {
+            ServiceDependency<OutboundSocketBinding> binding = ServiceDependency.on(OutboundSocketBinding.SERVICE_DESCRIPTOR, bindingName);
+            bindings.add(binding);
+        }
+
+        Map.Entry<Map.Entry<Supplier<RemoteStoreConfigurationBuilder>, Consumer<RemoteStoreConfigurationBuilder>>, Stream<Consumer<RequirementServiceBuilder<?>>>> entry = super.resolve(context, model);
+        Supplier<RemoteStoreConfigurationBuilder> builderFactory = entry.getKey().getKey();
+        Consumer<RemoteStoreConfigurationBuilder> configurator = entry.getKey().getValue().andThen(new Consumer<>() {
+            @Override
+            public void accept(RemoteStoreConfigurationBuilder builder) {
+                builder.segmented(false)
+                        .remoteCacheName(remoteCacheName)
+                        .socketTimeout(socketTimeout)
+                        .tcpNoDelay(tcpNoDelay)
+                        ;
+                for (Supplier<OutboundSocketBinding> dependency : bindings) {
+                    OutboundSocketBinding binding = dependency.get();
+                    builder.addServer().host(binding.getUnresolvedDestinationAddress()).port(binding.getDestinationPort());
+                }
+            }
+        });
+        Stream<Consumer<RequirementServiceBuilder<?>>> dependencies = entry.getValue();
+
+        return MapEntry.of(MapEntry.of(builderFactory, configurator), Stream.concat(dependencies, bindings.stream()));
     }
 }

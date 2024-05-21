@@ -15,7 +15,6 @@ import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -26,7 +25,7 @@ public class MutableDistributableWebDeploymentConfiguration implements Distribut
     private final PropertyReplacer replacer;
 
     private String managementName;
-    private DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management;
+    private DistributableSessionManagementProvider provider;
 
     public MutableDistributableWebDeploymentConfiguration(PropertyReplacer replacer) {
         this.replacer = replacer;
@@ -37,12 +36,12 @@ public class MutableDistributableWebDeploymentConfiguration implements Distribut
     }
 
     @Override
-    public DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> getSessionManagement() {
-        return this.management;
+    public DistributableSessionManagementProvider getSessionManagementProvider() {
+        return this.provider;
     }
 
-    public void setSessionManagement(DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> management) {
-        this.management = management;
+    public void setSessionManagementProvider(DistributableSessionManagementProvider provider) {
+        this.provider = provider;
     }
 
     @Override

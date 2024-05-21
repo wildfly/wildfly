@@ -24,14 +24,14 @@ import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
-import org.wildfly.clustering.ee.Restartable;
+import org.wildfly.clustering.server.manager.Service;
 import org.wildfly.transaction.client.ContextTransactionManager;
 
 /**
  * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
-public interface ManagedTimerService extends TimerService, Restartable {
+public interface ManagedTimerService extends TimerService, Service {
 
     /**
      * Returns the managed timer associated with the specified identifier

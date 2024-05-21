@@ -8,7 +8,9 @@ package org.wildfly.clustering.dispatcher;
 /**
  * Indicates a failure to dispatch a command.
  * @author Paul Ferraro
+ * @deprecated To be removed without replacement.
  */
+@Deprecated(forRemoval = true)
 public class CommandDispatcherException extends Exception {
     private static final long serialVersionUID = 3984965224844057380L;
 

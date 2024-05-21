@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.threads.EnhancedQueueExecutorResourceDefinition;
@@ -256,6 +257,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             RuntimeCapability.Builder.of(DEFAULT_ENTITY_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class)
                     .build();
 
+    static final RuntimeCapability<Void> DEFAULT_STATEFUL_BEAN_CACHE = RuntimeCapability.Builder.of(StatefulSessionBeanCacheProvider.DEFAULT_SERVICE_DESCRIPTOR).build();
+    static final RuntimeCapability<Void> PASSIVATION_DISABLED_STATEFUL_BEAN_CACHE = RuntimeCapability.Builder.of(StatefulSessionBeanCacheProvider.PASSIVATION_DISABLED_SERVICE_DESCRIPTOR).build();
+
     private final boolean registerRuntimeOnly;
     private final PathManager pathManager;
     private final AtomicReference<String> defaultSecurityDomainName;
@@ -273,7 +277,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setCapabilities(CLUSTERED_SINGLETON_CAPABILITY, EJB_CLIENT_CONFIGURATOR_CAPABILITY, EJB_CAPABILITY)
+                .setCapabilities(CLUSTERED_SINGLETON_CAPABILITY, EJB_CLIENT_CONFIGURATOR_CAPABILITY, EJB_CAPABILITY, DEFAULT_STATEFUL_BEAN_CACHE, PASSIVATION_DISABLED_STATEFUL_BEAN_CACHE)
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;

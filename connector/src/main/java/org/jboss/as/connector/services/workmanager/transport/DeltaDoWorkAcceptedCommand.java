@@ -6,13 +6,12 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#deltaDoWorkAccepted(java.util.Map).
  * @author Paul Ferraro
  */
-public class DeltaDoWorkAcceptedCommand implements Command<Void, CommandDispatcherTransport> {
+public class DeltaDoWorkAcceptedCommand implements TransportCommand<Void> {
     private static final long serialVersionUID = -2256088009794548082L;
 
     private final Address address;

@@ -7,13 +7,12 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagementConfiguration;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class MutableInfinispanSessionManagementConfiguration extends MutableSessionManagementConfiguration implements InfinispanSessionManagementConfiguration<DeploymentUnit> {
+public class MutableInfinispanSessionManagementConfiguration extends MutableSessionManagementConfiguration implements BinaryServiceConfiguration {
 
     private String containerName;
     private String cacheName;
@@ -23,12 +22,12 @@ public class MutableInfinispanSessionManagementConfiguration extends MutableSess
     }
 
     @Override
-    public String getContainerName() {
+    public String getParentName() {
         return this.containerName;
     }
 
     @Override
-    public String getCacheName() {
+    public String getChildName() {
         return this.cacheName;
     }
 

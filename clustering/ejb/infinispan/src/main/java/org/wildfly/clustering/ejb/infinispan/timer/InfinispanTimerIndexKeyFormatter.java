@@ -7,18 +7,17 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.ejb.cache.timer.TimerIndex;
-import org.wildfly.clustering.marshalling.spi.DelimitedFormatter;
-import org.wildfly.clustering.marshalling.spi.Formatter;
+import org.wildfly.clustering.marshalling.Formatter;
 
 /**
  * Formatter for a {@link InfinispanTimerIndexKey}.
  * @author Paul Ferraro
  */
 @MetaInfServices(Formatter.class)
-public class InfinispanTimerIndexKeyFormatter extends DelimitedFormatter<InfinispanTimerIndexKey> {
+public class InfinispanTimerIndexKeyFormatter extends Formatter.Provided<InfinispanTimerIndexKey> {
 
     public InfinispanTimerIndexKeyFormatter() {
-        super(InfinispanTimerIndexKey.class, "#", InfinispanTimerIndexKeyFormatter::fromStrings, InfinispanTimerIndexKeyFormatter::toStrings);
+        super(Formatter.joining(InfinispanTimerIndexKey.class, "#", InfinispanTimerIndexKeyFormatter::toStrings, InfinispanTimerIndexKeyFormatter::fromStrings));
     }
 
     static InfinispanTimerIndexKey fromStrings(String[] values) {

@@ -5,14 +5,15 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import java.io.IOException;
+import java.util.function.Consumer;
 
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.StartException;
-import org.junit.Assert;
-import org.junit.Test;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for marshalling of singleton service exceptions.
@@ -20,27 +21,28 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class ExceptionTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<Throwable> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new StartException(), ExceptionTestCase::assertEquals);
-        tester.test(new StartException("message"), ExceptionTestCase::assertEquals);
-        tester.test(new StartException(new Exception()), ExceptionTestCase::assertEquals);
-        tester.test(new StartException("message", new Exception()), ExceptionTestCase::assertEquals);
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Consumer<Throwable> tester = factory.createTester(ExceptionTestCase::assertEquals);
+        tester.accept(new StartException());
+        tester.accept(new StartException("message"));
+        tester.accept(new StartException(new Exception()));
+        tester.accept(new StartException("message", new Exception()));
 
-        tester.test(new ServiceNotFoundException(), ExceptionTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException("message"), ExceptionTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException(new Exception()), ExceptionTestCase::assertEquals);
-        tester.test(new ServiceNotFoundException("message", new Exception()), ExceptionTestCase::assertEquals);
+        tester.accept(new ServiceNotFoundException());
+        tester.accept(new ServiceNotFoundException("message"));
+        tester.accept(new ServiceNotFoundException(new Exception()));
+        tester.accept(new ServiceNotFoundException("message", new Exception()));
     }
 
     private static void assertEquals(Throwable exception1, Throwable exception2) {
         if ((exception1 != null) && (exception2 != null)) {
-            Assert.assertSame(exception1.getClass(), exception2.getClass());
-            Assert.assertEquals(exception1.getMessage(), exception2.getMessage());
+            Assertions.assertSame(exception1.getClass(), exception2.getClass());
+            Assertions.assertEquals(exception1.getMessage(), exception2.getMessage());
             assertEquals(exception1.getCause(), exception2.getCause());
         } else {
-            Assert.assertSame(exception1, exception2);
+            Assertions.assertSame(exception1, exception2);
         }
     }
 }

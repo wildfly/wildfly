@@ -5,31 +5,35 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.EnumSet;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.naming.BinderServiceInstaller;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jgroups.JChannel;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 
 /**
  * Definition of a fork resource.
  * @author Paul Ferraro
  */
-public class ForkResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class ForkResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -37,32 +41,7 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         return PathElement.pathElement("fork", name);
     }
 
-    enum Capability implements CapabilityProvider {
-        FORK_CHANNEL(JGroupsRequirement.CHANNEL),
-        FORK_CHANNEL_CLUSTER(JGroupsRequirement.CHANNEL_CLUSTER),
-        FORK_CHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
-        FORK_CHANNEL_MODULE(JGroupsRequirement.CHANNEL_MODULE),
-        FORK_CHANNEL_SOURCE(JGroupsRequirement.CHANNEL_SOURCE),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-    }
-
-    static class ForkChannelFactoryServiceConfiguratorFactory implements ResourceServiceConfiguratorFactory {
-        @Override
-        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-            return new ForkChannelFactoryServiceConfigurator(Capability.FORK_CHANNEL_FACTORY, address);
-        }
-    }
-
+    private final ResourceServiceConfigurator configurator = new ForkChannelFactoryServiceConfigurator(ChannelResourceDefinition.CHANNEL_FACTORY_CAPABILITY, PathAddress::getParent);
     private final ServiceValueExecutorRegistry<JChannel> registry;
 
     ForkResourceDefinition(ServiceValueExecutorRegistry<JChannel> registry) {
@@ -75,15 +54,54 @@ public class ForkResourceDefinition extends ChildResourceDefinition<ManagementRe
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addCapabilities(Capability.class)
-                .addCapabilities(EnumSet.allOf(ClusteringRequirement.class).stream().map(UnaryRequirementCapability::new).collect(Collectors.toList()))
+                .addCapabilities(List.of(ChannelResourceDefinition.CHANNEL_CAPABILITY, ChannelResourceDefinition.CHANNEL_FACTORY_CAPABILITY))
                 ;
-        ResourceServiceConfiguratorFactory serviceConfiguratorFactory = new ForkChannelFactoryServiceConfiguratorFactory();
-        ResourceServiceHandler handler = new ForkServiceHandler(serviceConfiguratorFactory, this.registry);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
-        new ProtocolResourceRegistrar(serviceConfiguratorFactory, new ForkProtocolRuntimeResourceRegistration(this.registry)).register(registration);
+        new ProtocolResourceRegistrar(this.configurator, new ForkProtocolRuntimeResourceRegistration(this.registry)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        PathAddress address = context.getCurrentAddress();
+        String name = address.getLastElement().getValue();
+        String channelName = address.getParent().getLastElement().getValue();
+
+        List<ResourceServiceInstaller> installers = new LinkedList<>();
+        installers.add(this.configurator.configure(context, model));
+
+        ServiceDependency<ForkChannelFactory> channelFactory = ServiceDependency.on(ChannelFactory.SERVICE_DESCRIPTOR, channelName).map(ForkChannelFactory.class::cast);
+        ServiceDependency<String> clusterName = ServiceDependency.on(ChannelResourceDefinition.CHANNEL_CLUSTER, channelName);
+        ChannelServiceConfiguration configuration = new ChannelServiceConfiguration() {
+            @Override
+            public boolean isStatisticsEnabled() {
+                return false;
+            }
+
+            @Override
+            public org.wildfly.clustering.jgroups.ChannelFactory getChannelFactory() {
+                return channelFactory.get();
+            }
+
+            @Override
+            public String getClusterName() {
+                return clusterName.get();
+            }
+
+            @Override
+            public void accept(RequirementServiceBuilder<?> builder) {
+                channelFactory.accept(builder);
+            }
+        };
+        installers.add(new ChannelServiceConfigurator(ChannelResourceDefinition.CHANNEL_CAPABILITY, configuration).configure(context, model));
+        installers.add(this.registry.capture(ServiceDependency.on(ChannelResourceDefinition.CHANNEL, name)));
+
+        installers.add(new BinderServiceInstaller(JGroupsBindingFactory.createChannelBinding(name), ChannelResourceDefinition.CHANNEL_CAPABILITY.getCapabilityServiceName(address)));
+        installers.add(new BinderServiceInstaller(JGroupsBindingFactory.createChannelFactoryBinding(name), ChannelResourceDefinition.CHANNEL_FACTORY_CAPABILITY.getCapabilityServiceName(address)));
+
+        return ResourceServiceInstaller.combine(installers);
     }
 }

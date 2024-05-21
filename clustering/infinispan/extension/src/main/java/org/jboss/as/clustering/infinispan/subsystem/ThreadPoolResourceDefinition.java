@@ -5,36 +5,44 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.function.UnaryOperator;
 
+import org.infinispan.commons.executors.ExecutorFactory;
+import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
+import org.infinispan.commons.util.ProcessorInfo;
+import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
+import org.infinispan.factories.threads.EnhancedQueueExecutorFactory;
 import org.jboss.as.clustering.controller.Attribute;
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfigurator;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
-import org.jboss.as.clustering.infinispan.subsystem.remote.ClientThreadPoolServiceConfigurator;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.clustering.infinispan.executors.DefaultNonBlockingThreadFactory;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Thread pool resource definitions for Infinispan subsystem. See {@link org.infinispan.factories.KnownComponentNames}
@@ -43,42 +51,35 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Radoslav Husar
  */
-public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ResourceServiceConfiguratorFactory, UnaryOperator<SimpleResourceDefinition.Parameters> {
+public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, ThreadPoolDefinition, ThreadPoolServiceDescriptor, ResourceServiceConfigurator {
 
-    BLOCKING("blocking", 1, 150, 5000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
-    LISTENER("listener", 1, 1, 1000, TimeUnit.MINUTES.toMillis(1), false, CacheContainerResourceDefinition.Capability.CONFIGURATION),
-    NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true, CacheContainerResourceDefinition.Capability.CONFIGURATION),
-    // remote-cache-container
-    CLIENT("async", 99, 99, 0, 0L, true, RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION) {
-        @Override
-        public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-            return new ClientThreadPoolServiceConfigurator(this, address);
-        }
-    },
+    BLOCKING("blocking", 1, 150, 5000, TimeUnit.MINUTES.toMillis(1), false),
+    LISTENER("listener", 1, 1, 1000, TimeUnit.MINUTES.toMillis(1), false),
+    NON_BLOCKING("non-blocking", 2, 2, 1000, TimeUnit.MINUTES.toMillis(1), true),
     ;
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    private static PathElement pathElement(String name) {
+    static PathElement pathElement(String name) {
         return PathElement.pathElement("thread-pool", name);
     }
 
+    private final RuntimeCapability<Void> capability;
     private final PathElement path;
     private final Attribute minThreads;
     private final Attribute maxThreads;
     private final Attribute queueLength;
     private final Attribute keepAliveTime;
     private final boolean nonBlocking;
-    private final CapabilityProvider baseCapability;
 
-    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, boolean nonBlocking, CapabilityProvider baseCapability) {
+    ThreadPoolResourceDefinition(String name, int defaultMinThreads, int defaultMaxThreads, int defaultQueueLength, long defaultKeepaliveTime, boolean nonBlocking) {
         this.path = pathElement(name);
         this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.maxThreads = new SimpleAttribute(createBuilder("max-threads", ModelType.INT, new ModelNode(defaultMaxThreads), new IntRangeValidatorBuilder().min(0)).build());
         this.queueLength = new SimpleAttribute(createBuilder("queue-length", ModelType.INT, new ModelNode(defaultQueueLength), new IntRangeValidatorBuilder().min(0)).build());
         this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0)).build());
         this.nonBlocking = nonBlocking;
-        this.baseCapability = baseCapability;
+        this.capability = RuntimeCapability.Builder.of(this).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
     }
 
     private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder) {
@@ -93,30 +94,28 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     @Override
-    public SimpleResourceDefinition.Parameters apply(SimpleResourceDefinition.Parameters parameters) {
-        return parameters;
-    }
-
-    @Override
     public void register(ManagementResourceRegistration parent) {
-        ResourceDescriptionResolver resolver = InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(this.path, pathElement(PathElement.WILDCARD_VALUE));
-        ResourceDefinition definition = new SimpleResourceDefinition(this.apply(new SimpleResourceDefinition.Parameters(this.path, resolver)));
+        ResourceDescriptionResolver resolver = InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(this.path, WILDCARD_PATH);
+        ResourceDefinition definition = new SimpleResourceDefinition(this.path, resolver);
         ManagementResourceRegistration registration = parent.registerSubModel(definition);
         ResourceDescriptor descriptor = new ResourceDescriptor(resolver)
                 .addAttributes(this.minThreads, this.maxThreads, this.queueLength, this.keepAliveTime)
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(this);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
     }
 
     @Override
-    public ResourceServiceConfigurator createServiceConfigurator(PathAddress address) {
-        return new ThreadPoolServiceConfigurator(this, address);
-    }
-
-    @Override
-    public ServiceName getServiceName(PathAddress containerAddress) {
-        return this.baseCapability.getServiceName(containerAddress).append(this.path.getKeyValuePair());
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        int multiplier = this.nonBlocking ? ProcessorInfo.availableProcessors() : 1;
+        int minThreads = this.minThreads.resolveModelAttribute(context, model).asInt() * multiplier;
+        int maxThreads = this.maxThreads.resolveModelAttribute(context, model).asInt() * multiplier;
+        int queueLength = this.queueLength.resolveModelAttribute(context, model).asInt();
+        long keepAliveTime = this.keepAliveTime.resolveModelAttribute(context, model).asLong();
+        ThreadPoolExecutorFactory<ExecutorService> factory = this.nonBlocking ? new NonBlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime) : new BlockingThreadPoolExecutorFactory(maxThreads, minThreads, queueLength, keepAliveTime);
+        return CapabilityServiceInstaller.builder(this.capability, new ThreadPoolConfigurationBuilder(null).threadPoolFactory(factory).create())
+                .asActive()
+                .build();
     }
 
     @Override
@@ -140,12 +139,31 @@ public enum ThreadPoolResourceDefinition implements ResourceDefinitionProvider, 
     }
 
     @Override
-    public boolean isNonBlocking() {
-        return this.nonBlocking;
-    }
-
-    @Override
     public PathElement getPathElement() {
         return this.path;
+    }
+
+    private static class BlockingThreadPoolExecutorFactory extends EnhancedQueueExecutorFactory {
+
+        BlockingThreadPoolExecutorFactory(int maxThreads, int coreThreads, int queueLength, long keepAlive) {
+            super(maxThreads, coreThreads, queueLength, keepAlive);
+        }
+
+        @Override
+        public ExecutorService createExecutor(ThreadFactory factory) {
+            return super.createExecutor(new DefaultThreadFactory(factory, ExecutorFactory.class.getClassLoader()));
+        }
+    }
+
+    private static class NonBlockingThreadPoolExecutorFactory extends org.infinispan.factories.threads.NonBlockingThreadPoolExecutorFactory {
+
+        NonBlockingThreadPoolExecutorFactory(int maxThreads, int coreThreads, int queueLength, long keepAlive) {
+            super(maxThreads, coreThreads, queueLength, keepAlive);
+        }
+
+        @Override
+        public ExecutorService createExecutor(ThreadFactory factory) {
+            return super.createExecutor(new DefaultNonBlockingThreadFactory(factory));
+        }
     }
 }

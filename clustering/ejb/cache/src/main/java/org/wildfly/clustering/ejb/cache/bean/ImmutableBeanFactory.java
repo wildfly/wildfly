@@ -5,7 +5,9 @@
 
 package org.wildfly.clustering.ejb.cache.bean;
 
-import org.wildfly.clustering.ee.Locator;
+import java.util.concurrent.CompletionStage;
+
+import org.wildfly.clustering.cache.CacheEntryLocator;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.ImmutableBean;
 import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
@@ -17,18 +19,18 @@ import org.wildfly.clustering.ejb.bean.ImmutableBeanMetaData;
  * @param <V> the bean instance type
  * @param <M> the bean metadata value type
  */
-public interface ImmutableBeanFactory<K, V extends BeanInstance<K>, M> extends Locator<K, M> {
+public interface ImmutableBeanFactory<K, V extends BeanInstance<K>, M> extends CacheEntryLocator<K, M> {
     ImmutableBeanMetaDataFactory<K, M> getMetaDataFactory();
     ImmutableBeanGroupManager<K, V> getBeanGroupManager();
 
     @Override
-    default M findValue(K id) {
-        return this.getMetaDataFactory().findValue(id);
+    default CompletionStage<M> findValueAsync(K id) {
+        return this.getMetaDataFactory().findValueAsync(id);
     }
 
     @Override
-    default M tryValue(K id) {
-        return this.getMetaDataFactory().tryValue(id);
+    default CompletionStage<M> tryValueAsync(K id) {
+        return this.getMetaDataFactory().tryValueAsync(id);
     }
 
     default ImmutableBean<K, V> createImmutableBean(K id, M value) {

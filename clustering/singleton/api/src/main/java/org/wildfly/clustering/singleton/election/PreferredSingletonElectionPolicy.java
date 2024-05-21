@@ -15,7 +15,9 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
  * if the preferred node is not a candidate.  The means of specifying the preferred node is
  * the responsibility of the extending class.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.singleton.election.SingletonElectionPolicy#prefer(List)}.
  */
+@Deprecated(forRemoval = true)
 public class PreferredSingletonElectionPolicy implements SingletonElectionPolicy {
     private final List<Preference> preferences;
     private final SingletonElectionPolicy policy;

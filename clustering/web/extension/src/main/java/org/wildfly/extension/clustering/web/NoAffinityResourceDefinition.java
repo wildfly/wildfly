@@ -5,16 +5,18 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
-import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.service.WebProviderRequirement;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.extension.clustering.web.routing.NullRouteLocatorProvider;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -23,28 +25,17 @@ public class NoAffinityResourceDefinition extends AffinityResourceDefinition {
 
     static final PathElement PATH = pathElement("none");
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        AFFINITY(WebProviderRequirement.AFFINITY),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setAllowMultipleRegistrations(true)
-                    .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT);
-        }
-    }
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(RouteLocatorProvider.SERVICE_DESCRIPTOR)
+            .setAllowMultipleRegistrations(true)
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
+            .build();
 
     NoAffinityResourceDefinition() {
-        super(PATH, EnumSet.allOf(Capability.class), UnaryOperator.identity(), NoAffinityServiceConfigurator::new);
+        super(PATH, CAPABILITY, UnaryOperator.identity());
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return CapabilityServiceInstaller.builder(CAPABILITY, new NullRouteLocatorProvider()).build();
     }
 }

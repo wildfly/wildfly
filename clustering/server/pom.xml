@@ -30,8 +30,6 @@
     <modules>
         <module>api</module>
         <module>extension</module>
-        <module>infinispan</module>
         <module>service</module>
-        <module>spi</module>
     </modules>
 </project>

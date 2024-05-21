@@ -3,7 +3,7 @@ package org.wildfly.clustering.ejb.infinispan.timer;
 import "java.lang.proto";
 import "java.time.proto";
 import "java.util.proto";
-import "org.wildfly.clustering.marshalling.spi.proto";
+import "org.wildfly.clustering.ejb.cache.timer.proto";
 
 // IDs: 340-344
 

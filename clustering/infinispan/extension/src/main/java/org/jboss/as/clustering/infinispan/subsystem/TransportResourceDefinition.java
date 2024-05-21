@@ -5,56 +5,60 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.Capability;
+import org.infinispan.configuration.global.TransportConfiguration;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class TransportResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class TransportResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String value) {
         return PathElement.pathElement("transport", value);
     }
 
-    private final UnaryOperator<ResourceDescriptor> configurator;
-    private final ResourceServiceHandler handler;
+    static final UnaryServiceDescriptor<TransportConfiguration> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION.getName() + "." + WILDCARD_PATH.getKey(), TransportConfiguration.class);
+    static final RuntimeCapability<Void> CAPABILITY = createRuntimeCapability(SERVICE_DESCRIPTOR);
 
-    TransportResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceHandler handler) {
+    private static RuntimeCapability<Void> createRuntimeCapability(UnaryServiceDescriptor<?> descriptor) {
+        return RuntimeCapability.Builder.of(descriptor).setAllowMultipleRegistrations(true).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
+    }
+
+    private final UnaryOperator<ResourceDescriptor> configurator;
+
+    TransportResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(path));
         this.configurator = configurator;
-        this.handler = handler;
     }
 
     @Override
     public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
-        Set<ClusteringRequirement> requirements = EnumSet.allOf(ClusteringRequirement.class);
-        List<Capability> capabilities = new ArrayList<>(requirements.size());
-        for (ClusteringRequirement requirement : requirements) {
-            capabilities.add(new UnaryRequirementCapability(requirement, UnaryCapabilityNameResolver.PARENT));
-        }
+        RuntimeCapability<Void> commandDispatcherFactory = RuntimeCapability.Builder.of(ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).setAllowMultipleRegistrations(true).build();
+        RuntimeCapability<Void> group = RuntimeCapability.Builder.of(ClusteringServiceDescriptor.GROUP).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).setAllowMultipleRegistrations(true).build();
 
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
-                .addCapabilities(capabilities)
+                .addCapabilities(List.of(CAPABILITY, commandDispatcherFactory, group))
                 ;
-        new SimpleResourceRegistrar(descriptor, this.handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
     }

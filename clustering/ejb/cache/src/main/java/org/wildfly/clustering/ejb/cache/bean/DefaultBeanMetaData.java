@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import org.wildfly.clustering.ee.Mutator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
 import org.wildfly.clustering.ejb.bean.BeanExpiration;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
 
@@ -19,9 +19,9 @@ import org.wildfly.clustering.ejb.bean.BeanMetaData;
 public class DefaultBeanMetaData<K> extends DefaultImmutableBeanMetaData<K> implements BeanMetaData<K> {
 
     private final BeanMetaDataEntry<K> entry;
-    private final Mutator mutator;
+    private final CacheEntryMutator mutator;
 
-    public DefaultBeanMetaData(BeanMetaDataEntry<K> entry, BeanExpiration expiration, Mutator mutator) {
+    public DefaultBeanMetaData(BeanMetaDataEntry<K> entry, BeanExpiration expiration, CacheEntryMutator mutator) {
         super(entry, expiration);
         this.entry = entry;
         this.mutator = mutator;

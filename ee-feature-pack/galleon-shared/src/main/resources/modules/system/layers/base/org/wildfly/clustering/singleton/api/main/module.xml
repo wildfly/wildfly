@@ -15,5 +15,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.service" export="true"/>
+        <module name="org.wildfly.service" export="true"/>
     </dependencies>
 </module>

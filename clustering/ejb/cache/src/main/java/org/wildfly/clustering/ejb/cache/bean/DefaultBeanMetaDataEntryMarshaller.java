@@ -11,8 +11,8 @@ import java.time.Instant;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.jboss.ejb.client.SessionID;
-import org.wildfly.clustering.ee.cache.offset.Offset;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
+import org.wildfly.clustering.server.offset.Offset;
+import org.wildfly.clustering.server.offset.OffsetValue;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;

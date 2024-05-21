@@ -5,39 +5,42 @@
 
 package org.wildfly.clustering.web.service.session;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
+import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
+import org.wildfly.subsystem.service.DeploymentServiceInstaller;
 
 /**
  * A distributable session management provider.
  * @author Paul Ferraro
  */
-public interface DistributableSessionManagementProvider<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> {
-    AttachmentKey<DistributableSessionManagementProvider<DistributableSessionManagementConfiguration<DeploymentUnit>>> ATTACHMENT_KEY = AttachmentKey.create(DistributableSessionManagementProvider.class);
+public interface DistributableSessionManagementProvider {
+    NullaryServiceDescriptor<DistributableSessionManagementProvider> DEFAULT_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.web.default-session-management-provider", DistributableSessionManagementProvider.class);
+    UnaryServiceDescriptor<DistributableSessionManagementProvider> SERVICE_DESCRIPTOR = UnaryServiceDescriptor.of("org.wildfly.clustering.web.session-management-provider", DEFAULT_SERVICE_DESCRIPTOR);
+
+    AttachmentKey<DistributableSessionManagementProvider> ATTACHMENT_KEY = AttachmentKey.create(DistributableSessionManagementProvider.class);
     AttachmentKey<AttachmentList<String>> IMMUTABILITY_ATTACHMENT_KEY = AttachmentKey.createList(String.class);
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.session.SessionManagerFactory}.
-     * @param <S> the HttpSession specification type
-     * @param <SC> the ServletContext specification type
-     * @param <AL> the HttpSessionAttributeListener specification type
-     * @param <LC> the local context type
+     * @param <C> the session context type
      * @param configuration the configuration of the session manager factory
      * @return a service configurator
      */
-    <S, SC, AL, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, LC> configuration);
+    <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration);
 
     /**
      * Returns a {@link CapabilityServiceConfigurator} used to configure a service providing a {@link org.wildfly.clustering.web.routing.RouteLocator}.
+     * @param context a deployment phase context
      * @param configuration the configuration of a deployment
      * @return a service configurator
      */
-    CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration);
+    DeploymentServiceInstaller getRouteLocatorServiceInstaller(DeploymentPhaseContext context, DeploymentConfiguration configuration);
 
-    C getSessionManagementConfiguration();
+    DistributableSessionManagementConfiguration<DeploymentUnit> getSessionManagementConfiguration();
 }
