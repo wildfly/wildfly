@@ -82,12 +82,6 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
     private static final String RELATIVE_SERVER_URLS = "mp.openapi.extensions.servers.relative";
     private static final String DEFAULT_TITLE = "Generated API";
     private static final Set<String> REQUISITE_LISTENERS = Collections.singleton("http");
-    private static final Iterable<AnnotationScanner> SCANNERS = WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
-        @Override
-        public Iterable<AnnotationScanner> run() {
-            return ServiceLoader.load(AnnotationScanner.class, AnnotationScanner.class.getClassLoader()).stream().map(ServiceLoader.Provider::get).collect(Collectors.toList());
-        }
-    });
 
     static {
         // Set the static OASFactoryResolver eagerly avoiding the need perform TCCL service loading later
@@ -159,7 +153,14 @@ public class OpenAPIModelServiceConfigurator extends SimpleServiceNameProvider i
             }
         }
 
-        document.modelFromAnnotations(OpenApiProcessor.modelFromAnnotations(config, this.module.getClassLoader(), indexView, Functions.constantSupplier(SCANNERS)));
+        // AnnotationScanner implementations are not stateless, so we must create new instances per deployment
+        Iterable<AnnotationScanner> scanners = WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
+            @Override
+            public Iterable<AnnotationScanner> run() {
+                return ServiceLoader.load(AnnotationScanner.class, AnnotationScanner.class.getClassLoader()).stream().map(ServiceLoader.Provider::get).collect(Collectors.toList());
+            }
+        });
+        document.modelFromAnnotations(OpenApiProcessor.modelFromAnnotations(config, this.module.getClassLoader(), indexView, Functions.constantSupplier(scanners)));
         document.filter(OpenApiProcessor.getFilter(config, this.module.getClassLoader(), indexView));
         document.initialize();
         OpenAPI model = document.get();
