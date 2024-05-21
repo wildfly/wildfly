@@ -5,6 +5,8 @@
 
 package org.wildfly.test.integration.elytron.oidc.client;
 
+import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.MULTIPLE_SCOPE_APP;
+import static org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest.SINGLE_SCOPE_APP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +32,7 @@ import io.restassured.specification.RequestSpecification;
  */
 public class KeycloakConfiguration {
 
-    private static final String USER_ROLE = "user";
+    public static final String USER_ROLE = "user";
     public static final String JBOSS_ADMIN_ROLE = "JBossAdmin";
     public static final String ALICE = "alice";
     public static final String ALICE_PASSWORD = "alice123+";
@@ -53,6 +55,9 @@ public class KeycloakConfiguration {
     public static final String TENANT2_REALM = "tenant2";
     public static final String TENANT1_ENDPOINT = "/tenant1";
     public static final String TENANT2_ENDPOINT = "/tenant2";
+    public static final String ALICE_FIRST_NAME = "Alice";
+    public static final String ALICE_LAST_NAME = "Smith";
+    public static final boolean ALICE_EMAIL_VERIFIED = true;
 
     public enum ClientAppType {
         OIDC_CLIENT,
@@ -180,7 +185,7 @@ public class KeycloakConfiguration {
             realm.getUsers().add(createUser(CHARLOTTE, CHARLOTTE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
             realm.getUsers().add(createUser(DAN, DAN_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         } else {
-            realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
+            realm.getUsers().add(createUser(ALICE, ALICE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE), ALICE_FIRST_NAME, ALICE_LAST_NAME, ALICE_EMAIL_VERIFIED));
             realm.getUsers().add(createUser(BOB, BOB_PASSWORD, Arrays.asList(USER_ROLE)));
             realm.getUsers().add(createUser(CHARLIE, CHARLIE_PASSWORD, Arrays.asList(USER_ROLE, JBOSS_ADMIN_ROLE)));
         }
@@ -205,6 +210,20 @@ public class KeycloakConfiguration {
             client.setRedirectUris(Arrays.asList("http://" + clientHostName + ":" + clientPort + "/" + clientApp + "/*"));
         }
         client.setEnabled(true);
+
+        if (clientId.equals(MULTIPLE_SCOPE_APP) || clientId.equals(SINGLE_SCOPE_APP)) {
+            client.setOptionalClientScopes(new ArrayList<>());
+            client.setDefaultClientScopes(new ArrayList<>());
+            client.getDefaultClientScopes().add("web-origins");
+            client.getDefaultClientScopes().add("acr");
+            client.getOptionalClientScopes().add("address");
+            client.getOptionalClientScopes().add("email");
+            client.getOptionalClientScopes().add("profile");
+            client.getOptionalClientScopes().add("phone");
+            client.getDefaultClientScopes().add("roles");
+            client.getOptionalClientScopes().add("offline_access");
+            client.getOptionalClientScopes().add("microprofile-jwt");
+        }
         client.setDirectAccessGrantsEnabled(directAccessGrantEnabled);
         if (allowedOrigin != null) {
             client.setWebOrigins(Collections.singletonList(allowedOrigin));
@@ -219,12 +238,16 @@ public class KeycloakConfiguration {
         client.setEnabled(true);
         return client;
     }
-
     private static UserRepresentation createUser(String username, String password, List<String> realmRoles) {
+        return createUser(username, password, realmRoles, username, username, false);
+    }
+
+        private static UserRepresentation createUser(String username, String password, List<String> realmRoles, String firstName, String lastName, boolean emailVerified) {
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
-        user.setFirstName(username);
-        user.setLastName(username);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmailVerified(emailVerified);
         user.setEnabled(true);
         user.setCredentials(new ArrayList<>());
         user.setRealmRoles(realmRoles);
