@@ -1,10 +1,4 @@
-/*
- * Copyright The WildFly Authors
- * SPDX-License-Identifier: Apache-2.0
- */
-package org.wildfly.extension.micrometer.otlp;
-
-import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.MICROMETER_MODULE;
+package org.wildfly.extension.micrometer.prometheus;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,9 +11,8 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.server.mgmt.domain.ExtensibleHttpManagement;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.MicrometerConfigurationConstants;
@@ -32,37 +25,32 @@ import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.ServiceInstaller;
 
-public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
-    static final String NAME = "otlp";
+public class PrometheusRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
+    static final String NAME = "prometheus";
     public static final PathElement PATH = PathElement.pathElement("registry", NAME);
 
-
-    static final RuntimeCapability<Void> MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY =
-            RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-otlp-config", WildFlyMicrometerConfig.class)
-                    .build();
-
-    public static final SimpleAttributeDefinition ENDPOINT = SimpleAttributeDefinitionBuilder
-            .create(MicrometerConfigurationConstants.ENDPOINT, ModelType.STRING)
+    static final String HTTP_EXTENSIBILITY_CAPABILITY = "org.wildfly.management.http.extensible";
+    static final SimpleAttributeDefinition CONTEXT = SimpleAttributeDefinitionBuilder
+            .create(MicrometerConfigurationConstants.CONTEXT, ModelType.STRING)
+            .setRequired(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+    static final AttributeDefinition SECURITY_ENABLED = SimpleAttributeDefinitionBuilder
+            .create(MicrometerConfigurationConstants.SECURITY_ENABLED, ModelType.BOOLEAN)
+            .setDefaultValue(ModelNode.FALSE)
             .setRequired(false)
-            .setAllowExpression(true)
             .setRestartAllServices()
+            .setAllowExpression(true)
             .build();
 
-    public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
-            .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setDefaultValue(ModelNode.fromString("60"))
-            .setMeasurementUnit(MeasurementUnit.SECONDS)
-            .setAllowExpression(true)
-            .setRestartAllServices()
-            .build();
-
-    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(ENDPOINT, STEP);
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONTEXT, SECURITY_ENABLED);
     private final WildFlyCompositeRegistry wildFlyRegistry;
 
-    public OtlpRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
-
+    public PrometheusRegistryDefinitionRegistrar(WildFlyCompositeRegistry wildFlyRegistry) {
         this.wildFlyRegistry = wildFlyRegistry;
     }
 
@@ -76,42 +64,31 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
                 .build();
         ManagementResourceRegistration mrr = parent.registerSubModel(
                 ResourceDefinition.builder(registration, descriptor.getResourceDescriptionResolver()).build());
-
         ManagementResourceRegistrar.of(descriptor).register(mrr);
 
         return mrr;
     }
 
+//    public Stability getStability() {
+//        return Stability.COMMUNITY;
+//    }
+
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String endpoint = ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
-        long step = STEP.resolveModelAttribute(context, model).asLong();
+        String serviceContext = CONTEXT.resolveModelAttribute(context, model).asStringOrNull();
+        boolean securityEnabled = SECURITY_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
-        return ServiceInstaller.builder(
-                        () -> {
-                            if (endpoint != null) {
-                                wildFlyRegistry.add(new WildFlyOtlpRegistry(new WildFlyMicrometerConfig(endpoint, step)));
+        return ServiceInstaller.builder(ServiceDependency.on(HTTP_EXTENSIBILITY_CAPABILITY, ExtensibleHttpManagement.class))
+                .onStart(ehm -> {
+                    WildFlyPrometheusRegistry prometheusRegistry = new WildFlyPrometheusRegistry();
+                    wildFlyRegistry.add(prometheusRegistry);
+                    ehm.addManagementHandler(serviceContext, securityEnabled,
+                            exchange -> {
+                                exchange.getResponseSender().send(prometheusRegistry.scrape());
                             }
-                        },
-                        () -> {
-                        }
-                )
+                    );
+                })
                 .asActive()
                 .build();
-
-//        AtomicReference<WildFlyMicrometerConfig> captor = new AtomicReference<>();
-//
-//        context.addStep((operationContext, modelNode) -> {
-//            WildFlyMicrometerConfig micrometerConfig = captor.get();
-//            if (micrometerConfig != null && micrometerConfig.url() != null) {
-//                wildFlyRegistry.addRegistry(new WildFlyOtlpRegistry(micrometerConfig));
-//            }
-//        }, OperationContext.Stage.VERIFY);
-//
-//        return CapabilityServiceInstaller.builder(MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY,
-//                        () -> new WildFlyMicrometerConfig(endpoint, step))
-//                .withCaptor(captor::set) // capture the provided value
-//                .asActive() // Start actively
-//                .build();
     }
 }

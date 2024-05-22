@@ -4,17 +4,6 @@
  */
 package org.wildfly.test.integration.observability.micrometer;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -36,11 +25,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class MicrometerOtelIntegrationTestCase {
-    protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static final int REQUEST_COUNT = 5;
     @ArquillianResource
     private URL url;
@@ -61,14 +59,12 @@ public class MicrometerOtelIntegrationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return dockerAvailable ?
-                ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
                         .addClasses(ServerSetupTask.class,
-                                MetricResource.class,
+                                MicrometerResource.class,
                                 AssumeTestGroupUtil.class)
                         .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
-                        .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
-                AssumeTestGroupUtil.emptyWar();
+                        .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
     // The @ServerSetup(MicrometerSetupTask.class) requires Docker to be available.

@@ -12,8 +12,6 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
-    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static OpenTelemetryCollectorContainer otelCollectorContainer;
 
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
@@ -25,6 +23,8 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        AssumeTestGroupUtil.assumeDockerAvailable();
+
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, extensionAddress))) {
             executeOp(managementClient, Operations.createAddOperation(extensionAddress));
             extensionAdded = true;
@@ -40,20 +40,16 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "sampler-type", "on"));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "max-queue-size", "1"));
 
-        if (dockerAvailable) {
-            otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
-            executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
-                    otelCollectorContainer.getOtlpGrpcEndpoint()));
-        }
+        otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
+        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
+                otelCollectorContainer.getOtlpGrpcEndpoint()));
 
         ServerReload.reloadIfRequired(managementClient);
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (dockerAvailable) {
-            otelCollectorContainer.stop();
-        }
+        otelCollectorContainer.stop();
         if (subsystemAdded) {
             executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
         }

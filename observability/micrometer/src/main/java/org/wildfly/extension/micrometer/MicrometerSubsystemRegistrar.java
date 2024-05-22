@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -57,6 +56,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
+import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.subsystem.resource.AttributeTranslation;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -101,7 +101,7 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
     @Deprecated
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(1)))
+            .setDefaultValue(ModelNode.fromString("60"))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .addFlag(AttributeAccess.Flag.ALIAS)
             .setAllowExpression(true)
@@ -146,6 +146,8 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
         new OtlpRegistryDefinitionRegistrar(wildFlyRegistry).register(registration, context);
+        new PrometheusRegistryDefinitionRegistrar(wildFlyRegistry).register(registration, context);
+
 
         return registration;
     }
@@ -179,7 +181,6 @@ public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinition
                 return subsystem -> exposeAnySubsystem || exposedSubsystems.contains(subsystem);
             }
         });
-
 
         AtomicReference<MicrometerCollector> captor = new AtomicReference<>();
 

@@ -7,24 +7,21 @@ package org.wildfly.test.integration.observability.opentelemetry;
 
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
-import java.lang.reflect.ReflectPermission;
-import java.net.NetPermission;
-import java.net.URL;
-import java.util.PropertyPermission;
-
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelApplication;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerResponse;
 
-public abstract class BaseOpenTelemetryTest {
-    protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
+import java.lang.reflect.ReflectPermission;
+import java.net.NetPermission;
+import java.net.URL;
+import java.util.PropertyPermission;
 
+public abstract class BaseOpenTelemetryTest {
     private static final String WEB_XML
             = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://java.sun.com/xml/ns/javaee\"\n"
@@ -39,8 +36,7 @@ public abstract class BaseOpenTelemetryTest {
     protected URL url;
 
     static WebArchive buildBaseArchive(String name) {
-        return dockerAvailable ?
-                ShrinkWrap
+        return ShrinkWrap
                         .create(WebArchive.class, name + ".war")
                         .addClasses(
                                 BaseOpenTelemetryTest.class,
@@ -63,12 +59,6 @@ public abstract class BaseOpenTelemetryTest {
                                         new ReflectPermission("suppressAccessChecks"),
                                         new NetPermission("getProxySelector"),
                                         new PropertyPermission("*", "read, write")),
-                                "permissions.xml") :
-                AssumeTestGroupUtil.emptyWar(name);
-    }
-
-    @BeforeClass
-    public static void checkForDocker() {
-        AssumeTestGroupUtil.assumeDockerAvailable();
+                                "permissions.xml");
     }
 }

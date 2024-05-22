@@ -10,14 +10,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 import org.wildfly.test.integration.observability.setuptask.AbstractSetupTask;
 
-/**
- * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
- * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
- */
 public class MicrometerSetupTask extends AbstractSetupTask {
     private final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
@@ -27,6 +24,8 @@ public class MicrometerSetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, String containerId) throws Exception {
+        AssumeTestGroupUtil.assumeDockerAvailable();
+
         otelCollector = OpenTelemetryCollectorContainer.getInstance();
 
         executeOp(managementClient, writeAttribute("undertow", STATISTICS_ENABLED, "true"));
