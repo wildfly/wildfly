@@ -1201,4 +1201,11 @@
         <packageUrl regex="true">^pkg:maven/org\.xmlunit/xmlunit\-core@.*$</packageUrl>
         <vulnerabilityName>CVE-2024-31573</vulnerabilityName>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: wildfly-elytron-1.19.2-3-PSI.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron@1\.19.*PSI$</packageUrl>
+        <cve>CVE-2022-3143</cve>
+    </suppress>
 </suppressions>
