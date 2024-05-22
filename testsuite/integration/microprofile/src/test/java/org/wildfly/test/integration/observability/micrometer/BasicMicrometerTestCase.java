@@ -18,7 +18,6 @@ import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.opentelemetry.application.JaxRsActivator;
 import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 
@@ -32,9 +31,7 @@ public class BasicMicrometerTestCase {
     @Deployment
     public static Archive<?> deploy() {
         return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
-                .addClasses(
-                        JaxRsActivator.class,
-                        MetricResource.class)
+                .addClasses(MicrometerApplication.class, MicrometerResource.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 

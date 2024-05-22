@@ -5,49 +5,47 @@
 package org.wildfly.extension.micrometer;
 
 import static org.wildfly.extension.micrometer.MicrometerSubsystemModel.VERSION_1_1_0;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemModel.VERSION_2_0_0;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.version.Stability;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
+import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 
 /*
- * Currently ignore as I keep getting this error:
- * [ERROR] testTransformation[0](org.wildfly.extension.micrometer.MicrometerTransformerTestCase)  Time elapsed: 0.945 s  <<< ERROR!
- * java.lang.IllegalStateException: Url file:/home/jdlee/.m2/repository/org/wildfly/core/wildfly-subsystem-test-framework/23.0.0.Beta5/wildfly-subsystem-test-framework-23.0.0.Beta5.jar which is the code source for the following classes has already been set up via other means: [org.jboss.as.subsystem.test.AdditionalInitialization]
- *
- * I don't know why, but, for now, I'd like to get a full CI run to verify the other changes. Will come back to this
- * "soon".
- */
+* https://github.com/wildfly/wildfly/blob/main/clustering/web/extension/src/test/java/org/wildfly/extension/clustering/web/DistributableWebTransformerTestCase.java#L170-L184
+*/
+
 @RunWith(value = Parameterized.class)
-@Ignore
 public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
+
+    public final AdditionalInitialization additionalInitialization =
+            new AdditionalInitialization.ManagementAdditionalInitialization(Stability.PREVIEW);
 
     private final ModelTestControllerVersion controller;
     private final ModelVersion version;
 
-    @Parameters
-    public static Iterable<ModelTestControllerVersion> parameters2() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_8_0_0);
-    }
-
     @Parameterized.Parameters
     public static Collection<Object[]> parameters() {
         return List.<Object[]>of(
-                new Object[]{ModelTestControllerVersion.EAP_8_0_0, VERSION_1_1_0.getVersion()}
+                new Object[]{ModelTestControllerVersion.EAP_XP_5, VERSION_1_1_0.getVersion()}
         );
     }
 
@@ -63,7 +61,6 @@ public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
                 version.getMajor(), version.getMinor(), version.getMicro());
 
         // create builder for current subsystem version
-        AdditionalInitialization additionalInitialization = createAdditionalInitialization();
         KernelServicesBuilder builder = createKernelServicesBuilder(additionalInitialization)
                 .setSubsystemXmlResource(subsystemXmlResource);
 
@@ -71,7 +68,6 @@ public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
         builder.createLegacyKernelServicesBuilder(additionalInitialization, controller, version)
                 .skipReverseControllerCheck()
                 .addMavenResourceURL(getDependencies())
-//                .addSingleChildFirstClass(AdditionalInitialization.class)
                 .dontPersistXml();
 
         KernelServices services = builder.build();
@@ -83,17 +79,47 @@ public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
         checkSubsystemModelTransformation(services, version, null, false);
     }
 
+    /**
+     * Tests rejected transformation of the model from current version into specified version.
+     */
     @Test
     public void testRejections() throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(additionalInitialization);
 
+        // initialize the legacy services and add required jars
+        builder.createLegacyKernelServicesBuilder(additionalInitialization, controller, version)
+                .skipReverseControllerCheck()
+                .addMavenResourceURL(getDependencies())
+                .dontPersistXml();
+
+        KernelServices services = builder.build();
+        Assert.assertTrue(services.isSuccessfulBoot());
+        KernelServices legacyServices = services.getLegacyServices(this.version);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> operations = builder.parseXmlResource("micrometer-reject.xml");
+        System.out.println(operations);
+        FailedOperationTransformationConfig failedOperationTransformationConfig = this.createFailedOperationTransformationConfig();
+        ModelTestUtils.checkFailedTransformedBootOperations(services, this.version, operations,
+                failedOperationTransformationConfig);
     }
 
-    private AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+    private FailedOperationTransformationConfig createFailedOperationTransformationConfig() {
+        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig();
+        PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, MicrometerConfigurationConstants.NAME);
+
+        if (VERSION_2_0_0.requiresTransformation(this.version)) {
+            config.addFailedAttribute(subsystemAddress.append(PrometheusRegistryDefinitionRegistrar.PATH),
+                    new FailedOperationTransformationConfig.NewAttributesConfig(PrometheusRegistryDefinitionRegistrar.CONTEXT.getName()));
+        }
+
+        return config;
     }
 
     private String[] getDependencies() {
-        if (Objects.requireNonNull(controller) == ModelTestControllerVersion.EAP_8_0_0) {
+        if (Objects.requireNonNull(controller) == ModelTestControllerVersion.EAP_XP_5) {
             return new String[]{
                     formatSubsystemArtifact()
             };
@@ -102,10 +128,6 @@ public class MicrometerTransformerTestCase extends AbstractSubsystemTest {
     }
 
     private String formatSubsystemArtifact() {
-        return formatArtifact("org.wildfly:wildfly-micrometer:%s");
-    }
-
-    private String formatArtifact(String pattern) {
-        return String.format(pattern, controller.getMavenGavVersion());
+        return "org.wildfly:wildfly-micrometer:" + controller.getTestControllerVersion() + ".Final";
     }
 }
