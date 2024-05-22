@@ -4,10 +4,10 @@
  */
 package org.wildfly.extension.micrometer.otlp;
 
-import io.micrometer.registry.otlp.OtlpConfig;
-
 import java.time.Duration;
 import java.util.Map;
+
+import io.micrometer.registry.otlp.OtlpConfig;
 
 public final class WildFlyMicrometerConfig implements OtlpConfig {
     /**

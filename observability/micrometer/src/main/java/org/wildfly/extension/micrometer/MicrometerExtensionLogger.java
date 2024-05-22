@@ -68,5 +68,5 @@ public interface MicrometerExtensionLogger extends BasicLogger {
     @Message(id = 11, value = "Micrometer has been enabled, but no endpoint has been configured. A No-op metrics registry has been configured.")
     void noOpRegistryChosen();
 
-    @Message(id = 12, value = "There was an error registerting the metric '%s'")
+    @Message(id = 12, value = "There was an error registering the metric '%s'")
     IllegalArgumentException errorRegisteringMetric(String name);}
