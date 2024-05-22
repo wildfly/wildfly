@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -56,6 +55,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.micrometer.jmx.JmxMicrometerCollector;
 import org.wildfly.extension.micrometer.metrics.MicrometerCollector;
 import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
+import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 import org.wildfly.extension.micrometer.registry.WildFlyCompositeRegistry;
 import org.wildfly.subsystem.resource.AttributeTranslation;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrar;
@@ -68,7 +68,7 @@ import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
-class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
+public class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistrar, ResourceServiceConfigurator {
     private static final String MICROMETER_MODULE = "org.wildfly.extension.micrometer";
     private static final String MICROMETER_API_MODULE = "org.wildfly.micrometer.deployment";
 
@@ -99,7 +99,7 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
     @Deprecated
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(1)))
+            .setDefaultValue(ModelNode.fromString("60"))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .addFlag(AttributeAccess.Flag.ALIAS)
             .setAllowExpression(true)
@@ -123,15 +123,14 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                                                    ManagementResourceRegistrationContext context) {
         ManagementResourceRegistration registration =
                 parent.registerSubsystemModel(ResourceDefinition.builder(ResourceRegistration.of(PATH), RESOLVER).build());
-        UnaryOperator<PathAddress> translator =
-                pathElements -> pathElements.append(OtlpRegistryDefinitionRegistrar.PATH);
+        UnaryOperator<PathAddress> translator = pathElements -> pathElements.append(OtlpRegistryDefinitionRegistrar.PATH);
         ResourceDescriptor descriptor = ResourceDescriptor.builder(RESOLVER)
                 .withRuntimeHandler(ResourceOperationRuntimeHandler.configureService(this))
                 .addCapability(MICROMETER_COLLECTOR_RUNTIME_CAPABILITY)
                 .addAttributes(ATTRIBUTES)
-                .translateAttribute(ENDPOINT, AttributeTranslation.relocate(ENDPOINT, translator))
-                .translateAttribute(STEP, AttributeTranslation.relocate(STEP, translator))
-                .withAddResourceOperationTransformation(new TranslateOtlpHandler())
+                .translateAttribute(ENDPOINT, new OtlpAttributeTranslation(ENDPOINT, translator))
+                .translateAttribute(STEP, new OtlpAttributeTranslation(STEP, translator))
+                .withOperationTransformation(ModelDescriptionConstants.ADD, new TranslateOtlpHandler())
                 .withDeploymentChainContributor(target -> {
                     target.addDeploymentProcessor(MicrometerConfigurationConstants.NAME, DEPENDENCIES, DEPENDENCIES_MICROMETER,
                             new MicrometerDependencyProcessor());
@@ -144,6 +143,7 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
 
         ManagementResourceRegistrar.of(descriptor).register(registration);
         new OtlpRegistryDefinitionRegistrar(wildFlyRegistry).register(registration, context);
+        new PrometheusRegistryDefinitionRegistrar(wildFlyRegistry).register(registration, context);
 
         return registration;
     }
@@ -177,7 +177,6 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                 return subsystem -> exposeAnySubsystem || exposedSubsystems.contains(subsystem);
             }
         });
-
 
         AtomicReference<MicrometerCollector> captor = new AtomicReference<>();
 
@@ -225,6 +224,48 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
                             OperationContext.Stage.MODEL, true);
                 }
                 handler.execute(context, operation);
+            };
+        }
+    }
+
+    class OtlpAttributeTranslation implements AttributeTranslation {
+        private final AttributeTranslation translation;
+
+        OtlpAttributeTranslation(AttributeDefinition attribute, UnaryOperator<PathAddress> addressTranslator) {
+            this.translation = AttributeTranslation.relocate(attribute, addressTranslator);
+        }
+
+        @Override
+        public AttributeDefinition getTargetAttribute() {
+            return this.translation.getTargetAttribute();
+        }
+
+        @Override
+        public UnaryOperator<PathAddress> getPathAddressTranslator() {
+            return this.translation.getPathAddressTranslator();
+        }
+
+        @Override
+        public AttributeValueTranslator getReadAttributeOperationTranslator() {
+            return this.translation.getReadAttributeOperationTranslator();
+        }
+
+        @Override
+        public AttributeValueTranslator getWriteAttributeOperationTranslator() {
+            AttributeValueTranslator valueTranslator = this.translation.getWriteAttributeOperationTranslator();
+            UnaryOperator<PathAddress> addressTranslator = this.translation.getPathAddressTranslator();
+            return new AttributeValueTranslator() {
+                @Override
+                public ModelNode translate(OperationContext context, ModelNode value) throws OperationFailedException {
+                    PathAddress destinationAddress = addressTranslator.apply(context.getCurrentAddress());
+                    try {
+                        // Does destination resource exist?
+                        context.readResourceFromRoot(destinationAddress, false);
+                    } catch (Resource.NoSuchResourceException e) {
+                        context.addStep(Util.createAddOperation(destinationAddress), context.getRootResourceRegistration().getOperationEntry(destinationAddress, ModelDescriptionConstants.ADD).getOperationHandler(), OperationContext.Stage.MODEL, true);
+                    }
+                    return valueTranslator.translate(context, value);
+                }
             };
         }
     }

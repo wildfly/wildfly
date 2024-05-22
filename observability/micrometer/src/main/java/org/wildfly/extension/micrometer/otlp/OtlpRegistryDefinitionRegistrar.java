@@ -6,6 +6,9 @@ package org.wildfly.extension.micrometer.otlp;
 
 import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.MICROMETER_MODULE;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,16 +32,12 @@ import org.wildfly.subsystem.resource.ResourceDescriptor;
 import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
-import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionRegistrar, ResourceServiceConfigurator {
     static final String NAME = "otlp";
     public static final PathElement PATH = PathElement.pathElement("registry", NAME);
+
 
     static final RuntimeCapability<Void> MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY =
             RuntimeCapability.Builder.of(MICROMETER_MODULE + ".wildfly-otlp-config", WildFlyMicrometerConfig.class)
@@ -53,7 +52,7 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
 
     public static final SimpleAttributeDefinition STEP = SimpleAttributeDefinitionBuilder
             .create(MicrometerConfigurationConstants.STEP, ModelType.LONG, true)
-            .setDefaultValue(new ModelNode(TimeUnit.MINUTES.toSeconds(60)))
+            .setDefaultValue(ModelNode.fromString("60"))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -85,22 +84,19 @@ public class OtlpRegistryDefinitionRegistrar implements ChildResourceDefinitionR
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        String endpoint = OtlpRegistryDefinitionRegistrar.ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
-        long step = OtlpRegistryDefinitionRegistrar.STEP.resolveModelAttribute(context, model).asLong();
+        String endpoint = ENDPOINT.resolveModelAttribute(context, model).asStringOrNull();
+        long step = STEP.resolveModelAttribute(context, model).asLong();
 
-        AtomicReference<WildFlyMicrometerConfig> captor = new AtomicReference<>();
-
-        context.addStep((operationContext, modelNode) -> {
-            WildFlyMicrometerConfig micrometerConfig = captor.get();
-            if (micrometerConfig != null && micrometerConfig.url() != null) {
-                wildFlyRegistry.addRegistry(new WildFlyOtlpRegistry(micrometerConfig));
-            }
-        }, OperationContext.Stage.VERIFY);
-
-        return CapabilityServiceInstaller.builder(MICROMETER_OTLP_CONFIG_RUNTIME_CAPABILITY,
-                        () -> new WildFlyMicrometerConfig(endpoint, step))
-                .withCaptor(captor::set) // capture the provided value
-                .asActive() // Start actively
+        return ServiceInstaller.builder(
+                        () -> {
+                            if (endpoint != null) {
+                                wildFlyRegistry.add(new WildFlyOtlpRegistry(new WildFlyMicrometerConfig(endpoint, step)));
+                            }
+                        },
+                        () -> {
+                        }
+                )
+                .asActive()
                 .build();
     }
 }
