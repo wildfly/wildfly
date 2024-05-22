@@ -5,6 +5,7 @@
 package org.jboss.as.test.shared.observability.setuptasks;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
@@ -36,14 +37,13 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         }
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
-            ModelNode addOp = Operations.createAddOperation(micrometerSubsystem);
-            addOp.get("endpoint").set(otelCollector.getOtlpHttpEndpoint() + "/v1/metrics");
-            executeOp(managementClient, addOp);
+            executeOp(managementClient, Operations.createAddOperation(micrometerSubsystem));
         }
 
-        executeOp(managementClient, writeAttribute("micrometer", "endpoint",
-                otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
-        executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
+        ModelNode addOtlpOp = Operations.createAddOperation(Operations.createAddress(SUBSYSTEM, "micrometer", "registry", "otlp"));
+        addOtlpOp.get("endpoint").set(otelCollector.getOtlpHttpEndpoint() + "/v1/metrics");
+        addOtlpOp.get("step").set("1");
+        executeOp(managementClient, addOtlpOp);
 
         ServerReload.reloadIfRequired(managementClient);
     }

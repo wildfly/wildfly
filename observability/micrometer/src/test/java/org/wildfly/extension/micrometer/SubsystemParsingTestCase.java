@@ -24,11 +24,12 @@ public class SubsystemParsingTestCase extends AbstractSubsystemSchemaTest<Microm
     }
 
     public SubsystemParsingTestCase(MicrometerSubsystemSchema schema) {
-        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema, MicrometerSubsystemSchema.CURRENT);
+        super(MicrometerConfigurationConstants.NAME, new MicrometerExtension(), schema,
+            MicrometerSubsystemSchema.CURRENT);
     }
 
     @Override
-    protected String getSubsystemXmlPathPattern() {
-        return "%s_%d_%d.xml";
+    public void testSchema() throws Exception {
+        super.testSchema();
     }
 }

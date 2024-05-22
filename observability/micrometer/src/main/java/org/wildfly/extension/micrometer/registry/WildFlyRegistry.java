@@ -6,6 +6,11 @@ package org.wildfly.extension.micrometer.registry;
 
 import static org.wildfly.extension.micrometer.MicrometerExtensionLogger.MICROMETER_LOGGER;
 
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.OptionalDouble;
+import java.util.stream.Collectors;
+
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
@@ -15,11 +20,6 @@ import io.micrometer.core.instrument.Tags;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.wildfly.extension.micrometer.metrics.MetricMetadata;
 import org.wildfly.extension.micrometer.metrics.WildFlyMetric;
-
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.OptionalDouble;
-import java.util.stream.Collectors;
 
 public interface WildFlyRegistry {
     Meter remove(Meter.Id mappedId);
