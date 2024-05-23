@@ -28,7 +28,7 @@
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
 
-        <!-- WildFly full and ee galleon contents -->
+        <!-- WildFly and ee galleon contents -->
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
 
