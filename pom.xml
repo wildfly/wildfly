@@ -455,11 +455,11 @@
         <version.org.apache.james.apache-mime4j>0.8.9</version.org.apache.james.apache-mime4j>
         <version.org.apache.kafka>3.6.0</version.org.apache.kafka>
         <version.org.apache.lucene>9.8.0</version.org.apache.lucene>
-        <version.org.apache.neethi>3.1.1</version.org.apache.neethi>
+        <version.org.apache.neethi>3.2.0</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.34.1</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>3.0.3</version.org.apache.santuario>
+        <version.org.apache.santuario>3.0.4</version.org.apache.santuario>
         <version.org.apache.velocity>2.3</version.org.apache.velocity>
-        <version.org.apache.wss4j>3.0.2</version.org.apache.wss4j>
+        <version.org.apache.wss4j>3.0.3</version.org.apache.wss4j>
         <version.org.apache.ws.xmlschema>2.3.0</version.org.apache.ws.xmlschema>
         <version.org.bitbucket.jose4j>0.9.4</version.org.bitbucket.jose4j>
         <version.org.bytebuddy>1.14.7</version.org.bytebuddy>
