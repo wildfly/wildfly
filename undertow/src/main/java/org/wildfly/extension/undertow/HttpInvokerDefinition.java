@@ -110,7 +110,7 @@ public class HttpInvokerDefinition extends PersistentResourceDefinition {
             final String hostName = hostAddress.getLastElement().getValue();
 
             final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(HTTP_INVOKER_HOST_CAPABILITY);
-            final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
+            final Supplier<Host> hSupplier = sb.requires(Host.SERVICE_DESCRIPTOR, serverName, hostName);
             Supplier<HttpAuthenticationFactory> hafSupplier = null;
             final Supplier<PathHandler> phSupplier = sb.requiresCapability(HTTP_INVOKER_RUNTIME_CAPABILITY.getName(), PathHandler.class);
             if (httpAuthenticationFactory != null) {

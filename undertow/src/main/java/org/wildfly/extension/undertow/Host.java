@@ -51,6 +51,7 @@ import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.deployment.GateHandlerWrapper;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -58,6 +59,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class Host implements Service<Host>, FilterLocation {
+    // TODO Extract proper interface from this service implementation
+    // TODO Relocate ServiceDescriptor and interface to a separate SPI module.
+    public static final BinaryServiceDescriptor<Host> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.undertow.host", Host.class);
+
     private final Consumer<Host> serviceConsumer;
     private final Supplier<Server> server;
     private final Supplier<UndertowService> undertowService;

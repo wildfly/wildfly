@@ -35,7 +35,7 @@ final class LocationAdd extends AbstractAddStepHandler {
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(LocationDefinition.LOCATION_CAPABILITY);
         final Consumer<LocationService> sConsumer = sb.provides(LocationDefinition.LOCATION_CAPABILITY, UndertowService.locationServiceName(serverName, hostName, name));
         final Supplier<HttpHandler> hhSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HANDLER, HttpHandler.class, handler);
-        final Supplier<Host> hSupplier = sb.requiresCapability(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName);
+        final Supplier<Host> hSupplier = sb.requires(Host.SERVICE_DESCRIPTOR, serverName, hostName);
         sb.setInstance(new LocationService(sConsumer, hhSupplier, hSupplier, name));
         sb.install();
     }
