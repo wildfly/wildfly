@@ -155,6 +155,7 @@ public class InfinispanBeanManagementProvider<K, V extends BeanInstance<K>> impl
         ServiceInstaller groupListenerInstaller = ServiceInstaller.builder(groupListener)
                 .onStop(Functions.closingConsumer())
                 .requires(ServiceDependency.on(groupManagerServiceName))
+                .asPassive()
                 .build();
 
         return List.of(cacheConfigurationInstaller, cacheInstaller, groupManagerInstaller, groupListenerInstaller);
