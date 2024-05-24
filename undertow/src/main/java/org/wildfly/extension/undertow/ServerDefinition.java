@@ -25,7 +25,7 @@ import org.jboss.dmr.ModelType;
  */
 class ServerDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SERVER);
-    static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_SERVER, true, Server.class)
+    static final RuntimeCapability<Void> SERVER_CAPABILITY = RuntimeCapability.Builder.of(Server.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
 

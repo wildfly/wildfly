@@ -24,7 +24,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Server;
 
 /**
@@ -50,7 +49,7 @@ public class SimpleSessionIdentifierCodecServiceConfigurator extends SimpleServi
 
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
-        this.server = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Capabilities.CAPABILITY_SERVER, this.serverName));
+        this.server = new ServiceSupplierDependency<>(support.getCapabilityServiceName(Server.SERVICE_DESCRIPTOR, this.serverName));
         return this;
     }
 

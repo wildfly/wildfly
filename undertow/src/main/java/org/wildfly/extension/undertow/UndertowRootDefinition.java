@@ -63,7 +63,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SERVER, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setDefaultValue(new ModelNode("default-server"))
-                    .setCapabilityReference(UNDERTOW_CAPABILITY, Capabilities.CAPABILITY_SERVER)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(UNDERTOW_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
                     .build();
 
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
