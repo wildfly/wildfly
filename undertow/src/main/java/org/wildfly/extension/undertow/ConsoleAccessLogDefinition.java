@@ -82,6 +82,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+            try {
             final PathAddress address = context.getCurrentAddress();
             final PathAddress hostAddress = address.getParent();
             final PathAddress serverAddress = hostAddress.getParent();
@@ -120,6 +121,10 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
             serviceBuilder.setInstance(service)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                throw e;
+            }
         }
 
         private Collection<AccessLogAttribute> parseAttributes(final OperationContext context, final ModelNode model) throws OperationFailedException {
