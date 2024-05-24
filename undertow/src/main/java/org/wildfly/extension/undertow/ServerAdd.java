@@ -55,7 +55,7 @@ final class ServerAdd extends AbstractAddStepHandler {
         if (isDefaultServer) { //only install for default server
             final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
             final Consumer<WebServerService> wssConsumer = csb.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
-            final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, name);
+            final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, name);
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 

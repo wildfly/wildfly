@@ -37,7 +37,6 @@ class HostDefinition extends PersistentResourceDefinition {
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
 
-
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setRequired(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
