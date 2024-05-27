@@ -17,7 +17,6 @@ import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
 import java.io.IOException;
 
 public class MicrometerSetupTask implements ServerSetupTask {
@@ -82,8 +81,8 @@ public class MicrometerSetupTask implements ServerSetupTask {
 
     private void startOpenTelemetryCollector() {
         if ( AssumeTestGroupUtil.isDockerAvailable()) {
-            String otelCollectorConfigFile = getClass().getPackage().getName().replaceAll("\\.", File.separator) +
-                    File.separator + "otel-collector-config.yaml";
+            String otelCollectorConfigFile = getClass().getPackage().getName().replaceAll("\\.", "/") +
+                    "/otel-collector-config.yaml";
             otelCollector = new OpenTelemetryCollectorContainer()
                     .withCopyFileToContainer(MountableFile.forClasspathResource(otelCollectorConfigFile),
                             OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
