@@ -18,6 +18,7 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
+        <module name="io.opentelemetry.otlp"/>
         <module name="io.opentelemetry.sdk"/>
 
         <module name="org.jboss.resteasy.resteasy-core"/>
