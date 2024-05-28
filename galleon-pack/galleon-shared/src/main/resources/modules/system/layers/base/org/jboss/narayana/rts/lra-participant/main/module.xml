@@ -11,7 +11,6 @@
     <property name="jboss.api" value="private"/>
   </properties>
   <resources>
-    <artifact name="${org.jboss.narayana.rts:lra-service-base}" />
     <artifact name="${org.jboss.narayana.rts:lra-client}" />
     <artifact name="${org.jboss.narayana.rts:lra-proxy-api}" />
     <artifact name="${org.jboss.narayana.rts:narayana-lra}" />
@@ -20,10 +19,10 @@
   <dependencies>
     <module name="org.eclipse.microprofile.lra.api" />
     <module name="org.jboss.modules"/>
-
-    <!-- lra-service-base -->
-    <module name="jakarta.ws.rs.api" />
     <module name="org.jboss.logging" />
+    <module name="jakarta.ws.rs.api" />
+    <module name="org.jboss.narayana.rts.lra-service-base" />
+
     <!-- lra-client -->
     <module name="jakarta.enterprise.api"/>
     <!-- lra-proxy-api -->
