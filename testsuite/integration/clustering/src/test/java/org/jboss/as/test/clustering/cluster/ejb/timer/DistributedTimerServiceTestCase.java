@@ -17,7 +17,7 @@ import org.junit.BeforeClass;
 public class DistributedTimerServiceTestCase extends AbstractTimerServiceTestCase {
     @BeforeClass
     public static void beforeClass() {
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19139");
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-18314");
     }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
