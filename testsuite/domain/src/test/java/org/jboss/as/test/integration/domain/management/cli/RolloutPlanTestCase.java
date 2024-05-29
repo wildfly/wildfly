@@ -22,7 +22,6 @@ import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.shared.RetryTaskExecutor;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
@@ -46,12 +45,16 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     @BeforeClass
     public static void before() throws Exception {
 
+        //noinspection resource
         CLITestSuite.createSupport(RolloutPlanTestCase.class.getSimpleName());
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
         war.addClass(RolloutPlanTestServlet.class);
         war.addAsManifestResource(createPermissionsXmlAsset(
-                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("primary")) + ":" + TEST_PORT, "listen,resolve"),           // main-one
-                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(CLITestSuite.hostAddresses.get("primary")) + ":" + (TEST_PORT + 350), "listen,resolve")),  // main-three
+                // RolloutPlanTestServlet binds a ServerSocket to the server's address and TEST_PORT
+                // But, as described in the SocketPermission javadoc, a 'listen' SocketPermission should always
+                // be for 'localhost', so that's what we grant.
+                new SocketPermission("localhost:" + TEST_PORT, "listen"),           // main-one
+                new SocketPermission("localhost:" + (TEST_PORT + 350), "listen")),  // main-three
                 "permissions.xml");
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
