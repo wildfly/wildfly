@@ -53,14 +53,12 @@ public class SimpleTimerMDBTestCase {
 
     @Test
     public void testAnnotationTimeoutMethod() throws Exception {
-        InitialContext ctx = new InitialContext();
         sendMessage();
         Assert.assertTrue(AnnotationTimerServiceMDB.awaitTimerCall());
     }
 
     @Test
     public void testTimedObjectTimeoutMethod() throws Exception {
-        InitialContext ctx = new InitialContext();
         sendMessage();
         Assert.assertTrue(TimedObjectTimerServiceMDB.awaitTimerCall(TimeoutUtil.adjust(2000)));
     }
@@ -69,19 +67,15 @@ public class SimpleTimerMDBTestCase {
     public void sendMessage() throws Exception {
         final InitialContext ctx = new InitialContext();
         final TopicConnectionFactory factory = (TopicConnectionFactory) ctx.lookup("java:/JmsXA");
-        final TopicConnection connection = factory.createTopicConnection();
-        connection.start();
-        try {
+        try (TopicConnection connection = factory.createTopicConnection()){
+            connection.start();
             final TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
             final Message message = session.createTextMessage("Test");
             final Destination destination = (Destination) ctx.lookup("topic/myAwesomeTopic");
-            final MessageProducer producer = session.createProducer(destination);
-            producer.send(message);
-            producer.close();
-        } finally {
-            connection.close();
+            try (MessageProducer producer = session.createProducer(destination)) {
+                producer.send(message);
+            }
         }
+        ctx.close();
     }
-
-
 }
