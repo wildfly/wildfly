@@ -55,7 +55,8 @@ class OpenTelemetrySubsystemDefinition extends PersistentResourceDefinition {
             "io.opentelemetry.api",
             "io.opentelemetry.context",
             "io.opentelemetry.exporter",
-            "io.opentelemetry.sdk"
+            "io.opentelemetry.sdk",
+            "io.smallrye.opentelemetry"
     };
 
     static final RuntimeCapability<Void> OPENTELEMETRY_CAPABILITY =
