@@ -16,6 +16,7 @@ import io.undertow.predicate.Predicates;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -30,7 +31,6 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.xnio.XnioWorker;
 
@@ -41,8 +41,7 @@ import org.xnio.XnioWorker;
  */
 class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.SETTING, Constants.CONSOLE_ACCESS_LOG);
-    private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(
-            Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, EventLoggerService.class)
+    private static final RuntimeCapability<Void> CONSOLE_ACCESS_LOG_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_CONSOLE_ACCESS_LOG, true, Void.class)
             .setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT)
             .build();
 
@@ -107,8 +106,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
             final String serverName = serverAddress.getLastElement().getValue();
             final String hostName = hostAddress.getLastElement().getValue();
 
-            final ServiceBuilder<?> serviceBuilder = context.getServiceTarget()
-                    .addService(CONSOLE_ACCESS_LOG_CAPABILITY.getCapabilityServiceName(address));
+            final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(CONSOLE_ACCESS_LOG_CAPABILITY);
 
             final Supplier<Host> hostSupplier = serviceBuilder.requires(
                     context.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName));
