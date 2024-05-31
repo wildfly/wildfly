@@ -22,7 +22,7 @@ import java.util.Properties;
 public class StatelessBean {
     private static final Logger log = Logger.getLogger(StatelessBean.class);
 
-    private static int methodCount = 0;
+    private int methodCount = 0;
 
     private InitialContext getInitialContext() throws NamingException {
         final Properties props = new Properties();
