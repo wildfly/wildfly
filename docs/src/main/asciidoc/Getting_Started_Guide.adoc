@@ -436,9 +436,9 @@ to what's shown below.
  
 11:46:11,161 INFO  [org.jboss.modules] (main) JBoss Modules version 1.5.1.Final
 11:46:11,331 INFO  [org.jboss.msc] (main) JBoss MSC version 1.2.6.Final
-11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly Full 10.0.0.Final (WildFly Core 2.0.10.Final) starting
+11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) starting
 <snip>
-11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly Full 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
+11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
 ----
 
 As with previous WildFly releases, you can point your browser to

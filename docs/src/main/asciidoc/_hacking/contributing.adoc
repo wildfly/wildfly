@@ -71,7 +71,7 @@ This is necessary because the testsuite poms do not contain all necessary module
 = Jira
 Make sure there is a JIRA somewhere for the enhancement/fix
 
-* https://issues.redhat.com/projects/WFLY (for WildFly full)
+* https://issues.redhat.com/projects/WFLY (for WildFly)
 * https://issues.redhat.com/projects/WFCORE (for WildFly Core)
 
 == Good First Issues

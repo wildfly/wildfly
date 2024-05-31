@@ -98,7 +98,7 @@ public class DomainAdjuster {
         removeHostExcludes(client);
 
         // Mixed Domain tests always use the full build instead of alternating between ee-dist and dist. If the DC is not an EAP server, we need to remove here
-        // the pre-configured extensions provided by WildFly full build to adjust the current domain to work with a node running EAP which does not contain
+        // the pre-configured extensions provided by WildFly build to adjust the current domain to work with a node running EAP which does not contain
         // those extensions.
         // We remove here these extensions and subsystems configured by default if they are in the current configuration, this makes this code capable to work for wildfly and EAP
         final PathAddress profileAddress = PathAddress.pathAddress(PROFILE, profile);

@@ -119,7 +119,7 @@
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
 
         <!-- Other release identification information that drives how the built server identifies itself -->
-        <full.dist.product.release.name>WildFly Full</full.dist.product.release.name>
+        <full.dist.product.release.name>WildFly</full.dist.product.release.name>
         <full.dist.product.slot>main</full.dist.product.slot>
         <full.dist.product.release.version>${project.version}</full.dist.product.release.version>
         <full.maven.groupId>${project.groupId}</full.maven.groupId>
