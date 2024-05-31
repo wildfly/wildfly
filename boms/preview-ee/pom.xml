@@ -35,9 +35,9 @@
         <!-- TODO ElytronAuthConfigFactory uses removed field AuthConfigFactory.providerRegistrationSecurityPermission
         <version.jakarta.authentication.jakarta-authentication-api>3.1.0-M1</version.jakarta.authentication.jakarta-authentication-api>
         -->
-        <version.jakarta.authorization.jakarta-authorization-api>3.0.0-M2</version.jakarta.authorization.jakarta-authorization-api>
+        <version.jakarta.authorization.jakarta-authorization-api>3.0.0</version.jakarta.authorization.jakarta-authorization-api>
         <version.jakarta.el>6.0.0</version.jakarta.el>
-        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0-M1</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0-RC2</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.1.0</version.jakarta.enterprise>
         <version.jakarta.faces.jakarta-faces-api>4.1.0-M1</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0</version.jakarta.interceptor.jakarta-interceptors-api>
