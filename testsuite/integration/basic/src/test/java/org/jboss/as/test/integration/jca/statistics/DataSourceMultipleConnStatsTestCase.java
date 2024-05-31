@@ -24,7 +24,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -127,10 +126,6 @@ public class DataSourceMultipleConnStatsTestCase {
     @InSequence(2)
     @Test
     public void testClearedDataSourceStatistics() throws Exception {
-
-        // Disable for now on Windows until WFLY-15336 is sorted
-        Assume.assumeTrue("WFLY-15336", System.getProperty("os.name").equalsIgnoreCase("Linux"));
-
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
         this.setConnectionPool();
