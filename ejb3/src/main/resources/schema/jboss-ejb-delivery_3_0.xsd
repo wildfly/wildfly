@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<xs:schema xmlns="urn:delivery:3.0"
+           targetNamespace="urn:delivery:3.0"
+           version="3.0"
+           xmlns:jakartaee="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://www.jboss.org/schema/jbossas/jboss-ejb3-spec-4_0.xsd">
+   <xs:import namespace="https://jakarta.ee/xml/ns/jakartaee" schemaLocation="https://www.jboss.org/schema/jbossas/jboss-ejb3-spec-4_0.xsd"/>
+
+   <xs:element name="delivery" substitutionGroup="jakartaee:assembly-descriptor-entry" type="deliveryType"/>
+
+   <xs:complexType name="deliveryType">
+      <xs:complexContent>
+         <xs:extension base="jakartaee:jboss-assembly-descriptor-bean-entryType">
+            <xs:choice>
+                <xs:element name="active" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>The delivery-active states whether messages will be delivered to the message-driven bean as soon as it is deployed (default is true).
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="group" type="xs:string" maxOccurs="unbounded">
+                    <xs:annotation>
+                        <xs:documentation>The delivery-group allows management of message delivery for a group of message-driven beans: messages will be delivered to the bean
+                            whenever the group is active. If more than one group is specified, the messages will be delivered only when all groups are active.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+         </xs:extension>
+      </xs:complexContent>
+   </xs:complexType>
+
+</xs:schema>
