@@ -31,10 +31,6 @@ public class TimedObjectTimerServiceMDB implements TimedObject , MessageListener
     @Resource
     private TimerService timerService;
 
-    public void createTimer() {
-        timerService.createTimer(100, null);
-    }
-
     public static boolean awaitTimerCall(int timeout) {
         try {
             latch.await(timeout, TimeUnit.MILLISECONDS);
