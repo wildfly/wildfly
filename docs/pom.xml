@@ -124,6 +124,7 @@
                     <display-name>${full.dist.product.release.name}</display-name>
                     <display-version>${product.docs.server.version}</display-version>
                     <site-dir>${project.build.directory}/generated-docs/wildscribe</site-dir>
+                    <stability>experimental</stability>
                     <required-extensions>
                         <required-extension>org.wildfly.extension.rts</required-extension>
                         <required-extension>org.jboss.as.xts</required-extension>
