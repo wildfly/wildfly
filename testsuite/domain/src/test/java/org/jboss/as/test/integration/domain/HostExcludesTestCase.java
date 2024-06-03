@@ -402,13 +402,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             List<String> excludedExtensions = prop.getValue().get(EXCLUDED_EXTENSIONS)
                     .asListOrEmpty()
                     .stream()
-                    .map(p -> p.asString())
+                    .map(ModelNode::asString)
                     .collect(Collectors.toList());
 
             //check duplicated extensions
-            Assert.assertTrue(String.format (
-                            "There are duplicated extensions declared for %s host-exclude", name),
-                    excludedExtensions.size() == new HashSet<>(excludedExtensions).size()
+            Assert.assertEquals(String.format("There are duplicated extensions declared for %s host-exclude", name),
+                    excludedExtensions.size(),
+                    new HashSet<>(excludedExtensions).size()
             );
 
             //check we have defined the current host-exclude configuration in the test
@@ -490,8 +490,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             return f.isDirectory() && !f.isHidden();
         };
         List<File> result = new ArrayList<>();
-        for (Path path : Files.newDirectoryStream(layersRoot, filter)) {
-            result.add(path.toFile());
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(layersRoot, filter)) {
+            for (Path path : stream) {
+                result.add(path.toFile());
+            }
         }
         return result.toArray(new File[0]);
     }
