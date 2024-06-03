@@ -85,7 +85,7 @@ A `socket-handler` is a handler which sends messages over a socket. This can be 
 defined in a <<socket-binding-groups,socket binding group>> under the `local-destination-outbound-socket-binding` or
 `remote-destination-outbound-socket-binding` resource.
 
-During the boot logging messages will be queued until the socket binding is configured and the logging subsystem is
+During the boot logging messages will be queued until the socket binding is configured and the `logging` subsystem is
 added. This is important to note because setting the level of the handler to `DEBUG` or `TRACE` could result in
 large memory consumption during boot.
 
