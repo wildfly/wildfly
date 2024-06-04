@@ -216,6 +216,9 @@
                     <value>true</value>
                 </property>
             </activation>
+            <properties>
+                <community-dist-backup-archive>community-dist-backup.zip</community-dist-backup-archive>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -249,6 +252,42 @@
                                     <fpGroupId>${full.maven.groupId}</fpGroupId>
                                     <fpArtifactId>wildfly-galleon-pack</fpArtifactId>
                                     <fpVersion>${full.maven.version}</fpVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <!-- Backups community distribution directory before introducing PSI hardening -->
+                            <execution>
+                                <id>backup-community-distribution</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <zip destfile="${project.build.directory}/${community-dist-backup-archive}"
+                                             basedir="${project.build.directory}/${project.build.finalName}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <!-- Restores community distribution directory (without PSI hardening) after package is prepared,
+                                 so that integration tests comparing distribution folder contents are passing -->
+                            <execution>
+                                <id>restore-community-distribution</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.build.directory}/${project.build.finalName}"/>
+                                        <unzip src="${project.build.directory}/${community-dist-backup-archive}"
+                                               dest="${project.build.directory}/${project.build.finalName}"/>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
@@ -613,6 +652,38 @@
                                     <systemProperties>
                                         <config>standalone-bdew.xml</config>
                                     </systemProperties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>post-hardening-cleanup</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${project.build.directory}/${project.build.finalName}</directory>
+                                            <includes>
+                                                <include>standalone/data/**</include>
+                                                <include>standalone/log/**</include>
+                                                <include>standalone/tmp/**</include>
+                                                <include>standalone/configuration/standalone_xml_history/**</include>
+                                                <include>domain/data/**</include>
+                                                <include>domain/log/**</include>
+                                                <include>domain/servers/**</include>
+                                                <include>domain/tmp/**</include>
+                                                <include>domain/configuration/domain_xml_history/**</include>
+                                                <include>domain/configuration/host_xml_history/**</include>
+                                            </includes>
+                                        </fileset>
+                                    </filesets>
                                 </configuration>
                             </execution>
                         </executions>
