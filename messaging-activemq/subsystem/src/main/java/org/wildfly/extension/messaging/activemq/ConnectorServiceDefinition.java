@@ -9,6 +9,7 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNT
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.apache.activemq.artemis.spi.core.remoting.ConnectorFactory;
 import org.apache.activemq.artemis.utils.ClassloadingUtil;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -55,7 +56,7 @@ public class ConnectorServiceDefinition extends PersistentResourceDefinition {
 
     private static void checkFactoryClass(final String factoryClass) throws OperationFailedException {
         try {
-            ClassloadingUtil.newInstanceFromClassLoader(factoryClass);
+            ClassloadingUtil.newInstanceFromClassLoader(factoryClass, ConnectorFactory.class);
         } catch (Throwable t) {
             throw MessagingLogger.ROOT_LOGGER.unableToLoadConnectorServiceFactoryClass(factoryClass);
         }

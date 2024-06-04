@@ -414,8 +414,8 @@
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
         <version.commons-codec>1.15</version.commons-codec>
         <version.commons-collections>3.2.2</version.commons-collections>
-        <version.commons-io>2.11.0</version.commons-io>
-        <version.de.dentrassi.crypto>2.2.2</version.de.dentrassi.crypto>
+        <version.commons-io>2.16.1</version.commons-io>
+        <version.de.dentrassi.crypto>2.4.0</version.de.dentrassi.crypto>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.agroal>2.0</version.io.agroal>
         <version.io.grpc>1.58.0</version.io.grpc>
@@ -470,7 +470,7 @@
         <version.joda-time>2.12.6</version.joda-time>
         <version.net.jcip>1.0</version.net.jcip>
         <version.net.shibboleth.utilities.java-support>8.0.0</version.net.shibboleth.utilities.java-support>
-        <version.org.apache.activemq.artemis>2.32.0</version.org.apache.activemq.artemis>
+        <version.org.apache.activemq.artemis>2.34.0</version.org.apache.activemq.artemis>
         <version.org.apache.activemq.artemis.native>2.0.0</version.org.apache.activemq.artemis.native>
         <version.org.apache.avro>1.11.3</version.org.apache.avro>
         <version.org.apache.cxf>4.0.4</version.org.apache.cxf>
