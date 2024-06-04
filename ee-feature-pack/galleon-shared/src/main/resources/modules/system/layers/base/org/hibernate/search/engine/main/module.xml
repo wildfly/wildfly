@@ -24,5 +24,6 @@
         <module name="org.hibernate.search.mapper.pojo" optional="true" services="import"/>
         <module name="org.hibernate.search.mapper.orm" optional="true" services="import"/>
         <module name="org.hibernate.search.mapper.orm.outboxpolling" optional="true" services="import"/>
+        <module name="org.hibernate.search.jakarta.batch" optional="true" services="import" export="true"/>
     </dependencies>
 </module>

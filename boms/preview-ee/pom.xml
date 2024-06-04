@@ -23,7 +23,7 @@
 
     <artifactId>wildfly-preview-ee-bom</artifactId>
     <description>
-        Build of materials that can be used to build WildFly Preview maven modules 
+        Build of materials that can be used to build WildFly Preview maven modules
         that provide traditional capabilities like Jakarta EE.
     </description>
     <packaging>pom</packaging>
@@ -305,6 +305,30 @@
             <dependency>
                 <groupId>org.hibernate.search</groupId>
                 <artifactId>hibernate-search-mapper-orm-outbox-polling</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-jakarta-batch-core</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.search</groupId>
+                <artifactId>hibernate-search-mapper-orm-jakarta-batch-jberet</artifactId>
                 <version>${version.org.hibernate.search}</version>
                 <exclusions>
                     <exclusion>
