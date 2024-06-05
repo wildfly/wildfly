@@ -49,8 +49,8 @@ public class OpenTelemetryCollectorContainer extends GenericContainer<OpenTeleme
     @Override
     public void start() {
         super.start();
-        otlpEndpoint = "http://localhost:" + getMappedPort(HTTP_OTLP_PORT) + "/v1/metrics";
-        prometheusUrl = "http://localhost:" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
+        otlpEndpoint = "http://" + getHost() + ":" + getMappedPort(HTTP_OTLP_PORT) + "/v1/metrics";
+        prometheusUrl = "http://" + getHost() + ":" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
     }
 
     public String getOtlpEndpoint() {
