@@ -27,7 +27,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -162,22 +161,22 @@ public class EjbOverHttpTestCase {
         return jar;
     }
 
-//    @Deployment(name = "wrong-credentials-client")
-//    @TargetsContainer("multinode-client")
-//    public static Archive<?> deploymentWrongCredentialsClient() {
-//        JavaArchive jar = createJar(EjbOverHttpTestCase.ARCHIVE_NAME_WRONG_CREDENTIALS_CLIENT);
-//        jar.addClasses(EjbOverHttpTestCase.class);
-//        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
-//                .addAsManifestResource("ejb-http-wildfly-config-wrong.xml", "wildfly-config.xml")
-//                .addAsManifestResource(
-//                        createPermissionsXmlAsset(
-//                                createFilePermission("read,write,delete",
-//                                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
-//                                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort,
-//                                        "connect,resolve")),
-//                        "permissions.xml");
-//        return jar;
-//    }
+    @Deployment(name = "wrong-credentials-client")
+    @TargetsContainer("multinode-client")
+    public static Archive<?> deploymentWrongCredentialsClient() {
+        JavaArchive jar = createJar(EjbOverHttpTestCase.ARCHIVE_NAME_WRONG_CREDENTIALS_CLIENT);
+        jar.addClasses(EjbOverHttpTestCase.class);
+        jar.addAsManifestResource("META-INF/jboss-ejb-client-profile.xml", "jboss-ejb-client.xml")
+                .addAsManifestResource("ejb-http-wildfly-config-wrong.xml", "wildfly-config.xml")
+                .addAsManifestResource(
+                        createPermissionsXmlAsset(
+                                createFilePermission("read,write,delete",
+                                        "jbossas.multinode.client", Arrays.asList("standalone", "data", "ejb-xa-recovery", "-")),
+                                new SocketPermission(TestSuiteEnvironment.formatPossibleIpv6Address(System.getProperty("node0")) + ":" + serverPort,
+                                        "connect,resolve")),
+                        "permissions.xml");
+        return jar;
+    }
 
     private static JavaArchive createJar(String archiveName) {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, archiveName + ".jar");
@@ -299,8 +298,7 @@ public class EjbOverHttpTestCase {
     }
 
     @Test
-    //@OperateOnDeployment("wrong-credentials-client")
-    @Ignore //waiting for ARQ-2233
+    @OperateOnDeployment("wrong-credentials-client")
     public void testBasicInvocationWithWrongCredentials(@ArquillianResource InitialContext ctx) throws Exception {
         try {
             StatelessRemote bean = (StatelessRemote) ctx.lookup("java:module/" + StatelessBean.class.getSimpleName() + "!"
