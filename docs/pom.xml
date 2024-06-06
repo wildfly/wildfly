@@ -76,8 +76,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -86,9 +87,17 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <install-dir>${jboss.home}</install-dir>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
+                            <provisioningDir>${jboss.home}</provisioningDir>
+                            <recordProvisioningState>false</recordProvisioningState>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                        <version>${full.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
@@ -107,9 +116,6 @@
                                     </included-configs>
                                 </feature-pack>
                             </feature-packs>
-                            <plugin-options>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
                         </configuration>
                     </execution>
                 </executions>
