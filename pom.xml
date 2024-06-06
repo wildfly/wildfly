@@ -10232,6 +10232,11 @@
                                             <exclude>org.apache.geronimo.specs:geronimo-stax-api_1.0_spec</exclude>
                                             <exclude>org.apache.xalan:serializer</exclude>
                                             <exclude>org.apache.xalan:xalan</exclude>
+                                            <!-- replaced by org.bouncycastle:*-jdk18on -->
+                                            <exclude>org.bouncycastle:bcpg-jdk15on</exclude>
+                                            <exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+                                            <exclude>org.bouncycastle:bcpkix-jdk15on</exclude>
+                                            <exclude>org.bouncycastle:bcutil-jdk15on</exclude>
                                             <exclude>org.codehaus.jackson:jackson-core-asl</exclude>
                                             <exclude>org.codehaus.jackson:jackson-jaxrs</exclude>
                                             <exclude>org.codehaus.jackson:jackson-mapper-asl</exclude>
