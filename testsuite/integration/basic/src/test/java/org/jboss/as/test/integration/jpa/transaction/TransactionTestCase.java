@@ -11,6 +11,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import jakarta.persistence.TransactionRequiredException;
@@ -262,6 +264,36 @@ public class TransactionTestCase {
         } catch (/*EJBTransactionRolledbackException*/ Exception expected) {
             assertTrue("should of been caused by IllegalStateException", expected.getCause() instanceof IllegalStateException);
         }
+    }
+
+    /**
+     * testQueryLazyFetch ensures that entity collection marked as jakarta.persistence.FetchType.LAZY is using the correct internal Hibernate ORM proxy representation.
+     *
+     * Test failure could look like:
+     *
+     *    TransactionTestCase.testQueryLazyFetch:284 Customer class must be lazy proxy (org.hibernate.engine.spi.ManagedEntity) but actually Customer class interfaces are = [interface org.hibernate.spi.ManagedEntity, interface org.hibernate.engine.spi.PersistentAttributeInterceptable, interface org.hibernate.engine.spi.ExtendedSelfDirtinessTracker]
+     *
+     * The above test failure was likely caused by the Hibernate ORM internal interface "org.hibernate.engine.spi.ManagedEntity" being renamed to "org.hibernate.spi.ManagedEntity".
+     * Solution:  Change this test to check for the new (SPI) interface name "org.hibernate.spi.ManagedEntity".
+     *
+     * @throws Exception
+     */
+    @Test
+    @InSequence(12)
+    public void testQueryLazyFetch() throws Exception {
+        SFSB1 sfsb1 = lookup("SFSB1", SFSB1.class);
+        Company company = sfsb1.createEmployee("Mad", "57343 LazilyFetched Lane", 205);
+        boolean lazyProxy = false;
+        Class<?>[] interfaces = company.getClass().getInterfaces();
+        for(int looper = 0; looper < interfaces.length; looper++) {
+            // Warning: If Hibernate ORM changes the internal proxy representation for lazy fetched entities, the checked interface may change.
+            //          If this test starts failing, open a debugger and examine the interfaces returned and see if a different class should be
+            //          checked for.
+            if (interfaces[looper].getName().equals("org.hibernate.engine.spi.ManagedEntity")) {
+                lazyProxy = true;
+            }
+        }
+        assertTrue("Customer class must be lazy proxy (org.hibernate.engine.spi.ManagedEntity) but actually Customer class interfaces are = " + Arrays.toString(company.getClass().getInterfaces()), lazyProxy);
     }
 
 }
