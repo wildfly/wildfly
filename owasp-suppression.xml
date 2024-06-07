@@ -1217,4 +1217,13 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron\-realm\-token@.*$</packageUrl>
         <cve>CVE-2024-1233</cve>
     </suppress>
+
+    <!-- OpenID is not part of WildFly nor WildFly Elytron -->
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-elytron-oidc-client-subsystem-26.1.2-12-PSI-SNAPSHOT.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly/wildfly\-elytron\-oidc\-client\-subsystem@.*$</packageUrl>
+        <cve>CVE-2007-1652</cve>
+    </suppress>
 </suppressions>
