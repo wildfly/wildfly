@@ -48,7 +48,7 @@
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>4.0.0-M2</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         -->
         <version.jakarta.validation.jakarta-validation-api>3.1.0-M2</version.jakarta.validation.jakarta-validation-api>
-        <version.jakarta.websocket.jakarta-websocket-api>2.2.0-M1</version.jakarta.websocket.jakarta-websocket-api>
+        <version.jakarta.websocket.jakarta-websocket-api>2.2.0</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.org.glassfish.jakarta.faces>4.1.0-M1</version.org.glassfish.jakarta.faces>
         <version.org.jboss.resteasy>7.0.0.Alpha2</version.org.jboss.resteasy>
