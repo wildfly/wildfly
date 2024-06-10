@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.clustering.cluster.provider.bean;
+package org.jboss.as.test.clustering.cluster.provider.bean.legacy;
 
 import java.util.Set;
 
@@ -18,20 +18,19 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.provider.ServiceProviderListener;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistrar;
-import org.wildfly.clustering.server.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.provider.ServiceProviderRegistration;
+import org.wildfly.clustering.provider.ServiceProviderRegistry;
 
 @Singleton
 @Startup
 @Local(ServiceProviderRegistration.class)
-public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String, GroupMember>, ServiceProviderListener<GroupMember> {
-    static final Logger log = Logger.getLogger(ServiceProviderRegistrationBean.class);
+public class LegacyServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
+    static final Logger log = Logger.getLogger(LegacyServiceProviderRegistrationBean.class);
 
-    @Resource(name = "clustering/service-provider-registrar")
-    private ServiceProviderRegistrar<String, GroupMember> factory;
-    private ServiceProviderRegistration<String, GroupMember> registration;
+    @Resource(name = "clustering/providers")
+    private ServiceProviderRegistry<String> factory;
+    private ServiceProviderRegistration<String> registration;
 
     @PostConstruct
     public void init() {
@@ -49,7 +48,7 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
     }
 
     @Override
-    public Set<GroupMember> getProviders() {
+    public Set<Node> getProviders() {
         return this.registration.getProviders();
     }
 
@@ -59,14 +58,14 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
     }
 
     @Override
-    public void providersChanged(Set<GroupMember> providers) {
+    public void providersChanged(Set<Node> nodes) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
             // Ensure the correct naming context is set
             Context context = new InitialContext();
             try {
-                context.lookup("java:comp/env/clustering/service-provider-registrar");
+                context.lookup("java:comp/env/clustering/providers");
             } finally {
                 context.close();
             }
@@ -75,6 +74,6 @@ public class ServiceProviderRegistrationBean implements ServiceProviderRegistrat
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-        log.info(String.format("ServiceProviderListener.providersChanged(%s)", providers));
+        log.info(String.format("ProviderRegistration.Listener.providersChanged(%s)", nodes));
     }
 }
