@@ -2,13 +2,11 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.jboss.as.test.clustering.cluster.dispatcher.bean;
+package org.jboss.as.test.clustering.cluster.dispatcher.bean.legacy;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
@@ -17,25 +15,28 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
 
-import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.dispatcher.Command;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
+import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Node;
 
 @Stateless
 @Remote(ClusterTopologyRetriever.class)
-public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
+public class LegacyClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     @EJB
-    private CommandDispatcher<GroupMember, GroupMember> dispatcher;
+    private CommandDispatcher<Node> dispatcher;
     @EJB
-    private CommandDispatcherFactory<GroupMember> factory;
-    private final Command<String, GroupMember, RuntimeException> command = new TestCommand();
-    private final Command<Void, GroupMember, Exception> exceptionCommand = new ExceptionCommand();
+    private CommandDispatcherFactory factory;
+    private final Command<String, Node> command = new TestCommand();
+    private final Command<Void, Node> exceptionCommand = new ExceptionCommand();
 
     @Override
     public ClusterTopology getClusterTopology() {
         try {
-            Collection<CompletionStage<String>> responses = this.dispatcher.dispatchToGroup(this.command).values();
+            Collection<CompletionStage<String>> responses = this.dispatcher.executeOnGroup(this.command).values();
             List<String> nodes = new ArrayList<>(responses.size());
             for (CompletionStage<String> response: responses) {
                 try {
@@ -45,10 +46,10 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
                 }
             }
 
-            GroupMember localMember = this.factory.getGroup().getLocalMember();
-            String local = this.dispatcher.dispatchToMember(this.command, localMember).toCompletableFuture().join();
+            Node localNode = this.factory.getGroup().getLocalMember();
+            String local = this.dispatcher.executeOnMember(this.command, localNode).toCompletableFuture().join();
 
-            responses = this.dispatcher.dispatchToGroup(this.command, Set.of(localMember)).values();
+            responses = this.dispatcher.executeOnGroup(this.command, localNode).values();
             List<String> remote = new ArrayList<>(responses.size());
             for (CompletionStage<String> response: responses) {
                 try {
@@ -58,7 +59,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
                 }
             }
 
-            for (CompletionStage<Void> response: this.dispatcher.dispatchToGroup(this.exceptionCommand).values()) {
+            for (CompletionStage<Void> response: this.dispatcher.executeOnGroup(this.exceptionCommand).values()) {
                 try {
                     response.toCompletableFuture().join();
                     throw new IllegalStateException("Exception expected");
@@ -71,7 +72,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
             }
 
             return new ClusterTopology(nodes, local, remote);
-        } catch (IOException e) {
+        } catch (CommandDispatcherException e) {
             throw new IllegalStateException(e.getCause());
         }
     }
