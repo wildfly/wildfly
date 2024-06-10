@@ -258,6 +258,8 @@
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                <!-- Use the wildfly-preview feature pack to provision -->
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
                 <!-- Use the WFP dependencyManagement set.
