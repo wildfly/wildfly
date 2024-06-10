@@ -33,7 +33,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>26.1.2-12-PSI</version>
+        <version>26.1.2-13-PSI-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-web-api</artifactId>
