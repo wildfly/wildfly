@@ -12,4 +12,9 @@
         <resource-env-ref-type>org.wildfly.clustering.group.Group</resource-env-ref-type>
         <lookup-name>java:jboss/clustering/group/default</lookup-name>
     </resource-env-ref>
+    <resource-env-ref>
+        <resource-env-ref-name>clustering/server/group</resource-env-ref-name>
+        <resource-env-ref-type>org.wildfly.clustering.server.Group</resource-env-ref-type>
+        <lookup-name>java:jboss/clustering/server/group/default</lookup-name>
+    </resource-env-ref>
 </web-app>

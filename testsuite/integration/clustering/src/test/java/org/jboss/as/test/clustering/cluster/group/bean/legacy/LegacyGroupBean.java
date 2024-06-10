@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.clustering.cluster.group.bean;
+package org.jboss.as.test.clustering.cluster.group.bean.legacy;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -15,21 +15,20 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.wildfly.clustering.server.Registration;
-import org.wildfly.clustering.server.GroupMember;
-import org.wildfly.clustering.server.GroupMembership;
-import org.wildfly.clustering.server.GroupMembershipEvent;
-import org.wildfly.clustering.server.GroupMembershipListener;
+import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.group.GroupListener;
+import org.wildfly.clustering.group.Membership;
+import org.wildfly.clustering.group.Node;
 
 @Singleton
 @Startup
-@Local(Group.class)
-public class GroupBean implements Group, GroupMembershipListener<GroupMember> {
+@Local(LegacyGroup.class)
+public class LegacyGroupBean implements LegacyGroup, GroupListener {
 
-    @Resource(name = "clustering/server/group")
-    private org.wildfly.clustering.server.Group<GroupMember> group;
+    @Resource(name = "clustering/group")
+    private org.wildfly.clustering.group.Group group;
     private Registration registration;
-    private volatile GroupMembership<GroupMember> previousMembership;
+    private volatile Membership previousMembership;
 
     @PostConstruct
     public void init() {
@@ -42,7 +41,7 @@ public class GroupBean implements Group, GroupMembershipListener<GroupMember> {
     }
 
     @Override
-    public void updated(GroupMembershipEvent<GroupMember> event) {
+    public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
@@ -58,7 +57,7 @@ public class GroupBean implements Group, GroupMembershipListener<GroupMember> {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-        this.previousMembership = event.getPreviousMembership();
+        this.previousMembership = previousMembership;
     }
 
     @Override
@@ -67,12 +66,12 @@ public class GroupBean implements Group, GroupMembershipListener<GroupMember> {
     }
 
     @Override
-    public GroupMember getLocalMember() {
+    public Node getLocalMember() {
         return this.group.getLocalMember();
     }
 
     @Override
-    public GroupMembership<GroupMember> getMembership() {
+    public Membership getMembership() {
         return this.group.getMembership();
     }
 
@@ -82,12 +81,12 @@ public class GroupBean implements Group, GroupMembershipListener<GroupMember> {
     }
 
     @Override
-    public Registration register(GroupMembershipListener<GroupMember> object) {
+    public Registration register(GroupListener object) {
         return this.group.register(object);
     }
 
     @Override
-    public GroupMembership<GroupMember> getPreviousMembership() {
+    public Membership getPreviousMembership() {
         return this.previousMembership;
     }
 }
