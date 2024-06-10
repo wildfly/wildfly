@@ -15,6 +15,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
+import org.jboss.as.test.clustering.cluster.registry.bean.legacy.LegacyRegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,7 +35,8 @@ public class RegistryTestCase {
     @Deployment(testable = false)
     public static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(RegistryRetriever.class.getPackage());
+        war.addPackage(RegistryRetrieverBean.class.getPackage());
+        war.addPackage(LegacyRegistryRetrieverBean.class.getPackage());
         war.addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml");
         war.setWebXML(org.jboss.as.test.clustering.cluster.registry.RegistryTestCase.class.getPackage(), "web.xml");
         return war;
@@ -42,8 +44,18 @@ public class RegistryTestCase {
 
     @Test
     public void test() throws Exception {
+        this.test(RegistryRetrieverBean.class);
+    }
+
+    @Test
+    public void legacy() throws Exception {
+        this.test(LegacyRegistryRetrieverBean.class);
+    }
+
+    @Test
+    public void test(Class<? extends RegistryRetriever> beanClass) throws Exception {
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-            RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
+            RegistryRetriever bean = context.lookupStateless(LegacyRegistryRetrieverBean.class, RegistryRetriever.class);
             Collection<String> names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.toString(), names.contains(NODE_1));
