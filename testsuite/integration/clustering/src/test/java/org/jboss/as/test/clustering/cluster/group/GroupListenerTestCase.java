@@ -14,6 +14,7 @@ import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopologyRetriever;
 import org.jboss.as.test.clustering.cluster.group.bean.ClusterTopologyRetrieverBean;
+import org.jboss.as.test.clustering.cluster.group.bean.legacy.LegacyClusterTopologyRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.TimeoutUtil;
@@ -25,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Integration test for the listener facility of a {@link Group}.
+ * Integration test for the listener facility of a {@link LegacyGroup}.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
@@ -47,7 +48,8 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
 
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
-        war.addPackage(ClusterTopologyRetriever.class.getPackage());
+        war.addPackage(ClusterTopologyRetrieverBean.class.getPackage());
+        war.addPackage(LegacyClusterTopologyRetrieverBean.class.getPackage());
         war.setWebXML(GroupListenerTestCase.class.getPackage(), "web.xml");
         war.addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new RuntimePermission("getClassLoader")), "permissions.xml");
         return war;
@@ -55,8 +57,17 @@ public class GroupListenerTestCase extends AbstractClusteringTestCase {
 
     @Test
     public void test() throws Exception {
+        this.test(ClusterTopologyRetrieverBean.class);
+    }
+
+    @Test
+    public void legacy() throws Exception {
+        this.test(LegacyClusterTopologyRetrieverBean.class);
+    }
+
+    public void test(Class<? extends ClusterTopologyRetriever> beanClass) throws Exception {
         try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
-            ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
+            ClusterTopologyRetriever bean = directory.lookupStateless(LegacyClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
 
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(topology.getCurrentMembers().toString(), 2, topology.getCurrentMembers().size());
