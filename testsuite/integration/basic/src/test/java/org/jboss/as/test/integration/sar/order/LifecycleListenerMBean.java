@@ -5,24 +5,47 @@
 
 package org.jboss.as.test.integration.sar.order;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 public interface LifecycleListenerMBean {
 
-    void mbeanCreated(String id);
+    void mbeanEvent(String id, String event);
 
-    void mbeanStarted(String id);
+    List<Tuple> getAllEvents();
 
-    void mbeanStopped(String id);
+    final class Tuple implements Serializable {
 
-    void mbeanDestroyed(String id);
+        private static final long serialVersionUID = 1L;
 
-    List<String> getCreates();
+        final String id;
+        final String method;
 
-    List<String> getStarts();
+        public Tuple(String id, String method) {
+            this.id = id;
+            this.method = method;
+        }
 
-    List<String> getStops();
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Tuple tuple = (Tuple) o;
+            return Objects.equals(id, tuple.id) && Objects.equals(method, tuple.method);
+        }
 
-    List<String> getDestroys();
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, method);
+        }
 
+        @Override
+        public String toString() {
+            return "Tuple{" +
+                    "id='" + id + '\'' +
+                    ", method='" + method + '\'' +
+                    '}';
+        }
+    }
 }
