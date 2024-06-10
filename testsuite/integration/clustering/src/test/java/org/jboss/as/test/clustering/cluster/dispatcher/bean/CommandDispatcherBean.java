@@ -4,7 +4,9 @@
  */
 package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 import jakarta.annotation.PostConstruct;
@@ -14,19 +16,18 @@ import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.GroupMember;
 
 @Singleton
 @Startup
 @Local(CommandDispatcher.class)
-public class CommandDispatcherBean implements CommandDispatcher<Node> {
+public class CommandDispatcherBean implements CommandDispatcher<GroupMember, GroupMember> {
     @EJB
-    private CommandDispatcherFactory factory;
-    private CommandDispatcher<Node> dispatcher;
+    private CommandDispatcherFactory<GroupMember> factory;
+    private CommandDispatcher<GroupMember, GroupMember> dispatcher;
 
     @PostConstruct
     public void init() {
@@ -39,13 +40,13 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
     }
 
     @Override
-    public <R> CompletionStage<R> executeOnMember(Command<R, ? super Node> command, Node member) throws CommandDispatcherException {
-        return this.dispatcher.executeOnMember(command, member);
+    public <R, E extends Exception> CompletionStage<R> dispatchToMember(Command<R, ? super GroupMember, E> command, GroupMember member) throws IOException {
+        return this.dispatcher.dispatchToMember(command, member);
     }
 
     @Override
-    public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super Node> command, Node... excludedMembers) throws CommandDispatcherException {
-        return this.dispatcher.executeOnGroup(command, excludedMembers);
+    public <R, E extends Exception> Map<GroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super GroupMember, E> command, Set<GroupMember> excluding) throws IOException {
+        return this.dispatcher.dispatchToGroup(command, excluding);
     }
 
     @Override
@@ -54,7 +55,7 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
     }
 
     @Override
-    public Node getContext() {
+    public GroupMember getContext() {
         return this.factory.getGroup().getLocalMember();
     }
 }
