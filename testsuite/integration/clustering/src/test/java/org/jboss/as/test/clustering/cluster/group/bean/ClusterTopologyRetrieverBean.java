@@ -13,8 +13,8 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
 
-import org.wildfly.clustering.group.Membership;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.GroupMembership;
 
 @Stateless
 @Remote(ClusterTopologyRetriever.class)
@@ -27,7 +27,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
         return new ClusterTopology(this.group.getLocalMember().getName(), getNames(this.group.getMembership()), getNames(this.group.getPreviousMembership()));
     }
 
-    private static List<String> getNames(Membership membership) {
-        return (membership != null) ? membership.getMembers().stream().map(Node::getName).collect(Collectors.toList()) : Collections.emptyList();
+    private static List<String> getNames(GroupMembership<GroupMember> membership) {
+        return (membership != null) ? membership.getMembers().stream().map(GroupMember::getName).collect(Collectors.toList()) : Collections.emptyList();
     }
 }
