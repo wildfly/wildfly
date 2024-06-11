@@ -4,6 +4,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
@@ -19,6 +20,9 @@ import org.jboss.dmr.ModelNode;
 import org.jgroups.conf.ClassConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Test cases for transformers used in the JGroups subsystem.
@@ -27,7 +31,20 @@ import org.junit.Test;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Radoslav Husar
  */
+@RunWith(Parameterized.class)
 public class JGroupsTransformersTestCase extends OperationTestCaseBase {
+
+    @Parameters
+    public static Iterable<ModelTestControllerVersion> parameters() {
+        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
+    }
+
+    public JGroupsTransformersTestCase(ModelTestControllerVersion version) {
+        super();
+        this.version = version;
+    }
+
+    ModelTestControllerVersion version;
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
         return String.format(pattern, version.getMavenGavVersion());
@@ -37,6 +54,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         switch (controllerVersion) {
             case EAP_7_4_0:
                 return JGroupsSubsystemModel.VERSION_8_0_0;
+            case EAP_8_0_0:
+                return JGroupsSubsystemModel.VERSION_10_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -54,6 +73,15 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
                         formatArtifact("org.jboss.eap:wildfly-clustering-spi:%s", version),
                 };
+            case EAP_8_0_0:
+                return new String[] {
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-extension:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-jgroups-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-server-service:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-server-spi:%s", version),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s", version),
+                };
             default:
                 throw new IllegalArgumentException();
         }
@@ -68,17 +96,17 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testTransformerEAP740() throws Exception {
-        testTransformation(ModelTestControllerVersion.EAP_7_4_0);
+    public void testTransformations() throws Exception {
+        this.testTransformations(version);
     }
 
     /**
      * Tests transformation of model from current version into specified version.
      */
-    private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
+    private void testTransformations(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
-        final String subsystemXmlResource = String.format("subsystem-jgroups-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
+        final String subsystemXmlResource = String.format("jgroups-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -103,8 +131,8 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testRejectionsEAP740() throws Exception {
-        testRejections(ModelTestControllerVersion.EAP_7_4_0);
+    public void testRejections() throws Exception {
+        this.testRejections(version);
     }
 
     private void testRejections(final ModelTestControllerVersion controller) throws Exception {
@@ -128,7 +156,7 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("subsystem-jgroups-transform-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource("jgroups-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationTransformationConfig(version));
     }
 
