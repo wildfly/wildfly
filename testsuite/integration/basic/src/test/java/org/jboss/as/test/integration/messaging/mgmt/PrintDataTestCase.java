@@ -63,7 +63,7 @@ public class PrintDataTestCase {
     private static final Pattern ADDRESS_ID = Pattern.compile(";userRecordType=44;isUpdate=false;compactCount=0;"
             + "PersistentAddressBindingEncoding \\[id=([0-9]+), name=jms.queue.PrintDataTestCase-Queue, "
             + "routingTypes=\\{ANYCAST\\}, autoCreated=false, internal=false\\]");
-    private static final Pattern QUEUE_ID = Pattern.compile("userRecordType=21;isUpdate=false;compactCount=0;PersistentQueueBindingEncoding "
+    private static final Pattern QUEUE_ID = Pattern.compile("^recordID=[0-9]+;userRecordType=21;isUpdate=false;compactCount=0;PersistentQueueBindingEncoding "
             + "\\[id=([0-9]+), name=jms.queue.PrintDataTestCase-Queue, address=jms.queue.PrintDataTestCase-Queue, filterString=null, "
             + "user=null, autoCreated=false, maxConsumers=-1, purgeOnNoConsumers=false, enabled=true, exclusive=false, lastValue=false,"
             + " lastValueKey=null, nonDestructive=false, consumersBeforeDispatch=0, delayBeforeDispatch=-1, routingType=1, "
@@ -183,7 +183,7 @@ public class PrintDataTestCase {
         }
         Assert.assertNotNull("Address Id not found", addressId);
         Assert.assertNotNull("Queue Id not found", queueId);
-        Assert.assertTrue("Should have a message count of 1 for " + jmsQueueName, hasQueueCount);
+        Assert.assertTrue("Should have a message count of 1 for " + jmsQueueName + " with queue id " + queueId, hasQueueCount);
     }
 
     /**
