@@ -469,9 +469,11 @@
                         <jboss.inst>${basedir}/target/wildfly</jboss.inst>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                         <jboss.server.config.file.name>standalone-microprofile.xml</jboss.server.config.file.name>
-                        <!-- -Dts.include.servlet.4=true is needed due to https://github.com/eclipse/microprofile-rest-client/issues/346 -->
-                        <microprofile.jvm.args>${microprofile.jvm.args} -Dts.include.servlet.4=true -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=${org.eclipse.microprofile.rest.client.tck.timeoutCushion}</microprofile.jvm.args>
-
+                        <!--
+                            1) -Dts.include.servlet.4=true is needed due to https://github.com/eclipse/microprofile-rest-client/issues/346
+                            2) The TCK deployments include javax.servlet stuff for integration with Jetty. Don't transform.
+                        -->
+                        <microprofile.jvm.args>${microprofile.jvm.args} -Dts.include.servlet.4=true -Dorg.eclipse.microprofile.rest.client.tck.timeoutCushion=${org.eclipse.microprofile.rest.client.tck.timeoutCushion} -Dorg.wildfly.unsupported.skip.jakarta.transformer=true</microprofile.jvm.args>
                         <test.url>http://localhost:8080</test.url>
                     </systemPropertyVariables>
                 </configuration>
