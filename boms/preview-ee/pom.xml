@@ -39,18 +39,18 @@
         <version.jakarta.el>6.0.0</version.jakarta.el>
         <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>3.1.0-RC2</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
         <version.jakarta.enterprise>4.1.0</version.jakarta.enterprise>
-        <version.jakarta.faces.jakarta-faces-api>4.1.0-M1</version.jakarta.faces.jakarta-faces-api>
+        <version.jakarta.faces.jakarta-faces-api>4.1.0</version.jakarta.faces.jakarta-faces-api>
         <version.jakarta.interceptor.jakarta-interceptors-api>2.2.0</version.jakarta.interceptor.jakarta-interceptors-api>
-        <version.jakarta.persistence>3.2.0-M2</version.jakarta.persistence>
+        <version.jakarta.persistence>3.2.0</version.jakarta.persistence>
         <version.jakarta.security.enterprise>4.0.0-M2</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>6.1.0-M2</version.jakarta.servlet.jakarta-servlet-api>
         <!-- TODO requires a Jastow upgrade to remove PageContextImpl.getVariableResolver()
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>4.0.0-M2</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
         -->
-        <version.jakarta.validation.jakarta-validation-api>3.1.0-M2</version.jakarta.validation.jakarta-validation-api>
+        <version.jakarta.validation.jakarta-validation-api>3.1.0</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.2.0-M1</version.jakarta.websocket.jakarta-websocket-api>
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
-        <version.org.glassfish.jakarta.faces>4.1.0-M1</version.org.glassfish.jakarta.faces>
+        <version.org.glassfish.jakarta.faces>4.1.0</version.org.glassfish.jakarta.faces>
         <version.org.jboss.resteasy>7.0.0.Alpha2</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>6.0.0.Beta1</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Beta4</version.org.jboss.weld.weld-api>
