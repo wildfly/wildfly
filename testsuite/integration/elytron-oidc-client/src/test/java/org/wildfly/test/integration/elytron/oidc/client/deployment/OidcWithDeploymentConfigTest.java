@@ -24,6 +24,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -33,6 +34,8 @@ import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest;
 
 import io.restassured.RestAssured;
+import org.wildfly.test.integration.elytron.oidc.client.subsystem.SimpleServletWithScope;
+import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
  * Tests for the OpenID Connect authentication mechanism.
@@ -41,7 +44,7 @@ import io.restassured.RestAssured;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
+@ServerSetup({ OidcWithDeploymentConfigTest.PreviewStabilitySetupTask.class, OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
 public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
     private static final String OIDC_PROVIDER_URL = "oidc.provider.url";
@@ -63,6 +66,10 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
     private static final String BEARER_ONLY_WITH_PROVIDER_URL_FILE = "BearerOnlyWithProviderUrl.json";
     private static final String BASIC_AUTH_WITH_PROVIDER_URL_FILE = "BasicAuthWithProviderUrl.json";
     private static final String CORS_WITH_PROVIDER_URL_FILE = "CorsWithProviderUrl.json";
+    private static final String SINGLE_SCOPE_FILE = "OidcWithSingleScope.json";
+    private static final String MULTI_SCOPE_FILE = "OidcWithMultipleScopes.json";
+    private static final String INVALID_SCOPE_FILE = "OidcWithInvalidScope.json";
+    private static final String OPENID_SCOPE_FILE = "OidcWithOpenIDScope.json";
 
     private static Map<String, KeycloakConfiguration.ClientAppType> APP_NAMES;
     static {
@@ -78,6 +85,14 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
         APP_NAMES.put(BASIC_AUTH_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(CORS_PROVIDER_URL_APP, KeycloakConfiguration.ClientAppType.BEARER_ONLY_CLIENT);
         APP_NAMES.put(CORS_CLIENT, KeycloakConfiguration.ClientAppType.CORS_CLIENT);
+        APP_NAMES.put(SINGLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(MULTIPLE_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(INVALID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(OPENID_SCOPE_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+    }
+
+    public OidcWithDeploymentConfigTest() {
+        super(Stability.PREVIEW);
     }
 
     @ArquillianResource
@@ -162,6 +177,42 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addClasses(SimpleSecuredServlet.class)
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), CORS_WITH_PROVIDER_URL_FILE, "oidc.json");
+    }
+
+    @Deployment(name = SINGLE_SCOPE_APP, managed = false, testable = false)
+    public static WebArchive createSingleScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, SINGLE_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), SINGLE_SCOPE_FILE, "oidc.json");
+    }
+
+    @Deployment(name = MULTIPLE_SCOPE_APP, managed = false, testable = false)
+    public static WebArchive createMultipleScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, MULTIPLE_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), MULTI_SCOPE_FILE, "oidc.json");
+    }
+
+    @Deployment(name = INVALID_SCOPE_APP, managed = false, testable = false)
+    public static WebArchive createInvalidScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, INVALID_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), INVALID_SCOPE_FILE, "oidc.json");
+    }
+
+    @Deployment(name = OPENID_SCOPE_APP, managed = false, testable = false)
+    public static WebArchive createOpenIdScopeDeployment() {
+        return ShrinkWrap.create(WebArchive.class, OPENID_SCOPE_APP + ".war")
+                .addClasses(SimpleServlet.class)
+                .addClasses(SimpleServletWithScope.class)
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML, "web.xml")
+                .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), OPENID_SCOPE_FILE, "oidc.json");
     }
 
     @Test
@@ -381,6 +432,46 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
         }
     }
 
+    @Test
+    public void testOpenIDScope() throws Exception {
+        try{
+            deployer.deploy(OPENID_SCOPE_APP);
+            super.testOpenIDScope();
+        } finally {
+            deployer.undeploy(OPENID_SCOPE_APP);
+        }
+    }
+
+    @Test
+    public void testSingleScope() throws Exception {
+        try {
+            deployer.deploy(SINGLE_SCOPE_APP);
+            super.testSingleScope();
+        } finally {
+            deployer.undeploy(SINGLE_SCOPE_APP);
+        }
+    }
+
+    @Test
+    public void testMultipleScope() throws Exception {
+        try {
+            deployer.deploy(MULTIPLE_SCOPE_APP);
+            super.testMultipleScope();
+        } finally {
+            deployer.undeploy(MULTIPLE_SCOPE_APP);
+        }
+    }
+
+    @Test
+    public void testInvalidScope() throws Exception {
+        try {
+            deployer.deploy(INVALID_SCOPE_APP);
+            super.testInvalidScope();
+        } finally {
+            deployer.undeploy(INVALID_SCOPE_APP);
+        }
+    }
+
     static class KeycloakAndSystemPropertySetup extends KeycloakSetup {
 
         @Override
@@ -420,6 +511,15 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
             operation = createOpNode("system-property=" + WRONG_OIDC_PROVIDER_URL, ModelDescriptionConstants.REMOVE);
             Utils.applyUpdate(operation, client);
+        }
+    }
+
+    public static class PreviewStabilitySetupTask extends StabilityServerSetupSnapshotRestoreTasks.Preview {
+        @Override
+        protected void doSetup(ManagementClient managementClient) throws Exception {
+            // Write a system property so the model gets stored with a lower stability level.
+            // This is to make sure we can reload back to the higher level from the snapshot
+            OidcBaseTest.addSystemProperty(managementClient, OidcWithDeploymentConfigTest.class);
         }
     }
 }
