@@ -9,11 +9,19 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The overall server logging configuration is represented by the logging
+[abstract]
+--
+The overall server logging configuration is represented by the `logging`
 subsystem. It consists of four notable parts: `handler` configurations,
 `logger` and the `root logger` declarations (aka log categories) and
 logging profiles. Each logger references a handler (or set of
-handlers). Each handler declares the log format and output:
+handlers). Each handler declares the log format and output.
+--
+
+[TIP]
+The WildFly Model Reference provides a complete description of the link:./wildscribe/subsystem/logging/index.html[management API for the `logging` subsystem].
+
+Here is an example of the `logging` subsystem XML configuration:
 
 [source,xml,options="nowrap"]
 ----
@@ -170,7 +178,7 @@ operations are valid in both standalone and domain modes.
 [[list-log-files]]
 === List Log Files
 
-The logging subsystem has a `log-file` resource off the subsystem root
+The `logging` subsystem has a `log-file` resource off the subsystem root
 resource and off each `logging-profile` resource to list each log file.
 
 .CLI command and output
@@ -239,14 +247,14 @@ down.
 
 You may have noticed that there is a `logging.properties` file in the
 configuration directory. This is logging configuration is used when the
-server boots up until the logging subsystem kicks in. If the logging
+server boots up until the `logging` subsystem kicks in. If the `logging`
 subsystem is not included in your configuration, then this would act as
 the logging configuration for the entire server.
 
 [TIP]
 
 The `logging.properties` file is overwritten at boot and with each
-change to the logging subsystem. Any changes made to the file are not
+change to the `logging` subsystem. Any changes made to the file are not
 persisted. Any changes made to the XML configuration or via management
 operations will be persisted to the `logging.properties` file and used
 on the next boot.
