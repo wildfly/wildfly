@@ -492,6 +492,7 @@
                             <offline>true</offline>
                             <plugin-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <store-input-provisioning-config>${galleon.store.input.provisioning.config}</store-input-provisioning-config>
                             </plugin-options>
                             <feature-packs>
                                 <feature-pack>

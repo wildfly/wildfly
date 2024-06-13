@@ -300,6 +300,7 @@
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                             <galleon-options>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <store-input-provisioning-config>${galleon.store.input.provisioning.config}</store-input-provisioning-config>
                             </galleon-options>
                             <channels>
                                 <channel>
