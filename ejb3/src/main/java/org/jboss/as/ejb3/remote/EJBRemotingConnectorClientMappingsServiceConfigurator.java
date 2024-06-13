@@ -10,10 +10,8 @@ import static org.jboss.as.ejb3.subsystem.EJB3RemoteResourceDefinition.CONNECTOR
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,8 +24,6 @@ import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.CompositeDependency;
 import org.wildfly.clustering.service.FunctionalService;
 import org.wildfly.clustering.service.ServiceConfigurator;
@@ -39,24 +35,19 @@ import org.wildfly.common.net.Inet;
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingsEntryProviderService extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<Map.Entry<String, List<ClientMapping>>> {
+public class EJBRemotingConnectorClientMappingsServiceConfigurator extends SimpleServiceNameProvider implements CapabilityServiceConfigurator, Supplier<List<ClientMapping>> {
     private static final ServiceName BASE_NAME = ServiceName.JBOSS.append("ejb", "remote", "client-mappings");
 
     private volatile SupplierDependency<ProtocolSocketBinding> remotingConnectorInfo;
-    private final String containerName;
     private final String connectorName;
 
-    private volatile SupplierDependency<Group> group;
-
-    public EJBRemotingConnectorClientMappingsEntryProviderService(String containerName, String connectorName) {
+    public EJBRemotingConnectorClientMappingsServiceConfigurator(String connectorName) {
         super(BASE_NAME.append(connectorName));
-        this.containerName = containerName;
         this.connectorName = connectorName;
     }
 
     @Override
     public ServiceConfigurator configure(OperationContext context) {
-        this.group = new ServiceSupplierDependency<>(ClusteringRequirement.GROUP.getServiceName(context, this.containerName));
         this.remotingConnectorInfo = new ServiceSupplierDependency<>(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class));
         return this;
     }
@@ -65,14 +56,9 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Simp
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceName name = this.getServiceName();
         ServiceBuilder<?> builder = target.addService(name);
-        Consumer<Map.Entry<String, List<ClientMapping>>> entry = new CompositeDependency(this.group, this.remotingConnectorInfo).register(builder).provides(name);
+        Consumer<List<ClientMapping>> entry = new CompositeDependency(this.remotingConnectorInfo).register(builder).provides(name);
         Service service = new FunctionalService<>(entry, Function.identity(), this);
         return builder.setInstance(service);
-    }
-
-    @Override
-    public Map.Entry<String, List<ClientMapping>> get() {
-        return new AbstractMap.SimpleImmutableEntry<>(this.group.get().getLocalMember().getName(), this.getClientMappings());
     }
 
     /**
@@ -82,7 +68,8 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Simp
      *
      * @return the client mappings for this host
      */
-    List<ClientMapping> getClientMappings() {
+    @Override
+    public List<ClientMapping> get() {
         final List<ClientMapping> ret = new ArrayList<>();
         ProtocolSocketBinding info = this.remotingConnectorInfo.get();
 

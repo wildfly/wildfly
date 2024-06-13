@@ -39,6 +39,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
@@ -147,7 +148,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
 import org.wildfly.clustering.singleton.service.SingletonPolicy;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
@@ -276,7 +276,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (resource.hasChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH)) {
             ModelNode remoteModel = resource.getChild(EJB3SubsystemModel.REMOTE_SERVICE_PATH).getModel();
-            String clusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, remoteModel).asString();
 
             // For each connector
             for (ModelNode connector : EJB3RemoteResourceDefinition.CONNECTORS.resolveModelAttribute(context, remoteModel).asList()) {
@@ -284,7 +283,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 Map.Entry<Injector<ProtocolSocketBinding>, Injector<Registry>> entry = associationService.addConnectorInjectors(connectorName);
                 associationServiceBuilder.addDependency(context.getCapabilityServiceName(CONNECTOR_CAPABILITY_NAME, connectorName, ProtocolSocketBinding.class), ProtocolSocketBinding.class, entry.getKey());
-                associationServiceBuilder.addDependency(ClusteringCacheRequirement.REGISTRY.getServiceName(context, clusterName, connectorName), Registry.class, entry.getValue());
+                associationServiceBuilder.addDependency(ServiceNameFactory.resolveServiceName(EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_REGISTRY, connectorName), Registry.class, entry.getValue());
             }
         }
         associationServiceBuilder.install();
