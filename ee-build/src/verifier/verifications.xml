@@ -60,10 +60,6 @@
       <exists>false</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/main</location>
-      <exists>false</exists>
-    </file>
-    <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/io/smallrye/openapi/main</location>
       <exists>false</exists>
     </file>
