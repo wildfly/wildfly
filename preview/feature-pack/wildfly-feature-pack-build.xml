@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
+<build xmlns="urn:wildfly:feature-pack-build:3.4" producer="wildfly-preview@maven(org.jboss.universe:community-universe):current">
 
     <default-packages>
         <package name="modules.all"/>
@@ -14,6 +14,11 @@
         <package name="bin"/>
     </default-packages>
 
+    <stability-levels>
+        <minimum-stability-level>experimental</minimum-stability-level>
+        <config-stability-level>preview</config-stability-level>
+        <package-stability-level>experimental</package-stability-level>
+    </stability-levels>
     <!--
       When building this feature pack the WildFly Galleon Plugin generates a docs.schema Galleon package,
       which is used to provision the contents of the 'docs/schema' directory in a WildFly installation.
