@@ -138,7 +138,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
 
                         // Safeguard : ensure timeout was not already triggered elsewhere
                         if (currentTimeoutReference.isEmpty()) {
-                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Unexpected timeout event triggered.", id);
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Unexpected timeout event triggered for %s", id);
                             return false;
                         }
                         Instant currentTimeout = currentTimeoutReference.get();
@@ -149,9 +149,9 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
 
                         Timer<I> timer = factory.createTimer(id, metaData, manager, scheduler);
 
-                        InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s [%s]", id, timer.getMetaData().getContext());
+                        InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s @ %s", id, currentTimeout);
 
-                        // In case we need to reset the last timeout
+                        // Capture original last timeout in case we need to reset it
                         Optional<Instant> lastTimeout = metaData.getLastTimeout();
                         // Record last timeout - expected to be set prior to triggering timeout
                         metaData.setLastTimeout(currentTimeout);
@@ -166,6 +166,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("EJB component is suspended - could not invoke timeout for timer %s", id);
                             // Reset last timeout
                             metaData.setLastTimeout(lastTimeout.orElse(null));
+                            batch.discard();
                             return false;
                         }
 
