@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -39,6 +40,7 @@ import org.jboss.as.test.clustering.cluster.ejb.timer.beans.TimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.servlet.TimerServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -60,6 +62,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 ;
     }
 
+    private static final Duration GRACE_PERIOD = Duration.ofSeconds(TimeoutUtil.adjust(2));
     private final String moduleName;
 
     protected AbstractTimerServiceTestCase() {
@@ -77,7 +80,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             // Create manual timers on node 1 only
             try (CloseableHttpResponse response = client.execute(new HttpPut(uris.get(NODE_1)))) {
@@ -98,7 +101,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             Map<Class<? extends TimerBean>, Map<String, List<Instant>>> timeouts = new IdentityHashMap<>();
             for (Class<? extends TimerBean> beanClass : TimerServlet.TIMER_CLASSES) {
@@ -150,7 +153,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -188,7 +191,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.stop(NODE_1);
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             try (CloseableHttpResponse response = client.execute(new HttpHead(uris.get(NODE_2)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -224,7 +227,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.start(NODE_1);
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -253,7 +256,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -284,7 +287,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.stop(NODE_2);
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -308,7 +311,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.start(NODE_2);
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uris.get(NODE_1)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -316,7 +319,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             Instant cancellation = Instant.now();
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(GRACE_PERIOD.getSeconds());
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
