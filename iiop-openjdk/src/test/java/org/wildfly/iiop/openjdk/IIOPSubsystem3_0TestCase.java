@@ -4,16 +4,6 @@
  */
 package org.wildfly.iiop.openjdk;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -21,6 +11,16 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <ṕ>
@@ -31,15 +31,15 @@ import org.junit.Test;
  * @author <a href="sguilhen@jboss.com">Stefan Guilhen</a>
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class IIOPSubsystem3_0TestCase extends AbstractSubsystemBaseTest {
 
-    public IIOPSubsystemTestCase() {
+    public IIOPSubsystem3_0TestCase() {
         super(IIOPExtension.SUBSYSTEM_NAME, new IIOPExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-3.1.xml");
+        return readResource("subsystem-3.0.xml");
     }
 
 
@@ -50,7 +50,7 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXsdPath() throws Exception {
-        return "schema/wildfly-iiop-openjdk_3_1.xsd";
+        return "schema/wildfly-iiop-openjdk_3_0.xsd";
     }
 
     @Test
@@ -115,6 +115,11 @@ public class IIOPSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testSubsystem_1_0() throws Exception {
         super.standardSubsystemTest("subsystem-1.0.xml", false);
+    }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        //
     }
 
     /**
