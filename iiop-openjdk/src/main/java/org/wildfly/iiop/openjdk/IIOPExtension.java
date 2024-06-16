@@ -34,9 +34,10 @@ public class IIOPExtension implements Extension {
 
     static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, IIOPExtension.class);
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(4);
+    static final ModelVersion VERSION_3_0 = ModelVersion.create(3);
     static final ModelVersion VERSION_2_1 = ModelVersion.create(2, 1);
-    static final ModelVersion VERSION_2 = ModelVersion.create(2,0,0);
+    static final ModelVersion VERSION_2 = ModelVersion.create(2, 0, 0);
     static final ModelVersion VERSION_1 = ModelVersion.create(1);
 
     @Override
