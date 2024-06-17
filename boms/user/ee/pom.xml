@@ -439,6 +439,28 @@
                                     <groupId>org.wildfly.security</groupId>
                                     <artifactId>wildfly-elytron</artifactId>
                                 </dependency>
+                                <!-- include web services -->
+                                <dependency>
+                                    <groupId>org.jboss.ws.cxf</groupId>
+                                    <artifactId>jbossws-cxf-client</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.ws.cxf</groupId>
+                                    <artifactId>jbossws-cxf-resources</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.ws.cxf</groupId>
+                                    <artifactId>jbossws-cxf-server</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.ws.cxf</groupId>
+                                    <artifactId>jbossws-cxf-transports-udp</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>org.jboss.ws.cxf</groupId>
+                                    <artifactId>jbossws-cxf-transports-undertow</artifactId>
+                                </dependency>
+
                                 <!-- other server components to include -->
                                 <dependency>
                                     <groupId>org.wildfly.discovery</groupId>

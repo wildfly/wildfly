@@ -134,6 +134,11 @@
                                     <groupId>org.jboss.arquillian.protocol</groupId>
                                     <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
                                 </dependency>
+                                <dependency>
+                                    <groupId>org.wildfly.core</groupId>
+                                    <artifactId>wildfly-cli</artifactId>
+                                    <classifier>client</classifier>
+                                </dependency>
                             </includeDependencies>
                             <versionRefDependencies>
                                 <dependency>
