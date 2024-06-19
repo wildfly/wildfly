@@ -41,5 +41,6 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
                     .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
                     .end();
         }
+        new RemoteClusterResourceTransformer(this.builder).accept(version);
     }
 }

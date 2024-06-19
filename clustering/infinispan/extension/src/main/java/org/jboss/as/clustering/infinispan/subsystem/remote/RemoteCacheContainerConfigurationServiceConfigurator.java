@@ -5,6 +5,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ import org.wildfly.clustering.service.SupplierDependency;
  */
 public class RemoteCacheContainerConfigurationServiceConfigurator extends CapabilityServiceNameProvider implements ResourceServiceConfigurator, Supplier<Configuration> {
 
-    private final Map<String, List<SupplierDependency<OutboundSocketBinding>>> clusters = new HashMap<>();
+    private final Map<String, Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>>> clusters = new HashMap<>();
     private final Map<ThreadPoolResourceDefinition, SupplierDependency<ExecutorFactoryConfiguration>> threadPools = new EnumMap<>(ThreadPoolResourceDefinition.class);
     private final SupplierDependency<ModuleLoader> loader;
     private final SupplierDependency<List<Module>> modules;
@@ -115,11 +116,12 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
             String clusterName = entry.getName();
             ModelNode cluster = entry.getModel();
             List<String> bindings = StringListAttributeDefinition.unwrapValue(context, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS.resolveModelAttribute(context, cluster));
+            String domain = RemoteClusterResourceDefinition.Attribute.DOMAIN.resolveModelAttribute(context, model).asStringOrNull();
             List<SupplierDependency<OutboundSocketBinding>> bindingDependencies = new ArrayList<>(bindings.size());
             for (String binding : bindings) {
                 bindingDependencies.add(new ServiceSupplierDependency<>(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING.getServiceName(context, binding)));
             }
-            this.clusters.put(clusterName, bindingDependencies);
+            this.clusters.put(clusterName, new AbstractMap.SimpleImmutableEntry<>(domain, bindingDependencies));
         }
 
         this.server = context.hasOptionalCapability(CommonRequirement.MBEAN_SERVER.getName(), RemoteCacheContainerResourceDefinition.Capability.CONFIGURATION.getDefinition().getDynamicName(context.getCurrentAddress()), null) ? new ServiceSupplierDependency<>(CommonRequirement.MBEAN_SERVER.getServiceName(context)) : null;
@@ -139,8 +141,8 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         for (Dependency dependency : this.threadPools.values()) {
             dependency.register(builder);
         }
-        for (List<SupplierDependency<OutboundSocketBinding>> dependencies : this.clusters.values()) {
-            for (Dependency dependency : dependencies) {
+        for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> entry : this.clusters.values()) {
+            for (Dependency dependency : entry.getValue()) {
                 dependency.register(builder);
             }
         }
@@ -152,8 +154,9 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
     public Configuration get() {
         String name = this.getServiceName().getSimpleName();
         ConfigurationBuilder builder = new ConfigurationBuilder();
+        SecurityConfiguration security = this.security.get();
         // Configure formal security first
-        builder.security().read(this.security.get());
+        builder.security().read(security);
         // Apply properties next, which may override formal security configuration
         builder.withProperties(this.properties)
                 .connectionTimeout(this.connectionTimeout)
@@ -178,17 +181,21 @@ public class RemoteCacheContainerConfigurationServiceConfigurator extends Capabi
         builder.connectionPool().read(this.connectionPool.get());
         builder.asyncExecutorFactory().read(this.threadPools.get(ThreadPoolResourceDefinition.CLIENT).get());
 
-        for (Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>> entry : this.clusters.entrySet()) {
+        for (Map.Entry<String, Map.Entry<String, List<SupplierDependency<OutboundSocketBinding>>>> entry : this.clusters.entrySet()) {
             String clusterName = entry.getKey();
             ClusterConfigurator<? extends ConfigurationChildBuilder> configurator = this.defaultRemoteCluster.equals(clusterName) ? DefaultClusterConfigurator.INSTANCE : new NonDefaultClusterConfigurator(clusterName);
-            configureCluster(builder, configurator, entry.getValue());
+            configureCluster(builder, configurator, security, entry.getValue().getKey(), entry.getValue().getValue());
         }
 
         return builder.build();
     }
 
-    private static <C extends ConfigurationChildBuilder> void configureCluster(ConfigurationBuilder builder, ClusterConfigurator<C> configurator, List<SupplierDependency<OutboundSocketBinding>> bindingDependencies) {
+    private static <C extends ConfigurationChildBuilder> void configureCluster(ConfigurationBuilder builder, ClusterConfigurator<C> configurator, SecurityConfiguration security, String domain, List<SupplierDependency<OutboundSocketBinding>> bindingDependencies) {
         C cluster = configurator.addCluster(builder);
+        if (security.ssl().enabled() && (domain != null)) {
+            configurator.getSNIHostNameConsumer(cluster).accept(domain);
+            builder.security().ssl().hostnameValidation(true);
+        }
         for (Supplier<OutboundSocketBinding> bindingDependency : bindingDependencies) {
             OutboundSocketBinding binding = bindingDependency.get();
             configurator.getBindingConsumer(cluster).accept(binding.getUnresolvedDestinationAddress(), binding.getDestinationPort());

@@ -114,8 +114,8 @@
         <property name="infinispan.client.hotrod.auth_username">username</property>
         <property name="infinispan.client.hotrod.auth_password">password</property>
         <remote-clusters>
-            <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3"/>
-            <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6"/>
+            <remote-cluster name="primary-site" socket-bindings="jdg1 jdg2 jdg3" domain="primary"/>
+            <remote-cluster name="failover-site" socket-bindings="jdg4 jdg5 jdg6" domain="secondary"/>
         </remote-clusters>
         <security ssl-context="hotrod-elytron"/>
     </remote-cache-container>

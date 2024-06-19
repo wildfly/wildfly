@@ -17,10 +17,12 @@ import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityReferenceRecorder;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.service.BinaryRequirement;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -40,9 +42,18 @@ public class RemoteClusterResourceDefinition extends ChildResourceDefinition<Man
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         SOCKET_BINDINGS("socket-bindings", new CapabilityReference(Capability.REMOTE_CLUSTER, CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING)),
+        DOMAIN("domain", ModelType.STRING),
         ;
 
         private final AttributeDefinition definition;
+
+        Attribute(String name, ModelType type) {
+            this.definition = new SimpleAttributeDefinitionBuilder(name, type)
+                    .setAllowExpression(true)
+                    .setRequired(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
+        }
 
         Attribute(String name, CapabilityReferenceRecorder reference) {
             this.definition = new StringListAttributeDefinition.Builder(name)

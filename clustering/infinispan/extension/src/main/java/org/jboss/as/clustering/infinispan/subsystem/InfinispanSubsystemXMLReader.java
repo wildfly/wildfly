@@ -1928,6 +1928,12 @@ public class InfinispanSubsystemXMLReader implements XMLElementReader<List<Model
                     readAttribute(reader, i, operation, RemoteClusterResourceDefinition.Attribute.SOCKET_BINDINGS);
                     break;
                 }
+                case DOMAIN: {
+                    if (this.schema.since(InfinispanSubsystemSchema.VERSION_15_0)) {
+                        readAttribute(reader, i, operation, RemoteClusterResourceDefinition.Attribute.DOMAIN);
+                        break;
+                    }
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }

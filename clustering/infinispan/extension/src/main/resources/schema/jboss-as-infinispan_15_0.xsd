@@ -1228,6 +1228,14 @@
                 <xs:list itemType="xs:string"/>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="domain" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines the domain name of this cluster.
+                    When using TLS, this specifies the SNI (Server Name Indication) host name to use during the handshake process.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="connection-pool">
