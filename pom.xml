@@ -10231,5 +10231,33 @@
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
             </properties>
         </profile>
+        <profile>
+            <id>cycloneDX</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <configuration>
+                            <outputName>${project.artifactId}-${project.version}-cyclonedx</outputName>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>makeAggregateBom</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
