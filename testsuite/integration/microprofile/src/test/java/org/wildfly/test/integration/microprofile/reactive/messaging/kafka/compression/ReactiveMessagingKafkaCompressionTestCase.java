@@ -19,12 +19,14 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,9 @@ import java.util.concurrent.TimeUnit;
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaCompressionTestCase {
 
+    // Downstream we want to disable Snappy on Windows and Mac
+    private static final boolean DISABLE_SNAPPY_ON_WINDOWS_AND_MAC = false;
+
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
 
     @Inject
@@ -44,11 +49,16 @@ public class ReactiveMessagingKafkaCompressionTestCase {
 
     @Deployment
     public static WebArchive getDeployment() {
+        String os = WildFlySecurityManager.getPropertyPrivileged("os.name", "x").toLowerCase(Locale.ENGLISH);
+        boolean runningOnWindowsOrMac = os.startsWith("windows") || os.startsWith("mac os");
+        boolean enableSnappy = !runningOnWindowsOrMac || !DISABLE_SNAPPY_ON_WINDOWS_AND_MAC;
+        String mpConfigFile = enableSnappy ? "microprofile-config.properties" : "microprofile-config-no-snappy.properties";
+
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-kafka-tx.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addPackage(ReactiveMessagingKafkaCompressionTestCase.class.getPackage())
                 .addClasses(RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
-                .addAsWebInfResource(ReactiveMessagingKafkaCompressionTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
+                .addAsWebInfResource(ReactiveMessagingKafkaCompressionTestCase.class.getPackage(), mpConfigFile, "classes/META-INF/microprofile-config.properties")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")

@@ -79,6 +79,14 @@ public abstract class BaseReactiveMessagingSslConfigProcessor implements Deploym
                     }
                 }
             }
+
+            if (isExtraConfigValueCheck()) {
+                if (propertyName.startsWith(globalPropertyPrefix)
+                        || propertyName.startsWith(RM_INCOMING_PROPERTY_PREFIX)
+                        || propertyName.startsWith(RM_OUTGOING_PROPERTY_PREFIX)) {
+                    extraConfigValueCheck(propertyName, config.getValue(propertyName, String.class));
+                }
+            }
         }
 
         Map<String, String> addedProperties = sdc.complete(phaseContext);
@@ -95,7 +103,13 @@ public abstract class BaseReactiveMessagingSslConfigProcessor implements Deploym
         }
     }
 
+    protected boolean isExtraConfigValueCheck() {
+        return false;
+    }
 
+    protected void extraConfigValueCheck(String key, String value) throws DeploymentUnitProcessingException {
+        // Noop
+    }
 
     private void logAndCheck(Set<ServiceName> mscDependencies, String propertyName, String sslContextName) {
         if (sslContextName == null) {
