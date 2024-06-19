@@ -131,7 +131,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
-        final String subsystemXmlResource = String.format("subsystem-infinispan-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
+        final String subsystemXmlResource = String.format("infinispan-transform-%s.xml", version);
 
         KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version, dependencies);
 
@@ -207,7 +207,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> operations = builder.parseXmlResource("subsystem-infinispan-transformer-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource(String.format("infinispan-reject-%s.xml", version));
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
