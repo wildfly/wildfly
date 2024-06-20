@@ -52,9 +52,10 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
     VERSION_1_0(1, Stability.DEFAULT),
     VERSION_2_0(2, Stability.DEFAULT),
     VERSION_2_0_PREVIEW(2, 0, Stability.PREVIEW), // WildFly 32.0-present
+    VERSION_3_0_PREVIEW(3, 0, Stability.PREVIEW), // WildFly 33.0-present
     ;
 
-    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_2_0_PREVIEW, VERSION_2_0));
+    static final Map<Stability, ElytronOidcSubsystemSchema> CURRENT = Feature.map(EnumSet.of(VERSION_3_0_PREVIEW, VERSION_2_0));
     private static final AttributeParser SIMPLE_ATTRIBUTE_PARSER = new AttributeElementParser();
     private static final AttributeMarshaller SIMPLE_ATTRIBUTE_MARSHALLER = new AttributeElementMarshaller();
 

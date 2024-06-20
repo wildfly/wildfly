@@ -8,6 +8,7 @@ package org.wildfly.extension.elytron.oidc;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_1_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_2_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_3_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SCOPE;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.SECURE_SERVER;
@@ -33,6 +34,9 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
     public void registerTransformers(SubsystemTransformerRegistration registration) {
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
+
+        // 4.0.0 (WildFly 33) to 3.0.0 (WildFly 32)
+        from4(chainedBuilder);
         // 3.0.0 (WildFly 32) to 2.0.0 (WildFly 29)
         from3(chainedBuilder);
         // 2.0.0 (WildFly 29) to 1.0.0 (WildFly 28)
@@ -60,6 +64,10 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .addRejectCheck(RejectAttributeChecker.DEFINED, SCOPE)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, SCOPE)
                 .end();
+    }
+
+    private static void from4(ChainedTransformationDescriptionBuilder chainedBuilder) {
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion());
     }
 
 }
