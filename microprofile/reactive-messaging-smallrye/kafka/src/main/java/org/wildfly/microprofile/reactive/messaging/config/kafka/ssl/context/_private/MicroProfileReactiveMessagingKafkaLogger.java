@@ -34,7 +34,7 @@ public interface MicroProfileReactiveMessagingKafkaLogger extends BasicLogger {
     @Message(id = 2, value = "Could not find an Elytron client-ssl-context called: %s")
     IllegalStateException noElytronClientSSLContext(String ctx);
 
-    @Message(id = 3, value = "Snappy compression is not supported when running on Windows. The MicroProfile Config " +
+    @Message(id = 3, value = "Snappy compression is not supported when running on Windows or Mac OS. The MicroProfile Config " +
             "property configuring Snappy is: %s")
     DeploymentUnitProcessingException snappyCompressionNotSupportedOnWindows(String propertyName);
 }
