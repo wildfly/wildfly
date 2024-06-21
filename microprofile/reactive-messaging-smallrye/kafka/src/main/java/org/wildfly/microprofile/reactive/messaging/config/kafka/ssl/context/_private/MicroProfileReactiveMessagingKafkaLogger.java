@@ -7,6 +7,7 @@ package org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context._pr
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -33,4 +34,7 @@ public interface MicroProfileReactiveMessagingKafkaLogger extends BasicLogger {
     @Message(id = 2, value = "Could not find an Elytron client-ssl-context called: %s")
     IllegalStateException noElytronClientSSLContext(String ctx);
 
+    @Message(id = 3, value = "Snappy compression is not supported when running on Windows or Mac OS. The MicroProfile Config " +
+            "property configuring Snappy is: %s")
+    DeploymentUnitProcessingException snappyCompressionNotSupportedOnWindows(String propertyName);
 }

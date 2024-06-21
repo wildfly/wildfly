@@ -14,17 +14,17 @@ import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.PropertyPermission;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -36,25 +36,44 @@ import java.util.concurrent.TimeUnit;
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
 public class ReactiveMessagingKafkaCompressionTestCase {
 
+    // Downstream we want to disable Snappy on Windows and Mac
+    // This setting should match that in KafkaReactiveMessagingSslConfigProcessor.DISABLE_SNAPPY_ON_WINDOWS_AND_MAC
+    // I don't want to depend on that module from here
+    static final boolean DISABLE_SNAPPY_ON_WINDOWS_AND_MAC = false;
+
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
 
     @Inject
     CompressionMessagingBean bean;
 
+    static boolean isSnappyEnabled() {
+        String os = WildFlySecurityManager.getPropertyPrivileged("os.name", "x").toLowerCase(Locale.ENGLISH);
+        boolean runningOnWindowsOrMac = os.startsWith("windows") || os.startsWith("mac os");
+        return  !runningOnWindowsOrMac || !DISABLE_SNAPPY_ON_WINDOWS_AND_MAC;
+    }
 
     @Deployment
     public static WebArchive getDeployment() {
+        boolean enableSnappy = isSnappyEnabled();
+        String mpConfigFile = enableSnappy ? "microprofile-config.properties" : "microprofile-config-no-snappy.properties";
+        return getDeploymentInternal(mpConfigFile);
+    }
+
+    static WebArchive getDeploymentWithSnappyEnabled() {
+        // Don't choose here whether to use Snappy or not
+        return getDeploymentInternal("microprofile-config.properties");
+    }
+
+    static WebArchive getDeploymentInternal(String mpConfigFile) {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-kafka-tx.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addPackage(ReactiveMessagingKafkaCompressionTestCase.class.getPackage())
                 .addClasses(RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
-                .addAsWebInfResource(ReactiveMessagingKafkaCompressionTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
+                .addAsWebInfResource(ReactiveMessagingKafkaCompressionTestCase.class.getPackage(), mpConfigFile, "classes/META-INF/microprofile-config.properties")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
                         new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
                 ), "permissions.xml");
-
-        webArchive.as(ZipExporter.class).exportTo(new File("target/test-original.war"), true);
 
         return webArchive;
     }

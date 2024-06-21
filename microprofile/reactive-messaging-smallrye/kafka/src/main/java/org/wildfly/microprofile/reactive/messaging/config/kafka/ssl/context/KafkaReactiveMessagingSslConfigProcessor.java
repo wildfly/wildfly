@@ -5,11 +5,16 @@
 
 package org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context;
 
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.wildfly.microprofile.reactive.messaging.common.security.BaseReactiveMessagingSslConfigProcessor;
+import static org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context._private.MicroProfileReactiveMessagingKafkaLogger.LOGGER;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.wildfly.microprofile.reactive.messaging.common.security.BaseReactiveMessagingSslConfigProcessor;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -21,13 +26,35 @@ class KafkaReactiveMessagingSslConfigProcessor extends BaseReactiveMessagingSslC
 
     private static final String CONNECTOR_NAME = "smallrye-kafka";
 
+    // Disable the Windows and Mac Snappy check
+    private static final boolean DISABLE_SNAPPY_ON_WINDOWS_AND_MAC = false;
+    private static final String OS_NAME = "os.name";
+    public static final String COMPRESSION_TYPE_PROPERTY_SUFFIX = ".compression.type";
+    public static final String SNAPPY_COMPRESSION = "snappy";
+
+    private final boolean runningOnWindowsOrMac;
+
     KafkaReactiveMessagingSslConfigProcessor() {
         super(CONNECTOR_NAME);
+        String os = WildFlySecurityManager.getPropertyPrivileged("os.name", "x").toLowerCase(Locale.ENGLISH);
+        runningOnWindowsOrMac = os.startsWith("windows") || os.startsWith("mac os");
     }
 
     @Override
     protected SecurityDeploymentContext createSecurityDeploymentContext() {
         return new KafkaSecurityDeploymentContext();
+    }
+
+    @Override
+    protected boolean isExtraConfigValueCheck() {
+        return DISABLE_SNAPPY_ON_WINDOWS_AND_MAC && runningOnWindowsOrMac;
+    }
+
+    @Override
+    protected void extraConfigValueCheck(String key, String value) throws DeploymentUnitProcessingException {
+        if (key.endsWith(COMPRESSION_TYPE_PROPERTY_SUFFIX) && value.trim().equals(SNAPPY_COMPRESSION)) {
+            throw LOGGER.snappyCompressionNotSupportedOnWindows(key);
+        }
     }
 
     private class KafkaSecurityDeploymentContext implements BaseReactiveMessagingSslConfigProcessor.SecurityDeploymentContext {

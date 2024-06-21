@@ -23,5 +23,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.reactive.messaging.common"/>
         <module name="org.wildfly.reactive.messaging.config"/>
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>
