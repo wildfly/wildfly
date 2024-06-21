@@ -100,7 +100,7 @@ final class MBeanServices {
         final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(dependencyMBeanName);
         startStopServiceBuilder.requires(injectedMBeanStartStopServiceName);
         final ServiceName injectedMBeanRegisterUnregisterServiceName = ServiceNameFactory.newRegisterUnregister(dependencyMBeanName);
-        registerUnregisterServiceBuilder.requires(injectedMBeanRegisterUnregisterServiceName);
+        createDestroyServiceBuilder.requires(injectedMBeanRegisterUnregisterServiceName);
     }
 
     void addAttribute(final String attributeMBeanName, final Method setter, final DelegatingSupplier propertySupplier) {

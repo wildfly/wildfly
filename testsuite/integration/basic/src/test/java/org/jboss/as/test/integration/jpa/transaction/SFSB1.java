@@ -57,7 +57,7 @@ public class SFSB1 {
         em.flush();         // should throw TransactionRequiredException
     }
 
-    public void createEmployee(String name, String address, int id) {
+    public Company createEmployee(String name, String address, int id) {
 
 
         Employee emp = new Employee();
@@ -80,7 +80,7 @@ public class SFSB1 {
         } catch (Exception e) {
             throw new RuntimeException("couldn't start tx", e);
         }
-
+        return theCompany;
     }
 
 

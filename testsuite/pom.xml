@@ -596,7 +596,7 @@
             </activation>
             <properties>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
-                <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>

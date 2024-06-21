@@ -1,0 +1,7 @@
+package com.sun.faces.context;
+
+/**
+ * @TypeId(515)
+ */
+message Mutex {
+}

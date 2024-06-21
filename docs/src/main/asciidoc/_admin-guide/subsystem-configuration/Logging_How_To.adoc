@@ -63,5 +63,5 @@ If you want to use your own log4j2 implementation, such as log4j-core, then you 
 in a link:Developer_Guide.html#jboss-deployment-structure-file[jboss-deployment-structure.xml].
 2. Then you would need to include the log4j-api and a log4j2 implementation library in your deployment.
 
-IMPORTANT: This only works for logging in your deployment. Server logs will continue to use the logging subsystem
+IMPORTANT: This only works for logging in your deployment. Server logs will continue to use the `logging` subsystem
            configuration.

@@ -138,6 +138,8 @@ public class WarResourceListingTestCase {
         String[] resourcesInWar = new String[]{
                 "META-INF/example.txt",
                 "META-INF/MANIFEST.MF",
+                // Added by WildFly Arquillian jmx-as7 protocol
+                "META-INF/test-description.properties",
                 "META-INF/properties/nested.properties",
                 "TextFile1.txt",
 

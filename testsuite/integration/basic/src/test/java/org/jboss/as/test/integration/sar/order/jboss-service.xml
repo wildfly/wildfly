@@ -8,6 +8,20 @@
         xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
     <!-- List the beans in reverse dep order to further 'stress' the ordering -->
+
+    <!-- These mbeans do not extend ServiceMBeanSupport -->
+    <mbean name="jboss:name=E" code="org.jboss.as.test.integration.sar.order.CustomLifecycleEmitter">
+        <attribute name="id">E</attribute>
+        <depends optional-attribute-name="Dependency">jboss:name=A</depends>
+        <depends optional-attribute-name="LifecycleListener">jboss:name=OrderListener</depends>
+    </mbean>
+    <mbean name="jboss:name=D" code="org.jboss.as.test.integration.sar.order.CustomLifecycleEmitter">
+        <attribute name="id">D</attribute>
+        <depends>jboss:name=A</depends>
+        <depends optional-attribute-name="LifecycleListener">jboss:name=OrderListener</depends>
+    </mbean>
+
+    <!-- The other mbeans extend ServiceMBeanSupport -->
     <mbean name="jboss:name=C" code="org.jboss.as.test.integration.sar.order.LifecycleEmitter">
         <attribute name="id">C</attribute>
         <depends>jboss:name=B</depends>

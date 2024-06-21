@@ -910,7 +910,7 @@
             <properties>
                 <ts.glow.phase>test-compile</ts.glow.phase>
                 <ts.glow.config-name>standalone.xml</ts.glow.config-name>
-                <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
 
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override

@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.manual.elytron.oidc.subsystem;
+package org.wildfly.test.integration.elytron.oidc.client.subsystem;
 
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.servlet.annotation.HttpConstraint;
@@ -15,9 +15,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import org.wildfly.security.http.oidc.OidcSecurityContext;
+
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
-import org.wildfly.test.manual.elytron.oidc.KeycloakConfiguration;
+import org.wildfly.security.http.oidc.OidcSecurityContext;
+import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
+
 
 
 /**
