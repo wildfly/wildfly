@@ -213,9 +213,6 @@
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
-                            <minimum-stability-level>experimental</minimum-stability-level>
-                            <config-stability-level>preview</config-stability-level>
-                            <package-stability-level>experimental</package-stability-level>
                         </configuration>
                     </execution>
                 </executions>
