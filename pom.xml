@@ -322,7 +322,7 @@
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
-        <version.org.wildfly.unstable.annotation.api>1.0.0.Alpha3</version.org.wildfly.unstable.annotation.api>
+        <version.org.wildfly.unstable.annotation.api>1.0.0.Beta1</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.galleon-plugins>7.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.2.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>

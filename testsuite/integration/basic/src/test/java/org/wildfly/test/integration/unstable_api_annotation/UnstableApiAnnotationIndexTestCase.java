@@ -69,8 +69,8 @@ public class UnstableApiAnnotationIndexTestCase {
     private static final String CONTENT = "content";
     private static final String INDEX_INDEX_FILE = "index.txt";
 
-    private static final String WILDFLY_EE_FEATURE_PACK_INDEX = "wildfly-ee-feature-pack.txt";
-    private static final String WILDFLY_GALLEON_PACK_INDEX = "wildfly-galleon-pack.txt";
+    private static final String WILDFLY_EE_FEATURE_PACK_INDEX = "wildfly-ee-feature-pack.zip";
+    private static final String WILDFLY_GALLEON_PACK_INDEX = "wildfly-galleon-pack.zip";
 
     @ArquillianResource
     public ManagementClient managementClient;

@@ -8,8 +8,8 @@
     <append-file
             target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/index.txt"
             ignore="true">
-        <line>wildfly-ee-feature-pack.txt</line>
+        <line>wildfly-ee-feature-pack.zip</line>
     </append-file>
-    <copy-path src="wildfly-ee-feature-pack.txt" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.txt"/>
+    <copy-path src="wildfly-ee-feature-pack.zip" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.zip"/>
 
 </tasks>

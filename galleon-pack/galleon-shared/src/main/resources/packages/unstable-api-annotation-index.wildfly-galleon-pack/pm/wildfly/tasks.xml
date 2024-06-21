@@ -8,7 +8,7 @@
     <append-file
             target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/index.txt"
             ignore="true">
-        <line>wildfly-galleon-pack.txt</line>
+        <line>wildfly-galleon-pack.zip</line>
     </append-file>
-    <copy-path src="wildfly-galleon-pack.txt" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack.txt"/>
+    <copy-path src="wildfly-galleon-pack.zip" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack.zip"/>
 </tasks>
