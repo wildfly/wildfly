@@ -22,6 +22,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
@@ -239,7 +240,10 @@ public class AddStepHandler extends AbstractAddStepHandler implements Management
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver()).withFlag(OperationEntry.Flag.RESTART_NONE);
+        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, this.descriptor.getDescriptionResolver())
+                .setDescriptionProvider(new DefaultResourceAddDescriptionProvider(registration, this.descriptor.getDescriptionResolver(), registration.isOrderedChildResource()))
+                .withFlag(OperationEntry.Flag.RESTART_NONE)
+                ;
         if (registration.isOrderedChildResource()) {
             builder.addParameter(SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ADD_INDEX, ModelType.INT, true).build());
         }
