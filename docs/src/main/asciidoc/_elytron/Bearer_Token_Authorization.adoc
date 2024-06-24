@@ -190,7 +190,7 @@ When validating a Bearer token,
 Elytron by default waits up to 2000 milliseconds when
 establishing a connection to the URL used in obtaining the public
 key from the OAuth2 or JWT provider, and up to 2000 milliseconds when
-reading the public key.  The user can customize these wait times with
+reading the public key.  The user can customize these expiration times with
 two new optional token-realm attributes, `connection-timeout` and `read-timeout`.
 
 ```xml
@@ -209,7 +209,7 @@ and a null value will be returned to the validation process.
 
 * *connection-timeout*
 +
-A property representing the time in milliseconds to wait on connecting
+A property representing the time in milliseconds to wait when connecting
   to the URL of the OAuth2 or JWT provider before expiring and logging a
   warning message and returning to the validation process.
 +
