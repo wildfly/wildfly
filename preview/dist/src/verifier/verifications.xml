@@ -42,10 +42,6 @@
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/org/jboss/as/server/main/wildfly-server-${version.org.wildfly.core}.jar</location>
-      <exists>true</exists>
-    </file>
-    <file>
       <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/modules/system/layers/base/io/smallrye/fault-tolerance/main</location>
       <exists>true</exists>
     </file>
