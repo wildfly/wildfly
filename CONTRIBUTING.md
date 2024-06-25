@@ -28,5 +28,4 @@ Check out our issues with the `good-first-issue` label. These are a triaged set 
 
 Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. To assign an issue to yourself, simply click on "Start Progress". This will automatically assign the issue to you.
 
-
 Lastly, this project is an open source project. Please act responsibly, be nice, polite and enjoy!
