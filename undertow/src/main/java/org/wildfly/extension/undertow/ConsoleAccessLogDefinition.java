@@ -108,8 +108,7 @@ class ConsoleAccessLogDefinition extends PersistentResourceDefinition {
 
             final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addCapability(CONSOLE_ACCESS_LOG_CAPABILITY);
 
-            final Supplier<Host> hostSupplier = serviceBuilder.requires(
-                    context.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, Host.class, serverName, hostName));
+            final Supplier<Host> hostSupplier = serviceBuilder.requires(Host.SERVICE_DESCRIPTOR, serverName, hostName);
             final Supplier<XnioWorker> workerSupplier = serviceBuilder.requires(
                     context.getCapabilityServiceName(Capabilities.REF_IO_WORKER, XnioWorker.class, worker));
 

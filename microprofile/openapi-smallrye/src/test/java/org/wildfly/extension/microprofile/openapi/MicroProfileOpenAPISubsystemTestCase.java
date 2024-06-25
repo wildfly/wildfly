@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Unit test for MicroProfile OpenAPI subsystem.
  * @author Paul Ferraro
  */
-@RunWith(value = Parameterized.class)
+@RunWith(Parameterized.class)
 public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemSchemaTest<MicroProfileOpenAPISubsystemSchema> {
 
     @Parameters
@@ -24,6 +24,6 @@ public class MicroProfileOpenAPISubsystemTestCase extends AbstractSubsystemSchem
     }
 
     public MicroProfileOpenAPISubsystemTestCase(MicroProfileOpenAPISubsystemSchema schema) {
-        super(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new MicroProfileOpenAPIExtension(), schema, MicroProfileOpenAPISubsystemSchema.CURRENT);
+        super(MicroProfileOpenAPISubsystemRegistrar.NAME, new MicroProfileOpenAPIExtension(), schema, MicroProfileOpenAPISubsystemSchema.CURRENT);
     }
 }

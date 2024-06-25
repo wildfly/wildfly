@@ -5,8 +5,6 @@
 
 package org.wildfly.extension.microprofile.openapi;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
@@ -26,7 +24,7 @@ public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSch
     private final VersionedNamespace<IntVersion, MicroProfileOpenAPISubsystemSchema> namespace;
 
     MicroProfileOpenAPISubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileOpenAPIExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicroProfileOpenAPISubsystemRegistrar.NAME, new IntVersion(major, minor));
     }
 
     @Override
@@ -36,6 +34,6 @@ public enum MicroProfileOpenAPISubsystemSchema implements PersistentSubsystemSch
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(MicroProfileOpenAPISubsystemDefinition.PATH, this.namespace).build();
+        return PersistentResourceXMLDescription.factory(this).builder(MicroProfileOpenAPISubsystemRegistrar.PATH).build();
     }
 }

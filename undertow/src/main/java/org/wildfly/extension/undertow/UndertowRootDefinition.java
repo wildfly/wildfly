@@ -35,6 +35,7 @@ import org.wildfly.common.function.ExceptionFunction;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
@@ -69,7 +70,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
                 new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_HOST, ModelType.STRING, true)
                         .setRestartAllServices()
                         .setDefaultValue(new ModelNode("default-host"))
-                        .setCapabilityReference(UNDERTOW_CAPABILITY, Capabilities.CAPABILITY_HOST, DEFAULT_SERVER)
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(UNDERTOW_CAPABILITY, Host.SERVICE_DESCRIPTOR).withParentAttribute(DEFAULT_SERVER).build())
                         .build();
 
     protected static final SimpleAttributeDefinition INSTANCE_ID =

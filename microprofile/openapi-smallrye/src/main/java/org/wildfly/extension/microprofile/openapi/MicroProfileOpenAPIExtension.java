@@ -4,11 +4,11 @@
  */
 package org.wildfly.extension.microprofile.openapi;
 
-import org.jboss.as.clustering.controller.PersistentSubsystemExtension;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.kohsuke.MetaInfServices;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
+import org.wildfly.subsystem.SubsystemPersistence;
 
 /**
  * Extension that provides the MicroProfile OpenAPI subsystem.
@@ -16,12 +16,9 @@ import org.kohsuke.MetaInfServices;
  * @author Paul Ferraro
  */
 @MetaInfServices(Extension.class)
-public class MicroProfileOpenAPIExtension extends PersistentSubsystemExtension<MicroProfileOpenAPISubsystemSchema> {
-
-    static final String SUBSYSTEM_NAME = "microprofile-openapi-smallrye";
-    static final ParentResourceDescriptionResolver SUBSYSTEM_RESOLVER = new SubsystemResourceDescriptionResolver(SUBSYSTEM_NAME, MicroProfileOpenAPIExtension.class);
+public class MicroProfileOpenAPIExtension extends SubsystemExtension<MicroProfileOpenAPISubsystemSchema> {
 
     public MicroProfileOpenAPIExtension() {
-        super(SUBSYSTEM_NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemDefinition::new, MicroProfileOpenAPISubsystemSchema.CURRENT);
+        super(SubsystemConfiguration.of(MicroProfileOpenAPISubsystemRegistrar.NAME, MicroProfileOpenAPISubsystemModel.CURRENT, MicroProfileOpenAPISubsystemRegistrar::new), SubsystemPersistence.of(MicroProfileOpenAPISubsystemSchema.CURRENT));
     }
 }

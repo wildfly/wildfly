@@ -17,7 +17,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -34,9 +33,8 @@ class HostDefinition extends PersistentResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
-    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_HOST, true, Host.class)
+    static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
-            .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
             .build();
 
 

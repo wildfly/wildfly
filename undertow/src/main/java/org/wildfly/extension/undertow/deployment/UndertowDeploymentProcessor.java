@@ -273,7 +273,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
-        final ServiceName hostServiceName = capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, serverInstanceName, hostName);
         final ServiceName legacyDeploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
         final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(deploymentUnit.getServiceName());
 
@@ -292,7 +291,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Supplier<UndertowService> undertowService = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_UNDERTOW));
         final Supplier<ServletContainerService> servletContainerService = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_SERVLET_CONTAINER, servletContainerName));
         final Supplier<ComponentRegistry> componentRegistryDependency = componentRegistryExists ? builder.requires(ComponentRegistry.serviceName(deploymentUnit)) : Functions.constantSupplier(componentRegistry);
-        final Supplier<Host> host = builder.requires(hostServiceName);
+        final Supplier<Host> host = builder.requires(Host.SERVICE_DESCRIPTOR, serverInstanceName, hostName);
         final Supplier<SuspendController> suspendController = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER));
         final Supplier<ServerEnvironment> serverEnvironment = builder.requires(ServerEnvironment.SERVICE_DESCRIPTOR);
         Supplier<SecurityDomain> securityDomain = null;
@@ -426,7 +425,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         final Consumer<UndertowDeploymentService> sConsumer = udsBuilder.provides(deploymentServiceName, legacyDeploymentServiceName);
         final Supplier<ServletContainerService> cSupplier = udsBuilder.requires(UndertowService.SERVLET_CONTAINER.append(defaultContainer));
         final Supplier<ExecutorService> seSupplier = Services.requireServerExecutor(udsBuilder);
-        final Supplier<Host> hSupplier = udsBuilder.requires(hostServiceName);
+        final Supplier<Host> hSupplier = udsBuilder.requires(capabilitySupport.getCapabilityServiceName(Host.SERVICE_DESCRIPTOR, serverInstanceName, hostName));
         final Supplier<DeploymentInfo> diSupplier = udsBuilder.requires(deploymentInfoServiceName);
         for (final ServiceName webDependency : deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES)) {
             udsBuilder.requires(webDependency);
