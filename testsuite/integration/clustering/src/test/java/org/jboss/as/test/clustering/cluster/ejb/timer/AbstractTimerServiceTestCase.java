@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -39,6 +40,7 @@ import org.jboss.as.test.clustering.cluster.ejb.timer.beans.TimerBean;
 import org.jboss.as.test.clustering.cluster.ejb.timer.servlet.TimerServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -51,6 +53,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTestCase {
+
+    private static final Duration TIMEOUT_DURATION = Duration.ofMillis(TimeoutUtil.adjust(2000));
+
+    private static void awaitTimers() throws InterruptedException {
+        TimeUnit.MILLISECONDS.sleep(TIMEOUT_DURATION.toMillis());
+    }
 
     protected static WebArchive createArchive(Class<? extends AbstractTimerServiceTestCase> testClass) {
         return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
@@ -77,8 +85,6 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
 
-            TimeUnit.SECONDS.sleep(2);
-
             // Create manual timers on node 1 only
             try (CloseableHttpResponse response = client.execute(new HttpPut(uris.get(NODE_1)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -98,7 +104,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             Map<Class<? extends TimerBean>, Map<String, List<Instant>>> timeouts = new IdentityHashMap<>();
             for (Class<? extends TimerBean> beanClass : TimerServlet.TIMER_CLASSES) {
@@ -150,7 +156,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -188,7 +194,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.stop(NODE_1);
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             try (CloseableHttpResponse response = client.execute(new HttpHead(uris.get(NODE_2)))) {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -224,7 +230,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.start(NODE_1);
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -253,7 +259,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
                 }
             }
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -284,7 +290,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             this.stop(NODE_2);
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
@@ -316,7 +322,7 @@ public abstract class AbstractTimerServiceTestCase extends AbstractClusteringTes
 
             Instant cancellation = Instant.now();
 
-            TimeUnit.SECONDS.sleep(2);
+            awaitTimers();
 
             for (Map<String, List<Instant>> beanTimeouts : timeouts.values()) {
                 beanTimeouts.clear();
