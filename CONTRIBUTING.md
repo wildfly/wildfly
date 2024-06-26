@@ -26,6 +26,6 @@ To create a new issue, comment on an existing issue, or assign an issue to yours
 
 Check out our issues with the `good-first-issue` label. These are a triaged set of issues that are great for getting started on our project. These can be found [here](https://issues.redhat.com/issues/?filter=12403174).
 
-Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. To assign an issue to yourself, simply click on "Start Progress". This will automatically assign the issue to you.
+Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. To assign an issue to yourself, simply click on "Start Progress". This will automatically assign the issue to you. If you're not able to assign it to yourself that way, post a message in the [wildfly-developers Zulip stream](https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers) and someone will help get it assigned to you.
 
 Lastly, this project is an open source project. Please act responsibly, be nice, polite and enjoy!
