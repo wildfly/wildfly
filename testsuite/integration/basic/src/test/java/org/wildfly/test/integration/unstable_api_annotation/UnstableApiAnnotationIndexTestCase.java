@@ -5,6 +5,21 @@
 
 package org.wildfly.test.integration.unstable_api_annotation;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -37,21 +52,6 @@ import org.wildfly.test.integration.unstable_api_annotation.jar2.Jar2ClassA;
 import org.wildfly.test.integration.unstable_api_annotation.war.Servlet;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-
 /**
  * The full test for testing the reporting of usage of unstable API annotation annotated constructs lives
  * in WildFly Core. This test is just to verify that the annotation index from the feature packs is present in the server.
@@ -67,7 +67,7 @@ public class UnstableApiAnnotationIndexTestCase {
             "system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main";
 
     private static final String CONTENT = "content";
-    private static final String INDEX_INDEX_FILE = "index.txt";
+    private static final String README_TXT = "README.txt";
 
     private static final String WILDFLY_EE_FEATURE_PACK_INDEX = "wildfly-ee-feature-pack.zip";
     private static final String WILDFLY_GALLEON_PACK_INDEX = "wildfly-galleon-pack.zip";
@@ -103,21 +103,14 @@ public class UnstableApiAnnotationIndexTestCase {
                 Path indexContentDir = indexModulePath.resolve(CONTENT);
                 Assert.assertTrue(Files.exists(indexContentDir));
 
-                Path mainIndexFile = indexContentDir.resolve(INDEX_INDEX_FILE);
-                Assert.assertTrue(Files.exists(mainIndexFile));
-
                 Set<String> indices = Files.list(indexContentDir)
-                        .filter(p -> !p.getFileName().toString().equals(INDEX_INDEX_FILE))
+                        .filter(p -> !p.getFileName().toString().equals(README_TXT))
                         .map(p -> p.getFileName().toString())
                         .collect(Collectors.toSet());
                 // We are always running in an execution that has both feature packs provisioned
                 Assert.assertEquals(2, indices.size());
                 Assert.assertTrue(indices.toString(), indices.contains(WILDFLY_EE_FEATURE_PACK_INDEX));
                 Assert.assertTrue(indices.toString(), indices.contains(WILDFLY_GALLEON_PACK_INDEX));
-
-                List<String> mainIndexEntries = Files.readAllLines(mainIndexFile).stream().filter(l -> !l.isEmpty() && !l.startsWith("#")).collect(Collectors.toList());
-                Assert.assertEquals(mainIndexEntries + " : " + indices, mainIndexEntries.size(), indices.size());
-                Assert.assertTrue(mainIndexEntries + " : " + indices, indices.containsAll(mainIndexEntries));
 
                 break;
             }
