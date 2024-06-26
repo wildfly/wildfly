@@ -75,7 +75,7 @@ Make sure there is a JIRA somewhere for the enhancement/fix
 * https://issues.redhat.com/projects/WFCORE (for WildFly Core)
 
 == Good First Issues
-Want to contribute to the WildFly project but aren't quite sure where to start? Check out our issues with the https://issues.redhat.com/browse/WFLY-15654?filter=12403174[good-first-issue] label. These are a triaged set of issues that are great for getting started on our project.
+Want to contribute to the WildFly project but aren't quite sure where to start? Check out our issues with the https://issues.redhat.com/issues/?filter=12403174[good-first-issue] label. These are a triaged set of issues that are great for getting started on our project.
 
 Once you have selected an issue you'd like to work on, make sure it's not already assigned to someone else. If you've resolved a WildFly issue before, to assign an issue to yourself, you should be able to simply click on "Start Progress" or Change the assignee by clicking on "Assign to me". This will automatically assign the issue to you. If you haven't resolved an issue before, please start a thread expressing your interest in the issue in the https://wildfly.zulipchat.com/#narrow/stream/174184-wildfly-developers[wildfly-developers] stream in zulip.
 
