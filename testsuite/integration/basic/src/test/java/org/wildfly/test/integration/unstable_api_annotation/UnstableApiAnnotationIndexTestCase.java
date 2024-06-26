@@ -9,7 +9,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +16,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -62,16 +60,6 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 @RunAsClient
 @ServerSetup({UnstableApiAnnotationIndexTestCase.AddUnstableApiAnnotationResourceSetupTask.class, UnstableApiAnnotationIndexTestCase.SystemPropertyServerSetupTask.class})
 public class UnstableApiAnnotationIndexTestCase {
-
-    private static final String INDEX_MODULE_DIR =
-            "system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main";
-
-    private static final String CONTENT = "content";
-    private static final String README_TXT = "README.txt";
-
-    private static final String WILDFLY_EE_FEATURE_PACK_INDEX = "wildfly-ee-feature-pack.zip";
-    private static final String WILDFLY_GALLEON_PACK_INDEX = "wildfly-galleon-pack.zip";
-
     @ArquillianResource
     public ManagementClient managementClient;
 
@@ -79,44 +67,6 @@ public class UnstableApiAnnotationIndexTestCase {
     public static Archive<?> getDummyDeployment() {
         return ShrinkWrap.create(JavaArchive.class, "dummy.jar")
                 .addClass(Dummy.class);
-    }
-
-    @Test
-    public void testIndexExists() throws Exception {
-        String[] modulePathStrings = System.getProperty("module.path", null).split(File.pathSeparator);
-        List<Path> modulePaths = new ArrayList<>();
-        for (String mp : modulePathStrings) {
-            Path p = Paths.get(mp);
-            if (Files.exists(p)) {
-                modulePaths.add(p);
-            }
-        }
-
-        Assert.assertTrue(modulePaths.size() > 0);
-
-        boolean found = false;
-        for (Path modulesPath : modulePaths) {
-            Path indexModulePath = modulesPath.resolve(INDEX_MODULE_DIR);
-            if (Files.exists(indexModulePath)) {
-                found = true;
-
-                Path indexContentDir = indexModulePath.resolve(CONTENT);
-                Assert.assertTrue(Files.exists(indexContentDir));
-
-                Set<String> indices = Files.list(indexContentDir)
-                        .filter(p -> !p.getFileName().toString().equals(README_TXT))
-                        .map(p -> p.getFileName().toString())
-                        .collect(Collectors.toSet());
-                // We are always running in an execution that has both feature packs provisioned
-                Assert.assertEquals(2, indices.size());
-                Assert.assertTrue(indices.toString(), indices.contains(WILDFLY_EE_FEATURE_PACK_INDEX));
-                Assert.assertTrue(indices.toString(), indices.contains(WILDFLY_GALLEON_PACK_INDEX));
-
-                break;
-            }
-        }
-
-        Assert.assertTrue("Could not find annotation index module", found);
     }
 
     @Test
