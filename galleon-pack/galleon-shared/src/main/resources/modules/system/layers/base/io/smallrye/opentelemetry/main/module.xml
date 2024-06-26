@@ -16,9 +16,14 @@
 
     <dependencies>
         <module name="io.opentelemetry.api"/>
+        <module name="io.opentelemetry.api.events"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.exporter"/>
+        <module name="io.opentelemetry.otlp"/>
         <module name="io.opentelemetry.sdk"/>
+        <module name="io.opentelemetry.semconv"/>
+        <module name="io.opentelemetry.instrumentation.api"/>
+        <module name="io.opentelemetry.instrumentation.annotations"/>
 
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>

@@ -9,8 +9,6 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${com.fasterxml.jackson.jr:jackson-jr-objects}"/>
     </resources>
 
@@ -18,9 +16,9 @@
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.sdk"/>
         <module name="io.opentelemetry.context"/>
-        <module name="io.opentelemetry.otlp"/>
+        <module name="io.opentelemetry.otlp" services="export"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
-        <module name="io.smallrye.opentelemetry" services="import"/>
+        <module name="io.smallrye.opentelemetry" services="export"/>
         <module name="org.slf4j"/>
 
         <module name="java.logging"/>
