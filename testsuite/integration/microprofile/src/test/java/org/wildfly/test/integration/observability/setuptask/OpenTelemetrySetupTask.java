@@ -25,6 +25,8 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
+
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, extensionAddress))) {
             executeOp(managementClient, Operations.createAddOperation(extensionAddress));
             extensionAdded = true;
@@ -38,13 +40,9 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "batch-delay", "1"));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "sampler-type", "on"));
-        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "max-queue-size", "1"));
 
-        if (dockerAvailable) {
-            otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
-            executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
-                    otelCollectorContainer.getOtlpGrpcEndpoint()));
-        }
+        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
+                otelCollectorContainer.getOtlpGrpcEndpoint()));
 
         ServerReload.reloadIfRequired(managementClient);
     }

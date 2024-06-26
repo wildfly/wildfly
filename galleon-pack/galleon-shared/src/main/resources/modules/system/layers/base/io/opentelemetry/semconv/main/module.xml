@@ -1,0 +1,17 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module xmlns="urn:jboss:module:1.9" name="io.opentelemetry.semconv">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${io.opentelemetry:opentelemetry-semconv}"/>
+    </resources>
+
+    <dependencies>
+        <module name="io.opentelemetry.api"/>
+    </dependencies>
+</module>
