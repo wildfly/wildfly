@@ -310,17 +310,15 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         poolRequired = poolRequired || capacityRequired;
 
         if (poolRequired) {
+            streamWriter.writeStartElement(isXa ? ConnectionDefinition.Tag.XA_POOL.getLocalName() : ConnectionDefinition.Tag.POOL.getLocalName());
+            MIN_POOL_SIZE.marshallAsElement(conDef, streamWriter);
+            INITIAL_POOL_SIZE.marshallAsElement(conDef, streamWriter);
+            MAX_POOL_SIZE.marshallAsElement(conDef, streamWriter);
+            POOL_PREFILL.marshallAsElement(conDef, streamWriter);
+            POOL_FAIR.marshallAsElement(conDef, streamWriter);
+            POOL_USE_STRICT_MIN.marshallAsElement(conDef, streamWriter);
+            POOL_FLUSH_STRATEGY.marshallAsElement(conDef, streamWriter);
             if (isXa) {
-
-                streamWriter.writeStartElement(ConnectionDefinition.Tag.XA_POOL.getLocalName());
-                MIN_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                INITIAL_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                MAX_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                POOL_PREFILL.marshallAsElement(conDef, streamWriter);
-                POOL_FAIR.marshallAsElement(conDef, streamWriter);
-                POOL_USE_STRICT_MIN.marshallAsElement(conDef, streamWriter);
-                POOL_FLUSH_STRATEGY.marshallAsElement(conDef, streamWriter);
-
                 SAME_RM_OVERRIDE.marshallAsElement(conDef, streamWriter);
                 if (conDef.hasDefined(INTERLEAVING.getName()) && conDef.get(INTERLEAVING.getName()).getType().equals(ModelType.BOOLEAN)
                         && conDef.get(INTERLEAVING.getName()).asBoolean()) {
@@ -336,17 +334,6 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 }
                 PAD_XID.marshallAsElement(conDef, streamWriter);
                 WRAP_XA_RESOURCE.marshallAsElement(conDef, streamWriter);
-
-
-            } else {
-                streamWriter.writeStartElement(ConnectionDefinition.Tag.POOL.getLocalName());
-                MIN_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                INITIAL_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                MAX_POOL_SIZE.marshallAsElement(conDef, streamWriter);
-                POOL_PREFILL.marshallAsElement(conDef, streamWriter);
-                POOL_USE_STRICT_MIN.marshallAsElement(conDef, streamWriter);
-                POOL_FLUSH_STRATEGY.marshallAsElement(conDef, streamWriter);
-
             }
             if (capacityRequired) {
                 streamWriter.writeStartElement(Pool.Tag.CAPACITY.getLocalName());

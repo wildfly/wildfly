@@ -20,7 +20,7 @@
         </xs:all>
     </xs:complexType>
 
-    <xs:complexType name="boolean-presenceType"></xs:complexType>
+    <xs:complexType name="boolean-presenceType"/>
 
     <xs:complexType name="config-propertyType" mixed="true">
         <xs:annotation>
@@ -140,7 +140,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="false" name="statistics-enabled" type="xs:boolean">
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[[
@@ -196,7 +196,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="true" name="use-java-context" type="xs:boolean">
+        <xs:attribute name="use-java-context" type="xs:boolean" default="true">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[[
@@ -228,7 +228,7 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
-        <xs:attributeGroup ref="common-attribute"></xs:attributeGroup>
+        <xs:attributeGroup ref="common-attribute"/>
     </xs:complexType>
 
     <xs:complexType name="timeoutType">
@@ -428,7 +428,7 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="recovery" type="recoverType" minOccurs="0" maxOccurs="1"></xs:element>
+            <xs:element name="recovery" type="recoverType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="use-ccm" type="xs:boolean" default="true" use="optional">
             <xs:annotation>
@@ -458,7 +458,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute default="false" name="connectable" type="xs:boolean">
+        <xs:attribute name="connectable" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[[
@@ -494,7 +494,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attributeGroup ref="common-attribute"></xs:attributeGroup>
+        <xs:attributeGroup ref="common-attribute"/>
     </xs:complexType>
 
     <xs:complexType name="poolType">
@@ -807,9 +807,9 @@
     </xs:complexType>
     <xs:complexType name="extensionType">
         <xs:sequence>
-            <xs:element name="config-property" type="config-propertyType"></xs:element>
+            <xs:element name="config-property" type="config-propertyType"/>
         </xs:sequence>
-        <xs:attribute name="class-name" type="xs:token" use="required"></xs:attribute>
+        <xs:attribute name="class-name" type="xs:token" use="required"/>
     </xs:complexType>
     <xs:complexType name="credentialType">
         <xs:sequence>
@@ -1109,7 +1109,7 @@
     </xs:complexType>
 
     <xs:complexType name="report-directoryType">
-        <xs:attribute name="path" type="xs:token" use="required"></xs:attribute>
+        <xs:attribute name="path" type="xs:token" use="required"/>
     </xs:complexType>
 
 </xs:schema>
