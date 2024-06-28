@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.bom</groupId>
+        <groupId>org.wildfly.bom.builder</groupId>
         <artifactId>wildfly</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
@@ -36,7 +36,7 @@
 
     <packaging>pom</packaging>
 
-    <name>WildFly BOMs: Client Aggregator</name>
+    <name>WildFly BOM Builders: Client</name>
 
     <modules>
         <module>ejb-client</module>

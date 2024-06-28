@@ -34,12 +34,19 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly.bom</groupId>
+    <groupId>org.wildfly.bom.builder</groupId>
     <artifactId>wildfly</artifactId>
 
     <packaging>pom</packaging>
 
-    <name>WildFly BOMs: Parent Aggregator</name>
+    <name>WildFly BOM Builders</name>
+
+    <properties>
+        <!-- the BOMs built's groupId -->
+        <bomGroupId>org.wildfly</bomGroupId>
+        <!-- the BOMs built's artifactId prefix-->
+        <bomArtifactIdPrefix>wildfly</bomArtifactIdPrefix>
+    </properties>
 
     <licenses>
         <license>
@@ -57,6 +64,8 @@
                     <artifactId>wildfly-bom-builder-plugin</artifactId>
                     <version>${version.org.wildfly.bom-builder-plugin}</version>
                     <configuration>
+                        <!-- configuration common to all user BOMs -->
+                        <licenses>true</licenses>
                         <includeRepositories>
                             <id>jboss-public-repository-group</id>
                         </includeRepositories>
@@ -68,8 +77,7 @@
 
     <modules>
         <module>client</module>
-        <module>ee</module>
-        <module>microprofile</module>
+        <module>server</module>
     </modules>
 
 </project>
