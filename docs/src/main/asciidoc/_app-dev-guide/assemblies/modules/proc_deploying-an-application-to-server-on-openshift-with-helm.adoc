@@ -1,0 +1,104 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-10-16
+:_mod-docs-content-type: PROCEDURE
+
+[id="deploying-an-application-to-server-on-openshift-with-helm_{context}"]
+= Building and deploying an application to {ProductShortname} on OpenShift with Helm
+
+[role="_abstract"]
+Use the {ProductShortname} Helm chart to configure and deploy application to {ProductShortname} on OpenShift with Helm.
+
+.Prerequisites
+
+* You have prepared your application for deployment on {cloudPlatform}.
++
+For more information, see xref:preparing-an-application-for-deployment-on-openshift_deploying-an-application-to-cloudplatform[Preparing an application for deployment on OpenShift Container Platform].
+
+* You have created a project in {cloudPlatform}.
++
+For more information see link:https://access.redhat.com/documentation/en-us/openshift_container_platform/4.14/html-single/building_applications/index#working-with-projects[Working with projects].
+
+* You have installed OpenShift CLI (`oc`)
++
+For more information, see link:https://access.redhat.com/documentation/en-us/openshift_container_platform/4.14/html-single/cli_tools/index#openshift-cli-oc[Installing the OpenShift CLI].
+
+* You are logged in to {cloudPlatform} from your machine.
++
+For more information, see link:https://access.redhat.com/documentation/en-us/openshift_container_platform/4.14/html-single/cli_tools/index#cli-logging-in_cli-developer-commands[Logging in to the OpenShift CLI].
+
+* You have installed helm.
++
+For more information, see link:https://helm.sh/docs/intro/install/[Installing Helm].
+
+.Procedure
+
+. Create a directory called `charts` in the application root directoy and navigate to it. Application root directory is the one that contains `pom.xml` configuration file.
++
+[source,options="nowrap"]
+----
+$ mkdir charts; cd charts
+----
+
+. Create a file `helm.yaml` with the following content:
++
+[source,yaml,optinos="nowrap",subs=+quotes]
+----
+build:
+  uri: https://github.com/__<user>__/__<repository>__.git     <1>
+  ref: __<branch_name>__                                  <2>
+  contextDir: helloworld                              <3>
+deploy:
+  replicas: 1                                         <4>
+----
+<1> Specify the URL for your Git repository that contains the application to deploy on {cloudPlatform}.
+<2> Specify the Git branch that contains your application.
+<3> Specify the directory containing the application.
+<4> Specify the number of pods to create.
+
+. Configure the {ProductShortname} repository in Helm.
+
+* If you haven't added the {ProductShortname} repository to Helm before, add it.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ helm repo add {helmName} {helmURL}
+----
+
+* If you already have added the {ProductShortname} repository to Helm, update it.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ helm repo update {helmName}
+----
+
+. Deploy the application using helm.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ helm install helloworld -f helm.yaml {helmChart}
+----
+
+.Verification
+
+. Get the URL of the route to the deployment.
++
+[source,options="nowrap",subs=attributes+]
+----
+$ APPLICATION_URL=https://$(oc get route {helm-app-name} --template='{{ .spec.host }}') &&
+echo "" &&
+echo "Application URL: $APPLICATION_URL"
+----
++
+The deployment can take a few minutes to complete.
+
+. To access the application, navigate to the Application URL of the deployment in a browser.
++
+You are redirected to the servlet at path "/HelloWorld" and you get the following message:
++
+----
+Hello World!
+----
+
+[role="_additional-resources"]
+.Next steps
+* xref:testing-an-application-deployed-to-server_default[Testing an application deployed on {ProductShortName}]

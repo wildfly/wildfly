@@ -1,0 +1,30 @@
+include::_app-dev-guide/attributes.adoc[]
+
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 2
+:toc-title: {GettingStartedDevelopingApplications}
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+:wildflyVersion: {wildflyversion}
+:sectlinks:
+:idseparator: -
+:include-depth: 2
+
+:appication_development:
+
+= {GettingStartedDevelopingApplications}
+
+This guide covers how to develop, from scratch, test, and deploy applications on {ProductShortName}. If you are already familiar with some areas, use the table of contents to jump ahead.
+
+//include::_app-dev-guide/assemblies/modules/con_introduction-to-developing-applications-for-server-deployment.adoc[leveloffset=+1]
+
+include::_app-dev-guide/assemblies/assembly_creating-a-maven-project-for-a-hello-world-application.adoc[leveloffset=+1]
+
+include::_app-dev-guide/assemblies/modules/proc_creating-a-hello-world-servlet.adoc[leveloffset=+1]
+
+include::_app-dev-guide/assemblies/assembly_deploying-an-application-to-the-server.adoc[leveloffset=+1]
+
+include::_app-dev-guide/assemblies/assembly_testing-an-application-deployed-to-server.adoc[leveloffset=+1]
