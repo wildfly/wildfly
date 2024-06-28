@@ -4,9 +4,12 @@
  */
 package org.jboss.as.test.integration.jaxrs.integration.cdi;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * @author Stuart Douglas
  */
+@ApplicationScoped
 public class CDIBean {
 
     public String message() {

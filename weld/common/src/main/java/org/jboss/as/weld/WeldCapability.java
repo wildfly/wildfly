@@ -5,6 +5,9 @@
 
 package org.jboss.as.weld;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
+import java.util.Map;
 import java.util.function.Supplier;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
@@ -93,5 +96,34 @@ public interface WeldCapability {
      * a call to this method, calls to {@code isWeldDeployment(DeploymentUnit unit)} will return true.
      */
     void markAsWeldDeployment(DeploymentUnit unit);
+
+    /**
+     * Allows adding bean defining annotations to Weld.
+     *
+     * @param annotation the annotation to add as a bean defining annotation
+     *
+     * @return this WeldCapability
+     */
+    default WeldCapability addBeanDefiningAnnotation(final Class<? extends Annotation> annotation) {
+        return addBeanDefiningAnnotation(annotation, annotation.isAnnotationPresent(Inherited.class));
+    }
+
+    /**
+     * Allows adding bean defining annotations to Weld.
+     *
+     * @param annotation the annotation to add as a bean defining annotation
+     * @param inherited  whether the annotation should be {@linkplain  java.lang.annotation.Inherited inherited} or not
+     *
+     * @return this WeldCapability
+     */
+    WeldCapability addBeanDefiningAnnotation(Class<? extends Annotation> annotation, boolean inherited);
+
+    /**
+     * An unmodifiable map of bean defining annotations. The key of the map is the FQCN of the annotation. The value
+     * indicates whether the annotation should be {@linkplain java.lang.annotation.Inherited inherited}.
+     *
+     * @return a map of bean defining annotations
+     */
+    Map<String, Boolean> getBeanDefiningAnnotations();
 
 }
