@@ -333,4 +333,23 @@
         <packageUrl regex="true">^pkg:maven/org\.wildfly/wildfly\-elytron\-oidc\-client\-subsystem@.*$</packageUrl>
         <cve>CVE-2007-1652</cve>
     </suppress>
+
+    <!-- undertow 2.3.14 contains fix for CVE-2024-6162 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.3.14.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-6162</vulnerabilityName>
+    </suppress>
+    
+    <!--  Fixed by updating elytron to 2.2.6 -->
+    <suppress>
+        <notes><![CDATA[
+        file name: wildfly-elytron-2.2.3.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.wildfly\.security/wildfly\-elytron.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-1233</vulnerabilityName>
+        <vulnerabilityName>CVE-2023-6236</vulnerabilityName>
+    </suppress>
 </suppressions>

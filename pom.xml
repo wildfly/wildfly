@@ -540,7 +540,7 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.5</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.core>23.0.3-1-PSI-ALPHA-1</version.org.wildfly.core>
+        <version.org.wildfly.core>23.0.3-1-PSI-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.6.Final</version.org.wildfly.http-client>
         <preview.version.org.wildfly.mvc.krazo>0.8.2.Final</preview.version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
