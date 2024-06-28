@@ -21,7 +21,7 @@ import io.micrometer.core.instrument.Timer;
  */
 @RequestScoped
 @Path("/")
-public class MetricResource {
+public class MicrometerResource {
     @Inject
     private MeterRegistry meterRegistry;
     private Counter counter;

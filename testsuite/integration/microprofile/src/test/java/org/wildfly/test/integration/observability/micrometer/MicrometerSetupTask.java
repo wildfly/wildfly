@@ -5,6 +5,7 @@
 package org.wildfly.test.integration.observability.micrometer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -14,13 +15,7 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 import org.wildfly.test.integration.observability.setuptask.AbstractSetupTask;
 
-/**
- * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
- * are expected to call AssumeTestGroupUtil.assumeDockerAvailable(); in a @BeforeClass.
- */
 public class MicrometerSetupTask extends AbstractSetupTask {
-    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     private final ModelNode micrometerExtension = Operations.createAddress("extension", "org.wildfly.extension.micrometer");
     private final ModelNode micrometerSubsystem = Operations.createAddress("subsystem", "micrometer");
     private boolean extensionAdded = false;
@@ -29,6 +24,10 @@ public class MicrometerSetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, String containerId) throws Exception {
+        AssumeTestGroupUtil.assumeDockerAvailable();
+
+        otelCollector = OpenTelemetryCollectorContainer.getInstance();
+
         executeOp(managementClient, writeAttribute("undertow", STATISTICS_ENABLED, "true"));
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerExtension))) {
@@ -37,27 +36,24 @@ public class MicrometerSetupTask extends AbstractSetupTask {
         }
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, micrometerSubsystem))) {
-            ModelNode addOp = Operations.createAddOperation(micrometerSubsystem);
-            addOp.get("endpoint").set("http://localhost:4318/v1/metrics"); // Default endpoint
-            executeOp(managementClient, addOp);
+            executeOp(managementClient, Operations.createAddOperation(micrometerSubsystem));
             subsystemAdded = true;
         }
 
-        if (dockerAvailable) {
-            otelCollector = OpenTelemetryCollectorContainer.getInstance();
-            executeOp(managementClient, writeAttribute("micrometer", "endpoint",
-                    otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
-            executeOp(managementClient, writeAttribute("micrometer", "step", "1"));
+        final ModelNode otlpRegistryAddress = Operations.createAddress(SUBSYSTEM, "micrometer", "registry", "otlp");
+        if (!Operations.isSuccessfulOutcome(executeRead(managementClient, otlpRegistryAddress))) {
+            executeOp(managementClient, Operations.createAddOperation(otlpRegistryAddress));
         }
+        executeOp(managementClient, writeAttribute(otlpRegistryAddress,
+                "endpoint", otelCollector.getOtlpHttpEndpoint() + "/v1/metrics"));
+        executeOp(managementClient, writeAttribute(otlpRegistryAddress, "step", "1"));
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, String containerId) throws Exception {
-        if (dockerAvailable) {
-            otelCollector.stop();
-        }
+        otelCollector.stop();
 
         executeOp(managementClient, clearAttribute("undertow", STATISTICS_ENABLED));
         if (subsystemAdded) {
