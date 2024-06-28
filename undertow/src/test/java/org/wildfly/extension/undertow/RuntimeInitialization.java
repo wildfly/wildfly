@@ -39,7 +39,8 @@ import org.xnio.XnioWorker;
 class RuntimeInitialization extends DefaultInitialization {
     private final Map<ServiceName, Supplier<Object>> values;
 
-    RuntimeInitialization(Map<ServiceName, Supplier<Object>> values) {
+    RuntimeInitialization(final Map<ServiceName, Supplier<Object>> values, final UndertowSubsystemSchema schema) {
+        super(schema);
         this.values = values;
     }
 

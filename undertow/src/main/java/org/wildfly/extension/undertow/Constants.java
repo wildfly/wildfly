@@ -260,4 +260,7 @@ public interface Constants {
     String DIRECT = "direct";
     String LEAK_DETECTION_PERCENT = "leak-detection-percent";
     String BYTE_BUFFER_POOL = "byte-buffer-pool";
+
+    String CLOSE_RETRY_COUNT = "close-retry-count";
+    String CLOSE_RETRY_DELAY = "close-retry-delay";
 }
