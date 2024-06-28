@@ -19,6 +19,7 @@
     9) Schemas coming from a module formerly distributed by the transitive core-galleon-pack are copied to docs/schema
    10) the .galleon dir exists
    11) no .galleon/history dir exists
+   12) the .installation dir exists and contains channel metadata
 -->
   <files>
     <file>
@@ -113,5 +114,24 @@
       <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.galleon/history</location>
       <exists>false</exists>
     </file>
+    <!-- start of (#12) -->
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/installer-channels.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/manifest.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/manifest_version.yaml</location>
+      <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-preview-${server.output.dir.version}/.installation/provisioning_record.xml</location>
+      <exists>true</exists>
+    </file>
+    <!-- end of (#12) -->
+
   </files>
 </verifications>

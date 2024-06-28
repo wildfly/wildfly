@@ -140,6 +140,7 @@
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
         <galleon.offline>true</galleon.offline>
+        <galleon.store.input.provisioning.config>true</galleon.store.input.provisioning.config>
 
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>

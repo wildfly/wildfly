@@ -41,6 +41,17 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+        <!-- Depends on the org.wildfly.channels:wildfly-ee artifact to ensure
+             that this channel is built first as it is required by the org.wildfly.channels:wildfly channel
+             built by this module -->
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>${ee.maven.version}</version>
+            <classifier>manifest</classifier>
+            <type>yaml</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
