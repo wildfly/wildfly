@@ -403,10 +403,8 @@
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
         <version.com.nimbus.jose-jwt>9.37.3</version.com.nimbus.jose-jwt>
-        <version.com.squareup.okhttp>4.10.0</version.com.squareup.okhttp>
         <legacy.version.com.squareup.okhttp>3.14.9</legacy.version.com.squareup.okhttp>
         <legacy.version.com.squareup.okio>1.17.6</legacy.version.com.squareup.okio>
-        <version.com.squareup.okio-jvm>3.4.0</version.com.squareup.okio-jvm>
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.com.sun.istack>4.1.2</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>2.1.1</version.com.sun.xml.fastinfoset>
@@ -518,7 +516,7 @@
         <version.org.hibernate.search>7.1.1.Final</version.org.hibernate.search>
         <version.org.hibernate.validator>8.0.1.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.9.Final</version.org.hornetq>
-        <version.org.infinispan>14.0.28.Final</version.org.infinispan>
+        <version.org.infinispan>14.0.29.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.6.5.Final</version.org.infinispan.protostream>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.jberet>2.2.1.Final</version.org.jberet>

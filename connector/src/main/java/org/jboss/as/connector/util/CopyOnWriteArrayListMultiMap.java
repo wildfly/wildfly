@@ -5,55 +5,37 @@
 
 package org.jboss.as.connector.util;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CopyOnWriteArrayListMultiMap<K, V> {
 
-    private final ConcurrentMap<K, List<V>> cache = new ConcurrentHashMap<K, List<V>>();
+    private final ConcurrentMap<K, CopyOnWriteArrayList<V>> cache = new ConcurrentHashMap<K, CopyOnWriteArrayList<V>>();
 
     public List<V> get(K k) {
         return cache.get(k);
     }
 
-    public synchronized List<V> remove(K k) {
+    public List<V> remove(K k) {
         return cache.remove(k);
     }
 
-    public synchronized void putIfAbsent(K k, V v) {
-        List<V> list = cache.get(k);
-        if (list == null || list.isEmpty()) {
-            list = new ArrayList<V>();
-        } else {
-            list = new ArrayList<V>(list);
-        }
-        if (!list.contains(v)) {
-            list.add(v);
-            cache.put(k, list);
-        }
+    public void putIfAbsent(K k, V v) {
+        cache.computeIfAbsent(k, key -> new CopyOnWriteArrayList<>()).addIfAbsent(v);
     }
 
-    public synchronized boolean remove(K k, V v) {
+    public boolean remove(K k, V v) {
         List<V> list = cache.get(k);
         if (list == null) {
             return false;
         }
         if (list.isEmpty()) {
-            cache.remove(k);
+
             return false;
         }
-        boolean removed = list.remove(v);
-        if (removed) {
-            if (list.isEmpty()) {
-                cache.remove(k);
-            } else {
-                list = new ArrayList<V>(list);
-                cache.put(k, list);
-            }
-        }
-        return removed;
+        return list.remove(v);
     }
 
 }
