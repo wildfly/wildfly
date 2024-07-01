@@ -220,8 +220,8 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
-            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition(), PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition(), PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
         }
 
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
