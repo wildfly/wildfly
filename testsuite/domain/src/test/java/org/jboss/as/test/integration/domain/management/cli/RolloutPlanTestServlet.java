@@ -45,13 +45,13 @@ public class RolloutPlanTestServlet extends HttpServlet {
 
         String op = request.getParameter(OP_PARAM);
         if (OP_BIND.equals(op)) {
-            bindPort = Integer.valueOf(request.getParameter(BIND_PORT_PARAM));
+            bindPort = Integer.parseInt(request.getParameter(BIND_PORT_PARAM));
             bind();
         } else if (OP_UNBIND.equals(op)) { unbind(); }
 
         response.setContentType("text/plain");
         PrintWriter out = response.getWriter();
-        out.print(String.valueOf(initDate.getTime()));
+        out.print(initDate.getTime());
         out.close();
     }
 
@@ -59,7 +59,7 @@ public class RolloutPlanTestServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         initDate = new Date();
         super.init(config);
-        log.trace("RolloutServlet initialized: " + String.valueOf(initDate.getTime()));
+        log.trace("RolloutServlet initialized: " + initDate.getTime());
     }
 
     @Override
@@ -67,7 +67,9 @@ public class RolloutPlanTestServlet extends HttpServlet {
         if (socket != null) {
             try {
                 unbind();
-            } catch (ServletException se) {}
+            } catch (ServletException se) {
+                // ignore
+            }
         }
         super.destroy();
     }
