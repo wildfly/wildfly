@@ -12,6 +12,7 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -218,6 +219,10 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress containerAddress = subsystemAddress.append(CacheContainerResourceDefinition.WILDCARD_PATH);
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
+
+        if (InfinispanSubsystemModel.VERSION_19_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(remoteContainerAddress.append(RemoteClusterResourceDefinition.WILDCARD_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(RemoteClusterResourceDefinition.Attribute.DOMAIN.getDefinition()));
+        }
 
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition(), PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));

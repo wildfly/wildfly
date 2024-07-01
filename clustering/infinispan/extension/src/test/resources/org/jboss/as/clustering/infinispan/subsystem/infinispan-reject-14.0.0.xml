@@ -15,7 +15,7 @@
     <cache-container name="marshaller" marshaller="JBOSS"/>
     <remote-cache-container name="marshaller" default-remote-cluster="foo" marshaller="PROTOSTREAM" modules="org.infinispan" protocol-version="2.9">
         <remote-clusters>
-            <remote-cluster name="foo" socket-bindings="jdg1 jdg2 jdg3"/>
+            <remote-cluster name="foo" socket-bindings="jdg1 jdg2 jdg3" domain="foo"/>
         </remote-clusters>
     </remote-cache-container>
 </subsystem>
