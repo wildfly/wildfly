@@ -50,7 +50,7 @@ public class SecurityServiceConfigurator extends ComponentServiceConfigurator<Se
     public SecurityConfiguration get() {
         SecurityConfigurationBuilder securityBuilder = new ConfigurationBuilder().security();
         SSLContext sslContext = (this.sslContextDependency != null) ? this.sslContextDependency.get() : null;
-        securityBuilder.ssl().sslContext(sslContext).enabled(sslContext != null);
+        securityBuilder.ssl().hostnameValidation(false).sslContext(sslContext).enabled(sslContext != null);
         return securityBuilder.create();
     }
 }
