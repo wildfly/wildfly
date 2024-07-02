@@ -2,7 +2,7 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:14.0">
+<subsystem xmlns="urn:jboss:domain:infinispan:15.0">
     <cache-container name="minimal" default-cache="local" marshaller="LEGACY" modules="org.wildfly.clustering.singleton.server org.wildfly.clustering.server.infinispan">
         <local-cache name="local"/>
     </cache-container>

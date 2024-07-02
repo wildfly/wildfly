@@ -12,6 +12,7 @@ import java.util.Map;
 import org.jboss.as.clustering.controller.CommonRequirement;
 import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteClusterResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -131,7 +132,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
     private void testTransformation(final ModelTestControllerVersion controller) throws Exception {
         final ModelVersion version = getModelVersion(controller).getVersion();
         final String[] dependencies = getDependencies(controller);
-        final String subsystemXmlResource = String.format("subsystem-infinispan-transform-%d_%d_%d.xml", version.getMajor(), version.getMinor(), version.getMicro());
+        final String subsystemXmlResource = String.format("infinispan-transform-%s.xml", version);
 
         KernelServices services = this.buildKernelServices(readResource(subsystemXmlResource), controller, version, dependencies);
 
@@ -207,7 +208,7 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         // test failed operations involving backups
-        List<ModelNode> operations = builder.parseXmlResource("subsystem-infinispan-transformer-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource(String.format("infinispan-reject-%s.xml", version));
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, operations, createFailedOperationConfig(version));
     }
 
@@ -219,9 +220,13 @@ public class InfinispanTransformersTestCase extends OperationTestCaseBase {
         PathAddress remoteContainerAddress = subsystemAddress.append(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
         List<String> rejectedRemoteContainerAttributes = new LinkedList<>();
 
+        if (InfinispanSubsystemModel.VERSION_19_0_0.requiresTransformation(version)) {
+            config.addFailedAttribute(remoteContainerAddress.append(RemoteClusterResourceDefinition.WILDCARD_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(RemoteClusterResourceDefinition.Attribute.DOMAIN.getDefinition()));
+        }
+
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
-            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition()));
-            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(ReplicatedCacheResourceDefinition.pathElement("repl"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition(), PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
+            config.addFailedAttribute(containerAddress.append(DistributedCacheResourceDefinition.pathElement("dist"), PartitionHandlingResourceDefinition.PATH), new FailedOperationTransformationConfig.NewAttributesConfig(PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY.getDefinition(), PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT.getDefinition()));
         }
 
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {

@@ -49,6 +49,7 @@ public enum XMLAttribute {
     DEFAULT_CACHE(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE),
     @Deprecated DEFAULT_CACHE_CONTAINER("default-cache-container"),
     DIALECT(JDBCStoreResourceDefinition.Attribute.DIALECT),
+    DOMAIN(RemoteClusterResourceDefinition.Attribute.DOMAIN),
     DROP_ON_STOP(TableResourceDefinition.Attribute.DROP_ON_STOP),
     @Deprecated ENABLED(BackupResourceDefinition.DeprecatedAttribute.ENABLED),
     @Deprecated EVICTION_EXECUTOR("eviction-executor"),
