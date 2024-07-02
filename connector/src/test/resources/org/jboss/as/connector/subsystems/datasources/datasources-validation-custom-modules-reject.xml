@@ -3,16 +3,13 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS"
                     use-java-context="true">
             <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
             <driver>h2</driver>
-            <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-            </security>
+            <security user-name="sa" password="sa"/>
             <validation>
                 <valid-connection-checker class-name="someClass2" module="someModule2"/>
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
@@ -28,10 +25,7 @@
                 org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource
             </xa-datasource-class>
             <driver>h2</driver>
-            <security>
-                <user-name>sa</user-name>
-                <password>sa</password>
-            </security>
+            <security user-name="sa" password="sa"/>
             <validation>
                 <valid-connection-checker class-name="someClass2" module="someModule2"/>
                 <stale-connection-checker class-name="someClass3" module="someModule3"/>
