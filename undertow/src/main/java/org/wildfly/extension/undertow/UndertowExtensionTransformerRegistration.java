@@ -13,6 +13,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -39,7 +40,7 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
             ResourceTransformationDescriptionBuilder subsystem = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
             ResourceTransformationDescriptionBuilder server = subsystem.addChildResource(ServerDefinition.PATH_ELEMENT);
-            for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT, AjpListenerResourceDefinition.PATH_ELEMENT)) {
+            for (PathElement listenerPath : Set.of(HttpListenerResourceDefinition.PATH_ELEMENT, HttpsListenerResourceDefinition.PATH_ELEMENT)) {
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     server.addChildResource(listenerPath).getAttributeBuilder()
                         .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
@@ -55,6 +56,20 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                     .end();
 
                 servletContainer.rejectChildResource(AffinityCookieDefinition.PATH_ELEMENT);
+            }
+
+            final ResourceTransformationDescriptionBuilder ajpListener = server.addChildResource(AjpListenerResourceDefinition.PATH_ELEMENT);
+            if (UndertowSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
+                final AttributeTransformationDescriptionBuilder ajpListenerAttributeTransformationDescriptionBuilder = ajpListener.getAttributeBuilder();
+                ajpListenerAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
+                .end();
+
+                if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
+                    ajpListenerAttributeTransformationDescriptionBuilder
+                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
+                        .end();
+                }
             }
 
             TransformationDescription.Tools.register(subsystem.build(), registration, version);
