@@ -16,6 +16,9 @@ import org.jboss.msc.service.ServiceName;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,6 +29,7 @@ import static org.junit.Assert.assertSame;
  *
  * @author Flavia Rainone
  */
+@RunWith(Parameterized.class)
 public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
 
     private static final String NODE_NAME = "node-name";
@@ -33,8 +37,13 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
     private static final String DEFAULT_VIRTUAL_HOST = "default-host";
     private static final String UNDERTOW_SERVER = "undertow-server";
 
-    public ServerServiceTestCase() {
-        super(UndertowSubsystemSchema.VERSION_12_0);
+    @Parameters
+    public static Iterable<UndertowSubsystemSchema> parameters() {
+        return UndertowSubsystemSchema.CURRENT.values();
+    }
+
+    public ServerServiceTestCase(UndertowSubsystemSchema schema) {
+        super(schema);
     }
 
     @Override
@@ -44,7 +53,7 @@ public class ServerServiceTestCase extends AbstractUndertowSubsystemTestCase {
     }
 
     private Server load(String xmlFile, String serverName) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(readResource(xmlFile));
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values, super.schema)).setSubsystemXml(readResource(xmlFile));
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
