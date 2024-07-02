@@ -2,15 +2,14 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.test.integration.observability.opentelemetry;
 
 import java.net.URI;
 import java.util.List;
+
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -22,7 +21,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerSpan;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerTrace;
@@ -63,8 +61,7 @@ public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
             Response response = client.target(URI.create(url + "contextProp1")).request().get();
             Assert.assertEquals(204, response.getStatus());
 
-            List<JaegerTrace> traces = OpenTelemetryCollectorContainer.getInstance()
-                    .getTraces("service1.war");
+            List<JaegerTrace> traces = otelContainer.getTraces("service1.war");
             Assert.assertFalse("Traces not found for service", traces.isEmpty());
 
             JaegerTrace trace = traces.get(0);
