@@ -9,8 +9,6 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${com.fasterxml.jackson.jr:jackson-jr-objects}"/>
     </resources>
 
