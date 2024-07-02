@@ -138,45 +138,53 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
 
                         // Safeguard : ensure timeout was not already triggered elsewhere
                         if (currentTimeoutReference.isEmpty()) {
-                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Unexpected timeout event triggered.", id);
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Unexpected timeout event triggered for %s", id);
                             return false;
                         }
+
+                        Instant now = Instant.now();
                         Instant currentTimeout = currentTimeoutReference.get();
-                        if (currentTimeout.isAfter(Instant.now())) {
-                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Timeout for timer %s initiated prematurely.", id);
+                        if (currentTimeout.isAfter(now)) {
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Timeout for timer %s initiated prematurely @ %s", id, currentTimeout);
                             return false;
                         }
 
-                        Timer<I> timer = factory.createTimer(id, metaData, manager, scheduler);
-
-                        InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s [%s]", id, timer.getMetaData().getContext());
-
-                        // In case we need to reset the last timeout
-                        Optional<Instant> lastTimeout = metaData.getLastTimeout();
-                        // Record last timeout - expected to be set prior to triggering timeout
+                        // Capture previous last timeout in case we need to reset it
+                        Optional<Instant> originalLastTimeout = metaData.getLastTimeout();
+                        // Record new last timeout - expected to be set prior to triggering timeout
                         metaData.setLastTimeout(currentTimeout);
-
-                        try {
-                            timer.invoke();
-                        } catch (ExecutionException e) {
-                            // Log error and proceed as if it was successful
-                            InfinispanEjbLogger.ROOT_LOGGER.error(e.getLocalizedMessage(), e);
-                        } catch (RejectedExecutionException e) {
-                            // Component is not started or is suspended
-                            InfinispanEjbLogger.ROOT_LOGGER.debugf("EJB component is suspended - could not invoke timeout for timer %s", id);
-                            // Reset last timeout
-                            metaData.setLastTimeout(lastTimeout.orElse(null));
-                            return false;
-                        }
-
-                        // If timeout callback canceled this timer
-                        if (timer.isCanceled()) {
-                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Timeout callback canceled timer %s", id);
-                            return true;
-                        }
 
                         // Determine next timeout
                         Optional<Instant> nextTimeout = metaData.getNextTimeout();
+                        // WFLY-19361: If next timeout is in the past do not trigger event
+                        if (nextTimeout.orElse(now).isBefore(now)) {
+                            // This has the effect of consolidating missed timeouts into a single event
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Skipping notification of missed timeout for timer %s @ %s", id, currentTimeout);
+                        } else {
+                            InfinispanEjbLogger.ROOT_LOGGER.debugf("Triggering timeout for timer %s @ %s", id, currentTimeout);
+
+                            Timer<I> timer = factory.createTimer(id, metaData, manager, scheduler);
+                            try {
+                                timer.invoke();
+                            } catch (ExecutionException e) {
+                                // Log error and proceed as if it was successful
+                                InfinispanEjbLogger.ROOT_LOGGER.error(e.getLocalizedMessage(), e);
+                            } catch (RejectedExecutionException e) {
+                                // Component is not started or is suspended
+                                InfinispanEjbLogger.ROOT_LOGGER.debugf("EJB component is suspended - could not invoke timeout for timer %s", id);
+                                // Reset last timeout
+                                metaData.setLastTimeout(originalLastTimeout.orElse(null));
+                                batch.discard();
+                                return false;
+                            }
+
+                            // If timeout callback canceled this timer
+                            if (timer.isCanceled()) {
+                                InfinispanEjbLogger.ROOT_LOGGER.debugf("Timeout callback canceled timer %s", id);
+                                return true;
+                            }
+                        }
+
                         if (nextTimeout.isEmpty()) {
                             InfinispanEjbLogger.ROOT_LOGGER.debugf("Timer %s has expired", id);
                             registry.unregister(id);
@@ -191,7 +199,7 @@ public class TimerScheduler<I, V, C> extends AbstractCacheEntryScheduler<I, Immu
                         }
 
                         // Reschedule using next timeout
-                        InfinispanEjbLogger.ROOT_LOGGER.debugf("Rescheduling timer %s for next timeout %s", id, nextTimeout);
+                        InfinispanEjbLogger.ROOT_LOGGER.debugf("Rescheduling timer %s for next timeout %s", id, nextTimeout.get());
                         entries.add(id, nextTimeout.get());
                         return false;
                     }

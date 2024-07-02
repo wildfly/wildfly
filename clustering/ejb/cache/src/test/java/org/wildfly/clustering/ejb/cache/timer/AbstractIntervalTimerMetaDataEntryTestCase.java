@@ -7,6 +7,7 @@ package org.wildfly.clustering.ejb.cache.timer;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public abstract class AbstractIntervalTimerMetaDataEntryTestCase extends Abstrac
 
     @Parameters
     public static Iterable<IntervalTimerConfiguration> parameters() {
-        Instant start = Instant.now();
+        Instant start = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         return List.of(new IntervalTimerConfiguration() {
             @Override
             public Instant getStart() {
