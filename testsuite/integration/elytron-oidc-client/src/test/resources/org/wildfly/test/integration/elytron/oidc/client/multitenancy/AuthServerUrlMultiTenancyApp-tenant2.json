@@ -6,6 +6,6 @@
     "public-client" : "false",
     "ssl-required" : "EXTERNAL",
     "credentials" : {
-        "secret" : "secret"
+        "secret" : "longerclientsecretthatisstleast256bitslong"
     }
 }

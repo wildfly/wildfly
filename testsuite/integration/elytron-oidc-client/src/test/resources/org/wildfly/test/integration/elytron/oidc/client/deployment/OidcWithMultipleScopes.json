@@ -5,6 +5,6 @@
     "ssl-required" : "EXTERNAL",
     "scope" : "profile email phone microprofile-jwt",
     "credentials" : {
-        "secret" : "secret"
+        "secret" : "longerclientsecretthatisstleast256bitslong"
     }
 }
