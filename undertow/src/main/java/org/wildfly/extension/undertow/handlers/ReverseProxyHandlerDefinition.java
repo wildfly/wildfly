@@ -18,6 +18,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
@@ -90,7 +91,23 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
             .setDefaultValue(new ModelNode(1L))
             .build();
 
-    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, MAX_RETRIES);
+    public static final AttributeDefinition REUSE_X_FORWARDED_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REUSE_X_FORWARDED_HEADER, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.FALSE)
+            .setStability(Stability.PREVIEW)
+            .build();
+
+    public static final AttributeDefinition REWRITE_HOST_HEADER = new SimpleAttributeDefinitionBuilder(Constants.REWRITE_HOST_HEADER, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setRestartAllServices()
+            .setAllowExpression(true)
+            .setDefaultValue(ModelNode.FALSE)
+            .setStability(Stability.PREVIEW)
+            .build();
+
+    public static final Collection<AttributeDefinition> ATTRIBUTES = List.of(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY, REQUEST_QUEUE_SIZE, MAX_REQUEST_TIME, CACHED_CONNECTIONS_PER_THREAD, CONNECTION_IDLE_TIMEOUT, MAX_RETRIES,REUSE_X_FORWARDED_HEADER, REWRITE_HOST_HEADER);
 
     ReverseProxyHandlerDefinition() {
         super(PATH_ELEMENT, ReverseProxyHandlerDefinition::createHandler);
@@ -116,6 +133,8 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
         int cachedConnectionsPerThread = CACHED_CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
         int connectionIdleTimeout = CONNECTION_IDLE_TIMEOUT.resolveModelAttribute(context, model).asInt();
         int maxRetries = MAX_RETRIES.resolveModelAttribute(context, model).asInt();
+        final boolean reuseXForwardedHeader = REUSE_X_FORWARDED_HEADER.resolveModelAttribute(context, model).asBoolean();
+        final boolean rewriteHostHeader = REWRITE_HOST_HEADER.resolveModelAttribute(context, model).asBoolean();
 
 
         final LoadBalancingProxyClient lb = new LoadBalancingProxyClient(exchange -> {
@@ -139,6 +158,8 @@ public class ReverseProxyHandlerDefinition extends HandlerDefinition {
                 .setRewriteHostHeader(false)
                 .setReuseXForwarded(false)
                 .setMaxConnectionRetries(maxRetries)
+                .setRewriteHostHeader(rewriteHostHeader)
+                .setReuseXForwarded(reuseXForwardedHeader)
                 .build();
     }
 }

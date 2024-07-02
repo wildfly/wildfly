@@ -50,6 +50,10 @@ class DefaultInitialization extends AdditionalInitialization.ManagementAdditiona
 
     private static final long serialVersionUID = 1L;
 
+    public DefaultInitialization(final UndertowSubsystemSchema schema) {
+        super(schema);
+    }
+
     @Override
     protected ControllerInitializer createControllerInitializer() {
         return new ControllerInitializer() {

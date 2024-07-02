@@ -14,25 +14,49 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 /**
  *  Tests server and host removal in Undertow subsystem.
  *
  * @author <a href="mailto:lgao@redhat.com">Lin Gao</a>
  */
+@RunWith(Parameterized.class)
 public class UndertowServerRemovalTestCase extends AbstractUndertowSubsystemTestCase {
 
     private static final String NODE_NAME = "node-name";
     private static final String SERVER_ABC = "abc";
     private static final String HOST_ABC = "abc-host";
 
-    public UndertowServerRemovalTestCase() {
-        super(UndertowSubsystemSchema.CURRENT);
+    @Parameters
+    public static Iterable<UndertowSubsystemSchema> parameters() {
+        return UndertowSubsystemSchema.CURRENT.values();
+    }
+
+    public UndertowServerRemovalTestCase(UndertowSubsystemSchema schema) {
+        super(schema);
+        // TODO Auto-generated constructor stub
+    }
+
+    @Override
+    protected UndertowSubsystemSchema getSubsystemSchema() {
+        // TODO Auto-generated method stub
+        return super.getSubsystemSchema();
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        // TODO Auto-generated method stub
+        return super.getSubsystemXml();
     }
 
     @Override
@@ -42,7 +66,7 @@ public class UndertowServerRemovalTestCase extends AbstractUndertowSubsystemTest
     }
 
     private KernelServices load(String subsystemXml) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(subsystemXml);
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values, super.schema)).setSubsystemXml(subsystemXml);
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Throwable t = mainServices.getBootError();
