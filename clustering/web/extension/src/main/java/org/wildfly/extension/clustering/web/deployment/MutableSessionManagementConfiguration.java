@@ -9,9 +9,9 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
 import org.wildfly.extension.clustering.web.SessionGranularity;
 import org.wildfly.extension.clustering.web.SessionMarshallerFactory;
 

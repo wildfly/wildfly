@@ -115,7 +115,7 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
 
         String protocol = property.getName();
         if (containsName(ProtocolResourceRegistrar.MulticastProtocol.class, protocol)) {
-            writeAttributes(writer, property.getValue(), MulticastProtocolResourceDefinition.Attribute.class);
+            writeAttributes(writer, property.getValue(), MulticastSocketProtocolResourceDefinition.Attribute.class);
         } else if (containsName(ProtocolResourceRegistrar.SocketProtocol.class, protocol)) {
             writeAttributes(writer, property.getValue(), SocketProtocolResourceDefinition.Attribute.class);
         } else if (containsName(ProtocolResourceRegistrar.JdbcProtocol.class, protocol)) {

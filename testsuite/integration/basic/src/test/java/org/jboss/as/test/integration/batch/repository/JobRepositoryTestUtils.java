@@ -39,7 +39,8 @@ public final class JobRepositoryTestUtils {
             Assert.assertEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
         }
 
-        serviceContainer.dumpServices();
+        // TODO Current fails due to MSC-346
+        //serviceContainer.dumpServices();
 
         ServiceController<?> service = serviceContainer.getService(ServiceName.of("org", "wildfly", "batch", "job", "repository", repositoryName));
         Assert.assertNotNull(String.format("MSC service for the %s job repository not found. Services found: %s",

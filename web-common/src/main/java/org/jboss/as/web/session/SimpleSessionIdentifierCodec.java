@@ -13,6 +13,10 @@ public class SimpleSessionIdentifierCodec implements SessionIdentifierCodec {
     private final RoutingSupport routing;
     private final String route;
 
+    public SimpleSessionIdentifierCodec(String route) {
+        this(new SimpleRoutingSupport(), route);
+    }
+
     public SimpleSessionIdentifierCodec(RoutingSupport routing, String route) {
         this.routing = routing;
         this.route = route;

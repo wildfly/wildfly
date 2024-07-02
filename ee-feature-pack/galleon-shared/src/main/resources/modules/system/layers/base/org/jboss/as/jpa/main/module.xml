@@ -22,11 +22,15 @@
     <dependencies>
         <module name="java.instrument"/>
         <module name="java.sql"/>
+        <module name="java.xml"/>
+
         <module name="jakarta.ejb.api"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.persistence.api"/>
         <module name="jakarta.transaction.api"/>
         <module name="jakarta.validation.api"/>
+        <module name="jakarta.xml.bind.api"/>
+
         <module name="org.hibernate.validator" services="import"/>
         <module name="org.infinispan.core"/>
         <!-- Only used if capability org.wildfly.bean-validation is available -->
@@ -53,12 +57,8 @@
         <module name="org.jboss.weld.core"/>
         <!-- Only used if capability org.wildfly.weld is available -->
         <module name="org.jboss.as.weld.common" optional="true"/>
-        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
         <module name="org.wildfly.clustering.infinispan.embedded.service"/>
         <module name="org.wildfly.transaction.client"/>
         <module name="org.wildfly.common"/>
-
-        <module name="java.xml"/>
-        <module name="jakarta.xml.bind.api"/>
     </dependencies>
 </module>

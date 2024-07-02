@@ -8,6 +8,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.PathElement;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
@@ -24,6 +25,6 @@ public class InvalidationCacheResourceDefinition extends ClusteredCacheResourceD
     }
 
     InvalidationCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
-        super(WILDCARD_PATH, UnaryOperator.identity(), new ClusteredCacheServiceHandler(InvalidationCacheServiceConfigurator::new), executors);
+        super(WILDCARD_PATH, UnaryOperator.identity(), CacheMode.INVALIDATION_SYNC, executors);
     }
 }

@@ -5,13 +5,14 @@
 
 package org.jboss.as.jpa.hibernate.cache;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.hibernate.cache.internal.NaturalIdCacheKey;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link NaturalIdCacheKeyMarshaller}.
@@ -19,13 +20,14 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class NaturalIdCacheKeyMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<NaturalIdCacheKey> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<NaturalIdCacheKey> tester = factory.createKeyTester();
         UUID id = UUID.randomUUID();
         String entity = "foo";
         String tenant = "bar";
-        tester.testKey(new NaturalIdCacheKey(id, entity, tenant, id.hashCode()));
-        tester.testKey(new NaturalIdCacheKey(id, entity, tenant, 1));
+        tester.accept(new NaturalIdCacheKey(id, entity, tenant, id.hashCode()));
+        tester.accept(new NaturalIdCacheKey(id, entity, tenant, 1));
     }
 }

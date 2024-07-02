@@ -5,10 +5,10 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.infinispan.protostream.SerializationContext;
 import org.jboss.ejb.client.SessionID;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
-import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 
 /**
  * {@link org.infinispan.protostream.SerializationContextInitializer} for this package.
@@ -19,6 +19,7 @@ public class InfinispanBeanGroupSerializationContextInitializer extends Abstract
     @SuppressWarnings("unchecked")
     @Override
     public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new FunctionalMarshaller<>((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, SessionID.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
+        ProtoStreamMarshaller<SessionID> sessionIdMarshaller = context.getMarshaller(SessionID.class);
+        context.registerMarshaller(sessionIdMarshaller.wrap((Class<InfinispanBeanGroupKey<SessionID>>) (Class<?>) InfinispanBeanGroupKey.class, InfinispanBeanGroupKey::getId, InfinispanBeanGroupKey::new));
     }
 }

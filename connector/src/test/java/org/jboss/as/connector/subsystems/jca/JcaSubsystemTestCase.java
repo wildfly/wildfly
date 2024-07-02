@@ -30,7 +30,7 @@ import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -55,7 +55,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.withCapabilities(
-                ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName(),
+                ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName(),
                 ConnectorServices.LOCAL_TRANSACTION_PROVIDER_CAPABILITY,
                 ConnectorServices.TRANSACTION_XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY,
                 ConnectorServices.TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY,
@@ -220,6 +220,8 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         String artifactId = "wildfly-connector";
         initializer.addMavenResourceURL(mavenGroupId + ":" + artifactId + ":" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-api:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-common:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-service:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL(mavenGroupId + ":wildfly-clustering-spi:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.wildfly.core:wildfly-threads:" + controllerVersion.getCoreVersion())
                 .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")

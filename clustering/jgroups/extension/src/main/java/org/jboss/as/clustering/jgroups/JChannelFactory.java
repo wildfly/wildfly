@@ -101,7 +101,7 @@ public class JChannelFactory implements ChannelFactory {
 
         JChannel channel = createChannel(protocols);
 
-        channel.setName(this.configuration.getNodeName());
+        channel.setName(this.configuration.getMemberName());
 
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {

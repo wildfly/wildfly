@@ -6,20 +6,16 @@
 package org.wildfly.clustering.ejb.timer;
 
 import java.lang.reflect.Method;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.Batcher;
-import org.wildfly.clustering.ee.Restartable;
+import org.wildfly.clustering.server.manager.Manager;
 
 /**
  * Manages creation, retrieval, and scheduling of timers.
  * @author Paul Ferraro
  * @param <I> the timer identifier type
- * @param <B> the batch type
  */
-public interface TimerManager<I, B extends Batch> extends Restartable {
+public interface TimerManager<I> extends Manager<I> {
 
     Timer<I> createTimer(I id, IntervalTimerConfiguration config, Object context);
 
@@ -30,8 +26,4 @@ public interface TimerManager<I, B extends Batch> extends Restartable {
     Timer<I> getTimer(I id);
 
     Stream<I> getActiveTimers();
-
-    Batcher<B> getBatcher();
-
-    Supplier<I> getIdentifierFactory();
 }

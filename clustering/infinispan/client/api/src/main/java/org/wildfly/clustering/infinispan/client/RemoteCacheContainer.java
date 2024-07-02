@@ -9,7 +9,6 @@ import java.util.concurrent.CompletionStage;
 
 import jakarta.transaction.TransactionManager;
 
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManagerAdmin;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.jmx.RemoteCacheManagerMXBean;
@@ -29,6 +28,12 @@ public interface RemoteCacheContainer extends org.infinispan.client.hotrod.Remot
      * @return the remote cache container name
      */
     String getName();
+
+    @Override
+    <K, V> RemoteCache<K, V> getCache();
+
+    @Override
+    <K, V> RemoteCache<K, V> getCache(String cacheName);
 
     @Deprecated
     @Override

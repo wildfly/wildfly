@@ -7,16 +7,19 @@ package org.wildfly.clustering.ejb.remote;
 
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
- * interface defining ClientMappingsRegistryProvider instances, used to install configured ClientMappingsRegistry services.
+ * interface defining ClientMappingsRegistryProvider instances, used to install configured client-mappings registry services.
  *
  * @author Paul Ferraro
  */
 public interface ClientMappingsRegistryProvider {
+    NullaryServiceDescriptor<ClientMappingsRegistryProvider> SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.clustering.ejb.client-mappings-registry-provider", ClientMappingsRegistryProvider.class);
 
-    Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings);
+    Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String connectorName, ServiceDependency<List<ClientMapping>> clientMappings);
 }

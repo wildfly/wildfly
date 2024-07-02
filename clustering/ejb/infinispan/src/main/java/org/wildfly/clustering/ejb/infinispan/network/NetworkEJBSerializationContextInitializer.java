@@ -5,13 +5,16 @@
 
 package org.wildfly.clustering.ejb.infinispan.network;
 
-import org.infinispan.protostream.SerializationContext;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * {@link SerializationContextInitializer} for this package.
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class NetworkEJBSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     @Override

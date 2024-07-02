@@ -9,11 +9,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.function.UnaryOperator;
 
 import org.jboss.as.web.session.RoutingSupport;
 import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.junit.Test;
-import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
  * Unit test for {@link DistributableSessionIdentifierCodec}.
@@ -22,7 +22,7 @@ import org.wildfly.clustering.web.routing.RouteLocator;
  */
 public class DistributableSessionIdentifierCodecTestCase {
     private final RoutingSupport routing = mock(RoutingSupport.class);
-    private final RouteLocator locator = mock(RouteLocator.class);
+    private final UnaryOperator<String> locator = mock(UnaryOperator.class);
 
     private SessionIdentifierCodec codec = new DistributableSessionIdentifierCodec(this.locator, this.routing);
 
@@ -30,7 +30,7 @@ public class DistributableSessionIdentifierCodecTestCase {
     public void encode() {
         String sessionId = "session";
 
-        when(this.locator.locate(sessionId)).thenReturn(null);
+        when(this.locator.apply(sessionId)).thenReturn(null);
 
         CharSequence result = this.codec.encode(sessionId);
 
@@ -39,7 +39,7 @@ public class DistributableSessionIdentifierCodecTestCase {
         String route = "route";
         String encodedSessionId = "session.route";
 
-        when(this.locator.locate(sessionId)).thenReturn(route);
+        when(this.locator.apply(sessionId)).thenReturn(route);
         when(this.routing.format(sessionId, route)).thenReturn(encodedSessionId);
 
         result = this.codec.encode(sessionId);

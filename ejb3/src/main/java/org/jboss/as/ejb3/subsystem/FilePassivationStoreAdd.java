@@ -5,7 +5,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -15,10 +14,6 @@ import org.jboss.dmr.ModelNode;
  */
 @Deprecated
 public class FilePassivationStoreAdd extends PassivationStoreAdd {
-
-    public FilePassivationStoreAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws IllegalArgumentException, OperationFailedException {

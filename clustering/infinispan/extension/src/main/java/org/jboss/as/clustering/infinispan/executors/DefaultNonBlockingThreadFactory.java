@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.commons.executors.NonBlockingResource;
 import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Thread factory for non-blocking threads.
@@ -17,6 +18,6 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
 public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
 
     public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
-        super(factory);
+        super(factory, WildFlySecurityManager.getClassLoaderPrivileged(DefaultNonBlockingThreadFactory.class));
     }
 }

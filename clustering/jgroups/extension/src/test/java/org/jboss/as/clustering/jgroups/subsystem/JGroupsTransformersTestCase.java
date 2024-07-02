@@ -7,13 +7,14 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -89,9 +90,18 @@ public class JGroupsTransformersTestCase extends OperationTestCaseBase {
 
     private static org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "jgroups-udp-fd", "some-binding", "client-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd", "jgroups-state-xfr")
-                .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
-                .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-udp")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-udp-fd")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "some-binding")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "client-binding")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp-fd")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-client-fd")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-state-xfr")
+                .require(CommonServiceDescriptor.KEY_STORE, "my-key-store")
+                .require(CommonServiceDescriptor.CREDENTIAL_STORE, "my-credential-store")
                 ;
     }
 

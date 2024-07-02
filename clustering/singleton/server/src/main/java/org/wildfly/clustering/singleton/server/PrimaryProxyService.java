@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.singleton.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,8 +18,7 @@ import java.util.concurrent.CompletionStage;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * Service that proxies the value from the primary node.
@@ -42,11 +42,11 @@ public class PrimaryProxyService<T> implements Service<T> {
             throw SingletonLogger.ROOT_LOGGER.notStarted(context.getServiceName().getCanonicalName());
         }
         try {
-            Map<Node, CompletionStage<Optional<T>>> responses = context.getCommandDispatcher().executeOnGroup(new SingletonValueCommand<>());
+            Map<GroupMember, CompletionStage<Optional<T>>> responses = context.getCommandDispatcher().dispatchToGroup(SingletonValueCommand.getInstance());
             // Prune non-primary (i.e. null) results
-            Map<Node, Optional<T>> results = new HashMap<>();
+            Map<GroupMember, Optional<T>> results = new HashMap<>();
             try {
-                for (Map.Entry<Node, CompletionStage<Optional<T>>> entry : responses.entrySet()) {
+                for (Map.Entry<GroupMember, CompletionStage<Optional<T>>> entry : responses.entrySet()) {
                     try {
                         Optional<T> response = entry.getValue().toCompletableFuture().join();
                         if (response != null) {
@@ -69,7 +69,7 @@ public class PrimaryProxyService<T> implements Service<T> {
                 throw SingletonLogger.ROOT_LOGGER.noResponseFromPrimary(context.getServiceName().getCanonicalName());
             }
             return values.next().orElse(null);
-        } catch (CommandDispatcherException e) {
+        } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }

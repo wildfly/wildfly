@@ -5,22 +5,23 @@
 
 package org.wildfly.extension.messaging.activemq.broadcast;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherException;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.ee.Manager;
-import org.wildfly.clustering.ee.cache.ConcurrentManager;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.cache.Cache;
+import org.wildfly.clustering.server.cache.CacheStrategy;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.common.function.Functions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -31,16 +32,16 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCommandDispatcherFactory {
 
     private final Set<BroadcastReceiver> receivers = ConcurrentHashMap.newKeySet();
-    private final Manager<Object, CommandDispatcher<?>> dispatchers = new ConcurrentManager<>(Functions.discardingConsumer(), new Consumer<CommandDispatcher<?>>() {
+    private final CommandDispatcherFactory<GroupMember> dispatcherFactory;
+    private final Cache<Object, CachedCommandDispatcher<?>> cache = CacheStrategy.CONCURRENT.createCache(Functions.discardingConsumer(), new Consumer<>() {
         @Override
-        public void accept(CommandDispatcher<?> dispatcher) {
-            ((ConcurrentCommandDispatcher<?>) dispatcher).closeDispatcher();
+        public void accept(CachedCommandDispatcher<?> dispatcher) {
+            dispatcher.get().close();
         }
     });
-    private final CommandDispatcherFactory factory;
 
-    public ConcurrentBroadcastCommandDispatcherFactory(CommandDispatcherFactory factory) {
-        this.factory = factory;
+    public ConcurrentBroadcastCommandDispatcherFactory(CommandDispatcherFactory<GroupMember> dispatcherFactory) {
+        this.dispatcherFactory = dispatcherFactory;
     }
 
     @Override
@@ -57,36 +58,41 @@ public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCom
     }
 
     @Override
-    public Group getGroup() {
-        return this.factory.getGroup();
+    public Group<GroupMember> getGroup() {
+        return this.dispatcherFactory.getGroup();
+    }
+
+    @Override
+    public <C> CommandDispatcher<GroupMember, C> createCommandDispatcher(Object id, C context) {
+        return this.createCommandDispatcher(id, context, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        CommandDispatcherFactory dispatcherFactory = this.factory;
-        Function<Runnable, CommandDispatcher<?>> factory = new Function<>() {
+    public <C> CommandDispatcher<GroupMember, C> createCommandDispatcher(Object id, C context, ClassLoader loader) {
+        CommandDispatcherFactory<GroupMember> dispatcherFactory = this.dispatcherFactory;
+        BiFunction<Object, Runnable, CachedCommandDispatcher<?>> factory = new BiFunction<>() {
             @Override
-            public CommandDispatcher<C> apply(Runnable closeTask) {
-                CommandDispatcher<C> dispatcher = dispatcherFactory.createCommandDispatcher(id, context, WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()));
-                return new ConcurrentCommandDispatcher<>(dispatcher, closeTask);
+            public CachedCommandDispatcher<?> apply(Object id, Runnable closeTask) {
+                return new CachedCommandDispatcher<>(dispatcherFactory.createCommandDispatcher(id, context, loader), closeTask);
             }
         };
-        return (CommandDispatcher<C>) this.dispatchers.apply(id, factory);
+        return (CommandDispatcher<GroupMember, C>) this.cache.computeIfAbsent(id, factory);
     }
 
-    private static class ConcurrentCommandDispatcher<C> implements CommandDispatcher<C> {
+    private static class CachedCommandDispatcher<C> implements CommandDispatcher<GroupMember, C>, Supplier<CommandDispatcher<GroupMember, C>> {
 
-        private final CommandDispatcher<C> dispatcher;
+        private final CommandDispatcher<GroupMember, C> dispatcher;
         private final Runnable closeTask;
 
-        ConcurrentCommandDispatcher(CommandDispatcher<C> dispatcher, Runnable closeTask) {
+        CachedCommandDispatcher(CommandDispatcher<GroupMember, C> dispatcher, Runnable closeTask) {
             this.dispatcher = dispatcher;
             this.closeTask = closeTask;
         }
 
-        void closeDispatcher() {
-            this.dispatcher.close();
+        @Override
+        public CommandDispatcher<GroupMember, C> get() {
+            return this.dispatcher;
         }
 
         @Override
@@ -95,13 +101,13 @@ public class ConcurrentBroadcastCommandDispatcherFactory implements BroadcastCom
         }
 
         @Override
-        public <R> CompletionStage<R> executeOnMember(Command<R, ? super C> command, Node member) throws CommandDispatcherException {
-            return this.dispatcher.executeOnMember(command, member);
+        public <R, E extends Exception> CompletionStage<R> dispatchToMember(Command<R, ? super C, E> command, GroupMember member) throws IOException {
+            return this.dispatcher.dispatchToMember(command, member);
         }
 
         @Override
-        public <R> Map<Node, CompletionStage<R>> executeOnGroup(Command<R, ? super C> command, Node... excludedMembers) throws CommandDispatcherException {
-            return this.dispatcher.executeOnGroup(command, excludedMembers);
+        public <R, E extends Exception> Map<GroupMember, CompletionStage<R>> dispatchToGroup(Command<R, ? super C, E> command, Set<GroupMember> excluding) throws IOException {
+            return this.dispatcher.dispatchToGroup(command, excluding);
         }
 
         @Override

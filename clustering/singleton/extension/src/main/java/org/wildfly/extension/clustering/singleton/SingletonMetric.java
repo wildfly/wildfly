@@ -12,7 +12,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.singleton.Singleton;
 
 /**
@@ -24,21 +24,20 @@ public enum SingletonMetric implements Metric<Singleton> {
     IS_PRIMARY("is-primary", ModelType.BOOLEAN) {
         @Override
         public ModelNode execute(Singleton singleton) throws OperationFailedException {
-            return new ModelNode(singleton.isPrimary());
+            return singleton.getSingletonState().isPrimaryProvider() ? ModelNode.TRUE : ModelNode.FALSE;
         }
     },
     PRIMARY_PROVIDER("primary-provider", ModelType.STRING) {
         @Override
         public ModelNode execute(Singleton singleton) throws OperationFailedException {
-            Node primary = singleton.getPrimaryProvider();
-            return (primary != null) ? new ModelNode(primary.getName()) : null;
+            return singleton.getSingletonState().getPrimaryProvider().map(GroupMember::getName).map(ModelNode::new).orElse(null);
         }
     },
     PROVIDERS("providers") {
         @Override
         public ModelNode execute(Singleton singleton) throws OperationFailedException {
             ModelNode result = new ModelNode();
-            for (Node provider : singleton.getProviders()) {
+            for (GroupMember provider : singleton.getSingletonState().getProviders()) {
                 result.add(provider.getName());
             }
             return result;

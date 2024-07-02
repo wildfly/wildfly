@@ -7,7 +7,6 @@ package org.jboss.as.ejb3.component.stateful.cache.distributable;
 
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheConfiguration;
 import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanInstance;
-import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ejb.bean.BeanManager;
 
 /**
@@ -18,5 +17,5 @@ import org.wildfly.clustering.ejb.bean.BeanManager;
  */
 public interface DistributableStatefulSessionBeanCacheConfiguration<K, V extends StatefulSessionBeanInstance<K>> extends StatefulSessionBeanCacheConfiguration<K, V> {
 
-    BeanManager<K, V, Batch> getBeanManager();
+    BeanManager<K, V> getBeanManager();
 }

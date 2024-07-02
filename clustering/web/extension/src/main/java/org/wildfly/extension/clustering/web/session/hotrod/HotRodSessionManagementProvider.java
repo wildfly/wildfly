@@ -5,36 +5,88 @@
 
 package org.wildfly.extension.clustering.web.session.hotrod;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import jakarta.servlet.ServletContext;
+
+import org.infinispan.client.hotrod.DefaultTemplate;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.configuration.NearCacheMode;
+import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
+import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.wildfly.clustering.web.WebDeploymentConfiguration;
-import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
-import org.wildfly.extension.clustering.web.routing.LocalRouteLocatorServiceConfigurator;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.clustering.infinispan.client.service.RemoteCacheConfigurationServiceInstallerFactory;
+import org.wildfly.clustering.infinispan.client.service.RemoteCacheServiceInstallerFactory;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.session.SessionManagerFactory;
+import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
+import org.wildfly.clustering.session.infinispan.remote.SessionManagerNearCacheFactory;
+import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
+import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
+import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
+import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
+import org.wildfly.common.function.Functions;
+import org.wildfly.extension.clustering.web.session.AbstractSessionManagementProvider;
+import org.wildfly.subsystem.service.DeploymentServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class HotRodSessionManagementProvider implements DistributableSessionManagementProvider<HotRodSessionManagementConfiguration<DeploymentUnit>> {
+public class HotRodSessionManagementProvider extends AbstractSessionManagementProvider {
 
-    private final HotRodSessionManagementConfiguration<DeploymentUnit> configuration;
-
-    public HotRodSessionManagementProvider(HotRodSessionManagementConfiguration<DeploymentUnit> configuration) {
-        this.configuration = configuration;
+    public HotRodSessionManagementProvider(DistributableSessionManagementConfiguration<DeploymentUnit> configuration, BinaryServiceConfiguration cacheConfiguration, Supplier<RouteLocatorProvider> locatorProviderFactory) {
+        super(configuration, cacheConfiguration, locatorProviderFactory);
     }
 
     @Override
-    public <S, SC, AL, LC> CapabilityServiceConfigurator getSessionManagerFactoryServiceConfigurator(SessionManagerFactoryConfiguration<S, SC, AL, LC> config) {
-        return new HotRodSessionManagerFactoryServiceConfigurator<>(this.configuration, config);
-    }
+    public <C> DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(SessionManagerFactoryConfiguration<C> configuration) {
+        OptionalInt maxActiveSessions = configuration.getMaxActiveSessions();
+        NearCacheMode mode = maxActiveSessions.isPresent() ? NearCacheMode.INVALIDATED : NearCacheMode.DISABLED;
+        BinaryServiceConfiguration deploymentCacheConfiguration = this.getCacheConfiguration().withChildName(configuration.getDeploymentName());
+        String templateName = Optional.ofNullable(this.getCacheConfiguration().getChildName()).orElse(DefaultTemplate.DIST_SYNC.getTemplateName());
 
-    @Override
-    public CapabilityServiceConfigurator getRouteLocatorServiceConfigurator(WebDeploymentConfiguration configuration) {
-        return new LocalRouteLocatorServiceConfigurator(configuration);
-    }
+        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<>() {
+            @Override
+            public void accept(RemoteCacheConfigurationBuilder builder) {
+                builder.forceReturnValues(false).nearCacheMode(mode).templateName(templateName).transactionMode(TransactionMode.NONE);
+                if (mode.invalidated()) {
+                    builder.nearCacheFactory(new SessionManagerNearCacheFactory(maxActiveSessions));
+                }
+            }
+        };
+        DeploymentServiceInstaller configurationInstaller = new RemoteCacheConfigurationServiceInstallerFactory(configurator).apply(deploymentCacheConfiguration);
+        DeploymentServiceInstaller cacheInstaller = RemoteCacheServiceInstallerFactory.INSTANCE.apply(deploymentCacheConfiguration);
 
-    @Override
-    public HotRodSessionManagementConfiguration<DeploymentUnit> getSessionManagementConfiguration() {
-        return this.configuration;
+        ServiceDependency<RemoteCache<?, ?>> cache = deploymentCacheConfiguration.getServiceDependency(HotRodServiceDescriptor.REMOTE_CACHE);
+        RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public <CK, CV> RemoteCache<CK, CV> getCache() {
+                return (RemoteCache<CK, CV>) cache.get();
+            }
+        };
+        Supplier<SessionManagerFactory<ServletContext, C>> factory = new Supplier<>() {
+            @Override
+            public SessionManagerFactory<ServletContext, C> get() {
+                return new HotRodSessionManagerFactory<>(configuration, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, cacheConfiguration);
+            }
+        };
+        DeploymentServiceInstaller installer = ServiceInstaller.builder(factory)
+                .provides(ServiceNameFactory.resolveServiceName(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY, configuration.getDeploymentName()))
+                .requires(cache)
+                .onStop(Functions.closingConsumer())
+                .build();
+
+        return DeploymentServiceInstaller.combine(configurationInstaller, cacheInstaller, installer);
     }
 }

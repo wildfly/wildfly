@@ -12,7 +12,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -21,6 +21,7 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -29,14 +30,13 @@ import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class HostDefinition extends PersistentResourceDefinition {
+class HostDefinition extends SimpleResourceDefinition {
     static final PathElement PATH_ELEMENT = PathElement.pathElement(Constants.HOST);
     public static final String DEFAULT_WEB_MODULE_DEFAULT = "ROOT.war";
 
     static final RuntimeCapability<Void> HOST_CAPABILITY = RuntimeCapability.Builder.of(Host.SERVICE_DESCRIPTOR)
             .addRequirements(Capabilities.CAPABILITY_UNDERTOW)
             .build();
-
 
     static final StringListAttributeDefinition ALIAS = new StringListAttributeDefinition.Builder(Constants.ALIAS)
             .setRequired(false)
@@ -80,19 +80,19 @@ class HostDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        for (AttributeDefinition attribute : ATTRIBUTES) {
+            registration.registerReadWriteAttribute(attribute, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        }
     }
 
     @Override
-    public List<? extends PersistentResourceDefinition> getChildren() {
-        return List.of(
-                new LocationDefinition(),
-                new AccessLogDefinition(),
-                new ConsoleAccessLogDefinition(),
-                new FilterRefDefinition(),
-                new HttpInvokerDefinition(),
-                new HostSingleSignOnDefinition());
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new LocationDefinition());
+        registration.registerSubModel(new AccessLogDefinition());
+        registration.registerSubModel(new ConsoleAccessLogDefinition());
+        registration.registerSubModel(new FilterRefDefinition());
+        registration.registerSubModel(new HttpInvokerDefinition());
+        new HostSingleSignOnDefinition().register(registration, null);
     }
-
 }

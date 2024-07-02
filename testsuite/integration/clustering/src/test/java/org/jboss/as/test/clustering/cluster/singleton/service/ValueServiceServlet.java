@@ -59,7 +59,8 @@ public class ValueServiceServlet extends HttpServlet {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (TimeoutException e) {
-            service.getServiceContainer().dumpServices();
+            // TODO current fails due to MSC-346
+            //service.getServiceContainer().dumpServices();
             throw new ServletException(String.format("ServiceController %s did not provide a value within 5 minutes; " +
                     "mode is %s and state is %s", serviceName, service.getMode(), service.getState()), e);
         }

@@ -7,8 +7,8 @@ package org.wildfly.clustering.ejb.cache.bean;
 
 import java.time.Instant;
 
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
-import org.wildfly.clustering.ee.cache.offset.Value;
+import org.wildfly.clustering.server.offset.OffsetValue;
+import org.wildfly.clustering.server.offset.Value;
 
 /**
  * @author Paul Ferraro

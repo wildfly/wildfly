@@ -6,8 +6,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.PartitionHandlingConfiguration;
 import org.infinispan.conflict.MergePolicy;
 import org.infinispan.partitionhandling.PartitionHandling;
 import org.jboss.as.clustering.controller.AttributeTranslation;
@@ -16,14 +20,21 @@ import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Resource definition of the partition handling component of a cache.
@@ -32,6 +43,9 @@ import org.jboss.dmr.ModelType;
 public class PartitionHandlingResourceDefinition extends ComponentResourceDefinition {
 
     static final PathElement PATH = pathElement("partition-handling");
+
+    static final BinaryServiceDescriptor<PartitionHandlingConfiguration> SERVICE_DESCRIPTOR = serviceDescriptor(PATH, PartitionHandlingConfiguration.class);
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         WHEN_SPLIT("when-split", PartitionHandling.ALLOW_READ_WRITES, EnumValidator.create(PartitionHandling.class)),
@@ -106,10 +120,28 @@ public class PartitionHandlingResourceDefinition extends ComponentResourceDefini
                         return (context, value) -> value.isDefined() ? new ModelNode((value.asBoolean() ? PartitionHandling.DENY_READ_WRITES : PartitionHandling.ALLOW_READ_WRITES).name()) : value;
                     }
                 })
+                .addCapabilities(List.of(CAPABILITY))
                 ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(PartitionHandlingServiceConfigurator::new);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        PartitionHandling whenSplit = PartitionHandling.valueOf(Attribute.WHEN_SPLIT.resolveModelAttribute(context, model).asString());
+        MergePolicy mergePolicy = MergePolicy.valueOf(Attribute.MERGE_POLICY.resolveModelAttribute(context, model).asString());
+
+        Supplier<PartitionHandlingConfiguration> configurationFactory = new Supplier<>() {
+            @Override
+            public PartitionHandlingConfiguration get() {
+                return new ConfigurationBuilder().clustering().partitionHandling()
+                        .whenSplit(whenSplit)
+                        .mergePolicy(mergePolicy)
+                        .create();
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, configurationFactory).build();
     }
 }

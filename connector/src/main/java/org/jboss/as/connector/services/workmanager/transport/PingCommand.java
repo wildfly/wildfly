@@ -5,13 +5,11 @@
 
 package org.jboss.as.connector.services.workmanager.transport;
 
-import org.wildfly.clustering.dispatcher.Command;
-
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#localPing().
  * @author Paul Ferraro
  */
-public class PingCommand implements Command<Long, CommandDispatcherTransport> {
+public class PingCommand implements TransportCommand<Long> {
     private static final long serialVersionUID = 7747022347047976535L;
 
     @Override

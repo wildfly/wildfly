@@ -7,7 +7,7 @@ package org.wildfly.clustering.ejb.bean;
 
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * Encapsulates the configuration of a bean management provider.

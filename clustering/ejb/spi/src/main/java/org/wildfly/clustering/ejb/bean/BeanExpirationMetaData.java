@@ -7,7 +7,7 @@ package org.wildfly.clustering.ejb.bean;
 
 import java.time.Duration;
 
-import org.wildfly.clustering.ee.expiration.ExpirationMetaData;
+import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 
 /**
  * Encapsulates the expiration-related meta data of a cached bean.

@@ -8,8 +8,8 @@ package org.wildfly.clustering.web.undertow;
 import java.security.PrivilegedAction;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.web.IdentifierMarshaller;
-import org.wildfly.clustering.web.IdentifierMarshallerProvider;
+import org.wildfly.clustering.session.IdentifierMarshaller;
+import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

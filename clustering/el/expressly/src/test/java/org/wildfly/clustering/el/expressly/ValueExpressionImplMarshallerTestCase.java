@@ -5,14 +5,14 @@
 
 package org.wildfly.clustering.el.expressly;
 
-import java.io.IOException;
-
 import org.glassfish.expressly.ValueExpressionImpl;
 import org.glassfish.expressly.lang.FunctionMapperImpl;
 import org.glassfish.expressly.lang.VariableMapperImpl;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of a {@link ValueExpressionImpl}.
@@ -20,9 +20,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class ValueExpressionImplMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<ValueExpressionImpl> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new ValueExpressionImpl("foo", null, new FunctionMapperImpl(), new VariableMapperImpl(), String.class));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<ValueExpressionImpl> tester = factory.createTester();
+        tester.accept(new ValueExpressionImpl("foo", null, new FunctionMapperImpl(), new VariableMapperImpl(), String.class));
     }
 }

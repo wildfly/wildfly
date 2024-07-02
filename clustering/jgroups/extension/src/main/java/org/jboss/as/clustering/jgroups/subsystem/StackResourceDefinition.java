@@ -5,25 +5,29 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
 
 /**
  * Resource description for the addressable resource /subsystem=jgroups/stack=X
@@ -31,7 +35,7 @@ import org.wildfly.clustering.service.UnaryRequirement;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class StackResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class StackResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     public static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
@@ -63,22 +67,9 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
         }
     }
 
-    enum Capability implements CapabilityProvider {
-        JCHANNEL_FACTORY(JGroupsRequirement.CHANNEL_FACTORY),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
+    static final RuntimeCapability<Void> CHANNEL_FACTORY = RuntimeCapability.Builder.of(ChannelFactory.SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).build();
 
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-    }
-
-    private final ResourceServiceConfiguratorFactory serviceConfiguratorFactory = JChannelFactoryServiceConfigurator::new;
+    private final ResourceServiceConfigurator configurator = JChannelFactoryServiceConfigurator.INSTANCE;
 
     // registration
     public StackResourceDefinition() {
@@ -91,19 +82,29 @@ public class StackResourceDefinition extends ChildResourceDefinition<ManagementR
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(CHANNEL_FACTORY))
                 ;
-        ResourceServiceHandler handler = new StackServiceHandler(this.serviceConfiguratorFactory);
+        ResourceServiceHandler handler = ResourceServiceHandler.of(ResourceOperationRuntimeHandler.configureService(this));
         new SimpleResourceRegistrar(descriptor, handler).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new StackOperationHandler().register(registration);
         }
 
-        new TransportResourceRegistrar(this.serviceConfiguratorFactory).register(registration);
-        new ProtocolResourceRegistrar(this.serviceConfiguratorFactory).register(registration);
-        new RelayResourceDefinition(this.serviceConfiguratorFactory).register(registration);
+        TransportResourceRegistrar.INSTANCE.register(registration);
+        new ProtocolResourceRegistrar(this.configurator).register(registration);
+        new RelayResourceDefinition().register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String name = context.getCurrentAddressValue();
+
+        ResourceServiceInstaller installer = this.configurator.configure(context, model);
+        ResourceServiceInstaller binderInstaller = new BinderServiceInstaller(JGroupsBindingFactory.createChannelFactoryBinding(name), context.getCapabilityServiceName(ChannelFactory.SERVICE_DESCRIPTOR, name));
+
+        return ResourceServiceInstaller.combine(installer, binderInstaller);
     }
 }
