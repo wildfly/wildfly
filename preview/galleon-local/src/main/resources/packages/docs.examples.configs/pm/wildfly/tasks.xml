@@ -215,5 +215,11 @@
             </layers>
             <feature-group name="adjust-standalone-full-config"/>
         </config>
+        <config model="standalone" name="standalone-core-microprofile.xml">
+            <layers>
+                <include name="ee-core-profile-server"/>
+                <include name="microprofile-platform"/>
+            </layers>
+        </config>
     </example-configs>
 </tasks>
