@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:resource-adapters:7.1">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:7.2">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -44,7 +44,7 @@
                 <!--Optional:-->
                 <is-same-rm-override>${test.expr:true}</is-same-rm-override>
                 <!--Optional:-->
-                <interleaving>${test.expr:false}</interleaving>
+                <interleaving/>
                 <!--Optional:-->
                 <no-tx-separate-pools/>
                 <!--Optional:-->
