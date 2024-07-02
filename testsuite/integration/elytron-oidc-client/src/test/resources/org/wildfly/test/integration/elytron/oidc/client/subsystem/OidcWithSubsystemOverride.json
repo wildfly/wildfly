@@ -4,6 +4,6 @@
     "provider-url" : "http://fakeauthserver/auth",
     "ssl-required" : "EXTERNAL",
     "credentials" : {
-        "secret" : "secret"
+        "secret" : "longerclientsecretthatisstleast256bitslong"
     }
 }

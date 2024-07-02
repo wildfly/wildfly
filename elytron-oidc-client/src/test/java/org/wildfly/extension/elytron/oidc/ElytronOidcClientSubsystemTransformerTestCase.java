@@ -44,7 +44,7 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
 
 
     public ElytronOidcClientSubsystemTransformerTestCase(ModelTestControllerVersion controllerVersion, ModelVersion version) {
-        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_2_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
+        super(ElytronOidcExtension.SUBSYSTEM_NAME, new ElytronOidcExtension(), ElytronOidcSubsystemSchema.VERSION_3_0_PREVIEW, ElytronOidcSubsystemSchema.CURRENT.get(Stability.PREVIEW));
         this.controllerVersion = controllerVersion;
         this.modelVersion = version;
     }
@@ -66,6 +66,42 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
                         new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.SCOPE))
                 .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.SCOPE)),
                         new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.SCOPE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_ALGORITHM))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_ALIAS))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_ALIAS))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_PASSWORD))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEY_PASSWORD))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_DEPLOYMENT, "wildfly-reject-deployment-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE))
+                .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PathElement.pathElement(ElytronOidcDescriptionConstants.SECURE_SERVER, "wildfly-reject-with-scope.war"), PathElement.pathElement(ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT)),
+                        new FailedOperationTransformationConfig.NewAttributesConfig(ElytronOidcDescriptionConstants.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE))
         );
     }
 
@@ -94,7 +130,7 @@ public class ElytronOidcClientSubsystemTransformerTestCase extends AbstractSubsy
         ModelTestUtils.checkFailedTransformedBootOperations(services, version, ops, config);
     }
 
-        private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
+    private KernelServices buildKernelServices(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
         KernelServicesBuilder builder = this.createKernelServicesBuilder(new DefaultInitializer(this.getSubsystemSchema().getStability()))
                 .setSubsystemXmlResource("elytron-oidc-client-transform.xml");
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, version)

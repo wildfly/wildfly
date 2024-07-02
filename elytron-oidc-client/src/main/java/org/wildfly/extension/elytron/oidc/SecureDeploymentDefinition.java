@@ -9,7 +9,16 @@ import static org.jboss.as.server.security.SecurityMetaData.OPERATION_CONTEXT_AT
 import static org.jboss.as.server.security.VirtualDomainMarkerUtility.virtualDomainName;
 import static org.jboss.as.server.security.VirtualDomainUtil.VIRTUAL;
 import static org.jboss.as.web.common.VirtualHttpServerMechanismFactoryMarkerUtility.virtualMechanismFactoryName;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.AUTHENTICATION_REQUEST_FORMAT;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DISABLE_TRUST_MANAGER;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ALG_VALUE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_ENCRYPTION_ENC_VALUE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_ALGORITHM;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_ALIAS;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEY_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_FILE;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD;
+import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE;
 import static org.wildfly.extension.elytron.oidc._private.ElytronOidcLogger.ROOT_LOGGER;
 
 import java.io.ByteArrayInputStream;
@@ -181,6 +190,15 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_RESOURCE_SERVICES));
         NON_DEFAULT_ATTRIBUTES.add(SCOPE);
+        NON_DEFAULT_ATTRIBUTES.add(AUTHENTICATION_REQUEST_FORMAT);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_ENCRYPTION_ENC_VALUE);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_ENCRYPTION_ALG_VALUE);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_FILE);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEY_ALIAS);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEY_PASSWORD);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE);
+        NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_ALGORITHM);
     }
 
     @Override

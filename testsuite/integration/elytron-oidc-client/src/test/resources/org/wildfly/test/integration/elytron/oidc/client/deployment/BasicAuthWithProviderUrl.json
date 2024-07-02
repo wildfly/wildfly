@@ -4,6 +4,6 @@
     "ssl-required" : "EXTERNAL",
     "enable-basic-auth" : "true",
     "credentials" : {
-        "secret" : "secret"
+        "secret" : "longerclientsecretthatisstleast256bitslong"
     }
 }

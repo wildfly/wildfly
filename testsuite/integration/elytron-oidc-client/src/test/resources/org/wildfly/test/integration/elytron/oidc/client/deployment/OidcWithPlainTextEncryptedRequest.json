@@ -1,0 +1,14 @@
+{
+  "client-id" : "PlainTextEncryptedRequestApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "scope" : "profile email phone",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "none",
+  "request-object-encryption-alg-value" : "RSA-OAEP",
+  "request-object-encryption-enc-value" : "A128CBC-HS256",
+  "credentials" : {
+    "secret" : "longerclientsecretthatisstleast256bitslong"
+  }
+}

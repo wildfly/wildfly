@@ -17,6 +17,7 @@ interface ElytronOidcDescriptionConstants {
     String ALLOW_ANY_HOSTNAME = "allow-any-hostname";
     String ALWAYS_REFRESH_TOKEN = "always-refresh-token";
     String AUTH_SERVER_URL = "auth-server-url";
+    String AUTHENTICATION_REQUEST_FORMAT = "authentication-request-format";
     String AUTODETECT_BEARER_ONLY = "autodetect-bearer-only";
     String BEARER_ONLY = "bearer-only";
     String CLIENT_ID = "client-id";
@@ -42,6 +43,7 @@ interface ElytronOidcDescriptionConstants {
     String EXPOSE_TOKEN = "expose-token";
     String IGNORE_OAUTH_QUERY_PARAMTER = "ignore-oauth-query-parameter";
     String MIN_TIME_BETWEEN_JWKS_REQUESTS = "min-time-between-jwks-requests";
+    String OAUTH2 = "oauth2";
     String PATTERN = "pattern";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
@@ -55,6 +57,16 @@ interface ElytronOidcDescriptionConstants {
     String REGISTER_NODE_AT_STARTUP = "register-node-at-startup";
     String REGISTER_NODE_PERIOD = "register-node-period";
     String REPLACEMENT = "replacement";
+    String REQUEST = "request";
+    String REQUEST_OBJECT_ENCRYPTION_ENC_VALUE = "request-object-encryption-enc-value";
+    String REQUEST_OBJECT_ENCRYPTION_ALG_VALUE = "request-object-encryption-alg-value";
+    String REQUEST_OBJECT_SIGNING_ALGORITHM = "request-object-signing-algorithm";
+    String REQUEST_OBJECT_SIGNING_KEYSTORE_FILE = "request-object-signing-keystore-file";
+    String REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD = "request-object-signing-keystore-password";
+    String REQUEST_OBJECT_SIGNING_KEY_PASSWORD = "request-object-signing-key-password";
+    String REQUEST_OBJECT_SIGNING_KEY_ALIAS = "request-object-signing-key-alias";
+    String REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE = "request-object-signing-keystore-type";
+    String REQUEST_URI = "request_uri";
     String RESOURCE = "resource";
     String SCOPE = "scope";
     String SECRET = "secret";

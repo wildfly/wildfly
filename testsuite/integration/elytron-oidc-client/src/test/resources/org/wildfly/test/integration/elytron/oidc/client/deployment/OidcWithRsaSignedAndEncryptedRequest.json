@@ -1,0 +1,19 @@
+{
+  "client-id" : "RSASignedAndEncryptedRequestApp",
+  "provider-url" : "${oidc.provider.url}",
+  "public-client" : "false",
+  "authentication-request-format" : "request",
+  "request-object-signing-algorithm" : "RS256",
+  "request-object-encryption-alg-value" : "RSA-OAEP-256",
+  "request-object-encryption-enc-value" : "A192CBC-HS384",
+  "request-object-signing-keystore-file" : "${oidc.request.object.signing.keystore.file}",
+  "request-object-signing-keystore-password" : "Elytron",
+  "request-object-signing-key-password" : "Elytron",
+  "request-object-signing-key-alias" : "jwtKeystore",
+  "request-object-signing-keystore-type" : "PKCS12",
+  "ssl-required" : "EXTERNAL",
+  "scope" : "profile email phone",
+  "credentials" : {
+    "secret" : "longerclientsecretthatisstleast256bitslong"
+  }
+}
