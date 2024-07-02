@@ -86,6 +86,10 @@
       <exists>false</exists>
     </file>
     <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.zip</location>
+      <exists>true</exists>
+    </file>
+    <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/docs/schema/wildfly-txn_5_0.xsd</location>
       <exists>true</exists>
     </file>

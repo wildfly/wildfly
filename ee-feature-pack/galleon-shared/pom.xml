@@ -4115,6 +4115,29 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.unstable.api.annotation</groupId>
+                <artifactId>unstable-api-annotation-classpath-indexer-plugin</artifactId>
+                <configuration>
+                    <outputFile>${project.build.directory}/index/wildfly-ee-feature-pack.zip</outputFile>
+                    <filters>
+                        <filter>
+                            <annotation>org.hibernate.Incubating</annotation>
+                            <groupIds>
+                                <groupId>org.hibernate</groupId>
+                                <groupId>org.hibernate.*</groupId>
+                            </groupIds>
+                        </filter>
+                        <filter>
+                            <annotation>org.hibernate.validator.Incubating</annotation>
+                            <groupIds>
+                                <groupId>org.hibernate</groupId>
+                                <groupId>org.hibernate.*</groupId>
+                            </groupIds>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
