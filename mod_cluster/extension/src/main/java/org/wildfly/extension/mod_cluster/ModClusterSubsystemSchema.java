@@ -28,7 +28,7 @@ public enum ModClusterSubsystemSchema implements SubsystemSchema<ModClusterSubsy
     MODCLUSTER_3_0(3, 0), // WildFly 11-13, EAP 7.1
     MODCLUSTER_4_0(4, 0), // WildFly 14-15, EAP 7.2
     MODCLUSTER_5_0(5, 0), // WildFly 16-26, EAP 7.3-7.4
-    MODCLUSTER_6_0(6, 0), // WildFly 27-present
+    MODCLUSTER_6_0(6, 0), // WildFly 27-present, EAP 8.0-present
     ;
     public static final ModClusterSubsystemSchema CURRENT = MODCLUSTER_6_0;
 
