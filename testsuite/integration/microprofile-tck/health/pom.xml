@@ -7,7 +7,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ-mp</artifactId>
@@ -90,7 +90,7 @@
                         <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
                     </dependenciesToScan>
                     <systemPropertyVariables>
-                        <!-- Disable default procedures as the MP Metrics TCK must be run without them -->
+                        <!-- Disable default procedures as the MP Health TCK must be run without them -->
                         <!-- https://github.com/eclipse/microprofile-health/blob/master/tck/running_the_tck.asciidoc#disabling-default-vendor-procedures -->
                         <microprofile.jvm.args>${microprofile.jvm.args} -Dmp.health.disable-default-procedures=true</microprofile.jvm.args>
                     </systemPropertyVariables>
@@ -129,8 +129,8 @@
                 <ts.microprofile-tck-glow.config.name>standalone.xml</ts.microprofile-tck-glow.config.name>
             </properties>
         </profile>
-        
-         <profile>
+
+        <profile>
             <id>bootablejar.preview.profile</id>
             <activation>
                 <property>

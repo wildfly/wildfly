@@ -67,9 +67,10 @@ public class CDIExtension implements Extension {
         addHealthChecks(Readiness.Literal.INSTANCE, reporter::addReadinessCheck, readinessChecks);
         addHealthChecks(Startup.Literal.INSTANCE, reporter::addStartupCheck, startupChecks);
         reporter.setUserChecksProcessed(true);
+
+        final Config config = ConfigProvider.getConfig(module.getClassLoader());
+        final boolean disableDefaultprocedure = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES, Boolean.class).orElse(false);
         if (readinessChecks.isEmpty()) {
-            Config config = ConfigProvider.getConfig(module.getClassLoader());
-            boolean disableDefaultprocedure = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES, Boolean.class).orElse(false);
             if (!disableDefaultprocedure) {
                 // no readiness probe are present in the deployment. register a readiness check so that the deployment is considered ready
                 defaultReadinessCheck = new DefaultReadinessHealthCheck(module.getName());
@@ -77,13 +78,16 @@ public class CDIExtension implements Extension {
             }
         }
         if (startupChecks.isEmpty()) {
-            Config config = ConfigProvider.getConfig(module.getClassLoader());
-            boolean disableDefaultprocedure = config.getOptionalValue(MP_HEALTH_DISABLE_DEFAULT_PROCEDURES, Boolean.class).orElse(false);
             if (!disableDefaultprocedure) {
                 // no startup probes are present in the deployment. register a startup check so that the deployment is considered started
                 defaultStartupCheck = new DefaultStartupHealthCheck(module.getName());
                 reporter.addStartupCheck(defaultStartupCheck, module.getClassLoader());
             }
+        }
+        // https://issues.redhat.com/browse/WFLY-19147 - let the per-application `mp.health.disable-default-procedures`
+        // configuration setting affect the Health checks response global server configuration
+        if (disableDefaultprocedure) {
+            reporter.deactivateDefaultProcedures(module.getName());
         }
     }
 
