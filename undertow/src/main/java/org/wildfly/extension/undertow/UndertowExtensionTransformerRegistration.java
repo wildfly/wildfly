@@ -54,11 +54,17 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                 final ResourceTransformationDescriptionBuilder handlers = subsystem.addChildResource(HandlerDefinitions.PATH_ELEMENT);
                 final ResourceTransformationDescriptionBuilder reverseProxy = handlers.addChildResource(ReverseProxyHandlerDefinition.PATH_ELEMENT);
                 final AttributeTransformationDescriptionBuilder reverseProxyAttributeTransformationDescriptionBuilder = reverseProxy.getAttributeBuilder();
+                final ResourceTransformationDescriptionBuilder ajpListener = server.addChildResource(AjpListenerResourceDefinition.PATH_ELEMENT);
 
                 reverseProxyAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ReverseProxyHandlerDefinition.REUSE_X_FORWARDED_HEADER)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ReverseProxyHandlerDefinition.REWRITE_HOST_HEADER)
+                .end();
+
+                final AttributeTransformationDescriptionBuilder ajpListenerAttributeTransformationDescriptionBuilder = ajpListener.getAttributeBuilder();
+                ajpListenerAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
                 .end();
 
                 if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
@@ -69,22 +75,10 @@ public class UndertowExtensionTransformerRegistration implements ExtensionTransf
                         .end();
 
                     servletContainer.rejectChildResource(AffinityCookieDefinition.PATH_ELEMENT);
-                }
 
-                TransformationDescription.Tools.register(subsystem.build(), registration, version);
-            }
-
-            final ResourceTransformationDescriptionBuilder ajpListener = server.addChildResource(AjpListenerResourceDefinition.PATH_ELEMENT);
-            if (UndertowSubsystemModel.VERSION_14_0_0.requiresTransformation(version)) {
-                final AttributeTransformationDescriptionBuilder ajpListenerAttributeTransformationDescriptionBuilder = ajpListener.getAttributeBuilder();
-                ajpListenerAttributeTransformationDescriptionBuilder.setDiscard(DiscardAttributeChecker.UNDEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, AjpListenerResourceDefinition.ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
-                .end();
-
-                if (UndertowSubsystemModel.VERSION_13_0_0.requiresTransformation(version)) {
                     ajpListenerAttributeTransformationDescriptionBuilder
-                        .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
-                        .end();
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, ListenerResourceDefinition.WRITE_TIMEOUT, ListenerResourceDefinition.READ_TIMEOUT)
+                    .end();
                 }
             }
 
