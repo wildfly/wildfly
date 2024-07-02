@@ -9,6 +9,7 @@ import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
 import jakarta.jms.Topic;
+import jakarta.resource.ResourceException;
 import javax.naming.NamingException;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ClusterTopologyListener;
@@ -35,7 +36,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
- * Service responsible for creating and destroying a client {@code jakarta.jms.Topic}.
+ * Service responsible for creating and destroying a client
+ * {@code jakarta.jms.Topic}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
@@ -79,18 +81,22 @@ public class ExternalJMSTopicService implements Service<Topic> {
                         public void nodeUP(TopologyMember member, boolean last) {
                             try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
                                 factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
+                                factory.setUser(raCf.getDefaultFactory().getUser());
+                                factory.setPassword(raCf.getDefaultFactory().getPassword());
                                 MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on node UP %s - %s", topicName, member.getNodeId(), member.getLive().toString());
                                 config.createTopic(factory, managementQueue, topicName);
-                            } catch (JMSException | StartException ex) {
+                            } catch (JMSException | ResourceException | StartException ex) {
                                 MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating topic %s on node UP %s failed", topicName, member.getLive().toString());
                                 throw new RuntimeException(ex);
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
                                     factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
+                                    factory.setUser(raCf.getDefaultFactory().getUser());
+                                    factory.setPassword(raCf.getDefaultFactory().getPassword());
                                     MessagingLogger.ROOT_LOGGER.infof("Creating topic %s on backup node UP %s - %s", topicName, member.getNodeId(), member.getBackup().toString());
                                     config.createTopic(factory, managementQueue, topicName);
-                                } catch (JMSException | StartException ex) {
+                                } catch (JMSException | ResourceException | StartException ex) {
                                     throw new RuntimeException(ex);
                                 }
                             }
