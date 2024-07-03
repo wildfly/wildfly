@@ -22,6 +22,11 @@
     <artifactId>wildfly-ts-integ-mp-certification</artifactId>
     <name>WildFly Test Suite: Integration - MicroProfile TCK - Certification</name>
 
+    <properties>
+        <!-- Don't try to deploy the testsuite modules because they don't build jars -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <build>
         <pluginManagement>
             <plugins>
