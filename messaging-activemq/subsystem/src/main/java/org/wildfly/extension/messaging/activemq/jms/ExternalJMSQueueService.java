@@ -4,7 +4,6 @@
  */
 package org.wildfly.extension.messaging.activemq.jms;
 
-
 import java.util.Collection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
@@ -35,7 +34,8 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
- * Service responsible for creating and destroying a client {@code jakarta.jms.Queue}.
+ * Service responsible for creating and destroying a client
+ * {@code jakarta.jms.Queue}.
  *
  * @author Emmanuel Hugonnet (c) 2018 Red Hat, inc.
  */
@@ -62,7 +62,7 @@ public class ExternalJMSQueueService implements Service<Queue> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         NamingStore namingStore = namingStoreInjector.getOptionalValue();
-        if(namingStore!= null) {
+        if (namingStore != null) {
             final Queue managementQueue = config.getManagementQueue();
             final NamingContext storeBaseContext = new NamingContext(namingStore, null);
             try {
@@ -75,27 +75,33 @@ public class ExternalJMSQueueService implements Service<Queue> {
                     ClusterTopologyListener listener = new ClusterTopologyListener() {
                         @Override
                         public void nodeUP(TopologyMember member, boolean last) {
-                            try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getLive())) {
+                            try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getPrimary())) {
                                 factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
-                                MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getLive().toString());
+                                factory.setUser(raCf.getResourceAdapter().getUserName());
+                                factory.setPassword(raCf.getResourceAdapter().getPassword());
+                                MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on node UP %s - %s", queueName, member.getNodeId(), member.getPrimary().toString());
                                 config.createQueue(factory, managementQueue, queueName);
                             } catch (JMSException | StartException ex) {
-                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getLive().toString());
+                                MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getPrimary().toString());
                                 throw new RuntimeException(ex);
                             }
                             if (member.getBackup() != null) {
                                 try (ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(false, member.getBackup())) {
                                     factory.getServerLocator().setProtocolManagerFactory(protocolManagerFactory);
+                                    factory.setUser(raCf.getResourceAdapter().getUserName());
+                                    factory.setPassword(raCf.getResourceAdapter().getPassword());
                                     MessagingLogger.ROOT_LOGGER.infof("Creating queue %s on backup node UP %s - %s", queueName, member.getNodeId(), member.getBackup().toString());
                                     config.createQueue(factory, managementQueue, queueName);
                                 } catch (JMSException | StartException ex) {
+                                    MessagingLogger.ROOT_LOGGER.errorf(ex, "Creating queue %s on node UP %s failed", queueName, member.getBackup().toString());
                                     throw new RuntimeException(ex);
                                 }
                             }
                         }
 
                         @Override
-                        public void nodeDown(long eventUID, String nodeID) {}
+                        public void nodeDown(long eventUID, String nodeID) {
+                        }
                     };
                     Collection<TopologyMemberImpl> members = locator.getTopology().getMembers();
                     if (members == null || members.isEmpty() || members.size() == 1) {
@@ -119,10 +125,9 @@ public class ExternalJMSQueueService implements Service<Queue> {
         queue = ActiveMQDestination.createQueue(queueName);
     }
 
-
     @Override
     public synchronized void stop(final StopContext context) {
-        if(sessionFactory != null) {
+        if (sessionFactory != null) {
             sessionFactory.close();
         }
     }
