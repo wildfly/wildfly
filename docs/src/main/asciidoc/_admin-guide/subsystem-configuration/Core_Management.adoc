@@ -136,11 +136,11 @@ Now we can list the last configuration changes :
 [[unstable-api-annotation]]
 == [Preview Feature] Reporting of API elements annotated with annotations indicating unstable API
 
-Note: This feature only exists at the `preview` stability level or lower.
+Note: This feature only exists at the https://docs.wildfly.org/32/Admin_Guide.html#Feature_stability_levels[`preview` stability level] or lower.
 
 Some libraries use annotations on classes/interfaces/members to indicate that the API is considered to be unstable, and likely to change or go away in a future release. For example Hibernate uses the `org.hibernate.Incubating` annotation to mark such API elements.
 
-WildFly can scan for usage of such API when your applications are deployed into WildFly, but it needs to be enabled via addition of the `/subsystem=core-management/service=unstable-api-annotations` resource. Once enabled, you can choose whether usage of these API elements should result in a warning in the logs, or a failed deployment. The next two child sections show examples of how to configure the scanner.
+WildFly can scan for the use of such API when your applications are deployed into WildFly, but it needs to be enabled via addition of the `/subsystem=core-management/service=unstable-api-annotations` resource. Once enabled, you can choose whether the use of these API elements should result in a warning in the logs, or a failed deployment. The next two child sections show examples of how to configure the scanner.
 
 === Log a warning
 To enable the scanner and log a warning if annotated API elements are used in your code, execute the following CLI command:
