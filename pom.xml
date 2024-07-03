@@ -1475,7 +1475,7 @@
                     <plugin>
                       <groupId>org.owasp</groupId>
                       <artifactId>dependency-check-maven</artifactId>
-                      <version>9.0.10</version>
+                      <version>10.0.1</version>
                       <configuration>
                           <nvdApiServerId>nvd</nvdApiServerId>
                           <suppressionFile>./sca-overrides/owasp-suppressions.xml</suppressionFile>
