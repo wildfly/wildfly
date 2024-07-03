@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:3.1">
+    <example-configs>
+        <config model="standalone" name="standalone-core-microprofile.xml">
+            <layers>
+                <include name="ee-core-profile-server"/>
+                <include name="microprofile-platform"/>
+            </layers>
+        </config>
+    </example-configs>
+</tasks>
