@@ -28,6 +28,7 @@
 
     <properties>
         <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
+        <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
         <pruned.resources.directory>${basedir}/../pruned/src/main/resources</pruned.resources.directory>
@@ -118,6 +119,23 @@
                             <resources>
                                 <resource>
                                     <directory>${galleon.shared.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-feature-pack-generated-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Just copy here rather than trying to get from the shared zip, since nothing else is using the zip -->
+                            <outputDirectory>${basedir}/target/resources/packages/unstable-api-annotation-index.wildfly-ee-feature-pack/content</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.generated.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
