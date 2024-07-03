@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.undertow;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
@@ -45,7 +47,15 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
             .setValidator(new IntRangeValidator(1))
             .build();
 
-    static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE);
+    protected static final OptionAttributeDefinition ALLOWED_REQUEST_ATTRIBUTES_PATTERN = OptionAttributeDefinition
+            .builder(Constants.ALLOWED_REQUEST_ATTRIBUTES_PATTERN, UndertowOptions.AJP_ALLOWED_REQUEST_ATTRIBUTES_PATTERN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setDefaultValue(null)
+            .setStability(Stability.PREVIEW)
+            .build();
+
+    static final List<AttributeDefinition> ATTRIBUTES = List.of(SCHEME, REDIRECT_SOCKET, MAX_AJP_PACKET_SIZE, ALLOWED_REQUEST_ATTRIBUTES_PATTERN);
 
     AjpListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER)), new AjpListenerAdd(), Map.of());
