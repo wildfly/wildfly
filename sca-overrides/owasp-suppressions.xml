@@ -246,4 +246,13 @@
       <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-23080</vulnerabilityName>
    </suppress>   
+   <suppress until="2025-07-03">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.14.Final.jar
+
+      [WFLY-19494] This has already been addressed within UNDERTOW-2334.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-6162</vulnerabilityName>
+   </suppress>
 </suppressions>
