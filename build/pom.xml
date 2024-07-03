@@ -91,6 +91,9 @@
                                     <groupId>${full.maven.groupId}</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${full.maven.version}</version>
+                                    <included-packages>
+                                        <name>docs.examples.configs</name>
+                                    </included-packages>
                                 </feature-pack>
                             </feature-packs>
                             <galleon-options>
