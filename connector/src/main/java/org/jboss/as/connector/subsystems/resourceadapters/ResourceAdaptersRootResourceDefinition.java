@@ -19,7 +19,9 @@ import org.jboss.as.controller.registry.RuntimePackageDependency;
  */
 public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefinition {
 
-    static final RuntimeCapability<Void> RESOURCE_ADAPTERS_SUBSYSTEM = RuntimeCapability.Builder.of(Capabilities.RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY_NAME).build();
+    private static final String RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY = "org.wildfly.resource-adapters";
+
+    private static final RuntimeCapability<Void> RESOURCE_ADAPTERS_SUBSYSTEM = RuntimeCapability.Builder.of(RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY).build();
 
     private final boolean runtimeOnlyRegistrationValid;
 

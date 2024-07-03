@@ -20,7 +20,6 @@ import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapt
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.Constants;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
-import org.jboss.as.connector.subsystems.resourceadapters.Capabilities;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
@@ -65,6 +64,8 @@ import org.jboss.msc.service.ServiceTarget;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private static final String RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY = "org.wildfly.resource-adapters";
 
     /**
      * Process a deployment for a Connector. Will install a {@Code
@@ -192,7 +193,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(support.getCapabilityServiceName(ConnectorServices.TRANSACTION_INTEGRATION_CAPABILITY_NAME), TransactionIntegration.class, raDeploymentService.getTxIntegrationInjector())
                 .addDependency(ConnectorServices.CONNECTOR_CONFIG_SERVICE, JcaSubsystemConfiguration.class, raDeploymentService.getConfigInjector());
 
-            if (support.hasCapability(Capabilities.RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY_NAME)) {
+            if (support.hasCapability(RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY)) {
                 builder.addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.class, raDeploymentService.getResourceAdaptersSubsystem());
             }
 
