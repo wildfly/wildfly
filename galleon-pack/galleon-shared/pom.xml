@@ -647,6 +647,26 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.wildfly.unstable.api.annotation</groupId>
+                <artifactId>unstable-api-annotation-classpath-indexer-plugin</artifactId>
+                <configuration>
+                    <outputFile>${project.build.directory}/index/wildfly-galleon-pack.zip</outputFile>
+                    <filters>
+                        <filter>
+                            <annotation>io.smallrye.common.annotation.Experimental</annotation>
+                            <groupIds>
+                                <groupId>io.smallrye</groupId>
+                                <groupId>io.smallrye.*</groupId>
+                            </groupIds>
+                            <excludedClasses>
+                                <excludedClass>org.eclipse.microprofile.reactive.messaging.Channel</excludedClass>
+                                <excludedClass>org.eclipse.microprofile.reactive.messaging.Incoming</excludedClass>
+                            </excludedClasses>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
