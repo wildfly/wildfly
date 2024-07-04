@@ -5,6 +5,7 @@
 
 package org.wildfly.extension.batch.jberet._private;
 
+import java.lang.invoke.MethodHandles;
 import java.security.Permission;
 import jakarta.batch.operations.BatchRuntimeException;
 import jakarta.batch.operations.JobSecurityException;
@@ -31,7 +32,7 @@ public interface BatchLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    BatchLogger LOGGER = Logger.getMessageLogger(BatchLogger.class, "org.wildfly.extension.batch");
+    BatchLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), BatchLogger.class, "org.wildfly.extension.batch");
 
     /**
      * Creates an exception indicating there was an error processing the batch jobs directory.

@@ -8,6 +8,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 
 import org.jboss.logging.BasicLogger;
@@ -29,7 +30,7 @@ public interface SingletonLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    SingletonLogger ROOT_LOGGER = Logger.getMessageLogger(SingletonLogger.class, ROOT_LOGGER_CATEGORY);
+    SingletonLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), SingletonLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "This node will now operate as the singleton provider of the %s service")

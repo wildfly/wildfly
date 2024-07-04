@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.sql.Driver;
 import java.util.Set;
 
@@ -42,42 +43,42 @@ public interface ConnectorLogger extends BasicLogger {
     /**
      * The root logger with a category of the default package.
      */
-    ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector");
+    ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.deployers.jdbc}.
      */
-    ConnectorLogger DEPLOYER_JDBC_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployers.jdbc");
+    ConnectorLogger DEPLOYER_JDBC_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.deployers.jdbc");
 
     /**
      * A logger with the category {@code org.jboss.as.deployment.connector}.
      */
-    ConnectorLogger DEPLOYMENT_CONNECTOR_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployment");
+    ConnectorLogger DEPLOYMENT_CONNECTOR_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.deployment");
 
     /**
      * A logger with the category {@code org.jboss.as.deployment.connector.registry}.
      */
-    ConnectorLogger DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployment.registry");
+    ConnectorLogger DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.deployment.registry");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.deployer.dsdeployer}.
      */
-    ConnectorLogger DS_DEPLOYER_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployer.dsdeployer");
+    ConnectorLogger DS_DEPLOYER_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.deployer.dsdeployer");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.services.mdr}.
      */
-    ConnectorLogger MDR_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.services.mdr");
+    ConnectorLogger MDR_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.services.mdr");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.subsystems.datasources}.
      */
-    ConnectorLogger SUBSYSTEM_DATASOURCES_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.subsystems.datasources");
+    ConnectorLogger SUBSYSTEM_DATASOURCES_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.subsystems.datasources");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.subsystems.resourceadapters}.
      */
-    ConnectorLogger SUBSYSTEM_RA_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.subsystems.resourceadapters");
+    ConnectorLogger SUBSYSTEM_RA_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector.subsystems.resourceadapters");
 
     /**
      * Logs an informational message indicating the data source has been bound.
