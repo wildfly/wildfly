@@ -352,9 +352,7 @@
             </build>
         </profile>
 
-        <!-- Test against the ee 9 feature pack -->
-        <!-- TODO convert this to a bootable jar setup once a release
-             of the wildfly jar plugin with transformation support is available -->
+        <!-- Test against the wildfly-preview feature pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>
