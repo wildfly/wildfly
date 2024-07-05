@@ -352,4 +352,13 @@
         <vulnerabilityName>CVE-2024-1233</vulnerabilityName>
         <vulnerabilityName>CVE-2023-6236</vulnerabilityName>
     </suppress>
+
+    <!-- False positive: We build WF in lowest possible JDK (17) which isn't affected -->
+    <suppress>
+        <notes><![CDATA[
+        file name: expressly-5.0.0.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
+        <cve>CVE-2023-5763</cve>
+    </suppress>
 </suppressions>
