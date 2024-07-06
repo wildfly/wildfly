@@ -342,7 +342,6 @@
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
-                <module>secman</module>
                 <module>elytron</module>
                 <module>elytron-oidc-client</module>
                 <module>vdx</module>
