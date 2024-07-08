@@ -54,10 +54,6 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     */
 
     @LogMessage(level = WARN)
-    @Message(id = 7, value = "Disabling default procedures according to the %s deployment configuration")
-    void disablingDefaultProcedures(String deploymentName);
-
-    @LogMessage(level = WARN)
-    @Message(id = 8, value = "Default procedures were disabled already, based on the %s deployment configuration")
-    void defaultProceduresDisabledAlready(String deploymentName);
+    @Message(id = 7, value = "Default procedures were disabled already, based on the following deployments configuration: %s")
+    void defaultProceduresDisabledByDeployments(String configuration);
 }

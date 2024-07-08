@@ -169,13 +169,13 @@ will be added (which returns `UP`) and the `empty-startup-checks` procedure will
 
 === Disabling Default Server Procedures
 
-It is possible to disable all these server procedures by using the MicroProfile Config property `mp.health.disable-default-procedures`.
+It is possible to disable the default server procedures by using the MicroProfile Config property `mp.health.disable-default-procedures`.
 
 [NOTE]
 ====
 The MicroProfile Config property `mp.health.disable-default-procedures` is read at 2 different times:
 
-1. __When the server starts__, to determine if its _server_ procedures should be disabled or enabled. It can be set using the system property `mp.health.disable-default-procedures` or the environment variable `MP_HEALTH_DISABLE_DEFAULT_PROCEDURES`. Setting this property in a deployment is ignored at that time.
+1. __When the server starts__, to determine if the _server_ procedures should be disabled or enabled. It can be set using the system property `mp.health.disable-default-procedures` or the environment variable `MP_HEALTH_DISABLE_DEFAULT_PROCEDURES`. Setting this property in a deployment is ignored at that time.
 2. __When an application is deployed__, to determine if WildFly should disable _all_ the default procedures, including
 _server_ ones.
 Setting this property in a deployment has higher priority than the global server configuration, based on the principle that

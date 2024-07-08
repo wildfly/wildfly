@@ -8,7 +8,8 @@ package org.wildfly.extension.microprofile.health;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -40,21 +41,20 @@ public class MicroProfileHealthReporter {
     private final HealthCheck emptyDeploymentReadinessCheck;
     private final HealthCheck emptyDeploymentStartupCheck;
     private boolean userChecksProcessed = false;
-    private final AtomicReference<String> defaultProceduresDeactivatorReference = new AtomicReference<>();
+    private final ConcurrentHashMap<String, Boolean> deploymentsDefaultProceduresConfiguration = new ConcurrentHashMap<>();
 
-    public void deactivateDefaultProcedures(final String deploymentName) {
-        // If a deployment disables default procedures, that will affect all the default procedures,
-        //  including those relating to the global server context, see https://issues.redhat.com/browse/WFLY-19147
-        if (this.defaultProceduresDeactivatorReference.get() == null) {
-            MicroProfileHealthLogger.LOGGER.disablingDefaultProcedures(deploymentName);
-        } else {
-            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledAlready(deploymentName);
-        }
-        this.defaultProceduresDeactivatorReference.compareAndSet(null, deploymentName);
+    public void registerDeploymentDefaultProceduresConfiguration(final String deploymentName, final Boolean defaultProceduresDisabled) {
+        deploymentsDefaultProceduresConfiguration.put(deploymentName, defaultProceduresDisabled);
     }
 
     private boolean defaultProceduresShouldBeAdded() {
-        return !defaultProceduresDisabled && defaultProceduresDeactivatorReference.get() == null;
+        if (deploymentsDefaultProceduresConfiguration.entrySet().stream().anyMatch(e -> e.getValue())) {
+            final String summary = "[" + deploymentsDefaultProceduresConfiguration.entrySet().stream()
+                    .map(e -> String.format("%s: %s", e.getKey(), e.getValue()))
+                    .collect(Collectors.joining(",")).toString() + "]";
+            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledByDeployments(summary);
+        }
+        return !defaultProceduresDisabled && deploymentsDefaultProceduresConfiguration.entrySet().stream().noneMatch(e -> e.getValue());
     }
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
@@ -73,7 +73,6 @@ public class MicroProfileHealthReporter {
                     .build();
         }
     }
-
 
     public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus,
                                       String emptyStartupChecksStatus, boolean defaultProceduresDisabled,
