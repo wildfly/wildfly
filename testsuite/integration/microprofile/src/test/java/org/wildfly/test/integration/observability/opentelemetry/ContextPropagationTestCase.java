@@ -18,8 +18,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
@@ -37,6 +39,12 @@ import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTa
 @RunAsClient
 @ServerSetup({OpenTelemetrySetupTask.class})
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
+
+    @BeforeClass
+    public static void disableForWFLY19509() {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19509");
+    }
+
     @ArquillianResource
     private Deployer deployer;
 

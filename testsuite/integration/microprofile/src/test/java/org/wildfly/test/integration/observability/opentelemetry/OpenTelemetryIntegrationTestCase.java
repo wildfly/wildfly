@@ -19,8 +19,10 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
@@ -32,6 +34,12 @@ import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask
 @ServerSetup({OpenTelemetrySetupTask.class})
 @RunAsClient
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
+
+    @BeforeClass
+    public static void disableForWFLY19509() {
+        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-19510");
+    }
+
     @ContainerResource
     ManagementClient managementClient;
 
