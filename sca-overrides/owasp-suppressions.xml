@@ -98,6 +98,15 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-tools@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: unstable-api-annotation-classpath-indexer-1.0.0.Beta1.jar
+
+      [WFLY-19495] The unstable API artifacts is incorrectly mapping to WildFly CVEs.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.unstable\.api\.annotation/unstable-api-annotation-classpath-indexer@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
