@@ -8,6 +8,7 @@ package org.jboss.as.connector.services.resourceadapters.deployment;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,7 +55,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public final class ResourceAdapterDeploymentService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RADeployer");
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), DeployersLogger.class, "org.jboss.as.connector.deployers.RADeployer");
 
     private final ClassLoader classLoader;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;

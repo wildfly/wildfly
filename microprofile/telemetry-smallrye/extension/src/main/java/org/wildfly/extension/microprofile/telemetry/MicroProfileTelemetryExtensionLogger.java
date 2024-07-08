@@ -7,6 +7,8 @@ package org.wildfly.extension.microprofile.telemetry;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -16,7 +18,8 @@ import org.jboss.logging.annotations.MessageLogger;
 
 @MessageLogger(projectCode = "WFLYMPTEL", length = 4)
 interface MicroProfileTelemetryExtensionLogger extends BasicLogger {
-    MicroProfileTelemetryExtensionLogger MPTEL_LOGGER = Logger.getMessageLogger(MicroProfileTelemetryExtensionLogger.class,
+    MicroProfileTelemetryExtensionLogger MPTEL_LOGGER = Logger.getMessageLogger(
+            MethodHandles.lookup(), MicroProfileTelemetryExtensionLogger.class,
             MicroProfileTelemetryExtensionLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)

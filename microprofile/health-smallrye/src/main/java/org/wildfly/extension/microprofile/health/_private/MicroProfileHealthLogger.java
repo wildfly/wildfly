@@ -8,6 +8,8 @@ package org.wildfly.extension.microprofile.health._private;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -25,7 +27,7 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    MicroProfileHealthLogger LOGGER = Logger.getMessageLogger(MicroProfileHealthLogger.class, "org.wildfly.extension.microprofile.health.smallrye");
+    MicroProfileHealthLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileHealthLogger.class, "org.wildfly.extension.microprofile.health.smallrye");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

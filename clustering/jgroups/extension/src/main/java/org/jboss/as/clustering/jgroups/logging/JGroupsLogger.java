@@ -8,6 +8,7 @@ package org.jboss.as.clustering.jgroups.logging;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -33,7 +34,7 @@ public interface JGroupsLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    JGroupsLogger ROOT_LOGGER = Logger.getMessageLogger(JGroupsLogger.class, ROOT_LOGGER_CATEGORY);
+    JGroupsLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JGroupsLogger.class, ROOT_LOGGER_CATEGORY);
 
     /**
      * Logs an informational message indicating the JGroups subsystem is being activated.

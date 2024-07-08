@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.messaging.activemq._private;
 
+import java.lang.invoke.MethodHandles;
+
 import jakarta.jms.IllegalStateRuntimeException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -21,7 +23,7 @@ public interface MessagingLogger extends BasicLogger {
     /**
      * The logger with the category of the package.
      */
-    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
+    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
 
     /**
      * Create an exception when calling a method not allowed on injected JMSContext.

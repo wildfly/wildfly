@@ -17,12 +17,13 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModelNodeUtil {
 
-    private static ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector");
+    private static ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ConnectorLogger.class, "org.jboss.as.connector");
 
     public static Long getLongIfSetOrGetDefault(final OperationContext context, final ModelNode dataSourceNode, final SimpleAttributeDefinition key) throws OperationFailedException {
 

@@ -8,6 +8,7 @@ package org.jboss.as.appclient.logging;
 import static org.jboss.logging.Logger.Level.ERROR;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 
 import javax.xml.stream.Location;
@@ -32,7 +33,7 @@ public interface AppClientLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    AppClientLogger ROOT_LOGGER = Logger.getMessageLogger(AppClientLogger.class, "org.jboss.as.appclient");
+    AppClientLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), AppClientLogger.class, "org.jboss.as.appclient");
 
 //    /**
 //     * Logs a generic error message using the {@link Throwable#toString() t.toString()} for the error message.

@@ -7,6 +7,8 @@ package org.jboss.as.jpa.hibernate;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.hibernate.boot.archive.spi.ArchiveException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -27,7 +29,7 @@ public interface JpaLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jipijapa}.
      */
-    JpaLogger JPA_LOGGER = Logger.getMessageLogger(JpaLogger.class, "org.jipijapa");
+    JpaLogger JPA_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JpaLogger.class, "org.jipijapa");
 
     /**
      * Inform that the Hibernate second level cache is enabled.

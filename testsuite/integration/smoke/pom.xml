@@ -538,6 +538,14 @@
                         </configuration>
                     </execution>
                 </executions>
+                <!-- Need to override the plugin dependency to make jboss-logging lib work -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                        <version>${version.org.jboss.logging.jboss-logging}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.wildfly.glow</groupId>
@@ -808,7 +816,7 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
-                            
+
                             <!-- Tests against the install with legacy sar support -->
                             <execution>
                                 <id>legacy-sar-layers.surefire</id>
@@ -835,7 +843,7 @@
                                     </includes>
                                 </configuration>
                             </execution>
-                            
+
                         </executions>
                     </plugin>
                 </plugins>
@@ -928,7 +936,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <!-- Test against bootable jar -->
         <profile>
             <id>bootablejar.preview.profile</id>

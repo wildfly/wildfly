@@ -9,6 +9,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -35,7 +36,7 @@ public interface JaxrsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jboss.jaxrs}.
      */
-    JaxrsLogger JAXRS_LOGGER = Logger.getMessageLogger(JaxrsLogger.class, "org.jboss.as.jaxrs");
+    JaxrsLogger JAXRS_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JaxrsLogger.class, "org.jboss.as.jaxrs");
 
     /**
      * Logs a warning message indicating the annotation, represented by the {@code annotation} parameter, not on Class,

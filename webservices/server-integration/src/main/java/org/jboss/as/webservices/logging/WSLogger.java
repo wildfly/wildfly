@@ -12,6 +12,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
 import jakarta.xml.ws.WebServiceException;
@@ -39,7 +40,7 @@ import org.jboss.wsf.spi.deployment.DeploymentAspect;
 @MessageLogger(projectCode = "WFLYWS", length = 4)
 public interface WSLogger extends BasicLogger {
 
-    WSLogger ROOT_LOGGER = Logger.getMessageLogger(WSLogger.class, "org.jboss.as.webservices");
+    WSLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), WSLogger.class, "org.jboss.as.webservices");
 
     @LogMessage(level = WARN)
     @Message(id = 1, value = "Cannot load WS deployment aspects from %s")

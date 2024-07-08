@@ -13,6 +13,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.io.InvalidClassException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -93,27 +94,27 @@ import org.jboss.msc.service.ServiceName;
 @MessageLogger(projectCode = "WFLYEJB", length = 4)
 public interface EjbLogger extends BasicLogger {
 
-    EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3");
+    EjbLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EjbLogger.class, "org.jboss.as.ejb3");
 
     /**
      * A logger with the category {@code org.jboss.as.ejb3.deployment} used for deployment log messages
      */
-    EjbLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.deployment");
+    EjbLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EjbLogger.class, "org.jboss.as.ejb3.deployment");
 
     /**
      * A logger with the category {@code org.jboss.as.ejb3.remote} used for remote log messages
      */
-    EjbLogger REMOTE_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.remote");
+    EjbLogger REMOTE_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EjbLogger.class, "org.jboss.as.ejb3.remote");
 
     /**
      * logger use to log Jakarta Enterprise Beans invocation errors
      */
-    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
+    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
      * logger use to log Jakarta Enterprise Beans timer messages
      */
-    EjbLogger EJB3_TIMER_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.timer");
+    EjbLogger EJB3_TIMER_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EjbLogger.class, "org.jboss.as.ejb3.timer");
 
 //    /**
 //     * Logs an error message indicating an exception occurred while removing an inactive bean.

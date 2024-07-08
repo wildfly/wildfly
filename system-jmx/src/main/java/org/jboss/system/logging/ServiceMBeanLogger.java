@@ -5,6 +5,8 @@
 
 package org.jboss.system.logging;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
@@ -17,7 +19,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYSYSJMX", length = 4)
 public interface ServiceMBeanLogger extends BasicLogger {
 
-    ServiceMBeanLogger ROOT_LOGGER = Logger.getMessageLogger(ServiceMBeanLogger.class, "org.jboss.system");
+    ServiceMBeanLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ServiceMBeanLogger.class, "org.jboss.system");
 
     @Message(id = 1, value = "Null method name")
     IllegalArgumentException nullMethodName();

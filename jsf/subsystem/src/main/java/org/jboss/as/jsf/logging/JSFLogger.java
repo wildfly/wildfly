@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -35,7 +36,7 @@ public interface JSFLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    JSFLogger ROOT_LOGGER = Logger.getMessageLogger(JSFLogger.class, "org.jboss.as.jsf");
+    JSFLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JSFLogger.class, "org.jboss.as.jsf");
 
 //    @LogMessage(level = WARN)
 //    @Message(id = 1, value = "WildFlyConversationAwareViewHandler was improperly initialized. Expected ViewHandler parent.")

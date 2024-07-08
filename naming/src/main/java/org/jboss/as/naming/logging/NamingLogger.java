@@ -9,6 +9,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.security.Permission;
 
 import javax.naming.Context;
@@ -44,7 +45,7 @@ public interface NamingLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    NamingLogger ROOT_LOGGER = Logger.getMessageLogger(NamingLogger.class, "org.jboss.as.naming");
+    NamingLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), NamingLogger.class, "org.jboss.as.naming");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

@@ -7,6 +7,8 @@ package org.wildfly.clustering.web.infinispan.logging;
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -25,7 +27,7 @@ import org.jboss.logging.annotations.MessageLogger;
 public interface InfinispanWebLogger extends BasicLogger {
     String ROOT_LOGGER_CATEGORY = "org.wildfly.clustering.web.infinispan";
 
-    InfinispanWebLogger ROOT_LOGGER = Logger.getMessageLogger(InfinispanWebLogger.class, ROOT_LOGGER_CATEGORY);
+    InfinispanWebLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), InfinispanWebLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = WARN)
     @Message(id = 1, value = "Failed to passivate attributes of session %s")

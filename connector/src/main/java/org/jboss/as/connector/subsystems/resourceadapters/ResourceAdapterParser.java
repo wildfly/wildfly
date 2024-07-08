@@ -34,7 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 
-
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +66,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     /**
      * The bundle
      */
-    private static final CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static final CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
 
 
     public void parse(final XMLExtendedStreamReader reader, final ModelNode subsystemAddOperation, final List<ModelNode> list, ModelNode parentAddress) throws Exception {

@@ -7,6 +7,8 @@ package org.jipijapa;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -25,7 +27,7 @@ public interface JipiLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jboss.jpa}.
      */
-    JipiLogger JPA_LOGGER = Logger.getMessageLogger(JipiLogger.class, "org.jipijapa");
+    JipiLogger JPA_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), JipiLogger.class, "org.jipijapa");
 
 
     /**

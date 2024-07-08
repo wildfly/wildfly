@@ -9,6 +9,8 @@ import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import jakarta.resource.spi.work.Work;
 import jakarta.resource.spi.work.WorkCompletedException;
 import jakarta.transaction.Synchronization;
@@ -36,7 +38,7 @@ public interface TransactionLogger extends BasicLogger {
     /**
      * A logger with the category of the default transaction package.
      */
-    TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(TransactionLogger.class, "org.jboss.as.txn");
+    TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), TransactionLogger.class, "org.jboss.as.txn");
 
     /**
      * If a transaction could not be rolled back

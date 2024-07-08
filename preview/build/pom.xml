@@ -93,6 +93,14 @@
                         </configuration>
                     </execution>
                 </executions>
+                <!-- Need to override the plugin dependency to make jboss-logging lib work -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                        <version>${version.org.jboss.logging.jboss-logging}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

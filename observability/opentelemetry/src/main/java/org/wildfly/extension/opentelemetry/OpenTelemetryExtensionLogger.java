@@ -9,6 +9,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.wildfly.extension.opentelemetry.OpenTelemetryConfigurationConstants.EXPORTER_OTLP;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -19,7 +21,7 @@ import org.jboss.logging.annotations.MessageLogger;
 
 @MessageLogger(projectCode = "WFLYOTELEXT", length = 4)
 interface OpenTelemetryExtensionLogger extends BasicLogger {
-    OpenTelemetryExtensionLogger OTEL_LOGGER = Logger.getMessageLogger(OpenTelemetryExtensionLogger.class,
+    OpenTelemetryExtensionLogger OTEL_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), OpenTelemetryExtensionLogger.class,
             OpenTelemetryExtensionLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)

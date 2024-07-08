@@ -8,6 +8,7 @@ package org.jboss.as.clustering.infinispan.logging;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Set;
 
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
@@ -30,7 +31,7 @@ public interface InfinispanLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    InfinispanLogger ROOT_LOGGER = Logger.getMessageLogger(InfinispanLogger.class, ROOT_LOGGER_CATEGORY);
+    InfinispanLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), InfinispanLogger.class, ROOT_LOGGER_CATEGORY);
 
     /**
      * Logs an informational message indicating the Infinispan subsystem is being activated.

@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
@@ -21,7 +22,8 @@ import org.jboss.logging.annotations.MessageLogger;
 
 @MessageLogger(projectCode = "WFLYMMTREXT", length = 4)
 public interface MicrometerExtensionLogger extends BasicLogger {
-    MicrometerExtensionLogger MICROMETER_LOGGER = Logger.getMessageLogger(MicrometerExtensionLogger.class,
+    MicrometerExtensionLogger MICROMETER_LOGGER = Logger.getMessageLogger(
+            MethodHandles.lookup(), MicrometerExtensionLogger.class,
             MicrometerExtensionLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)

@@ -18,13 +18,15 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * Log messages for WildFly microprofile-lra-participant Extension.
  */
 @MessageLogger(projectCode = "WFLYTXLRAPARTICIPANT", length = 4)
 public interface MicroProfileLRAParticipantLogger extends BasicLogger {
 
-    MicroProfileLRAParticipantLogger LOGGER = Logger.getMessageLogger(MicroProfileLRAParticipantLogger.class, "org.wildfly.extension.microprofile.lra.participant");
+    MicroProfileLRAParticipantLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileLRAParticipantLogger.class, "org.wildfly.extension.microprofile.lra.participant");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

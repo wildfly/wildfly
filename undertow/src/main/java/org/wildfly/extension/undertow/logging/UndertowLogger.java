@@ -11,6 +11,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -40,7 +41,7 @@ public interface UndertowLogger extends BasicLogger {
     /**
      * A root logger with the category of the package name.
      */
-    UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowLogger.class, "org.wildfly.extension.undertow");
+    UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), UndertowLogger.class, "org.wildfly.extension.undertow");
 
 
     /*

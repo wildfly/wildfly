@@ -321,12 +321,17 @@
         <version.org.jboss.wildscribe>3.1.0.Final</version.org.jboss.wildscribe>
         <version.org.wildfly.bom-builder-plugin>2.0.6.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
+        <version.org.wildfly.common>2.0.0</version.org.wildfly.common>
         <version.org.wildfly.unstable.annotation.api>1.0.0.Beta1</version.org.wildfly.unstable.annotation.api>
         <version.org.wildfly.galleon-plugins>7.1.0.Final</version.org.wildfly.galleon-plugins>
         <version.org.wildfly.jar.plugin>11.0.2.Final</version.org.wildfly.jar.plugin>
         <version.org.wildfly.licenses.plugin>2.4.1.Final</version.org.wildfly.licenses.plugin>
         <version.org.wildfly.plugin>5.0.0.Final</version.org.wildfly.plugin>
+        <!--
+            This jboss-logging version is only used to override the version in the wildfly plugin!
+            Remove it as soon as the plugin is updated to a compatible version.
+         -->
+        <version.org.jboss.logging.jboss-logging>3.6.0.Final</version.org.jboss.logging.jboss-logging>
         <version.org.wildfly.wildfly-channel-plugin>1.0.9</version.org.wildfly.wildfly-channel-plugin>
         <version.verifier.plugin>1.1</version.verifier.plugin>
         <version.xml.plugin>1.0.2</version.xml.plugin>
@@ -564,7 +569,7 @@
         <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.6</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
-        <version.org.wildfly.core>25.0.0.Beta5</version.org.wildfly.core>
+        <version.org.wildfly.core>25.0.0.Beta6-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
@@ -1394,6 +1399,19 @@
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-channel-maven-plugin</artifactId>
                     <version>${version.org.wildfly.wildfly-channel-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.plugin}</version>
+                    <!-- Need to override the plugin dependency to make jboss-logging lib work -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jboss.logging</groupId>
+                            <artifactId>jboss-logging</artifactId>
+                            <version>${version.org.jboss.logging.jboss-logging}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>

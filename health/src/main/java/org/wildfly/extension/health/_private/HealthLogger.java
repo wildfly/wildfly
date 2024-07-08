@@ -6,6 +6,8 @@ package org.wildfly.extension.health._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -23,7 +25,7 @@ public interface HealthLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.health}.
      */
-    HealthLogger LOGGER = Logger.getMessageLogger(HealthLogger.class, "org.wildfly.extension.health");
+    HealthLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), HealthLogger.class, "org.wildfly.extension.health");
 
     /**
      * Logs an informational message indicating the naming subsystem is being activated.

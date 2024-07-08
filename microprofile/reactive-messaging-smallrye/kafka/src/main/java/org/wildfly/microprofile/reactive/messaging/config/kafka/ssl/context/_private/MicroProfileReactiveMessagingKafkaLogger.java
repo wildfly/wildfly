@@ -7,6 +7,8 @@ package org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context._pr
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -22,7 +24,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYRXMKAF", length = 4)
 public interface MicroProfileReactiveMessagingKafkaLogger extends BasicLogger {
 
-    MicroProfileReactiveMessagingKafkaLogger LOGGER = Logger.getMessageLogger(MicroProfileReactiveMessagingKafkaLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
+    MicroProfileReactiveMessagingKafkaLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileReactiveMessagingKafkaLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

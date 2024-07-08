@@ -21,6 +21,7 @@ import org.jboss.vfs.VirtualFile;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Set;
 
 /**
@@ -33,7 +34,7 @@ public interface PojoLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    PojoLogger ROOT_LOGGER = Logger.getMessageLogger(PojoLogger.class, "org.jboss.as.pojo");
+    PojoLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), PojoLogger.class, "org.jboss.as.pojo");
 
     /**
      * Log old namespace usage.

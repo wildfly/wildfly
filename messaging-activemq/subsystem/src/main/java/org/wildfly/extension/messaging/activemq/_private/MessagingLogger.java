@@ -26,6 +26,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +46,7 @@ public interface MessagingLogger extends BasicLogger {
     /**
      * The logger with the category of the package.
      */
-    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
+    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MessagingLogger.class, "org.wildfly.extension.messaging-activemq");
 
     /**
      * Logs a info message indicating AIO was not found.

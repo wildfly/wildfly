@@ -10,6 +10,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.Logger.Level.ERROR;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.logging.BasicLogger;
@@ -28,7 +29,7 @@ public interface MetricsLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.
      */
-    MetricsLogger LOGGER = Logger.getMessageLogger(MetricsLogger.class, "org.wildfly.extension.metrics");
+    MetricsLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MetricsLogger.class, "org.wildfly.extension.metrics");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

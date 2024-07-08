@@ -8,6 +8,7 @@ package org.jboss.as.weld.logging;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -41,12 +42,12 @@ public interface WeldLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    WeldLogger ROOT_LOGGER = Logger.getMessageLogger(WeldLogger.class, "org.jboss.as.weld");
+    WeldLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), WeldLogger.class, "org.jboss.as.weld");
 
     /**
      * A logger with the category {@code org.jboss.weld}.
      */
-    WeldLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(WeldLogger.class, "org.jboss.weld.deployer");
+    WeldLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), WeldLogger.class, "org.jboss.weld.deployer");
 
 
     @LogMessage(level= Logger.Level.ERROR)
