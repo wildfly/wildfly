@@ -52,7 +52,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         final ActiveMQServer server = getActiveMQServer(context, operation);
         if (server != null) {
             final AddressSettings settings = createSettings(context, model);
-            if(server.getConfiguration().getWildcardConfiguration().equals(context.getCurrentAddressValue())) {
+            if(server.getConfiguration().getWildcardConfiguration().getAnyWordsString().equals(context.getCurrentAddressValue())) {
                 settings.merge(createDefaulAddressSettings());
             }
             server.getAddressSettingsRepository().addMatch(context.getCurrentAddressValue(), settings);
