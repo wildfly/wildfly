@@ -9,7 +9,8 @@ for additional information.
 
 Key Features
 ------------
-* Jakarta EE 8 support
+* Jakarta EE support
+* MicroProfile support
 * Fast Startup
 * Small Footprint
 * Modular Design
@@ -20,7 +21,7 @@ Release Notes
 -------------
 You can obtain release notes here:
 
-http://wildfly.org/
+http://wildfly.org/releases
 
 Getting Started
 ---------------
@@ -29,7 +30,7 @@ of the JDK, see http://www.oracle.com/technetwork/java/index.html
 
 WildFly has two modes of operation: Standalone and Domain. For more
 information regarding these modes, please refer to the documentation 
-available on the JBoss.org site:
+available on the WildFly documentation site:
 
 http://docs.wildfly.org
 
@@ -71,7 +72,7 @@ A WildFly server can be stopped by pressing Ctrl-C on the command line.
 If the server is running in a background process, the server can be stopped
 using the JBoss CLI:
 
-<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=:shutdown      (Unix / Linux)
+<JBOSS_HOME>/bin/jboss-cli.sh --connect --command=shutdown      (Unix / Linux)
 
-<JBOSS_HOME>\bin\jboss-cli.bat --connect --command=:shutdown     (Windows)
+<JBOSS_HOME>\bin\jboss-cli.bat --connect --command=shutdown     (Windows)
 
