@@ -4,47 +4,33 @@
  */
 package org.jboss.as.test.integration.jsf.version;
 
-import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
-
-import java.io.FilePermission;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.PropertyPermission;
-import jakarta.faces.context.FacesContext;
+import java.util.List;
 
+import jakarta.faces.context.FacesContext;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.test.integration.jsf.version.ejb.JSFMyFacesEJB;
 import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
-import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
-import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,83 +44,28 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class JSFDeploymentProcessorTestCase {
 
-    private static final String WEB_BUNDLED_JSF = "bundled-jsf";
-    private static final String WEB_BUNDLED_JSF_WEB_XML = "bundled-jsf-web.xml";
+    private static final String TEST_HANDLER_NAME = "test-" + JSFDeploymentProcessorTestCase.class.getSimpleName();
+    private static final String TEST_LOG_FILE_NAME  = TEST_HANDLER_NAME + ".log";
+    private static final String LOG_MESSAGE = "WFLYJSF0005";
     private static final String WEB_FACES_CONFIG_XML = "faces-config-xml";
-    private static final String MYFACES = "MyFaces JSF-2.0 Core API";
 
     @ContainerResource
     private ManagementClient managementClient;
 
     @ArquillianResource
-    protected static Deployer deployer;
-
-    // [WFLY-16450] TODO No MyFaces implementation of Faces 4 available, so injection and tests that use it are disabled
-    //@ArquillianResource
-    private URL bundledJsf;
-
-    @ArquillianResource
-    @OperateOnDeployment(WEB_FACES_CONFIG_XML)
     private URL facesConfigXml;
 
     /**
-     * Creates a war with all the libraries needed in the war/lib folder, this sample does not call the
-     * ejb as it is not necessary to test if the bundled Jakarta Server Faces is loaded
+     * Creates an ear with only the faces-config to indicate it is using Jakarta Server Faces, that way it will load the
+     * one provided by WildFly
      *
-     * @return
+     * @return deployment archive
      */
-    @Deployment(name = WEB_BUNDLED_JSF, testable = false, managed = false)
-    public static EnterpriseArchive createDeployment1() throws IOException {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WEB_BUNDLED_JSF + ".ear");
-
-        ear.addAsManifestResource(JSFDeploymentProcessorTestCase.class.getPackage(), WEB_BUNDLED_JSF + "-application.xml", "application.xml");
-        ear.addAsManifestResource(createPermissionsXmlAsset(
-                new RuntimePermission("getClassLoader"),
-                new RuntimePermission("accessDeclaredMembers"),
-                new PropertyPermission("*", "read"),
-                new FilePermission("/-", "read")), "permissions.xml");
-
-        JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, "bundled-jsf-ejb.jar");
-        ejb.addClasses(JSFMyFacesEJB.class);
-        //add the ejb
-        ear.addAsModule(ejb);
-
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_BUNDLED_JSF + "-webapp.war");
-        war.addClasses(JSFMyFaces.class);
-        war.addAsWebResource(JSFVersion.class.getPackage(), "jsfmyfacesversion.xhtml", "jsfmyfacesversion.xhtml");
-        war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
-
-        // Do not add these libraries that would then be scanned by WildFly Glow when instantiating/scanning the deployment.
-        if (!GlowUtil.isGlowScan()) {
-            //add Jakarta Server Faces as webapp lib
-            final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
-            war.addAsLibraries(
-                    resolver.resolve(
-                                    "commons-beanutils:commons-beanutils:1.9.3",
-                                    "commons-collections:commons-collections:3.2.2",
-                                    "commons-digester:commons-digester:1.8",
-                                    "org.apache.myfaces.core:myfaces-api:2.0.24",
-                                    "org.apache.myfaces.core:myfaces-impl:2.0.24"
-                            )
-                            .withoutTransitivity()
-                            .asFile()
-            );
-        }
-
-        // add the .war
-        ear.addAsModule(war);
-        return ear;
-    }
-
-    /**
-     * Creates a war with only the faces-config to indicate it is using Jakarta Server Faces, that way it will load the one provided by Wildfly
-     *
-     * @return
-     */
-    @Deployment(name = WEB_FACES_CONFIG_XML, testable = false)
-    public static EnterpriseArchive createDeployment2() {
+    @Deployment
+    public static EnterpriseArchive createDeployment() {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WEB_FACES_CONFIG_XML + ".ear");
-        ear.addAsManifestResource(JSFDeploymentProcessorTestCase.class.getPackage(), WEB_FACES_CONFIG_XML + "-application.xml", "application.xml");
+        ear.addAsManifestResource(JSFDeploymentProcessorTestCase.class.getPackage(),
+                WEB_FACES_CONFIG_XML + "-application.xml", "application.xml");
 
         JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
         ejb.addClasses(JSFVersionEJB.class);
@@ -143,47 +74,13 @@ public class JSFDeploymentProcessorTestCase {
 
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WEB_FACES_CONFIG_XML + "-webapp.war");
         war.addClasses(JSFVersion.class);
-        war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_FACES_CONFIG_XML + "-faces-config.xml", "faces-config.xml");
+        war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_FACES_CONFIG_XML + "-faces-config.xml",
+                "faces-config.xml");
         war.addAsWebResource(JSFVersion.class.getPackage(), "jsfversion.xhtml", "jsfversion.xhtml");
         // add the .war
         ear.addAsModule(war);
 
         return ear;
-    }
-
-    @Test
-    @InSequence(1)
-    public void deployBundledJsf() {
-        Assume.assumeFalse("[WFLY-16450] No MyFaces implementation of Faces 4 available", true);
-        // in order to use @ArquillianResource URL from the unmanaged deployment we need to deploy the test archive first
-        deployer.deploy(WEB_BUNDLED_JSF);
-    }
-
-    /**
-     * Facing intermitent problem on myfaces 2.3 documented here https://issues.jboss.org/browse/WELD-1387
-     * using myfaces 2.0 instead
-     *
-     * @throws Exception
-     */
-    @Test
-    @InSequence(2)
-    @OperateOnDeployment(WEB_BUNDLED_JSF)
-    public void bundledJsf() throws Exception {
-        Assume.assumeFalse("[WFLY-16450] No MyFaces implementation of Faces 4 available", true);
-        try {
-            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-            try (CloseableHttpClient client = httpClientBuilder.build()) {
-
-                HttpUriRequest getVarRequest = new HttpGet(bundledJsf.toExternalForm() + "jsfmyfacesversion.xhtml");
-                try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
-                    String text = EntityUtils.toString(getVarResponse.getEntity());
-                    Assert.assertTrue("Text should contain [" + MYFACES + "] but it contains[" + text + "]", text.contains(MYFACES));
-                }
-            }
-            Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME, LOG_MESSAGE));
-        } finally {
-            deployer.undeploy(WEB_BUNDLED_JSF);
-        }
     }
 
     @Test
@@ -194,34 +91,20 @@ public class JSFDeploymentProcessorTestCase {
             HttpUriRequest getVarRequest = new HttpGet(facesConfigXml.toExternalForm() + "jsfversion.xhtml");
             try (CloseableHttpResponse getVarResponse = client.execute(getVarRequest)) {
                 String text = EntityUtils.toString(getVarResponse.getEntity());
-                Package aPackage = FacesContext.class.getPackage();
-                System.err.println("***** package = " + aPackage);
-                String facesVersion = aPackage.getSpecificationTitle();
-                Assert.assertTrue("Text should contain [" + facesVersion + "] but it contains [" + text + "]", text.contains(facesVersion));
+                String facesVersion = FacesContext.class.getPackage().getSpecificationTitle();
+                Assert.assertTrue("Text should contain [" + facesVersion + "] but it contains [" + text + "]",
+                        text.contains(facesVersion));
             }
         }
-        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient, TEST_HANDLER_NAME, LOG_MESSAGE));
-    }
-
-    private static final String TEST_HANDLER_NAME;
-    private static final String TEST_LOG_FILE_NAME;
-    private static final String LOG_MESSAGE;
-
-    static {
-        /*
-         * Make both the test handler name and the test log file specific for this class and execution so that we do not
-         * interfere with other test classes or multiple subsequent executions of this class against the same container
-         */
-        TEST_HANDLER_NAME = "test-" + JSFDeploymentProcessorTestCase.class.getSimpleName();
-        TEST_LOG_FILE_NAME = TEST_HANDLER_NAME + ".log";
-        LOG_MESSAGE = "WFLYJSF0005";
+        Assert.assertFalse("Unexpected log message: " + LOG_MESSAGE, LoggingUtil.hasLogMessage(managementClient,
+                TEST_HANDLER_NAME, LOG_MESSAGE));
     }
 
     public static class TestLogHandlerSetup extends TestLogHandlerSetupTask {
 
         @Override
         public Collection<String> getCategories() {
-            return Arrays.asList("org.jboss.as.jsf");
+            return List.of("org.jboss.as.jsf");
         }
 
         @Override
