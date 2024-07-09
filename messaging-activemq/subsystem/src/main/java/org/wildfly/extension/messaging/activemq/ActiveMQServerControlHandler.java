@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Handles operations and attribute reads supported by a ActiveMQ {@link org.apache.activemq.api.core.management.ActiveMQServerControl}.
@@ -113,16 +113,21 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
-        if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
-            ActiveMQServer server = null;
+        if (READ_ATTRIBUTE_OPERATION.equals(operationName) || GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
+            ActiveMQBroker server = null;
             if (context.getRunningMode() == RunningMode.NORMAL) {
                 ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
                 if (service == null || service.getState() != ServiceController.State.UP) {
                     throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
                 }
-                server = ActiveMQServer.class.cast(service.getValue());
+                server = ActiveMQBroker.class.cast(service.getValue());
             }
-            handleReadAttribute(context, operation, server);
+            if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
+                handleReadAttribute(context, operation, server);
+                return;
+            }
+            String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
+            context.getResult().set(server.getAddressSettingsAsJSON(addressMatch));
             return;
         }
 
@@ -202,7 +207,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
             } else if (GET_ADDRESS_SETTINGS_AS_JSON.equals(operationName)) {
                 String addressMatch = ADDRESS_MATCH.resolveModelAttribute(context, operation).asString();
                 String json = serverControl.getAddressSettingsAsJSON(addressMatch);
-                context.getResult().set(json);
+                context.getResult().set(ManagementUtil.convertAddressSettingInfosAsJSON(json));
             } else if (FORCE_FAILOVER.equals(operationName)) {
                 serverControl.forceFailover();
                 context.getResult();
@@ -337,9 +342,10 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 this);
     }
 
-    private void handleReadAttribute(OperationContext context, ModelNode operation, final ActiveMQServer server) throws OperationFailedException {
+    private void handleReadAttribute(OperationContext context, ModelNode operation, final ActiveMQBroker broker) throws OperationFailedException {
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
+        ActiveMQServer server = broker == null ? null : ActiveMQServer.class.cast(broker.getDelegate());
         if (STARTED.getName().equals(name)) {
             boolean started = server != null ? server.isStarted() : false;
             context.getResult().set(started);
@@ -377,7 +383,7 @@ public class ActiveMQServerControlHandler extends AbstractRuntimeOnlyHandler {
         if (service == null || service.getState() != ServiceController.State.UP) {
             throw MessagingLogger.ROOT_LOGGER.activeMQServerNotInstalled(serviceName.getSimpleName());
         }
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
         return server.getActiveMQServerControl();
     }
 }

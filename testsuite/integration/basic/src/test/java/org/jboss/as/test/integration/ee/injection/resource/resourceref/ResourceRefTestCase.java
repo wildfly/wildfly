@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
  * Tests that @Resource bindings on interceptors that are applied to multiple
  * components without their own naming context work properly, and do not try
  * and create two duplicate bindings in the same namespace.
- *
+ * <p>
  * Migration test from EJB Testsuite (ejbthree-1823, ejbthree-1858) to AS7 [JIRA JBQA-5483].
  * - ResourceHandler when resource-ref type is not specified.
  * - EJBContext is configured through ejb-jar.xml as a resource-env-ref.
@@ -49,7 +49,7 @@ public class ResourceRefTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "managed-bean.war");
         war.addAsWebInfResource(ResourceRefTestCase.class.getPackage(),"web.xml", "web.xml");
         war.addAsWebInfResource(ResourceRefTestCase.class.getPackage(),"jboss-web.xml", "jboss-web.xml");
-        war.addClasses(ResourceRefTestCase.class, DatasourceManagedBean.class, CreateQueueSetupTask.class);
+        war.addClasses(ResourceRefTestCase.class, DatasourceBean.class, CreateQueueSetupTask.class);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "resource-ref-test.jar");
         jar.addClasses(ResourceRefBean.class, ResourceRefRemote.class, StatelessBean.class, StatelessBeanRemote.class, ResUrlChecker.class, ResUrlCheckerBean.class);
@@ -78,7 +78,7 @@ public class ResourceRefTestCase {
     @Test
     public void testInjection() throws NamingException {
         InitialContext context = new InitialContext();
-        DatasourceManagedBean bean = (DatasourceManagedBean)context.lookup("java:module/datasourceManagedBean");
+        DatasourceBean bean = (DatasourceBean)context.lookup("java:module/datasourceManagedBean");
         Assert.assertNotNull(bean.getDataSource());
     }
 

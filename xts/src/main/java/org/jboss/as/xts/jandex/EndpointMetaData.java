@@ -15,27 +15,24 @@ import org.jboss.as.xts.XTSException;
 public class EndpointMetaData {
 
     private final TransactionalAnnotation transactionalAnnotation;
-    private final CompensatableAnnotation compensatableAnnotation;
     private final StatelessAnnotation statelessAnnotation;
     private final WebServiceAnnotation webServiceAnnotation;
 
     private EndpointMetaData(final StatelessAnnotation statelessAnnotation,
-            final TransactionalAnnotation transactionalAnnotation, final CompensatableAnnotation compensatableAnnotation,
+            final TransactionalAnnotation transactionalAnnotation,
             final WebServiceAnnotation webServiceAnnotation) {
 
         this.statelessAnnotation = statelessAnnotation;
         this.transactionalAnnotation = transactionalAnnotation;
-        this.compensatableAnnotation = compensatableAnnotation;
         this.webServiceAnnotation = webServiceAnnotation;
     }
 
     public static EndpointMetaData build(final DeploymentUnit unit, final String endpoint) throws XTSException {
         final TransactionalAnnotation transactionalAnnotation = TransactionalAnnotation.build(unit, endpoint);
-        final CompensatableAnnotation compensatableAnnotation = CompensatableAnnotation.build(unit, endpoint);
         final StatelessAnnotation statelessAnnotation = StatelessAnnotation.build(unit, endpoint);
         final WebServiceAnnotation webServiceAnnotation = WebServiceAnnotation.build(unit, endpoint);
 
-        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, compensatableAnnotation, webServiceAnnotation);
+        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, webServiceAnnotation);
     }
 
     public WebServiceAnnotation getWebServiceAnnotation() {
@@ -55,6 +52,6 @@ public class EndpointMetaData {
     }
 
     public boolean isXTSEnabled() {
-        return transactionalAnnotation != null || compensatableAnnotation != null;
+        return transactionalAnnotation != null;
     }
 }

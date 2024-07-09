@@ -6,10 +6,6 @@
 package org.wildfly.extension.opentelemetry.api;
 
 import java.util.Map;
-
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
-import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
-import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -18,11 +14,19 @@ import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Singleton;
 
+import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
+import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryClientFilter;
+import io.smallrye.opentelemetry.implementation.rest.OpenTelemetryServerFilter;
+
 public final class OpenTelemetryCdiExtension implements Extension {
     private final boolean useServerConfig;
-    private final Map<String, String> config;
+    private final WildFlyOpenTelemetryConfig config;
 
     public OpenTelemetryCdiExtension(boolean useServerConfig, Map<String, String> config) {
+        this (useServerConfig, new WildFlyOpenTelemetryConfig(config));
+    }
+
+    public OpenTelemetryCdiExtension(boolean useServerConfig, WildFlyOpenTelemetryConfig config) {
         this.useServerConfig = useServerConfig;
         this.config = config;
     }
@@ -34,13 +38,13 @@ public final class OpenTelemetryCdiExtension implements Extension {
                 OpenTelemetryClientFilter.class.getName());
     }
 
-    public void registerOpenTelemetryConfigBean(@Observes AfterBeanDiscovery abd) {
+    public void registerOpenTelemetryBeans(@Observes AfterBeanDiscovery abd) {
         if (useServerConfig) {
             abd.addBean()
                     .scope(Singleton.class)
                     .addQualifier(Default.Literal.INSTANCE)
                     .types(OpenTelemetryConfig.class)
-                    .createWith(e -> (OpenTelemetryConfig) () -> config);
+                    .createWith(e -> config);
         }
     }
 }

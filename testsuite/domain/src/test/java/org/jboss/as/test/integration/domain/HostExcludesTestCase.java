@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "30.";
+    private static final String MAJOR = "33.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -197,7 +197,12 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.jboss.as.messaging",
                 "org.jboss.as.web"
                 ), true),
-        CURRENT(MAJOR, WILDFLY_29_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_30_0("WildFly30.0", WILDFLY_29_0, List.of(), List.of(), true),
+        WILDFLY_31_0("WildFly31.0", WILDFLY_30_0, List.of(), List.of(), true),
+        WILDFLY_32_0("WildFly32.0", WILDFLY_31_0, List.of(
+                "org.wildfly.extension.mvc-krazo"
+        ), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_32_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
@@ -206,6 +211,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             // of wildfly preview. In such a case, add them to previewExtensions set defined below.
             return List.of();
         }
+
         private static List<String> getCurrentRemovedExtensions() {
             // TODO If we decide to remove these modules from WFP, uncomment this.
             // See https://issues.redhat.com/browse/WFLY-16686
@@ -396,13 +402,13 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             List<String> excludedExtensions = prop.getValue().get(EXCLUDED_EXTENSIONS)
                     .asListOrEmpty()
                     .stream()
-                    .map(p -> p.asString())
+                    .map(ModelNode::asString)
                     .collect(Collectors.toList());
 
             //check duplicated extensions
-            Assert.assertTrue(String.format (
-                            "There are duplicated extensions declared for %s host-exclude", name),
-                    excludedExtensions.size() == new HashSet<>(excludedExtensions).size()
+            Assert.assertEquals(String.format("There are duplicated extensions declared for %s host-exclude", name),
+                    excludedExtensions.size(),
+                    new HashSet<>(excludedExtensions).size()
             );
 
             //check we have defined the current host-exclude configuration in the test
@@ -456,6 +462,12 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         Iterator<String> moduleNames = ml.iterateModules((String) null, true);
         while (moduleNames.hasNext()) {
             String moduleName = moduleNames.next();
+            if (moduleName.equals("org.wildfly.extension.elytron.jaas-realm")) {
+                // Temporary workaround until https://issues.redhat.com/browse/WFCORE-6834 gets fixed
+                // org.wildfly.extension.elytron.jaas-realm is not a WildFly extension, so even if it supplies
+                // a META-INF/services/org.jboss.as.controller.Extension file, we should ignore it.
+                continue;
+            }
             Module module;
             try {
                 module = ml.loadModule(moduleName);
@@ -478,8 +490,10 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
             return f.isDirectory() && !f.isHidden();
         };
         List<File> result = new ArrayList<>();
-        for (Path path : Files.newDirectoryStream(layersRoot, filter)) {
-            result.add(path.toFile());
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(layersRoot, filter)) {
+            for (Path path : stream) {
+                result.add(path.toFile());
+            }
         }
         return result.toArray(new File[0]);
     }

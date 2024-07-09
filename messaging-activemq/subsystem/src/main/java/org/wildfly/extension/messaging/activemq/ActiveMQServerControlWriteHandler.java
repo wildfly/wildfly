@@ -13,7 +13,6 @@ import static org.jboss.as.controller.security.CredentialReference.rollbackCrede
 import static org.wildfly.extension.messaging.activemq.ServerDefinition.CREDENTIAL_REFERENCE;
 
 import org.apache.activemq.artemis.api.core.management.ActiveMQServerControl;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -30,7 +29,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Write attribute handler for attributes that update ActiveMQServerControl.
@@ -118,7 +117,7 @@ public class ActiveMQServerControlWriteHandler extends AbstractWriteAttributeHan
     }
 
     private void applyOperationToActiveMQService(ModelNode operation, String attributeName, ModelNode newValue, ServiceController<?> activeMQServiceController) {
-        ActiveMQServerControl serverControl = ActiveMQServer.class.cast(activeMQServiceController.getValue()).getActiveMQServerControl();
+        ActiveMQServerControl serverControl = ActiveMQBroker.class.cast(activeMQServiceController.getValue()).getActiveMQServerControl();
         if (serverControl == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);

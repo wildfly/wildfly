@@ -41,6 +41,7 @@ public class MicroProfileTelemetryCdiExtension implements Extension {
                                             value -> properties.put(propertyName, value));
                                 }
                             }
+
                             return (OpenTelemetryConfig) () -> properties;
                         }
                 );

@@ -5,6 +5,6 @@
     "auth-server-url" : "${oidc.auth.server.url}",
     "ssl-required" : "EXTERNAL",
     "credentials" : {
-        "secret" : "secret"
+        "secret" : "longerclientsecretthatisstleast256bitslong"
     }
 }

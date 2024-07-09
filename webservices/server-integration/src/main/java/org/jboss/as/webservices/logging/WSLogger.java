@@ -304,4 +304,6 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 74, value = "The deployment is configured to use legacy security which is no longer supported." )
     IllegalStateException legacySecurityUnsupported();
 
+    @Message(id = 75, value = "only string password accepted")
+    IllegalArgumentException onlyStringPasswordAccepted();
 }

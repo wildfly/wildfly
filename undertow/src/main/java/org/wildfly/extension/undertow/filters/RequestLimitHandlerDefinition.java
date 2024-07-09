@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.RequestLimitingHandler;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -53,9 +54,14 @@ public class RequestLimitHandlerDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         int maxConcurrentRequests = MAX_CONCURRENT_REQUESTS.resolveModelAttribute(context, model).asInt();
         int queueSize = QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
-        return next -> new RequestLimitingHandler(maxConcurrentRequests, queueSize, next);
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler next) {
+                return new RequestLimitingHandler(maxConcurrentRequests, queueSize, next);
+            }
+        });
     }
 }

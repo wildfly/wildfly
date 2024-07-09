@@ -8,8 +8,8 @@ package org.wildfly.extension.micrometer.metrics;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 import io.micrometer.core.instrument.Meter;
+import org.wildfly.extension.micrometer.registry.WildFlyRegistry;
 
 public class MetricRegistration {
 

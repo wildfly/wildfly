@@ -10,6 +10,7 @@ import java.util.List;
 
 import io.undertow.attribute.ExchangeAttributes;
 import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.server.handlers.SetAttributeHandler;
 
@@ -53,9 +54,14 @@ public class RewriteFilterDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         String target = TARGET.resolveModelAttribute(context, model).asString();
         boolean redirect = REDIRECT.resolveModelAttribute(context, model).asBoolean();
-        return next -> redirect ? new RedirectHandler(target) : new SetAttributeHandler(next, ExchangeAttributes.relativePath(), ExchangeAttributes.parser(RewriteFilterDefinition.class.getClassLoader()).parse(target));
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(HttpHandler next) {
+                return redirect ? new RedirectHandler(target) : new SetAttributeHandler(next, ExchangeAttributes.relativePath(), ExchangeAttributes.parser(RewriteFilterDefinition.class.getClassLoader()).parse(target));
+            }
+        });
     }
 }

@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="wildfly-test-preview@maven(org.jboss.universe:community-universe):current">
+<build xmlns="urn:wildfly:feature-pack-build:3.1" producer="org.wildfly:wildfly-test-feature-pack-preview">
     <dependencies>
         <dependency group-id="org.wildfly" artifact-id="wildfly-preview-feature-pack">
             <name>org.wildfly:wildfly-preview-galleon-pack</name>

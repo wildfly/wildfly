@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -28,6 +27,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.function.Functions;
 
 /**
  * Builds a {@link Registry} service.
@@ -63,7 +63,7 @@ public class RegistryServiceConfigurator<K, V> extends SimpleServiceNameProvider
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
         Consumer<Registry<K, V>> registry = new CompositeDependency(this.factory, this.entry).register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(registry, Function.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(registry, Function.identity(), this, Functions.closingConsumer());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

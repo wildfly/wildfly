@@ -5,6 +5,8 @@
 
 package org.wildfly.extension.micrometer.metrics;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 
 public interface MetricMetadata {
@@ -85,7 +87,7 @@ public interface MetricMetadata {
 
         @Override
         public String toString() {
-            return this.name().toLowerCase();
+            return this.name().toLowerCase(Locale.ENGLISH);
         }
     }
 

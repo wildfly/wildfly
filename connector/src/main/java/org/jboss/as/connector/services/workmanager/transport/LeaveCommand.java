@@ -9,7 +9,7 @@ import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.group.Node;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#viewAccepted(org.jgroups.View)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#viewAccepted(org.jgroups.View).
  * @author Paul Ferraro
  */
 public class LeaveCommand implements Command<Void, CommandDispatcherTransport> {

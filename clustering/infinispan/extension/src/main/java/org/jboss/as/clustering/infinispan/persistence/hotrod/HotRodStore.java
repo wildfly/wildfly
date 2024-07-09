@@ -27,7 +27,6 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import org.infinispan.Cache;
-import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -35,7 +34,6 @@ import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.commons.configuration.ConfiguredBy;
-import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.commons.util.IntSets;
@@ -64,7 +62,6 @@ import org.wildfly.common.function.Functions;
 @ConfiguredBy(HotRodStoreConfiguration.class)
 public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
     private static final Set<Characteristic> CHARACTERISTICS = EnumSet.of(Characteristic.SHAREABLE, Characteristic.BULK_READ, Characteristic.EXPIRATION, Characteristic.SEGMENTABLE);
-    private static final DataFormat BINARY_DATA_FORMAT = DataFormat.builder().keyType(MediaType.APPLICATION_OCTET_STREAM).valueType(MediaType.APPLICATION_OCTET_STREAM).build();
 
     private volatile RemoteCacheContainer container;
     private volatile AtomicReferenceArray<RemoteCache<ByteBuffer, ByteBuffer>> caches;
@@ -165,7 +162,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
         if (cache == null) return CompletableFuture.completedStage(null);
         Metadata metadata = entry.getMetadata();
         try {
-            return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(entry.getKeyBytes(), this.marshalValue(entry.getMarshalledValue()), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS)
+            return cache.withFlags(Flag.SKIP_LISTENER_NOTIFICATION).putAsync(this.marshalKey(entry.getKey()), this.marshalValue(entry.getMarshalledValue()), metadata.lifespan(), TimeUnit.MILLISECONDS, metadata.maxIdle(), TimeUnit.MILLISECONDS)
                     .thenAcceptAsync(Functions.discardingConsumer(), this.executor);
         } catch (PersistenceException e) {
             return CompletableFuture.failedStage(e);
@@ -305,7 +302,7 @@ public class HotRodStore<K, V> implements NonBlockingStore<K, V> {
 
                 cache.start();
 
-                this.caches.set(index, cache.withDataFormat(BINARY_DATA_FORMAT));
+                this.caches.set(index, cache);
             }, "hotrod-store-add-segments").toCompletableFuture());
         }
         return result;

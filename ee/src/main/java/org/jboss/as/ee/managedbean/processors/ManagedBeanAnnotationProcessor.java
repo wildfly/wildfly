@@ -5,11 +5,11 @@
 
 package org.jboss.as.ee.managedbean.processors;
 
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
-
-import jakarta.annotation.ManagedBean;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -39,27 +39,45 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
-
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code jakarta.annotation.ManagedBean} annotations.
- * Note:  This processor only supports JSR-316 compliant managed beans.  So it will not handle complimentary spec additions (ex. Jakarta Enterprise Beans).
+ * Note:  This processor only supports JSR-316 compliant managed beans.  So it will not handle complementary spec additions (ex. Jakarta Enterprise Beans).
  *
  * @author John E. Bailey
  */
 public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
-    static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple(ManagedBean.class.getName());
+    static final DotName MANAGED_BEAN_ANNOTATION_NAME = DotName.createSimple("jakarta.annotation.ManagedBean");
+
+    /** Whether the jakarta.annotation.ManagedBean class exists. It was removed in Jakarta Annotations 3.0 */
+    private static final boolean HAS_MANAGED_BEAN;
+
+    static {
+        boolean hasManagedBean = false;
+        try {
+            ManagedBeanAnnotationProcessor.class.getClassLoader().loadClass("jakarta.annotation.ManagedBean");
+            hasManagedBean = true;
+        } catch (Throwable ignored) {
+            // ignore
+        }
+        HAS_MANAGED_BEAN = hasManagedBean;
+    }
 
     /**
      * Check the deployment annotation index for all classes with the @ManagedBean annotation.  For each class with the
      * annotation, collect all the required information to create a managed bean instance, and attach it to the context.
      *
      * @param phaseContext the deployment unit context
-     * @throws DeploymentUnitProcessingException
+     * @throws DeploymentUnitProcessingException if the annotation is applied to something other than a class
      *
      */
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        if (!HAS_MANAGED_BEAN) {
+            // We're running Jakarta Annotations 3.0 or later. Managed beans no longer exist.
+            return;
+        }
+
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
@@ -93,7 +111,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             // Add the view
             ViewDescription viewDescription = new ViewDescription(componentDescription, beanClassName);
             viewDescription.getConfigurators().addFirst(new ViewConfigurator() {
-                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) {
                     // Add MB association interceptors
                     configuration.addClientPostConstructInterceptor(ManagedBeanCreateInterceptor.FACTORY, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
                     final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
@@ -113,10 +131,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
     /**
      * Returns true if the passed <code>managedBeanClass</code> meets the requirements set by the Managed bean spec about
      * bean implementation classes. The passed <code>managedBeanClass</code> must not be an interface and must not be final or abstract.
-     * If it passes these requirements then this method returns true. Else it returns false.
      *
      * @param managedBeanClass The session bean class
-     * @return
+     * @return {@code true} if {@code managedBeanClass} meets the requirements, otherwise {@code false}
      */
     private static boolean assertManagedBeanClassValidity(final ClassInfo managedBeanClass) {
         final short flags = managedBeanClass.flags();

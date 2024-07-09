@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.common.function.ExceptionSupplier;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.source.CredentialSource;
@@ -59,7 +59,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
  * @author scott.stark@jboss.org
  * @author Emanuel Muckenhuber
  */
-class ActiveMQServerService implements Service<ActiveMQServer> {
+class ActiveMQServerService implements Service<ActiveMQBroker> {
 
     /** */
     private static final String HOST = "host";
@@ -309,12 +309,12 @@ class ActiveMQServerService implements Service<ActiveMQServer> {
     }
 
     @Override
-    public synchronized ActiveMQServer getValue() throws IllegalStateException {
+    public synchronized ActiveMQBroker getValue() throws IllegalStateException {
         final ActiveMQServer server = this.server;
         if (server == null) {
             throw new IllegalStateException();
         }
-        return server;
+        return new ActiveMQBrokerImpl(server);
     }
 
 

@@ -12,6 +12,7 @@
         '''testsuite\/integration\/elytron-oidc-client\/src\/test\/java\/org\/wildfly\/test\/integration\/elytron\/oidc\/client''',
         '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/ssl''',
         '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/jboss\/as\/test\/manualmode\/ejb\/client\/outbound\/connection\/security''',
+        '''testsuite\/integration\/manualmode\/src\/test\/java\/org\/wildfly\/test\/manual\/elytron\/oidc''',
         '''testsuite\/integration\/microprofile\/src\/test\/resources\/jwt''',
         '''testsuite\/integration\/multinode\/src\/test\/resources''',
         '''testsuite\/integration\/src\/test\/scripts''',

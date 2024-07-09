@@ -14,10 +14,10 @@ import static org.wildfly.extension.micrometer.metrics.MetricMetadata.Type.GAUGE
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.LocalModelControllerClient;
@@ -50,12 +50,11 @@ public class MicrometerCollector {
     public synchronized MetricRegistration collectResourceMetrics(final Resource resource,
                                                     ImmutableManagementResourceRegistration managementResourceRegistration,
                                                     Function<PathAddress, PathAddress> resourceAddressResolver,
-                                                    boolean exposeAnySubsystem,
-                                                    List<String> exposedSubsystems) {
+                                                      Predicate<String> subsystemFilter) {
         MetricRegistration registration = new MetricRegistration(micrometerRegistry);
 
         queueMetricRegistration(resource, managementResourceRegistration, EMPTY_ADDRESS, resourceAddressResolver,
-                registration, exposeAnySubsystem, exposedSubsystems);
+                registration, subsystemFilter);
         // Defer the actual registration until the server is running and they can be collected w/o errors
         this.processStateNotifier.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -85,9 +84,8 @@ public class MicrometerCollector {
                                          PathAddress address,
                                          Function<PathAddress, PathAddress> resourceAddressResolver,
                                          MetricRegistration registration,
-                                         boolean exposeAnySubsystem,
-                                         List<String> exposedSubsystems) {
-        if (!isExposingMetrics(address, exposeAnySubsystem, exposedSubsystems)) {
+                                         Predicate<String> subsystemFilter) {
+        if (!isExposingMetrics(address, subsystemFilter)) {
             return;
         }
 
@@ -126,22 +124,18 @@ public class MicrometerCollector {
                 final PathElement pathElement = entry.getPathElement();
                 final PathAddress childAddress = address.append(pathElement);
                 queueMetricRegistration(entry, managementResourceRegistration, childAddress, resourceAddressResolver,
-                        registration, exposeAnySubsystem, exposedSubsystems);
+                        registration, subsystemFilter);
             }
         }
     }
 
-    private boolean isExposingMetrics(PathAddress address, boolean exposeAnySubsystem, List<String> exposedSubsystems) {
+    private boolean isExposingMetrics(PathAddress address, Predicate<String> subsystemFilter) {
         // root resource
         if (address.size() == 0) {
             return true;
         }
         String subsystemName = getSubsystemName(address);
-        if (subsystemName != null) {
-            return exposeAnySubsystem || exposedSubsystems.contains(subsystemName);
-        }
-        // do not expose metrics for resources outside the subsystems and deployments.
-        return false;
+        return subsystemName != null && subsystemFilter.test(subsystemName);
     }
 
     private String getSubsystemName(PathAddress address) {

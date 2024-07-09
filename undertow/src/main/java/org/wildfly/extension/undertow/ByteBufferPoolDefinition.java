@@ -118,10 +118,6 @@ public class ByteBufferPoolDefinition extends PersistentResourceDefinition {
 
     private static class BufferPoolAdd extends AbstractAddStepHandler {
 
-        private BufferPoolAdd() {
-            super(ByteBufferPoolDefinition.ATTRIBUTES);
-        }
-
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             final ModelNode bufferSizeModel = BUFFER_SIZE.resolveModelAttribute(context, model);

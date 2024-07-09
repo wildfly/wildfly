@@ -14,6 +14,8 @@ import org.eclipse.microprofile.reactive.messaging.spi.IncomingConnectorFactory;
 import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 
+import java.util.Locale;
+
 /**
  * Copied from Quarkus and adjusted
  */
@@ -23,7 +25,7 @@ public class DumbConnector implements IncomingConnectorFactory {
     @Override
     public PublisherBuilder<? extends Message<?>> getPublisherBuilder(Config config) {
         String values = config.getValue("values", String.class);
-        return ReactiveStreams.of(values, values.toUpperCase())
+        return ReactiveStreams.of(values, values.toUpperCase(Locale.ENGLISH))
                 .map(Message::of);
     }
 }

@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-microprofile</artifactId>
@@ -30,8 +30,9 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <surefire.forked.process.timeout>3600</surefire.forked.process.timeout>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
-        <!-- properties to enable plugins shared by various bootable jar executions -->
-        <bootable-jar-packaging.phase>none</bootable-jar-packaging.phase>
+
+        <ts.glow.phase>none</ts.glow.phase>
+        <ts.glow.config-name>standalone-microprofile.xml</ts.glow.config-name>
 
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
@@ -226,6 +227,65 @@
             <version>${version.org.apache.kafka}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Dependencies for embedded artemis -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-amqp-protocol</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-socks</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed if people use compression.type=zstd in their Kafka config -->
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed if people use compression.type=lz4 in their Kafka config -->
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Needed if people use compression.type=snappy in their Kafka config -->
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
@@ -272,6 +332,11 @@
             <artifactId>smallrye-opentelemetry-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-opentelemetry-api</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Other test dependencies -->
         <dependency>
@@ -305,6 +370,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
@@ -320,6 +390,40 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.wildfly.glow</groupId>
+                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                            <version>${testsuite.full.galleon.pack.version}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <config-name>${ts.glow.config-name}</config-name>
+                    <add-ons>
+                        <add-on>kafka</add-on>
+                        <add-on>micrometer</add-on>
+                        <add-on>lra-coordinator</add-on>
+                    </add-ons>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>scan-deployments</id>
+                        <goals>
+                            <goal>scan</goal>
+                        </goals>
+                        <phase>${ts.glow.phase}</phase>
+                        <configuration>
+                            <expected-errors>
+                                <error>jakarta.naming.Context or InitialContext lookup. Enable verbose output to see the locations.</error>
+                            </expected-errors>
+                            <expected-discovery>[cdi, ee-integration, ejb, ejb-lite, h2-datasource, jaxrs, jpa, jsonp, micrometer, microprofile-config, microprofile-fault-tolerance, microprofile-health, microprofile-jwt, microprofile-lra-coordinator, microprofile-lra-participant, microprofile-openapi, microprofile-reactive-messaging, microprofile-reactive-messaging-amqp, microprofile-reactive-messaging-kafka, microprofile-reactive-streams-operators, microprofile-rest-client, microprofile-telemetry, naming, opentelemetry, transactions]==>ee-core-profile-server,ejb,h2-datasource,jpa,micrometer,microprofile-fault-tolerance,microprofile-health,microprofile-jwt,microprofile-lra-coordinator,microprofile-lra-participant,microprofile-openapi,microprofile-reactive-messaging-amqp,microprofile-reactive-messaging-kafka,microprofile-rest-client,microprofile-telemetry</expected-discovery>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
@@ -349,47 +453,15 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <version>${version.org.wildfly.jar.plugin}</version>
                 <executions>
                     <!-- Provision a cloud server including all the MicroProfile specs layers -->
                     <execution>
                         <id>bootable-jar-packaging</id>
-                        <goals>
-                            <goal>package</goal>
-                        </goals>
-                        <phase>${bootable-jar-packaging.phase}</phase>
                         <configuration>
                             <!-- content that is installed in wildfly home -->
                             <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
                             <output-file-name>test-wildfly.jar</output-file-name>
-                            <hollowJar>true</hollowJar>
-                            <record-state>false</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>true</offline>
-                            <plugin-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                </feature-pack>
-                            </feature-packs>
-                            <layers>
-                                <layer>cloud-server</layer>
-                                <layer>microprofile-openapi</layer>
-                                <layer>microprofile-jwt</layer>
-                                <layer>microprofile-fault-tolerance</layer>
-                                <layer>micrometer</layer>
-                                <!-- Dependencies for reactive specs -->
-                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                <layer>h2-default-datasource</layer>
-                                <!--Dependencies for lra specs -->
-                                <layer>microprofile-lra-coordinator</layer>
-                                <layer>microprofile-lra-participant</layer>
-                            </layers>
+                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -414,6 +486,7 @@
                                 <!-- In this module default-test runs against standalone-microprofile.xml
                                      Exclude tests from that execution that require functionality not in that config. -->
                                 <exclude>org/wildfly/test/integration/microprofile/jwt/ejb/JWTEJBTestCase.java</exclude>
+                                <exclude>org/wildfly/test/integration/microprofile/jwt/propagation/JWTIdentityPropagationTestCase.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -460,6 +533,8 @@
             <properties>
                 <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
                 <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
+                <ts.glow.phase>test-compile</ts.glow.phase>
             </properties>
             <build>
                 <plugins>
@@ -481,6 +556,9 @@
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -488,57 +566,23 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>microprofile-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.full.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-platform</layer>
-                                                <layer>ejb</layer>
-                                                <layer>micrometer</layer>
-                                                <!-- Dependencies for reactive specs -->
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <!--Dependencies for lra specs -->
-                                                <layer>microprofile-lra-coordinator</layer>
-                                                <layer>microprofile-lra-participant</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -575,14 +619,14 @@
             </build>
         </profile>
 
-        <!-- Test against the ee 9 feature pack -->
+        <!-- Test against WildFly Preview dist -->
         <!-- TODO convert this to a bootable jar setup once a release
              of the wildfly jar plugin with transformation support is available -->
         <profile>
             <id>preview.test.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.preview</name>
+                    <name>ts.preview</name>
                 </property>
             </activation>
             <properties>
@@ -592,6 +636,9 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <ts.glow.phase>test-compile</ts.glow.phase>
+                <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
             </properties>
             <build>
                 <plugins>
@@ -613,6 +660,9 @@
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                        </configuration>
                         <executions>
                             <execution>
                                 <phase>none</phase>
@@ -620,56 +670,23 @@
                                     <goal>execute-commands</goal>
                                 </goals>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <execution>
                                 <id>microprofile-provisioning</id>
                                 <goals>
                                     <goal>provision</goal>
                                 </goals>
-                                <phase>compile</phase>
+                                <phase>test-compile</phase>
                                 <configuration>
-                                    <install-dir>${project.build.directory}/wildfly</install-dir>
-                                    <record-state>false</record-state>
-                                    <log-time>${galleon.log.time}</log-time>
-                                    <offline>${galleon.offline}</offline>
-                                    <plugin-options>
+                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
+                                    <record-provisioning-state>false</record-provisioning-state>
+                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                                    <galleon-options>
                                         <jboss-maven-dist/>
                                         <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                         <optional-packages>passive+</optional-packages>
-                                    </plugin-options>
-                                    <feature-packs>
-                                        <feature-pack>
-                                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.full.galleon.pack.version}</version>
-                                            <inherit-configs>false</inherit-configs>
-                                            <inherit-packages>false</inherit-packages>
-                                        </feature-pack>
-                                    </feature-packs>
-                                    <configurations>
-                                        <config>
-                                            <model>standalone</model>
-                                            <!-- Call the file standalone-microprofile.xml as that is what
-                                                 arquillian.xml says to use for testing in the default maven profile-->
-                                            <name>standalone-microprofile.xml</name>
-                                            <layers>
-                                                <layer>cloud-server</layer>
-                                                <layer>microprofile-platform</layer>
-                                                <layer>ejb</layer>
-                                                <!-- Dependencies for reactive specs -->
-                                                <layer>microprofile-reactive-messaging-kafka</layer>
-                                                <layer>h2-default-datasource</layer>
-                                                <!--Dependencies for lra specs -->
-                                                <layer>microprofile-lra-coordinator</layer>
-                                                <layer>microprofile-lra-participant</layer>
-                                            </layers>
-                                        </config>
-                                    </configurations>
+                                    </galleon-options>
+                                    <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
@@ -699,9 +716,6 @@
                             <systemPropertyVariables>
                                 <!-- Override the standard module path that points at the shared module set from the dist -->
                                 <module.path>${project.build.directory}/wildfly/modules</module.path>
-                                <!-- -Dnode0 is present in the parent definition of server.jvm.args, it is
-                                        expected by microprofile-config tests -->
-                                <server.jvm.args>${surefire.jpda.args} -Dnode0=${node0} -Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -807,7 +821,9 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-packaging.phase>process-test-resources</bootable-jar-packaging.phase>
+                <ts.glow.phase>test-compile</ts.glow.phase>
+                <ts.glow.config-name>standalone.xml</ts.glow.config-name>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
             </properties>
             <build>
                 <plugins>
@@ -836,12 +852,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>
@@ -888,7 +898,7 @@
             <id>bootablejar.preview.profile</id>
             <activation>
                 <property>
-                    <name>DISABLED.ts.bootable.preview</name>
+                    <name>ts.bootable.preview</name>
                 </property>
             </activation>
             <dependencies>
@@ -898,8 +908,9 @@
                 </dependency>
             </dependencies>
             <properties>
-                <bootable-jar-packaging.phase>process-test-resources</bootable-jar-packaging.phase>
-                <extra.server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</extra.server.jvm.args>
+                <ts.glow.phase>test-compile</ts.glow.phase>
+                <ts.glow.config-name>standalone.xml</ts.glow.config-name>
+                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
 
                 <!-- Use the WFP dependencyManagement set.
                      This is set in this profile in a parent module, but the explicit global override
@@ -933,12 +944,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jboss.galleon</groupId>
-                        <artifactId>galleon-maven-plugin</artifactId>
-                        <executions>
                             <!-- Disable the default provisioning -->
                             <execution>
                                 <id>server-provisioning</id>

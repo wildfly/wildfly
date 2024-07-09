@@ -32,8 +32,8 @@ public class EnvEntryInjectionServletTestCase {
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
-        war.addClasses(EnvEntryInjectionServlet.class, EnvEntryManagedBean.class);
-        war.addAsWebInfResource(EnvEntryInjectionServletTestCase.class.getPackage(), "EnvEntryInjectionTestCase-web.xml", "web.xml");
+        war.addClasses(EnvEntryInjectionServlet.class);
+        war.addAsWebInfResource(EnvEntryInjectionServletTestCase.class.getPackage(), "EnvEntryInjectionServletTestCase-web.xml", "web.xml");
         return war;
     }
 

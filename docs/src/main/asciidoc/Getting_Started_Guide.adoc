@@ -33,7 +33,7 @@ application server offerings. WildFly {wildflyVersion} is an exceptionally fast,
 lightweight and powerful implementation of the Jakarta
 Enterprise Edition 10 specifications. WildFly's modular architecture built on the
 JBoss Modules and JBoss Modular Service Container projects enables services on-demand when your
-application requires them. The table below lists the technologies available in WildFly {wildflyVersion}
+application requires them. The table below lists the Jakarta technologies available in WildFly {wildflyVersion}
 server configuration profiles.
 
 [cols=",,,,",options="header"]
@@ -79,6 +79,11 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Messaging 3.1 |X |-- |X |--
 
+| Jakarta MVC 2.1
+(xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability])|--|--|--|--
+
+|Jakarta Pages 3.1 |X |X |X |X
+
 |Jakarta Persistence 3.1 |X |X |X |X
 
 |Jakarta RESTful Web Services 3.1 |X |X |X |X
@@ -87,11 +92,9 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 
 |Jakarta Faces 4.0 |X |X |X |X
 
-|Jakarta Server Pages 3.1 |X |X |X |X
-
 |Jakarta Servlet 6.0 |X |X |X |X
 
-|Jakarta SOAP with Attachments 1.3 |Optional |-- |X |X
+|Jakarta SOAP with Attachments 3.0 |Optional |-- |X |X
 
 |Jakarta Standard Tag Library 3.0 |X |X |X |X
 
@@ -104,29 +107,26 @@ Profile |WildFly {wildflyVersion} Full Configuration |WildFly {wildflyVersion} D
 |Jakarta XML Web Services 4.0 |Optional |-- |X |X
 |=======================================================================
 
+[WARNING]
+====
+WildFly Preview {wildflyVersion} is currently aiming at providing an early look at Jakarta EE 11, and therefore provides different versions of a number of the Jakarta specifications listed above. See xref:WildFly_and_WildFly_Preview.adoc#wildfly-preview-ee11[EE 11 Support in WildFly Preview] for details.
+====
+
 WildFly {wildflyVersion} also provides support for a number of MicroProfile technologies:
 
 [cols=",,",options="header"]
 |=======================================================================
 |MicroProfile Technology |WildFly {wildflyVersion} Default Configuration |WildFly {wildflyVersion} MicroProfile Configuration
-
-|MicroProfile Config 3.0 |X |X
-
+|MicroProfile Config 3.1 |X |X
 |MicroProfile Fault Tolerance 4.0 |-- |X
-
 |MicroProfile Health 4.0 |-- |X
-
-|MicroProfile JWT Authentication 2.0 |X |X
-
-|MicroProfile Metrics 4.0 (deprecated in WildFly; will be replaced by link:Admin_Guide{outfilesuffix}#Micrometer_Metrics[Micrometer]) |-- |X
-
-|MicroProfile OpenAPI 3.0 |-- |X
-
+|MicroProfile JWT Authentication 2.1 |X |X
+|MicroProfile LRA 2.0 |-- |--
+|MicroProfile OpenAPI 3.1 |-- |X
 |MicroProfile Reactive Messaging 3.0 |-- |--
-
-|MicroProfile Streams Operators 3.0 |-- |--
-
 |MicroProfile Rest Client 3.0|X |X
+|MicroProfile Streams Operators 3.0 |-- |--
+|MicroProfile Telemetry 1.1|--|X
 
 |=======================================================================
 
@@ -402,6 +402,8 @@ syntax from $JBOSS_HOME/bin:
 ./standalone.sh --server-config=standalone-full-ha.xml
 ----
 
+_See also:_ <<Admin_Guide#aliases, Configuration File Aliases>>
+
 Similarly to start an alternate configuration in _domain_ mode:
 
 [source,options="nowrap"]
@@ -434,9 +436,9 @@ to what's shown below.
  
 11:46:11,161 INFO  [org.jboss.modules] (main) JBoss Modules version 1.5.1.Final
 11:46:11,331 INFO  [org.jboss.msc] (main) JBoss MSC version 1.2.6.Final
-11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly Full 10.0.0.Final (WildFly Core 2.0.10.Final) starting
+11:46:11,391 INFO  [org.jboss.as] (MSC service thread 1-6) WFLYSRV0049: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) starting
 <snip>
-11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly Full 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
+11:46:14,300 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0025: WildFly 10.0.0.Final (WildFly Core 2.0.10.Final) started in 1909ms - Started 267 of 553 services (371 services are lazy, passive or on-demand)
 ----
 
 As with previous WildFly releases, you can point your browser to

@@ -1,0 +1,11 @@
+{
+  "client-id" : "OAuth2RequestApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "scope" : "profile email phone",
+  "authentication-request-format" : "oauth2",
+  "credentials" : {
+    "secret" : "longerclientsecretthatisstleast256bitslong"
+  }
+}

@@ -5,18 +5,18 @@
 package org.wildfly.extension.clustering.server.dispatcher;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.LocalCommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.service.FunctionalService;
@@ -55,7 +55,7 @@ public class LocalCommandDispatcherFactoryServiceConfigurator extends SimpleServ
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<CommandDispatcherFactory> factory = this.group.register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(factory, Functions.identity(), this);
+        Service service = new FunctionalService<>(factory, Function.identity(), this);
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 }

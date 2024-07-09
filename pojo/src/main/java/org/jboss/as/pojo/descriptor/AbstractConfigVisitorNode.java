@@ -5,6 +5,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.as.pojo.service.DefaultBeanInfo;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -111,7 +112,7 @@ public abstract class AbstractConfigVisitorNode implements ConfigVisitorNode, Ty
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         Deque<ConfigVisitorNode> nodes = visitor.getCurrentNodes();
         if (nodes.isEmpty())
-            throw new IllegalArgumentException("Cannot determine type - insufficient info on configuration!");
+            throw PojoLogger.ROOT_LOGGER.cannotDetermineType();
 
         ConfigVisitorNode current = nodes.pop();
         try {

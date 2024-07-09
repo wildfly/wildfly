@@ -31,6 +31,6 @@ public class RegistryFactoryServiceConfiguratorProvider extends CacheRequirement
         Iterable<ServiceConfigurator> configurators = super.getServiceConfigurators(support, containerName, cacheName);
         ServiceName name = ClusteringCacheRequirement.REGISTRY.getServiceName(support, containerName, cacheName);
         ServiceConfigurator configurator = new RegistryServiceConfigurator<>(name, containerName, cacheName).configure(support);
-        return new CompositeIterable<>(configurators, List.of(configurator));
+        return new CompositeIterable<>(List.of(configurator), configurators);
     }
 }

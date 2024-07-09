@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-mixed-domain</artifactId>
@@ -67,13 +67,6 @@
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-network</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.build</groupId>
-            <artifactId>wildfly-server-provisioning-standalone</artifactId>
-            <!-- Set in root pom.xml -->
-            <version>${version.org.wildfly.build-tools}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -5,18 +5,15 @@
 
 package org.wildfly.extension.undertow.handlers;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.undertow.server.HttpHandler;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.requestcontroller.RequestController;
@@ -29,16 +26,14 @@ import org.wildfly.extension.undertow.Capabilities;
 final class HandlerAdd extends AbstractAddStepHandler {
     private HandlerFactory factory;
 
-    HandlerAdd(HandlerFactory factory, Collection<AttributeDefinition> attributes) {
-        super(attributes);
+    HandlerAdd(HandlerFactory factory) {
         this.factory = factory;
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String name = context.getCurrentAddressValue();
-        final RuntimeCapability<Void> newCapability = HandlerDefinition.CAPABILITY.fromBaseCapability(context.getCurrentAddress());
-        final boolean capabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, newCapability.getName(), null);
+        final boolean capabilityAvailable = context.hasOptionalCapability(Capabilities.REF_REQUEST_CONTROLLER, HandlerDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null);
 
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(HandlerDefinition.CAPABILITY);
         final Consumer<HttpHandler> hhConsumer = sb.provides(HandlerDefinition.CAPABILITY);

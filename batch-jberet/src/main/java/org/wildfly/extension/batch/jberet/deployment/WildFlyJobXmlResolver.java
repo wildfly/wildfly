@@ -225,7 +225,7 @@ public class WildFlyJobXmlResolver implements JobXmlResolver {
             final Map<String, VirtualFile> xmlFiles = new HashMap<>();
             for (VirtualFile f : jobsDir.getChildren(JobXmlFilter.INSTANCE)) {
                 if (xmlFiles.put(f.getName(), f) != null) {
-                    throw new IllegalStateException("Duplicate key");
+                    throw BatchLogger.LOGGER.duplicateVirtualFile(f);
                 }
             }
             foundJobXmlFiles.putAll(xmlFiles);

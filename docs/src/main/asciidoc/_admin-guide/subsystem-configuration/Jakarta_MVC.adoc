@@ -1,0 +1,50 @@
+[[Jakarta_MVC]]
+= Jakarta MVC Subsystem
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+[abstract]
+
+The `mvc-krazo` subsystem provides support for the use of Jakarta MVC in deployments.
+
+[WARNING]
+
+The `mvc-krazo` subsystem is currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability]. This means use of the subsystem requires running xref:WildFly_and_WildFly_Preview.adoc[WildFly Preview] or using the `--stability=preview` parameter when starting standard WildFly.
+
+[[mvc-krazo-subsystem-provision]]
+== Provisioning the subsystem
+
+When provisioning a WildFly instance, you can include Jakarta MVC support in your server configuration by specifying the `mvc-krazo` Galleon layer.
+
+////
+TODO add discussion of the need to specify config-stability-level when provisioning. But this should point to general content available via WFLY-19021 and WFLY-19172
+////
+
+[[mvc-krazo-subsystem-enable]]
+== Enabling the subsystem
+
+If the WildFly configuration does not have the `mvc-krazo` subsystem enabled, it can be enabled using the CLI:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990  /] org.wildfly.extension.mvc-krazo:add
+{"outcome" => "success"}
+[standalone@localhost:9990  /] /subsystem=mvc-krazo:add
+{
+    "outcome" => "success",
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
+}
+----
+
+== Configuration
+
+The `mvc-krazo` subsystem doesn't offer any configuration options beyond its presence in the overall configuration.

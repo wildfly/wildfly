@@ -1,0 +1,10 @@
+{
+    "client-id" : "MultipleScopeApp",
+    "public-client" : "false",
+    "provider-url" : "${oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "scope" : "profile email phone microprofile-jwt",
+    "credentials" : {
+        "secret" : "longerclientsecretthatisstleast256bitslong"
+    }
+}

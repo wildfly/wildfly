@@ -23,12 +23,6 @@ import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
  */
 public class ConnectionFactoryDefinitionDescriptorProcessor extends ResourceDefinitionDescriptorProcessor {
 
-    private final boolean legacySecurityAvailable;
-
-    public ConnectionFactoryDefinitionDescriptorProcessor(boolean legacySecurityAvailable) {
-        this.legacySecurityAvailable = legacySecurityAvailable;
-    }
-
     @Override
     protected void processEnvironment(RemoteEnvironment environment, ResourceDefinitionInjectionSources injectionSources) throws DeploymentUnitProcessingException {
         final ConnectionFactoriesMetaData metaDatas = environment.getConnectionFactories();
@@ -72,7 +66,6 @@ public class ConnectionFactoryDefinitionDescriptorProcessor extends ResourceDefi
                     break;
             }
         }
-        resourceDefinitionInjectionSource.setLegacySecurityAvailable(legacySecurityAvailable);
         resourceDefinitionInjectionSource.addProperties(metaData.getProperties());
         return resourceDefinitionInjectionSource;
     }

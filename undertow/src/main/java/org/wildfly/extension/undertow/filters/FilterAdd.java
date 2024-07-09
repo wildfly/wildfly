@@ -6,7 +6,6 @@
 package org.wildfly.extension.undertow.filters;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -16,10 +15,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.UndertowService;
 
-import java.util.Collection;
 import java.util.function.Consumer;
-
-import io.undertow.server.HandlerWrapper;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -27,10 +23,9 @@ import io.undertow.server.HandlerWrapper;
  */
 class FilterAdd extends AbstractAddStepHandler {
 
-    private HandlerWrapperFactory factory;
+    private PredicateHandlerWrapperFactory factory;
 
-    FilterAdd(HandlerWrapperFactory factory, Collection<AttributeDefinition> attributes) {
-        super(attributes);
+    FilterAdd(PredicateHandlerWrapperFactory factory) {
         this.factory = factory;
     }
 
@@ -39,8 +34,8 @@ class FilterAdd extends AbstractAddStepHandler {
         final String name = context.getCurrentAddressValue();
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<?> sb = target.addService(UndertowService.FILTER.append(name));
-        final Consumer<HandlerWrapper> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
-        HandlerWrapper wrapper = this.factory.createHandlerWrapper(context, model);
+        final Consumer<PredicateHandlerWrapper> serviceConsumer = sb.provides(UndertowService.FILTER.append(name));
+        PredicateHandlerWrapper wrapper = this.factory.createHandlerWrapper(context, model);
         sb.setInstance(Service.newInstance(serviceConsumer, wrapper));
         sb.setInitialMode(ServiceController.Mode.ON_DEMAND);
         sb.install();

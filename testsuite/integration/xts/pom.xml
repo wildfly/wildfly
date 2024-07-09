@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -258,11 +258,6 @@
                     <groupId>org.jboss.narayana.xts</groupId>
                     <artifactId>jbossxts</artifactId>
                     <classifier>api</classifier>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.jboss.narayana.compensations</groupId>
-                    <artifactId>compensations</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

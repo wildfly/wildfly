@@ -18,9 +18,8 @@ import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.resolveFilter;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeOnlyOperation;
 import static org.wildfly.extension.messaging.activemq.OperationDefinitionHelper.runtimeReadOnlyOperation;
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -39,7 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Base class for handlers that interact with either a ActiveMQ {@link org.apache.activemq.artemis.api.core.management.QueueControl}
@@ -234,7 +233,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final ServiceName activeMQServiceName = MessagingServices.getActiveMQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         boolean readOnly = context.getResourceRegistration().getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName).contains(OperationEntry.Flag.READ_ONLY);
         ServiceController<?> activeMQService = context.getServiceRegistry(!readOnly).getService(activeMQServiceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(activeMQService.getValue());
+        ActiveMQBroker server = ActiveMQBroker.class.cast(activeMQService.getValue());
         final DelegatingQueueControl<T> control = getQueueControl(server, queueName);
 
         if (control == null) {
@@ -378,7 +377,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         };
     }
 
-    protected abstract DelegatingQueueControl<T> getQueueControl(ActiveMQServer server, String queueName);
+    protected abstract DelegatingQueueControl<T> getQueueControl(ActiveMQBroker server, String queueName);
 
     protected abstract Object handleAdditionalOperation(final String operationName, final ModelNode operation,
                                                         final OperationContext context, T queueControl) throws OperationFailedException;

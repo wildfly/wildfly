@@ -14,13 +14,11 @@ import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
-import org.jboss.as.clustering.controller.UnaryCapabilityNameResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -32,6 +30,9 @@ import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
 import org.wildfly.clustering.jgroups.spi.JGroupsRequirement;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * A generic handler for protocol metrics based on reflection.
@@ -242,7 +243,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 return result;
             }
         };
-        FunctionExecutor<JChannel> executor = this.executors.get(channelServiceName);
+        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(channelServiceName));
         try {
             ModelNode value = (executor != null) ? executor.execute(function) : null;
             if (value != null) {

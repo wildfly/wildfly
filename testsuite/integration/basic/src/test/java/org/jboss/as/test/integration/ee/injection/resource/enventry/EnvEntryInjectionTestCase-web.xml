@@ -5,20 +5,14 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
+<!-- NOTE: This file belongs in the src/test/ee10/java source tree, but for some reason
+           putting it there makes it problematic to get it into the Shrinkwrap archive.
+           So, as a workaround we leave it in src/test/java. -->
 <web-app version="3.0"
          xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          metadata-complete="false">
-
-    <env-entry>
-        <env-entry-name>foo</env-entry-name>
-        <env-entry-value>injection!</env-entry-value>
-        <injection-target>
-            <injection-target-class>org.jboss.as.test.integration.ee.injection.resource.enventry.EnvEntryInjectionServlet</injection-target-class>
-            <injection-target-name>field</injection-target-name>
-        </injection-target>
-    </env-entry>
 
     <env-entry>
         <env-entry-name>org.jboss.as.test.integration.ee.injection.resource.enventry.EnvEntryManagedBean/existingString</env-entry-name>

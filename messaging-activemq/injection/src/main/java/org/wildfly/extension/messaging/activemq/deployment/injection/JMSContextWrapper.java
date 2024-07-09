@@ -25,8 +25,8 @@ import jakarta.jms.TemporaryQueue;
 import jakarta.jms.TemporaryTopic;
 import jakarta.jms.TextMessage;
 import jakarta.jms.Topic;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
 
 /**
  * Wrapper to restrict use of methods for injected JMSContext (Jakarta Messaging 2.0 spec, §12.4.5).

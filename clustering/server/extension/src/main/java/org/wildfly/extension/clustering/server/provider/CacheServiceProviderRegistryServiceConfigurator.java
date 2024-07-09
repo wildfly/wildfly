@@ -5,22 +5,21 @@
 package org.wildfly.extension.clustering.server.provider;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.clustering.function.Consumers;
-import org.jboss.as.clustering.function.Functions;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.provider.AutoCloseableServiceProviderRegistry;
 import org.wildfly.clustering.server.infinispan.provider.CacheServiceProviderRegistry;
@@ -35,6 +34,7 @@ import org.wildfly.clustering.service.ServiceConfigurator;
 import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SimpleServiceNameProvider;
 import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.common.function.Functions;
 
 /**
  * Builds a clustered {@link ServiceProviderRegistrationFactory} service.
@@ -73,7 +73,7 @@ public class CacheServiceProviderRegistryServiceConfigurator<T> extends SimpleSe
     public ServiceBuilder<?> build(ServiceTarget target) {
         ServiceBuilder<?> builder = new AsyncServiceConfigurator(this.getServiceName()).build(target);
         Consumer<ServiceProviderRegistry<T>> registry = new CompositeDependency(this.cache, this.dispatcherFactory, this.group).register(builder).provides(this.getServiceName());
-        Service service = new FunctionalService<>(registry, Functions.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(registry, Functions.cast(Function.identity()), this, Functions.closingConsumer());
         return builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND);
     }
 

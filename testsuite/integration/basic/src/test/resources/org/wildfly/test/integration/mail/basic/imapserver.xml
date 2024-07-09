@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<imapservers>
+    <imapserver enabled="true">
+        <jmxName>imapserver</jmxName>
+        <bind>0.0.0.0:143</bind>
+        <connectionBacklog>200</connectionBacklog>
+        <tls socketTLS="false" startTLS="true">
+            <privateKey>file://conf/private.key</privateKey>
+            <certificates>file://conf/private.csr</certificates>
+        </tls>
+        <connectionLimit>0</connectionLimit>
+        <connectionLimitPerIP>0</connectionLimitPerIP>
+        <plainAuthDisallowed>false</plainAuthDisallowed>
+        <gracefulShutdown>false</gracefulShutdown>
+    </imapserver>
+</imapservers>

@@ -36,5 +36,6 @@
         <module name="org.jboss.weld.spi"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.manager"/>
+        <module name="org.wildfly.subsystem"/>
     </dependencies>
 </module>

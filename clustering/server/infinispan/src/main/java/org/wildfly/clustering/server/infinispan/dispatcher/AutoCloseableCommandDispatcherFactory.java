@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.server.infinispan.dispatcher;
 
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 
 /**
  * A command dispatcher factory with a specific lifecycle (i.e. that must be closed).

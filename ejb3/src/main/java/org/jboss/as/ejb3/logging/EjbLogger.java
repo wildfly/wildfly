@@ -3242,4 +3242,16 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 532, value = "Database detected from configuration is: '%s'. If this is incorrect, please specify the correct database.")
     void unknownDatabaseName(String name);
+
+    @Message(id = 533, value = "Invocation failed")
+    RemoteException invocationFailed(@Cause Exception e);
+
+    @Message(id = 534, value = "Authentication failed")
+    SecurityException authenticationFailed();
+
+    @Message(id = 535, value = "Message endpoint %s has already been released")
+    IllegalStateException messageEndpointAlreadyReleasedISE(MessageEndpoint messageEndpoint);
+
+    @Message(id = 536, value = "Unsupported EJB receiver protocol %s")
+    IllegalArgumentException unsupportedEJBReceiverProtocol(String uriScheme);
 }

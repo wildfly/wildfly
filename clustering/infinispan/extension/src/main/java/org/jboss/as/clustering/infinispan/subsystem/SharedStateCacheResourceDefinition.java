@@ -9,10 +9,10 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.PathElement;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * Base class for cache resources which require common cache attributes, clustered cache attributes

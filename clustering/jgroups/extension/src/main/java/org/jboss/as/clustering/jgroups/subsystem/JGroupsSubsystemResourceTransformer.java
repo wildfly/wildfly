@@ -18,13 +18,12 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  */
 public class JGroupsSubsystemResourceTransformer implements Function<ModelVersion, TransformationDescription> {
 
-    private final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
     @Override
     public TransformationDescription apply(ModelVersion version) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        new ChannelResourceTransformer(this.builder).accept(version);
+        new ChannelResourceTransformer(builder).accept(version);
+        new StackResourceTransformer(builder).accept(version);
 
         return builder.build();
     }

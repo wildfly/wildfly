@@ -49,7 +49,10 @@ public class HTTPConnectorDefinition extends AbstractTransportDefinition {
             .setAllowExpression(false)
             .build();
 
-    public HTTPConnectorDefinition(boolean registerRuntimeOnly) {
-        super(false, CommonAttributes.HTTP_CONNECTOR, registerRuntimeOnly, SOCKET_BINDING, ENDPOINT, SERVER_NAME, PARAMS, CommonAttributes.SSL_CONTEXT);
+    /**
+     * @param registerRuntimeOnlyValid: no effect
+     */
+    public HTTPConnectorDefinition(boolean registerRuntimeOnlyValid) {
+        super(false, CommonAttributes.HTTP_CONNECTOR, registerRuntimeOnlyValid, SOCKET_BINDING, ENDPOINT, SERVER_NAME, PARAMS, CommonAttributes.SSL_CONTEXT);
     }
 }

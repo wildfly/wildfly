@@ -40,7 +40,7 @@ public class DeploymentMetricProcessor implements DeploymentUnitProcessor {
         rootResource = deploymentUnit.getAttachment(DeploymentModelUtils.DEPLOYMENT_RESOURCE);
         managementResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
 
-        DeploymentMetricService.install(phaseContext.getServiceTarget(), deploymentUnit, rootResource, managementResourceRegistration,
+        DeploymentMetricService.install(phaseContext.getRequirementServiceTarget(), deploymentUnit, rootResource, managementResourceRegistration,
                 exposeAnySubsystem, exposedSubsystems, prefix);
     }
 }

@@ -16,16 +16,16 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 abstract class SimpleFilterDefinition extends AbstractFilterDefinition {
 
-    private final HandlerWrapperFactory factory;
+    private final PredicateHandlerWrapperFactory factory;
 
-    protected SimpleFilterDefinition(PathElement path, HandlerWrapperFactory factory) {
+    protected SimpleFilterDefinition(PathElement path, PredicateHandlerWrapperFactory factory) {
         super(path);
         this.factory = factory;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        FilterAdd add = new FilterAdd(this.factory, this.getAttributes());
+        FilterAdd add = new FilterAdd(this.factory);
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.FILTER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

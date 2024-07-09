@@ -95,7 +95,7 @@ public class ResponseCodeTestCase {
          final HttpEntity entity = response.getEntity();
          Assert.assertNotNull("Null entity!", entity);
          final String content = EntityUtils.toString(response.getEntity());
-         Assert.assertTrue("Wrong content! " + content, content.matches("WildFly Full .*\\(WildFly Core .*\\) - .*"));
+         Assert.assertTrue("Wrong content! " + content, content.matches("WildFly .*\\(WildFly Core .*\\) - .*"));
     }*/
 
     private void doContentTypeChecks(final HttpResponse response, final int code) throws Exception {

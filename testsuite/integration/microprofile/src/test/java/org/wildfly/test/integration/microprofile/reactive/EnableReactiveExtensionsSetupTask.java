@@ -26,9 +26,9 @@ public class EnableReactiveExtensionsSetupTask extends CLIServerSetupTask {
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
         boolean rsoExt = !containsChild(managementClient, "extension", MODULE_REACTIVE_STREAMS_OPERATORS);
-        boolean rsoSs = !containsChild(managementClient, "extension", SUBSYSTEM_REACTIVE_STREAMS_OPERATORS);
+        boolean rsoSs = !containsChild(managementClient, "subsystem", SUBSYSTEM_REACTIVE_STREAMS_OPERATORS);
         boolean rmExt = !containsChild(managementClient, "extension", MODULE_REACTIVE_MESSAGING);
-        boolean rmSs = !containsChild(managementClient, "extension", SUBSYSTEM_REACTIVE_MESSAGING);
+        boolean rmSs = !containsChild(managementClient, "subsystem", SUBSYSTEM_REACTIVE_MESSAGING);
 
         NodeBuilder nb = this.builder.node(containerId);
         if (rsoExt) {

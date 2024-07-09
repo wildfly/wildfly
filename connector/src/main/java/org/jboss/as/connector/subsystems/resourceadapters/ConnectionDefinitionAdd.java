@@ -10,7 +10,6 @@ import static org.jboss.as.connector.subsystems.common.jndi.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.common.jndi.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.AUTHENTICATION_CONTEXT_AND_APPLICATION;
@@ -90,8 +89,6 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
             throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN.getName());
         else if (resourceModel.hasDefined(SECURITY_DOMAIN_AND_APPLICATION.getName()))
             throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(SECURITY_DOMAIN_AND_APPLICATION.getName());
-        else if (resourceModel.hasDefined(APPLICATION.getName()))
-            throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(APPLICATION.getName());
         // do the same for recovery security attributes
         if (resourceModel.hasDefined(RECOVERY_SECURITY_DOMAIN.getName()))
             throw SUBSYSTEM_RA_LOGGER.legacySecurityAttributeNotSupported(RECOVERY_SECURITY_DOMAIN.getName());

@@ -8,7 +8,6 @@ package org.wildfly.extension.undertow;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import io.undertow.UndertowOptions;
 import io.undertow.protocols.http2.Http2Channel;
@@ -128,7 +127,7 @@ abstract class AbstractHttpListenerResourceDefinition extends ListenerResourceDe
             REQUIRE_HOST_HTTP11,
             PROXY_PROTOCOL);
 
-    AbstractHttpListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, Function<Collection<AttributeDefinition>, AbstractAddStepHandler> addHandlerFactory) {
-        super(parameters, addHandlerFactory, Map.of(WORKER, new HttpListenerWorkerAttributeWriteHandler(WORKER)));
+    AbstractHttpListenerResourceDefinition(SimpleResourceDefinition.Parameters parameters, AbstractAddStepHandler addHandler) {
+        super(parameters, addHandler, Map.of(WORKER, new HttpListenerWorkerAttributeWriteHandler()));
     }
 }

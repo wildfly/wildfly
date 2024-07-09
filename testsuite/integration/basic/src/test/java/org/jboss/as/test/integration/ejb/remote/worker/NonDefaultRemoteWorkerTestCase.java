@@ -57,7 +57,7 @@ public class NonDefaultRemoteWorkerTestCase {
     @ArquillianResource
     protected ManagementClient managementClient;
 
-    private static final String NAME_DEPLOYMENT = "echo-ejb-candy"; // module
+    private static final String NAME_DEPLOYMENT = "echo-ejb-candy.jar"; // module
     private static final String NAME_WORKER = "puppeteer";
     private static final PathAddress ADDRESS_WORKER = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, "io"),
             PathElement.pathElement("worker", NAME_WORKER));

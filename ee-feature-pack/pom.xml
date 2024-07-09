@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-feature-pack-parent</artifactId>
@@ -27,10 +27,12 @@
     <name>WildFly: EE Feature Pack Parent</name>
 
     <modules>
+        <module>channel</module>
         <module>galleon-feature-pack</module>
         <module>galleon-local</module>
         <module>galleon-shared</module>
         <module>layer-metadata-tests</module>
+        <module>product-conf</module>
     </modules>
 
     <dependencyManagement>

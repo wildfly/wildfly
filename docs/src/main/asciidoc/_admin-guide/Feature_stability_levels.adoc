@@ -1,0 +1,49 @@
+[[Feature_stability_levels]]
+= Feature stability levels
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+The WildFly project has high standards related to quality, stability and backwards compatibility. A key way an open source project like WildFly can ensure high standards are met is by "community bake" -- allowing interested users to have access to features that are still undergoing a hardening process, while not forcing users who are not interested in such things to consume them.
+
+To better facilitate this, WildFly 31 introduced the notion of formal "stability levels" that can be associated with functionality. When starting a WildFly process, users can use the `--stability` command line parameter to control the minimum stability level of available features, with a value of `experimental`, `preview`, `community` or `default`.
+
+[source,options="nowrap"]
+----
+bin/standalone.sh --stability=preview
+----
+
+Features at a lower stability level will not be available for use.
+
+A WildFly installation will have a standard stability level, determined by the xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-pack] used to provision the installation. This level is used if the `--stability` param is not set. For a standard WildFly installation, this level is `community`. For WildFly Preview it is `preview`.
+
+Some details on the stability levels:
+
+* *experimental* -- This level is for true bleeding edge functionality that may never advance to a higher stability level. No WildFly feature-pack or distribution zip/tar would enable this level by default.
+* *preview* -- This is the level for features that are of a sufficient stability to be available by default in WildFly Preview, but not in standard WildFly. The general expectation for features at this level is that they will eventually move to `community` level in substantially similar form (although this is not guaranteed).
+* *community*-- This is the level for features that are of a sufficient stability to be available by default in standard WildFly. Features at this level are not expected to change incompatibly over time in a manner inconsistent with the expectations of the xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-pack] that provides them.
+* *default* -- Features at this level have gone through additional vetting to ensure they are suitable for the long-term compatibility expectations of the xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-pack] that provides them.
+
+[NOTE]
+The vast majority of functionality provided in both xref:WildFly_and_WildFly_Preview.adoc[standard WildFly and WildFly Preview] is at the `default` stability level. Over time the amount of functionality at other levels, particularly `community`, is expected to increase.
+
+[NOTE]
+A feature being ‘available by default’ in a WildFly installation might not mean ‘enabled by default’, i.e. turned on in a standard out-of-the-box configuration. It could just mean a user could turn it on if they so choose using normal configuration tools like the <<Command_Line_Interface,CLI>>.
+
+[[Relationship_to_Feature_Packs]]
+== Relationship to feature-packs
+
+The xref:Galleon_Guide.adoc#WildFly_Galleon_feature-packs[Galleon feature-packs] that WildFly produces themselves incorporate expectations for long-term feature stability and compatibility. The `--stability` startup setting discussed above just allows users to use a different setting than the standard one for the feature-pack.
+
+* *wildfly-ee* -- This feature-pack is not widely used directly and WildFly does not produce any downloadable zip/tar built solely using it. However, it is transparently used internally in provisioning any standard WildFly installation, and most standard WildFly functionality is provisioned from this feature-pack. It can be used directly by users who wish to limit their installation to what it provides. The defining characteristic of this feature-pack is that it integrates technologies where we have the highest confidence in our ability to provide them in a largely compatible way for many years.
+* *wildfly* -- This is the feature-pack most people use. It depends upon `wildfly-ee` and adds functionality in addition to what is provisioned by `wildfly-ee`. The traditional standard WildFly server zip is built using this feature-pack. The primary reason things are provided in this feature-pack instead of `wildfly-ee` is because the technology that is integrated is more likely to change in incompatible ways over a relatively short time period. For example, MicroProfile specifications are comfortable introducing breaking changes on an annual basis, making them a poor fit for `wildfly-ee`. The observability space, particularly metrics and tracing, is evolving rapidly, so our Micrometer and OpenTelemetry extensions are not in `wildfly-ee`.
+* *wildfly-preview* -- This feature-pack provisions WildFly Preview and is all about the fact that it provides no long term guarantees and can change significantly from release to release.
+
+What we mean by the `community` and `default` levels is relative to the generally expected long-term maintainability and compatibility level of the feature-pack that provides it. In other words, just because a feature provided by the `wildfly` feature-pack has been vetted as suitable for the `default` level does not mean it comes with higher expectations than the feature-pack as a whole.
+
+[NOTE]
+WildFly Preview is also used to showcase functionality whose scope is not tied to a particular reasonably scoped ‘feature’. Using it in the past for Jakarta EE 9 was an example. Not having an embedded messaging broker in the standard configs is not a ‘feature’.

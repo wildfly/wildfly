@@ -86,10 +86,5 @@ public class BasicAuthMechanismServerSetupTask extends SnapshotRestoreSetupTask 
         updateOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         updateOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         CoreUtils.applyUpdate(updateOp, managementClient.getControllerClient());
-
-        ModelNode removeSecurityOp = new ModelNode();
-        removeSecurityOp.get(OP).set(REMOVE);
-        removeSecurityOp.get(OP_ADDR).add(SUBSYSTEM, "security");
-        CoreUtils.applyUpdate(removeSecurityOp, managementClient.getControllerClient());
     }
 }

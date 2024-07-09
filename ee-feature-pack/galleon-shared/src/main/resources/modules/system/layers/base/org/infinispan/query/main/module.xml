@@ -15,8 +15,8 @@
         <module name="org.apache.lucene"/>
         <module name="org.hibernate.commons-annotations"/>
         <module name="org.hibernate.search.engine"/>
-        <module name="org.infinispan"/>
         <module name="org.infinispan.commons"/>
+        <module name="org.infinispan.core"/>
         <module name="org.infinispan.lock"/>
         <module name="org.infinispan.objectfilter"/>
         <module name="org.infinispan.protostream"/>

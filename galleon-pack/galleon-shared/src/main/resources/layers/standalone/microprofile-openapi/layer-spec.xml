@@ -12,6 +12,7 @@
         <prop name="org.wildfly.rule.properties-file-match-oas-model-reader" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.openapi.model.reader,*"/>
         <prop name="org.wildfly.rule.properties-file-match-oas-filter" value="[/META-INF/microprofile-config.properties,/WEB-INF/classes/META-INF/microprofile-config.properties],mp.openapi.filter,*"/>
         <prop name="org.wildfly.rule.expected-file" value="[/META-INF/openapi.yml,/META-INF/openapi.yaml,/META-INF/openapi.json,/WEB-INF/classes/META-INF/openapi.yml,/WEB-INF/classes/META-INF/openapi.yaml,/WEB-INF/classes/META-INF/openapi.json]"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for MicroProfile OpenAPI."/>
     </props>
     <dependencies>
         <layer name="jaxrs"/>

@@ -8,6 +8,7 @@
     <props>
         <prop name="org.wildfly.rule.add-on-depends-on" value="none"/>
         <prop name="org.wildfly.rule.add-on" value="lra,lra-coordinator"/>
+        <prop name="org.wildfly.rule.add-on-description" value="Support for MicroProfile LRA Coordinator."/>
     </props>
     <dependencies>
         <layer name="cdi"/>

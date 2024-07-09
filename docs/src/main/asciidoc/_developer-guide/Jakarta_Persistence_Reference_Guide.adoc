@@ -550,8 +550,9 @@ that depends on EclipseLink, to deploy on WildFly.
 ----
  <module xmlns="urn:jboss:module:1.9" name="org.eclipse.persistence">
     <resources>
-        <resource-root path="jipijapa-eclipselink-jakarta-27.0.0.Final.jar"/>
-        <resource-root path="eclipselink.jar">           <filter>
+        <resource-root path="jipijapa-eclipselink-31.0.0.Final.jar"/>
+        <resource-root path="eclipselink.jar">
+           <filter>
               <exclude path="jakarta/**" />
            </filter>
         </resource-root>

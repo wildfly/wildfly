@@ -65,19 +65,19 @@ public class CustomFilterDefinition extends SimpleFilterDefinition {
         return ATTRIBUTES;
     }
 
-    static HandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
+    static PredicateHandlerWrapper createHandlerWrapper(OperationContext context, ModelNode model) throws OperationFailedException {
         String className = CLASS_NAME.resolveModelAttribute(context, model).asString();
         String moduleName = MODULE.resolveModelAttribute(context, model).asString();
         Map<String, String> parameters = PARAMETERS.unwrap(context, model);
         UndertowLogger.ROOT_LOGGER.debugf("Creating http handler %s from module %s with parameters %s", className, moduleName, parameters);
         // Resolve module lazily
-        return new HandlerWrapper() {
+        return PredicateHandlerWrapper.filter(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(HttpHandler handler) {
                 Class<?> handlerClass = getHandlerClass(className, moduleName);
                 return new ConfiguredHandlerWrapper(handlerClass, parameters).wrap(handler);
             }
-        };
+        });
     }
 
     private static Class<?> getHandlerClass(String className, String moduleName) {

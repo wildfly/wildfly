@@ -23,9 +23,17 @@ import org.junit.runner.RunWith;
 /**
  * @author baranowb
  */
-@ServerSetup({SetupModuleServerSetupTask.class})
+@ServerSetup({StatelesBeanWhichDependsOnTestCase.SetupTask.class})
 @RunWith(Arquillian.class)
 public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTestCaseBase {
+    private static final String MODULE_NAME = StatelesBeanWhichDependsOnTestCase.class.getName();
+
+    public static class SetupTask extends SetupModuleServerSetupTask {
+
+        public SetupTask() {
+            super(MODULE_NAME);
+        }
+    }
 
     @ArquillianResource
     InitialContext ctx;
@@ -37,21 +45,21 @@ public class StatelesBeanWhichDependsOnTestCase extends SessionWhichDependeOnTes
 
     @Deployment(name = Constants.DEPLOYMENT_NAME_COUNTER, order = 0, managed = true, testable = true)
     public static Archive<?> getTestArchive() throws Exception {
-        JavaArchive jar = getTestArchiveBase();
+        JavaArchive jar = getTestArchiveBase(MODULE_NAME);
         jar.addClass(StatelesBeanWhichDependsOnTestCase.class);
         return jar;
     }
 
     @Deployment(name = SessionConstants.DEPLOYMENT_NAME_SESSION, order = 1, managed = false, testable = false)
     public static Archive<?> getSessionArchive() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SessionConstants.DEPLOYMENT_NAME_SESSION);
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SessionConstants.DEPLOYMENT_JAR_NAME_SESSION);
         jar.addClass(Constants.class);
         jar.addClass(CallCounterProxy.class);
         jar.addClass(SessionConstants.class);
         jar.addClass(BeanBase.class);
         jar.addClass(StatelesBeanWhichDependsOn.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, "
-                + SessionConstants.TEST_MODULE_NAME_FULL + "\n"), "MANIFEST.MF");
+                + MODULE_NAME + "\n"), "MANIFEST.MF");
         return jar;
     }
 

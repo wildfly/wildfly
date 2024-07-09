@@ -6,7 +6,7 @@ wildfly:
 
     - id: batch-jberet
       directories: [ batch-jberet ]
-      notify: [ chengfang ]
+      notify: [ liweinan ]
 
     - id: bean-validation
       directories: [ bean-validation ]
@@ -28,7 +28,7 @@ wildfly:
 
     - id: ejb3
       directories: [ ejb3 ]
-      notify: [ chengfang ]
+      notify: [ tadamski ]
 
     - id: elytron
       directories: 
@@ -108,7 +108,7 @@ wildfly:
 
     - id: rts
       directories: [ rts ]
-      notify: [ mmusgrove ]
+      notify: [ mmusgrov ]
 
     - id: sar
       directories: [ sar ]
@@ -182,7 +182,7 @@ wildfly:
     - id: testsuite-multinode
       directories:
         - testsuite/integration/multinode
-      notify: [ chengfang ]
+      notify: [ tadamski ]
       
     - id: testsuite-rbac
       directories:

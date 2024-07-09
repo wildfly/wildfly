@@ -11,6 +11,7 @@
     </properties>
 
     <resources>
+        <artifact name="${io.micrometer:micrometer-commons}"/>
         <artifact name="${io.micrometer:micrometer-core}"/>
         <artifact name="${io.micrometer:micrometer-registry-otlp}"/>
     </resources>

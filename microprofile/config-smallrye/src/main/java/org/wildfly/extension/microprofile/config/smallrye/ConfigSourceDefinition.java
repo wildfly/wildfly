@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import io.smallrye.config.PropertiesConfigSource;
+
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.ConfigSourceProvider;
 import org.jboss.as.controller.AbstractAddStepHandler;

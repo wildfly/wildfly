@@ -88,7 +88,7 @@ public class ResourceAdapterOperationsUnitTestCase extends ContainerResourceMgmt
 
     @Test
     public void addComplexResourceAdapterWithAppSecurity() throws Exception {
-        complexResourceAdapterAddTest(ConnectionSecurityType.ELYTRON_AUTHENTICATION_CONTEXT_AND_APPLICATION, null);
+        complexResourceAdapterAddTest(ConnectionSecurityType.APPLICATION, null);
     }
 
     @Test

@@ -81,7 +81,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
                 if(overlay != null) {
                     overlay.remountAsZip(false);
                 } else if(child.isFile()) {
-                    closable = VFS.mountZip(child, child, TempFileProviderService.provider());
+                    closable = VFS.mountZip(child.getPhysicalFile(), child, TempFileProviderService.provider());
                 }
                 final MountHandle mountHandle = MountHandle.create(closable);
                 final ResourceRoot childResource = new ResourceRoot(child, mountHandle);

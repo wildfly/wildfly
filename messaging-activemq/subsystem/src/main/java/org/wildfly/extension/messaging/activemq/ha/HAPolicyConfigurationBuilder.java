@@ -42,15 +42,16 @@ import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.HAPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ScaleDownConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ColocatedPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.LiveOnlyPolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.PrimaryOnlyPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicaPolicyConfiguration;
 import org.apache.activemq.artemis.core.config.ha.ReplicatedPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.SharedStoreMasterPolicyConfiguration;
-import org.apache.activemq.artemis.core.config.ha.SharedStoreSlavePolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.SharedStorePrimaryPolicyConfiguration;
+import org.apache.activemq.artemis.core.config.ha.SharedStoreBackupPolicyConfiguration;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
@@ -110,7 +111,7 @@ public class HAPolicyConfigurationBuilder {
                 break;
             }
             default: {
-                throw new OperationFailedException("unknown ha policy type");
+                throw MessagingLogger.ROOT_LOGGER.unknownHAPolicyType();
             }
         }
         configuration.setHAPolicyConfiguration(haPolicyConfiguration);
@@ -118,12 +119,12 @@ public class HAPolicyConfigurationBuilder {
 
     private HAPolicyConfiguration buildLiveOnlyConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ScaleDownConfiguration scaleDownConfiguration = ScaleDownAttributes.addScaleDownConfiguration(context, model);
-        return new LiveOnlyPolicyConfiguration(scaleDownConfiguration);
+        return new PrimaryOnlyPolicyConfiguration(scaleDownConfiguration);
     }
 
     private HAPolicyConfiguration buildReplicationPrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
         ReplicatedPolicyConfiguration haPolicyConfiguration = new ReplicatedPolicyConfiguration();
-        haPolicyConfiguration.setCheckForLiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
+        haPolicyConfiguration.setCheckForActiveServer(CHECK_FOR_LIVE_SERVER.resolveModelAttribute(context, model).asBoolean())
                 .setInitialReplicationSyncTimeout(INITIAL_REPLICATION_SYNC_TIMEOUT.resolveModelAttribute(context, model).asLong());
         ModelNode clusterName = CLUSTER_NAME.resolveModelAttribute(context, model);
         if (clusterName.isDefined()) {
@@ -167,7 +168,7 @@ public class HAPolicyConfigurationBuilder {
         }
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
         HAPolicyConfiguration masterConfiguration = buildReplicationPrimaryConfiguration(context, masterConfigurationModel);
-        haPolicyConfiguration.setLiveConfig(masterConfiguration);
+        haPolicyConfiguration.setPrimaryConfig(masterConfiguration);
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
         HAPolicyConfiguration slaveConfiguration = buildReplicationSecondaryConfiguration(context, slaveConfigurationModel);
         haPolicyConfiguration.setBackupConfig(slaveConfiguration);
@@ -175,12 +176,12 @@ public class HAPolicyConfigurationBuilder {
     }
 
     private HAPolicyConfiguration buildSharedStorePrimaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new SharedStoreMasterPolicyConfiguration()
+        return new SharedStorePrimaryPolicyConfiguration()
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean());
     }
 
     private HAPolicyConfiguration buildSharedStoreSecondaryConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        return new SharedStoreSlavePolicyConfiguration()
+        return new SharedStoreBackupPolicyConfiguration()
                 .setAllowFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean())
                 .setFailoverOnServerShutdown(FAILOVER_ON_SERVER_SHUTDOWN.resolveModelAttribute(context, model).asBoolean())
                 .setRestartBackup(RESTART_BACKUP.resolveModelAttribute(context, model).asBoolean())
@@ -197,7 +198,7 @@ public class HAPolicyConfigurationBuilder {
 
         ModelNode masterConfigurationModel = model.get(CONFIGURATION, PRIMARY);
         HAPolicyConfiguration masterConfiguration = buildSharedStorePrimaryConfiguration(context, masterConfigurationModel);
-        haPolicyConfiguration.setLiveConfig(masterConfiguration);
+        haPolicyConfiguration.setPrimaryConfig(masterConfiguration);
 
         ModelNode slaveConfigurationModel = model.get(CONFIGURATION, SECONDARY);
         HAPolicyConfiguration slaveConfiguration = buildSharedStoreSecondaryConfiguration(context, slaveConfigurationModel);

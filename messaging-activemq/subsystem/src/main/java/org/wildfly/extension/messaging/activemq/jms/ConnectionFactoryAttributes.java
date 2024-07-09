@@ -50,7 +50,7 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.extension.messaging.activemq.AbstractTransportDefinition;
 import org.wildfly.extension.messaging.activemq.CommonAttributes;
 import org.wildfly.extension.messaging.activemq.InfiniteOrPositiveValidators;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 public interface ConnectionFactoryAttributes {
 
@@ -472,8 +472,8 @@ public interface ConnectionFactoryAttributes {
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
                 create(THREAD_POOL_MAX_SIZE, "threadPoolMaxSize", true),
                 create(GROUP_ID, "groupID", true),
-                create(DESERIALIZATION_ALLOWLIST, "deserializationWhiteList", true),
-                create(DESERIALIZATION_BLOCKLIST, "deserializationBlackList", true),
+                create(DESERIALIZATION_ALLOWLIST, "deserializationAllowList", true),
+                create(DESERIALIZATION_BLOCKLIST, "deserializationDenyList", true),
                 create(DESERIALIZATION_BLACKLIST, "deserializationBlackList", true),
                 create(DESERIALIZATION_WHITELIST, "deserializationWhiteList", true),
                 create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),

@@ -15,7 +15,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.apache.lucene:lucene-analyzers-common}"/>
+        <artifact name="${org.apache.lucene:lucene-analysis-common}"/>
         <artifact name="${org.apache.lucene:lucene-core}"/>
         <artifact name="${org.apache.lucene:lucene-facet}"/>
         <artifact name="${org.apache.lucene:lucene-queries}"/>
@@ -25,7 +25,9 @@
 
     <dependencies>
         <module name="java.logging"/>
-        <module name="com.carrotsearch.hppc" />
         <module name="java.xml"/>
+        <module name="jdk.management"/>
+        <module name="jdk.unsupported"/>
+        <module name="com.carrotsearch.hppc" />
     </dependencies>
 </module>

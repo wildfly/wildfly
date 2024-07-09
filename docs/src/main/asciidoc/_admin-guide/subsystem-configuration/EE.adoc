@@ -1,5 +1,5 @@
 [[EE]]
-= EE Subsystem Configuration
+= EE Subsystem
 :leveloffset: +1
 
 ifdef::env-github[]
@@ -10,19 +10,19 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The EE subsystem provides common functionality in the Jakarta EE platform,
+The `ee` subsystem provides common functionality in the Jakarta EE platform,
 such as the EE Concurrency Utilities (JSR 236) and `@Resource`
 injection. The subsystem is also responsible for managing the lifecycle
 of Jakarta EE application's deployments, that is, `.ear` files and configuration of global directories to share common libraries across all deployed applications.
 
-The EE subsystem configuration may be used to:
+The `ee` subsystem configuration may be used to:
 
 * customise the deployment of Jakarta EE applications
 * create EE Concurrency Utilities instances
-* define the default bindings
+* define the spec-mandated default JNDI bindings for services that must be made available via JNDI to applications.
 
-The subsystem name is ee and this document covers EE subsystem version
-`5.0`, which XML namespace within WildFly XML configurations is
+This document covers EE subsystem version
+`5.0`, whose XML namespace within WildFly XML configurations is
 `urn:jboss:domain:ee:5.0`. The path for the subsystem's XML schema,
 within WildFly's distribution, is `docs/schema/jboss-as-ee_5_0.xsd`.
 

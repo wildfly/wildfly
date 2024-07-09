@@ -1,0 +1,10 @@
+{
+    "client-id" : "ProviderUrlMultiTenancyApp",
+    "provider-url" : "${oidc.provider.url.tenant1}",
+    "principal-attribute" : "preferred_username",
+    "public-client" : "false",
+    "ssl-required" : "EXTERNAL",
+    "credentials" : {
+        "secret" : "longerclientsecretthatisstleast256bitslong"
+    }
+}

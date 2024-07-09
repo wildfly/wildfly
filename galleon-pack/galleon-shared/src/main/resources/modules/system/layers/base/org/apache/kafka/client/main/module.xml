@@ -16,9 +16,12 @@
 
     <dependencies>
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.github.luben.zstd-jni"/>
         <module name="java.management"/>
         <module name="java.security.jgss"/>
         <module name="java.security.sasl"/>
+        <module name="org.lz4.lz4-java"/>
         <module name="org.slf4j"/>
+        <module name="org.xerial.snappy.snappy-java"/>
     </dependencies>
 </module>

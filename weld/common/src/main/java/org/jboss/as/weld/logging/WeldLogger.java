@@ -5,6 +5,7 @@
 
 package org.jboss.as.weld.logging;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
@@ -16,6 +17,7 @@ import java.util.Set;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -249,4 +251,19 @@ public interface WeldLogger extends BasicLogger {
 
     @Message(id = 58, value = "Persistence unit '%s' removed.")
     IllegalStateException persistenceUnitRemoved(String scopedPuName);
+
+    @Message(id = 59, value = "Unknown deployment type %s")
+    IllegalArgumentException unknownDeploymentType(DeploymentType deploymentType);
+
+    @Message(id = 60, value = "Error handling file %s")
+    RuntimeException errorHandlingFile(File file, @Cause Throwable throwable);
+
+    @Message(id = 61, value = "Exactly one service provider is required for: %s")
+    IllegalStateException missingService(Class<?> serviceClass);
+
+    @Message(id = 62, value = "Could not determine package from corrupted class name")
+    IllegalStateException couldNotDeterminePackage();
+
+    @Message(id = 63, value = "Original %s does not have a module")
+    IllegalArgumentException originalClassDoesNotHaveAModule(Class<?> originalClass);
 }

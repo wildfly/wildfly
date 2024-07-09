@@ -8,6 +8,8 @@ public final class MicrometerConfigurationConstants {
     private MicrometerConfigurationConstants() {
     }
 
+    static final String NAME = "micrometer";
+
     static final String OTLP_REGISTRY = "otlp-registry";
     public static final String ENDPOINT = "endpoint";
     public static final String STEP = "step";

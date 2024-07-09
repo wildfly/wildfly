@@ -28,7 +28,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -178,6 +178,16 @@
                                 <dependency>
                                     <groupId>io.smallrye.reactive</groupId>
                                     <artifactId>smallrye-reactive-messaging-kafka-api</artifactId>
+                                </dependency>
+                                <!-- include RESTeasy MP REST Client -->
+                                <dependency>
+                                    <groupId>org.jboss.resteasy.microprofile</groupId>
+                                    <artifactId>microprofile-rest-client</artifactId>
+                                </dependency>
+                                <!-- include SmallRye Config -->
+                                <dependency>
+                                    <groupId>io.smallrye.config</groupId>
+                                    <artifactId>smallrye-config</artifactId>
                                 </dependency>
                             </includeDependencies>
                         </configuration>

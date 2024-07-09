@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
     
     <artifactId>wildfly-preview-feature-pack</artifactId>
@@ -28,7 +28,7 @@
     <properties>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
 
-        <!-- WildFly full and ee galleon contents -->
+        <!-- WildFly and ee galleon contents -->
         <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
         <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
 
@@ -81,11 +81,16 @@
                                     <artifactId>wildfly-core-feature-pack-ee-10-api</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
                             </artifactItems>
                             <!-- The feature pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
-                            <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
+                            <outputDirectory>${basedir}/target/unpacked-dependency-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -95,7 +100,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
+                        <id>copy-unpacked-galleon-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -105,7 +110,7 @@
                             <escapeString>\</escapeString>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
+                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -183,6 +188,7 @@
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
@@ -205,9 +211,8 @@
                         <configuration>
                             <release-name>${preview.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                            <task-properties>
-                                <product.release.version>${preview.dist.product.release.version}</product.release.version>
-                            </task-properties>
+                            <generate-channel-manifest>true</generate-channel-manifest>
+                            <deploy-channel-manifest>false</deploy-channel-manifest>
                         </configuration>
                     </execution>
                 </executions>
@@ -315,6 +320,13 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>mvc-krazo-galleon-shared</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -379,6 +391,7 @@
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
+                                                <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

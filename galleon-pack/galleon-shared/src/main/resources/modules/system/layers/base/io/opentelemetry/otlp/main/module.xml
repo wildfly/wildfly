@@ -15,7 +15,7 @@
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
-        <module name="com.squareup.okhttp3"/>
+        <module name="io.opentelemetry.sdk"/>
         <module name="org.slf4j"/>
 
         <module name="java.logging"/>

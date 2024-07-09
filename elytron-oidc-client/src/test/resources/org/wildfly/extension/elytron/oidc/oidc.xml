@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:3.0">
     <realm name="main">
         <realm-public-key>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4siLKUew0WYxdtq6/rwk4Uj/4amGFFnE/yzIxQVU0PUqz3QBRVkUWpDj0K6ZnS5nzJV/y6DHLEy7hjZTdRDphyF1sq09aDOYnVpzu8o2sIlMM8q5RnUyEfIyUZqwo8pSZDJ90fS0s+IDUJNCSIrAKO3w1lqZDHL6E/YFHXyzkvQIDAQAB</realm-public-key>
         <auth-server-url>http://localhost:8080/auth</auth-server-url>
@@ -126,6 +126,84 @@
         <ssl-required>EXTERNAL</ssl-required>
         <principal-attribute>preferred_username</principal-attribute>
     </secure-deployment>
+    <secure-deployment name="wildfly-with-scope">
+        <provider>keycloak</provider>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-deployment>
+    <secure-server name="wildfly-server-with-scope">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+    </secure-server>
+    <secure-server name="wildfly-server-with-request">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <authentication-request-format>request</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-server>
+    <secure-server name="wildfly-server-with-request-uri">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <authentication-request-format>request_uri</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-server>
+    <secure-deployment name="wildfly-with-request">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <authentication-request-format>request</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
+    <secure-deployment name="wildfly-with-request-uri">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>false</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <authentication-request-format>request_uri</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+        <credential name="secret" secret="password" />
+    </secure-deployment>
     <secure-server name="wildfly-console">
         <realm>jboss-infra</realm>
         <resource>wildfly-console</resource>
@@ -142,4 +220,3 @@
         <ssl-required>EXTERNAL</ssl-required>
     </secure-server>
 </subsystem>
-

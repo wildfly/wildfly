@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
 
@@ -24,9 +24,10 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>amqp</module>
         <module>common</module>
-        <module>extension</module>
         <module>config</module>
+        <module>extension</module>
         <module>kafka</module>
     </modules>
 </project>

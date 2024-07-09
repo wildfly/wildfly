@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import io.undertow.server.HandlerWrapper;
+import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 
@@ -30,17 +30,14 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.wildfly.extension.undertow.filters.PredicateHandlerWrapper;
 
 public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsystemSchemaTest<UndertowSubsystemSchema> {
     final Map<ServiceName, Supplier<Object>> values = new ConcurrentHashMap<>();
-    private final UndertowSubsystemSchema schema;
-
-    AbstractUndertowSubsystemTestCase() {
-        this(UndertowSubsystemSchema.CURRENT);
-    }
+    protected final UndertowSubsystemSchema schema;
 
     AbstractUndertowSubsystemTestCase(UndertowSubsystemSchema schema) {
-        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT);
+        super(UndertowExtension.SUBSYSTEM_NAME, new UndertowExtension(), schema, UndertowSubsystemSchema.CURRENT.get(schema.getStability()));
         this.schema = schema;
     }
 
@@ -66,7 +63,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         // Skip runtime tests for old versions - since legacy SSO is only allowed in admin-only mode
         if (!this.schema.since(UndertowSubsystemSchema.VERSION_14_0)) return;
 
-        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values)).setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(new RuntimeInitialization(this.values, this.schema)).setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
 
         if (!mainServices.isSuccessfulBoot()) {
@@ -74,18 +71,18 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
             Assert.fail("Boot unsuccessful: " + (t != null ? t.toString() : "no boot error provided"));
         }
 
-        HandlerWrapper connectionLimiterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("limit-connections")).get();
-        HttpHandler connectionLimiterHandler = connectionLimiterService.wrap(new PathHandler());
+        PredicateHandlerWrapper connectionLimiterService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("limit-connections")).get();
+        HttpHandler connectionLimiterHandler = connectionLimiterService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", connectionLimiterHandler);
 
-        HandlerWrapper headersService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("headers")).get();
-        HttpHandler headerHandler = headersService.wrap(new PathHandler());
+        PredicateHandlerWrapper headersService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("headers")).get();
+        HttpHandler headerHandler = headersService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
-        HandlerWrapper modClusterService = (HandlerWrapper) this.values.get(UndertowService.FILTER.append("mod-cluster")).get();
+        PredicateHandlerWrapper modClusterService = (PredicateHandlerWrapper) this.values.get(UndertowService.FILTER.append("mod-cluster")).get();
         Assert.assertNotNull(modClusterService);
 
-        HttpHandler modClusterHandler = modClusterService.wrap(new PathHandler());
+        HttpHandler modClusterHandler = modClusterService.wrap(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", modClusterHandler);
 
         UndertowService undertowService = (UndertowService) this.values.get(UndertowRootDefinition.UNDERTOW_CAPABILITY.getCapabilityServiceName()).get();
@@ -109,7 +106,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Assert.assertEquals(3, host.getAllAliases().size());
         Assert.assertTrue(host.getAllAliases().contains("default-alias"));
 
-        LocationService locationService = (LocationService) this.values.get(UndertowService.locationServiceName("some-server", "default-virtual-host", "/")).get();
+        LocationService locationService = (LocationService) this.values.get(LocationDefinition.LOCATION_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host", "/")).get();
         Assert.assertNotNull(locationService);
 
         JSPConfig jspConfig = ((ServletContainerService) this.values.get(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY.getCapabilityServiceName("myContainer")).get()).getJspConfig();
@@ -151,7 +148,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Server defaultServer = (Server) this.values.get(UndertowService.DEFAULT_SERVER).get();
         Assert.assertNotNull("Default host should exist", defaultServer);
 
-        AccessLogService accessLogService = (AccessLogService) this.values.get(UndertowService.accessLogServiceName("some-server", "default-virtual-host")).get();
+        AccessLogService accessLogService = (AccessLogService) this.values.get(AccessLogDefinition.ACCESS_LOG_CAPABILITY.getCapabilityServiceName("some-server", "default-virtual-host")).get();
         Assert.assertNotNull(accessLogService);
         Assert.assertFalse(accessLogService.isRotate());
 
@@ -165,6 +162,6 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new DefaultInitialization();
+        return new DefaultInitialization(this.schema);
     }
 }

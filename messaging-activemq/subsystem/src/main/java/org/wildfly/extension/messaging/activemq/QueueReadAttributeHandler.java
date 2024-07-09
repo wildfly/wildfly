@@ -27,7 +27,6 @@ import java.util.List;
 
 import org.apache.activemq.artemis.api.core.management.QueueControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,7 +38,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Implements the {@code read-attribute} operation for runtime attributes exposed by a ActiveMQ
@@ -84,8 +83,8 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         final ServiceName serviceName = MessagingServices.getActiveMQServiceName(context.getCurrentAddress());
         ServiceController<?> service = context.getServiceRegistry(false).getService(serviceName);
-        ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
-        QueueControl control = QueueControl.class.cast(server.getManagementService().getResource(ResourceNames.QUEUE + queueName));
+        ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
+        QueueControl control = QueueControl.class.cast(server.getResource(ResourceNames.QUEUE + queueName));
 
         if (control == null) {
             throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(context.getCurrentAddress());
@@ -141,7 +140,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private static List<String> getStorageAttributeNames() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (SimpleAttributeDefinition attr : QueueDefinition.ATTRIBUTES) {
           names.add(attr.getName());
         }

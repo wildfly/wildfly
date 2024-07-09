@@ -1,0 +1,10 @@
+{
+  "client-id" : "InvalidScopeApp",
+  "public-client" : "false",
+  "provider-url" : "${oidc.provider.url}",
+  "ssl-required" : "EXTERNAL",
+  "scope" : "INVALID_SCOPE",
+  "credentials" : {
+    "secret" : "longerclientsecretthatisstleast256bitslong"
+  }
+}

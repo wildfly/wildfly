@@ -23,7 +23,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
-import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.security.RemotingPermission;
 import org.jboss.shrinkwrap.api.Archive;
@@ -51,11 +50,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IDE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE_IDENTITY_ROLES;
 import static org.junit.Assert.assertEquals;
@@ -214,10 +211,8 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
             operations.add(Util.getWriteAttributeOperation(addr, "trusted-security-domains", trustedDomains));
 
 
-            ModelNode response = managementClient.getControllerClient().execute(Util.createCompositeOperation(operations));
-            Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, TimeoutUtil.adjust(10000));
+            executeOperation(managementClient, Util.createCompositeOperation(operations));
+            ServerReload.reloadIfRequired(managementClient);
         }
 
         private ModelNode createSuperUserRoleMapping(String userName) {
@@ -226,8 +221,8 @@ public abstract class AbstractJmxAccessFromDeploymentWithRbacTest {
                     .append(ROLE_MAPPING, "SuperUser")
                     .append(INCLUDE, "user-" + userName);
             ModelNode addSuperUserInclude = Util.createAddOperation(addr);
-            addSuperUserInclude.get(NAME, userName);
-            addSuperUserInclude.get(TYPE, "USER");
+            addSuperUserInclude.get(NAME).set(userName);
+            addSuperUserInclude.get(TYPE).set("USER");
             return addSuperUserInclude;
         }
 

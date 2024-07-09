@@ -4,7 +4,7 @@
  */
 package org.wildfly.extension.micrometer;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.factory;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
@@ -22,7 +22,8 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
     MicrometerSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createSubsystemURN(MicrometerExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createSubsystemURN(MicrometerConfigurationConstants.NAME,
+                new IntVersion(major, minor));
     }
 
     @Override
@@ -32,8 +33,9 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(org.wildfly.extension.micrometer.MicrometerExtension.SUBSYSTEM_PATH, this.namespace)
-                .addAttributes(MicrometerSubsystemDefinition.ATTRIBUTES)
+        return factory(this)
+                .builder(MicrometerSubsystemRegistrar.PATH)
+                .addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES)
                 .build();
     }
 }

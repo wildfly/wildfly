@@ -9,7 +9,7 @@
 
     <resources>
         <artifact name="${org.wildfly.deployment:wildfly-ee-9-deployment-transformer}"/>
-        <artifact name="${org.wildfly.galleon-plugins:transformer}"/>
+        <artifact name="${org.wildfly.deployment:transformer}"/>
     </resources>
 
     <dependencies>

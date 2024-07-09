@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -176,7 +176,25 @@
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
                 <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+            <dependency>
+                <groupId>${full.maven.groupId}</groupId>
+                <artifactId>wildfly-microprofile-reactive-messaging-amqp</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-common</artifactId>
@@ -214,6 +232,12 @@
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-streams-operators</artifactId>
                 <version>${full.maven.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
@@ -274,10 +298,17 @@
                 </exclusions>
             </dependency>
 
+
             <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${version.com.fasterxml.jackson}</version>
+                <groupId>com.github.luben</groupId>
+                <artifactId>zstd-jni</artifactId>
+                <version>${version.com.github.luben.zstd-jni}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -327,9 +358,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${version.com.squareup.okhttp}</version>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${version.io.grpc}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -337,11 +368,10 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
-                <groupId>com.squareup.okio</groupId>
-                <artifactId>okio-jvm</artifactId>
-                <version>${version.com.squareup.okio-jvm}</version>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-commons</artifactId>
+                <version>${version.io.micrometer}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -349,7 +379,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-core</artifactId>
@@ -398,7 +427,7 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-api-logs</artifactId>
+                <artifactId>opentelemetry-api-events</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
@@ -421,17 +450,6 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-exporter-common</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-jaeger</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
@@ -487,7 +505,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -509,7 +527,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-sdk-logs</artifactId>
-                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -586,6 +604,17 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-java-http-client</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
@@ -803,6 +832,28 @@
             </dependency>
             <dependency>
                 <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-propagation</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
+                <artifactId>smallrye-opentelemetry-exporters</artifactId>
+                <version>${version.io.smallrye.smallrye-opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.opentelemetry</groupId>
                 <artifactId>smallrye-opentelemetry-rest</artifactId>
                 <version>${version.io.smallrye.smallrye-opentelemetry}</version>
                 <exclusions>
@@ -829,6 +880,17 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>mutiny-reactive-streams-operators</artifactId>
                 <version>${version.io.smallrye.smallrye-mutiny}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-mutiny-vertx-amqp-client</artifactId>
+                <version>${version.io.smallrye.smallrye-mutiny-vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -908,7 +970,26 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-api</artifactId>
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>smallrye-reactive-messaging-amqp</artifactId>
+                <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <dependency>
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-kafka</artifactId>
@@ -935,6 +1016,18 @@
                 <groupId>io.smallrye.reactive</groupId>
                 <artifactId>smallrye-reactive-messaging-provider</artifactId>
                 <version>${version.io.smallrye.smallrye-reactive-messaging}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-amqp-client</artifactId>
+                <version>${version.io.vertx.vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1001,8 +1094,42 @@
             </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-client</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-grpc-common</artifactId>
+                <version>${version.io.vertx.vertx}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
                 <artifactId>vertx-kafka-client</artifactId>
                 <version>${version.io.vertx.vertx-kafka-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-proton</artifactId>
+                <version>${version.io.vertx.vertx}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1024,12 +1151,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.thrift</groupId>
-                <artifactId>libthrift</artifactId>
-                <version>${version.org.apache.thrift}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
                 <version>${version.org.eclipse.microprofile.config.api}</version>
@@ -1039,13 +1160,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.config</groupId>
-                <artifactId>microprofile-config-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.config.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1059,13 +1173,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
-                <artifactId>microprofile-fault-tolerance-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.fault-tolerance.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.health</groupId>
@@ -1077,13 +1184,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.health</groupId>
-                <artifactId>microprofile-health-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.health.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1097,22 +1197,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.jwt</groupId>
-                <artifactId>microprofile-jwt-auth-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.jwt.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.jwt</groupId>
-                <artifactId>microprofile-jwt-auth-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.jwt.api}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-
 
             <dependency>
                 <groupId>org.eclipse.microprofile.lra</groupId>
@@ -1125,13 +1209,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.lra</groupId>
-                <artifactId>microprofile-lra-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.lra.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.openapi</groupId>
@@ -1143,12 +1220,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.openapi</groupId>
-                <artifactId>microprofile-openapi-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.openapi}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1173,22 +1244,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive-streams-operators</groupId>
-                <artifactId>microprofile-reactive-streams-operators-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.reactive-streams-operators.api}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <!--
-                        Depends on org.reactivestreams:reactive-streams-tck which in turn has a dependency
-                        on an ancient version of this spi
-                     -->
-                    <exclusion>
-                        <groupId>org.jboss.arquillian.test</groupId>
-                        <artifactId>arquillian-test-spi</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
@@ -1201,12 +1256,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
-                <artifactId>microprofile-reactive-messaging-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.reactive-messaging.api}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <dependency>
                 <groupId>org.eclipse.microprofile.rest.client</groupId>
@@ -1218,19 +1267,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.rest.client</groupId>
-                <artifactId>microprofile-rest-client-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.rest.client.api}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
-                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
 
             <dependency>
@@ -1324,9 +1360,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
+                <groupId>org.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>${version.org.lz4.lz4-java}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1336,33 +1372,17 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-common</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${version.org.wildfly.mvc.krazo}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
             <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk8</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk7</artifactId>
-                <version>${version.org.jetbrains.kotlin}</version>
+                <groupId>org.wildfly</groupId>
+                <artifactId>mvc-krazo-galleon-shared</artifactId>
+                <version>${version.org.wildfly.mvc.krazo}</version>
+                <type>zip</type>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -1377,6 +1397,17 @@
                 <version>${version.org.wildfly.security.elytron-mp}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>${version.org.xerial.snappy.snappy-java}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

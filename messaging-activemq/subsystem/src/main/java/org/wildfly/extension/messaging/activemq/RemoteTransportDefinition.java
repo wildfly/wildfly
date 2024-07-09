@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
@@ -37,15 +36,18 @@ public class RemoteTransportDefinition extends AbstractTransportDefinition {
 
     static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, CommonAttributes.PARAMS, CommonAttributes.SSL_CONTEXT};
 
-    static RemoteTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnly) {
-        return new RemoteTransportDefinition(true, CommonAttributes.REMOTE_ACCEPTOR, registerRuntimeOnly);
+    static RemoteTransportDefinition createAcceptorDefinition(boolean registerRuntimeOnlyValid) {
+        return new RemoteTransportDefinition(true, CommonAttributes.REMOTE_ACCEPTOR, registerRuntimeOnlyValid);
     }
 
-    static RemoteTransportDefinition createConnectorDefinition(boolean registerRuntimeOnly) {
-        return new RemoteTransportDefinition(false, CommonAttributes.REMOTE_CONNECTOR, registerRuntimeOnly);
+    /**
+     * @param registerRuntimeOnlyValid: no effect
+     */
+    static RemoteTransportDefinition createConnectorDefinition(boolean registerRuntimeOnlyValid) {
+        return new RemoteTransportDefinition(false, CommonAttributes.REMOTE_CONNECTOR, registerRuntimeOnlyValid);
     }
 
-    private RemoteTransportDefinition(boolean isAcceptor, String specificType, boolean registerRuntimeOnly) {
-        super(isAcceptor, specificType, registerRuntimeOnly, ATTRIBUTES);
+    private RemoteTransportDefinition(boolean isAcceptor, String specificType, boolean registerRuntimeOnlyValid) {
+        super(isAcceptor, specificType, registerRuntimeOnlyValid, ATTRIBUTES);
     }
 }

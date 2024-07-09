@@ -67,7 +67,7 @@ public class WSBearerElytronSecurityPropagationTestCase {
                 .addAsWebInfResource(createFilteredAsset("WEB-INF/wsdl/bearer-ws-trust-1.4-service.wsdl"), "wsdl/bearer-ws-trust-1.4-service.wsdl")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsstore.jks", "classes/stsstore.jks")
                 .addAsWebInfResource(WSTrustTestCase.class.getPackage(), "WEB-INF/stsKeystore.properties", "classes/stsKeystore.properties")
-                .addAsManifestResource(WSTrustTestCase.class.getPackage(), "META-INF/permissions.xml", "permissions.xml")
+                .addAsManifestResource(WSTrustTestCase.EXTRA_PERMISSIONS, "permissions.xml")
                 .setWebXML(WSTrustTestCase.class.getPackage(), "WEB-INF/bearer/web.xml");
         return archive;
     }

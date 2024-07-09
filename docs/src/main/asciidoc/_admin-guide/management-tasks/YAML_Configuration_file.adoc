@@ -107,3 +107,36 @@ wildfly-configuration:
                 index: 0
 ----
 
+You can't configure everything in YAML. Configuring the following resource types is not supported:
+
+ - extension: to add an extension to the server as this might require modules which may be missing.
+ - deployment: to add *managed* deployments to the server as this requires more than just some configuration.
+ - deployment-overlay: to add deployment-overlays to the server as this requires more than just some configuration.
+ - path: since those should already have been defined when the YAML files are parsed.
+
+While *managed* deployments are not supported you can still define *unmanaged* deployments. An unmanaged deployment is one where the server does not make an internal copy of the deployment content for its use; instead it directly uses the configured content. See link:#managed-and-unmanaged-deployments[Managed and Unmanaged Deployments].
+
+IMPORTANT: All your changes using the management API aren't persisted since the server is in *read-only* mode with YAML.
+
+This is a sample to install two deployments but with only one deployed:
+
+[source,options="nowrap"]
+----
+wildfly-configuration:
+  deployment:
+    test.jar:
+      content:
+        -
+          path: test.jar
+          relative-to: jboss.server.base.dir
+          archive: true
+      enabled: true
+    hello.jar:
+      content:
+        - 
+          path: test.jar
+          relative-to: jboss.server.base.dir
+          archive: true
+----
+
+NOTE: For historical reasons, the `content` attribute is of type LIST so you must add a *-* before defining the archive or the directory of your deployment. The list should only contain a *single* element.

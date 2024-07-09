@@ -1,7 +1,7 @@
 :module-url: https://raw.githubusercontent.com/wildfly/wildfly/main/jsf/multi-jsf-installer/src/main/resources
 
 [[Jakarta_Faces]]
-= Jakarta Faces Configuration
+= Jakarta Faces Subsystem
 
 Jakarta Faces configuration is handled by the `jsf` subsystem. The `jsf` subsystem
 allows multiple Jakarta Faces implementations to be installed on the same WildFly server. In particular, any

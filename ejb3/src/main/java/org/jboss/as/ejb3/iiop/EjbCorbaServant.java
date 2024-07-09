@@ -440,11 +440,11 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
                     return context.getAuthorizedIdentity();
                 } else {
                     context.fail();
-                    throw new SecurityException("Authorization failed");
+                    throw EjbLogger.ROOT_LOGGER.authenticationFailed();
                 }
             } else {
                 context.fail();
-                throw new SecurityException("Authentication failed");
+                throw EjbLogger.ROOT_LOGGER.authenticationFailed();
             }
         } catch (IllegalArgumentException | IllegalStateException | RealmUnavailableException e) {
             context.fail();

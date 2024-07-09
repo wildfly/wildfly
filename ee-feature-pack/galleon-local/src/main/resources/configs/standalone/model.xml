@@ -15,7 +15,9 @@
         <prop name="--internal-remove-config" value=""/>
     </props>
     <packages>
+        <package name="banner" optional="true"/>
         <package name="product.conf" optional="true"/>
+        <package name="org.jboss.as.product" optional="true"/>
         <package name="misc.standalone"/>
         <package name="org.jboss.as.standalone"/>
         <package name="org.jboss.as.domain-management"/>
@@ -33,5 +35,7 @@
         <package name="org.jboss.common-beans" optional="true"/>
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>
+        <!-- Unstable API Annotation Index -->
+        <package name="unstable-api-annotation-index.wildfly-ee-feature-pack"/>
     </packages>
 </config>

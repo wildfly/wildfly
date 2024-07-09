@@ -1,5 +1,5 @@
 [[MicroProfile_Telemetry]]
-= MicroProfile Telemetry Subsystem Configuration
+= MicroProfile Telemetry Subsystem
 
 Support for https://microprofile.io/project/eclipse/microprofile-telemetry[MicroProfile Telemetry] is provided by the _microprofile-telemetry_ subsystem.
 

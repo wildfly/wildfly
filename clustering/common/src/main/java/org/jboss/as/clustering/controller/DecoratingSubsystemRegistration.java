@@ -17,6 +17,7 @@ import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.version.Stability;
 import org.jboss.staxmapper.XMLElementWriter;
 
 /**
@@ -89,5 +90,10 @@ public class DecoratingSubsystemRegistration<R extends ManagementResourceRegistr
     @Override
     public R registerDeploymentModel(ResourceDefinition definition) {
         return this.decorator.apply(this.registration.registerDeploymentModel(definition));
+    }
+
+    @Override
+    public Stability getStability() {
+        return this.registration.getStability();
     }
 }

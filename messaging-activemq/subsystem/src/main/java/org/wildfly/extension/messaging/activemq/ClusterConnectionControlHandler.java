@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.management.ClusterConnectionControl;
 import org.apache.activemq.artemis.api.core.management.ResourceNames;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -28,9 +27,9 @@ public class ClusterConnectionControlHandler extends AbstractActiveMQComponentCo
     }
 
     @Override
-    protected ClusterConnectionControl getActiveMQComponentControl(ActiveMQServer activeMQServer, PathAddress address) {
+    protected ClusterConnectionControl getActiveMQComponentControl(ActiveMQBroker activeMQServer, PathAddress address) {
         final String resourceName = address.getLastElement().getValue();
-        return ClusterConnectionControl.class.cast(activeMQServer.getManagementService().getResource(ResourceNames.CORE_CLUSTER_CONNECTION + resourceName));
+        return ClusterConnectionControl.class.cast(activeMQServer.getResource(ResourceNames.CORE_CLUSTER_CONNECTION + resourceName));
     }
 
     @Override

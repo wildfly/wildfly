@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * Handler for adding a bridge.
@@ -82,7 +82,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
             BridgeConfiguration bridgeConfig = createBridgeConfiguration(context, name, model);
 
             //noinspection RedundantClassCall
-            ActiveMQServer server = ActiveMQServer.class.cast(service.getValue());
+            ActiveMQBroker server = ActiveMQBroker.class.cast(service.getValue());
             createBridge(bridgeConfig, server);
 
         }
@@ -172,7 +172,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
         return result;
     }
 
-    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQServer server) throws OperationFailedException {
+    static void createBridge(BridgeConfiguration bridgeConfig, ActiveMQBroker broker) throws OperationFailedException {
+        ActiveMQServer server = ActiveMQServer.class.cast(broker.getDelegate());
         checkStarted(server);
         clearIO(server);
 

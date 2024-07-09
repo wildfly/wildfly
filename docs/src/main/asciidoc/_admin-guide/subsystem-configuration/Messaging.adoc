@@ -1,5 +1,5 @@
 [[Messaging]]
-= Messaging configuration
+= Messaging Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -9,7 +9,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The Jakarta Messaging server configuration is done through the _messaging-activemq_
+Support for an embedded messaging broker or integration with a remote broker, including support for the Jakarta Messaging specification, is done through the _messaging-activemq_
 subsystem. In this chapter we are going outline the frequently used
 configuration options. For a more detailed explanation please consult
 the Artemis user guide (See "Component Reference").

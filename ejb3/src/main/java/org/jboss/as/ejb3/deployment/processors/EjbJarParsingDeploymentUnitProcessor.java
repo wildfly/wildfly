@@ -25,10 +25,8 @@ import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
 import org.jboss.as.ejb3.cache.EJBBoundCacheParser;
 import org.jboss.as.ejb3.clustering.ClusteringSchema;
 import org.jboss.as.ejb3.clustering.EJBBoundClusteringMetaDataParser;
-import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser;
-import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser11;
-import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser12;
-import org.jboss.as.ejb3.deliveryactive.parser.EJBBoundMdbDeliveryMetaDataParser20;
+import org.jboss.as.ejb3.delivery.parser.EJBBoundMdbDeliveryMetaDataParser;
+import org.jboss.as.ejb3.delivery.parser.EjbBoundMdbDeliveryMetaDataSchema;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsParser;
@@ -305,10 +303,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI_1_0, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
         parsers.put(EJBBoundResourceAdapterBindingMetaDataParser.NAMESPACE_URI_2_0, EJBBoundResourceAdapterBindingMetaDataParser.INSTANCE);
 
-        parsers.put(EJBBoundMdbDeliveryMetaDataParser.NAMESPACE_URI_1_0, EJBBoundMdbDeliveryMetaDataParser.INSTANCE);
-        parsers.put(EJBBoundMdbDeliveryMetaDataParser11.NAMESPACE_URI_1_1, EJBBoundMdbDeliveryMetaDataParser11.INSTANCE);
-        parsers.put(EJBBoundMdbDeliveryMetaDataParser12.NAMESPACE_URI_1_2, EJBBoundMdbDeliveryMetaDataParser12.INSTANCE);
-        parsers.put(EJBBoundMdbDeliveryMetaDataParser20.NAMESPACE_URI_2_0, EJBBoundMdbDeliveryMetaDataParser20.INSTANCE);
+        for (EjbBoundMdbDeliveryMetaDataSchema schema : EnumSet.allOf(EjbBoundMdbDeliveryMetaDataSchema.class)) {
+            parsers.put(schema.getNamespace().getUri(), new EJBBoundMdbDeliveryMetaDataParser(schema));
+        }
 
         parsers.put("urn:iiop", new IIOPMetaDataParser());
         parsers.put("urn:iiop:1.0", new IIOPMetaDataParser());

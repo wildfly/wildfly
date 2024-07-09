@@ -10,9 +10,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.xts.jandex.CompensatableAnnotation;
 import org.jboss.as.xts.jandex.EndpointMetaData;
 import org.jboss.as.xts.jandex.TransactionalAnnotation;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.as.xts.txnclient.WildflyTransactionClientTxBridgeIntegrationHandler;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.util.ASHelper;
@@ -60,7 +60,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
                     modifiedWSMeta = modifiedWSMeta || result;
                 }
             } catch (XTSException e) {
-                throw new DeploymentUnitProcessingException("Error processing endpoint '" + endpoint + "'", e);
+                throw XtsAsLogger.ROOT_LOGGER.errorProcessingEndpoint(endpoint, e);
             }
         }
 
@@ -137,10 +137,6 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
     private Set<String> getDeploymentClasses(DeploymentUnit unit) {
         final Set<String> endpoints = new HashSet<String>();
-
-        for (final String annotation : CompensatableAnnotation.COMPENSATABLE_ANNOTATIONS) {
-            addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
-        }
 
         for (final String annotation : TransactionalAnnotation.TRANSACTIONAL_ANNOTATIONS) {
             addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));

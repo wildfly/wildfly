@@ -14,6 +14,7 @@
     <line-endings phase="FINALIZING">
       <unix>
         <filter pattern="docs?licenses?licenses.html" include="true"/>
+        <filter pattern="docs?licenses?licenses.xml" include="true"/>
       </unix>
     </line-endings>
 </tasks>

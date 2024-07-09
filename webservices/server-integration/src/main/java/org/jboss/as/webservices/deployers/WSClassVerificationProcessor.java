@@ -123,7 +123,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
 
     static boolean hasCxfModuleDependency(DeploymentUnit unit) {
         final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
+        for (ModuleDependency dep : moduleSpec.getUserDependenciesSet()) {
             final String id = dep.getIdentifier().getName();
             if (cxfExportingModules.contains(id)) {
                 return true;
@@ -135,7 +135,7 @@ public class WSClassVerificationProcessor implements DeploymentUnitProcessor {
     private static boolean hasExportedCxfModuleDependency(DeploymentUnit unit) {
         if (unit != null) {
             final ModuleSpecification moduleSpec = unit.getAttachment(Attachments.MODULE_SPECIFICATION);
-            for (ModuleDependency dep : moduleSpec.getUserDependencies()) {
+            for (ModuleDependency dep : moduleSpec.getUserDependenciesSet()) {
                 final String id = dep.getIdentifier().getName();
                 if (cxfExportingModules.contains(id) && dep.isExport()) {
                     return true;

@@ -1,6 +1,13 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+registries:
+  maven-central:
+    type: maven-repository
+    url: https://repo.maven.apache.org/maven2/
+  jboss-public-repository-group:
+    type: maven-repository
+    url: https://repository.jboss.org/nexus/content/groups/public/
 updates:
   - package-ecosystem: "maven"
     directory: "/"
@@ -10,8 +17,17 @@ updates:
        # Only allow for patch release upgrades
       - dependency-name: '*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Dependencies exclusive to Hibernate Search:
+      # we'll only upgrade those when we upgrade to a newer version of Hibernate Search.
+      - dependency-name: 'org.elasticsearch.client:*'
+      - dependency-name: 'org.apache.lucene:*'
+      - dependency-name: 'com.carrotsearch:hppc'
+      - dependency-name: 'org.apache.avro:avro'
     rebase-strategy: "disabled"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 8
+    registries:
+      - maven-central
+      - jboss-public-repository-group
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`

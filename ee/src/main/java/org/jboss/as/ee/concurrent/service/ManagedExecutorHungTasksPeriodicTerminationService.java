@@ -8,6 +8,7 @@ import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerExceptio
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.ee.concurrent.ManagedExecutorWithHungThreads;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.StartContext;
@@ -60,7 +61,7 @@ public class ManagedExecutorHungTasksPeriodicTerminationService implements Servi
     public synchronized Future startHungTaskPeriodicTermination(final ManagedExecutorWithHungThreads executor, final long hungTaskTerminationPeriod) {
         checkNotNullParamWithNullPointerException("executor", executor);
         if (hungTaskTerminationPeriod <= 0) {
-            throw new IllegalArgumentException("hungTaskTerminationPeriod is not > 0");
+            throw EeLogger.ROOT_LOGGER.hungTaskTerminationPeriodIsNotBiggerThanZero();
         }
         if (scheduler == null) {
             scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory());

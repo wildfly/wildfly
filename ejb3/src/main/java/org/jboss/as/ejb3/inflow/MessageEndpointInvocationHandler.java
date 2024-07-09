@@ -142,7 +142,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
     @Override
     public void release() {
         if (released.getAndSet(true))
-            throw new IllegalStateException("Message endpoint " + this + " has already been released");
+            throw EjbLogger.ROOT_LOGGER.messageEndpointAlreadyReleasedISE(this);
 
         // TODO: tidy up outstanding delivery
 

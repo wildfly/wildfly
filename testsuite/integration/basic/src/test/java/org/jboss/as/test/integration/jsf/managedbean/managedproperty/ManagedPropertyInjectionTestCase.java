@@ -22,7 +22,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -61,11 +60,6 @@ public class ManagedPropertyInjectionTestCase {
     private static WebArchive baseDeployment(String warName) {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, warName);
         war.addClasses(InjectionTargetBean.class, GreetingBean.class);
-        if (!AssumeTestGroupUtil.isWildFlyPreview()) {
-            // JSF 2.3 impl requires using @FacesConfig on a bean to turn on CDI integration
-            // TODO remove this once standard WildFly uses Faces 4
-            war.addClass(JSF23ConfigurationBean.class);
-        }
         war.addAsWebResource(InjectionTargetBean.class.getPackage(), "managedproperties.xhtml", "managedproperties.xhtml");
         war.addAsWebResource(InjectionTargetBean.class.getPackage(), "index.html", "index.html");
         return war;
@@ -74,9 +68,6 @@ public class ManagedPropertyInjectionTestCase {
     @Test
     @OperateOnDeployment("jsfmanagedproperty-cruft.war")
     public void testWithoutFacesServlet() throws IOException {
-        // TODO remove this once standard WildFly uses Faces 4
-        AssumeTestGroupUtil.assumeWildFlyPreview();
-
         DefaultHttpClient client = new DefaultHttpClient();
         try {
             // Confirm the war is accessible

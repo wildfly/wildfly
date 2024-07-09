@@ -5,9 +5,6 @@
 
 package org.jboss.as.connector.services.workmanager;
 
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 import org.jboss.as.threads.ManagedQueueExecutorService;
 import org.jboss.as.threads.ManagedQueuelessExecutorService;
@@ -47,22 +44,6 @@ public class StatisticsExecutorImpl implements StatisticsExecutor {
     @Override
     public void execute(Runnable runnable) {
         realExecutor.execute(runnable);
-    }
-
-    @Override
-    public void executeBlocking(Runnable runnable) throws RejectedExecutionException, InterruptedException {
-        realExecutor.executeBlocking(runnable);
-    }
-
-    @Override
-    public void executeBlocking(Runnable runnable, long l, TimeUnit timeUnit) throws RejectedExecutionException,
-            InterruptedException {
-        realExecutor.executeBlocking(runnable, l, timeUnit);
-    }
-
-    @Override
-    public void executeNonBlocking(Runnable runnable) throws RejectedExecutionException {
-        realExecutor.executeNonBlocking(runnable);
     }
 
     @Override

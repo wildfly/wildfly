@@ -15,6 +15,8 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Locale;
+
 
 /**
  * AS7-5768 -Support for RA module deployment
@@ -58,7 +60,7 @@ public class TwoRaJarTestCase extends TwoRaFlatTestCase {
 
         @Override
         protected String getSlot() {
-            return TwoRaJarTestCase.class.getSimpleName().toLowerCase();
+            return TwoRaJarTestCase.class.getSimpleName().toLowerCase(Locale.ENGLISH);
         }
     }
 

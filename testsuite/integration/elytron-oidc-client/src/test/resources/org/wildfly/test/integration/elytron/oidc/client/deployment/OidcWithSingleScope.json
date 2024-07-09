@@ -1,0 +1,10 @@
+{
+    "client-id" : "SingleScopeApp",
+    "public-client" : "false",
+    "provider-url" : "${oidc.provider.url}",
+    "ssl-required" : "EXTERNAL",
+    "scope" : "profile",
+    "credentials" : {
+        "secret" : "longerclientsecretthatisstleast256bitslong"
+    }
+}

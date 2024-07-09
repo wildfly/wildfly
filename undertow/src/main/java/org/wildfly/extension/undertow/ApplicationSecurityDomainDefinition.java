@@ -226,7 +226,6 @@ public class ApplicationSecurityDomainDefinition extends PersistentResourceDefin
         private final SecurityDomainSingleSignOnManagementProvider provider;
 
         private AddHandler(Set<String> knownApplicationSecurityDomains) {
-            super(ATTRIBUTES);
             this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
             Iterator<SecurityDomainSingleSignOnManagementProvider> providers = ServiceLoader.load(SecurityDomainSingleSignOnManagementProvider.class, SecurityDomainSingleSignOnManagementProvider.class.getClassLoader()).iterator();
             this.provider = providers.hasNext() ? providers.next() : NonDistributableSingleSignOnManagementProvider.INSTANCE;

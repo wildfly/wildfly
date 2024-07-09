@@ -12,12 +12,13 @@ import java.util.function.Supplier;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.ExpirationConfiguration;
+import org.infinispan.configuration.cache.PersistenceConfiguration;
 import org.infinispan.configuration.cache.StorageType;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.clustering.controller.CompositeServiceBuilder;
-import org.jboss.as.clustering.function.Consumers;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.Service;
@@ -25,6 +26,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
@@ -35,7 +37,6 @@ import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceConfigurator;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.NodeFactory;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.service.ClusteringCacheRequirement;
 import org.wildfly.clustering.server.service.ClusteringRequirement;
 import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
@@ -55,6 +56,7 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.SpecificationProvider;
+import org.wildfly.common.function.Functions;
 
 /**
  * @param <S> the HttpSession specification type
@@ -124,6 +126,11 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
             // We will cascade eviction to the remaining entries for a given session
             builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionMetaDataKey.class::isInstance);
         }
+        PersistenceConfiguration persistence = builder.persistence().create();
+        // If cache is configured to passivate and purge on startup, but application does not define a passivation threshold, then remove useless stores
+        if ((size == null) && persistence.passivation() && persistence.stores().stream().allMatch(StoreConfiguration::purgeOnStartup)) {
+            builder.persistence().passivation(false).clearStores();
+        }
     }
 
     @Override
@@ -135,7 +142,7 @@ public class InfinispanSessionManagerFactoryServiceConfigurator<S, SC, AL, LC> e
         ServiceBuilder<?> builder = target.addService(this.getServiceName());
         Consumer<SessionManagerFactory<SC, LC, TransactionBatch>> factory = new CompositeDependency(this.group, this.affinityFactory, this.dispatcherFactory).register(builder).provides(this.getServiceName());
         this.cache = builder.requires(this.cacheConfigurator.getServiceName());
-        Service service = new FunctionalService<>(factory, Function.identity(), this, Consumers.close());
+        Service service = new FunctionalService<>(factory, Function.identity(), this, Functions.closingConsumer());
         return new CompositeServiceBuilder<>(List.of(configurationBuilder, cacheBuilder, groupBuilder, builder.setInstance(service).setInitialMode(ServiceController.Mode.ON_DEMAND)));
     }
 

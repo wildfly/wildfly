@@ -36,8 +36,8 @@ public class WildflyWorkWrapper extends org.jboss.jca.core.workmanager.WorkWrapp
      * @throws IllegalArgumentException for null work, execution context or a negative start timeout
      */
     WildflyWorkWrapper(WorkManagerImpl workManager, SecurityIntegration si, Work work, ExecutionContext executionContext,
-            WorkListener workListener, CountDownLatch startedLatch, CountDownLatch completedLatch, long startTime) {
-        super(workManager, si, work, executionContext, workListener, startedLatch, completedLatch, startTime);
+            WorkListener workListener, CountDownLatch startedLatch, CountDownLatch completedLatch, long creationTime, long startTimeout) {
+        super(workManager, si, work, executionContext, workListener, startedLatch, completedLatch, creationTime, startTimeout);
     }
 
     @Override

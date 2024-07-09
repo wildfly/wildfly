@@ -18,10 +18,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.service.capture.FunctionExecutor;
 
 @WebServlet(urlPatterns = { NodeServiceServlet.SERVLET_PATH })
 public class NodeServiceServlet extends HttpServlet {
@@ -50,7 +50,7 @@ public class NodeServiceServlet extends HttpServlet {
         String serviceName = getRequiredParameter(req, SERVICE);
         String expected = req.getParameter(EXPECTED);
         this.log(String.format("Received request for %s, expecting %s", serviceName, expected));
-        FunctionExecutor<Supplier<Node>> executor = NodeServiceExecutorRegistry.INSTANCE.get(ServiceName.parse(serviceName));
+        FunctionExecutor<Supplier<Node>> executor = NodeServiceExecutorRegistry.INSTANCE.getExecutor(ServiceName.parse(serviceName));
         Instant stop = Instant.now().plus(TIMEOUT);
         ExceptionFunction<Supplier<Node>, Node, RuntimeException> function = Supplier::get;
         Node node = executor.execute(function);

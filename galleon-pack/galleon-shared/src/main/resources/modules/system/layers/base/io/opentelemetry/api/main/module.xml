@@ -9,7 +9,7 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-api}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-api-logs}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-api-events}"/>
         <artifact name="${io.opentelemetry:opentelemetry-semconv}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api}"/>
         <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv}"/>
@@ -19,7 +19,8 @@
 
     <dependencies>
         <module name="io.opentelemetry.context"/>
-        <module name="io.smallrye.opentelemetry"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
+
         <module name="java.logging"/>
         <module name="jakarta.interceptor.api" />
     </dependencies>

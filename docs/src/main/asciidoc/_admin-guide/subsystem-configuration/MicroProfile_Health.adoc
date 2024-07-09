@@ -1,5 +1,5 @@
 [[MicroProfile_Health_SmallRye]]
-= MicroProfile Health Subsystem Configuration
+= MicroProfile Health Subsystem
 
 ifdef::env-github[]
 :tip-caption: :bulb:

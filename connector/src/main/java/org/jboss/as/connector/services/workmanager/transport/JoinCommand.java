@@ -8,7 +8,7 @@ package org.jboss.as.connector.services.workmanager.transport;
 import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Equivalent to {@link org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#viewAccepted(org.jgroups.View)}.
+ * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#viewAccepted(org.jgroups.View).
  * @author Paul Ferraro
  */
 public class JoinCommand implements Command<Void, CommandDispatcherTransport> {

@@ -6,8 +6,6 @@ package org.wildfly.extension.mod_cluster;
 
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.FunctionExecutor;
-import org.jboss.as.clustering.controller.FunctionExecutorRegistry;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
 import org.jboss.as.clustering.controller.OperationFunction;
@@ -22,6 +20,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
  * @author Radoslav Husar
@@ -65,7 +66,7 @@ public class ProxyOperationExecutor implements OperationExecutor<ModClusterServi
     @Override
     public ModelNode execute(OperationContext context, ModelNode operation, Operation<ModClusterServiceMBean> executable) throws OperationFailedException {
         ServiceName serviceName = ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(context.getCurrentAddress());
-        FunctionExecutor<ModClusterServiceMBean> executor = this.executors.get(serviceName);
+        FunctionExecutor<ModClusterServiceMBean> executor = this.executors.getExecutor(ServiceDependency.on(serviceName));
         return (executor != null) ? executor.execute(new OperationFunction<>(context, operation, Function.identity(), executable)) : null;
     }
 }

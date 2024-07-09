@@ -74,6 +74,8 @@ public class JarResourceListingTestCase {
         resourcesInDeployment.add(ResourceListingUtils.classToPath(ResourceListingUtils.class));
         resourcesInDeployment.add("META-INF/example.txt");
         resourcesInDeployment.add("META-INF/properties/nested.properties");
+        // Added by WildFly Arquillian jmx-as7 protocol
+        resourcesInDeployment.add("META-INF/test-description.properties");
         resourcesInDeployment.add("META-INF/MANIFEST.MF");
         resourcesInDeployment.add("example2.txt");
         resourcesInDeployment.add("TextFile1.txt");

@@ -37,7 +37,7 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
 import org.wildfly.extension.microprofile.reactive.messaging.deployment.ReactiveMessagingDependencyProcessor;
 import org.wildfly.microprofile.reactive.messaging.common.DynamicDeploymentProcessorAdder;
-import org.wildfly.microprofile.reactive.messaging.config.kafka.ssl.context.ElytronSSLContextRegistry;
+import org.wildfly.microprofile.reactive.messaging.common.security.ElytronSSLContextRegistry;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -89,7 +89,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
         protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performBoottime(context, operation, model);
 
-            installKafkaElytronSSLContextRegistryServiceIfPresent(context);
+            installElytronSSLContextRegistryServiceIfPresent(context);
 
             context.addStep(new AbstractDeploymentChainStep() {
                 @Override
@@ -113,12 +113,12 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
             MicroProfileReactiveMessagingLogger.LOGGER.activatingSubsystem();
         }
 
-        private void installKafkaElytronSSLContextRegistryServiceIfPresent(OperationContext context) {
+        private void installElytronSSLContextRegistryServiceIfPresent(OperationContext context) {
             ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
             if (cl instanceof ModuleClassLoader) {
                 ModuleLoader loader = ((ModuleClassLoader)cl).getModule().getModuleLoader();
                 try {
-                    loader.loadModule("org.wildfly.reactive.messaging.kafka");
+                    loader.loadModule("org.wildfly.reactive.messaging.common");
                     ElytronSSLContextRegistry.setServiceRegistry(context.getServiceRegistry(false));
                 } catch (ModuleLoadException e) {
                     // Ignore, it means the module is not available so we don't install the service

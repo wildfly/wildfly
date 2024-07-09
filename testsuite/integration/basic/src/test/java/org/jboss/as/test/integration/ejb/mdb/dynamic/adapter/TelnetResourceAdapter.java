@@ -17,15 +17,16 @@ import jakarta.resource.spi.work.Work;
 import jakarta.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @version $Revision$ $Date$
  */
 public class TelnetResourceAdapter implements jakarta.resource.spi.ResourceAdapter {
 
-    private final Map<Integer, TelnetServer> activated = new HashMap<Integer, TelnetServer>();
+    private final Map<Integer, TelnetServer> activated = new ConcurrentHashMap<>();
     private WorkManager workManager;
 
     /**
@@ -84,11 +85,10 @@ public class TelnetResourceAdapter implements jakarta.resource.spi.ResourceAdapt
 
     @Override
     public void endpointDeactivation(MessageEndpointFactory messageEndpointFactory, ActivationSpec activationSpec) {
-        final TelnetActivationSpec telnetActivationSpec = (TelnetActivationSpec) activationSpec;
-
         final TelnetServer telnetServer = activated.remove(port);
 
         try {
+            Objects.requireNonNull(telnetServer, String.format("No telnetServer found for port %d", port)).deactivate();
             telnetServer.deactivate();
         } catch (IOException e) {
             e.printStackTrace();

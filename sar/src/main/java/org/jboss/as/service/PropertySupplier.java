@@ -5,6 +5,8 @@
 
 package org.jboss.as.service;
 
+import org.jboss.as.service.logging.SarLogger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
@@ -23,19 +25,19 @@ final class PropertySupplier extends DelegatingSupplier {
     public Object get() {
         final Supplier<Object> objectSupplier = this.objectSupplier;
         if (objectSupplier == null) {
-            throw new IllegalStateException("Object supplier not available");
+            throw SarLogger.ROOT_LOGGER.objectSupplierNotAvailable();
         }
         final Object o = objectSupplier.get();
         if (o == null) {
-            throw new IllegalStateException("Object not available");
+            throw SarLogger.ROOT_LOGGER.objectNotAvailable();
         }
         if (propertyName != null) {
             try {
                 return ReflectionUtils.getGetter(o.getClass(), propertyName).invoke(o, (Object[]) null);
             } catch (IllegalAccessException e) {
-                throw new IllegalStateException("Method is not accessible", e);
+                throw SarLogger.ROOT_LOGGER.methodIsNotAccessible(e);
             } catch (InvocationTargetException e) {
-                throw new IllegalStateException("Failed to invoke method", e);
+                throw SarLogger.ROOT_LOGGER.failedToInvokeMethod(e);
             }
 
         } else {

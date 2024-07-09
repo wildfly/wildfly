@@ -108,7 +108,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             } catch (ClassNotFoundException e) {
                 throw SUBSYSTEM_DATASOURCES_LOGGER.failedToLoadDataSourceClass(xaDataSourceClassName, e);
             } catch (ClassCastException e) {
-                throw SUBSYSTEM_DATASOURCES_LOGGER.notAValidDataSourceClass(dataSourceClassName, DataSource.class.getName());
+                throw SUBSYSTEM_DATASOURCES_LOGGER.notAValidDataSourceClass(xaDataSourceClassName, XADataSource.class.getName());
             }
             checkDSCls(dsCls, XADataSource.class);
         }

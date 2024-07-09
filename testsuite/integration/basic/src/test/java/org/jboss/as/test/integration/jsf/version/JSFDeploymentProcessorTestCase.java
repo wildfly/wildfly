@@ -34,6 +34,7 @@ import org.jboss.as.test.integration.jsf.version.ejb.JSFMyFacesEJB;
 import org.jboss.as.test.integration.jsf.version.ejb.JSFVersionEJB;
 import org.jboss.as.test.integration.jsf.version.war.JSFMyFaces;
 import org.jboss.as.test.integration.jsf.version.war.JSFVersion;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.TestLogHandlerSetupTask;
 import org.jboss.as.test.shared.util.LoggingUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -103,19 +104,22 @@ public class JSFDeploymentProcessorTestCase {
         war.addAsWebResource(JSFVersion.class.getPackage(), "jsfmyfacesversion.xhtml", "jsfmyfacesversion.xhtml");
         war.addAsWebInfResource(JSFVersion.class.getPackage(), WEB_BUNDLED_JSF_WEB_XML, "web.xml");
 
-        //add Jakarta Server Faces as webapp lib
-        final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
-        war.addAsLibraries(
-                resolver.resolve(
-                            "commons-beanutils:commons-beanutils:1.9.3",
-                            "commons-collections:commons-collections:3.2.2",
-                            "commons-digester:commons-digester:1.8",
-                            "org.apache.myfaces.core:myfaces-api:2.0.24",
-                            "org.apache.myfaces.core:myfaces-impl:2.0.24"
-                        )
-                        .withoutTransitivity()
-                        .asFile()
-        );
+        // Do not add these libraries that would then be scanned by WildFly Glow when instantiating/scanning the deployment.
+        if (!GlowUtil.isGlowScan()) {
+            //add Jakarta Server Faces as webapp lib
+            final PomEquippedResolveStage resolver = Maven.resolver().loadPomFromFile("pom.xml");
+            war.addAsLibraries(
+                    resolver.resolve(
+                                    "commons-beanutils:commons-beanutils:1.9.3",
+                                    "commons-collections:commons-collections:3.2.2",
+                                    "commons-digester:commons-digester:1.8",
+                                    "org.apache.myfaces.core:myfaces-api:2.0.24",
+                                    "org.apache.myfaces.core:myfaces-impl:2.0.24"
+                            )
+                            .withoutTransitivity()
+                            .asFile()
+            );
+        }
 
         // add the .war
         ear.addAsModule(war);

@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
 
@@ -151,9 +151,6 @@
                                 <id>default-test</id>
                                 <phase>test</phase>
                                 <configuration>
-                                    <systemPropertyVariables>
-                                        <server.jvm.args>-Dmaven.repo.local=${settings.localRepository}</server.jvm.args>
-                                    </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
                                     </environmentVariables>

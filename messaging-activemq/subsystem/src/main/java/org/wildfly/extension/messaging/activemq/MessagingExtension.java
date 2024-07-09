@@ -353,7 +353,7 @@ public class MessagingExtension implements Extension {
         final SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
         subsystemRegistration.registerXMLElementWriter(CURRENT_PARSER);
 
-        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
+        boolean registerRuntimeOnlyValid = context.isRuntimeOnlyRegistrationValid();
 
         BiConsumer<OperationContext, String> broadcastCommandDispatcherFactoryInstaller = new BroadcastCommandDispatcherFactoryInstaller();
 
@@ -362,20 +362,20 @@ public class MessagingExtension implements Extension {
         subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // WFLY-10518 - register new client resources under subsystem
-        subsystem.registerSubModel(new DiscoveryGroupDefinition(registerRuntimeOnly, true));
-        subsystem.registerSubModel(new JGroupsDiscoveryGroupDefinition(registerRuntimeOnly, true));
-        subsystem.registerSubModel(new SocketDiscoveryGroupDefinition(registerRuntimeOnly, true));
-        subsystem.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new DiscoveryGroupDefinition(false, true));
+        subsystem.registerSubModel(new JGroupsDiscoveryGroupDefinition(false, true));
+        subsystem.registerSubModel(new SocketDiscoveryGroupDefinition(false, true));
+        subsystem.registerSubModel(GenericTransportDefinition.createConnectorDefinition(false));
+        subsystem.registerSubModel(InVMTransportDefinition.createConnectorDefinition(false));
+        subsystem.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(false));
+        subsystem.registerSubModel(new HTTPConnectorDefinition(false));
+        subsystem.registerSubModel(new ExternalConnectionFactoryDefinition());
         subsystem.registerSubModel(new ExternalPooledConnectionFactoryDefinition(false));
-        subsystem.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
-        subsystem.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
+        subsystem.registerSubModel(new ExternalJMSQueueDefinition(false));
+        subsystem.registerSubModel(new ExternalJMSTopicDefinition(false));
 
         // ActiveMQ Servers
-        final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(broadcastCommandDispatcherFactoryInstaller, registerRuntimeOnly));
+        final ManagementResourceRegistration server = subsystem.registerSubModel(new ServerDefinition(broadcastCommandDispatcherFactoryInstaller, registerRuntimeOnlyValid));
 
         for (PathElement path : List.of(JOURNAL_DIRECTORY_PATH, BINDINGS_DIRECTORY_PATH, LARGE_MESSAGES_DIRECTORY_PATH, PAGING_DIRECTORY_PATH)) {
             ManagementResourceRegistration pathRegistry = server.registerSubModel(new PathDefinition(path));
@@ -384,18 +384,18 @@ public class MessagingExtension implements Extension {
 
         subsystem.registerSubModel(new JMSBridgeDefinition());
 
-        if (registerRuntimeOnly) {
+        if (registerRuntimeOnlyValid) {
             final ManagementResourceRegistration deployment = subsystemRegistration.registerDeploymentModel(new SimpleResourceDefinition(
                     new Parameters(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployed")).setFeature(false).setRuntime()));
-            deployment.registerSubModel(new ExternalConnectionFactoryDefinition(registerRuntimeOnly));
+            deployment.registerSubModel(new ExternalConnectionFactoryDefinition());
             deployment.registerSubModel(new ExternalPooledConnectionFactoryDefinition(true));
-            deployment.registerSubModel(new ExternalJMSQueueDefinition(registerRuntimeOnly));
-            deployment.registerSubModel(new ExternalJMSTopicDefinition(registerRuntimeOnly));
+            deployment.registerSubModel(new ExternalJMSQueueDefinition(true));
+            deployment.registerSubModel(new ExternalJMSTopicDefinition(true));
             final ManagementResourceRegistration deployedServer = deployment.registerSubModel(new SimpleResourceDefinition(
                     new Parameters(SERVER_PATH, getResourceDescriptionResolver(SERVER)).setFeature(false).setRuntime()));
-            deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnly));
-            deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnly));
-            deployedServer.registerSubModel(new PooledConnectionFactoryDefinition(true));
+            deployedServer.registerSubModel(new JMSQueueDefinition(true, registerRuntimeOnlyValid));
+            deployedServer.registerSubModel(new JMSTopicDefinition(true, registerRuntimeOnlyValid));
+            deployedServer.registerSubModel(new PooledConnectionFactoryDefinition(registerRuntimeOnlyValid));
         }
     }
 

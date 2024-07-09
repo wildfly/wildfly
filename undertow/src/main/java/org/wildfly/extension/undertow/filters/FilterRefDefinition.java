@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.PredicateParser;
-import io.undertow.server.HandlerWrapper;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,6 +32,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.undertow.Capabilities;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.FilterLocation;
+import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.PredicateValidator;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowFilter;
@@ -78,9 +78,6 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
     }
 
     static class FilterRefAdd extends AbstractAddStepHandler {
-        FilterRefAdd() {
-            super(FilterRefDefinition.PREDICATE, PRIORITY);
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -94,7 +91,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
                 final PathAddress serverAddress = hostAddress.getParent();
                 final String serverName = serverAddress.getLastElement().getValue();
                 final String hostName = hostAddress.getLastElement().getValue();
-                locationSN = context.getCapabilityServiceName(Capabilities.CAPABILITY_HOST, FilterLocation.class, serverName, hostName);
+                locationSN = context.getCapabilityServiceName(Host.SERVICE_DESCRIPTOR, serverName, hostName);
             } else {
                 final PathAddress locationAddress = address.getParent();
                 final PathAddress hostAddress = locationAddress.getParent();
@@ -116,7 +113,7 @@ public class FilterRefDefinition extends PersistentResourceDefinition {
             final ServiceName sn = UndertowService.getFilterRefServiceName(address, name);
             final ServiceBuilder<?> sb = target.addService(sn);
             final Consumer<UndertowFilter> frConsumer = sb.provides(sn);
-            final Supplier<HandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
+            final Supplier<PredicateHandlerWrapper> fSupplier = sb.requires(UndertowService.FILTER.append(name));
             final Supplier<FilterLocation> lSupplier = sb.requires(locationSN);
             sb.setInstance(new FilterService(frConsumer, fSupplier, lSupplier, predicate, priority));
             sb.install();

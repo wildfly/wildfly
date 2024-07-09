@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -37,10 +38,6 @@ import java.util.function.Supplier;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
-
-    ServletContainerAdd() {
-        super(ServletContainerDefinition.ATTRIBUTES);
-    }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
@@ -93,7 +90,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final Supplier<ByteBufferPool> byteBufferPool = webSocketInfo != null ? builder.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, webSocketInfo.getBufferPool()) : null;
         final Supplier<XnioWorker> xnioWorker = webSocketInfo != null ? builder.requiresCapability(Capabilities.REF_IO_WORKER, XnioWorker.class, webSocketInfo.getWorker()) : null;
 
-        ServletStackTraces traces = ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_'));
+        ServletStackTraces traces = ServletStackTraces.valueOf(stackTracesString.toUpperCase(Locale.ENGLISH).replace('-', '_'));
         ServletContainer container = ServletContainer.Factory.newInstance();
         ServletContainerService service = new ServletContainerService() {
             @Override
@@ -271,7 +268,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
                 return orphanSessionAllowed;
             }
         };
-        builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY, UndertowService.SERVLET_CONTAINER.append(address.getLastElement().getValue())), service));
+        builder.setInstance(Service.newInstance(builder.provides(ServletContainerDefinition.SERVLET_CONTAINER_CAPABILITY), service));
         builder.setInitialMode(ServiceController.Mode.ON_DEMAND);
         builder.install();
     }

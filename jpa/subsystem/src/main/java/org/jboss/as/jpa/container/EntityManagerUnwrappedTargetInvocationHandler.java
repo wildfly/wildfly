@@ -11,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import jakarta.persistence.EntityManager;
+import org.jboss.as.jpa.messages.JpaLogger;
 
 /**
  * Handle method execution delegation to a wrapped object using the passed entity manager to obtain the target
@@ -37,7 +38,7 @@ public class EntityManagerUnwrappedTargetInvocationHandler implements Invocation
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if ("close".equals(method.getName())) {
-            throw new IllegalStateException("Illegal to call this method from injected, managed EntityManager");
+            throw JpaLogger.ROOT_LOGGER.illegalCallOnCloseMethod();
         } else {
             //catch all
             try {

@@ -5,7 +5,7 @@
 package org.wildfly.extension.messaging.activemq.jms;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 
 /**
  * A wrapper for pooled CF attributes with additional parameters required

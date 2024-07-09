@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ee-build</artifactId>
@@ -43,14 +43,27 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>${channels.maven.groupId}</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <type>yaml</type>
+            <classifier>manifest</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
     <build>
         <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.jboss.galleon</groupId>
-                <artifactId>galleon-maven-plugin</artifactId>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
@@ -59,10 +72,11 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <install-dir>${project.build.directory}/${project.build.finalName}</install-dir>
-                            <record-state>true</record-state>
-                            <log-time>${galleon.log.time}</log-time>
-                            <offline>${galleon.offline}</offline>
+                            <provisioning-dir>${project.build.directory}/${project.build.finalName}</provisioning-dir>
+                            <record-provisioning-state>true</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
@@ -73,10 +87,10 @@
                                     </included-packages>
                                 </feature-pack>
                             </feature-packs>
-                            <plugin-options>
+                            <galleon-options>
                                 <jboss-maven-dist/>
                                 <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                            </plugin-options>
+                            </galleon-options>
                         </configuration>
                     </execution>
                 </executions>

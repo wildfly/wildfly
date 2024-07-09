@@ -5,7 +5,6 @@
 
 package org.wildfly.test.integration.elytron.oidc.client.propagation;
 
-import static org.jboss.as.cli.Util.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -24,7 +23,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -34,17 +32,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.setup.SnapshotServerSetupTask;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
-import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,7 +56,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.testcontainers.DockerClientFactory;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
 import org.wildfly.security.permission.ElytronPermission;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -454,16 +453,7 @@ public class OidcIdentityPropagationTestCase {
 
     @BeforeClass
     public static void checkDockerAvailability() {
-        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
-    }
-
-    private static boolean isDockerAvailable() {
-        try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
     /**
@@ -696,6 +686,12 @@ public class OidcIdentityPropagationTestCase {
                     new File(OidcIdentityPropagationTestCase.class.getResource("ejbroles.properties").getFile()).getAbsolutePath(),
                     EJB_SECURITY_DOMAIN_NAME);
         }
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
+            super.setup(managementClient, containerId);
+        }
     }
 
     static class AnotherEJBDomainSetupOverride extends ElytronDomainSetup {
@@ -704,23 +700,28 @@ public class OidcIdentityPropagationTestCase {
                     new File(OidcIdentityPropagationTestCase.class.getResource("ejbroles.properties").getFile()).getAbsolutePath(),
                     ANOTHER_EJB_SECURITY_DOMAIN_NAME);
         }
-    }
-
-    static class PropagationSetup extends AbstractMgmtTestBase implements ServerSetupTask {
-        private ManagementClient managementClient;
 
         @Override
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            this.managementClient = managementClient;
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
+            super.setup(managementClient, containerId);
+        }
+    }
 
-            updates.add(getAddEjbApplicationSecurityDomainOp(EJB_SECURITY_DOMAIN_NAME, EJB_SECURITY_DOMAIN_NAME));
-            updates.add(getAddEjbApplicationSecurityDomainOp(ANOTHER_EJB_SECURITY_DOMAIN_NAME, ANOTHER_EJB_SECURITY_DOMAIN_NAME));
+    static class PropagationSetup extends SnapshotServerSetupTask {
+
+        @Override
+        public void doSetup(ManagementClient managementClient, String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
+            final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
+
+            builder.addStep(getAddEjbApplicationSecurityDomainOp(EJB_SECURITY_DOMAIN_NAME, EJB_SECURITY_DOMAIN_NAME));
+            builder.addStep(getAddEjbApplicationSecurityDomainOp(ANOTHER_EJB_SECURITY_DOMAIN_NAME, ANOTHER_EJB_SECURITY_DOMAIN_NAME));
 
             // /subsystem=elytron/virtual-security-domain=APP_NAME:add(outflow-security-domains=["ejb-domain"])
             // /subsystem=elytron/virtual-security-domain=another-single-deployment-local:add(outflow-security-domains=["another-ejb-domain"])
             for (String app : APP_NAMES) {
-                updates.add(getAddVirtualSecurityDomainOp(app, app.equals(ANOTHER_SINGLE_DEPLOYMENT_LOCAL) ? ANOTHER_EJB_SECURITY_DOMAIN_NAME : EJB_SECURITY_DOMAIN_NAME));
+                builder.addStep(getAddVirtualSecurityDomainOp(app, app.equals(ANOTHER_SINGLE_DEPLOYMENT_LOCAL) ? ANOTHER_EJB_SECURITY_DOMAIN_NAME : EJB_SECURITY_DOMAIN_NAME));
             }
 
             // /subsystem=elytron/virtual-security-domain=outflow-anonymous-config.ear:write-attribute(name=outflow-anonymous, value=true)
@@ -730,7 +731,7 @@ public class OidcIdentityPropagationTestCase {
             op.get(OP_ADDR).add("virtual-security-domain", OUTFLOW_ANONYMOUS_CONFIG + ".ear");
             op.get("name").set("outflow-anonymous");
             op.get("value").set(true);
-            updates.add(op);
+            builder.addStep(op);
 
             // /subsystem=elytron/security-domain=ejb-domain:write-attribute(name=trusted-virtual-security-domains, value=["APP_NAMES"])
             op = new ModelNode();
@@ -743,38 +744,14 @@ public class OidcIdentityPropagationTestCase {
                 trustedDomains.add(app + ".ear");
             }
             op.get("value").set(trustedDomains);
-            updates.add(op);
+            builder.addStep(op);
 
-            executeOperations(updates);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
+            executeOperation(managementClient, builder.build());
         }
 
         @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<>();
-
-            ModelNode op = ModelUtil.createOpNode(
-                    "subsystem=ejb3/application-security-domain=" + EJB_SECURITY_DOMAIN_NAME, REMOVE);
-            updates.add(op);
-            op = ModelUtil.createOpNode(
-                    "subsystem=ejb3/application-security-domain=" + ANOTHER_EJB_SECURITY_DOMAIN_NAME, REMOVE);
-            updates.add(op);
-
-            for (String app : APP_NAMES) {
-                op = ModelUtil.createOpNode(
-                        "subsystem=elytron/virtual-security-domain=" + app + ".ear", REMOVE);
-                updates.add(op);
-            }
-
-            executeOperations(updates);
-
-            ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
-        }
-
-        @Override
-        protected ModelControllerClient getModelControllerClient() {
-            return managementClient.getControllerClient();
+        protected long timeout() {
+            return TimeoutUtil.adjust(50);
         }
 
         private static PathAddress getEjbApplicationSecurityDomainAddress(String ejbDomainName) {

@@ -9,12 +9,13 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The following subsystems currently have no configuration beyond its root
+The following subsystems currently have no configuration beyond their root
 element in the configuration
 
 [source,xml,options="nowrap"]
 ----
 <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
+<subsystem xmlns="urn:jboss:domain:mvc-krazo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
 <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
 ----
@@ -27,14 +28,16 @@ The presence of each of these turns on a piece of functionality:
 
 |jdr |Enables the gathering of diagnostic data for use in remote
 analysis of error conditions. Although the data is in a simple format
-and could be useful to anyone, primarily useful for JBoss EAP
+and could be useful to anyone, it is primarily useful for JBoss EAP
 subscribers who would provide the data to Red Hat when requesting
-support
+support.
+
+|mvc-krazo| Provides support for use of Jakarta MVC in deployments. Currently provided at xref:Admin_Guide.adoc#Feature_stability_levels[`preview` stability].
 
 |pojo |Enables the deployment of applications containing JBoss
 Microcontainer services, as supported by previous versions of JBoss
-Application Server
+Application Server.
 
 |sar |Enables the deployment of .SAR archives containing MBean services,
-as supported by previous versions of JBoss Application Server
+as supported by previous versions of JBoss Application Server.
 |=======================================================================

@@ -4,12 +4,13 @@
  */
 package org.wildfly.extension.messaging.activemq;
 
-import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.ROOT_LOGGER;
+import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.security.CredentialReference.handleCredentialReferenceUpdate;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
+import static org.wildfly.extension.messaging.activemq.AddressSettingAdd.createDefaulAddressSettings;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ACTIVEMQ_SERVER_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.DATA_SOURCE_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.Capabilities.ELYTRON_DOMAIN_CAPABILITY;
@@ -131,7 +132,6 @@ import org.apache.activemq.artemis.core.config.CoreQueueConfiguration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.config.storage.DatabaseStorageConfiguration;
 import org.apache.activemq.artemis.core.security.Role;
-import org.apache.activemq.artemis.core.server.ActiveMQServer;
 import org.apache.activemq.artemis.core.server.JournalType;
 import org.apache.activemq.artemis.core.settings.impl.AddressSettings;
 import org.apache.activemq.artemis.utils.critical.CriticalAnalyzerPolicy;
@@ -164,7 +164,7 @@ import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.extension.messaging.activemq.broadcast.BroadcastCommandDispatcherFactory;
 import org.wildfly.extension.messaging.activemq.ha.HAPolicyConfigurationBuilder;
 import org.wildfly.extension.messaging.activemq.jms.JMSService;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.credential.source.CredentialSource;
 
@@ -468,7 +468,7 @@ class ServerAdd extends AbstractAddStepHandler {
                         final ServiceName queueServiceName = activeMQServiceName.append(queueConfiguration.getName());
                         final ServiceBuilder sb = context.getServiceTarget().addService(queueServiceName);
                         sb.requires(ActiveMQActivationService.getServiceName(activeMQServiceName));
-                        Supplier<ActiveMQServer> serverSupplier = sb.requires(activeMQServiceName);
+                        Supplier<ActiveMQBroker> serverSupplier = sb.requires(activeMQServiceName);
                         final QueueService queueService = new QueueService(serverSupplier, queueConfiguration, false, false);
                         sb.setInitialMode(Mode.PASSIVE);
                         sb.setInstance(queueService);
@@ -688,13 +688,21 @@ class ServerAdd extends AbstractAddStepHandler {
          * @throws OperationFailedException
          */
         private void processAddressSettings(final OperationContext context, final Configuration configuration, final ModelNode params) throws OperationFailedException {
+            boolean merged = false;
             if (params.hasDefined(ADDRESS_SETTING)) {
                 for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                     final String match = property.getName();
                     final ModelNode config = property.getValue();
                     boolean isRootAddressMatch = configuration.getWildcardConfiguration().getAnyWordsString().equals(match);
                     final AddressSettings settings = AddressSettingAdd.createSettings(context, config, isRootAddressMatch);
+                    if (!merged && isRootAddressMatch) {
+                        settings.merge(createDefaulAddressSettings());
+                        merged = true;
+                    }
                     configuration.addAddressSetting(match, settings);
+                }
+                if (!merged) {
+                    configuration.addAddressSetting(configuration.getWildcardConfiguration().getAnyWordsString(), createDefaulAddressSettings());
                 }
             }
         }

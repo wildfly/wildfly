@@ -135,6 +135,46 @@ If your project is using link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly
 is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
 ====
 
+[[wildfly-jar-maven-plugin-galleon-stability-level]]
+=== Setting a stability level when building a Bootable JAR
+
+In order to support xref:Admin_Guide.adoc#Feature_stability_levels[WildFly feature stability levels], Galleon defines 
+some http://docs.wildfly.org/galleon/#_built_in_and_product_specific_options[options] that can be used at provisioning time 
+to provision server features at a specific stability level.
+
+The stability levels handling described in the xref:Galleon_Guide.adoc#WildFly_Galleon_stability[Stability levels at provisioning time] 
+applies when building a WildFly Bootable JAR.
+
+For example, building a WildFly Bootable JAR that includes `preview` features and packages: 
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-jar-maven-plugin</artifactId>
+      <configuration>
+        <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)</feature-pack-location>
+        <layers>
+          <layer>jaxrs-server</layer>
+        </layers>
+        <plugin-options>
+          <stability-level>preview</stability-level>
+        </plugin-options>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
 include::_galleon/Galleon_layers.adoc[]
 
 [[wildfly-jar-maven-plugin-additional-configuration]]
@@ -205,6 +245,9 @@ The following arguments can be used when starting the bootable JAR:
 
 |-secmgr
 |Activate and install the `WildFlySecurityManager`.
+
+|--stability[=value]
+|Runs the server using a specific stability level. Possible values: [default, community, preview, experimental], Default = community
 
 |-u=<value>
 |Set system property jboss.default.multicast.address to the given value.

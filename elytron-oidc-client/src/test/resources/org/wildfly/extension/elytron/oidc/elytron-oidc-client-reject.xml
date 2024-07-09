@@ -1,0 +1,39 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<subsystem xmlns="urn:wildfly:elytron-oidc-client:preview:3.0">
+    <secure-server name="wildfly-reject-with-scope.war">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>oauth2</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+    </secure-server>
+    <secure-deployment name="wildfly-reject-deployment-with-scope.war">
+        <provider-url>http://localhost:8080/realms/WildFly</provider-url>
+        <client-id>wildfly-console</client-id>
+        <public-client>true</public-client>
+        <ssl-required>EXTERNAL</ssl-required>
+        <scope>profile email phone</scope>
+        <authentication-request-format>oauth2</authentication-request-format>
+        <request-object-encryption-enc-value>A128CBC-HS256</request-object-encryption-enc-value>
+        <request-object-encryption-alg-value>RSA-OAEP</request-object-encryption-alg-value>
+        <request-object-signing-algorithm>RS-256</request-object-signing-algorithm>
+        <request-object-signing-keystore-file>jwt.keystore</request-object-signing-keystore-file>
+        <request-object-signing-keystore-password>password</request-object-signing-keystore-password>
+        <request-object-signing-key-password>password</request-object-signing-key-password>
+        <request-object-signing-key-alias>alias</request-object-signing-key-alias>
+        <request-object-signing-keystore-type>JKS</request-object-signing-keystore-type>
+    </secure-deployment>
+</subsystem>

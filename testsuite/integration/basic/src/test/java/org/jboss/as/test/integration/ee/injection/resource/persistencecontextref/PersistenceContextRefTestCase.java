@@ -61,14 +61,14 @@ public class PersistenceContextRefTestCase {
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation() throws NamingException {
-        PcManagedBean bean = getManagedBean();
+        PcBean bean = getManagedBean();
         bean.getMypc().getMetamodel().entity(PcMyEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation2() throws NamingException {
         try {
-            PcManagedBean bean = getManagedBean();
+            PcBean bean = getManagedBean();
             bean.getMypc().getMetamodel().entity(PcOtherEntity.class);
             Assert.fail();
         } catch (IllegalArgumentException expected) {
@@ -79,7 +79,7 @@ public class PersistenceContextRefTestCase {
     @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef() throws NamingException {
         try {
-            PcManagedBean bean = getManagedBean();
+            PcBean bean = getManagedBean();
             bean.getOtherpc().getMetamodel().entity(PcMyEntity.class);
             Assert.fail();
         } catch (IllegalArgumentException expected) {
@@ -89,20 +89,20 @@ public class PersistenceContextRefTestCase {
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef2() throws NamingException {
-        PcManagedBean bean = getManagedBean();
+        PcBean bean = getManagedBean();
         bean.getOtherpc().getMetamodel().entity(PcOtherEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget() throws NamingException {
-        PcManagedBean bean = getManagedBean();
+        PcBean bean = getManagedBean();
         bean.getMypc2().getMetamodel().entity(PcMyEntity.class);
     }
 
     @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget2() throws NamingException {
         try {
-            PcManagedBean bean = getManagedBean();
+            PcBean bean = getManagedBean();
             bean.getMypc2().getMetamodel().entity(PcOtherEntity.class);
             Assert.fail();
         } catch (IllegalArgumentException expected) {
@@ -112,21 +112,21 @@ public class PersistenceContextRefTestCase {
 
     @Test
     public void testUnsynchronizedPCisNotJoinedToTransaction() throws NamingException {
-        PcManagedBean bean = getManagedBean();
+        PcBean bean = getManagedBean();
         boolean isJoined = bean.unsynchronizedIsNotJoinedToTX();
         Assert.assertFalse("Unsynchronized entity manager should not of been joined to the JTA transaction but was",isJoined);
     }
 
     @Test
     public void testSynchronizedPCisJoinedToTransaction() throws NamingException {
-        PcManagedBean bean = getManagedBean();
+        PcBean bean = getManagedBean();
         boolean isJoined = bean.synchronizedIsJoinedToTX();
         Assert.assertTrue("Synchronized entity manager should of been joined to the JTA transaction but was not",isJoined);
     }
 
-    private PcManagedBean getManagedBean() throws NamingException {
+    private PcBean getManagedBean() throws NamingException {
         InitialContext initialContext = new InitialContext();
-        PcManagedBean bean = (PcManagedBean) initialContext.lookup("java:module/pcManagedBean");
+        PcBean bean = (PcBean) initialContext.lookup("java:module/pcManagedBean");
         assertNotNull(bean);
         return bean;
     }
@@ -154,7 +154,7 @@ public class PersistenceContextRefTestCase {
                 "        <persistence-context-ref-name>AnotherPuBinding</persistence-context-ref-name>\n" +
                 "        <persistence-unit-name>mypc</persistence-unit-name>\n" +
                 "        <injection-target>" +
-                "           <injection-target-class>" + PcManagedBean.class.getName() + "</injection-target-class>" +
+                "           <injection-target-class>" + PcBean.class.getName() + "</injection-target-class>" +
                 "           <injection-target-name>mypc2</injection-target-name>" +
                 "        </injection-target>\n" +
                 "    </persistence-context-ref>\n" +

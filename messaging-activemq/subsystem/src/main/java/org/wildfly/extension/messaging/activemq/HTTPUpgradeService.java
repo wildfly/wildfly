@@ -47,7 +47,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.extension.messaging.activemq.logging.MessagingLogger;
+import org.wildfly.extension.messaging.activemq._private.MessagingLogger;
 import org.xnio.ChannelListener;
 import org.xnio.ChannelListeners;
 import org.xnio.IoUtils;
@@ -105,7 +105,7 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
 
         MessagingLogger.ROOT_LOGGER.registeredHTTPUpgradeHandler(ACTIVEMQ_REMOTING, acceptorName);
         ServiceController<?> activeMQService = context.getController().getServiceContainer().getService(MessagingServices.getActiveMQServiceName(activeMQServerName));
-        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(activeMQService.getValue());
+        ActiveMQServer activeMQServer = ActiveMQServer.class.cast(ActiveMQBroker.class.cast(activeMQService.getValue()).getDelegate());
 
         httpUpgradeListener = switchToMessagingProtocol(activeMQServer, acceptorName, getProtocol());
         upgradeSupplier.get().addProtocol(getProtocol(),

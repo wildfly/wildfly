@@ -45,6 +45,7 @@ import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
@@ -103,7 +104,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (module != null) {
             final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
             final WildFlyConfigurationFactory configurationFactory = WildFlyConfigurationFactory.getInstance();
-            configurationFactory.register(module.getClassLoader(), support.hasCapability("org.wildfly.microprofile.config"));
+            configurationFactory.register(module.getClassLoader(), useMicroProfileConfig(module, support));
         }
 
         final List<ParamValueMetaData> params = webdata.getContextParams();
@@ -609,5 +610,19 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             sb.append(key + ":" + value.asString());
         }
         return sb.toString();
+    }
+
+    private static boolean useMicroProfileConfig(final Module module, final CapabilityServiceSupport support) {
+        final boolean configSupported = support.hasCapability("org.wildfly.microprofile.config");
+        if (configSupported) {
+            // Can we load the org.jboss.resteasy.microprofile.config module? If so we can use the MicroProfile backed
+            // configuration in RESTEasy. Otherwise, we need to use the default.
+            try {
+                module.getModule("org.jboss.resteasy.microprofile.config");
+                return true;
+            } catch (ModuleLoadException ignore) {
+            }
+        }
+        return false;
     }
 }

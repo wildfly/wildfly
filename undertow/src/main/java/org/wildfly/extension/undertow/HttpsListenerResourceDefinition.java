@@ -100,7 +100,7 @@ public class HttpsListenerResourceDefinition extends AbstractHttpListenerResourc
 
     HttpsListenerResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, UndertowExtension.getResolver(Constants.LISTENER))
-                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), HttpsListenerAdd::new);
+                .setCapabilities(HTTP_UPGRADE_REGISTRY_CAPABILITY), new HttpsListenerAdd());
     }
 
     @Override

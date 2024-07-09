@@ -16,8 +16,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.ServiceValueCaptorServiceConfigurator;
-import org.jboss.as.clustering.controller.ServiceValueRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -34,7 +32,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
 
 /**
  * Resource service handler implementation that handles installation of mod_cluster services. Since mod_cluster requires certain
@@ -79,9 +78,8 @@ class ModClusterSubsystemServiceHandler implements ResourceServiceHandler {
                 String listenerName = LISTENER.resolveModelAttribute(context, proxyModel).asString();
                 int statusInterval = STATUS_INTERVAL.resolveModelAttribute(context, proxyModel).asInt();
 
-                ServiceConfigurator configurator = new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider);
-                configurator.build(target).install();
-                new ServiceValueCaptorServiceConfigurator<>(this.registry.add(configurator.getServiceName())).build(target).install();
+                this.registry.capture(ServiceDependency.on(ProxyConfigurationResourceDefinition.Capability.SERVICE.getDefinition().getCapabilityServiceName(proxyAddress))).install(context);
+                new ContainerEventHandlerServiceConfigurator(proxyAddress, loadProvider).build(target).install();
 
                 // Install services for web container integration
                 for (ContainerEventHandlerAdapterServiceConfiguratorProvider provider : ServiceLoader.load(ContainerEventHandlerAdapterServiceConfiguratorProvider.class, ContainerEventHandlerAdapterServiceConfiguratorProvider.class.getClassLoader())) {

@@ -191,7 +191,7 @@ public class ProxyServicesImpl implements ProxyServices {
     public Class<?> loadClass(Class<?> originalClass, String classBinaryName) throws ClassNotFoundException {
         Module module = getModule(originalClass);
         if (module == null) {
-            throw new IllegalArgumentException("Original " + originalClass + " does not have a module");
+            throw WeldLogger.ROOT_LOGGER.originalClassDoesNotHaveAModule(originalClass);
         }
         return module.getClassLoader().loadClass(classBinaryName);
     }

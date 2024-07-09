@@ -1,0 +1,179 @@
+# A workflow that can be called from other workflows as a way to build and test a SNAPSHOT of WildFly with overridden dependencies.
+
+# Input parameters:
+# * test-arguments: An optional argument allowing to provide arguments to configure testing. Note that '-DallTests' should not be passed as not all tests will work on GitHub Actions.
+# * build-arguments: Arguments used during build. That is where you can override the version of the dependency.
+# * maven-repo-path: The path to a tar.gz file of a maven repo that contains the built dependency(ies) you are using.
+# * maven-repo-name: The name that identifies the maven repo to be downloaded.
+# * java-versions: A string containing a JSON array of JDK versions. For example: "['11', '17']"
+# * os: A string containing a JSON array of operating systems. For example: "['ubuntu-latest', 'windows-latest']"
+# 
+# Example Usage (WildFly main branch is built and tested with a custom build of a dependency named 'my-dependency'.
+#
+#jobs:  
+#  my-dependency-build:
+#    name: my-dependency
+#    runs-on: ubuntu-latest
+#    outputs:
+#      my-dependency-version: ${{ steps.version.outputs.my-dependency-version }}
+#    strategy:
+#      fail-fast: false
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Set up JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
+#          cache: 'maven'
+#      - name: Build and Test my-dependency
+#        run: mvn -U -B -ntp clean install
+#        shell: bash
+#      - id: version
+#        run: echo "my-dependency-version=$(mvn -B help:evaluate -Dexpression=project.version -DforceStdout -q)" >> $GITHUB_OUTPUT
+#      - name: Archive the repository
+#        run:  |
+#          cd ~
+#          find ./.m2/repository -type d -name "*SNAPSHOT" -print0 | xargs -0 tar -czf ~/my-dependency-maven-repository.tar.gz  
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: my-dependency-maven-repository
+#          path: ~/my-dependency-maven-repository.tar.gz
+#          retention-days: 5
+#
+#  wildfly-build-and-test-galleon-layers:
+#    name: Galleon Linux - JDK11
+#    uses: wildfly/wildfly/.github/workflows/shared-wildfly-build-and-test.yml@main
+#    with:
+#      test-arguments: '-Dts.layers -Dts.galleon'
+#      build-arguments: '-Dversion.org.wildfly.my-dependency=${{needs.my-dependency-build.outputs.my-dependency-version}}'
+#      os: "['ubuntu-latest']"
+#      java-versions: "['11']"
+#      maven-repo-name: my-dependency-maven-repository
+#      maven-repo-path: my-dependency-maven-repository.tar.gz
+#    needs: my-dependency-build
+
+name: Build and Test WildFly
+
+on:
+  workflow_call:
+    inputs:
+      test-arguments:
+        description: "Test arguments"
+        required: false
+        default: ""
+        type: string
+      build-arguments:
+        description: "Build arguments"
+        required: true
+        type: string
+      maven-repo-path:
+        description: "Maven repo path to extract to local cache"
+        required: true
+        type: string
+      maven-repo-name:
+        description: "Maven repo name to extract to local cache"
+        required: true
+        type: string
+      java-versions:
+        description: "JDK versions array"
+        required: true
+        type: string
+      os:
+        description: "OS array"
+        required: true
+        type: string
+      ref:
+        description: "WildFly ref"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  wildfly-build-and-test:
+    name: ${{ matrix.os }}-jdk${{ matrix.java }} ${{ inputs.test-arguments }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJson(inputs.os) }}
+        java: ${{ fromJson(inputs.java-versions) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: wildfly/wildfly
+          ref: '${{ inputs.ref }}'
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.maven-repo-name }}
+          path: .
+      - name: Extract Maven Repo
+        shell: bash
+        run: |
+         tar -xzf ${{ inputs.maven-repo-path }} -C ~
+        # Do not compile with JDK 11. If 11 is specified, we will build with 17 and test with 11
+        # So, setup 17
+      - name: Set up JDK 17 and JDK 11 for JDK11 execution
+        if: matrix.java == 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: |
+            17
+            11
+          distribution: 'temurin'
+          # Cache must be computed prior to build WildFly. On Windows we run into https://github.com/actions/upload-artifact/issues/240
+          # when computing cache hash (**/pom.xml) due to galleon generated feature long file names.
+          cache: 'maven'
+      - name: Set up JDK ${{ matrix.java }}
+        if: matrix.java != 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+        # For JDK 11 tests, build with 17, skipping tests
+      - name: Build WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with JDK 17 for JDK 11 tests
+        if: matrix.java == 11
+        run: JAVA_HOME=$JAVA_HOME_17_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -DskipTests
+        shell: bash
+        # For JDK 11 tests, we already built, so just run the 'test' goal with the -DnoCompile setting to disable recompile
+      - name: Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with -DnoCompile for JDK 11 tests
+        if: matrix.java == 11
+        run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp test -DnoCompile ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -rf testsuite
+        shell: bash
+      - name: Build and Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }}
+        if: matrix.java != 11
+        run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
+        shell: bash
+        # We need this due to long file names on Windows: https://github.com/actions/upload-artifact/issues/240
+      - name: Find reports
+        if: failure()
+        run: |
+          {
+            echo 'SUREFIRE_REPORTS<<EOF'
+            find . -path '**/surefire-reports/*.xml'
+            echo EOF
+          } >> "$GITHUB_ENV"
+        shell: bash
+      - name: Find server logs
+        if: failure()
+        run: |
+          {
+            echo 'SERVER_LOGS<<EOF'
+            find . -path '**/server.log'
+            echo EOF
+          } >> "$GITHUB_ENV"
+        shell: bash
+      - name: Upload Test Reports on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          path: ${{ env.SUREFIRE_REPORTS }}
+      - name: Upload Server Logs on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          path: ${{ env.SERVER_LOGS }}
+

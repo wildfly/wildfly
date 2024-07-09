@@ -41,7 +41,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>30.0.0.Final-SNAPSHOT</version>
+        <version>33.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite</artifactId>
@@ -51,6 +51,7 @@
 
     <modules>
         <module>integration</module>
+        <module>test-product-conf</module>
     </modules>
 
 
@@ -166,6 +167,13 @@
 
         <!-- used to enable trace logging for test suite runs -->
         <trace>none</trace>
+
+        <!-- Dynamic part of the name of ee-version-specific test source dir that may be added to the build -->
+        <additional.ee.test.source>ee10</additional.ee.test.source>
+
+        <!-- properties to enable plugin executions -->
+        <ts.bootable-jar-packaging.phase>none</ts.bootable-jar-packaging.phase>
+
     </properties>
 
     <dependencyManagement>
@@ -196,6 +204,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Ensure the relevant test feature pack is built -->
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>${testsuite.test.feature.pack.artifactId}</artifactId>
+            <type>zip</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -268,6 +283,34 @@
                    </executions>
                </plugin>
 
+                <!-- Basic configuration for bootable jar packaging, if enabled -->
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-jar-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.jar.plugin}</version>
+                    <configuration>
+                        <hollowJar>true</hollowJar>
+                        <record-state>false</record-state>
+                        <log-time>${galleon.log.time}</log-time>
+                        <offline>true</offline>
+                        <plugin-options>
+                            <jboss-maven-dist/>
+                            <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        </plugin-options>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>bootable-jar-packaging</id>
+                            <goals>
+                                <goal>package</goal>
+                            </goals>
+                            <!-- This execution's phase is controlled by a property that defaults to 'none'.
+                                 Profiles that want it to run set the property to a different phase-->
+                            <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+
 
                <!-- WFLY-3361 - use external xalan for XML transformations to
                ensure consistent behaviour on all platrforms.-->
@@ -311,6 +354,26 @@
                        <trimStackTrace>false</trimStackTrace>
                    </configuration>
                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <executions combine-children="append">
+                        <!-- If enabled, add a second test source dir for EE-version-specific classes -->
+                        <execution>
+                            <id>add-ee-test-source</id>
+                            <!-- Disabled by default -->
+                            <phase>none</phase>
+                            <goals>
+                                <goal>add-test-source</goal>
+                            </goals>
+                            <configuration>
+                                <sources>
+                                    <source>src/test/${additional.ee.test.source}/java</source>
+                                </sources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
 
                <!-- Disable default site run. -->
                <plugin>
@@ -456,14 +519,46 @@
         </profile>
 
         <profile>
+            <!-- Use the latest version of the standard channels when provisioning a bootable jar. -->
+            <id>latest.standard.channels.profile</id>
+            <activation><property><name>latest.standard.channels</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <configuration>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                                <channel>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>preview.profile</id>
             <activation><property><name>ts.preview</name></property></activation>
             <properties>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
             <modules>
-                <module>test-feature-pack-preview</module>
                 <module>domain</module>
+                <module>galleon</module>
                 <module>integration</module>
                 <module>layers</module>
                 <module>layers-expansion</module>
@@ -478,10 +573,33 @@
                     <name>ts.bootable.preview</name>
                 </property>
             </activation>
+            <properties>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
+            </properties>
             <modules>
-                <module>test-feature-pack-preview</module>
                 <module>integration</module>
+                <module>preview</module>
             </modules>
+        </profile>
+        <!-- Profile that can be activated in combination with -Dts.layers and -Dts.galleon
+             to execute the tests activated by those profiles, but using the wildfly-preview feature pack
+             based variant of wildfly-test-galleon-pack.
+        -->
+        <profile>
+            <id>test.feature.pack.preview.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
+            </properties>
         </profile>
 
         <!--

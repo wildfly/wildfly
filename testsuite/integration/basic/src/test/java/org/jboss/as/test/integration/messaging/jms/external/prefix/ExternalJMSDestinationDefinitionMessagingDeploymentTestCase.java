@@ -73,7 +73,6 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
         @Override
         public final void setup(ManagementClient managementClient, String containerId) throws Exception {
             snapshots.put(containerId, ServerSnapshot.takeSnapshot(managementClient));
-            Set<String> runtimeQueues = listRuntimeQueues(managementClient);
             ServerReload.executeReloadAndWaitForCompletion(managementClient, true);
             JMSOperations ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
             boolean needRemoteConnector = ops.isRemoteBroker();
@@ -104,9 +103,14 @@ public class ExternalJMSDestinationDefinitionMessagingDeploymentTestCase {
             ops.close();
             ServerReload.executeReloadAndWaitForCompletion(managementClient);
             ops = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
+            Set<String> runtimeQueues = listRuntimeQueues(managementClient);
             for (String runtimeQueue : runtimeQueues) {
                 if (!"jms.queue.DLQ".equals(runtimeQueue) && !"jms.queue.ExpiryQueue".equals(runtimeQueue)) {
-                    ops.removeCoreQueue(runtimeQueue);
+                    try {
+                        ops.removeCoreQueue(runtimeQueue);
+                    } catch (Exception e) {
+                        logger.debugf(e, "Failed to remove queue %s", runtimeQueue);
+                    }
                 }
             }
             ops.close();

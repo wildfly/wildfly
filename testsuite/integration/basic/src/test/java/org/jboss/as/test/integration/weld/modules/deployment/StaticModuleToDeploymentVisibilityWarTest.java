@@ -9,6 +9,7 @@ import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.ModuleUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -48,9 +49,12 @@ public class StaticModuleToDeploymentVisibilityWarTest {
 
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
-        doSetup();
+        // No actual setup when scanning the deployment prior to test execution.
+        if (!GlowUtil.isGlowScan()) {
+            doSetup();
+        }
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class)
+                .addClasses(StaticModuleToDeploymentVisibilityWarTest.class, FooImpl1.class, TestModule.class, GlowUtil.class)
                 .addAsWebInfResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }

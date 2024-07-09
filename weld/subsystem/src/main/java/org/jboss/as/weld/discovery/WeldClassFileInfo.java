@@ -193,7 +193,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
             while (name.isInner()) {
                 name = name.prefix();
                 if (name == null) {
-                    throw new IllegalStateException("Could not determine package from corrupted class name");
+                    throw WeldLogger.DEPLOYMENT_LOGGER.couldNotDeterminePackage();
                 }
             }
             return name.prefix();

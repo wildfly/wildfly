@@ -14,10 +14,10 @@ import jakarta.interceptor.InvocationContext;
 public class MyInterceptor {
 
     /**
-     * This should create a binding for java:module/env/org.jboss.as.test.integration.injection.resource.multiple.MyInterceptor/simpleManagedBean
+     * This should create a binding for java:module/env/org.jboss.as.test.integration.injection.resource.multiple.MyInterceptor/simpleStatelessBean
      */
-    @Resource(lookup="java:module/simpleManagedBean")
-    private SimpleManagedBean simpleManagedBean;
+    @Resource(lookup="java:module/simpleStatelessBean")
+    private SimpleStatelessBean simpleStatelessBean;
 
     @AroundInvoke
     public Object intercept(InvocationContext context ) throws Exception {

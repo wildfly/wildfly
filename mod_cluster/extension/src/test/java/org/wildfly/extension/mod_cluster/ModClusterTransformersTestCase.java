@@ -32,7 +32,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0);
+        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
     }
 
     ModelTestControllerVersion version;
@@ -50,6 +50,8 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         switch (controllerVersion) {
             case EAP_7_4_0:
                 return ModClusterSubsystemModel.VERSION_7_0_0;
+            case EAP_8_0_0:
+                return ModClusterSubsystemModel.VERSION_8_0_0;
         }
         throw new IllegalArgumentException();
     }
@@ -60,6 +62,12 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 return new String[] {
                         formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
                         "org.jboss.mod_cluster:mod_cluster-core:1.4.3.Final-redhat-00002",
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
+                };
+            case EAP_8_0_0:
+                return new String[] {
+                        formatArtifact("org.jboss.eap:wildfly-mod_cluster-extension:%s", version),
+                        "org.jboss.mod_cluster:mod_cluster-core:2.0.1.Final-redhat-00001",
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s", version),
                 };
         }
@@ -125,7 +133,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         ModelVersion modelVersion = model.getVersion();
 
         KernelServicesBuilder builder = createKernelServicesBuilder(new ModClusterAdditionalInitialization());
-        builder.createLegacyKernelServicesBuilder(model.getVersion().getMajor() >= 4 ? new ModClusterAdditionalInitialization() : null, controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(new ModClusterAdditionalInitialization(), controllerVersion, modelVersion)
                 .addSingleChildFirstClass(ModClusterAdditionalInitialization.class)
                 .addMavenResourceURL(dependencies)
                 .skipReverseControllerCheck();

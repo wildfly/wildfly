@@ -43,7 +43,9 @@ public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitP
                         (OpenTelemetryConfig) support.getCapabilityRuntimeAPI("org.wildfly.extension.opentelemetry.config",
                                 Supplier.class).get();
                 Map<String, String> properties = new HashMap<>(serverConfig.properties());
-                properties.put("otel.service.name", getServiceName(deploymentUnit));
+                if (!properties.containsKey("otel.service.name")) {
+                    properties.put("otel.service.name", getServiceName(deploymentUnit));
+                }
 
                 weldCapability.registerExtensionInstance(new MicroProfileTelemetryCdiExtension(properties),
                         deploymentUnit);

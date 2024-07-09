@@ -5,10 +5,17 @@
 
 package org.wildfly.test.integration.elytron.oidc.client;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
+import static org.wildfly.security.http.oidc.Oidc.OIDC_SCOPE;
+import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST_URI;
+import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.REQUEST;
+import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.OAUTH2;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
 
 import java.io.IOException;
@@ -39,19 +46,25 @@ import org.apache.http.protocol.HttpContext;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.TestHttpClientUtils;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
+import org.jboss.as.version.Stability;
+import org.jboss.dmr.ModelNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
-import org.testcontainers.DockerClientFactory;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.jose.util.JsonSerialization;
+import org.wildfly.test.integration.elytron.oidc.client.subsystem.SimpleServletWithScope;
 
 import io.restassured.RestAssured;
 
@@ -62,7 +75,7 @@ import io.restassured.RestAssured;
  */
 public abstract class OidcBaseTest {
 
-    public static final String CLIENT_SECRET = "secret";
+    public static final String CLIENT_SECRET = "longerclientsecretthatisstleast256bitslong";
     public static final String OIDC_WITHOUT_SUBSYSTEM_CONFIG_WEB_XML = "web.xml";
     public static KeycloakContainer KEYCLOAK_CONTAINER;
     public static final String TEST_REALM = "WildFly";
@@ -88,20 +101,33 @@ public abstract class OidcBaseTest {
     static final String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
     static final String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
     public static final String CORS_CLIENT = "CorsClient";
+    public static final String OPENID_SCOPE_APP = "OpenIDScopeApp";
+    public static final String INVALID_SCOPE_APP = "InvalidScopeApp";
+    public static final String SINGLE_SCOPE_APP = "SingleScopeApp";
+    public static final String MULTIPLE_SCOPE_APP = "MultipleScopeApp";
+    public static final String OAUTH2_REQUEST_METHOD_APP = "OAuth2RequestApp";
+    public static final String PLAINTEXT_REQUEST_APP = "PlainTextRequestApp";
+    public static final String PLAINTEXT_REQUEST_URI_APP = "PlainTextRequestUriApp";
+    public static final String PLAINTEXT_ENCRYPTED_REQUEST_APP = "PlainTextEncryptedRequestApp";
+    public static final String PLAINTEXT_ENCRYPTED_REQUEST_URI_APP = "PlainTextEncryptedRequestUriApp";
+    public static final String RSA_SIGNED_REQUEST_APP = "RsaSignedRequestApp";
+    public static final String RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP = "RSASignedAndEncryptedRequestApp";
+    public static final String SIGNED_AND_ENCRYPTED_REQUEST_URI_APP = "SignedAndEncryptedRequestUriApp";
+    public static final String PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP = "PsSignedAndRsaEncryptedRequestApp";
+    public static final String INVALID_SIGNATURE_ALGORITHM_APP = "InvalidSignatureAlgorithmApp";
+    public static final String PS_SIGNED_REQUEST_URI_APP = "PsSignedRequestUriApp";
+    public static final String MISSING_SECRET_APP = "MissingSecretApp";
+
+    private final Stability desiredStability;
+
+    public OidcBaseTest(Stability desiredStability) {
+        this.desiredStability = desiredStability;
+    }
 
     private enum BearerAuthType {
         BEARER,
         QUERY_PARAM,
         BASIC
-    }
-
-    private static boolean isDockerAvailable() {
-        try {
-            DockerClientFactory.instance().client();
-            return true;
-        } catch (Throwable ex) {
-            return false;
-        }
     }
 
     public static void sendRealmCreationRequest(RealmRepresentation realm) {
@@ -123,7 +149,7 @@ public abstract class OidcBaseTest {
 
     @BeforeClass
     public static void checkDockerAvailability() {
-        assumeTrue("Docker isn't available, OIDC tests will be skipped", isDockerAvailable());
+        assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
     }
 
     @Test
@@ -329,6 +355,144 @@ public abstract class OidcBaseTest {
                 SimpleServlet.RESPONSE_BODY, null, CORS_CLIENT, CLIENT_SECRET, ALLOWED_ORIGIN, false);
     }
 
+    /**
+     * Tests that use different scope values to request access to claims values.
+     */
+
+    @Test
+    @OperateOnDeployment(OPENID_SCOPE_APP)
+    public void testOpenIDScope() throws Exception {
+        String expectedScope = OIDC_SCOPE;
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + OPENID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(SINGLE_SCOPE_APP)
+    public void testSingleScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+profile";
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + SINGLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(MULTIPLE_SCOPE_APP)
+    public void testMultipleScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+phone+profile+microprofile-jwt+email";
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + MULTIPLE_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, false);
+    }
+
+    @Test
+    @OperateOnDeployment(INVALID_SCOPE_APP)
+    public void testInvalidScope() throws Exception {
+        String expectedScope = OIDC_SCOPE + "+INVALID_SCOPE";
+        loginToApp(KeycloakConfiguration.ALICE, KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, false,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + INVALID_SCOPE_APP + SimpleServletWithScope.SERVLET_PATH).toURI(), expectedScope, true);
+    }
+
+    /**
+    * Tests that use authentication-request-format to send request objects using request and request_uri
+    **/
+    @Test
+    @OperateOnDeployment(OAUTH2_REQUEST_METHOD_APP)
+    public void testOpenIDWithOauth2Request() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + OAUTH2_REQUEST_METHOD_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, OAUTH2.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
+    public void testOpenIDWithPlainTextRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_REQUEST_APP)
+    public void testOpenIDWithPlainTextRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithPlainTextEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PLAINTEXT_ENCRYPTED_REQUEST_URI_APP)
+    public void testOpenIDWithPlainTextEncryptedRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PLAINTEXT_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(RSA_SIGNED_REQUEST_APP)
+    public void testOpenIDWithRsaSignedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + RSA_SIGNED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithRsaSignedAndEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + RSA_SIGNED_AND_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(SIGNED_AND_ENCRYPTED_REQUEST_URI_APP)
+    public void testOpenIDWithSignedAndEncryptedRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + SIGNED_AND_ENCRYPTED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PS_SIGNED_REQUEST_URI_APP)
+    public void testOpenIDWithPsSignedRequestUri() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PS_SIGNED_REQUEST_URI_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST_URI.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP)
+    public void testOpenIDWithPsSignedAndRsaEncryptedRequest() throws Exception {
+        loginToApp(org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE, org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD, HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY, true,
+                new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), null, false, REQUEST.getValue());
+    }
+
+    @Test
+    @OperateOnDeployment(INVALID_SIGNATURE_ALGORITHM_APP)
+    public void testOpenIDWithInvalidSigningAlgorithm() throws Exception {
+        testRequestObjectInvalidConfiguration(new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                        "/" + INVALID_SIGNATURE_ALGORITHM_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), true);
+    }
+
+    @Test
+    @OperateOnDeployment(MISSING_SECRET_APP)
+    public void testOpenIDWithMissingSecretHmacSigningAlgorithm() throws Exception {
+        //Expected to fail since the client secret is needed to sign the JWT
+        testRequestObjectInvalidConfiguration(new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
+                "/" + MISSING_SECRET_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), true);
+    }
+
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
         loginToApp(username, password, expectedStatusCode, expectedText, true,
                 new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
@@ -345,6 +509,14 @@ public abstract class OidcBaseTest {
     }
 
     public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri) throws Exception {
+        loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, requestUri, null, false);
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri, String expectedScope, boolean checkInvalidScope) throws Exception {
+        loginToApp(username, password, expectedStatusCode, expectedText, loginToKeycloak, requestUri, expectedScope, checkInvalidScope, null);
+    }
+
+    public static void loginToApp(String username, String password, int expectedStatusCode, String expectedText, boolean loginToKeycloak, URI requestUri, String expectedScope, boolean checkInvalidScope, String requestMethod) throws Exception {
         CookieStore store = new BasicCookieStore();
         HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
                 .setDefaultCookieStore(store)
@@ -364,9 +536,55 @@ public abstract class OidcBaseTest {
                 if (expectedText != null) {
                     String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
                     assertTrue("Unexpected result " + responseString, responseString.contains(expectedText));
+                    if (expectedScope != null) {
+                        assertTrue(context.toString().contains("scope=" + expectedScope));
+                        if (expectedScope.contains("profile")) {
+                            assertTrue(responseString.contains("profile: " + KeycloakConfiguration.ALICE_FIRST_NAME + " " + KeycloakConfiguration.ALICE_LAST_NAME));
+                        }
+                        if (expectedScope.contains("email")) {
+                            assertTrue(responseString.contains("email: " + KeycloakConfiguration.ALICE_EMAIL_VERIFIED));
+                        }
+                        if (expectedScope.contains("microprofile-jwt")) {
+                            assertTrue(responseString.contains("microprofile-jwt: [" + KeycloakConfiguration.JBOSS_ADMIN_ROLE + ", " + KeycloakConfiguration.USER_ROLE + "]"));
+                        }
+                    }
                 }
+
+                if (requestMethod != null && requestMethod.equals(REQUEST_URI.getValue())) {
+                    assertFalse(context.toString().contains("scope=" + OIDC_SCOPE + "+phone+profile+email")); // additional scope values should be inside the request object
+                    assertTrue(context.toString().contains("scope=" + OIDC_SCOPE));
+                    assertTrue(context.toString().contains("request_uri="));
+                } else if (requestMethod != null && requestMethod.equals(REQUEST.getValue())) {
+                    assertFalse(context.toString().contains("scope=" + OIDC_SCOPE + "+phone+profile+email")); // additional scope values should be inside the request object
+                    assertTrue(context.toString().contains("scope=" + OIDC_SCOPE));
+                    assertTrue(context.toString().contains("request="));
+                }
+            } else if (checkInvalidScope) {
+                assertTrue(context.toString().contains("error_description=Invalid+scopes"));
+                assertTrue("Expected code == BAD REQUEST but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_BAD_REQUEST);
             } else {
                 assertTrue("Expected code == FORBIDDEN but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_FORBIDDEN);
+            }
+        } finally {
+            HttpClientUtils.closeQuietly(response);
+        }
+    }
+
+    private void testRequestObjectInvalidConfiguration(URI requestUri, boolean expectFailure) throws Exception {
+        CookieStore store = new BasicCookieStore();
+        HttpClient httpClient = TestHttpClientUtils.promiscuousCookieHttpClientBuilder()
+                .setDefaultCookieStore(store)
+                .setRedirectStrategy(new LaxRedirectStrategy())
+                .build();
+        HttpGet getMethod = new HttpGet(requestUri);
+        HttpContext context = new BasicHttpContext();
+        HttpResponse response = httpClient.execute(getMethod, context);
+        try {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (expectFailure) {
+                assertTrue("Expected code == HTTP_INTERNAL_ERROR but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_INTERNAL_ERROR);
+            } else {
+                assertTrue("Expected code == OK but got " + statusCode + " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_OK);
             }
         } finally {
             HttpClientUtils.closeQuietly(response);
@@ -566,6 +784,7 @@ public abstract class OidcBaseTest {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            assumeTrue("Docker isn't available, OIDC tests will be skipped", AssumeTestGroupUtil.isDockerAvailable());
             KEYCLOAK_CONTAINER = new KeycloakContainer();
             KEYCLOAK_CONTAINER.start();
         }
@@ -577,7 +796,7 @@ public abstract class OidcBaseTest {
         }
     }
 
-    private static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+    public static HttpResponse simulateClickingOnButton(HttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
@@ -660,5 +879,11 @@ public abstract class OidcBaseTest {
         public enum Type {
             HIDDEN, SUBMIT
         }
+    }
+
+    protected static <T extends OidcBaseTest> void addSystemProperty(ManagementClient client, Class<T> clazz) throws Exception {
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, OidcBaseTest.class.getName()));
+        add.get(VALUE).set(clazz.getName());
+        ManagementOperations.executeOperation(client.getControllerClient(), add);
     }
 }

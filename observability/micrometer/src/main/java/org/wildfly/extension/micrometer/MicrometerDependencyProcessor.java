@@ -4,8 +4,7 @@
  */
 package org.wildfly.extension.micrometer;
 
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.EXPORTED_MODULES;
-import static org.wildfly.extension.micrometer.MicrometerSubsystemDefinition.MODULES;
+import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.EXPORTED_MODULES;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -30,9 +29,6 @@ class MicrometerDependencyProcessor implements DeploymentUnitProcessor {
     private void addDependencies(DeploymentUnit deploymentUnit) {
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        for (String module : MODULES) {
-            moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, false, true, false));
-        }
         for (String module : EXPORTED_MODULES) {
             moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, module, false, true, true, false));
         }
