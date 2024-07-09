@@ -53,7 +53,7 @@ class AddressSettingAdd extends AbstractAddStepHandler {
         if (server != null) {
             boolean isRootAddressMatch = server.getConfiguration().getWildcardConfiguration().getAnyWordsString().equals(context.getCurrentAddressValue());
             final AddressSettings settings = createSettings(context, model, isRootAddressMatch);
-            if(server.getConfiguration().getWildcardConfiguration().equals(context.getCurrentAddressValue())) {
+            if (isRootAddressMatch) {
                 settings.merge(createDefaulAddressSettings());
             }
             server.getAddressSettingsRepository().addMatch(context.getCurrentAddressValue(), settings);
