@@ -50,8 +50,8 @@ public interface SingletonServiceActivator extends ServiceActivator {
     }
 
     /**
-     * Returns the singleton policy used for service installation.
-     * @return a singleton policy name
+     * Returns the singleton policy used for service installation, or null, if the default policy is to be used.
+     * @return a singleton policy name, or null
      */
     default String getSingletonPolicy() {
         return null;
