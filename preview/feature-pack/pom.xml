@@ -209,6 +209,11 @@
                         </goals>
                         <phase>prepare-package</phase>
                         <configuration>
+                            <!-- Any dependency to a package that has a stability level
+                                 lower than the minimum stability level will break the build.
+                                 Note that package dependencies that are only valid for
+                                 a minimum stability level are ignored. -->
+                            <forbid-lower-stability-level-package-reference>true</forbid-lower-stability-level-package-reference>
                             <release-name>${preview.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
