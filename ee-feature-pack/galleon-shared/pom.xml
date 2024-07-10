@@ -2661,25 +2661,49 @@
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-cache-infinispan-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-cache-spi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-context</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.threads</groupId>
+                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
@@ -2689,11 +2713,7 @@
             <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.marshalling</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.common</groupId>
+                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
@@ -2703,7 +2723,7 @@
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.wildfly.common</groupId>
+                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
@@ -2713,7 +2733,7 @@
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.jboss.logging</groupId>
+                    <groupId>*</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
@@ -2725,14 +2745,32 @@
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-server-infinispan</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-server-jgroups</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-server-local</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
@@ -2741,14 +2779,32 @@
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-session-cache</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.wildfly.clustering</groupId>
