@@ -693,8 +693,9 @@ class ServerAdd extends AbstractAddStepHandler {
                 for (final Property property : params.get(ADDRESS_SETTING).asPropertyList()) {
                     final String match = property.getName();
                     final ModelNode config = property.getValue();
-                    final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
-                    if (!merged && configuration.getWildcardConfiguration().getAnyWordsString().equals(match)) {
+                    boolean isRootAddressMatch = configuration.getWildcardConfiguration().getAnyWordsString().equals(match);
+                    final AddressSettings settings = AddressSettingAdd.createSettings(context, config, isRootAddressMatch);
+                    if (!merged && isRootAddressMatch) {
                         settings.merge(createDefaulAddressSettings());
                         merged = true;
                     }
