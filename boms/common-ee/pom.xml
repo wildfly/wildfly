@@ -3345,9 +3345,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                <version>${version.org.glassfish.web.jakarta.servlet.jsp.jstl}</version>
+                <groupId>org.glassfish.wasp</groupId>
+                <artifactId>wasp</artifactId>
+                <version>${version.org.glassfish.wasp}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
