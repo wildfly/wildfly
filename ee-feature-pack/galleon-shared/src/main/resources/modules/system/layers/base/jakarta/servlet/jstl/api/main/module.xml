@@ -8,7 +8,7 @@
 
     <resources>
         <artifact name="${jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api}"/>
-        <artifact name="${org.glassfish.web:jakarta.servlet.jsp.jstl}"/>
+        <artifact name="${org.glassfish.wasp:wasp}"/>
     </resources>
 
     <dependencies>
