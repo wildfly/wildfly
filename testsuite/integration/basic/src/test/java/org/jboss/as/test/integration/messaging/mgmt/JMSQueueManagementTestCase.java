@@ -496,9 +496,12 @@ public class JMSQueueManagementTestCase {
 
         MessageConsumer consumer = session.createConsumer(queue);
 
+        // Sanity check that there are messages to clean up when the queue is removed
         ModelNode result = execute(getQueueOperation("count-messages"), true);
         Assert.assertTrue(result.isDefined());
-        Assert.assertEquals(1, result.asInt());
+        // WFLY-19519 See issue description for possible reasons why the message count is on rare occasions 2
+        //Assert.assertEquals(1, result.asInt());
+        Assert.assertTrue(result.asInt() > 0);
 
         // remove the queue
         adminSupport.removeJmsQueue(getQueueName());
