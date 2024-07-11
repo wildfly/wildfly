@@ -45,7 +45,7 @@ public abstract class MicroProfileHealthApplicationLiveTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
-    @Deployment(name = "MicroProfileHealthTestCase", managed = false)
+    @Deployment(name = "MicroProfileHealthTestCase", managed = false, testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthTestCase.war")
                 .addClasses(TestApplication.class, TestApplication.Resource.class, MyLiveProbe.class, HealthConfigSource.class)

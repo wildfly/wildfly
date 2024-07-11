@@ -35,14 +35,14 @@ public abstract class MicroProfileHealthApplicationStartupTestBase {
 
     abstract void checkGlobalOutcome(ManagementClient managementClient, String operation, boolean mustBeUP, String probeName) throws IOException;
 
-    @Deployment(name = "MicroProfileHealthApplicationStartupTestBaseSetup")
+    @Deployment(name = "MicroProfileHealthApplicationStartupTestBaseSetup", testable = false)
     public static Archive<?> deploySetup() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationStartupTestBaseSetup.war")
                 .addClass(MicroProfileHealthApplicationStartupSetupTask.class);
         return war;
     }
 
-    @Deployment(name = "MicroProfileHealthApplicationStartupTestBase", managed = false)
+    @Deployment(name = "MicroProfileHealthApplicationStartupTestBase", managed = false, testable = false)
     public static Archive<?> deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "MicroProfileHealthApplicationStartupTestBase.war")
                 .addClass(SuccessfulStartupProbe.class)
