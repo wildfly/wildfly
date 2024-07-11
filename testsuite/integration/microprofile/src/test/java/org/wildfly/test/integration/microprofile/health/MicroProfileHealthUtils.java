@@ -10,6 +10,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,7 +27,11 @@ import jakarta.json.JsonValue;
 
 public class MicroProfileHealthUtils {
 
-    static void testHttpEndPoint(String healthURL, boolean mustBeUP, String probeName) throws IOException {
+    static void testHttpEndPoint(final String healthURL, final boolean mustBeUP, final String probeName) throws IOException {
+        testHttpEndPoint(healthURL, mustBeUP, probeName, null);
+    }
+
+    static void testHttpEndPoint(final String healthURL, final boolean mustBeUP, final String probeName, final Integer expectedChecksCount) throws IOException {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
 
@@ -35,16 +41,18 @@ public class MicroProfileHealthUtils {
 
             assertEquals(content, mustBeUP ? 200 : 503, resp.getStatusLine().getStatusCode());
 
-
-            try (
-                    JsonReader jsonReader = Json.createReader(new StringReader(content))
-            ) {
+            try (JsonReader jsonReader = Json.createReader(new StringReader(content))) {
                 JsonObject payload = jsonReader.readObject();
                 String outcome = payload.getString("status");
                 assertEquals(mustBeUP ? "UP" : "DOWN", outcome);
 
+                List<JsonValue> checks = payload.getJsonArray("checks") == null ?
+                        new ArrayList<JsonValue>() : payload.getJsonArray("checks");
+                if (expectedChecksCount != null) {
+                    assertEquals(expectedChecksCount.intValue(), checks.size());
+                }
                 if (probeName != null) {
-                    for (JsonValue check : payload.getJsonArray("checks")) {
+                    for (JsonValue check : checks) {
                         if (probeName.equals(check.asJsonObject().getString("name"))) {
                             // probe name found
                             assertEquals(mustBeUP ? "UP" : "DOWN", check.asJsonObject().getString("status"));
@@ -57,7 +65,11 @@ public class MicroProfileHealthUtils {
         }
     }
 
-    static void testManagementOperation(ModelNode response, boolean mustBeUP, String probeName) {
+    static void testManagementOperation(final ModelNode response, final boolean mustBeUP, final String probeName) {
+        testManagementOperation(response, mustBeUP, probeName, null);
+    }
+
+    static void testManagementOperation(final ModelNode response, final boolean mustBeUP, final String probeName, final Integer expectedChecksCount) {
 
         final String opOutcome = response.get("outcome").asString();
         assertEquals("success", opOutcome);
@@ -65,8 +77,12 @@ public class MicroProfileHealthUtils {
         ModelNode result = response.get("result");
         assertEquals(mustBeUP ? "UP" : "DOWN", result.get("status").asString());
 
+        List<ModelNode> checks = result.get("checks").asList();
+        if (expectedChecksCount != null) {
+            assertEquals(expectedChecksCount.intValue(), checks.size());
+        }
         if (probeName != null) {
-            for (ModelNode check : result.get("checks").asList()) {
+            for (ModelNode check : checks) {
                 if (probeName.equals(check.get("name").asString())) {
                     // probe name found
                     // global outcome is driven by this probe state

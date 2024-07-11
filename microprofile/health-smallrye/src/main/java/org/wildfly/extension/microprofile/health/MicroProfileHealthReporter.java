@@ -26,20 +26,32 @@ public class MicroProfileHealthReporter {
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
-    private final boolean defaultServerProceduresDisabled;
+    private final boolean globalDefaultProceduresDisabled;
+    private boolean deploymentDefaultProceduresDisabled = false;
     private final String defaultReadinessEmptyResponse;
     private final String defaultStartupEmptyResponse;
-    private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
     private final HealthCheck emptyDeploymentStartupCheck;
-
     private boolean userChecksProcessed = false;
+
+    public void registerDeploymentDefaultProceduresConfiguration(final String deploymentName, final boolean deploymentDefaultProceduresDisabled) {
+        if (deploymentDefaultProceduresDisabled && !globalDefaultProceduresDisabled) {
+            // Deployment-level setting is overriding the global setting
+            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledByDeployment(deploymentName);
+        }
+        this.deploymentDefaultProceduresDisabled |= deploymentDefaultProceduresDisabled;
+    }
+
+    private boolean defaultProceduresShouldBeAdded() {
+        return !globalDefaultProceduresDisabled && !deploymentDefaultProceduresDisabled;
+    }
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
         private final String name;
@@ -58,14 +70,13 @@ public class MicroProfileHealthReporter {
         }
     }
 
-
     public MicroProfileHealthReporter(String emptyLivenessChecksStatus, String emptyReadinessChecksStatus,
-                                      String emptyStartupChecksStatus, boolean defaultServerProceduresDisabled,
+                                      String emptyStartupChecksStatus, boolean defaultProceduresDisabled,
                                       String defaultReadinessEmptyResponse, String defaultStartupEmptyResponse) {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
         this.emptyDeploymentStartupCheck  = new EmptyDeploymentCheckStatus("empty-startup-checks", emptyStartupChecksStatus);
-        this.defaultServerProceduresDisabled = defaultServerProceduresDisabled;
+        this.globalDefaultProceduresDisabled = defaultProceduresDisabled;
         this.defaultReadinessEmptyResponse = defaultReadinessEmptyResponse;
         this.defaultStartupEmptyResponse = defaultStartupEmptyResponse;
     }
@@ -77,20 +88,21 @@ public class MicroProfileHealthReporter {
         deploymentChecks.putAll(readinessChecks);
         deploymentChecks.putAll(startupChecks);
 
-        HashMap<HealthCheck, ClassLoader> serverChecks= new HashMap<>();
-        serverChecks.putAll(serverReadinessChecks);
-        if (deploymentChecks.size() == 0 && !defaultServerProceduresDisabled) {
-            serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
-            serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
-            serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+        HashMap<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
+        if (defaultProceduresShouldBeAdded()) {
+            serverChecks.putAll(serverReadinessChecks);
+            if (deploymentChecks.size() == 0) {
+                serverChecks.put(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
+                serverChecks.put(emptyDeploymentReadinessCheck, Thread.currentThread().getContextClassLoader());
+                serverChecks.put(emptyDeploymentStartupCheck, Thread.currentThread().getContextClassLoader());
+            }
         }
-
         return getHealth(serverChecks, deploymentChecks);
     }
 
     public SmallRyeHealth getLiveness() {
         final Map<HealthCheck, ClassLoader> serverChecks;
-        if (livenessChecks.size() == 0 && !defaultServerProceduresDisabled) {
+        if (livenessChecks.size() == 0 && defaultProceduresShouldBeAdded()) {
             serverChecks = Collections.singletonMap(emptyDeploymentLivenessCheck, Thread.currentThread().getContextClassLoader());
         } else {
             serverChecks = Collections.emptyMap();
@@ -100,9 +112,12 @@ public class MicroProfileHealthReporter {
 
     public SmallRyeHealth getReadiness() {
         final Map<HealthCheck, ClassLoader> serverChecks = new HashMap<>();
-        serverChecks.putAll(serverReadinessChecks);
+        final boolean addDefaultProcedures = defaultProceduresShouldBeAdded();
+        if (addDefaultProcedures) {
+            serverChecks.putAll(serverReadinessChecks);
+        }
         if (readinessChecks.size() == 0) {
-            if (defaultServerProceduresDisabled) {
+            if (!addDefaultProcedures) {
                 return getHealth(serverChecks, readinessChecks,
                     userChecksProcessed ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultReadinessEmptyResponse));
@@ -117,7 +132,7 @@ public class MicroProfileHealthReporter {
     public SmallRyeHealth getStartup() {
         Map<HealthCheck, ClassLoader> serverChecks = Collections.emptyMap();
         if (startupChecks.size() == 0) {
-            if (defaultServerProceduresDisabled) {
+            if (!defaultProceduresShouldBeAdded()) {
                 return getHealth(serverChecks, startupChecks,
                     userChecksProcessed ? HealthCheckResponse.Status.UP :
                         HealthCheckResponse.Status.valueOf(defaultStartupEmptyResponse));

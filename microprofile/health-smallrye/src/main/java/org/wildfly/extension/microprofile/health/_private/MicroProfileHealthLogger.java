@@ -52,4 +52,8 @@ public interface MicroProfileHealthLogger extends BasicLogger {
     @Message(id = 6, value = "")
     OperationFailedException seeDownstream();
     */
+
+    @LogMessage(level = INFO)
+    @Message(id = 7, value = "The deployment %s configuration has specified that default MicroProfile Health procedures should be disabled; server-wide procedures will be disabled.")
+    void defaultProceduresDisabledByDeployment(String deploymentName);
 }
