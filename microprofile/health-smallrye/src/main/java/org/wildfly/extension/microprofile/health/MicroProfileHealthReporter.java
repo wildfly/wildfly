@@ -8,8 +8,6 @@ package org.wildfly.extension.microprofile.health;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -28,33 +26,31 @@ public class MicroProfileHealthReporter {
 
     public static final String DOWN = "DOWN";
     public static final String UP = "UP";
-    private final boolean defaultProceduresDisabled;
+    private final boolean globalDefaultProceduresDisabled;
+    private boolean deploymentDefaultProceduresDisabled = false;
     private final String defaultReadinessEmptyResponse;
     private final String defaultStartupEmptyResponse;
-    private Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
-    private Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> healthChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> livenessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> readinessChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> startupChecks = new HashMap<>();
+    private final Map<HealthCheck, ClassLoader> serverReadinessChecks = new HashMap<>();
 
     private final HealthCheck emptyDeploymentLivenessCheck;
     private final HealthCheck emptyDeploymentReadinessCheck;
     private final HealthCheck emptyDeploymentStartupCheck;
     private boolean userChecksProcessed = false;
-    private final ConcurrentHashMap<String, Boolean> deploymentsDefaultProceduresConfiguration = new ConcurrentHashMap<>();
 
-    public void registerDeploymentDefaultProceduresConfiguration(final String deploymentName, final Boolean defaultProceduresDisabled) {
-        deploymentsDefaultProceduresConfiguration.put(deploymentName, defaultProceduresDisabled);
+    public void registerDeploymentDefaultProceduresConfiguration(final String deploymentName, final boolean deploymentDefaultProceduresDisabled) {
+        if (deploymentDefaultProceduresDisabled && !globalDefaultProceduresDisabled) {
+            // Deployment-level setting is overriding the global setting
+            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledByDeployment(deploymentName);
+        }
+        this.deploymentDefaultProceduresDisabled |= deploymentDefaultProceduresDisabled;
     }
 
     private boolean defaultProceduresShouldBeAdded() {
-        if (deploymentsDefaultProceduresConfiguration.entrySet().stream().anyMatch(e -> e.getValue())) {
-            final String summary = "[" + deploymentsDefaultProceduresConfiguration.entrySet().stream()
-                    .map(e -> String.format("%s: %s", e.getKey(), e.getValue()))
-                    .collect(Collectors.joining(",")).toString() + "]";
-            MicroProfileHealthLogger.LOGGER.defaultProceduresDisabledByDeployments(summary);
-        }
-        return !defaultProceduresDisabled && deploymentsDefaultProceduresConfiguration.entrySet().stream().noneMatch(e -> e.getValue());
+        return !globalDefaultProceduresDisabled && !deploymentDefaultProceduresDisabled;
     }
 
     private static class EmptyDeploymentCheckStatus implements HealthCheck {
@@ -80,7 +76,7 @@ public class MicroProfileHealthReporter {
         this.emptyDeploymentLivenessCheck  = new EmptyDeploymentCheckStatus("empty-liveness-checks", emptyLivenessChecksStatus);
         this.emptyDeploymentReadinessCheck  = new EmptyDeploymentCheckStatus("empty-readiness-checks", emptyReadinessChecksStatus);
         this.emptyDeploymentStartupCheck  = new EmptyDeploymentCheckStatus("empty-startup-checks", emptyStartupChecksStatus);
-        this.defaultProceduresDisabled = defaultProceduresDisabled;
+        this.globalDefaultProceduresDisabled = defaultProceduresDisabled;
         this.defaultReadinessEmptyResponse = defaultReadinessEmptyResponse;
         this.defaultStartupEmptyResponse = defaultStartupEmptyResponse;
     }
