@@ -14,6 +14,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -79,8 +80,10 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
             // we can't choose one host randomly
             testHost = System.getProperty("node0");
             testNic = getNic(testHost);
+            assumeFalse("No usable nic '" + testHost + "' is available", testNic == null);
         } else {
             testNic = getNonDefaultNic();
+            assumeFalse("No usable non-default nic is available", testNic == null);
             // test the connector
             testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostAddress());
         }
@@ -95,28 +98,23 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     @Test
     public void testAddUpdateRemove() throws Exception {
 
-        if (testNic == null) {
-            logger.error("Could not look up non-default interface");
-            return;
-        }
-
         // add interface
         ModelNode op = createOpNode("interface=test123-interface", ADD);
         op.get("nic").set(testNic.getName());
         op.get("inet-address").set(testHost);
-        ModelNode result = executeOperation(op);
+        executeOperation(op);
 
         // add socket binding using created interface
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", ADD);
         op.get("interface").set("test123-interface");
         op.get("port").set(TEST_PORT);
-        result = executeOperation(op);
+        executeOperation(op);
 
 
         // add a web connector so we can test the interface
         op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", ADD);
         op.get("socket-binding").set("test123-binding");
-        result = executeOperation(op);
+        ModelNode result = executeOperation(op);
 
         final URL url = new URL("http", testHost, TEST_PORT, "/");
         Assert.assertTrue("Could not connect to created connector: " + url + "<>" + InetAddress.getByName(url.getHost()) + "..." + testNic + ".>" + result, WebUtil.testHttpURL(url.toString()));
@@ -126,8 +124,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op.get(NAME).set("port");
         op.get(VALUE).set(TEST_PORT + 1);
         result = executeOperation(op, false);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        Assert.assertTrue(result.get(RESPONSE_HEADERS).get(PROCESS_STATE).asString().equals("reload-required"));
+        Assert.assertEquals(result.asString(), "reload-required", result.get(RESPONSE_HEADERS).get(PROCESS_STATE).asString());
 
         logger.trace("Restarting server.");
 
@@ -136,7 +133,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         // wait until the connector is available on the new port
         final String testUrl = new URL("http", testHost, TEST_PORT + 1, "/").toString();
         RetryTaskExecutor<Boolean> rte = new RetryTaskExecutor<Boolean>();
-        rte.retryTask(new Callable<Boolean>() {
+        rte.retryTask(new Callable<>() {
             public Boolean call() throws Exception {
                 boolean available = WebUtil.testHttpURL(testUrl);
                 if (!available) throw new Exception("Connector not available.");
@@ -153,12 +150,12 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         // try to remove the interface while the socket binding is still  bound to it - should fail
         op = createOpNode("interface=test123-interface", REMOVE);
         result = executeOperation(op, false);
-        Assert.assertFalse("Removed interface with socket binding bound to it.", SUCCESS.equals(result.get(OUTCOME).asString()));
+        Assert.assertNotEquals("Removed interface with socket binding bound to it.", SUCCESS, result.get(OUTCOME).asString());
 
         // try to remove socket binding while the connector is still using it - should fail
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
         result = executeOperation(op, false);
-        Assert.assertFalse("Removed socked binding with connector still using it.", SUCCESS.equals(result.get(OUTCOME).asString()));
+        Assert.assertNotEquals("Removed socked binding with connector still using it.", SUCCESS, result.get(OUTCOME).asString());
     }
 
     private NetworkInterface getNonDefaultNic() throws SocketException, UnknownHostException {
@@ -167,14 +164,23 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface nic = interfaces.nextElement();
-            if (!nic.isUp()) {
+            if (!nic.isUp() || nic.isPointToPoint()) {
                 continue;
             }
+            boolean valid = false;
             for (InterfaceAddress addr : nic.getInterfaceAddresses()) {
-                if (addr.getAddress().equals(defaultAddr)) continue;
+                if (addr.getAddress().equals(defaultAddr)) {
+                    valid = false;
+                    break;
+                } else {
+                    valid = true;
+                }
             }
-            // interface found
-            return nic;
+
+            if (valid) {
+                // interface found
+                return nic;
+            }
         }
         return null; // no interface found
     }
