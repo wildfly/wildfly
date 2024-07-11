@@ -80,6 +80,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Handler for adding the ee subsystem.
@@ -109,6 +110,12 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         this.jbossDescriptorPropertyReplacementProcessor = jbossDescriptorPropertyReplacementProcessor;
         this.ejbAnnotationPropertyReplacementProcessor = ejbAnnotationPropertyReplacementProcessor;
         this.directoryDependencyProcessor = directoryDependencyProcessor;
+    }
+
+    @Override
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        checkEEvsSM();
+        super.execute(context, operation);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -226,5 +233,15 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // installs the service which manages managed executor's hung task periodic termination
         new ManagedExecutorHungTasksPeriodicTerminationService().install(context);
+    }
+
+    private static void checkEEvsSM() throws OperationFailedException {
+        if (WildFlySecurityManager.isChecking()) {
+            try {
+                EeSubsystemAdd.class.getClassLoader().loadClass("jakarta.annotation.ManagedBean");
+            } catch (ClassNotFoundException e) {
+                throw ROOT_LOGGER.securityManagerNotAllowed();
+            }
+        }
     }
 }

@@ -1224,4 +1224,7 @@ public interface EeLogger extends BasicLogger {
 
     @Message(id = 140, value="Cannot add a HTTP connection which references a null/empty URI")
     IllegalArgumentException cannotAddHTTPConnection();
+
+    @Message(id = 141, value="Running with a SecurityManager enabled is not allowed in a Jakarta EE 11 or later environment")
+    OperationFailedException securityManagerNotAllowed();
 }

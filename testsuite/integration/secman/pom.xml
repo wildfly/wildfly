@@ -131,36 +131,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <!-- Test against WildFly Preview dist -->
-        <profile>
-            <id>preview.profile</id>
-            <activation>
-                <property>
-                    <name>ts.preview</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <!--Re-enable the default surefire execution. -->
-                            <execution>
-                                <id>default-test</id>
-                                <phase>test</phase>
-                                <configuration>
-                                    <environmentVariables>
-                                        <JBOSS_HOME>${jboss.dist}</JBOSS_HOME>
-                                    </environmentVariables>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>
