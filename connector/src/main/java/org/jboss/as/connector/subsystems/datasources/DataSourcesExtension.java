@@ -146,7 +146,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(7, 2, 0);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -187,6 +187,7 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_6_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_0.getUriString(), DataSourceSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_1.getUriString(), DataSourceSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_7_2.getUriString(), DataSourceSubsystemParser::new);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -282,22 +283,14 @@ public class DataSourcesExtension implements Extension {
 
                     }
                     XA_DATASOURCE_CLASS.marshallAsElement(dataSourceNode, writer);
-
+                    URL_PROPERTY.marshallAsElement(dataSourceNode, writer);
                 }
                 DATASOURCE_DRIVER.marshallAsElement(dataSourceNode, writer);
-
-                if (isXADataSource) {
-                    URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
-                    URL_PROPERTY.marshallAsElement(dataSourceNode, writer);
-                    URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
-                }
+                URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
+                URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
                 NEW_CONNECTION_SQL.marshallAsElement(dataSourceNode, writer);
                 TRANSACTION_ISOLATION.marshallAsElement(dataSourceNode, writer);
 
-                if (!isXADataSource) {
-                    URL_DELIMITER.marshallAsElement(dataSourceNode, writer);
-                    URL_SELECTOR_STRATEGY_CLASS_NAME.marshallAsElement(dataSourceNode, writer);
-                }
                 boolean poolRequired = INITIAL_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         MIN_POOL_SIZE.isMarshallable(dataSourceNode) ||
                         MAX_POOL_SIZE.isMarshallable(dataSourceNode) ||
@@ -379,40 +372,6 @@ public class DataSourcesExtension implements Extension {
                     }
                     writer.writeEndElement();
                 }
-                boolean securityRequired = USERNAME.isMarshallable(dataSourceNode) ||
-                        PASSWORD.isMarshallable(dataSourceNode) ||
-                        CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
-                        SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
-                        ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
-                        REAUTH_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
-                        REAUTHPLUGIN_PROPERTIES.isMarshallable(dataSourceNode);
-                if (securityRequired) {
-                    writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
-                    USERNAME.marshallAsAttribute(dataSourceNode, writer);
-                    PASSWORD.marshallAsAttribute(dataSourceNode, writer);
-                    SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
-                    CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
-                    ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
-                    AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
-
-                    if (dataSourceNode.hasDefined(REAUTH_PLUGIN_CLASSNAME.getName())) {
-                        writer.writeStartElement(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName());
-                        writer.writeAttribute(
-                                org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                                dataSourceNode.get(REAUTH_PLUGIN_CLASSNAME.getName()).asString());
-
-                        if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
-                            for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
-                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                                .getValue().asString(),
-                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                                .getLocalName());
-                            }
-                        }
-                        writer.writeEndElement();
-                    }
-                    writer.writeEndElement();
-                }
 
                 boolean recoveryRequired = RECOVERY_USERNAME.isMarshallable(dataSourceNode) ||
                         RECOVERY_PASSWORD.isMarshallable(dataSourceNode) ||
@@ -429,10 +388,10 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(Recovery.Tag.RECOVER_CREDENTIAL.getLocalName());
                         RECOVERY_USERNAME.marshallAsAttribute(dataSourceNode, writer);
                         RECOVERY_PASSWORD.marshallAsAttribute(dataSourceNode, writer);
-                        RECOVERY_ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
                         RECOVERY_CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
+                        RECOVERY_ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
                         writer.writeEndElement();
                     }
                     if (hasAnyOf(dataSourceNode, RECOVER_PLUGIN_CLASSNAME)) {
@@ -450,6 +409,41 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
 
+                    }
+                    writer.writeEndElement();
+                }
+
+                boolean securityRequired = USERNAME.isMarshallable(dataSourceNode) ||
+                        PASSWORD.isMarshallable(dataSourceNode) ||
+                        CREDENTIAL_REFERENCE.isMarshallable(dataSourceNode) ||
+                        SECURITY_DOMAIN.isMarshallable(dataSourceNode) ||
+                        ELYTRON_ENABLED.isMarshallable(dataSourceNode) ||
+                        REAUTH_PLUGIN_CLASSNAME.isMarshallable(dataSourceNode) ||
+                        REAUTHPLUGIN_PROPERTIES.isMarshallable(dataSourceNode);
+                if (securityRequired) {
+                    writer.writeStartElement(DataSource.Tag.SECURITY.getLocalName());
+                    USERNAME.marshallAsAttribute(dataSourceNode, writer);
+                    PASSWORD.marshallAsAttribute(dataSourceNode, writer);
+                    SECURITY_DOMAIN.marshallAsElement(dataSourceNode, writer);
+                    AUTHENTICATION_CONTEXT.marshallAsElement(dataSourceNode, writer);
+                    CREDENTIAL_REFERENCE.marshallAsElement(dataSourceNode, writer);
+                    ELYTRON_ENABLED.marshallAsElement(dataSourceNode, writer);
+
+                    if (dataSourceNode.hasDefined(REAUTH_PLUGIN_CLASSNAME.getName())) {
+                        writer.writeStartElement(DsSecurity.Tag.REAUTH_PLUGIN.getLocalName());
+                        writer.writeAttribute(
+                                org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
+                                dataSourceNode.get(REAUTH_PLUGIN_CLASSNAME.getName()).asString());
+
+                        if (dataSourceNode.hasDefined(REAUTHPLUGIN_PROPERTIES.getName())) {
+                            for (Property connectionProperty : dataSourceNode.get(REAUTHPLUGIN_PROPERTIES.getName()).asPropertyList()) {
+                                writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
+                                                .getValue().asString(),
+                                        org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
+                                                .getLocalName());
+                            }
+                        }
+                        writer.writeEndElement();
                     }
                     writer.writeEndElement();
                 }

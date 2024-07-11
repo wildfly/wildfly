@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.1">
+<subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool" jta="false"
                     use-java-context="true" spy="false" use-ccm="true" connectable="false" statistics-enabled="true" tracking="true">
@@ -22,18 +22,18 @@
             <driver>
                 h2
             </driver>
-            <new-connection-sql>
-                select 1
-            </new-connection-sql>
-            <transaction-isolation>
-                TRANSACTION_READ_COMMITTED
-            </transaction-isolation>
             <url-delimiter>
                 :
             </url-delimiter>
             <url-selector-strategy-class-name>
                 someClass
             </url-selector-strategy-class-name>
+            <new-connection-sql>
+                select 1
+            </new-connection-sql>
+            <transaction-isolation>
+                TRANSACTION_READ_COMMITTED
+            </transaction-isolation>
             <pool>
                 <min-pool-size>1</min-pool-size>
                 <max-pool-size>5</max-pool-size>
@@ -103,7 +103,6 @@
                 <track-statements>nowarn</track-statements>
                 <prepared-statement-cache-size>30</prepared-statement-cache-size>
                 <share-prepared-statements>true</share-prepared-statements>
-
             </statement>
         </datasource>
         <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool"
@@ -157,13 +156,7 @@
                 <wrap-xa-resource>
                     true
                 </wrap-xa-resource>
-
             </xa-pool>
-            <security user-name="sa" password="sa">
-                <reauth-plugin class-name="someClass1">
-                    <config-property name="name">Property1</config-property>
-                </reauth-plugin>
-            </security>
             <recovery no-recovery="false">
                 <recover-credential user-name="sa" password="sa"/>
                 <recover-plugin class-name="someClass5">
@@ -171,6 +164,11 @@
                     <config-property name="name1">Property6</config-property>
                 </recover-plugin>
             </recovery>
+            <security user-name="sa" password="sa">
+                <reauth-plugin class-name="someClass1">
+                    <config-property name="name">Property1</config-property>
+                </reauth-plugin>
+            </security>
             <validation>
                 <valid-connection-checker class-name="someClass2" module="someModule2">
                     <config-property name="name">Property2</config-property>
