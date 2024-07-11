@@ -41,10 +41,10 @@
           </xs:annotation>
         </xs:element>
       </xs:choice>
-      <xs:element name="drivers" type="driversType" maxOccurs="1" minOccurs="0"></xs:element>
+      <xs:element name="drivers" type="driversType" maxOccurs="1" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="datasourceType" mixed="false">
+  <xs:complexType name="datasourceType">
     <xs:sequence>
       <xs:element name="connection-url" type="xs:token">
         <xs:annotation>
@@ -86,56 +86,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="driver" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-                An unique reference to the classloader module which contains the JDBC driver
-                The accepted format is driverName#majorVersion.minorVersion
-               ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="url-delimiter" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the delimeter for URLs in connection-url for HA datasources
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="url-selector-strategy-class-name" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              A class that implements org.jboss.jca.adapters.jdbc.URLSelectorStrategy
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="new-connection-sql" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specify an SQL statement to execute whenever a connection is added
-              to the connection pool.
-              ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="transaction-isolation" type="transaction-isolationType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Set java.sql.Connection transaction isolation level to use. The constants
-              defined by transaction-isolation-values are the possible transaction isolation
-              levels and include: TRANSACTION_READ_UNCOMMITTED TRANSACTION_READ_COMMITTED
-              TRANSACTION_REPEATABLE_READ TRANSACTION_SERIALIZABLE TRANSACTION_NONE
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:group ref="common-simpleDatasourceElements"/>
       <xs:element name="pool" type="poolType" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
@@ -145,42 +96,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="security" type="dsSecurityType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the security settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="validation" type="validationType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the validation settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="timeout" type="timeoutType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the time out settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="statement" type="statementType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the statement settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:group ref="common-complexDatasourceElements"/>
     </xs:sequence>
     <xs:attribute name="jta" type="xs:boolean" default="true" use="optional">
       <xs:annotation>
@@ -191,11 +107,11 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="common-datasourceAttributes" />
+    <xs:attributeGroup ref="common-datasourceAttributes"/>
   </xs:complexType>
   <xs:complexType name="xa-datasourceType">
     <xs:sequence>
-      <xs:element name="xa-datasource-property" type="xa-datasource-propertyType" minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="xa-datasource-property" type="config-propertyType" minOccurs="1" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             <![CDATA[[
@@ -234,56 +150,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="driver" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-                An unique reference to the classloader module which contains the JDBC driver
-                The accepted format is driverName#majorVersion.minorVersion
-               ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="url-delimiter" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the delimeter for URLs in connection-url for HA datasources
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="url-selector-strategy-class-name" type="xs:token" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              A class that implements org.jboss.jca.adapters.jdbc.URLSelectorStrategy
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="new-connection-sql" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specify an SQL statement to execute whenever a connection is added
-              to the connection pool.
-              ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="transaction-isolation" type="transaction-isolationType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Set java.sql.Connection transaction isolation level to use. The constants
-              defined by transaction-isolation-values are the possible transaction isolation
-              levels and include: TRANSACTION_READ_UNCOMMITTED TRANSACTION_READ_COMMITTED
-              TRANSACTION_REPEATABLE_READ TRANSACTION_SERIALIZABLE TRANSACTION_NONE
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:group ref="common-simpleDatasourceElements"/>
       <xs:element name="xa-pool" type="xa-poolType" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
@@ -293,47 +160,11 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="recovery" type="recoverType" minOccurs="0" maxOccurs="1"></xs:element>
-      <xs:element name="security" type="dsSecurityType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the security settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="validation" type="validationType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the validation settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="timeout" type="timeoutType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the time out settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="statement" type="statementType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            <![CDATA[[
-              Specifies the statement settings
-             ]]>
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:element name="recovery" type="recoverType" minOccurs="0" maxOccurs="1"/>
+      <xs:group ref="common-complexDatasourceElements"/>
     </xs:sequence>
-    <xs:attributeGroup ref="common-datasourceAttributes" />
+    <xs:attributeGroup ref="common-datasourceAttributes"/>
   </xs:complexType>
-  <xs:complexType name="boolean-presenceType" />
   <xs:attributeGroup name="common-datasourceAttributes">
     <xs:attribute name="jndi-name" type="xs:token" use="required">
       <xs:annotation>
@@ -439,6 +270,103 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
+
+  <xs:group name="common-simpleDatasourceElements">
+    <xs:sequence>
+      <xs:element name="driver" type="xs:token" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                An unique reference to the classloader module which contains the JDBC driver
+                The accepted format is driverName#majorVersion.minorVersion
+               ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="url-delimiter" type="xs:token" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specifies the delimeter for URLs in connection-url for HA datasources
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="url-selector-strategy-class-name" type="xs:token" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              A class that implements org.jboss.jca.adapters.jdbc.URLSelectorStrategy
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="new-connection-sql" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specify an SQL statement to execute whenever a connection is added
+              to the connection pool.
+              ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="transaction-isolation" type="transaction-isolationType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Set java.sql.Connection transaction isolation level to use. The constants
+              defined by transaction-isolation-values are the possible transaction isolation
+              levels and include: TRANSACTION_READ_UNCOMMITTED TRANSACTION_READ_COMMITTED
+              TRANSACTION_REPEATABLE_READ TRANSACTION_SERIALIZABLE TRANSACTION_NONE
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+
+  <xs:group name="common-complexDatasourceElements">
+    <xs:sequence>
+      <xs:element name="security" type="dsSecurityType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specifies the security settings
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="validation" type="validationType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specifies the validation settings
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="timeout" type="timeoutType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specifies the time out settings
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="statement" type="statementType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+              Specifies the statement settings
+             ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+
   <xs:simpleType name="transaction-isolationType">
     <xs:annotation>
       <xs:documentation>
@@ -450,19 +378,13 @@
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:token">
-      <xs:enumeration value="TRANSACTION_READ_UNCOMMITTED" />
-      <xs:enumeration value="TRANSACTION_READ_COMMITTED" />
-      <xs:enumeration value="TRANSACTION_REPEATABLE_READ" />
-      <xs:enumeration value="TRANSACTION_SERIALIZABLE" />
-      <xs:enumeration value="TRANSACTION_NONE" />
+      <xs:enumeration value="TRANSACTION_READ_UNCOMMITTED"/>
+      <xs:enumeration value="TRANSACTION_READ_COMMITTED"/>
+      <xs:enumeration value="TRANSACTION_REPEATABLE_READ"/>
+      <xs:enumeration value="TRANSACTION_SERIALIZABLE"/>
+      <xs:enumeration value="TRANSACTION_NONE"/>
     </xs:restriction>
   </xs:simpleType>
-  <xs:complexType name="xa-datasource-propertyType" mixed="true">
-    <xs:attribute name="name" use="required" type="xs:token" />
-  </xs:complexType>
-  <xs:complexType name="connection-propertyType" mixed="true">
-    <xs:attribute name="name" use="required" type="xs:token" />
-  </xs:complexType>
   <xs:complexType name="validationType">
     <xs:sequence>
       <xs:element name="valid-connection-checker" type="moduleExtensionType" minOccurs="0">
@@ -652,9 +574,9 @@
   </xs:complexType>
   <xs:simpleType name="track-statementsType">
     <xs:restriction base="xs:token">
-      <xs:enumeration value="true" />
-      <xs:enumeration value="false" />
-      <xs:enumeration value="nowarn" />
+      <xs:enumeration value="true"/>
+      <xs:enumeration value="false"/>
+      <xs:enumeration value="nowarn"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="statementType">
@@ -885,9 +807,9 @@
           </xs:annotation>
         </xs:element>
         <xs:element name="authentication-context" type="xs:token" minOccurs="0">
-            <xs:annotation>
-              <xs:documentation>
-                <![CDATA[[
+          <xs:annotation>
+            <xs:documentation>
+              <![CDATA[[
                 Indicates the Elytron context that will be used for authenticating connections during
                 container-managed sign-on.
                 The resulting Subject will be used to distinguish connections in the pool.
@@ -897,9 +819,9 @@
                   <elytron-enabled/>
                   <authentication-context>HsqlDbContext</authentication-context>
                 ]]>
-              </xs:documentation>
-            </xs:annotation>
-          </xs:element>
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:choice>
       <xs:element name="credential-reference" type="credential-reference:credentialReferenceType" minOccurs="0">
         <xs:annotation>
@@ -922,7 +844,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="reauth-plugin" type="extensionType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="reauth-plugin" type="extensionType" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
     <xs:attribute name="user-name" type="xs:token" use="optional">
       <xs:annotation>
@@ -946,38 +868,23 @@
 
   <xs:complexType name="extensionType">
     <xs:sequence>
-      <xs:element name="config-property" type="config-propertyType" minOccurs="0" maxOccurs="unbounded"></xs:element>
+      <xs:element name="config-property" type="config-propertyType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
-    <xs:attribute name="class-name" type="xs:token" use="required"></xs:attribute>
+    <xs:attribute name="class-name" type="xs:token" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="moduleExtensionType">
-    <xs:sequence>
-      <xs:element name="config-property" type="config-propertyType" minOccurs="0" maxOccurs="unbounded"></xs:element>
-    </xs:sequence>
-    <xs:attribute name="class-name" type="xs:token" use="required"></xs:attribute>
-    <xs:attribute name="module" type="xs:token" use="optional"></xs:attribute>
+    <xs:complexContent>
+      <xs:extension base="extensionType">
+        <xs:attribute name="module" type="xs:token" use="optional"/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="config-propertyType" mixed="true">
-    <xs:annotation>
-      <xs:documentation>
-        <![CDATA[[
-          Specifies a Java bean property value
-         ]]>
-      </xs:documentation>
-    </xs:annotation>
     <xs:simpleContent>
       <xs:extension base="xs:token">
-        <xs:attribute use="required" name="name" type="xs:token">
-          <xs:annotation>
-            <xs:documentation>
-              <![CDATA[[
-                Specifies the name of the config-property
-               ]]>
-            </xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
+        <xs:attribute use="required" name="name" type="xs:token"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
@@ -1090,7 +997,7 @@
 
   <xs:complexType name="driversType">
     <xs:sequence>
-      <xs:element name="driver" type="driverType" maxOccurs="unbounded" minOccurs="1"></xs:element>
+      <xs:element name="driver" type="driverType" maxOccurs="unbounded" minOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="capacityType">
