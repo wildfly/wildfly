@@ -1519,15 +1519,15 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 242, value = "Illegal lock type %s on %s for component %s")
     IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, SingletonComponent lockableComponent);
 
-    /**
-     * Creates an exception indicating the inability to call the method as something is missing for the invocation.
-     *
-     * @param methodName the name of the method.
-     * @param missing    the missing type.
-     * @return a {@link IllegalStateException} for the error.
-     */
-    @Message(id = 243, value = "Cannot call %s, no %s is present for this invocation")
-    IllegalStateException cannotCall(String methodName, String missing);
+//    /**
+//     * Creates an exception indicating the inability to call the method as something is missing for the invocation.
+//     *
+//     * @param methodName the name of the method.
+//     * @param missing    the missing type.
+//     * @return a {@link IllegalStateException} for the error.
+//     */
+//    @Message(id = 243, value = "Cannot call %s, no %s is present for this invocation")
+//    IllegalStateException cannotCall(String methodName, String missing);
 
 
     /**
@@ -2408,23 +2408,23 @@ public interface EjbLogger extends BasicLogger {
 //     */
 //    @Message(id = 352, value = "TimerService is not started")
 //    IllegalStateException failToStartTimerService();
-
-    /**
-     * Creates an exception indicating resourceBundle based descriptions are not supported
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 353, value = "ResourceBundle based descriptions of %s are not supported")
-    UnsupportedOperationException resourceBundleDescriptionsNotSupported(String name);
-
-    /**
-     * Creates an exception indicating a runtime attribute is not marshallable
-     *
-     * @return an {@link UnsupportedOperationException} for the error.
-     */
-    @Message(id = 354, value = "Runtime attribute %s is not marshallable")
-    UnsupportedOperationException runtimeAttributeNotMarshallable(String name);
-
+//
+//    /**
+//     * Creates an exception indicating resourceBundle based descriptions are not supported
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 353, value = "ResourceBundle based descriptions of %s are not supported")
+//    UnsupportedOperationException resourceBundleDescriptionsNotSupported(String name);
+//
+//    /**
+//     * Creates an exception indicating a runtime attribute is not marshallable
+//     *
+//     * @return an {@link UnsupportedOperationException} for the error.
+//     */
+//    @Message(id = 354, value = "Runtime attribute %s is not marshallable")
+//    UnsupportedOperationException runtimeAttributeNotMarshallable(String name);
+//
 //    /**
 //     * Creates an exception indicating an invalid value for the specified element
 //     *
@@ -2465,30 +2465,30 @@ public interface EjbLogger extends BasicLogger {
 //     */
 //    @Message(id = 359, value = "Method named %s with params %s not found on component class %s")
 //    RuntimeException failToFindComponentMethod(String name, String s, Class<?> componentClass);
-
-    /**
-     * Creates an exception indicating the Jakarta Enterprise Beans method security metadata cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 360, value = "Jakarta Enterprise Beans method security metadata cannot be null")
-    IllegalArgumentException ejbMethodSecurityMetaDataIsNull();
-
-    /**
-     * Creates an exception indicating the view classname cannot be null or empty
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 361, value = "View classname cannot be null or empty")
-    IllegalArgumentException viewClassNameIsNull();
-
-    /**
-     * Creates an exception indicating View method cannot be null
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 362, value = "View method cannot be null")
-    IllegalArgumentException viewMethodIsNull();
+//
+//    /**
+//     * Creates an exception indicating the Jakarta Enterprise Beans method security metadata cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 360, value = "Jakarta Enterprise Beans method security metadata cannot be null")
+//    IllegalArgumentException ejbMethodSecurityMetaDataIsNull();
+//
+//    /**
+//     * Creates an exception indicating the view classname cannot be null or empty
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 361, value = "View classname cannot be null or empty")
+//    IllegalArgumentException viewClassNameIsNull();
+//
+//    /**
+//     * Creates an exception indicating View method cannot be null
+//     *
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 362, value = "View method cannot be null")
+//    IllegalArgumentException viewMethodIsNull();
 
     /**
      * Creates an exception indicating class cannot handle method of view class
@@ -3126,9 +3126,9 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 499, value = "Cannot read derived size - service %s unreachable")
     OperationFailedException cannotReadStrictMaxPoolDerivedSize(ServiceName serviceName);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 500, value = "Legacy org.jboss.security.annotation.SecurityDomain annotation is used in class: %s, please use org.jboss.ejb3.annotation.SecurityDomain instead.")
-    void legacySecurityDomainAnnotationIsUsed(String cls);
+//    @LogMessage(level = ERROR)
+//    @Message(id = 500, value = "Legacy org.jboss.security.annotation.SecurityDomain annotation is used in class: %s, please use org.jboss.ejb3.annotation.SecurityDomain instead.")
+//    void legacySecurityDomainAnnotationIsUsed(String cls);
 
     @Message(id = 501, value = "Failed to activate MDB %s")
     RuntimeException failedToActivateMdb(String componentName, @Cause Exception e);
