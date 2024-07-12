@@ -18,7 +18,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
- * A simple Jakarta RESTful Web Services endpoint deployed as an Jakarta Enterprise Beans.
+ * A simple Jakarta RESTful Web Services endpoint deployed as a Jakarta Enterprise Beans bean.
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>
  */

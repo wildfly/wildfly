@@ -125,7 +125,7 @@ public interface EjbLogger extends BasicLogger {
 //    void cacheRemoveFailed(Object id);
 
 //    /**
-//     * Logs a warning message indicating an Jakarta Enterprise Beans for the specific id could not be found
+//     * Logs a warning message indicating a Jakarta Enterprise Beans bean for the specific id could not be found
 //     *
 //     * @param id the session id that could not be released
 //     */
@@ -365,18 +365,18 @@ public interface EjbLogger extends BasicLogger {
     void invocationFailed(String component, Method method, @Cause Throwable t);
 
     /**
-     * Logs an error message indicating that an Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
+     * Logs an error message indicating that a Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
      */
     @LogMessage(level = WARN)
-    @Message(id = 35, value = "Could not find Jakarta Enterprise Beans for locator %s, Jakarta Enterprise Beans client proxy will not be replaced")
+    @Message(id = 35, value = "Could not find Jakarta Enterprise Beans bean for locator %s, Jakarta Enterprise Beans client proxy will not be replaced")
     void couldNotFindEjbForLocatorIIOP(EJBLocator<?> locator);
 
 
     /**
-     * Logs an error message indicating that an Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
+     * Logs an error message indicating that a Jakarta Enterprise Beans client proxy could not be swapped out in a RMI invocation
      */
     @LogMessage(level = WARN)
-    @Message(id = 36, value = "Jakarta Enterprise Beans %s is not being replaced with a Stub as it is not exposed over IIOP")
+    @Message(id = 36, value = "Jakarta Enterprise Beans bean %s is not being replaced with a Stub as it is not exposed over IIOP")
     void ejbNotExposedOverIIOP(EJBLocator<?> locator);
 
     /**
@@ -656,7 +656,7 @@ public interface EjbLogger extends BasicLogger {
 //    @Message(id = 104, value = "Could not find marshaller factory for marshaller strategy %s")
 //    RuntimeException failedToFindMarshallerFactoryForStrategy(String marshallerStrategy);
 
-//    @Message(id = 105, value = "%s is not an Jakarta Enterprise Beans component")
+//    @Message(id = 105, value = "%s is not a Jakarta Enterprise Beans component")
 //    IllegalArgumentException notAnEJBComponent(Component component);
 
 //    @Message(id = 106, value = "Could not load method param class %s of timeout method")
@@ -2370,11 +2370,11 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException invalidSecurityForDomainSet(String componentName);
 
     /**
-     * Creates an exception indicating component configuration is not an Jakarta Enterprise Beans component"
+     * Creates an exception indicating component configuration is not a Jakarta Enterprise Beans component.
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 348, value = "%s is not an Jakarta Enterprise Beans component")
+    @Message(id = 348, value = "%s is not a Jakarta Enterprise Beans component")
     IllegalArgumentException invalidComponentConfiguration(String componentName);
 
     /**
@@ -2386,11 +2386,11 @@ public interface EjbLogger extends BasicLogger {
     RuntimeException failToLoadViewClassEjb(String beanName, @Cause Throwable e);
 
     /**
-     * Creates an exception indicating the component named with component class is not an Jakarta Enterprise Beans component
+     * Creates an exception indicating the component named with component class is not a Jakarta Enterprise Beans component
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 350, value = "Component named %s with component class %s is not an Jakarta Enterprise Beans component")
+    @Message(id = 350, value = "Component named %s with component class %s is not a Jakarta Enterprise Beans component")
     IllegalArgumentException invalidEjbComponent(String componentName, Class<?> componentClass);
 
 //    /**
@@ -2556,12 +2556,12 @@ public interface EjbLogger extends BasicLogger {
 
 
 //    /**
-//     * Creates an exception indicating specified components is not an Jakarta Enterprise Beans component"
+//     * Creates an exception indicating specified components is not a Jakarta Enterprise Beans component
 //     *
 //     * @param componentName
 //     * @return an {@link IllegalArgumentException} for the error.
 //     */
-//    @Message(id = 371, value = "%s is not an Jakarta Enterprise Beans component")
+//    @Message(id = 371, value = "%s is not a Jakarta Enterprise Beans component")
 //    IllegalArgumentException invalidComponentIsNotEjbComponent(final String componentName);
 
     /**
@@ -2573,12 +2573,12 @@ public interface EjbLogger extends BasicLogger {
     DeploymentUnitProcessingException componentClassHasMultipleTimeoutAnnotations(Class<?> componentClass);
 
     /**
-     * Creates an exception indicating the current component is not an Jakarta Enterprise Beans.
+     * Creates an exception indicating the current component is not a Jakarta Enterprise Beans bean.
      *
      * @param component the component.
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 373, value = "Current component is not an Jakarta Enterprise Beans %s")
+    @Message(id = 373, value = "Current component is not a Jakarta Enterprise Beans bean %s")
     IllegalStateException currentComponentNotAEjb(ComponentInstance component);
 
     /**
@@ -2638,7 +2638,7 @@ public interface EjbLogger extends BasicLogger {
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 
     /**
-     * Thrown when an Jakarta Enterprise Beans 2 Jakarta Enterprise Beans does not implement a method on an Jakarta Enterprise Beans 2
+     * Thrown when a Jakarta Enterprise Beans 2 bean does not implement a method on a Jakarta Enterprise Beans 2 bean
      *
      * @param method    The method
      * @param viewClass The view
@@ -2658,7 +2658,7 @@ public interface EjbLogger extends BasicLogger {
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
 
     /**
-     * Exception that is thrown when invoking remove while an Jakarta Enterprise Beans is in a transaction
+     * Exception that is thrown when invoking remove while a Jakarta Enterprise Beans bean is in a transaction
      */
     @Message(id = 386, value = "Jakarta Enterprise Beans 4.6.4 Cannot remove Jakarta Enterprise Beans via Enterprise Beans 2.x remove() method while participating in a transaction")
     RemoveException cannotRemoveWhileParticipatingInTransaction();
@@ -3196,7 +3196,7 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 518, value = "Exception resolving class %s for unmarshalling; it has either been blocklisted or not allowlisted")
     InvalidClassException cannotResolveFilteredClass(String clazz);
 
-    @Message(id = 519, value = "Invalid unmarshalling filter specfication %s; specifications must describe class or package name matching patterns")
+    @Message(id = 519, value = "Invalid unmarshalling filter specification %s; specifications must describe class or package name matching patterns")
     IllegalArgumentException invalidFilterSpec(String spec);
 
     @Message(id = 521, value = "Some classes referenced by annotation: %s in class: %s are missing.")

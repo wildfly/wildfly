@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.jwt.BaseJWTCase;
 
 /**
- * A test case for an Jakarta Enterprise Bean endpoint secured using the MP-JWT mechanism and invoking a
+ * A test case for a Jakarta Enterprise Bean endpoint secured using the MP-JWT mechanism and invoking a
  * second Jakarta Enterprise Bean within the same deployment and across deployments.
  *
  * @author <a href="fjuma@redhat.com">Farah Juma</a>

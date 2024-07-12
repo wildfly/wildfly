@@ -64,7 +64,7 @@ public class EjbJarDeploymentProcessor implements DeploymentUnitProcessor {
                             !index.getAnnotations(STATELESS).isEmpty() ||
                             !index.getAnnotations(MESSAGE_DRIVEN).isEmpty() ||
                             !index.getAnnotations(SINGLETON).isEmpty())) {
-                    // this is an Jakarta Enterprise Beans deployment
+                    // this is a Jakarta Enterprise Beans deployment
                     // TODO: we need to mark Jakarta Enterprise Beans sub deployments so the sub deployers know they are Jakarta
                     // Enterprise Beans deployments
                     SubDeploymentMarker.mark(resourceRoot);

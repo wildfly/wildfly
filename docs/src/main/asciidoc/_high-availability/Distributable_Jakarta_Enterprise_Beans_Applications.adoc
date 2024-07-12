@@ -20,7 +20,7 @@ on which the SFSB was created fails, the invocation will be retried on another n
 In the case of Jakarta Enterprise Beans applications, whether or not a bean is distributable is determined globally or on a per-bean basis, rather than on
 an application-wide basis as in the case of distributed HttpSessions.
 
-A stateful session bean within an Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
+A stateful session bean within a Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
 to store its session state. Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#caches[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
 Additionally, the EJB application needs to be deployed into a server which uses an High Availability (HA) server profile, such as standalone-ha.xml
 or standalone-full-ha.xml.

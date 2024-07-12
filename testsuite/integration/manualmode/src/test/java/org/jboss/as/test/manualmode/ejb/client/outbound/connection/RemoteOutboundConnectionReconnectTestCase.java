@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that an Jakarta Enterprise Beans client context containing a reference to a remote outbound connection, has the ability to
+ * Tests that a Jakarta Enterprise Beans client context containing a reference to a remote outbound connection, has the ability to
  * reconnect a failed connection
  *
  * @author Jaikiran Pai
@@ -111,7 +111,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
         this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION_NON_CLUSTERED);
         boolean defaultContainerStarted = false;
         try {
-            // deploy a deployment which contains jboss-ejb-client.xml that contains an Jakarta Enterprise Beans receiver pointing
+            // deploy a deployment which contains jboss-ejb-client.xml that contains a Jakarta Enterprise Beans bean receiver pointing
             // to a server which hasn't yet started. Should succeed without throwing deployment error
             this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
             // To make sure deployment succeeded and invocations are possible, call an independent bean

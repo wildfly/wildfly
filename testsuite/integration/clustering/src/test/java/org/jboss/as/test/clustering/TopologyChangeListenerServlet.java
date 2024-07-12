@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Utility servlet that delegates to an Jakarta Enterprise Beans to perform topology stabilization.
+ * Utility servlet that delegates to a Jakarta Enterprise Beans bean to perform topology stabilization.
  * @author Paul Ferraro
  */
 @WebServlet(urlPatterns = { TopologyChangeListenerServlet.SERVLET_PATH })

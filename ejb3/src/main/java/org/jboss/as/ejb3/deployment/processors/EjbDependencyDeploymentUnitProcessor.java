@@ -22,8 +22,8 @@ import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
 
 /**
  * Responsible for adding appropriate Jakarta EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
- * <p/>
- * Author : Jaikiran Pai
+ *
+ * @author Jaikiran Pai
  */
 public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
@@ -43,7 +43,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String CLUSTERING_EJB_CLIENT = "org.wildfly.clustering.ejb.client";
 
     /**
-     * Adds Jakarta EE module as a dependency to any deployment unit which is an Jakarta Enterprise Beans deployment
+     * Adds Jakarta EE module as a dependency to any deployment unit which is a Jakarta Enterprise Beans deployment
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException
