@@ -23,7 +23,7 @@ import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
 /**
  * Sets up the Jakarta Enterprise Beans component description with the pool name configured via the {@link org.jboss.ejb3.annotation.Pool}
- * annotation and/or the deployment descriptor, for an Jakarta Enterprise Beans
+ * annotation and/or the deployment descriptor, for a Jakarta Enterprise Beans bean.
  *
  * @author Jaikiran Pai
  */

@@ -28,9 +28,9 @@ import org.wildfly.security.auth.server.SecurityDomain;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A service that sets up the security domain mapping for an Jakarta Enterprise Beans deployment.
+ * A service that sets up the security domain mapping for a Jakarta Enterprise Beans deployment.
  *
- * This service is reponsible for deployment level actions such as registering a deployment with the resolved
+ * This service is responsible for deployment level actions such as registering a deployment with the resolved
  * application-security-domain mapping or associating the {@code SecurityDomain} with the deployment's {@code ClassLoader}.
  * Defined {@code ComponentConfigurator} instances will then provide the component specific installation.
  *

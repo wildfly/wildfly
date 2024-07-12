@@ -43,7 +43,7 @@ When a deployment is being processed by the server, it goes through a
 chain of "deployment processors". Each of these processors will have a
 way to check if the deployment meets a certain criteria and if it does,
 the deployment processor adds an implicit module dependency to that
-deployment. Let's take an example - Consider (again) an Jakarta Enterprise Beans 3 deployment
+deployment. Let's take an example - Consider (again) a Jakarta Enterprise Beans 3 deployment
 which has the following class:
 
 .MySuperDuperBean.java
@@ -61,7 +61,7 @@ public class MySuperDuperBean {
 As can be seen, we have a simple @Stateless Jakarta Enterprise Beans. When the deployment
 containing this class is being processed, the Jakarta Enterprise Beans deployment processor
 will see that the deployment contains a class with the @Stateless
-annotation and thus identifies this as an Jakarta Enterprise Beans deployment. *This is just
+annotation and thus identifies this as a Jakarta Enterprise Beans deployment. *This is just
 one of the several ways, various deployment processors can identify a
 deployment of some specific type.* The Jakarta Enterprise Beans deployment processor will
 then add an implicit dependency on the Jakarta EE API module, so that all

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class that stores the JACC config for an Jakarta Enterprise Beans before being consumed by the JACC service.
+ * Class that stores the JACC config for a Jakarta Enterprise Beans bean before being consumed by the JACC service.
  *
  * @author Stuart Douglas
  * @see EjbJaccService
