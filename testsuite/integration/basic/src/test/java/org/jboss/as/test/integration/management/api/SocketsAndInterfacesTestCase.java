@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.shared.RetryTaskExecutor;
@@ -75,18 +74,10 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
     @Before
     public void before() throws IOException {
         snapshot = ServerSnapshot.takeSnapshot(getManagementClient());
-        if (System.getProperties().containsKey("ipv6")) {
-            // if proxy is used, we need to use default host, because used host needs to be set in -DnonProxyHosts and -Dhttp.nonProxyHosts parameter
-            // we can't choose one host randomly
-            testHost = System.getProperty("node0");
-            testNic = getNic(testHost);
-            assumeFalse("No usable nic '" + testHost + "' is available", testNic == null);
-        } else {
-            testNic = getNonDefaultNic();
-            assumeFalse("No usable non-default nic is available", testNic == null);
-            // test the connector
-            testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostAddress());
-        }
+        testHost = System.getProperty("node0");
+        testNic = getNic(testHost);
+        assumeFalse("No usable nic '" + testHost + "' is available", testNic == null);
+
     }
 
     @After
@@ -156,33 +147,6 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test123-binding", REMOVE);
         result = executeOperation(op, false);
         Assert.assertNotEquals("Removed socked binding with connector still using it.", SUCCESS, result.get(OUTCOME).asString());
-    }
-
-    private NetworkInterface getNonDefaultNic() throws SocketException, UnknownHostException {
-        InetAddress defaultAddr = InetAddress.getByName(url.getHost());
-
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface nic = interfaces.nextElement();
-            if (!nic.isUp() || nic.isPointToPoint()) {
-                continue;
-            }
-            boolean valid = false;
-            for (InterfaceAddress addr : nic.getInterfaceAddresses()) {
-                if (addr.getAddress().equals(defaultAddr)) {
-                    valid = false;
-                    break;
-                } else {
-                    valid = true;
-                }
-            }
-
-            if (valid) {
-                // interface found
-                return nic;
-            }
-        }
-        return null; // no interface found
     }
 
     private NetworkInterface getNic(String node) throws SocketException, UnknownHostException {
