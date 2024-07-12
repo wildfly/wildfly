@@ -1076,6 +1076,21 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Test against the wildfly-preview feature pack using layers-->
+        <profile>
+            <id>preview.layers.test.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-preview-feature-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Use preview stability when running the embedded server for pre-surefire-execution setup work -->
+                <embedded.server.stability>preview</embedded.server.stability>
+            </properties>
+        </profile>
     </profiles>
 
 </project>

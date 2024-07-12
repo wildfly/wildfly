@@ -9,16 +9,17 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-The mod_cluster integration is done via the `mod_cluster` subsystem.
+The mod_cluster integration is provided by the `org.wildfly.extension.mod_cluster` extension and the `modcluster` subsystem.
+
+For more information about the project visit the https://www.modcluster.io/[project website (modcluster.io)] and the https://docs.modcluster.io/[documentation website (docs.modcluster.io)].
 
 [[mod_cluster_subsystem_configuration]]
 == Configuration
 
 [[instance-id-or-jvmroute]]
-=== Instance ID or JVMRoute
+=== Instance ID
 
-The instance-id or JVMRoute defaults to `jboss.node.name` property passed
-on server startup (e.g. via `-Djboss.node.name=XYZ`).
+The `instance-id` (also called `jvmRoute` in the JBoss Web / Tomcat nomenclature) defaults to the `jboss.node.name` property passed on server startup (e.g. via `-Djboss.node.name=myroute`).
 
 [source,options="nowrap"]
 ----
@@ -29,12 +30,11 @@ on server startup (e.g. via `-Djboss.node.name=XYZ`).
 }
 ----
 
-To configure instance-id statically, configure the corresponding
-property in Undertow subsystem:
+To configure `instance-id` statically, configure the corresponding attribute in the Undertow subsystem:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 /] /subsystem=undertow:write-attribute(name=instance-id,value=myroute)
+[standalone@localhost:9990 /] /subsystem=undertow:write-attribute(name=instance-id, value=myroute)
 {
     "outcome" => "success",
     "response-headers" => {
@@ -42,42 +42,35 @@ property in Undertow subsystem:
         "process-state" => "reload-required"
     }
 }
+
+[standalone@localhost:9990 /] reload
 ----
 
 [[proxies]]
 === Proxies
 
-By default, mod_cluster is configured for multicast-based discovery. To
-specify a static list of proxies, create a remote-socket-binding for
-each proxy and then reference them in the 'proxies' attribute. See the
-following example for configuration in the domain mode:
+By default, mod_cluster is configured for discovery based on UDP Multicast.
+To specify a static list of proxies, create a `remote-socket-binding` for each proxy and then reference them by the `proxies` attribute.
+See the following configuration example:
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=10.21.152.86, port=6666)
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy1:add(host=10.21.152.86, port=6666)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=proxy2:add(host=10.21.152.87, port=6666)
+{"outcome" => "success"}
+
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[proxy1, proxy2])
 {
     "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => undefined
+    "response-headers" => {
+        "operation-requires-reload" => true,
+        "process-state" => "reload-required"
+    }
 }
-[domain@localhost:9990 /] /socket-binding-group=ha-sockets/remote-destination-outbound-socket-binding=proxy2:add(host=10.21.152.87, port=6666)
-{
-    "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => undefined
-}
-[domain@localhost:9990 /] /profile=ha/subsystem=modcluster/proxy=default:write-attribute(name=proxies, value=[proxy1, proxy2])
-{
-    "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => undefined
-}
-[domain@localhost:9990 /] :reload-servers
-{
-    "outcome" => "success",
-    "result" => undefined,
-    "server-groups" => undefined
-}
+
+[standalone@localhost:9990 /] reload
 ----
 
 === Multiple mod_cluster Configurations
@@ -96,72 +89,46 @@ which registers this host using advertise mechanism.
 /subsystem=undertow/server=other-server/ajp-listener=ajp-other:add(socket-binding=ajp-other)
 /subsystem=undertow/server=other-server/host=other-host:add(default-web-module=root-other.war)
 /subsystem=undertow/server=other-server/host=other-host/location=other:add(handler=welcome-content)
-/subsystem=undertow/server=other-server/host=other-host:write-attribute(name=alias,value=[localhost]))
-
-/socket-binding-group=standard-sockets/socket-binding=modcluster-other:add(multicast-address=224.0.1.106,multicast-port=23364)
-/subsystem=modcluster/proxy=other:add(advertise-socket=modcluster-other,balancer=other-balancer,connector=ajp-other)
-
+/subsystem=undertow/server=other-server/host=other-host:write-attribute(name=alias, value=[localhost])
+/socket-binding-group=standard-sockets/socket-binding=modcluster-other:add(multicast-address=224.0.1.106, multicast-port=23364)
+/subsystem=modcluster/proxy=other:add(advertise-socket=modcluster-other, balancer=other-balancer, listener=ajp-other)
 reload
 ----
 
 [[runtime-operations]]
 == Runtime Operations
 
-The modcluster subsystem supports several operations:
+The mod_cluster subsystem supports several runtime operations on the proxy:
 
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-operation-names
-{
-    "outcome" => "success",
-    "result" => [
-        "add",
-        "add-custom-metric",
-        "add-metric",
-        "add-proxy",
-        "disable",
-        "disable-context",
-        "enable",
-        "enable-context",
-        "list-proxies",
-        "read-attribute",
-        "read-children-names",
-        "read-children-resources",
-        "read-children-types",
-        "read-operation-description",
-        "read-operation-names",
-        "read-proxies-configuration",
-        "read-proxies-info",
-        "read-resource",
-        "read-resource-description",
-        "refresh",
-        "remove-custom-metric",
-        "remove-metric",
-        "remove-proxy",
-        "reset",
-        "stop",
-        "stop-context",
-        "validate-address",
-        "write-attribute"
-    ]
-}
-----
+* add-proxy
+* disable
+* disable-context
+* enable
+* enable-context
+* query
+* read-proxies-configuration
+* read-proxies-info
+* refresh
+* remove-proxy
+* reset
+* stop
+* stop-context
 
-The operations specific to the modcluster subsystem are divided in 3
-categories the ones that affects the configuration and require a restart
-of the subsystem, the one that just modify the behaviour temporarily and
-the ones that display information from the httpd part.
+The operations specific to the mod_cluster subsystem are divided into 3 categories:
+
+* ones that affect the configuration and require a restart of the subsystem
+* ones that just modify the behaviour temporarily,
+* and the ones that display information from the proxy.
 
 [[operations-displaying-httpd-informations]]
-=== operations displaying httpd information
+=== Operations displaying reverse proxy information
 
-There are 2 operations that display how Apache httpd sees the node:
+There are 2 operations that display how the proxy sees the node:
 
 [[read-proxies-configuration]]
 ==== read-proxies-configuration
 
-Send a DUMP message to all Apache httpd the node is connected to and
-display the message received from Apache httpd.
+Sends a `DUMP` message to all reverse proxies the node is connected to, and displays the message received from them.
 
 [source,options="nowrap"]
 ----
@@ -194,8 +161,7 @@ context: 2 [/myapp] vhost: 1 node: 1 status: 1
 [[read-proxies-info]]
 ==== read-proxies-info
 
-Send a INFO message to all Apache httpd the node is connected to and
-display the message received from Apache httpd.
+Sends an `INFO` message to all reverse proxies the node is connected to, and displays the message received from them.
 
 [source,options="nowrap"]
 ----
@@ -224,20 +190,19 @@ Context: [1:1:2], Context: /myapp, Status: ENABLED
 ----
 
 [[operations-that-handle-the-proxies-the-node-is-connected-too]]
-==== operations that handle the proxies the node is connected too
+==== Operations that handle the proxies the node is connected to
 
-There are 3 operation that could be used to manipulate the list of
-Apache httpd the node is connected to.
+There are 3 operations that could be used to manipulate the list of reverse proxies the node is connected to.
 
 [[list-proxies]]
 ==== list-proxies
 
-Displays the httpd that are connected to the node. The httpd could be
-discovered via the Advertise protocol or via the proxy-list attribute.
+Displays the reverse proxies that are connected to the node.
+The proxies are either discovered by the advertise mechanism or by the configured `proxies` attribute.
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 subsystem=modcluster] :list-proxies
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:list-proxies
 {
     "outcome" => "success",
     "result" => [
@@ -247,40 +212,38 @@ discovered via the Advertise protocol or via the proxy-list attribute.
 }
 ----
 
-[[remove-proxy]]
-==== remove-proxy
-
-Remove a proxy from the discovered proxies or temporarily from the
-proxy-list attribute.
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 subsystem=modcluster] :remove-proxy(host=jfcpc, port=6666)
-{"outcome" => "success"}
-----
-
 [[add-proxy]]
 ==== add-proxy
 
-Add a proxy to the discovered proxies or temporarily to the proxy-list
-attribute.
+Adds a proxy to the discovered proxies at runtime without persisting to the server configuration:
 
 [source,options="nowrap"]
 ----
-[standalone@localhost:9990 subsystem=modcluster] :add-proxy(host=jfcpc, port=6666)
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-proxy(host=localhost, port=8090)
+{"outcome" => "success"}
+----
+
+[[remove-proxy]]
+==== remove-proxy
+
+Removes a proxy from the discovered proxies at runtime without persisting to the server configuration:
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:remove-proxy(host=localhost, port=8090)
 {"outcome" => "success"}
 ----
 
 [[context-related-operations]]
 === Context related operations
 
-Those operations allow to send context related commands to Apache httpd.
-They are send automatically when deploying or undeploying webapps.
+These operations allow you to send context related commands to the reverse proxies.
+These are also issued automatically when deploying or un-deploying webapps.
 
 [[enable-context]]
 ==== enable-context
 
-Tell Apache httpd that the context is ready receive requests.
+Informs reverse proxies that the given web context is ready receive requests.
 
 [source,options="nowrap"]
 ----
@@ -291,8 +254,7 @@ Tell Apache httpd that the context is ready receive requests.
 [[disable-context]]
 ==== disable-context
 
-Tell Apache httpd that it shouldn't send new session requests to the
-context of the virtualhost.
+Informs reverse proxies that they should not send any new session requests to the specified web context.
 
 [source,options="nowrap"]
 ----
@@ -303,8 +265,7 @@ context of the virtualhost.
 [[stop-context]]
 ==== stop-context
 
-Tell Apache httpd that it shouldn't send requests to the context of the
-virtualhost.
+Informs reverse proxies that they should not send requests to the web context.
 
 [source,options="nowrap"]
 ----
@@ -321,107 +282,18 @@ webapps running on the node and operation that affect the whole node.
 [[refresh]]
 ==== refresh
 
-Refresh the node by sending a new CONFIG message to Apache httpd.
+Refreshes the node by sending a new `CONFIG` message to the reverse proxies.
+
+[source,options="nowrap"]
+----
+[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:refresh
+{"outcome" => "success"}
+----
 
 [[reset]]
 ==== reset
 
-Reset the connection between Apache httpd and the node.
-
-[[configuration-1]]
-=== Configuration
-
-[[metric-configuration]]
-==== Metric configuration
-
-There are 4 metric operations corresponding to add and remove load
-metrics to the dynamic-load-provider. Note that when nothing is defined
-a simple-load-provider is use with a fixed load factor of one.
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-resource(name=mod-cluster-config)
-{
-    "outcome" => "success",
-    "result" => {"simple-load-provider" => {"factor" => "1"}}
-}
-----
-
-that corresponds to the following configuration:
-
-[source,xml,options="nowrap"]
-----
-<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-            <mod-cluster-config>
-                <simple-load-provider factor="1"/>
-            </mod-cluster-config>
- </subsystem>
-----
-
-[[add-metric]]
-===== add-metric
-
-Add a metric to the dynamic-load-provider, the dynamic-load-provider in
-configuration is created if needed.
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-metric(type=cpu)
-{"outcome" => "success"}
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:read-resource(name=mod-cluster-config)
-{
-    "outcome" => "success",
-    "result" => {
-        "dynamic-load-provider" => {
-            "history" => 9,
-            "decay" => 2,
-            "load-metric" => [{
-                "type" => "cpu"
-            }]
-        }
-    }
-}
-----
-
-[[remove-metric]]
-===== remove-metric
-
-Remove a metric from the dynamic-load-provider.
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:remove-metric(type=cpu)
-{"outcome" => "success"}
-----
-
-[[add-custom-metric-remove-custom-metric]]
-===== add-custom-metric / remove-custom-metric
-
-like the add-metric and remove-metric except they require a class
-parameter instead the type. Usually they needed additional properties
-which can be specified
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /subsystem=modcluster/proxy=default:add-custom-metric(class=myclass, property=[("pro1" => "value1"), ("pro2" => "value2")]
-{"outcome" => "success"}
-----
-
-which corresponds the following in the xml configuration file:
-
-[source,xml,options="nowrap"]
-----
-<subsystem xmlns="urn:jboss:domain:modcluster:1.0">
-    <mod-cluster-config>
-        <dynamic-load-provider history="9" decay="2">
-            <custom-load-metric class="myclass">
-                <property name="pro1" value="value1"/>
-                <property name="pro2" value="value2"/>
-            </custom-load-metric>
-        </dynamic-load-provider>
-    </mod-cluster-config>
-</subsystem>
-----
+Reset the connection between the reverse proxy and the node.
 
 include::SSL_Configuration_using_Elytron_Subsystem.adoc[leveloffset=+1]
 
@@ -433,8 +305,7 @@ be used. This is done by creating a security domain and specifying the External 
 configurations to be used by the `http-authentication-factory`:
 
 ----
-/subsystem=elytron/http-authentication-factory=web-tests:add(security-domain=example-domain, http-server-mechanism-factory=example-factory,
-mechanism-configurations=[{mechanism-name=EXTERNAL}])
+/subsystem=elytron/http-authentication-factory=web-tests:add(security-domain=example-domain, http-server-mechanism-factory=example-factory, mechanism-configurations=[{mechanism-name=EXTERNAL}])
 ----
 
 Elytron will accept the externally authenticated user and use the specified security domain to perform role mapping to

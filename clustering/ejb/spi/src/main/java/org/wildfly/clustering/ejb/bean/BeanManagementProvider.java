@@ -26,7 +26,7 @@ public interface BeanManagementProvider {
     Iterable<CapabilityServiceConfigurator> getDeploymentServiceConfigurators(BeanDeploymentConfiguration configuration);
 
     /**
-     * Builds a bean manager factory for an Jakarta Enterprise Bean within a deployment.
+     * Builds a bean manager factory for a Jakarta Enterprise Beans bean within a deployment.
      * @param configuration a bean configuration
      * @return a service configurator
      */

@@ -162,21 +162,28 @@ If a deployment does not provide any startup checks, WildFly will automatically 
 
 [NOTE]
 ====
-This allows applications that does not provide startup checks to still be able to inform cloud containers when they are started to proceed with the container start.
+This allows applications that do not provide startup checks to still be able to inform cloud containers when they are started to proceed with the container start.
 Setting `empty-startup-checks-status` to `DOWN` ensures that the server will not be ready until the application is deployed. At that time, the `started-<deployment name>`
 will be added (which returns `UP`) and the `empty-startup-checks` procedure will no longer be checked as there is now a startup check procedure provided either by the deployment or by the server.
 ====
 
 === Disabling Default Server Procedures
 
-It is possible to disable all these server procedures by using the MicroProfile Config property `mp.health.disable-default-procedures`.
+It is possible to disable the default server procedures by using the MicroProfile Config property `mp.health.disable-default-procedures`.
 
 [NOTE]
 ====
 The MicroProfile Config property `mp.health.disable-default-procedures` is read at 2 different times:
 
-1. __When the server starts__, to determine if its server procedures should be disabled or enabled. It can be set using the system property `mp.health.disable-default-procedures` or the environment variable `MP_HEALTH_DISABLE_DEFAULT_PROCEDURES`. Setting this property in a deployment is ignored at that time.
-2. __When an application is deployed__, to determine if WildFly should add a readiness check if the deployment does not provide any. At that time, setting this property in a `microprofile-config.properties` file in the deployment would be taken into account. (with the usual priority rules for MicroProfile Config properties).
+1. __When the server starts__, to determine if the _server_ procedures should be disabled or enabled. It can be set using the system property `mp.health.disable-default-procedures` or the environment variable `MP_HEALTH_DISABLE_DEFAULT_PROCEDURES`. Setting this property in a deployment is ignored at that time.
+2. __When an application is deployed__, to determine if WildFly should disable _all_ the default procedures, including
+_server_ ones.
+Setting this property in a deployment has higher priority than the global server configuration, based on the principle that
+microservices applications - and specifically MicroProfile based - usually endorse a single-deployment model.
+With respect to this scenario, it is quite natural to let the deployment override the global configuration.
+When set to `true` WildFly will also add a readiness check if the deployment does not provide any.
+At that time, setting this property in a `microprofile-config.properties` file in the deployment would be taken into account
+(with the usual priority rules for MicroProfile Config properties).
 ====
 
 When the `mp.health.disable-default-procedures` is set to `true` the server will not return any of its health checks in the responses which involve also the default empty configurable checks included before the deployments are processed, namely `empty-readiness-checks`, `empty-startup-checks`, and `empty-liveness-checks`. This means that the server might prematurely respond with invalid `UP` response particularly to `startup` and `readiness` invocations before the user deployment is processed. For this reason, MicroProfile Health specification defines two MicroProfile Config properties that specify the response returned while the server is still processing deployments, i.e. it returns an empty health response:

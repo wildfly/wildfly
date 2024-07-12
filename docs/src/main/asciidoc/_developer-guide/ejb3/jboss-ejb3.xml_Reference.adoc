@@ -78,7 +78,7 @@ or to all beans in the deployment by using `*` as the `ejb-name`.
 ==== The security namespace urn:security
 
 This allows you to set the security domain and the run-as principal for
-an Jakarta Enterprise Beans.
+a Jakarta Enterprise Beans bean.
 
 [source,xml,options="nowrap"]
 ----

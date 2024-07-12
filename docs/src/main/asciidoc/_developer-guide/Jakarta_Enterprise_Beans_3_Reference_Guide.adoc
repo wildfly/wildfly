@@ -69,7 +69,7 @@ For example:
 == Security Domain
 
 Each Enterprise Java Bean ^tm^ can be associated with a security domain.
-Only when an Jakarta Enterprise Beans are associated with a security domain will
+Only when a Jakarta Enterprise Beans bean is associated with a security domain will
 authentication and authorization be enforced.
 
 [[specification-of-security-domain-using-metadata-annotations]]

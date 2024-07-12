@@ -21,7 +21,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 
 /**
  *
- * Configurator that validates than an Jakarta Enterprise Beans class does not validate the Jakarta Enterprise Beans specification
+ * Configurator that validates that a Jakarta Enterprise Beans class does not violate the Jakarta Enterprise Beans specification.
  *
  * @author Stuart Douglas
  */

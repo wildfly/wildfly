@@ -1357,7 +1357,7 @@
                         </goals>
                         <phase>${glow.ejb-lite.phase}</phase>
                         <configuration>
-                            <expected-discovery>[cdi, ejb-lite, jaxrs, jsf, servlet]==>ee-core-profile-server,ejb-lite,jaxrs,jsf</expected-discovery>
+                            <expected-discovery>[cdi, ejb-lite, jaxrs, jsf]==>ee-core-profile-server,ejb-lite,jaxrs,jsf</expected-discovery>
                             <surefire-execution-for-included-classes>jsf-ejb-lite-layers.surefire</surefire-execution-for-included-classes>
                         </configuration>
                     </execution>

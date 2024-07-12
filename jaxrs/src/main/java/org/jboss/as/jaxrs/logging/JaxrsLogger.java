@@ -11,7 +11,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.List;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -133,7 +132,7 @@ public interface JaxrsLogger extends BasicLogger {
      * @param ejbName The ejb
      * @return  the exception
      */
-    @Message(id = 10, value = "Jakarta RESTful Web Services resource %s does not correspond to a view on the Jakarta Enterprise Beans %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of an Jakarta Enterprise Beans.")
+    @Message(id = 10, value = "Jakarta RESTful Web Services resource %s does not correspond to a view on the Jakarta Enterprise Beans %s. @Path annotations can only be placed on classes or interfaces that represent a local, remote or no-interface view of a Jakarta Enterprise Beans bean.")
     DeploymentUnitProcessingException typeNameNotAnEjbView(List<Class<?>> type, String ejbName);
 
     @Message(id = 11, value = "Invalid value for parameter %s: %s")
@@ -182,11 +181,11 @@ public interface JaxrsLogger extends BasicLogger {
     @Message(id = 21, value = "%s %s")
     void classIntrospectionFailure(String clazz, String msg);
 
-    @Message(id = 22, value = "\"Parameter %s is not a list\"")
-    OperationFailedException parameterNotList(String param);
-
-    @Message(id = 23, value = "Illegal value for parameter %s: %s")
-    String illegalArgument(String name, String value);
+//    @Message(id = 22, value = "\"Parameter %s is not a list\"")
+//    OperationFailedException parameterNotList(String param);
+//
+//    @Message(id = 23, value = "Illegal value for parameter %s: %s")
+//    String illegalArgument(String name, String value);
 
     @LogMessage(level = WARN)
     @Message(id = 29, value = "The RESTEasy tracing API has been enabled for deployment \"%s\" and is not meant for production.")

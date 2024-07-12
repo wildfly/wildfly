@@ -13,11 +13,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * A servlet that accesses an Jakarta Enterprise Beans and tests whether the call argument is
+ * A servlet that accesses a Jakarta Enterprise Beans bean and tests whether the call argument is
  * serialized.
  *
  * @author Scott.Stark@jboss.org
- * @author
  */
 public class EJBServlet extends HttpServlet {
 

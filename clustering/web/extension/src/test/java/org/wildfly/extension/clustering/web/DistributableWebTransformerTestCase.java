@@ -38,7 +38,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
 
     @Parameters
     public static Iterable<ModelTestControllerVersion> parameters() {
-        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0);
+        return EnumSet.of(ModelTestControllerVersion.EAP_7_4_0, ModelTestControllerVersion.EAP_8_0_0);
     }
 
     private final ModelTestControllerVersion controller;
@@ -73,6 +73,8 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         switch (this.controller) {
             case EAP_7_4_0:
                 return DistributableWebSubsystemModel.VERSION_2_0_0;
+            case EAP_8_0_0:
+                return DistributableWebSubsystemModel.VERSION_4_0_0;
             default:
                 throw new IllegalArgumentException();
         }
@@ -96,6 +98,23 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
                         formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
                         formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
                 };
+            case EAP_8_0_0:
+                return new String[] {
+                        formatSubsystemArtifact(),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-hotrod:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-spi:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-client-service:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-web-container:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-web-hotrod:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-web-infinispan:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-web-service:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-web-spi:%s"),
+                };
             default:
                 throw new IllegalArgumentException();
         }
@@ -106,7 +125,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
      */
     @Test
     public void testTransformation() throws Exception {
-        String subsystemXmlResource = String.format("wildfly-distributable-web-transform-%d_%d_%d.xml", this.version.getMajor(), this.version.getMinor(), this.version.getMicro());
+        String subsystemXmlResource = String.format("distributable-web-transform-%s.xml", this.version);
 
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(this.additionalInitialization)
@@ -148,7 +167,7 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> operations = builder.parseXmlResource("wildfly-distributable-web-transform-reject.xml");
+        List<ModelNode> operations = builder.parseXmlResource("distributable-web-reject.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(services, this.version, operations, this.createFailedOperationTransformationConfig());
     }
 
