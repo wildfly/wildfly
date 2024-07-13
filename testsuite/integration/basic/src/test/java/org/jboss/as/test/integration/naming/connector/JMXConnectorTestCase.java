@@ -60,7 +60,7 @@ public class JMXConnectorTestCase {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         final String address = managementClient.getMgmtAddress();
         rmiServerJndiName = "rmi://" + address + ":" + port + "/jmxrmi";
-        jmxServiceURL = new JMXServiceURL("service:jmx:rmi:///jndi/"+rmiServerJndiName);
+        jmxServiceURL = new JMXServiceURL("service:jmx:rmi://" + address + "/jndi/"+rmiServerJndiName);
         connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(jmxServiceURL, null, mbs);
         connectorServer.start();
     }
