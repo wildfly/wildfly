@@ -59,6 +59,12 @@
                     <artifactId>maven-install-plugin</artifactId>
                     <executions><execution><id>default-install</id><phase>none</phase></execution></executions>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions><execution><id>require-java17-build</id><goals><goal>enforce</goal></goals><phase>none</phase></execution></executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
