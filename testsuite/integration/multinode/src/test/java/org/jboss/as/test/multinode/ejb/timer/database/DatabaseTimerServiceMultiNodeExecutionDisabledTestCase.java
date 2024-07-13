@@ -32,6 +32,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,7 +79,12 @@ public class DatabaseTimerServiceMultiNodeExecutionDisabledTestCase {
             if (server == null) {
                 //we need a TCP server that can be shared between the two servers
                 //To allow remote connections, start the TCP server using the option -tcpAllowOthers
-                server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                try {
+                    System.setProperty("h2.bindAddress", TestSuiteEnvironment.getServerAddress());
+                    server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                } finally {
+                    System.clearProperty("h2.bindAddress");
+                }
             }
 
             final ModelNode compositeOp = new ModelNode();
