@@ -15,6 +15,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.arquillian.container.NetworkUtils;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.omg.CORBA.SystemException;
 import org.omg.CORBA.ORBPackage.InvalidName;
 
@@ -36,6 +37,7 @@ public class Util {
 
     public static void presetOrb() throws InvalidName, SystemException {
         Properties properties = new Properties();
+        properties.setProperty(ORBConstants.SERVER_HOST_PROPERTY, TestSuiteEnvironment.getServerAddress());
         properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, "15151");
         properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, "1");
 
