@@ -7,7 +7,6 @@ package org.jboss.as.test.multinode.ejb.timer.database;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.test.multinode.ejb.timer.database.DatabaseTimerServiceMultiNodeExecutionDisabledTestCase.getRemoteContext;
@@ -38,6 +37,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
@@ -66,9 +66,6 @@ public class DatabaseTimerServiceMultiNodeTestCase {
 
     private static final int TIMER_DELAY = 400;
 
-    static final PathAddress ADDR_DATA_SOURCE = PathAddress.pathAddress().append(SUBSYSTEM, "datasources").append("data-source", "MyNewDs");
-    static final PathAddress ADDR_DATA_STORE = PathAddress.pathAddress().append(SUBSYSTEM, "ejb3").append(SERVICE, "timer-service").append("database-data-store", "dbstore");
-
     @AfterClass
     public static void afterClass() {
         if(server != null) {
@@ -88,7 +85,12 @@ public class DatabaseTimerServiceMultiNodeTestCase {
             if(server == null) {
                 //we need a TCP server that can be shared between the two servers
                 //To allow remote connections, start the TCP server using the option -tcpAllowOthers
-                server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                try {
+                    System.setProperty("h2.bindAddress", TestSuiteEnvironment.getServerAddress());
+                    server = Server.createTcpServer("-tcpAllowOthers", "-ifNotExists").start();
+                } finally {
+                    System.clearProperty("h2.bindAddress");
+                }
             }
 
             final ModelNode compositeOp = new ModelNode();
