@@ -372,16 +372,19 @@ public class JWTIdentityPropagationTestCase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
-                cli.sendLine(String.format("/subsystem=ejb3/application-security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
-                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", EJB_SECURITY_REALM));
-                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", ANOTHER_EJB_SECURITY_DOMAIN));
-                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", ANOTHER_EJB_SECURITY_REALM));
+                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:undefine-attribute(name=trusted-virtual-security-domains)",  EJB_SECURITY_DOMAIN));
+
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", SINGLE_DEPLOYMENT + ".ear"));
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", ANOTHER_SINGLE_DEPLOYMENT + ".ear"));
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", OUTFLOW_ANONYMOUS_CONFIG + ".ear"));
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", EAR_DEPLOYMENT_WITH_MP_JWT + ".ear"));
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN + ".ear"));
+
+                cli.sendLine(String.format("/subsystem=ejb3/application-security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
+                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
+                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", EJB_SECURITY_REALM));
+                cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", ANOTHER_EJB_SECURITY_DOMAIN));
+                cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", ANOTHER_EJB_SECURITY_REALM));
             }
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
