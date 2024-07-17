@@ -29,7 +29,6 @@ import org.wildfly.extension.requestcontroller.RequestController;
  */
 public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
 
-    private static final String PROCESS_STATE_NOTIFIER_CAPABILITY_NAME = "org.wildfly.management.process-state-notifier";
     private static final String REQUEST_CONTROLLER_CAPABILITY_NAME = "org.wildfly.request-controller";
 
     static final ManagedScheduledExecutorServiceAdd INSTANCE = new ManagedScheduledExecutorServiceAdd();
@@ -81,7 +80,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         }
         final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
 
-        final Supplier<ProcessStateNotifier> processStateNotifierSupplier = serviceBuilder.requiresCapability(PROCESS_STATE_NOTIFIER_CAPABILITY_NAME, ProcessStateNotifier.class);
+        final Supplier<ProcessStateNotifier> processStateNotifierSupplier = serviceBuilder.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         Supplier<RequestController> requestControllerSupplier = null;
         if (context.hasOptionalCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, ManagedScheduledExecutorServiceResourceDefinition.CAPABILITY.getDynamicName(context.getCurrentAddress()), null)) {
             requestControllerSupplier = serviceBuilder.requiresCapability(REQUEST_CONTROLLER_CAPABILITY_NAME, RequestController.class);

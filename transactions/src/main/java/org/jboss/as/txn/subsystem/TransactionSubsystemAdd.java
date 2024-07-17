@@ -400,11 +400,11 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final CapabilityServiceBuilder<?> recoveryManagerServiceServiceBuilder = serviceTarget.addCapability(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
         final Consumer<RecoveryManagerService> consumer = recoveryManagerServiceServiceBuilder.provides(XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY);
-        final Supplier<SocketBinding> recoveryBindingSupplier = recoveryManagerServiceServiceBuilder.requiresCapability("org.wildfly.network.socket-binding", SocketBinding.class, recoveryBindingName);
-        final Supplier<SocketBinding> statusBindingSupplier = recoveryManagerServiceServiceBuilder.requiresCapability("org.wildfly.network.socket-binding", SocketBinding.class, recoveryStatusBindingName);
-        final Supplier<SocketBindingManager> bindingManagerSupplier = recoveryManagerServiceServiceBuilder.requiresCapability("org.wildfly.management.socket-binding-manager", SocketBindingManager.class);
+        final Supplier<SocketBinding> recoveryBindingSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, recoveryBindingName);
+        final Supplier<SocketBinding> statusBindingSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBinding.SERVICE_DESCRIPTOR, recoveryStatusBindingName);
+        final Supplier<SocketBindingManager> bindingManagerSupplier = recoveryManagerServiceServiceBuilder.requires(SocketBindingManager.SERVICE_DESCRIPTOR);
         final Supplier<SuspendController> suspendControllerSupplier = recoveryManagerServiceServiceBuilder.requiresCapability("org.wildfly.server.suspend-controller", SuspendController.class);
-        final Supplier<ProcessStateNotifier> processStateSupplier = recoveryManagerServiceServiceBuilder.requiresCapability("org.wildfly.management.process-state-notifier", ProcessStateNotifier.class);
+        final Supplier<ProcessStateNotifier> processStateSupplier = recoveryManagerServiceServiceBuilder.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.requires(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT);
         recoveryManagerServiceServiceBuilder.addAliases(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER);

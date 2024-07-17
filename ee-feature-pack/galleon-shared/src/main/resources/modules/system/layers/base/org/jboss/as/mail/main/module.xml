@@ -16,6 +16,7 @@
     </resources>
 
     <dependencies>
+        <module name="java.xml"/>
         <module name="jakarta.mail.api" />
         <module name="org.eclipse.angus.mail">
             <imports>
@@ -35,6 +36,6 @@
         <module name="org.jboss.logging"/>
         <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
-        <module name="java.xml"/>
+        <module name="org.wildfly.service"/>
     </dependencies>
 </module>

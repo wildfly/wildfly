@@ -7,8 +7,6 @@ package org.wildfly.extension.messaging.activemq;
 
 import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.as.network.SocketBinding;
 
 /**
  * Capabilities for the messaging-activemq extension. This is not to be used outside of this extension.
@@ -61,13 +59,6 @@ public class Capabilities {
     static final String ELYTRON_DOMAIN_CAPABILITY = "org.wildfly.security.security-domain";
 
     /**
-     * The capability for the PathManager
-     *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/management/path-manager/capability.adoc">documentation</a>
-     */
-    static final String PATH_MANAGER_CAPABILITY = "org.wildfly.management.path-manager";
-
-    /**
      * The capability for the Http Listener Registry
      *
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/remoting/http-listener-registry/capability.adoc">documentation</a>
@@ -80,34 +71,6 @@ public class Capabilities {
      * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/undertow/listener/http-upgrade-registry/capability.adoc">documentation</a>
      */
     static final String HTTP_UPGRADE_REGISTRY_CAPABILITY_NAME = "org.wildfly.undertow.listener.http-upgrade-registry";
-/**
-     * The capability for the SocketBinding capability
-     *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
-     */
-    public static final String SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.socket-binding";
-
-    /**
-     * The capability for the SocketBinding capability
-     *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/socket-binding/capability.adoc">documentation</a>
-     */
-    public static final RuntimeCapability<Void> SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of(SOCKET_BINDING_CAPABILITY_NAME, true, SocketBinding.class)
-            .build();
-
-    /**
-     * A capability for the current messaging-activemq server configuration.
-     *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
-     */
-    public static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME ="org.wildfly.network.outbound-socket-binding";
-    /**
-     * A capability for the current messaging-activemq server configuration.
-     *
-     * @see <a href="https://github.com/wildfly/wildfly-capabilities/blob/main/org/wildfly/network/outbound-socket-binding/capability.adoc">Capability documentation</a>
-     */
-    public static final RuntimeCapability<Void> OUTBOUND_SOCKET_BINDING_CAPABILITY = RuntimeCapability.Builder.of(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, true, OutboundSocketBinding.class)
-            .build();
 
     /**
      * The capability name for the Elytron SSL context.

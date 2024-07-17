@@ -12,6 +12,7 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringAllowedValuesValidator;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -21,8 +22,6 @@ import org.jboss.dmr.ModelType;
  * @author Emmanuel Hugonnet (c) 2019 Red Hat, Inc.
  */
 public class TracerAttributes {
-
-    static final String OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME = "org.wildfly.network.outbound-socket-binding";
 
     private static final String[] ALLOWED_SAMPLER_TYPE = {"const", "probabilistic", "ratelimiting", "remote"};
 
@@ -55,7 +54,7 @@ public class TracerAttributes {
 
     public static final SimpleAttributeDefinition SENDER_BINDING = SimpleAttributeDefinitionBuilder.create(TracerConfigurationConstants.SENDER_AGENT_BINDING, ModelType.STRING, true)
             .setAttributeGroup("sender-configuration")
-            .setCapabilityReference(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME)
+            .setCapabilityReference(OutboundSocketBinding.SERVICE_DESCRIPTOR.getName())
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .setRestartAllServices()
             .build();

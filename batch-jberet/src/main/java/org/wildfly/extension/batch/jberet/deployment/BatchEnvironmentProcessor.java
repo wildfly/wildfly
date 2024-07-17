@@ -22,6 +22,8 @@ import org.jberet.spi.ContextClassLoaderJobOperatorContextSelector;
 import org.jberet.spi.JobExecutor;
 import org.jberet.spi.JobOperatorContext;
 import org.jboss.as.controller.ProcessStateNotifier;
+import org.jboss.as.controller.RequirementServiceBuilder;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -38,7 +40,6 @@ import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.jberet.BatchConfiguration;
 import org.wildfly.extension.batch.jberet.BatchServiceNames;
 import org.wildfly.extension.batch.jberet._private.BatchLogger;
@@ -79,7 +80,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final ClassLoader moduleClassLoader = module.getClassLoader();
 
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+            final RequirementServiceTarget serviceTarget = phaseContext.getRequirementServiceTarget();
 
             // Check for a deployment descriptor
             BatchEnvironmentMetaData metaData = deploymentUnit.getAttachment(BatchAttachments.BATCH_ENVIRONMENT_META_DATA);
@@ -160,12 +161,12 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             // Install the JobOperatorService
             final ServiceName jobOperatorServiceName = BatchServiceNames.jobOperatorServiceName(deploymentUnit);
-            final ServiceBuilder<?> jobOperatorServiceSB = serviceTarget.addService(jobOperatorServiceName);
+            final RequirementServiceBuilder<?> jobOperatorServiceSB = serviceTarget.addService();
             final Consumer<JobOperator> jobOperatorConsumer = jobOperatorServiceSB.provides(jobOperatorServiceName);
             final Supplier<ExecutorService> executorSupplier = Services.requireServerExecutor(jobOperatorServiceSB);
             final Supplier<BatchConfiguration> batchConfigSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.BATCH_CONFIGURATION_CAPABILITY.getName()));
             final Supplier<SuspendController> suspendControllerSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.SUSPEND_CONTROLLER_CAPABILITY));
-            final Supplier<ProcessStateNotifier> processStateSupplier = jobOperatorServiceSB.requires(support.getCapabilityServiceName(Capabilities.PROCESS_STATE_NOTIFIER_CAPABILITY));
+            final Supplier<ProcessStateNotifier> processStateSupplier = jobOperatorServiceSB.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
             final Supplier<SecurityAwareBatchEnvironment> batchEnvironmentSupplier = jobOperatorServiceSB.requires(BatchServiceNames.batchEnvironmentServiceName(deploymentUnit));
             final JobOperatorService jobOperatorService = new JobOperatorService(jobOperatorConsumer, batchConfigSupplier, batchEnvironmentSupplier, executorSupplier, suspendControllerSupplier, processStateSupplier, restartJobsOnResume, deploymentName, jobXmlResolver);
             jobOperatorServiceSB.setInstance(jobOperatorService);

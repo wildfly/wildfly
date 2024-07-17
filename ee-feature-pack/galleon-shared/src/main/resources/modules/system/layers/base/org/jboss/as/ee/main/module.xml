@@ -43,6 +43,7 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.service"/>
         <module name="org.wildfly.transaction.client" optional="true" />
     </dependencies>
 </module>
