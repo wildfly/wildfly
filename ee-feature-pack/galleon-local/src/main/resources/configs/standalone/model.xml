@@ -15,7 +15,10 @@
         <prop name="--internal-remove-config" value=""/>
     </props>
     <packages>
-        <package name="banner" optional="true"/>
+        <!-- In case the feature-pack containing this model.xml is constrained at build time
+             to a level that doesn't imply 'experimental', the banner package will be not packaged inside the feature-pack.
+             'valid-for-stability' attribute allows to keep this dependency that will be ignored at provisioning time. -->
+        <package name="banner" optional="true" valid-for-stability="experimental"/>
         <package name="product.conf" optional="true"/>
         <package name="org.jboss.as.product" optional="true"/>
         <package name="misc.standalone"/>
