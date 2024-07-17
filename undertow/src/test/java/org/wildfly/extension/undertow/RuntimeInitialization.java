@@ -88,7 +88,8 @@ class RuntimeInitialization extends DefaultInitialization {
         try {
             SSLContext sslContext = SSLContext.getDefault();
 
-            target.addService(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)).setInstance(new SuspendController()).install();
+            ServiceBuilder<?> builder = target.addService();
+            builder.setInstance(Service.newInstance(builder.provides(ServiceName.parse(Capabilities.REF_SUSPEND_CONTROLLER)), new SuspendController())).install();
             target.addService(Services.JBOSS_SERVICE_MODULE_LOADER).setInstance(new ServiceModuleLoader(null)).install();
             target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();
             target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME).setInstance(new NamingStoreService()).install();

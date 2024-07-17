@@ -20,12 +20,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUSPEND_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.server.suspend.SuspendController.State.RUNNING;
 
 import java.util.List;
 
 import org.jboss.as.controller.LocalModelControllerClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.dmr.ModelNode;
 
 class ServerProbes {
@@ -125,7 +125,7 @@ class ServerProbes {
             String value = result.asString();
             ModelNode data = new ModelNode();
             data.add(VALUE, value);
-            return new Outcome(RUNNING.toString().equals(value), data);
+            return new Outcome(SuspendController.State.RUNNING.toString().equals(value), data);
         }
 
         @Override
