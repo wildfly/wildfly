@@ -393,19 +393,21 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         //see https://issues.jboss.org/browse/WFLY-7037
         //see https://github.com/FasterXML/jackson-databind/issues/1363
         //we use reflection to avoid a non optional dependency on jackson
+        Module module = null;
         try {
-            Module module = context.getAttachment(Attachments.MODULE);
+            module = context.getAttachment(Attachments.MODULE);
             Class<?> typeFactoryClass = module.getClassLoader().loadClass("com.fasterxml.jackson.databind.type.TypeFactory");
             Method defaultInstanceMethod = typeFactoryClass.getMethod("defaultInstance");
             Object typeFactory = defaultInstanceMethod.invoke(null);
             Method clearCache = typeFactoryClass.getDeclaredMethod("clearCache");
             clearCache.invoke(typeFactory);
-            // Remove the deployment from the registered configuration factory
-            if (JaxrsDeploymentMarker.isJaxrsDeployment(context)) {
-                WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
-            }
         } catch (Exception e) {
             JAXRS_LOGGER.debugf("Failed to clear class utils LRU map");
+        } finally {
+            // Remove the deployment from the registered configuration factory
+            if (module != null && JaxrsDeploymentMarker.isJaxrsDeployment(context)) {
+                WildFlyConfigurationFactory.getInstance().unregister(module.getClassLoader());
+            }
         }
     }
 
