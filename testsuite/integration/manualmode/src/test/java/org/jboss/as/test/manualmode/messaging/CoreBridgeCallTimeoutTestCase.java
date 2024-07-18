@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.Server;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
-import org.wildfly.core.testrunner.WildflyTestRunner;
+import org.wildfly.core.testrunner.WildFlyRunner;
 
 import jakarta.inject.Inject;
 import jakarta.jms.Connection;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tomas Hofman
  */
-@RunWith(WildflyTestRunner.class)
+@RunWith(WildFlyRunner.class)
 @RunAsClient
 @ServerControl(manual = true)
 public class CoreBridgeCallTimeoutTestCase {
