@@ -130,7 +130,7 @@
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
         <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
-        <product.docs.server.version>33</product.docs.server.version>
+        <product.docs.server.version>34</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
         <!-- The Galleon channel for the minor version with which this branch is associated.  -->
