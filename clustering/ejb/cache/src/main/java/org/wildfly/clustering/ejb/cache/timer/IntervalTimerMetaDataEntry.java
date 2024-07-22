@@ -19,7 +19,8 @@ public class IntervalTimerMetaDataEntry<C> extends AbstractTimerMetaDataEntry<C>
     private final Duration interval;
 
     public IntervalTimerMetaDataEntry(C context, IntervalTimerConfiguration config) {
-        this(context, config.getStart(), config.getInterval());
+        super(context, config);
+        this.interval = config.getInterval();
     }
 
     public IntervalTimerMetaDataEntry(C context, Instant start, Duration interval) {
