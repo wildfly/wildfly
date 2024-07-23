@@ -7,9 +7,7 @@ package org.wildfly.extension.messaging.activemq;
 
 import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.SCHEDULED_THREAD_POOL_SIZE_PROPERTY_KEY;
 import static org.apache.activemq.artemis.api.core.client.ActiveMQClient.THREAD_POOL_MAX_SIZE_PROPERTY_KEY;
-import static org.jboss.as.server.services.net.SocketBindingResourceDefinition.SOCKET_BINDING_CAPABILITY;
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
-import static org.wildfly.extension.messaging.activemq.Capabilities.OUTBOUND_SOCKET_BINDING_CAPABILITY;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_BROADCAST_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_DISCOVERY_GROUP;
 import static org.wildfly.extension.messaging.activemq.CommonAttributes.JGROUPS_CLUSTER;
@@ -37,6 +35,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -159,12 +159,12 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 for (final String connectorSocketBinding : connectorsSocketBindings) {
                     // find whether the connectorSocketBinding references a SocketBinding or an OutboundSocketBinding
                     if (outbounds.get(connectorSocketBinding)) {
-                        final ServiceName outboundSocketName = OUTBOUND_SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding);
+                        final ServiceName outboundSocketName = context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding);
                         outboundSocketBindings.put(connectorSocketBinding, outboundSocketName);
                     } else {
                         // check if the socket binding has not already been added by the acceptors
                         if (!socketBindings.containsKey(connectorSocketBinding)) {
-                            socketBindings.put(connectorSocketBinding, SOCKET_BINDING_CAPABILITY.getCapabilityServiceName(connectorSocketBinding));
+                            socketBindings.put(connectorSocketBinding, context.getCapabilityServiceName(SocketBinding.SERVICE_DESCRIPTOR, connectorSocketBinding));
                         }
                     }
                 }

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.suspend.ServerActivity;
 import org.jboss.as.server.suspend.ServerActivityCallback;
-import org.jboss.as.server.suspend.SuspendController.State;
+import org.jboss.as.server.suspend.SuspendController;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -105,9 +105,9 @@ public class UndertowEventHandlerAdapterService implements UndertowEventListener
     private synchronized void onStart(Context context) {
         ContainerEventHandler handler = this.configuration.getContainerEventHandler();
 
-        State state = this.configuration.getSuspendController().getState();
+        SuspendController.State state = this.configuration.getSuspendController().getState();
 
-        if (state == State.RUNNING) {
+        if (state == SuspendController.State.RUNNING) {
             // Normal operation - trigger ENABLE-APP
             handler.start(context);
         } else {

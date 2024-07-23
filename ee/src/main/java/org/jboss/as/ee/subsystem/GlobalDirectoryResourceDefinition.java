@@ -9,7 +9,6 @@ import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILESYSTEM_PATH;
 import static org.jboss.as.ee.subsystem.EeCapabilities.EE_GLOBAL_DIRECTORY_CAPABILITY;
-import static org.jboss.as.ee.subsystem.EeCapabilities.PATH_MANAGER_CAPABILITY;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -110,7 +109,7 @@ public class GlobalDirectoryResourceDefinition extends PersistentResourceDefinit
             final CapabilityServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget()
                     .addCapability(EE_GLOBAL_DIRECTORY_CAPABILITY);
             final Consumer<GlobalDirectory> provides = serviceBuilder.provides(EE_GLOBAL_DIRECTORY_CAPABILITY);
-            final Supplier<PathManager> pathManagerSupplier = serviceBuilder.requiresCapability(PATH_MANAGER_CAPABILITY, PathManager.class);
+            final Supplier<PathManager> pathManagerSupplier = serviceBuilder.requires(PathManager.SERVICE_DESCRIPTOR);
 
             Service globalDirectoryService = new GlobalDirectoryService(pathManagerSupplier, provides, context.getCurrentAddressValue(), path, relativeTo);
 

@@ -32,6 +32,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.modules.Module;
@@ -90,7 +91,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
-            .setCapabilityReference("org.wildfly.management.path-manager")
+            .setCapabilityReference(PathManager.SERVICE_DESCRIPTOR.getName())
             .build();
 
     static ObjectTypeAttributeDefinition DIR = ObjectTypeAttributeDefinition.Builder.of("dir", PATH, RELATIVE_TO, ROOT)
@@ -98,7 +99,7 @@ class ConfigSourceDefinition extends PersistentResourceDefinition {
             .setRequired(false)
             .setAttributeMarshaller(AttributeMarshaller.ATTRIBUTE_OBJECT)
             .setRestartAllServices()
-            .setCapabilityReference("org.wildfly.management.path-manager")
+            .setCapabilityReference(PathManager.SERVICE_DESCRIPTOR.getName())
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = {ORDINAL, PROPERTIES, CLASS, DIR};

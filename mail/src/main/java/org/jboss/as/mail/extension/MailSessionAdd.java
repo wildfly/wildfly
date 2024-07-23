@@ -7,7 +7,6 @@ package org.jboss.as.mail.extension;
 
 import static org.jboss.as.controller.security.CredentialReference.KEY_DELIMITER;
 import static org.jboss.as.controller.security.CredentialReference.rollbackCredentialStoreUpdate;
-import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME;
 import static org.jboss.as.mail.extension.MailSessionDefinition.ATTRIBUTES;
 import static org.jboss.as.mail.extension.MailSessionDefinition.SESSION_CAPABILITY;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
@@ -203,7 +202,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
     }
 
     private static Supplier<OutboundSocketBinding> requireOutboundSocketBinding(OperationContext context, ServiceBuilder<?> builder, String ref) {
-        return (ref != null) ? builder.requires(context.getCapabilityServiceName(OUTBOUND_SOCKET_BINDING_CAPABILITY_NAME, OutboundSocketBinding.class, ref)) : null;
+        return (ref != null) ? builder.requires(context.getCapabilityServiceName(OutboundSocketBinding.SERVICE_DESCRIPTOR, ref)) : null;
     }
 
     static MailSessionConfig from(final OperationContext operationContext, final ModelNode model, ServiceBuilder<?> builder) throws OperationFailedException {

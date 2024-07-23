@@ -12,6 +12,7 @@ import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBindingManager;
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 /**
  * Enumerates common requirements for clustering resources.
@@ -22,12 +23,16 @@ public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider
     LOCAL_TRANSACTION_PROVIDER("org.wildfly.transactions.global-default-local-provider", Void.class),
     MBEAN_SERVER("org.wildfly.management.jmx", MBeanServer.class),
     NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
-    PATH_MANAGER("org.wildfly.management.path-manager", PathManager.class),
-    SOCKET_BINDING_MANAGER("org.wildfly.management.socket-binding-manager", SocketBindingManager.class),
+    PATH_MANAGER(PathManager.SERVICE_DESCRIPTOR),
+    SOCKET_BINDING_MANAGER(SocketBindingManager.SERVICE_DESCRIPTOR),
     ;
     private final String name;
     private final Class<?> type;
     private final ServiceNameFactory factory = new RequirementServiceNameFactory(this);
+
+    CommonRequirement(NullaryServiceDescriptor<?> descriptor) {
+        this(descriptor.getName(), descriptor.getType());
+    }
 
     CommonRequirement(String name, Class<?> type) {
         this.name = name;

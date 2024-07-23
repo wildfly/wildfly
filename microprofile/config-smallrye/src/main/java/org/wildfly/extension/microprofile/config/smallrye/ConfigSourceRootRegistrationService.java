@@ -54,7 +54,7 @@ class ConfigSourceRootRegistrationService implements Service {
     static void install(OperationContext context, String name, String path, String relativeTo, int ordinal, Registry<ConfigSourceProvider> registry) {
         ServiceBuilder<?> builder = context.getServiceTarget()
                 .addService(ServiceNames.CONFIG_SOURCE_ROOT.append(name));
-        Supplier<PathManager> pathManager = builder.requires(context.getCapabilityServiceName("org.wildfly.management.path-manager", PathManager.class));
+        Supplier<PathManager> pathManager = builder.requires(context.getCapabilityServiceName(PathManager.SERVICE_DESCRIPTOR));
 
         builder.setInstance(new ConfigSourceRootRegistrationService(name, path, relativeTo, ordinal, pathManager, registry))
                 .install();
