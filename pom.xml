@@ -358,7 +358,8 @@
         <version.org.hamcrest>2.2</version.org.hamcrest>
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.javassist>3.29.2-GA</version.org.javassist>
-        <version.org.jboss.arquillian.core>1.8.1.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.9.1.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.byteman>4.0.23</version.org.jboss.byteman>
         <version.org.jboss.logmanager.commons-logging-jboss-logmanager>1.0.3.Final</version.org.jboss.logmanager.commons-logging-jboss-logmanager>
         <!-- only needed here until wildfly-arquillian has this version properly synced with arquillian itself  -->
@@ -375,7 +376,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.19.8</version.org.testcontainers>
         <version.org.testng>7.4.0</version.org.testng>
-        <version.org.wildfly.arquillian>5.1.0.Beta3</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta4</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>1.6.2</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
