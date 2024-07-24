@@ -72,7 +72,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
     private final boolean isFullDistribution = AssumeTestGroupUtil.isFullDistribution();
     private final boolean isPreviewGalleonPack = AssumeTestGroupUtil.isWildFlyPreview();
 
-    private static final String MAJOR = "33.";
+    private static final String MAJOR = "34.";
 
     /**
      * Maintains the list of expected extensions for each host-exclude name for previous releases.
@@ -202,7 +202,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         WILDFLY_32_0("WildFly32.0", WILDFLY_31_0, List.of(
                 "org.wildfly.extension.mvc-krazo"
         ), List.of(), true),
-        CURRENT(MAJOR, WILDFLY_32_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
+        WILDFLY_33_0("WildFly33.0", WILDFLY_32_0, List.of(), List.of(), true),
+        CURRENT(MAJOR, WILDFLY_33_0, getCurrentAddedExtensions(), getCurrentRemovedExtensions(), true);
 
         private static List<String> getCurrentAddedExtensions() {
             // If an extension is added to this list, also check if it is supplied only by wildfly-galleon-pack. If so, add it also
