@@ -71,7 +71,7 @@ public class PersistentTestXAResource extends TestXAResource implements XAResour
     @Override
     public Xid[] recover(int flag) throws XAException {
         Collection<Xid> recoveredXids = xidsPersister.recoverFromDisk();
-        log.debugf("Recover call with flag %d returned %s", recoveredXids);
+        log.debugf("Recover call with flag %d returned %d Xids", flag, recoveredXids);
         return recoveredXids.toArray(new Xid[]{});
     }
 }
