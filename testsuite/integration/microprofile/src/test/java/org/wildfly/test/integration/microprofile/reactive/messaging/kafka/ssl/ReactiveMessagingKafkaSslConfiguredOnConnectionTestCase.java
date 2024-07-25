@@ -35,7 +35,7 @@ import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslCon
  */
 @RunWith(Arquillian.class)
 @ServerSetup({RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
-public class ReactiveMessagingKafkaSslTestCase {
+public class ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
 
@@ -46,9 +46,9 @@ public class ReactiveMessagingKafkaSslTestCase {
     public static WebArchive getDeployment() {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-kafka-tx.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addPackage(ReactiveMessagingKafkaSslTestCase.class.getPackage())
+                .addPackage(ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase.class.getPackage())
                 .addClasses(RunKafkaSetupTask.class, RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
-                .addAsWebInfResource(ReactiveMessagingKafkaSslTestCase.class.getPackage(), "microprofile-config.properties", "classes/META-INF/microprofile-config.properties")
+                .addAsWebInfResource(ReactiveMessagingKafkaSslConfiguredOnConnectionTestCase.class.getPackage(), "microprofile-config-ssl-connection.properties", "classes/META-INF/microprofile-config.properties")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(
                         new PropertyPermission(TimeoutUtil.FACTOR_SYS_PROP, "read")
