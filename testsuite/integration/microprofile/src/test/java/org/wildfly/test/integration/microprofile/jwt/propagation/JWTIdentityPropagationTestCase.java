@@ -321,7 +321,6 @@ public class JWTIdentityPropagationTestCase {
         testInvokeEJB(ROOT_PATH, PRINCIPAL_NAME, "targetCallerPrincipal: " + PRINCIPAL_NAME + ", hasAdminRole: false, hasSubscriberRole: true");
     }
 
-
     private void testInvokeEJB(String rootPath, String principalName, String expectedMessage) throws Exception {
         String jwtToken = generateJWT(Paths.get(KEY_LOCATION.toURI()).toAbsolutePath().toString(), principalName, DATE, ECHOER_GROUP, SUBSCRIBER_GROUP);
 
@@ -332,8 +331,9 @@ public class JWTIdentityPropagationTestCase {
 
         assertEquals("Successful call", 200, httpResponse.getStatusLine().getStatusCode());
         String body = EntityUtils.toString(httpResponse.getEntity());
-        assertTrue("Call was authenticated", body.contains(expectedMessage));
-
+        // rls tmp disable   assertTrue("Call was authenticated", body.contains(expectedMessage));
+        assertTrue("expectedMessage:["+ expectedMessage +
+                "] returned msg:[" +body+ "]", body.contains(expectedMessage)); // rls debug
         httpResponse.close();
     }
 
@@ -346,6 +346,7 @@ public class JWTIdentityPropagationTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try (CLIWrapper cli =  new CLIWrapper(true)) {
+                rlsSetupDebugLog(cli); // rls tmp debug
                 createFilesystemRealm(cli, EJB_SECURITY_DOMAIN, EJB_SECURITY_REALM, EJB_SECURITY_REALM_PATH, EJB_SECURITY_REALM_USER, EJB_SECURITY_REALM_ADMIN_ROLE);
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:add(auth-method=MP-JWT,outflow-security-domains=[%s])",
                         SINGLE_DEPLOYMENT + ".ear", EJB_SECURITY_DOMAIN)); // outflow config (corresponding trust config is below)
@@ -369,6 +370,18 @@ public class JWTIdentityPropagationTestCase {
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
 
+        // rls start
+        private void rlsSetupDebugLog(CLIWrapper cli){
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.security:add()");
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.security:write-attribute(name=level, value=DEBUG)");
+            cli.sendLine("/subsystem=logging/logger=org.apache.http:add()");
+            cli.sendLine("/subsystem=logging/logger=org.apache.http:write-attribute(name=level, value=DEBUG)");
+        }
+        private void rlsTearDownDebugLog(CLIWrapper cli){
+            cli.sendLine("/subsystem=logging/logger=org.wildfly.security:remove()");
+            cli.sendLine("/subsystem=logging/logger=org.apache.http:remove()");
+        }
+        // rls end
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             try (CLIWrapper cli = new CLIWrapper(true)) {
@@ -381,10 +394,13 @@ public class JWTIdentityPropagationTestCase {
                 cli.sendLine(String.format("/subsystem=elytron/virtual-security-domain=%s:remove()", EAR_DEPLOYMENT_WITH_MP_JWT_SAME_DOMAIN + ".ear"));
 
                 cli.sendLine(String.format("/subsystem=ejb3/application-security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
+                cli.sendLine(String.format("/subsystem=ejb3/application-security-domain=%s:remove()", ANOTHER_EJB_SECURITY_DOMAIN));
                 cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", EJB_SECURITY_DOMAIN));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", EJB_SECURITY_REALM));
                 cli.sendLine(String.format("/subsystem=elytron/security-domain=%s:remove()", ANOTHER_EJB_SECURITY_DOMAIN));
                 cli.sendLine(String.format("/subsystem=elytron/filesystem-realm=%s:remove()", ANOTHER_EJB_SECURITY_REALM));
+
+                rlsTearDownDebugLog(cli); // rls debug
             }
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
