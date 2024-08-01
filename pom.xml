@@ -563,7 +563,7 @@
         <version.org.keycloak.keycloak-saml-wildfly-subsystem>18.0.2</version.org.keycloak.keycloak-saml-wildfly-subsystem>
         <version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
         <version.org.lz4.lz4-java>1.8.0</version.org.lz4.lz4-java>
-        <version.org.opensaml.opensaml>4.2.0</version.org.opensaml.opensaml>
+        <version.org.opensaml.opensaml>4.3.0</version.org.opensaml.opensaml>
         <version.org.ow2.asm>9.7</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.core>26.0.0.Beta1</version.org.wildfly.core>
