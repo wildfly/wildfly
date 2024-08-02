@@ -146,8 +146,8 @@ jobs:
         run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
         shell: bash
         # We need this due to long file names on Windows: https://github.com/actions/upload-artifact/issues/240
-      - name: Find reports
-        if: failure()
+      - name: Find reports on Windows
+        if: ${{ failure() && contains(matrix.os, 'windows') }}
         run: |
           {
             echo 'SUREFIRE_REPORTS<<EOF'
@@ -155,8 +155,8 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
         shell: bash
-      - name: Find server logs
-        if: failure()
+      - name: Find server logs on Windows
+        if: ${{ failure() && contains(matrix.os, 'windows') }}
         run: |
           {
             echo 'SERVER_LOGS<<EOF'
@@ -164,16 +164,28 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
         shell: bash
-      - name: Upload Test Reports on Failure
+      - name: Upload Test Reports on Failure on Windows
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
           path: ${{ env.SUREFIRE_REPORTS }}
-      - name: Upload Server Logs on Failure
+      - name: Upload Server Logs on Failure on Windows
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: ${{ failure() && contains(matrix.os, 'windows') }}
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}
           path: ${{ env.SERVER_LOGS }}
+      - name: Upload Test Reports on Failure
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() && ! contains(matrix.os, 'windows') }}
+        with:
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          path: '**/surefire-reports/*.txt'
+      - name: Upload Server Logs on Failure
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() && ! contains(matrix.os, 'windows') }}
+        with:
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          path: '**/server.log'
 
