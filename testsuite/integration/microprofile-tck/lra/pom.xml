@@ -63,6 +63,12 @@
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>lra-test-arquillian-extension</artifactId>
             <version>${version.org.jboss.narayana}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
         <dependency>
