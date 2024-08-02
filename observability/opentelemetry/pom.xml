@@ -123,6 +123,10 @@
             <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
+        <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
             <scope>provided</scope>

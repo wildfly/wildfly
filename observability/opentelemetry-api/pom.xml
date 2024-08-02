@@ -94,6 +94,10 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-service</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

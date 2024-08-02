@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -23,8 +22,15 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.wildfly.extension.microprofile.telemetry.api.MicroProfileTelemetryCdiExtension;
+import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
+    private final Supplier<WildFlyOpenTelemetryConfig> configSupplier;
+
+    public MicroProfileTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> configSupplier) {
+        this.configSupplier = configSupplier;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext deploymentPhaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
@@ -39,10 +45,7 @@ public class MicroProfileTelemetryDeploymentProcessor implements DeploymentUnitP
                 MPTEL_LOGGER.debug("The deployment does not have Jakarta Contexts and Dependency Injection enabled. " +
                         "Skipping MicroProfile Telemetry integration.");
             } else {
-                final OpenTelemetryConfig serverConfig =
-                        (OpenTelemetryConfig) support.getCapabilityRuntimeAPI("org.wildfly.extension.opentelemetry.config",
-                                Supplier.class).get();
-                Map<String, String> properties = new HashMap<>(serverConfig.properties());
+                Map<String, String> properties = new HashMap<>(configSupplier.get().properties());
                 if (!properties.containsKey("otel.service.name")) {
                     properties.put("otel.service.name", getServiceName(deploymentUnit));
                 }

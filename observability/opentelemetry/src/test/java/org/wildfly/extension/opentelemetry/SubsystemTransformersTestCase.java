@@ -25,7 +25,7 @@ import org.junit.Test;
 public class SubsystemTransformersTestCase extends AbstractSubsystemTest {
 
     public SubsystemTransformersTestCase() {
-        super(OpenTelemetrySubsystemExtension.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension());
+        super(OpenTelemetryConfigurationConstants.SUBSYSTEM_NAME, new OpenTelemetrySubsystemExtension());
     }
 
     @Test

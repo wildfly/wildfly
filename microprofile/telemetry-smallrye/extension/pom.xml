@@ -86,6 +86,10 @@
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -104,6 +108,11 @@
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-weld-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-opentelemetry-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
@@ -146,6 +155,5 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 </project>

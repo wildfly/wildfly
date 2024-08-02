@@ -10,6 +10,7 @@ import static org.wildfly.extension.opentelemetry.OpenTelemetryExtensionLogger.O
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import io.smallrye.opentelemetry.implementation.cdi.OpenTelemetryExtension;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
@@ -25,12 +26,10 @@ import org.wildfly.extension.opentelemetry.api.OpenTelemetryCdiExtension;
 import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
 
 class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
-    private final boolean useServerConfig;
-    private final WildFlyOpenTelemetryConfig serverConfig;
+    private final Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig;
 
-    public OpenTelemetryDeploymentProcessor(boolean useServerConfig, WildFlyOpenTelemetryConfig serverConfig) {
-        this.useServerConfig = useServerConfig;
-        this.serverConfig = serverConfig;
+    public OpenTelemetryDeploymentProcessor(Supplier<WildFlyOpenTelemetryConfig> openTelemetryConfig) {
+        this.openTelemetryConfig = openTelemetryConfig;
     }
 
     @Override
@@ -46,18 +45,19 @@ class OpenTelemetryDeploymentProcessor implements DeploymentUnitProcessor {
             final WeldCapability weldCapability = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
                     .getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
-                // Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection. Without Jakarta
-                // Contexts and Dependency Injection, there's no integration needed
+                // Jakarta RESTful Web Services require Jakarta Contexts and Dependency Injection, without which,
+                // there's no integration needed
                 OTEL_LOGGER.debug("The deployment does not have Jakarta Contexts and Dependency Injection enabled. Skipping OpenTelemetry integration.");
                 return;
             }
 
-            Map<String, String> config = new HashMap<>(serverConfig.properties());
+            Map<String, String> config = new HashMap<>(openTelemetryConfig.get().properties());
             if (!config.containsKey(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME)) {
                 config.put(WildFlyOpenTelemetryConfig.OTEL_SERVICE_NAME, getServiceName(deploymentUnit));
             }
 
-            weldCapability.registerExtensionInstance(new OpenTelemetryCdiExtension(useServerConfig, config), deploymentUnit);
+            weldCapability.registerExtensionInstance(
+                    new OpenTelemetryCdiExtension(!openTelemetryConfig.get().isMpTelemetryInstalled(), config), deploymentUnit);
             weldCapability.registerExtensionInstance(new OpenTelemetryExtension(), deploymentUnit);
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             // We should not be here since the subsystem depends on weld capability. Just in case ...

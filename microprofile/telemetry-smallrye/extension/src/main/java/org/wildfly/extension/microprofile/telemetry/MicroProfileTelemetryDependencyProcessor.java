@@ -15,15 +15,17 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.opentelemetry.api.WildFlyOpenTelemetryConfig;
+import org.wildfly.service.ServiceDependency;
 
 class MicroProfileTelemetryDependencyProcessor implements DeploymentUnitProcessor {
-    public MicroProfileTelemetryDependencyProcessor() {
-
-    }
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) {
         addDependencies(phaseContext.getDeploymentUnit());
+
+        // Ensure the OpenTelemetryConfig is available before the next phase DeploymentUnitPhaseService starts
+        phaseContext.requires(ServiceDependency.on(ServiceName.parse(WildFlyOpenTelemetryConfig.SERVICE_DESCRIPTOR.getName())));
     }
 
     private void addDependencies(DeploymentUnit deploymentUnit) {

@@ -7,58 +7,47 @@ package org.wildfly.test.integration.observability.container;
 import java.util.Collections;
 import java.util.List;
 
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.MountableFile;
-import org.wildfly.common.annotation.NotNull;
 import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerTrace;
 
 public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetryCollectorContainer> {
-    private static OpenTelemetryCollectorContainer INSTANCE = null;
-    private static JaegerContainer jaegerContainer;
-
+    public static final String IMAGE_NAME = "otel/opentelemetry-collector";
+    public static final String IMAGE_VERSION = "0.93.0";
     public static final int OTLP_GRPC_PORT = 4317;
     public static final int OTLP_HTTP_PORT = 4318;
     public static final int PROMETHEUS_PORT = 49152;
     public static final int HEALTH_CHECK_PORT = 13133;
-
     public static final String OTEL_COLLECTOR_CONFIG_YAML = "/etc/otel-collector-config.yaml";
+
+    private JaegerContainer jaegerContainer;
 
     private String otlpGrpcEndpoint;
     private String otlpHttpEndpoint;
     private String prometheusUrl;
 
-
-    private OpenTelemetryCollectorContainer() {
-        super("OpenTelemetryCollector",
-                "otel/opentelemetry-collector",
-                "0.93.0",
-                List.of(OTLP_GRPC_PORT, OTLP_HTTP_PORT, HEALTH_CHECK_PORT, PROMETHEUS_PORT),
-                List.of(Wait.forHttp("/").forPort(HEALTH_CHECK_PORT)));
-    }
-
-    @NotNull
-    public static synchronized OpenTelemetryCollectorContainer getInstance() {
-        if (INSTANCE == null) {
-            jaegerContainer = JaegerContainer.getInstance();
-
-            INSTANCE = new OpenTelemetryCollectorContainer()
-                    .withNetwork(Network.SHARED)
-                    .withCopyToContainer(MountableFile.forClasspathResource(
-                                    "org/wildfly/test/integration/observability/container/otel-collector-config.yaml"),
-                            OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
-                    .withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML);
-            INSTANCE.start();
-        }
-        return INSTANCE;
+    public OpenTelemetryCollectorContainer() {
+        super("OpenTelemetryCollector", IMAGE_NAME, IMAGE_VERSION,
+                List.of(OTLP_GRPC_PORT, OTLP_HTTP_PORT, HEALTH_CHECK_PORT, PROMETHEUS_PORT));
+        withCopyToContainer(
+                MountableFile.forClasspathResource("org/wildfly/test/integration/observability/container/otel-collector-config.yaml"),
+                OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML)
+                .withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML);
+        jaegerContainer = new JaegerContainer();
     }
 
     @Override
     public void start() {
         super.start();
+        jaegerContainer.start();
+
         otlpGrpcEndpoint = "http://localhost:" + getMappedPort(OTLP_GRPC_PORT);
         otlpHttpEndpoint = "http://localhost:" + getMappedPort(OTLP_HTTP_PORT);
         prometheusUrl = "http://localhost:" + getMappedPort(PROMETHEUS_PORT) + "/metrics";
+
+        debugLog("OTLP gRPC port: " + getMappedPort(OTLP_GRPC_PORT));
+        debugLog("OTLP HTTP port: " + getMappedPort(OTLP_HTTP_PORT));
+        debugLog("Prometheus port: " + getMappedPort(PROMETHEUS_PORT));
+        debugLog("port bindings: " + getPortBindings());
     }
 
     @Override
@@ -67,7 +56,6 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
             jaegerContainer.stop();
             jaegerContainer = null;
         }
-        INSTANCE = null;
         super.stop();
     }
 

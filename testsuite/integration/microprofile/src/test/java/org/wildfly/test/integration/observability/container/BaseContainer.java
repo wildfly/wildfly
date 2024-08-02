@@ -7,38 +7,35 @@ package org.wildfly.test.integration.observability.container;
 import java.time.Duration;
 import java.util.List;
 
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.junit.AssumptionViolatedException;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
+@DockerRequired(AssumptionViolatedException.class)
 public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends GenericContainer<SELF> {
     private final String containerName;
-    private final List<Integer> exposedPorts;
 
     private static final int STARTUP_ATTEMPTS = Integer.parseInt(
-            System.getProperty("testsuite.integration.container.startup.attempts", "1"));
+            System.getProperty("testsuite.integration.container.startup.attempts", "5"));
     private static final Duration ATTEMPT_DURATION = Duration.parse(
-            System.getProperty("testsuite.integration.container.attempt.duration", "PT5S"));
-    protected final Boolean loggingEnabled; // Default: null/false
+            System.getProperty("testsuite.integration.container.attempt.duration", "PT10S"));
+    protected Boolean loggingEnabled; // Default: null/false
 
     public BaseContainer(String containerName,
                          String imageName,
                          String imageVersion,
-                         List<Integer> exposedPorts,
-                         List<WaitStrategy> waitStrategies) {
+                         List<Integer> exposedPorts) {
         super(DockerImageName.parse(imageName + ":" + imageVersion));
 
         this.containerName = containerName;
-        this.exposedPorts = exposedPorts;
 
-        setWaitStrategy(buildWaitStrategy(waitStrategies));
         setExposedPorts(exposedPorts);
         setStartupAttempts(STARTUP_ATTEMPTS);
+        setNetwork(Network.SHARED);
 
-        loggingEnabled =
-                Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
-                Boolean.parseBoolean(System.getProperty("testsuite.integration.container." + containerName.toLowerCase() + ".logging"));
+        checkForLogging(containerName);
 
         if (loggingEnabled) {
             setLogConsumers(List.of(outputFrame -> {
@@ -50,21 +47,20 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
         }
     }
 
+    private void checkForLogging(String containerName) {
+        loggingEnabled =
+                Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||
+                Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
+                Boolean.parseBoolean(System.getProperty("testsuite.integration.container." + containerName.toLowerCase() + ".logging"));
+    }
+
     protected void debugLog(String message) {
-        debugLog(containerName.toUpperCase(), message);
+        debugLog(containerName, message);
     }
 
     protected void debugLog(String prefix, String message) {
         if (loggingEnabled) {
             System.err.println("[" + prefix + "] " + message);
         }
-    }
-
-    private WaitStrategy buildWaitStrategy(List<WaitStrategy> waitStrategies) {
-        WaitAllStrategy strategy = new WaitAllStrategy()
-                .withStartupTimeout(ATTEMPT_DURATION);
-        waitStrategies.forEach(strategy::withStrategy);
-
-        return strategy;
     }
 }
