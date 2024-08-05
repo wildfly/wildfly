@@ -6,6 +6,7 @@
 package org.wildfly.clustering.infinispan.affinity.impl;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
@@ -43,6 +46,7 @@ public class DefaultKeyAffinityServiceTestCase {
 
     @Test
     public void test() {
+        ExecutorService executor = Executors.newCachedThreadPool();
         KeyPartitioner partitioner = mock(KeyPartitioner.class);
         KeyGenerator<UUID> generator = mock(KeyGenerator.class);
         AdvancedCache<UUID, Object> cache = mock(AdvancedCache.class);
@@ -50,7 +54,16 @@ public class DefaultKeyAffinityServiceTestCase {
         Address remote = mock(Address.class);
         Address standby = mock(Address.class);
         Address ignored = mock(Address.class);
-        KeyAffinityService<UUID> service = new DefaultKeyAffinityService<>(cache, partitioner, generator, address -> (address != ignored));
+        UUID random = UUID.randomUUID();
+        KeyAffinityService<UUID> service = new DefaultKeyAffinityService<>(cache, partitioner, generator, address -> (address != ignored), executor);
+
+        doReturn(random).when(generator).getKey();
+
+        // Validate that service returns random key when not started
+        assertSame(random, service.getKeyForAddress(local));
+        assertSame(random, service.getKeyForAddress(remote));
+        assertSame(random, service.getKeyForAddress(standby));
+        assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
 
         DistributionManager dist = mock(DistributionManager.class);
         CacheTopology topology = mock(CacheTopology.class);
@@ -107,12 +120,6 @@ public class DefaultKeyAffinityServiceTestCase {
             when(partitioner.getSegment(key)).thenReturn(segment);
         }
 
-        assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(local));
-        assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(remote));
-        assertThrows(IllegalStateException.class, () -> service.getKeyForAddress(standby));
-        // This should throw IAE, since address does not pass filter
-        assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
-
         service.start();
 
         try {
@@ -141,6 +148,7 @@ public class DefaultKeyAffinityServiceTestCase {
             assertThrows(IllegalArgumentException.class, () -> service.getKeyForAddress(ignored));
         } finally {
             service.stop();
+            executor.shutdown();
         }
     }
 
