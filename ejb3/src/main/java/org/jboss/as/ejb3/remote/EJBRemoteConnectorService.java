@@ -5,7 +5,6 @@
 package org.jboss.as.ejb3.remote;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,7 +34,7 @@ public class EJBRemoteConnectorService implements Service {
 
     private final Consumer<EJBRemoteConnectorService> serviceConsumer;
     private final Supplier<Endpoint> endpointSupplier;
-    private final Supplier<ExecutorService> executorServiceSupplier;
+    private final Supplier<Executor> executorSupplier;
     private final Supplier<AssociationService> associationServiceSupplier;
     private final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier;
     private volatile Registration registration;
@@ -43,12 +42,12 @@ public class EJBRemoteConnectorService implements Service {
     private final Function<String, Boolean> classResolverFilter;
 
     public EJBRemoteConnectorService(
-            final Consumer<EJBRemoteConnectorService> serviceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<ExecutorService> executorServiceSupplier,
+            final Consumer<EJBRemoteConnectorService> serviceConsumer, final Supplier<Endpoint> endpointSupplier, final Supplier<Executor> executorSupplier,
             final Supplier<AssociationService> associationServiceSupplier, final Supplier<RemotingTransactionService> remotingTransactionServiceSupplier,
             final OptionMap channelCreationOptions, final Function<String, Boolean> classResolverFilter) {
         this.serviceConsumer = serviceConsumer;
         this.endpointSupplier = endpointSupplier;
-        this.executorServiceSupplier = executorServiceSupplier;
+        this.executorSupplier = executorSupplier;
         this.associationServiceSupplier = associationServiceSupplier;
         this.remotingTransactionServiceSupplier = remotingTransactionServiceSupplier;
         this.channelCreationOptions = channelCreationOptions;
@@ -59,7 +58,7 @@ public class EJBRemoteConnectorService implements Service {
     public void start(StartContext context) throws StartException {
         final AssociationService associationService = associationServiceSupplier.get();
         final Endpoint endpoint = endpointSupplier.get();
-        Executor executor = executorServiceSupplier != null ? executorServiceSupplier.get() : null;
+        Executor executor = executorSupplier.get();
         if (executor != null) {
             associationService.setExecutor(executor);
         }
