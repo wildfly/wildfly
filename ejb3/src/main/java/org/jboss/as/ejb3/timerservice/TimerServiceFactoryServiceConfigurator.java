@@ -71,7 +71,7 @@ public class TimerServiceFactoryServiceConfigurator extends SimpleServiceNamePro
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         this.timer = new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY_NAME));
         this.executor = new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerServiceResourceDefinition.THREAD_POOL_CAPABILITY_NAME, this.threadPoolName));
-        this.persistence = (this.store != null) ? new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY_NAME, this.store)) : null;
+        this.persistence = (this.store != null) ? new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerPersistence.SERVICE_DESCRIPTOR, this.store)) : null;
         return this;
     }
 

@@ -36,13 +36,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
     public static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
 
-    public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
-
-    public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =
-            RuntimeCapability.Builder.of(TIMER_PERSISTENCE_CAPABILITY_NAME, true, TimerPersistence.class)
-                    .setAllowMultipleRegistrations(true)
-                    .build();
-
     public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
     public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, Timer.class).build();
 
@@ -60,7 +53,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
                     .setRequires(EJB3SubsystemModel.THREAD_POOL_NAME)
-                    .setCapabilityReference(TIMER_PERSISTENCE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerPersistence.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_PERSISTENT_TIMER_MANAGEMENT =
@@ -89,7 +82,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setCapabilities(TIMER_SERVICE_CAPABILITY, TIMER_PERSISTENCE_CAPABILITY));
+                .setCapabilities(TIMER_SERVICE_CAPABILITY));
         this.pathManager = pathManager;
     }
 
@@ -105,5 +98,4 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
         resourceRegistration.registerSubModel(new DatabaseDataStoreResourceDefinition());
     }
-
 }
