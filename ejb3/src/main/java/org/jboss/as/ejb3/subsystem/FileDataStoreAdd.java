@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.CapabilityServiceTarget;
 import org.jboss.as.controller.OperationContext;
@@ -32,10 +31,7 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
     private static final String TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME = "org.wildfly.transactions.transaction-synchronization-registry";
     private static final String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
 
-    FileDataStoreAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
-
+    @Override
     protected void performRuntime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
         final ModelNode pathNode = FileDataStoreResourceDefinition.PATH.resolveModelAttribute(context, model);
         final String path = pathNode.isDefined() ? pathNode.asString() : null;
@@ -44,8 +40,8 @@ public class FileDataStoreAdd extends AbstractAddStepHandler {
 
         // add the TimerPersistence instance
         final CapabilityServiceTarget serviceTarget = context.getCapabilityServiceTarget();
-        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
-        final Consumer<FileTimerPersistence> consumer = builder.provides(TimerServiceResourceDefinition.TIMER_PERSISTENCE_CAPABILITY);
+        final CapabilityServiceBuilder<?> builder = serviceTarget.addCapability(TimerPersistenceResourceDefinition.CAPABILITY);
+        final Consumer<FileTimerPersistence> consumer = builder.provides(TimerPersistenceResourceDefinition.CAPABILITY);
         builder.requiresCapability(TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME, Void.class);
         final Supplier<TransactionSynchronizationRegistry> txnRegistrySupplier = builder.requiresCapability(TRANSACTION_SYNCHRONIZATION_REGISTRY_CAPABILITY_NAME, TransactionSynchronizationRegistry.class);
         final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);

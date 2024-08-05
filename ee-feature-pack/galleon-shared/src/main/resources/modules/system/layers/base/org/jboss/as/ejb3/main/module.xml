@@ -88,6 +88,7 @@
         <module name="org.wildfly.iiop-openjdk"/>
         <module name="org.wildfly.security.elytron-private"/>
         <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.transaction.client"/>
     </dependencies>
 </module>

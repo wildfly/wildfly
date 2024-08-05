@@ -20,6 +20,7 @@ import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
@@ -34,13 +35,6 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     // this is an unregistered copy of the capability defined and registered in /subsystem=ejb3/thread-pool=*
     // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
     public static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
-
-    public static final String TIMER_PERSISTENCE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service.timer-persistence-service";
-
-    public static final RuntimeCapability<Void> TIMER_PERSISTENCE_CAPABILITY =
-            RuntimeCapability.Builder.of(TIMER_PERSISTENCE_CAPABILITY_NAME, true, TimerPersistence.class)
-                    .setAllowMultipleRegistrations(true)
-                    .build();
 
     public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
     public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, Timer.class).build();
@@ -59,7 +53,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_PERSISTENT_TIMER_MANAGEMENT)
                     .setRequires(EJB3SubsystemModel.THREAD_POOL_NAME)
-                    .setCapabilityReference(TIMER_PERSISTENCE_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerPersistence.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_PERSISTENT_TIMER_MANAGEMENT =
@@ -95,7 +89,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 
