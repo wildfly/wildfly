@@ -51,7 +51,7 @@ public class InfinispanTimer<I> implements Timer<I> {
 
     @Override
     public boolean isActive() {
-        return this.scheduler.contains(this.id);
+        return (this.scheduler != null) ? this.scheduler.contains(this.id) : false;
     }
 
     @Override
@@ -78,12 +78,14 @@ public class InfinispanTimer<I> implements Timer<I> {
 
     @Override
     public void suspend() {
-        this.scheduler.cancel(this.id);
+        if (this.scheduler != null) {
+            this.scheduler.cancel(this.id);
+        }
     }
 
     @Override
     public void activate() {
-        if (!this.isActive()) {
+        if ((this.scheduler != null) && !this.isActive()) {
             this.scheduler.schedule(this.id, this.metaData);
         }
     }

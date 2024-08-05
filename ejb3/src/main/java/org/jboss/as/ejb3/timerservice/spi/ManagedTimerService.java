@@ -31,7 +31,10 @@ import org.wildfly.transaction.client.ContextTransactionManager;
  * Interface for managed {@link jakarta.ejb.TimerService} implementations.
  * @author Paul Ferraro
  */
-public interface ManagedTimerService extends TimerService, Service {
+public interface ManagedTimerService extends TimerService, Service, AutoCloseable {
+
+    @Override
+    void close();
 
     /**
      * Returns the managed timer associated with the specified identifier

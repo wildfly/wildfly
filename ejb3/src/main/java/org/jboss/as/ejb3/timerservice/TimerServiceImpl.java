@@ -159,6 +159,10 @@ public class TimerServiceImpl implements ManagedTimerService {
     }
 
     @Override
+    public void close() {
+    }
+
+    @Override
     public Timer createCalendarTimer(ScheduleExpression schedule, TimerConfig timerConfig) {
         this.validateInvocationContext();
         if (schedule == null) {
