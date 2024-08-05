@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -25,33 +24,38 @@ import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.deployment.TimerServiceResource;
-import org.jboss.as.ejb3.timerservice.NonFunctionalTimerServiceFactoryServiceConfigurator;
+import org.jboss.as.ejb3.timerservice.NonFunctionalTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.TimedObjectInvokerFactoryImpl;
-import org.jboss.as.ejb3.timerservice.TimerServiceFactoryServiceConfigurator;
+import org.jboss.as.ejb3.timerservice.TimerServiceFactoryServiceInstaller;
 import org.jboss.as.ejb3.timerservice.TimerServiceMetaData;
 import org.jboss.as.ejb3.timerservice.TimerServiceRegistryImpl;
-import org.jboss.as.ejb3.timerservice.composite.CompositeTimerServiceFactoryServiceConfigurator;
-import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerServiceFactoryServiceConfigurator;
+import org.jboss.as.ejb3.timerservice.composite.CompositeTimerServiceFactoryServiceInstaller;
+import org.jboss.as.ejb3.timerservice.distributable.DistributableTimerServiceFactoryServiceInstaller;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceConfiguration.TimerFilter;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactoryConfiguration;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerServiceConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
-import org.wildfly.clustering.service.ChildTargetService;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -80,9 +84,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
 
         final EjbJarMetaData ejbJarMetaData = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_METADATA);
-
-        // support for using capabilities to resolve service names
-        CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
 
         // if this is an EJB deployment then create an EJB module level TimerServiceRegistry which can be used by the timer services
         // of all EJB components that belong to this EJB module.
@@ -133,7 +134,6 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                     public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) {
                         ROOT_LOGGER.debugf("Installing timer service factory for component %s", componentDescription.getComponentName());
                         EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) description;
-                        ServiceTarget target = context.getServiceTarget();
                         TimerServiceResource resource = new TimerServiceResource();
                         ManagedTimerServiceFactoryConfiguration factoryConfiguration = new ManagedTimerServiceFactoryConfiguration() {
                             @Override
@@ -162,7 +162,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
                             if ((threadPoolName != null) && (componentMetaData.getDataStoreName() != null)) {
                                 // Install in-memory timer service factory w/persistence support
-                                new TimerServiceFactoryServiceConfigurator(serviceName, factoryConfiguration, threadPoolName, componentMetaData.getDataStoreName()).configure(capabilityServiceSupport).build(target).install();
+                                new TimerServiceFactoryServiceInstaller(serviceName, factoryConfiguration, TimerFilter.ALL, threadPoolName, componentMetaData.getDataStoreName()).install(context);
                             } else {
                                 // Use composite timer service, with separate transient vs persistent implementations.
                                 ServiceName transientServiceName = TimerFilter.TRANSIENT.apply(serviceName);
@@ -172,18 +172,20 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                                     installDistributableTimerServiceFactory(phaseContext, transientServiceName, componentMetaData.getTransientTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.TRANSIENT);
                                 } else {
                                     // Install in-memory timer service factory w/out persistence support
-                                    new TimerServiceFactoryServiceConfigurator(transientServiceName, factoryConfiguration, threadPoolName, null).filter(TimerFilter.TRANSIENT).configure(capabilityServiceSupport).build(target).install();
+                                    new TimerServiceFactoryServiceInstaller(transientServiceName, factoryConfiguration, TimerFilter.TRANSIENT, threadPoolName, null).install(context);
                                 }
 
                                 installDistributableTimerServiceFactory(phaseContext, persistentServiceName, componentMetaData.getPersistentTimerManagementProvider(), factoryConfiguration, componentDescription, TimerFilter.PERSISTENT);
 
-                                new CompositeTimerServiceFactoryServiceConfigurator(serviceName, factoryConfiguration).build(target).install();
+                                new CompositeTimerServiceFactoryServiceInstaller(serviceName, factoryConfiguration).install(phaseContext);
                             }
                         } else {
                             // the EJB is of a type that could have a timer service, but has no timer methods. just bind the non-functional timer service
-
                             String message = ejbComponentDescription.isStateful() ? EjbLogger.ROOT_LOGGER.timerServiceMethodNotAllowedForSFSB(ejbComponentDescription.getComponentName()) : EjbLogger.ROOT_LOGGER.ejbHasNoTimerMethods();
-                            new NonFunctionalTimerServiceFactoryServiceConfigurator(serviceName, message, factoryConfiguration).build(target).install();
+                            ServiceInstaller.builder(new NonFunctionalTimerServiceFactory(message, factoryConfiguration))
+                                    .provides(serviceName)
+                                    .build()
+                                    .install(context);
                         }
 
                         configuration.getCreateDependencies().add(new DependencyConfigurator<EJBComponentCreateService>() {
@@ -232,14 +234,85 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         CapabilityServiceSupport support = unit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         ServiceName providerServiceName = TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getServiceName(support, providerName);
-        ServiceBuilder<?> builder = context.getServiceTarget().addService(name.append("installer"));
-        Supplier<TimerManagementProvider> dependency = builder.requires(providerServiceName);
-        builder.setInstance(new ChildTargetService(new Consumer<ServiceTarget>() {
+        ServiceDependency<TimerManagementProvider> provider = ServiceDependency.on(providerServiceName);
+        ServiceInstaller.builder(new ServiceInstaller() {
             @Override
-            public void accept(ServiceTarget target) {
-                TimerManagementProvider provider = dependency.get();
-                new DistributableTimerServiceFactoryServiceConfigurator(name, factoryConfiguration, configuration, provider, filter).configure(support).build(target).install();
+            public ServiceController<?> install(RequirementServiceTarget target) {
+                // Create a child DeploymentPhaseContext that uses the child ServetTarget
+                DeploymentPhaseContext childContext = new DeploymentPhaseContext() {
+                    @Override
+                    public RequirementServiceTarget getRequirementServiceTarget() {
+                        return target;
+                    }
+
+                    @Override
+                    public boolean hasAttachment(AttachmentKey<?> key) {
+                        return context.hasAttachment(key);
+                    }
+
+                    @Override
+                    public <T> T getAttachment(AttachmentKey<T> key) {
+                        return context.getAttachment(key);
+                    }
+
+                    @Override
+                    public <T> List<T> getAttachmentList(AttachmentKey<? extends List<T>> key) {
+                        return context.getAttachmentList(key);
+                    }
+
+                    @Override
+                    public <T> T putAttachment(AttachmentKey<T> key, T value) {
+                        return context.putAttachment(key, value);
+                    }
+
+                    @Override
+                    public <T> T removeAttachment(AttachmentKey<T> key) {
+                        return context.removeAttachment(key);
+                    }
+
+                    @Override
+                    public <T> void addToAttachmentList(AttachmentKey<AttachmentList<T>> key, T value) {
+                        context.addToAttachmentList(key, value);
+                    }
+
+                    @Override
+                    public ServiceName getPhaseServiceName() {
+                        return context.getPhaseServiceName();
+                    }
+
+                    @Override
+                    public ServiceRegistry getServiceRegistry() {
+                        return context.getServiceRegistry();
+                    }
+
+                    @Override
+                    public DeploymentUnit getDeploymentUnit() {
+                        return context.getDeploymentUnit();
+                    }
+
+                    @Override
+                    public Phase getPhase() {
+                        return context.getPhase();
+                    }
+
+                    @Override
+                    public <T> void addDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey) {
+                        context.addDependency(providerServiceName, attachmentKey);
+                    }
+
+                    @Override
+                    public <T> void requires(org.wildfly.service.ServiceDependency<T> dependency) {
+                        context.requires(dependency);
+                    }
+
+                    @Override
+                    public <T> void addDeploymentDependency(ServiceName serviceName, AttachmentKey<T> attachmentKey) {
+                        context.addDeploymentDependency(providerServiceName, attachmentKey);
+                    }
+                };
+                new DistributableTimerServiceFactoryServiceInstaller(name, factoryConfiguration, configuration, provider.get(), filter).install(childContext);
+                return null;
             }
-        })).install();
+        }, support).requires(provider).build().install(context);
     }
 }
