@@ -17,13 +17,11 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
-import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 import java.util.Timer;
-import java.util.concurrent.ExecutorService;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the timer-service resource.
@@ -31,10 +29,6 @@ import java.util.concurrent.ExecutorService;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
-
-    // this is an unregistered copy of the capability defined and registered in /subsystem=ejb3/thread-pool=*
-    // needed due to the unorthodox way in which the thread pools are defined in ejb3 subsystem
-    public static final String THREAD_POOL_CAPABILITY_NAME = ThreadsServices.createCapability(EJB3SubsystemModel.BASE_EJB_THREAD_POOL_NAME, ExecutorService.class).getName();
 
     public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
     public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, Timer.class).build();
@@ -44,7 +38,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_TRANSIENT_TIMER_MANAGEMENT)
-                    .setCapabilityReference(THREAD_POOL_CAPABILITY_NAME, TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
