@@ -18,7 +18,6 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.Timer;
-import org.wildfly.clustering.ejb.timer.TimerRegistry;
 
 /**
  * Factory for creating {@link Synchronization} instances for a distributed timer service.
@@ -30,21 +29,9 @@ public class DistributableTimerSynchronizationFactory<I> implements TimerSynchro
     private final Consumer<Timer<I>> activateTask;
     private final Consumer<Timer<I>> cancelTask;
 
-    public DistributableTimerSynchronizationFactory(TimerRegistry<I> registry) {
-        this.activateTask = new Consumer<>() {
-            @Override
-            public void accept(Timer<I> timer) {
-                timer.activate();
-                registry.register(timer.getId());
-            }
-        };
-        this.cancelTask = new Consumer<>() {
-            @Override
-            public void accept(Timer<I> timer) {
-                registry.unregister(timer.getId());
-                timer.cancel();
-            }
-        };
+    public DistributableTimerSynchronizationFactory(Consumer<Timer<I>> activateTask, Consumer<Timer<I>> cancelTask) {
+        this.activateTask = activateTask;
+        this.cancelTask = cancelTask;
     }
 
     @Override

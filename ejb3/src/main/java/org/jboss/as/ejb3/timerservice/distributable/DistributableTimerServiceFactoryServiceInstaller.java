@@ -5,7 +5,9 @@
 
 package org.jboss.as.ejb3.timerservice.distributable;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -14,6 +16,7 @@ import jakarta.ejb.TimerConfig;
 
 import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.timerservice.SuspendableTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactory;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerServiceFactoryConfiguration;
@@ -22,8 +25,11 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.as.server.suspend.SuspendableActivityRegistry;
+import org.jboss.as.server.suspend.SuspensionStateProvider;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
+import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerManagerConfiguration;
@@ -119,14 +125,33 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
         }
 
         ServiceDependency<TimerManagerFactory<UUID>> managerFactory = ServiceDependency.on(timerManagerFactoryName);
+        ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
 
         ManagedTimerServiceFactory factory = new ManagedTimerServiceFactory() {
             @Override
             public ManagedTimerService createTimerService(EJBComponent component) {
                 TimedObjectInvoker invoker = invokerFactory.createInvoker(component);
-                TimerSynchronizationFactory<UUID> synchronizationFactory = new DistributableTimerSynchronizationFactory<>(timerRegistry);
+                SuspensionStateProvider stateProvider = activityRegistry.get();
+                Consumer<Timer<UUID>> activateTask = new Consumer<>() {
+                    @Override
+                    public void accept(Timer<UUID> timer) {
+                        // Do not activate timer if we are suspended
+                        if (stateProvider.getState() == SuspensionStateProvider.State.RUNNING) {
+                            timer.activate();
+                        }
+                        timerRegistry.register(timer.getId());
+                    }
+                };
+                Consumer<Timer<UUID>> cancelTask = new Consumer<>() {
+                    @Override
+                    public void accept(Timer<UUID> timer) {
+                        timerRegistry.unregister(timer.getId());
+                        timer.cancel();
+                    }
+                };
+                TimerSynchronizationFactory<UUID> synchronizationFactory = new DistributableTimerSynchronizationFactory<>(activateTask, cancelTask);
                 TimeoutListener<UUID> timeoutListener = new DistributableTimeoutListener<>(invoker, synchronizationFactory);
-                TimerManager<UUID> manager = managerFactory.get().createTimerManager(new TimerManagerConfiguration<UUID>() {
+                TimerManager<UUID> manager = managerFactory.get().createTimerManager(new TimerManagerConfiguration<>() {
                     @Override
                     public TimerServiceConfiguration getTimerServiceConfiguration() {
                         return configuration;
@@ -183,12 +208,12 @@ public class DistributableTimerServiceFactoryServiceInstaller implements Service
                         return synchronizationFactory;
                     }
                 };
-                return new DistributableTimerService<>(serviceConfiguration, manager);
+                return new SuspendableTimerService(new DistributableTimerService<>(serviceConfiguration, manager), activityRegistry.get());
             }
         };
         return ServiceInstaller.builder(Functions.constantSupplier(factory))
                 .provides(this.name)
-                .requires(managerFactory)
+                .requires(List.of(managerFactory, activityRegistry))
                 .build()
                 .install(target);
     }
