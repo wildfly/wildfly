@@ -6,6 +6,7 @@
 package org.jboss.as.ejb3.timerservice;
 
 import java.util.Timer;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -15,6 +16,7 @@ import jakarta.ejb.TimerConfig;
 import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition;
 import org.jboss.as.ejb3.subsystem.TimerServiceResourceDefinition;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
@@ -49,7 +51,7 @@ public class TimerServiceFactoryServiceConfigurator extends SimpleServiceNamePro
     private final TimedObjectInvokerFactory invokerFactory;
 
     private volatile SupplierDependency<Timer> timer;
-    private volatile SupplierDependency<ExecutorService> executor;
+    private volatile SupplierDependency<Executor> executor;
     private volatile SupplierDependency<TimerPersistence> persistence;
     private volatile Predicate<TimerConfig> timerFilter = TimerFilter.ALL;
 
@@ -70,7 +72,7 @@ public class TimerServiceFactoryServiceConfigurator extends SimpleServiceNamePro
     @Override
     public ServiceConfigurator configure(CapabilityServiceSupport support) {
         this.timer = new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY_NAME));
-        this.executor = new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerServiceResourceDefinition.THREAD_POOL_CAPABILITY_NAME, this.threadPoolName));
+        this.executor = new ServiceSupplierDependency<>(support.getCapabilityServiceName(EJB3SubsystemRootResourceDefinition.EXECUTOR_SERVICE_DESCRIPTOR, this.threadPoolName));
         this.persistence = (this.store != null) ? new ServiceSupplierDependency<>(support.getCapabilityServiceName(TimerPersistence.SERVICE_DESCRIPTOR, this.store)) : null;
         return this;
     }
@@ -88,7 +90,7 @@ public class TimerServiceFactoryServiceConfigurator extends SimpleServiceNamePro
         TimedObjectInvoker invoker = this.invokerFactory.createInvoker(component);
         TimerServiceRegistry registry = this.registry;
         TimerListener listener = this.listener;
-        ExecutorService executor = this.executor.get();
+        Executor executor = this.executor.get();
         Timer timer = this.timer.get();
         TimerPersistence persistence = (this.persistence != null) ? this.persistence.get() : null;
         Predicate<TimerConfig> timerFilter = this.timerFilter;
@@ -109,7 +111,7 @@ public class TimerServiceFactoryServiceConfigurator extends SimpleServiceNamePro
             }
 
             @Override
-            public ExecutorService getExecutor() {
+            public Executor getExecutor() {
                 return executor;
             }
 
