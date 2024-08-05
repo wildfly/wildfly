@@ -62,12 +62,16 @@
             <artifactId>infinispan-core-jakarta</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
     </dependencies>
 </project>
