@@ -21,10 +21,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Adds the timer service
@@ -56,28 +53,7 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         if (threadPoolName != null) {
-            context.getCapabilityServiceTarget().addCapability(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY).setInstance(new TimerValueService()).install();
-        }
-    }
-
-    private static final class TimerValueService implements Service<Timer> {
-
-        private Timer timer;
-
-        @Override
-        public synchronized void start(final StartContext context) throws StartException {
-            timer = new Timer();
-        }
-
-        @Override
-        public synchronized void stop(final StopContext context) {
-            timer.cancel();
-            timer = null;
-        }
-
-        @Override
-        public synchronized Timer getValue() throws IllegalStateException, IllegalArgumentException {
-            return timer;
+            CapabilityServiceInstaller.builder(TimerServiceResourceDefinition.TIMER_SERVICE_CAPABILITY, Timer::new).onStop(Timer::cancel).build().install(context);
         }
     }
 }

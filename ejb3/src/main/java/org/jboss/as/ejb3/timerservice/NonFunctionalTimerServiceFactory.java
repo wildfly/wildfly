@@ -18,37 +18,23 @@ import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvokerFactory;
 import org.jboss.as.ejb3.timerservice.spi.TimerListener;
 import org.jboss.as.ejb3.timerservice.spi.TimerServiceRegistry;
-import org.jboss.msc.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.ServiceConfigurator;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
 
 /**
  * Configures a service that provides a non-function TimerService factory.
  * @author Paul Ferraro
  */
-public class NonFunctionalTimerServiceFactoryServiceConfigurator extends SimpleServiceNameProvider implements ServiceConfigurator, ManagedTimerServiceFactory {
+public class NonFunctionalTimerServiceFactory implements ManagedTimerServiceFactory {
 
     private final String message;
     private final TimerServiceRegistry registry;
     private final TimedObjectInvokerFactory invokerFactory;
     private final TimerListener listener;
 
-    public NonFunctionalTimerServiceFactoryServiceConfigurator(ServiceName name, String message, ManagedTimerServiceFactoryConfiguration configuration) {
-        super(name);
+    public NonFunctionalTimerServiceFactory(String message, ManagedTimerServiceFactoryConfiguration configuration) {
         this.message = message;
         this.invokerFactory = configuration.getInvokerFactory();
         this.registry = configuration.getTimerServiceRegistry();
         this.listener = configuration.getTimerListener();
-    }
-
-    @Override
-    public ServiceBuilder<?> build(ServiceTarget target) {
-        ServiceName name = this.getServiceName();
-        ServiceBuilder<?> builder = target.addService(name);
-        return builder.setInstance(Service.newInstance(builder.provides(name), this));
     }
 
     @Override
