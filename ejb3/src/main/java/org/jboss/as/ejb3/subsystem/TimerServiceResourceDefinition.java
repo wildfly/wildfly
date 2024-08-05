@@ -5,6 +5,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Timer;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -19,9 +21,8 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
-
-import java.util.Timer;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the timer-service resource.
@@ -30,8 +31,8 @@ import java.util.Timer;
  */
 public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
-    public static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_CAPABILITY_NAME, Timer.class).build();
+    public static final NullaryServiceDescriptor<Timer> TIMER_SERVICE_DESCRIPTOR = NullaryServiceDescriptor.of("org.wildfly.ejb3.timer-service", Timer.class);
+    static final RuntimeCapability<Void> TIMER_SERVICE_CAPABILITY = RuntimeCapability.Builder.of(TIMER_SERVICE_DESCRIPTOR).build();
 
     static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING)

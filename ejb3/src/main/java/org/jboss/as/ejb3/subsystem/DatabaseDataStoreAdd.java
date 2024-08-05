@@ -29,7 +29,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Stuart Douglas
  */
 public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
-    private static final String TIMER_SERVICE_CAPABILITY_NAME = "org.wildfly.ejb3.timer-service";
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -56,7 +55,7 @@ public class DatabaseDataStoreAdd extends AbstractAddStepHandler {
         final Consumer<DatabaseTimerPersistence> consumer = builder.provides(TimerPersistenceResourceDefinition.CAPABILITY);
         final Supplier<ManagedReferenceFactory> dataSourceSupplier = builder.requires(ContextNames.bindInfoFor(jndiName).getBinderServiceName());
         final Supplier<ModuleLoader> moduleLoaderSupplier = builder.requires(Services.JBOSS_SERVICE_MODULE_LOADER);
-        final Supplier<Timer> timerSupplier = builder.requiresCapability(TIMER_SERVICE_CAPABILITY_NAME, java.util.Timer.class);
+        final Supplier<Timer> timerSupplier = builder.requires(TimerServiceResourceDefinition.TIMER_SERVICE_DESCRIPTOR);
         final DatabaseTimerPersistence databaseTimerPersistence = new DatabaseTimerPersistence(consumer, dataSourceSupplier, moduleLoaderSupplier, timerSupplier, database, partition, nodeName, refreshInterval, allowExecution);
         builder.setInstance(databaseTimerPersistence);
         builder.install();
