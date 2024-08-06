@@ -30,7 +30,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
-import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Test case based on reproducer for <a href="https://issues.jboss.org/browse/JBPAPP-7897">JBPAPP-7897</a>
@@ -78,10 +77,7 @@ public class RunAsEjbMdbTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "runasmdbejb-ejb3.jar")
             .addClasses(HelloBean.class,  Hello.class, HolaBean.class, Hola.class,
                 Howdy.class, HowdyBean.class, HelloMDB.class, TimeoutUtil.class);
-        // TODO WFLY-15289 Should these permissions be required?
         jar.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
-                                                    new ElytronPermission("setRunAsPrincipal"),
-                                                    new ElytronPermission("handleSecurityEvent"),
                                                     new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.runasmdbejb-ejb2.jar  \n"), "MANIFEST.MF");
         return jar;

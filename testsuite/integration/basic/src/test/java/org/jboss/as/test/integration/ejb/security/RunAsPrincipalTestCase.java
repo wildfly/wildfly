@@ -106,15 +106,10 @@ public class RunAsPrincipalTestCase  {
         // When WildFly Glow instantiate and scan the deployment, the deployment is not deployed, the following
         // code creates error at deployment instantiation time.
         if (!GlowUtil.isGlowScan()) {
-            // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
-            war.addAsManifestResource(createPermissionsXmlAsset(new ElytronPermission("getSecurityDomain"),
+            war.addAsManifestResource(createPermissionsXmlAsset(
                     new PropertyPermission("jboss.server.log.dir", "read"),
                     createFilePermission("read", "standalone", "log", TEST_LOG_FILE_NAME),
-                    new ElytronPermission("authenticate"),
-                    new ElytronPermission("getIdentity"),
-                    new ElytronPermission("createAdHocIdentity"),
-                    new ChangeRoleMapperPermission("ejb"),
-                    new ElytronPermission("setRunAsPrincipal")), "permissions.xml");
+                    new ChangeRoleMapperPermission("ejb")), "permissions.xml");
         }
         war.addPackage(CommonCriteria.class.getPackage());
         return war;

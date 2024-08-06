@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
-import org.wildfly.security.permission.ElytronPermission;
 
 import static org.jboss.as.controller.client.helpers.Operations.createWriteAttributeOperation;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
@@ -58,8 +57,6 @@ public class LegacyCompliantPrincipalPropagationTestCase {
                 .addAsWebInfResource(LegacyCompliantPrincipalPropagationTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
                 .addAsManifestResource(createPermissionsXmlAsset(
-                        new ElytronPermission("getIdentity"),
-                        new ElytronPermission("createAdHocIdentity"),
                         new ChangeRoleMapperPermission("ejb")
                 ), "permissions.xml");
     }

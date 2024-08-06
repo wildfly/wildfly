@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.wildfly.security.auth.permission.ChangeRoleMapperPermission;
-import org.wildfly.security.permission.ElytronPermission;
 
 /**
  * Make sure the run-as on a MDB is picked up.
@@ -86,8 +85,7 @@ public class RunAsMDBUnitTestCase {
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
         jar.addPackage(CommonCriteria.class.getPackage());
         // TODO WFLY-15289 Should these permissions be required?
-        jar.addAsResource(createPermissionsXmlAsset(new ElytronPermission("setRunAsPrincipal"),
-                new ElytronPermission("handleSecurityEvent"),
+        jar.addAsResource(createPermissionsXmlAsset(
                 new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
         return jar;
     }
