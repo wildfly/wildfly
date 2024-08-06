@@ -29,7 +29,6 @@ public class DuplicateMetricResource2 {
     }
 
     @GET
-    @Path("/")
     public String ping() {
         counter.increment();
         return "ping";
