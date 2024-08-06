@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.integration.observability.micrometer;
+package org.wildfly.test.integration.observability.setuptask;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATISTICS_ENABLED;
 
@@ -14,7 +14,6 @@ import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 import org.junit.AssumptionViolatedException;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
-import org.wildfly.test.integration.observability.setuptask.AbstractSetupTask;
 
 /**
  * Sets up a functioning Micrometer subsystem configuration. Requires functioning Docker environment! Tests using this
