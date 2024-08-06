@@ -14,9 +14,12 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
+import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
@@ -28,12 +31,15 @@ import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTa
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
 @RunWith(Arquillian.class)
-@ServerSetup({OpenTelemetrySetupTask.class, ServiceNameSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class})
 @RunAsClient
 @DockerRequired(AssumptionViolatedException.class)
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
+
+    @ContainerResource
+    ManagementClient managementClient;
 
     @Deployment(testable = false)
     public static WebArchive getDeployment() {
@@ -41,6 +47,13 @@ public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     }
 
     @Test
+    @InSequence(1)
+    public void setup() throws Exception {
+        new ServiceNameSetupTask().setup(managementClient, null);
+    }
+
+    @Test
+    @InSequence(2)
     public void testServiceNameOverride() throws Exception {
         try (Client client = ClientBuilder.newClient()) {
             Response response = client.target(getDeploymentUrl("otelinteg")).request().get();
@@ -49,5 +62,11 @@ public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
 
         List<JaegerTrace> traces = otelCollector.getTraces(SERVICE_NAME);
         Assert.assertFalse("Traces not found for service", traces.isEmpty());
+    }
+
+    @Test
+    @InSequence(3)
+    public void tearDown() throws Exception {
+        new ServiceNameSetupTask().tearDown(managementClient, null);
     }
 }

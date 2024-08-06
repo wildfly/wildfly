@@ -19,7 +19,6 @@ import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.opentelemetry.application.JaxRsActivator;
-import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 
 @RunWith(Arquillian.class)
