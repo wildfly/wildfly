@@ -16,6 +16,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -48,7 +49,9 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
                 createDeploymentAddressPrefix(deploymentUnit)::append,
                 this.config.getSubsystemFilter());
         ServiceInstaller.builder(factory)
+                .requires(ServiceDependency.on(DeploymentCompleteServiceProcessor.serviceName(deploymentUnit.getServiceName())))
                 .requires(collector)
+                .asActive()
                 .onStop(MetricRegistration::unregister)
                 .build()
                 .install(deploymentPhaseContext);
@@ -72,7 +75,6 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
         DeploymentUnit deploymentUnit = deploymentPhaseContext.getDeploymentUnit();
         try {
             CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
-
 
             final WeldCapability weldCapability = support.getCapabilityRuntimeAPI(WELD_CAPABILITY_NAME, WeldCapability.class);
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
