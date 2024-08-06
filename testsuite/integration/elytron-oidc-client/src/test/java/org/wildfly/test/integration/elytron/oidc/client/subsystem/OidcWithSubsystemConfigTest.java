@@ -44,13 +44,16 @@ import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.elytron.oidc.ElytronOidcExtension;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
 import org.wildfly.test.integration.elytron.oidc.client.OidcBaseTest;
+import org.wildfly.test.integration.elytron.oidc.client.deployment.OidcWithDeploymentConfigTest;
 import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
 
 /**
@@ -60,7 +63,9 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ OidcWithSubsystemConfigTest.PreviewStabilitySetupTask.class, OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class })
+@ServerSetup({ OidcWithSubsystemConfigTest.PreviewStabilitySetupTask.class,
+        OidcWithSubsystemConfigTest.KeycloakAndSubsystemSetup.class,
+        OidcBaseTest.WildFlyServerSetupTask.class})
 public class OidcWithSubsystemConfigTest extends OidcBaseTest {
 
     private static final String SUBSYSTEM_OVERRIDE_APP = "SubsystemOverrideOidcApp";
@@ -99,6 +104,7 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         APP_NAMES.put(PS_SIGNED_RSA_ENCRYPTED_REQUEST_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SIGNATURE_ALGORITHM_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(FORM_WITH_OIDC_OIDC_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     public OidcWithSubsystemConfigTest() {
@@ -278,6 +284,37 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
         return ShrinkWrap.create(WebArchive.class, MISSING_SECRET_APP + ".war")
                 .addClasses(SimpleServlet.class)
                 .addClasses(SimpleSecuredServlet.class);
+    }
+
+    @Deployment(name = FORM_WITH_OIDC_EAR_APP)
+    public static Archive<?> createFormWithOidcDeployment() {
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, FORM_WITH_OIDC_EAR_APP+".ear");
+        ear.addAsManifestResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_application.xml", "application.xml");
+
+        final WebArchive form = ShrinkWrap.create(WebArchive.class, "form.war");
+        form.addClasses(SimpleServlet.class);
+        form.addClasses(SimpleSecuredServlet.class);
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_web.xml", "web.xml");
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_jboss-web.xml", "jboss-web.xml");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_login.jsp", "login.jsp");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_error.jsp", "error.jsp");
+
+        ear.addAsModule(form);
+
+        final WebArchive oidc = ShrinkWrap.create(WebArchive.class, "oidc.war");
+        oidc.addClasses(SimpleServlet.class);
+        oidc.addClasses(SimpleSecuredServlet.class);
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_web.xml", "web.xml");
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_jboss-web.xml", "jboss-web.xml");
+        ear.addAsModule(oidc);
+        return ear;
     }
 
     @Test
@@ -645,6 +682,18 @@ public class OidcWithSubsystemConfigTest extends OidcBaseTest {
             operation.get("scope").set("profile email phone");
             operation.get("authentication-request-format").set(REQUEST.getValue());
             operation.get("request-object-signing-algorithm").set(HMAC_SHA256);
+            Utils.applyUpdate(operation, client);
+
+            // only config the WAR that is in the EAR
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + FORM_WITH_OIDC_OIDC_APP + ".war", ModelDescriptionConstants.ADD);
+            operation.get("client-id").set(FORM_WITH_OIDC_OIDC_APP);
+            operation.get("public-client").set(false);
+            operation.get("provider").set(KEYCLOAK_PROVIDER);
+            operation.get("ssl-required").set("EXTERNAL");
+            Utils.applyUpdate(operation, client);
+
+            operation = createOpNode(SECURE_DEPLOYMENT_ADDRESS + FORM_WITH_OIDC_OIDC_APP + ".war/credential=secret", ModelDescriptionConstants.ADD);
+            operation.get("secret").set(CLIENT_SECRET);
             Utils.applyUpdate(operation, client);
 
             ServerReload.executeReloadAndWaitForCompletion(managementClient);

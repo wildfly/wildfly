@@ -18,16 +18,19 @@ import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.RE
 import static org.wildfly.security.http.oidc.Oidc.AuthenticationRequestFormat.OAUTH2;
 import static org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALLOWED_ORIGIN;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import static org.apache.http.HttpStatus.SC_OK;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
@@ -43,6 +46,7 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -52,6 +56,7 @@ import org.jboss.as.test.http.util.TestHttpClientUtils;
 import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.as.test.integration.security.common.servlets.SimpleSecuredServlet;
 import org.jboss.as.test.integration.security.common.servlets.SimpleServlet;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.as.version.Stability;
@@ -64,6 +69,7 @@ import org.junit.Test;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.wildfly.common.iteration.CodePointIterator;
 import org.wildfly.security.jose.util.JsonSerialization;
+import org.wildfly.test.integration.elytron.oidc.client.deployment.OidcWithDeploymentConfigTest;
 import org.wildfly.test.integration.elytron.oidc.client.subsystem.SimpleServletWithScope;
 
 import io.restassured.RestAssured;
@@ -87,6 +93,8 @@ public abstract class OidcBaseTest {
     public static final String AUTH_SERVER_URL_APP = "AuthServerUrlOidcApp";
     public static final String WRONG_PROVIDER_URL_APP = "WrongProviderUrlOidcApp";
     public static final String WRONG_SECRET_APP = "WrongSecretOidcApp";
+    public static final String FORM_WITH_OIDC_EAR_APP = "FormWithOidcApp";
+    public static final String FORM_WITH_OIDC_OIDC_APP = "oidc";
     public static final String DIRECT_ACCCESS_GRANT_ENABLED_CLIENT = "DirectAccessGrantEnabledClient";
     public static final String BEARER_ONLY_AUTH_SERVER_URL_APP = "AuthServerUrlBearerOnlyApp";
     public static final String BEARER_ONLY_PROVIDER_URL_APP = "ProviderUrlBearerOnlyApp";
@@ -117,6 +125,20 @@ public abstract class OidcBaseTest {
     public static final String INVALID_SIGNATURE_ALGORITHM_APP = "InvalidSignatureAlgorithmApp";
     public static final String PS_SIGNED_REQUEST_URI_APP = "PsSignedRequestUriApp";
     public static final String MISSING_SECRET_APP = "MissingSecretApp";
+    public static final String FORM_USER="user1";
+    public static final String FORM_PASSWORD="password1";
+    protected static final String ERROR_PAGE_CONTENT = "Error!";
+
+    // Avoid problem on windows with path
+    public static final String USERS_PATH = new File(
+            OidcWithDeploymentConfigTest.class.getResource("users.properties").getFile()).getAbsolutePath()
+            .replace("\\", "/");
+    public static final String ROLES_PATH = new File(
+            OidcWithDeploymentConfigTest.class.getResource("roles.properties").getFile()).getAbsolutePath()
+            .replace("\\", "/");
+    public static final String ORIGINAL_USERS_PATH = "application-users.properties";
+    public static final String ORIGINAL_ROLES_PATH = "application-roles.properties";
+    public static final String RELATIVE_TO = "jboss.server.config.dir";
 
     private final Stability desiredStability;
 
@@ -491,6 +513,71 @@ public abstract class OidcBaseTest {
         //Expected to fail since the client secret is needed to sign the JWT
         testRequestObjectInvalidConfiguration(new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(),
                 "/" + MISSING_SECRET_APP + SimpleSecuredServlet.SERVLET_PATH).toURI(), true);
+    }
+
+    @Test
+    @OperateOnDeployment(FORM_WITH_OIDC_EAR_APP)
+    public void testFormWithOidc() throws Exception {
+        // oidc login
+        // EAR declares context-root to be oidc
+        loginToApp(FORM_WITH_OIDC_OIDC_APP,
+                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE,
+                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE_PASSWORD,
+                HttpURLConnection.HTTP_OK, SimpleServlet.RESPONSE_BODY);
+
+        // login with Form wfly user acct
+        testFormCredentials();
+    }
+    private void testFormCredentials() throws Exception {
+        URI requestUri = new URI("http://"+CLIENT_HOST_NAME+":"+CLIENT_PORT
+                +"/form"+"/"+SimpleSecuredServlet.class.getSimpleName()
+                +"/j_security_check");
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost getMethod = new HttpPost(requestUri);
+
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        nvps.add(new BasicNameValuePair("j_username", FORM_USER));
+        nvps.add(new BasicNameValuePair("j_password", FORM_PASSWORD));
+
+        getMethod.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
+
+        HttpResponse response = httpClient.execute(getMethod);
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertTrue("Expected code == OK but got " + statusCode +
+                " for request=" + requestUri, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+    }
+
+    @Test
+    @OperateOnDeployment(FORM_WITH_OIDC_EAR_APP)
+    public void testInvalidFormWithOidcCredentials() throws Exception {
+        // login with Form wfly user acct
+        testInvalidFormCredentials();
+        // oidc login
+        // EAR declares context-root to be oidc
+        loginToApp(FORM_WITH_OIDC_OIDC_APP,
+                org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration.ALICE,
+                "WRONG_PASSWORD", HttpURLConnection.HTTP_OK, "Invalid username or password");
+    }
+    public void testInvalidFormCredentials() throws Exception {
+        URI requestUri = new URI("http://"+CLIENT_HOST_NAME+":"+CLIENT_PORT
+                +"/form"+"/"+SimpleSecuredServlet.class.getSimpleName()
+                +"/j_security_check");
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpPost getMethod = new HttpPost(requestUri);
+
+        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+        nvps.add(new BasicNameValuePair("j_username", "Not"+FORM_USER));
+        nvps.add(new BasicNameValuePair("j_password", "Not"+FORM_PASSWORD));
+
+        getMethod.setEntity(new UrlEncodedFormEntity(nvps, StandardCharsets.UTF_8));
+
+        HttpResponse response = httpClient.execute(getMethod);
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals("For request=" + requestUri +"  Unexpected status code in HTTP response.",
+                SC_OK,  statusCode );
+        String errorMsg = EntityUtils.toString(response.getEntity());
+        assertTrue("Expected HTTP response to contain " + ERROR_PAGE_CONTENT
+                + "  response msg is: " + errorMsg, errorMsg.contains(ERROR_PAGE_CONTENT));
     }
 
     public static void loginToApp(String appName, String username, String password, int expectedStatusCode, String expectedText) throws Exception {
@@ -885,5 +972,36 @@ public abstract class OidcBaseTest {
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(SYSTEM_PROPERTY, OidcBaseTest.class.getName()));
         add.get(VALUE).set(clazz.getName());
         ManagementOperations.executeOperation(client.getControllerClient(), add);
+    }
+
+    public static class WildFlyServerSetupTask extends ManagementServerSetupTask {
+        public WildFlyServerSetupTask() {
+            super(createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path,value=\"%s\")",
+                                    USERS_PATH))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.plain-text,value=true)")
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=users-properties.relative-to)")
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path,value=\"%s\")",
+                                    ROLES_PATH))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=groups-properties.relative-to)")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.path,value=\"%s\")",
+                                    ORIGINAL_USERS_PATH))
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=users-properties.relative-to,value=\"%s\")",
+                                    RELATIVE_TO))
+                            .add("/subsystem=elytron/properties-realm=ApplicationRealm:undefine-attribute(name=users-properties.plain-text)")
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.path,value=\"%s\")",
+                                    ORIGINAL_ROLES_PATH))
+                            .add(String.format("/subsystem=elytron/properties-realm=ApplicationRealm:write-attribute(name=groups-properties.relative-to,value=\"%s\")",
+                                    RELATIVE_TO))
+                            .endBatch()
+                            .build())
+                    .build());
+        }
     }
 }

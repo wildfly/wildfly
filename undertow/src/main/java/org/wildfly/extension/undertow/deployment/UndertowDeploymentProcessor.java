@@ -303,20 +303,23 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor, Fun
         }
 
         final SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
-            securityDomain = builder.requires(securityMetaData.getSecurityDomain());
-        } else if(securityDomainName != null) {
+        if (securityDomainName != null) {
             if (mappedSecurityDomain.test(securityDomainName)) {
                 applySecurityFunction = builder.requires(capabilitySupport.getCapabilityServiceName(Capabilities.CAPABILITY_APPLICATION_SECURITY_DOMAIN, securityDomainName));
             } else {
                 throw ROOT_LOGGER.deploymentConfiguredForLegacySecurity();
             }
         }
-        if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
-            if (securityMetaData instanceof AdvancedSecurityMetaData) {
-                mechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
+        else if (isVirtualDomainRequired(deploymentUnit) || isVirtualMechanismFactoryRequired(deploymentUnit)) {
+            securityDomain = builder.requires(securityMetaData.getSecurityDomain());
+
+            if (isVirtualMechanismFactoryRequired(deploymentUnit)) {
+                if (securityMetaData instanceof AdvancedSecurityMetaData) {
+                    mechanismFactorySupplier = builder.requires(((AdvancedSecurityMetaData) securityMetaData).getHttpServerAuthenticationMechanismFactory());
+                }
             }
         }
+
 
         Supplier<ControlPoint> controlPoint = RequestControllerActivationMarker.isRequestControllerEnabled(deploymentUnit) ? builder.requires(ControlPointService.serviceName(Optional.ofNullable(parentDeploymentUnit).orElse(deploymentUnit).getName(), UndertowExtension.SUBSYSTEM_NAME)) : null;
 
