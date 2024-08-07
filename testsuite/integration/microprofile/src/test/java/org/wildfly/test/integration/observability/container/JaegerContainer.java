@@ -36,8 +36,6 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
         debugLog("port bindings: " + getPortBindings());
     }
 
-
-
     public List<JaegerTrace> getTraces(String serviceName) throws InterruptedException {
         try (Client client = ClientBuilder.newClient()) {
             waitForDataToAppear(serviceName);
@@ -60,7 +58,6 @@ class JaegerContainer extends BaseContainer<JaegerContainer> {
                 String response = client.target(getJaegerEndpoint() + "/api/services").request()
                         .get()
                         .readEntity(String.class);
-                System.out.println("response = " + response);
                 if (response.contains(serviceName)) {
                     found = true;
                     break;

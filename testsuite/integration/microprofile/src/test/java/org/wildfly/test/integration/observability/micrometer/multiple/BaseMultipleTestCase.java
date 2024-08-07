@@ -5,7 +5,6 @@
 package org.wildfly.test.integration.observability.micrometer.multiple;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +16,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
@@ -37,7 +35,7 @@ public abstract class BaseMultipleTestCase {
     @Testcontainer
     protected OpenTelemetryCollectorContainer otelCollector;
 
-    protected void makeRequests(URI service) throws URISyntaxException {
+    protected void makeRequests(URI service) {
         try (Client client = ClientBuilder.newClient()) {
             WebTarget target = client.target(service);
             for (int i = 0; i < REQUEST_COUNT; i++) {
@@ -46,7 +44,7 @@ public abstract class BaseMultipleTestCase {
         }
     }
 
-    protected @NotNull List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
+    protected List<PrometheusMetric> getMetricsByName(List<PrometheusMetric> metrics, String key) {
         return metrics.stream()
                 .filter(m -> m.getKey().equals(key))
                 .collect(Collectors.toList());
