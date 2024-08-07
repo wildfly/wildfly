@@ -10,13 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
-
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,13 +35,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
+import org.wildfly.test.integration.observability.container.PrometheusMetric;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
 public class MicrometerOtelIntegrationTestCase {
     protected static boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static final int REQUEST_COUNT = 5;
+    public static final String DEPLOYMENT_NAME = "micrometer-test.war";
+
     @ArquillianResource
     private URL url;
     @Inject
@@ -65,6 +67,7 @@ public class MicrometerOtelIntegrationTestCase {
                 ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
                         .addClasses(ServerSetupTask.class,
                                 MetricResource.class,
+                                PrometheusMetric.class,
                                 AssumeTestGroupUtil.class)
                         .addAsWebInfResource(new StringAsset(WEB_XML), "web.xml")
                         .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml") :
@@ -121,13 +124,42 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_bytes_received"
         );
 
-        final String response = fetchMetrics(metricsToTest.get(0));
-        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n, response.contains(n)));
+        final List<PrometheusMetric> metrics = OpenTelemetryCollectorContainer.getInstance().fetchMetrics(metricsToTest.get(0));
+        metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
+                metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
     }
 
     @Test
     @RunAsClient
     @InSequence(5)
+    public void testApplicationModelMetrics() throws InterruptedException {
+        List<String> metricsToTest = List.of(
+                "undertow_active_sessions",
+                "undertow_expired_sessions_total",
+                "undertow_highest_session_count",
+                "undertow_max_active_sessions",
+                "undertow_max_request_time_seconds",
+                "undertow_min_request_time_seconds",
+                "undertow_rejected_sessions_total",
+                "undertow_request_time_seconds_total",
+                "undertow_session_avg_alive_time_seconds",
+                "undertow_session_max_alive_time_seconds",
+                "undertow_sessions_created_total"
+        );
+        final List<PrometheusMetric> metrics = OpenTelemetryCollectorContainer.getInstance().fetchMetrics(metricsToTest.get(0));
+
+        Map<String, PrometheusMetric> appMetrics =
+                metrics.stream().filter(m -> m.getTags().entrySet().stream()
+                                .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
+                        )
+                        .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+
+        metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
+    }
+
+    @Test
+    @RunAsClient
+    @InSequence(6)
     public void testJmxMetrics() throws InterruptedException {
         List<String> metricsToTest = Arrays.asList(
                 "thread_max_count",

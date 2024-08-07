@@ -12,8 +12,6 @@ import org.jboss.dmr.ModelNode;
 import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 
 public class OpenTelemetrySetupTask extends AbstractSetupTask {
-    protected boolean dockerAvailable = AssumeTestGroupUtil.isDockerAvailable();
-
     public static OpenTelemetryCollectorContainer otelCollectorContainer;
 
     protected static final String SUBSYSTEM_NAME = "opentelemetry";
@@ -25,42 +23,33 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+        AssumeTestGroupUtil.assumeDockerAvailable();
+
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, extensionAddress))) {
             executeOp(managementClient, Operations.createAddOperation(extensionAddress));
-            extensionAdded = true;
         }
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, subsystemAddress))) {
             ModelNode addOp = Operations.createAddOperation(subsystemAddress);
             executeOp(managementClient, addOp);
-            subsystemAdded = true;
         }
 
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "batch-delay", "1"));
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "sampler-type", "on"));
-        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "max-queue-size", "1"));
 
-        if (dockerAvailable) {
-            otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
-            executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
-                    otelCollectorContainer.getOtlpGrpcEndpoint()));
-        }
+        otelCollectorContainer = OpenTelemetryCollectorContainer.getInstance();
+        executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "endpoint",
+                otelCollectorContainer.getOtlpGrpcEndpoint()));
 
         ServerReload.reloadIfRequired(managementClient);
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        if (dockerAvailable) {
-            otelCollectorContainer.stop();
-        }
-        if (subsystemAdded) {
-            executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
-        }
-        if (extensionAdded) {
-            executeOp(managementClient, Operations.createRemoveOperation(extensionAddress));
-        }
-
+        executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
+        executeOp(managementClient, Operations.createRemoveOperation(extensionAddress));
         ServerReload.reloadIfRequired(managementClient);
+
+        otelCollectorContainer.stop();
     }
 }
