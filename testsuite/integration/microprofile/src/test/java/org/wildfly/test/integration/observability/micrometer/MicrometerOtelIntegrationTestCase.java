@@ -43,6 +43,7 @@ import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
+    public static final String DEPLOYMENT_NAME = "micrometer-test.war";
 
     @ArquillianResource
     private URL url;
@@ -52,7 +53,7 @@ public class MicrometerOtelIntegrationTestCase {
 
     @Deployment
     public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, "micrometer-test.war")
+        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
                 .addClasses(JaxRsActivator.class, MetricResource.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
@@ -96,6 +97,26 @@ public class MicrometerOtelIntegrationTestCase {
         final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
         metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
                 metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
+
+        Map<String, PrometheusMetric> appMetrics =
+                metrics.stream().filter(m -> m.getTags().entrySet().stream()
+                                .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
+                        )
+                .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+
+        List.of(
+                "undertow_active_sessions",
+                "undertow_expired_sessions_total",
+                "undertow_highest_session_count",
+                "undertow_max_active_sessions",
+                "undertow_max_request_time_seconds",
+                "undertow_min_request_time_seconds",
+                "undertow_rejected_sessions_total",
+                "undertow_request_time_seconds_total",
+                "undertow_session_avg_alive_time_seconds",
+                "undertow_session_max_alive_time_seconds",
+                "undertow_sessions_created_total"
+        ).forEach(appMetrics::containsKey);
     }
 
     @Test
