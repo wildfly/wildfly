@@ -97,14 +97,13 @@ public class MicrometerOtelIntegrationTestCase {
         final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
         metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
                 metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));
+    }
 
-        Map<String, PrometheusMetric> appMetrics =
-                metrics.stream().filter(m -> m.getTags().entrySet().stream()
-                                .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
-                        )
-                .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
-
-        List.of(
+    @Test
+    @RunAsClient
+    @InSequence(5)
+    public void testApplicationModelMetrics() throws InterruptedException {
+        List<String> metricsToTest = List.of(
                 "undertow_active_sessions",
                 "undertow_expired_sessions_total",
                 "undertow_highest_session_count",
@@ -116,8 +115,19 @@ public class MicrometerOtelIntegrationTestCase {
                 "undertow_session_avg_alive_time_seconds",
                 "undertow_session_max_alive_time_seconds",
                 "undertow_sessions_created_total"
-        ).forEach(appMetrics::containsKey);
+        );
+        final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
+
+        Map<String, PrometheusMetric> appMetrics =
+                metrics.stream().filter(m -> m.getTags().entrySet().stream()
+                                .anyMatch(t -> "app".equals(t.getKey()) && DEPLOYMENT_NAME.equals(t.getValue()))
+                        )
+                        .collect(Collectors.toMap(PrometheusMetric::getKey, i -> i));
+
+        metricsToTest.forEach(m -> Assert.assertTrue("Missing app metric: " + m, appMetrics.containsKey(m)));
     }
+
+
 
     @Test
     @InSequence(5)
