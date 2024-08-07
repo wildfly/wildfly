@@ -54,9 +54,10 @@ import org.jboss.remoting3.security.RemotingPermission;
 
 
 /**
- * Test for issue https://issues.jboss.org/browse/WFLY-10531 (based on reproducer created by Gunter Zeilinger <gunterze@gmail.com>.
- *
- * 500 messages should be send to mdb and each of them should be received in verify queue.
+ * Test for issue <a href="https://issues.jboss.org/browse/WFLY-10531">https://issues.jboss.org/browse/WFLY-10531</a>,
+ * based on reproducer created by Gunter Zeilinger <gunterze@gmail.com>.
+ * <p>
+ * Two messages should be sent to mdb and each of them should be received in verify queue.
  * If error is still valid, there will be exceptions like: IJ000453: Unable to get managed connection for java:/JmsXA
  *
  * @author Jiri Ondrusek <jondruse@redhat.com>
@@ -83,7 +84,7 @@ public class NotClosingInjectedContextTestCase {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "NotClosingInjectedContextTestCase.war")
+        return ShrinkWrap.create(WebArchive.class, "NotClosingInjectedContextTestCase.war")
                 .addPackage(StartUp.class.getPackage())
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(
@@ -95,7 +96,6 @@ public class NotClosingInjectedContextTestCase {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller,org.jboss.remoting\n"), "MANIFEST.MF");
-        return archive;
     }
 
     @After
@@ -125,7 +125,11 @@ public class NotClosingInjectedContextTestCase {
         try (JMSContext context = factory.createContext(); JMSConsumer consumer = context.createConsumer(queueVerify)) {
             int j = 0;
             while (true) {
-                String t = consumer.receiveBody(String.class, adjust(2000));
+                // StartUp singleton EJB triggers sending of two messages, which Mdb republishes in queueVerify.
+                // Make the test robust by being patient waiting to receive those two, but then don't waste time
+                // waiting for a non-existing msg
+                int timeout = j < 2 ? adjust(15000) : 2000;
+                String t = consumer.receiveBody(String.class, adjust(timeout));
                 if (t == null) {
                     LOGGER.info("Received null message");
                     break;
