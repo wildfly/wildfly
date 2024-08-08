@@ -133,8 +133,6 @@ public abstract class LayersTestBase {
             "org.wildfly.security.elytron-tool",
             // bootable jar runtime
             "org.wildfly.bootable-jar",
-            // Extension not included in the default config
-            "org.wildfly.extension.clustering.singleton",
             // Dynamically added by ee-security and mp-jwt-smallrye DUPs but not referenced by subsystems.
             "org.wildfly.security.jakarta.security",
             // injected by sar

@@ -8,7 +8,7 @@ package org.wildfly.clustering.ejb.cache.bean;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import org.wildfly.clustering.ee.Remover;
+import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.bean.BeanMetaData;
 
@@ -22,10 +22,10 @@ public class CompositeBean<K, V extends BeanInstance<K>> extends CompositeImmuta
 
     private final BeanMetaData<K> metaData;
     private final BeanGroup<K, V> group;
-    private final Remover<K> remover;
+    private final CacheEntryRemover<K> remover;
     private final AtomicBoolean valid = new AtomicBoolean(true);
 
-    public CompositeBean(K id, BeanMetaData<K> metaData, BeanGroup<K, V> group, Remover<K> remover) {
+    public CompositeBean(K id, BeanMetaData<K> metaData, BeanGroup<K, V> group, CacheEntryRemover<K> remover) {
         super(id, group.getBeanInstance(id), metaData);
         this.metaData = metaData;
         this.group = group;

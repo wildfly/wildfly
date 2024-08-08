@@ -5,14 +5,18 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.OptionalInt;
+import java.util.ServiceLoader;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.ejb3.component.stateful.cache.distributable.LegacyDistributableStatefulSessionBeanCacheProviderServiceConfigurator;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
+import org.wildfly.clustering.ejb.bean.BeanManagementProvider;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
+import org.wildfly.clustering.ejb.bean.LegacyBeanManagementProviderFactory;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -20,18 +24,7 @@ import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
 @Deprecated
 public class PassivationStoreAdd extends AbstractAddStepHandler {
 
-    private final AttributeDefinition[] attributes;
-
-    PassivationStoreAdd(AttributeDefinition... attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attr : this.attributes) {
-            attr.validateAndSet(operation, model);
-        }
-    }
+    private static final LegacyBeanManagementProviderFactory LEGACY_PROVIDER_FACTORY = ServiceLoader.load(LegacyBeanManagementProviderFactory.class, LegacyBeanManagementProviderFactory.class.getClassLoader()).findFirst().orElseThrow(IllegalStateException::new);
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -55,12 +48,12 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
             }
 
             @Override
-            public Integer getMaxActiveBeans() {
-                return maxSize;
+            public OptionalInt getMaxActiveBeans() {
+                return OptionalInt.of(maxSize);
             }
         };
-        new LegacyDistributableStatefulSessionBeanCacheProviderServiceConfigurator<>(context.getCurrentAddress(), config).build(context.getServiceTarget())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        ServiceInstaller.builder(LEGACY_PROVIDER_FACTORY.createBeanManagementProvider(context.getCurrentAddressValue(), config))
+                .provides(ServiceNameFactory.resolveServiceName(BeanManagementProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue()))
+                .build();
     }
 }

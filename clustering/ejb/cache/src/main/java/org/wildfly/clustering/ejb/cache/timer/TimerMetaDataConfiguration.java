@@ -5,10 +5,11 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.marshalling.Marshaller;
 
 /**
  * @author Paul Ferraro
+ * @param <V> the timer metadata value type
  */
 public interface TimerMetaDataConfiguration<V> {
 

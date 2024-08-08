@@ -5,43 +5,36 @@
 
 package org.wildfly.clustering.web.undertow.elytron;
 
-import java.io.IOException;
 import java.security.Principal;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.jboss.JBossMarshallingTesterFactory;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.elytron.web.undertow.server.servlet.ServletSecurityContextImpl.IdentityContainer;
 import org.wildfly.security.auth.principal.NamePrincipal;
 import org.wildfly.security.cache.CachedIdentity;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Paul Ferraro
  */
 public class IdentityContainerMarshallerTestCase {
 
-    @Test
-    public void testProtoStream() throws IOException {
-        test(ProtoStreamTesterFactory.INSTANCE.createTester());
-    }
-
-    @Test
-    public void testJBoss() throws IOException {
-        test(JBossMarshallingTesterFactory.INSTANCE.createTester());
-    }
-
-    private static void test(Tester<IdentityContainer> tester) throws IOException {
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<IdentityContainer> tester = factory.createTester(IdentityContainerMarshallerTestCase::assertEquals);
         Principal principal = new NamePrincipal("name");
-        tester.test(new IdentityContainer(new CachedIdentity(HttpServletRequest.BASIC_AUTH, false, principal), "foo"), IdentityContainerMarshallerTestCase::assertEquals);
-        tester.test(new IdentityContainer(new CachedIdentity(HttpServletRequest.BASIC_AUTH, false, principal), null), IdentityContainerMarshallerTestCase::assertEquals);
+        tester.accept(new IdentityContainer(new CachedIdentity(HttpServletRequest.BASIC_AUTH, false, principal), "foo"));
+        tester.accept(new IdentityContainer(new CachedIdentity(HttpServletRequest.BASIC_AUTH, false, principal), null));
     }
 
     static void assertEquals(IdentityContainer container1, IdentityContainer container2) {
         CachedIdentityMarshallingTestCase.assertEquals(container1.getSecurityIdentity(), container2.getSecurityIdentity());
-        Assert.assertEquals(container1.getAuthType(), container2.getAuthType());
+        Assertions.assertEquals(container1.getAuthType(), container2.getAuthType());
     }
 }

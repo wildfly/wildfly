@@ -12,4 +12,9 @@
         <resource-env-ref-type>org.wildfly.clustering.provider.ServiceProviderRegistry</resource-env-ref-type>
         <lookup-name>java:jboss/clustering/providers/server/default</lookup-name>
     </resource-env-ref>
+    <resource-env-ref>
+        <resource-env-ref-name>clustering/service-provider-registrar</resource-env-ref-name>
+        <resource-env-ref-type>org.wildfly.clustering.server.provider.ServiceProviderRegistrar</resource-env-ref-type>
+        <lookup-name>java:jboss/clustering/server/service-provider-registrar/server/default</lookup-name>
+    </resource-env-ref>
 </web-app>

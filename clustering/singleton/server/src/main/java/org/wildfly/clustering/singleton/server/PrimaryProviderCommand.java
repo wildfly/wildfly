@@ -5,17 +5,17 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.singleton.SingletonStatus;
 
 /**
  * @author Paul Ferraro
  */
-public class PrimaryProviderCommand implements Command<Boolean, Singleton> {
-    private static final long serialVersionUID = 3194143912789013072L;
+public enum PrimaryProviderCommand implements Command<Boolean, SingletonStatus, RuntimeException> {
+    INSTANCE;
 
     @Override
-    public Boolean execute(Singleton singleton) {
-        return singleton.isPrimary();
+    public Boolean execute(SingletonStatus status) {
+        return status.isPrimaryProvider();
     }
 }

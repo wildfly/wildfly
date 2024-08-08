@@ -7,9 +7,7 @@ package org.wildfly.extension.clustering.web.deployment;
 
 import java.util.List;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
 
 /**
  * Configuration of a distributable web deployment.
@@ -26,7 +24,7 @@ public interface DistributableWebDeploymentConfiguration {
      * Returns a deployment-specific session management provider.
      * @return a session management provider
      */
-    DistributableSessionManagementProvider<? extends DistributableSessionManagementConfiguration<DeploymentUnit>> getSessionManagement();
+    DistributableSessionManagementProvider getSessionManagementProvider();
 
     /**
      * Returns a list of immutable session attribute classes.

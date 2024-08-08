@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
@@ -69,7 +70,7 @@ public class ScatteredCacheResourceDefinition extends SegmentedCacheResourceDefi
     }
 
     ScatteredCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), new ClusteredCacheServiceHandler(ScatteredCacheServiceConfigurator::new), executors);
+        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), CacheMode.DIST_SYNC, executors);
         this.setDeprecated(InfinispanSubsystemModel.VERSION_16_0_0.getVersion());
     }
 }

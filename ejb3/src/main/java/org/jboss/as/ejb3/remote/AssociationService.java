@@ -35,8 +35,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.discovery.AttributeValue;
 import org.wildfly.discovery.ServiceURL;
 import org.wildfly.discovery.impl.MutableDiscoveryProvider;
@@ -71,7 +72,7 @@ public final class AssociationService implements Service<AssociationService> {
     public void start(final StartContext context) throws StartException {
         // todo suspendController
         //noinspection unchecked
-        List<Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
+        List<Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>>> clientMappingsRegistries = this.clientMappingsRegistries.isEmpty() ? Collections.emptyList() : new ArrayList<>(this.clientMappingsRegistries.size());
         for (Map.Entry<Value<ProtocolSocketBinding>, Value<Registry>> entry : this.clientMappingsRegistries) {
             clientMappingsRegistries.add(new SimpleImmutableEntry<>(entry.getKey().getValue(), entry.getValue().getValue()));
         }
@@ -106,8 +107,8 @@ public final class AssociationService implements Service<AssociationService> {
                         ServiceURL.Builder b = new ServiceURL.Builder();
                         b.setUri(Affinity.LOCAL.getUri()).setAbstractType("ejb").setAbstractTypeAuthority("jboss");
                         b.addAttribute(EJBClientContext.FILTER_ATTR_NODE, AttributeValue.fromString(ourNodeName));
-                        for (Map.Entry<ProtocolSocketBinding, Registry<String, List<ClientMapping>>> entry : clientMappingsRegistries) {
-                            Group group = entry.getValue().getGroup();
+                        for (Map.Entry<ProtocolSocketBinding, Registry<GroupMember, String, List<ClientMapping>>> entry : clientMappingsRegistries) {
+                            Group<GroupMember> group = entry.getValue().getGroup();
                             if (!group.isSingleton()) {
                                 b.addAttribute(EJBClientContext.FILTER_ATTR_CLUSTER, AttributeValue.fromString(group.getName()));
                             }

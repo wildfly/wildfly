@@ -16,8 +16,8 @@ import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.server.Registrar;
+import org.wildfly.clustering.server.Registration;
 
 /**
  * Custom resource that additionally reports runtime singleton deployments and services.
@@ -46,13 +46,14 @@ public class SingletonPolicyResource extends ComplexResource implements Registra
     @Override
     public Registration register(ServiceName service) {
         boolean deployment = Services.JBOSS_DEPLOYMENT.isParentOf(service);
-        ChildResourceProvider provider = this.apply(deployment ? DEPLOYMENT_CHILD_TYPE : SERVICE_CHILD_TYPE);
-        String name = (deployment ? SingletonDeploymentResourceDefinition.pathElement(service) : SingletonServiceResourceDefinition.pathElement(service)).getValue();
-        provider.getChildren().add(name);
+        String key = deployment ? DEPLOYMENT_CHILD_TYPE : SERVICE_CHILD_TYPE;
+        ChildResourceProvider provider = this.apply(key);
+        String value = (deployment ? SingletonDeploymentResourceDefinition.pathElement(service) : SingletonServiceResourceDefinition.pathElement(service)).getValue();
+        provider.getChildren().add(value);
         return new Registration() {
             @Override
             public void close() {
-                provider.getChildren().remove(name);
+                provider.getChildren().remove(value);
             }
         };
     }

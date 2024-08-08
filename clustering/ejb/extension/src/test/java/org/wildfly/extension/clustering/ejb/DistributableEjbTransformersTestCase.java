@@ -22,8 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 /**
  * Transform/reject tests for singleton subsystem.
@@ -71,8 +70,11 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
                 return new String[] {
                         formatSubsystemArtifact(),
                         formatArtifact("org.jboss.eap:wildfly-clustering-common:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-ee-infinispan:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-ejb-infinispan:%s"),
                         formatArtifact("org.jboss.eap:wildfly-clustering-ejb-spi:%s"),
                         formatArtifact("org.jboss.eap:wildfly-clustering-infinispan-embedded-service:%s"),
+                        formatArtifact("org.jboss.eap:wildfly-clustering-marshalling-spi:%s"),
                         formatArtifact("org.jboss.eap:wildfly-clustering-service:%s"),
                 };
             default:
@@ -82,9 +84,9 @@ public class DistributableEjbTransformersTestCase extends AbstractSubsystemTest 
 
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(InfinispanDefaultCacheRequirement.CACHE, "foo")
-                .require(InfinispanDefaultCacheRequirement.CONFIGURATION, "foo")
-                .require(InfinispanCacheRequirement.CONFIGURATION, "foo", "bar")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE, "foo")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
                 ;
     }
 

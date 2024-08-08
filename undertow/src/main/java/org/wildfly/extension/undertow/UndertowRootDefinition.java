@@ -19,7 +19,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -43,7 +42,7 @@ import org.wildfly.subsystem.service.capture.ServiceValueExecutorRegistry;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class UndertowRootDefinition extends PersistentResourceDefinition {
+class UndertowRootDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH_ELEMENT = PathElement.pathElement(SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME);
     static final RuntimeCapability<Void> UNDERTOW_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CAPABILITY_UNDERTOW, false, UndertowService.class)
@@ -63,7 +62,7 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_SERVER, ModelType.STRING, true)
                     .setRestartAllServices()
                     .setDefaultValue(new ModelNode("default-server"))
-                    .setCapabilityReference(UNDERTOW_CAPABILITY, Capabilities.CAPABILITY_SERVER)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(UNDERTOW_CAPABILITY, Server.SERVICE_DESCRIPTOR).build())
                     .build();
 
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_HOST =
@@ -121,25 +120,19 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
-    }
-
-    @Override
-    public List<? extends PersistentResourceDefinition> getChildren() {
-        return List.of(
-                new ByteBufferPoolDefinition(),
-                new BufferCacheDefinition(),
-                new ServerDefinition(),
-                new ServletContainerDefinition(),
-                new HandlerDefinitions(),
-                new FilterDefinitions(),
-                new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
+    public void registerChildren(ManagementResourceRegistration registration) {
+        registration.registerSubModel(new ByteBufferPoolDefinition());
+        registration.registerSubModel(new BufferCacheDefinition());
+        registration.registerSubModel(new ServerDefinition());
+        registration.registerSubModel(new ServletContainerDefinition());
+        registration.registerSubModel(new HandlerDefinitions());
+        registration.registerSubModel(new FilterDefinitions());
+        registration.registerSubModel(new ApplicationSecurityDomainDefinition(this.knownApplicationSecurityDomains));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : getAttributes()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             if (attr == STATISTICS_ENABLED) {
                 ExceptionFunction<UndertowService, UndertowService, RuntimeException> identity = service -> service;
                 resourceRegistration.registerReadWriteAttribute(attr, null, new AbstractWriteAttributeHandler<Void>() {

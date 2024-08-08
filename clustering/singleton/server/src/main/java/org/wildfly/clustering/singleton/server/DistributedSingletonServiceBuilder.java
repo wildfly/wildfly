@@ -5,104 +5,72 @@
 
 package org.wildfly.clustering.singleton.server;
 
-import java.util.function.Supplier;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.service.CompositeDependency;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.singleton.SingletonElectionListener;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
-import org.wildfly.clustering.singleton.SingletonService;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
+import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.service.SingletonServiceController;
+import org.wildfly.common.function.Functions;
+import org.wildfly.service.AsyncServiceBuilder;
 
 /**
- * Distributed {@link SingletonServiceBuilder} implementation that uses JBoss MSC 1.3.x service installation.
+ * A service builder that installs a distributed singleton service.
  * @author Paul Ferraro
  */
-@Deprecated
-public class DistributedSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T>, DistributedSingletonServiceContext, Supplier<Group> {
+public class DistributedSingletonServiceBuilder<T> extends AbstractSingletonServiceBuilder<T> {
 
-    private final SupplierDependency<ServiceProviderRegistry<ServiceName>> registry;
-    private final SupplierDependency<CommandDispatcherFactory> dispatcherFactory;
-    private final Service<T> primaryService;
-    private final Service<T> backupService;
+    private final Function<ServiceTarget, ServiceBuilder<?>> builderFactory;
+    private final List<Map.Entry<ServiceName[], Consumer<Consumer<?>>>> injectors = new LinkedList<>();
+    private final SingletonServiceBuilderContext context;
+    private final Consumer<Singleton> singleton;
+    private final SingletonReference reference = new SingletonReference();
 
-    private volatile SingletonElectionPolicy electionPolicy = new SimpleSingletonElectionPolicy();
-    private volatile SingletonElectionListener electionListener;
-    private volatile int quorum = 1;
+    public DistributedSingletonServiceBuilder(ServiceBuilder<T> builder, Function<ServiceTarget, ServiceBuilder<?>> builderFactory, SingletonServiceBuilderContext context, Function<ServiceBuilder<?>, Consumer<Singleton>> singletonFactory) {
+        super(new AsyncServiceBuilder<>(builder, builder.requires(ServiceName.parse("org.wildfly.management.executor"))), context);
+        this.builderFactory = builderFactory;
+        this.context = context;
+        this.singleton = singletonFactory.apply(builder).andThen(this.reference);
+    }
 
-    public DistributedSingletonServiceBuilder(ServiceName serviceName, Service<T> primaryService, Service<T> backupService, DistributedSingletonServiceConfiguratorContext context) {
-        super(serviceName);
-        this.registry = context.getServiceProviderRegistryDependency();
-        this.dispatcherFactory = context.getCommandDispatcherFactoryDependency();
-        this.primaryService = primaryService;
-        this.backupService = backupService;
-        this.electionListener = new DefaultSingletonElectionListener(serviceName, this);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <V> Consumer<V> provides(ServiceName... names) {
+        if (names.length == 0) return Functions.discardingConsumer();
+        this.context.setServiceName(names[0]);
+        AtomicReference<Consumer<V>> injector = new AtomicReference<>();
+        this.injectors.add(Map.entry(names, ((AtomicReference<Consumer<?>>) (AtomicReference<?>) injector)::set));
+        return new Consumer<>() {
+            @Override
+            public void accept(V value) {
+                injector.get().accept(value);
+            }
+        };
     }
 
     @Override
-    public Group get() {
-        return this.registry.get().getGroup();
+    public SingletonServiceBuilder<T> setInstance(Service service) {
+        this.context.setServiceName(ServiceName.parse(service.getClass().getName()));
+        this.context.setService(service);
+        return this;
     }
 
     @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        SingletonService<T> service = new LegacyDistributedSingletonService<>(this, this.primaryService, this.backupService);
-        ServiceBuilder<T> installer = new AsynchronousServiceBuilder<>(this.getServiceName(), service).build(target);
-        return new CompositeDependency(this.registry, this.dispatcherFactory).register(installer);
-    }
-
-    @Override
-    public SingletonServiceBuilder<T> requireQuorum(int quorum) {
-        if (quorum < 1) {
-            throw SingletonLogger.ROOT_LOGGER.invalidQuorum(quorum);
+    public SingletonServiceController<T> install() {
+        ServiceName name = this.context.getServiceName();
+        if (name == null) {
+            throw new IllegalStateException();
         }
-        this.quorum = quorum;
-        return this;
-    }
-
-    @Override
-    public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy electionPolicy) {
-        this.electionPolicy = electionPolicy;
-        return this;
-    }
-
-    @Override
-    public SingletonServiceBuilder<T> electionListener(SingletonElectionListener listener) {
-        this.electionListener = listener;
-        return this;
-    }
-
-    @Override
-    public Supplier<ServiceProviderRegistry<ServiceName>> getServiceProviderRegistry() {
-        return this.registry;
-    }
-
-    @Override
-    public Supplier<CommandDispatcherFactory> getCommandDispatcherFactory() {
-        return this.dispatcherFactory;
-    }
-
-    @Override
-    public SingletonElectionPolicy getElectionPolicy() {
-        return this.electionPolicy;
-    }
-
-    @Override
-    public SingletonElectionListener getElectionListener() {
-        return this.electionListener;
-    }
-
-    @Override
-    public int getQuorum() {
-        return this.quorum;
+        ServiceController<T> controller = this.getDelegate().setInstance(new DistributedSingletonService(this.context, this.builderFactory, this.injectors, this.singleton)).install();
+        return new DistributedSingletonServiceController<>(controller, this.reference);
     }
 }

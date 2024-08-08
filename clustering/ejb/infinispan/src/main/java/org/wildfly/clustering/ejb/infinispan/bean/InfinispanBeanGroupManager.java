@@ -5,18 +5,22 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
+import static org.wildfly.clustering.cache.function.Functions.whenNullFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
-import org.wildfly.clustering.ee.Creator;
-import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.MutatorFactory;
-import org.wildfly.clustering.ee.Remover;
-import org.wildfly.clustering.ee.infinispan.InfinispanConfiguration;
-import org.wildfly.clustering.ee.infinispan.CacheMutatorFactory;
+import org.wildfly.clustering.cache.CacheEntryCreator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.CacheEntryMutatorFactory;
+import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryMutatorFactory;
 import org.wildfly.clustering.ejb.bean.BeanInstance;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.MarshalledValue;
 
 /**
  * Manages the cache entry for a bean group.
@@ -25,32 +29,30 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValue;
  * @param <V> the bean instance type
  * @param <C> the marshalled value context type
  */
-public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> implements Creator<K, MarshalledValue<Map<K, V>, C>, MarshalledValue<Map<K, V>, C>>, Remover<K>, MutatorFactory<K, MarshalledValue<Map<K, V>, C>> {
+public class InfinispanBeanGroupManager<K, V extends BeanInstance<K>, C> implements CacheEntryCreator<K, MarshalledValue<Map<K, V>, C>, MarshalledValue<Map<K, V>, C>>, CacheEntryRemover<K>, CacheEntryMutatorFactory<K, MarshalledValue<Map<K, V>, C>> {
 
     private final Cache<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> cache;
     private final Cache<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> removeCache;
-    private final MutatorFactory<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> mutatorFactory;
+    private final CacheEntryMutatorFactory<BeanGroupKey<K>, MarshalledValue<Map<K, V>, C>> mutatorFactory;
 
-    public InfinispanBeanGroupManager(InfinispanConfiguration configuration) {
+    public InfinispanBeanGroupManager(EmbeddedCacheConfiguration configuration) {
         this.cache = configuration.getCache();
         this.removeCache = configuration.getWriteOnlyCache();
-        this.mutatorFactory = new CacheMutatorFactory<>(configuration.getCache());
+        this.mutatorFactory = new EmbeddedCacheEntryMutatorFactory<>(configuration.getCache());
     }
 
     @Override
-    public MarshalledValue<Map<K, V>, C> createValue(K id, MarshalledValue<Map<K, V>, C> defaultValue) {
-        MarshalledValue<Map<K, V>, C> value = this.cache.putIfAbsent(new InfinispanBeanGroupKey<>(id), defaultValue);
-        return (value != null) ? value : defaultValue;
+    public CompletionStage<MarshalledValue<Map<K, V>, C>> createValueAsync(K id, MarshalledValue<Map<K, V>, C> defaultValue) {
+        return this.cache.putIfAbsentAsync(new InfinispanBeanGroupKey<>(id), defaultValue).thenApply(whenNullFunction(defaultValue));
     }
 
     @Override
-    public boolean remove(K id) {
-        this.removeCache.remove(new InfinispanBeanGroupKey<>(id));
-        return true;
+    public CompletionStage<Void> removeAsync(K id) {
+        return this.removeCache.removeAsync(new InfinispanBeanGroupKey<>(id)).thenAccept(discardingConsumer());
     }
 
     @Override
-    public Mutator createMutator(K id, MarshalledValue<Map<K, V>, C> value) {
+    public CacheEntryMutator createMutator(K id, MarshalledValue<Map<K, V>, C> value) {
         return this.mutatorFactory.createMutator(new InfinispanBeanGroupKey<>(id), value);
     }
 }

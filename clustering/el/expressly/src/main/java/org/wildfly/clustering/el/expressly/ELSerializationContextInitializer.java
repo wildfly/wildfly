@@ -5,17 +5,26 @@
 
 package org.wildfly.clustering.el.expressly;
 
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.marshalling.protostream.CompositeSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
-public class ELSerializationContextInitializer extends CompositeSerializationContextInitializer {
+public class ELSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ELSerializationContextInitializer() {
-        super(ELSerializationContextInitializerProvider.class);
+        super("org.glassfish.expressly.proto");
+    }
+
+    @Override
+    public void registerMarshallers(SerializationContext context) {
+        context.registerMarshaller(new MethodExpressionImplMarshaller());
+        context.registerMarshaller(new MethodExpressionLiteralMarshaller());
+        context.registerMarshaller(new ValueExpressionImplMarshaller());
+        context.registerMarshaller(new ValueExpressionLiteralMarshaller());
     }
 }

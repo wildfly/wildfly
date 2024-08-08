@@ -11,18 +11,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProviderServiceNameProvider;
-import org.jboss.as.ejb3.component.stateful.cache.simple.SimpleStatefulSessionBeanCacheProviderServiceConfigurator;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.IdentityServiceConfigurator;
-import org.wildfly.clustering.service.ServiceConfigurator;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * Configure, build and install CacheFactoryBuilders to support SFSB usage.
@@ -31,10 +28,6 @@ import org.wildfly.clustering.service.ServiceConfigurator;
  */
 @Deprecated
 public class LegacyCacheFactoryAdd extends AbstractAddStepHandler {
-
-    LegacyCacheFactoryAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -46,15 +39,11 @@ public class LegacyCacheFactoryAdd extends AbstractAddStepHandler {
 
         final Collection<String> unwrappedAliasValues = LegacyCacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
         final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<>(unwrappedAliasValues) : Collections.<String>emptySet();
-        ServiceTarget target = context.getServiceTarget();
-        // set up the CacheFactoryBuilder service
-        ServiceConfigurator configurator = (passivationStore != null) ? new IdentityServiceConfigurator<>(new StatefulSessionBeanCacheProviderServiceNameProvider(name).getServiceName(),
-                new StatefulSessionBeanCacheProviderServiceNameProvider(passivationStore).getServiceName()) : new SimpleStatefulSessionBeanCacheProviderServiceConfigurator<>(pathAddress);
-        ServiceBuilder<?> builder = configurator.build(target);
-        // set up aliases to the CacheFactoryBuilder service
-        for (String alias: aliases) {
-            new IdentityServiceConfigurator<>(new StatefulSessionBeanCacheProviderServiceNameProvider(alias).getServiceName(), configurator.getServiceName()).build(target).install();
+        ServiceDependency<StatefulSessionBeanCacheProvider> provider = (passivationStore != null) ? ServiceDependency.on(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, passivationStore) : new SimpleStatefulSessionBeanCacheProviderResourceDefinition().resolve(context, model);
+        ServiceInstaller.UnaryBuilder<StatefulSessionBeanCacheProvider, StatefulSessionBeanCacheProvider> builder = ServiceInstaller.builder(provider).provides(ServiceNameFactory.resolveServiceName(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, name));
+        for (String alias : aliases) {
+            builder.provides(ServiceNameFactory.resolveServiceName(StatefulSessionBeanCacheProvider.SERVICE_DESCRIPTOR, alias));
         }
-        builder.install();
+        builder.build().install(context);
     }
 }

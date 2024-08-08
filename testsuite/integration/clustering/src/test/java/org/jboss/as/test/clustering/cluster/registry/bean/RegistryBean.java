@@ -10,31 +10,32 @@ import java.net.UnknownHostException;
 import java.util.AbstractMap;
 import java.util.Map;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Local;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.registry.RegistryListener;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.registry.Registry;
+import org.wildfly.clustering.server.registry.RegistryFactory;
+import org.wildfly.clustering.server.registry.RegistryListener;
 
 @Singleton
 @Startup
 @Local(Registry.class)
-public class RegistryBean implements Registry<String, String>, RegistryListener<String, String> {
+public class RegistryBean implements Registry<GroupMember, String, String>, RegistryListener<String, String> {
 
-    @Resource(name = "clustering/registry")
-    private RegistryFactory<String, String> factory;
-    private Registry<String, String> registry;
+    @Resource(name = "clustering/registry-factory")
+    private RegistryFactory<GroupMember, String, String> factory;
+    private Registry<GroupMember, String, String> registry;
     private Registration registration;
 
     private static String getLocalHost() {
@@ -63,14 +64,14 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
     }
 
     @Override
-    public void addedEntries(Map<String, String> added) {
+    public void added(Map<String, String> added) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
             // Ensure the correct naming context is set
             Context context = new InitialContext();
             try {
-                context.lookup("java:comp/env/clustering/registry");
+                context.lookup("java:comp/env/clustering/registry-factory");
             } finally {
                 context.close();
             }
@@ -83,14 +84,14 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
     }
 
     @Override
-    public void updatedEntries(Map<String, String> updated) {
+    public void updated(Map<String, String> updated) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
             // Ensure the correct naming context is set
             Context context = new InitialContext();
             try {
-                context.lookup("java:comp/env/clustering/registry");
+                context.lookup("java:comp/env/clustering/registry-factory");
             } finally {
                 context.close();
             }
@@ -103,14 +104,14 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
     }
 
     @Override
-    public void removedEntries(Map<String, String> removed) {
+    public void removed(Map<String, String> removed) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
             // Ensure the correct naming context is set
             Context context = new InitialContext();
             try {
-                context.lookup("java:comp/env/clustering/registry");
+                context.lookup("java:comp/env/clustering/registry-factory");
             } finally {
                 context.close();
             }
@@ -123,7 +124,7 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
     }
 
     @Override
-    public Group getGroup() {
+    public Group<GroupMember> getGroup() {
         return this.registry.getGroup();
     }
 
@@ -138,7 +139,7 @@ public class RegistryBean implements Registry<String, String>, RegistryListener<
     }
 
     @Override
-    public Map.Entry<String, String> getEntry(Node node) {
-        return this.registry.getEntry(node);
+    public Map.Entry<String, String> getEntry(GroupMember member) {
+        return this.registry.getEntry(member);
     }
 }

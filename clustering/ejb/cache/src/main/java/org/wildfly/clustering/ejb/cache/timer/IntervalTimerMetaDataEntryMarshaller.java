@@ -13,8 +13,8 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValue;
-import org.wildfly.clustering.marshalling.spi.MarshalledValue;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledValue;
+import org.wildfly.clustering.marshalling.MarshalledValue;
 
 /**
  * @author Paul Ferraro

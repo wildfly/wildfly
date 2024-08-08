@@ -27,8 +27,7 @@ import org.jipijapa.cache.spi.Classification;
 import org.jipijapa.cache.spi.Wrapper;
 import org.jipijapa.event.spi.EventListener;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 /**
  * InfinispanCacheDeploymentListener adds Infinispan second level cache dependencies during application deployment.
@@ -63,7 +62,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         String cacheType = properties.getProperty(CACHE_TYPE);
         // TODO Figure out how to access CapabilityServiceSupport from here
-        ServiceName containerServiceName = ServiceNameFactory.parseServiceName(InfinispanRequirement.CONTAINER.getName()).append(container);
+        ServiceName containerServiceName = ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE_CONTAINER, container);
 
         // need a private cache for non-jpa application use
         String name = properties.getProperty(NAME, UUID.randomUUID().toString());
@@ -75,7 +74,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             // If using a private cache, addCacheDependencies(...) is never triggered
             String[] caches = properties.getProperty(CACHES).split("\\s+");
             for (String cache : caches) {
-                builder.requires(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.getName()).append(container, cache));
+                builder.requires(ServiceNameFactory.resolveServiceName(InfinispanServiceDescriptor.CACHE_CONFIGURATION, container, cache));
             }
         }
         final CountDownLatch latch = new CountDownLatch(1);
@@ -102,8 +101,8 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String container = properties.getProperty(CONTAINER);
         for (String cache : properties.getProperty(CACHES).split("\\s+")) {
             // Workaround for legacy default configuration, where the pending-puts cache configuration is missing
-            if (cache.equals(PENDING_PUTS) ? support.hasCapability(InfinispanCacheRequirement.CACHE.resolve(container, cache)) : true) {
-                builder.requires(InfinispanCacheRequirement.CONFIGURATION.getServiceName(support, container, cache));
+            if (cache.equals(PENDING_PUTS) ? support.hasCapability(InfinispanServiceDescriptor.CACHE_CONFIGURATION, container, cache) : true) {
+                builder.requires(support.getCapabilityServiceName(InfinispanServiceDescriptor.CACHE_CONFIGURATION, container, cache));
             }
         }
     }

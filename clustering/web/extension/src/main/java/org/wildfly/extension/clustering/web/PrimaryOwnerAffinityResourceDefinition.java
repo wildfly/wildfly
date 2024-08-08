@@ -5,18 +5,19 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.EnumSet;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
-import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.service.WebProviderRequirement;
-import org.wildfly.clustering.web.service.WebRequirement;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.extension.clustering.web.routing.infinispan.PrimaryOwnerRouteLocatorProvider;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -25,36 +26,18 @@ public class PrimaryOwnerAffinityResourceDefinition extends AffinityResourceDefi
 
     static final PathElement PATH = pathElement("primary-owner");
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        AFFINITY(WebProviderRequirement.AFFINITY),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setAllowMultipleRegistrations(true)
-                    .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
-                    .addRequirements(WebRequirement.INFINISPAN_ROUTING_PROVIDER.getName());
-        }
-    }
-
-    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
-        @Override
-        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addCapabilities(Capability.class);
-        }
-    }
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(RouteLocatorProvider.SERVICE_DESCRIPTOR)
+            .setAllowMultipleRegistrations(true)
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
+            .addRequirements(RoutingProvider.INFINISPAN_SERVICE_DESCRIPTOR.getName())
+            .build();
 
     PrimaryOwnerAffinityResourceDefinition() {
-        super(PATH, EnumSet.allOf(Capability.class), new ResourceDescriptorConfigurator(), PrimaryOwnerAffinityServiceConfigurator::new);
+        super(PATH, CAPABILITY, UnaryOperator.identity());
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return CapabilityServiceInstaller.builder(CAPABILITY, PrimaryOwnerRouteLocatorProvider::new).build();
     }
 }

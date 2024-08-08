@@ -6,20 +6,19 @@
 package org.jboss.as.connector.services.workmanager.transport;
 
 import org.jboss.jca.core.spi.workmanager.Address;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * Equivalent to org.jboss.jca.core.workmanager.transport.remote.jgroups.JGroupsTransport#addWorkManager(java.util.Map, org.jgroups.Address).
  * @author Paul Ferraro
  */
-public class AddWorkManagerCommand implements Command<Void, CommandDispatcherTransport> {
+public class AddWorkManagerCommand implements TransportCommand<Void> {
     private static final long serialVersionUID = -6747024371979702527L;
 
     private final Address address;
-    private final Node member;
+    private final GroupMember member;
 
-    public AddWorkManagerCommand(Address address, Node member) {
+    public AddWorkManagerCommand(Address address, GroupMember member) {
         this.address = address;
         this.member = member;
     }

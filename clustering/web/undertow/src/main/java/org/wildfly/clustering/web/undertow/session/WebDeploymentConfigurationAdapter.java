@@ -5,12 +5,13 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
+import org.wildfly.clustering.server.deployment.DeploymentConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public class WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.WebDeploymentConfiguration {
+public class WebDeploymentConfigurationAdapter implements DeploymentConfiguration {
 
     private final WebDeploymentConfiguration configuration;
 

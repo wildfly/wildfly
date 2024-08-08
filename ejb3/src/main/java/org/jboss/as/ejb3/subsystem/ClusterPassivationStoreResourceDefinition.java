@@ -5,7 +5,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -15,8 +14,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.ejb.bean.LegacyBeanManagementConfiguration;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 /**
  * @author Paul Ferraro
@@ -44,7 +43,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a UnaryRequirement
-            .setCapabilityReference(new CapabilityReference(()->CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanDefaultCacheRequirement.CONFIGURATION))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
             .build()
     ;
     @Deprecated
@@ -54,7 +53,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
             .setAllowExpression(false)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             // a CapabilityReference to a BinaryRequirement (including a parent attribute)
-            .setCapabilityReference(new CapabilityReference(()->CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanCacheRequirement.CONFIGURATION, ()->CACHE_CONTAINER))
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(CLUSTER_PASSIVATION_STORE_CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER).build())
             .build()
     ;
     @Deprecated
@@ -81,7 +80,7 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
 
     private static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
 
-    private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
+    private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd();
     private static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
 
     ClusterPassivationStoreResourceDefinition() {

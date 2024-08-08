@@ -13,11 +13,9 @@ import org.jboss.as.clustering.controller.MetricExecutor;
 import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.common.function.Functions;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -36,8 +34,7 @@ public class RemoteCacheContainerMetricExecutor implements MetricExecutor<Remote
 
     @Override
     public ModelNode execute(OperationContext context, Metric<RemoteCacheManagerMXBean> metric) throws OperationFailedException {
-        ServiceName name = InfinispanClientRequirement.REMOTE_CONTAINER.getServiceName(context, UnaryCapabilityNameResolver.DEFAULT);
-        FunctionExecutor<RemoteCacheContainer> executor = this.executors.getExecutor(ServiceDependency.on(name));
+        FunctionExecutor<RemoteCacheContainer> executor = this.executors.getExecutor(ServiceDependency.on(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, context.getCurrentAddressValue()));
         return (executor != null) ? executor.execute(new MetricFunction<>(Functions.cast(Function.identity()), metric)) : null;
     }
 }

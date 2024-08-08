@@ -7,15 +7,24 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
+import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.extension.clustering.web.session.hotrod.HotRodSessionManagementProvider;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -33,7 +42,7 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
                         .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.SESSION_MANAGEMENT_PROVIDER, InfinispanClientRequirement.REMOTE_CONTAINER))
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(SESSION_MANAGEMENT_PROVIDER, HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER).build())
                         ;
             }
         },
@@ -66,7 +75,24 @@ public class HotRodSessionManagementResourceDefinition extends SessionManagement
         }
     }
 
+    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.REMOTE_CACHE_CONTAINER.getDefinition(), Attribute.CACHE_CONFIGURATION.getDefinition());
+
     HotRodSessionManagementResourceDefinition() {
-        super(WILDCARD_PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), HotRodSessionManagementServiceConfigurator::new);
+        super(WILDCARD_PATH, new UnaryOperator<>() {
+            @Override
+            public ResourceDescriptor apply(ResourceDescriptor descriptor) {
+                return descriptor.addAttributes(Attribute.class)
+                        .addRequiredSingletonChildren(LocalAffinityResourceDefinition.PATH)
+                        ;
+            }
+        });
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        ServiceDependency<RouteLocatorProvider> locatorProvider = ServiceDependency.on(RouteLocatorProvider.SERVICE_DESCRIPTOR, context.getCurrentAddressValue());
+        return CapabilityServiceInstaller.builder(SessionManagementResourceDefinition.SESSION_MANAGEMENT_PROVIDER, new HotRodSessionManagementProvider(this.resolve(context, model), this.resolver.resolve(context, model), locatorProvider))
+                .requires(locatorProvider)
+                .build();
     }
 }

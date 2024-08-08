@@ -20,6 +20,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.jgroups.api"/>
-        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.service"/>
     </dependencies>
 </module>

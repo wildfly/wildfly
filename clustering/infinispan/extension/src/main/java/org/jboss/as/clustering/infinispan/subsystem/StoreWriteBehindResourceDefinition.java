@@ -5,17 +5,20 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.clustering.controller.ManagementResourceRegistration;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
+import java.util.function.Supplier;
+
+import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Resource description for the addressable resource
@@ -49,19 +52,22 @@ public class StoreWriteBehindResourceDefinition extends StoreWriteResourceDefini
     }
 
     StoreWriteBehindResourceDefinition() {
-        super(PATH);
+        super(PATH, descriptor -> descriptor.addAttributes(Attribute.class));
     }
 
     @Override
-    public ManagementResourceRegistration register(ManagementResourceRegistration parent) {
-        ManagementResourceRegistration registration = parent.registerSubModel(this);
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        int queueSize = Attribute.MODIFICATION_QUEUE_SIZE.resolveModelAttribute(context, model).asInt();
 
-        ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
-                .addAttributes(Attribute.class)
-                ;
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(StoreWriteBehindServiceConfigurator::new);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
-
-        return registration;
+        Supplier<AsyncStoreConfiguration> configurationFactory = new Supplier<>() {
+            @Override
+            public AsyncStoreConfiguration get() {
+                return new ConfigurationBuilder().persistence().addSoftIndexFileStore().async()
+                        .enable()
+                        .modificationQueueSize(queueSize)
+                        .create();
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, configurationFactory).build();
     }
 }

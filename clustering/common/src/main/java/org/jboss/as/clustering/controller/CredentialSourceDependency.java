@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.DelegatingServiceBuilder;
@@ -23,12 +24,15 @@ import org.wildfly.clustering.service.ServiceSupplierDependency;
 import org.wildfly.clustering.service.SupplierDependency;
 import org.wildfly.common.function.ExceptionSupplier;
 import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.subsystem.service.ServiceDependency;
 
 /**
  * @author Paul Ferraro
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @deprecated Replaced by {@link CredentialReference#getCredentialSourceDependency(OperationContext, AttributeDefinition, ModelNode)}.
  */
-public class CredentialSourceDependency implements SupplierDependency<CredentialSource> {
+@Deprecated
+public class CredentialSourceDependency implements SupplierDependency<CredentialSource>, ServiceDependency<CredentialSource> {
 
     private final ExceptionSupplier<CredentialSource, Exception> supplier;
     private final Iterable<Dependency> dependencies;
@@ -45,6 +49,11 @@ public class CredentialSourceDependency implements SupplierDependency<Credential
             dependency.register(builder);
         }
         return builder;
+    }
+
+    @Override
+    public void accept(RequirementServiceBuilder<?> builder) {
+        this.register(builder);
     }
 
     @Override

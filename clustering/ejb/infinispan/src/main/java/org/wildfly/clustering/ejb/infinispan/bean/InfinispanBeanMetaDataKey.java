@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
+import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataKey;
 
 /**
@@ -13,7 +13,7 @@ import org.wildfly.clustering.ejb.cache.bean.BeanMetaDataKey;
  * @author Paul Ferraro
  * @param <K> the bean identifier type
  */
-public class InfinispanBeanMetaDataKey<K> extends GroupedKey<K> implements BeanMetaDataKey<K> {
+public class InfinispanBeanMetaDataKey<K> extends CacheKey<K> implements BeanMetaDataKey<K> {
 
     public InfinispanBeanMetaDataKey(K id) {
         super(id);

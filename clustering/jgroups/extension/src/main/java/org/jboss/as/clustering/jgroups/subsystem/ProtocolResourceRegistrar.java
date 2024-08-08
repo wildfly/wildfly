@@ -13,7 +13,6 @@ import java.util.function.UnaryOperator;
 
 import org.jboss.as.clustering.controller.ManagementRegistrar;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
 import org.jboss.as.clustering.controller.RuntimeResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jgroups.Global;
@@ -21,6 +20,7 @@ import org.jgroups.PhysicalAddress;
 import org.jgroups.protocols.FD_ALL2;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
 
 /**
  * Registers protocol resource definitions, including any overrides.
@@ -63,18 +63,21 @@ public class ProtocolResourceRegistrar implements ManagementRegistrar<Management
     }
 
     enum SocketProtocol {
-        FD_SOCK(LegacyFailureDetectionProtocolConfigurationServiceConfigurator::new),
-        FD_SOCK2(FailureDetectionProtocolConfigurationServiceConfigurator::new),
+        FD_SOCK() {
+            @Override
+            SocketProtocolResourceDefinition<? extends Protocol> createResourceDefinition(UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfigurator parentServiceConfigurator) {
+                return new LegacyFailureDetectionProtocolResourceDefinition(this.name(), configurator, parentServiceConfigurator);
+            }
+        },
+        FD_SOCK2() {
+            @Override
+            SocketProtocolResourceDefinition<? extends Protocol> createResourceDefinition(UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfigurator parentServiceConfigurator) {
+                return new FailureDetectionProtocolResourceDefinition(this.name(), configurator, parentServiceConfigurator);
+            }
+        },
         ;
-        private final ResourceServiceConfiguratorFactory factory;
 
-        SocketProtocol(ResourceServiceConfiguratorFactory factory) {
-            this.factory = factory;
-        }
-
-        ResourceServiceConfiguratorFactory getResourceServiceConfiguratorFactory() {
-            return this.factory;
-        }
+        abstract SocketProtocolResourceDefinition<? extends Protocol> createResourceDefinition(UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfigurator parentServiceConfigurator);
     }
 
     enum LegacyProtocol {
@@ -108,58 +111,58 @@ public class ProtocolResourceRegistrar implements ManagementRegistrar<Management
         }
     }
 
-    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
+    private final ResourceServiceConfigurator parentServiceConfigurator;
     private final UnaryOperator<ResourceDescriptor> configurator;
 
-    ProtocolResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory) {
-        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
+    ProtocolResourceRegistrar(ResourceServiceConfigurator parentServiceConfigurator) {
+        this.parentServiceConfigurator = parentServiceConfigurator;
         this.configurator = UnaryOperator.identity();
     }
 
-    ProtocolResourceRegistrar(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory, RuntimeResourceRegistration runtimeResourceRegistration) {
-        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
+    ProtocolResourceRegistrar(ResourceServiceConfigurator parentServiceConfigurator, RuntimeResourceRegistration runtimeResourceRegistration) {
+        this.parentServiceConfigurator = parentServiceConfigurator;
         this.configurator = new ResourceDescriptorConfigurator(runtimeResourceRegistration);
     }
 
     @Override
     public void register(ManagementResourceRegistration registration) {
-        new GenericProtocolResourceDefinition(this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+        new GenericProtocolResourceDefinition(this.configurator, this.parentServiceConfigurator).register(registration);
 
         // Override definitions for protocol types
         for (SocketProtocol protocol : EnumSet.allOf(SocketProtocol.class)) {
-            new SocketProtocolResourceDefinition(protocol.name(), this.configurator, protocol.getResourceServiceConfiguratorFactory(), this.parentServiceConfiguratorFactory).register(registration);
+            protocol.createResourceDefinition(this.configurator, this.parentServiceConfigurator).register(registration);
         }
         for (MulticastProtocol protocol : EnumSet.allOf(MulticastProtocol.class)) {
-            new MulticastProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new MulticastSocketProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfigurator).register(registration);
         }
 
         for (JdbcProtocol protocol : EnumSet.allOf(JdbcProtocol.class)) {
-            new JDBCProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new JDBCProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfigurator).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfigurator).register(registration);
         }
 
         for (EncryptProtocol protocol : EnumSet.allOf(EncryptProtocol.class)) {
-            new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new EncryptProtocolResourceDefinition<>(protocol.name(), protocol.entryClass, this.configurator, this.parentServiceConfigurator).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfigurator).register(registration);
         }
 
         for (InitialHostsProtocol protocol : EnumSet.allOf(InitialHostsProtocol.class)) {
-            new SocketDiscoveryProtocolResourceDefinition<>(protocol.name(), protocol.hostTransformer, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new SocketDiscoveryProtocolResourceDefinition<>(protocol.name(), protocol.hostTransformer, this.configurator, this.parentServiceConfigurator).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfigurator).register(registration);
         }
 
         for (AuthProtocol protocol : EnumSet.allOf(AuthProtocol.class)) {
-            new AuthProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new AuthProtocolResourceDefinition(protocol.name(), this.configurator, this.parentServiceConfigurator).register(registration);
             // Add deprecated override definition for legacy variant
-            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+            new GenericProtocolResourceDefinition(protocol.name(), JGroupsSubsystemModel.VERSION_5_0_0, this.configurator, this.parentServiceConfigurator).register(registration);
         }
 
         if (registration.getProcessType().isServer()) { // only auto-update legacy protocols in server processes
             for (LegacyProtocol protocol : EnumSet.allOf(LegacyProtocol.class)) {
-                new LegacyProtocolResourceDefinition(protocol.name, protocol.targetName, protocol.deprecation, this.configurator, this.parentServiceConfiguratorFactory).register(registration);
+                new LegacyProtocolResourceDefinition<>(protocol.name, protocol.targetName, protocol.deprecation, this.configurator).register(registration);
             }
         }
     }

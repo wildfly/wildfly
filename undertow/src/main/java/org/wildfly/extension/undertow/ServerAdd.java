@@ -26,7 +26,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.undertow.session.DistributableServerRuntimeHandler;
+import org.wildfly.extension.undertow.session.DistributableServerServiceInstallerFactory;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -55,7 +55,7 @@ final class ServerAdd extends AbstractAddStepHandler {
         if (isDefaultServer) { //only install for default server
             final CapabilityServiceBuilder<?> csb = context.getCapabilityServiceTarget().addCapability(CommonWebServer.CAPABILITY);
             final Consumer<WebServerService> wssConsumer = csb.provides(CommonWebServer.CAPABILITY, CommonWebServer.SERVICE_NAME);
-            final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, name);
+            final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, name);
             csb.setInstance(new WebServerService(wssConsumer, sSupplier));
             csb.setInitialMode(ServiceController.Mode.PASSIVE);
 
@@ -65,8 +65,8 @@ final class ServerAdd extends AbstractAddStepHandler {
             csb.install();
         }
 
-        for (DistributableServerRuntimeHandler handler : ServiceLoader.load(DistributableServerRuntimeHandler.class, DistributableServerRuntimeHandler.class.getClassLoader())) {
-            handler.execute(context, name);
+        for (DistributableServerServiceInstallerFactory factory : ServiceLoader.load(DistributableServerServiceInstallerFactory.class, DistributableServerServiceInstallerFactory.class.getClassLoader())) {
+            factory.getServiceInstaller(context, name).install(context);
         }
     }
 

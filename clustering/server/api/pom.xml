@@ -27,4 +27,10 @@
         Server clustering API for use by WildFly services and deployments.
     </description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

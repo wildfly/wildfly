@@ -4,18 +4,20 @@
  */
 package org.jboss.as.test.clustering.cluster.dispatcher.bean;
 
+import java.io.Serializable;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.server.GroupMember;
 
-public class TestCommand implements Command<String, Node> {
+public class TestCommand implements Command<String, GroupMember, RuntimeException>, Serializable {
     private static final long serialVersionUID = -3405593925871250676L;
 
     @Override
-    public String execute(Node node) {
+    public String execute(GroupMember member) {
         try {
             // Ensure the thread context classloader of the command execution is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
@@ -31,6 +33,6 @@ public class TestCommand implements Command<String, Node> {
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-        return node.getName();
+        return member.getName();
     }
 }

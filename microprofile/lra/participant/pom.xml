@@ -85,10 +85,6 @@
     </dependency>
     <dependency>
       <groupId>${ee.maven.groupId}</groupId>
-      <artifactId>wildfly-clustering-service</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-weld</artifactId>
     </dependency>
     <dependency>

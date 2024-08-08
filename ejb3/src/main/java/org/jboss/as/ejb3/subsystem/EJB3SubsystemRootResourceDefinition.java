@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
+import org.jboss.as.ejb3.component.stateful.cache.StatefulSessionBeanCacheProvider;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.security.ApplicationSecurityDomainConfig;
 import org.jboss.as.threads.EnhancedQueueExecutorResourceDefinition;
@@ -256,6 +257,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             RuntimeCapability.Builder.of(DEFAULT_ENTITY_POOL_CONFIG_CAPABILITY_NAME, PoolConfig.class)
                     .build();
 
+    static final RuntimeCapability<Void> DEFAULT_STATEFUL_BEAN_CACHE = RuntimeCapability.Builder.of(StatefulSessionBeanCacheProvider.DEFAULT_SERVICE_DESCRIPTOR).build();
+    static final RuntimeCapability<Void> PASSIVATION_DISABLED_STATEFUL_BEAN_CACHE = RuntimeCapability.Builder.of(StatefulSessionBeanCacheProvider.PASSIVATION_DISABLED_SERVICE_DESCRIPTOR).build();
+
     private final boolean registerRuntimeOnly;
     private final PathManager pathManager;
     private final AtomicReference<String> defaultSecurityDomainName;
@@ -269,11 +273,11 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private EJB3SubsystemRootResourceDefinition(boolean registerRuntimeOnly, PathManager pathManager, AtomicReference<String> defaultSecurityDomainName, Set<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, List<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         super(new Parameters(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME), EJB3Extension.getResourceDescriptionResolver(EJB3Extension.SUBSYSTEM_NAME))
-                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault, ATTRIBUTES))
+                .setAddHandler(new EJB3SubsystemAdd(defaultSecurityDomainName, knownApplicationSecurityDomains, outflowSecurityDomains, denyAccessByDefault))
                 .setRemoveHandler(EJB3SubsystemRemove.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setCapabilities(CLUSTERED_SINGLETON_CAPABILITY, EJB_CLIENT_CONFIGURATOR_CAPABILITY, EJB_CAPABILITY)
+                .setCapabilities(CLUSTERED_SINGLETON_CAPABILITY, EJB_CLIENT_CONFIGURATOR_CAPABILITY, EJB_CAPABILITY, DEFAULT_STATEFUL_BEAN_CACHE, PASSIVATION_DISABLED_STATEFUL_BEAN_CACHE)
         );
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.pathManager = pathManager;
@@ -342,7 +346,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         final EJBDefaultMissingMethodPermissionsWriteHandler defaultMissingMethodPermissionsWriteHandler = new EJBDefaultMissingMethodPermissionsWriteHandler(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, this.denyAccessByDefault);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, null, defaultMissingMethodPermissionsWriteHandler);
 
-        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>(DISABLE_DEFAULT_EJB_PERMISSIONS) {
+        resourceRegistration.registerReadWriteAttribute(DISABLE_DEFAULT_EJB_PERMISSIONS, null, new AbstractWriteAttributeHandler<Void>() {
+            @Override
             protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
                 if (resolvedValue.asBoolean()) {
                     throw EjbLogger.ROOT_LOGGER.disableDefaultEjbPermissionsCannotBeTrue();
@@ -350,12 +355,13 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                 return false;
             }
 
+            @Override
             protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
             }
         });
         resourceRegistration.registerReadWriteAttribute(ENABLE_GRACEFUL_TXN_SHUTDOWN, null, EnableGracefulTxnShutdownWriteHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(SERVER_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(SERVER_INTERCEPTORS));
-        resourceRegistration.registerReadWriteAttribute(CLIENT_INTERCEPTORS, null,  new ReloadRequiredWriteAttributeHandler(CLIENT_INTERCEPTORS));
+        resourceRegistration.registerReadWriteAttribute(SERVER_INTERCEPTORS, null,  ReloadRequiredWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(CLIENT_INTERCEPTORS, null,  ReloadRequiredWriteAttributeHandler.INSTANCE);
     }
 
     @Override

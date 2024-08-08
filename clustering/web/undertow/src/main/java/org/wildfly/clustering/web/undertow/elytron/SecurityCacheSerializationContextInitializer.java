@@ -5,13 +5,16 @@
 
 package org.wildfly.clustering.web.undertow.elytron;
 
-import org.infinispan.protostream.SerializationContext;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
+import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * Marshaller registration for the {@link org.wildfly.security.cache} package.
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class SecurityCacheSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public SecurityCacheSerializationContextInitializer() {

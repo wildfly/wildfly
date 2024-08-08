@@ -6,22 +6,32 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.LockingConfiguration;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/locking=LOCKING
@@ -31,6 +41,9 @@ import org.jboss.dmr.ModelType;
 public class LockingResourceDefinition extends ComponentResourceDefinition {
 
     static final PathElement PATH = pathElement("locking");
+
+    static final BinaryServiceDescriptor<LockingConfiguration> SERVICE_DESCRIPTOR = serviceDescriptor(PATH, LockingConfiguration.class);
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         ACQUIRE_TIMEOUT("acquire-timeout", ModelType.LONG, new ModelNode(TimeUnit.SECONDS.toMillis(15))) {
@@ -84,9 +97,30 @@ public class LockingResourceDefinition extends ComponentResourceDefinition {
         ManagementResourceRegistration registration = parent.registerSubModel(this);
 
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver()).addAttributes(Attribute.class);
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(LockingServiceConfigurator::new);
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        long timeout = Attribute.ACQUIRE_TIMEOUT.resolveModelAttribute(context, model).asLong();
+        int concurrency = Attribute.CONCURRENCY.resolveModelAttribute(context, model).asInt();
+        IsolationLevel isolation = IsolationLevel.valueOf(Attribute.ISOLATION.resolveModelAttribute(context, model).asString());
+        boolean striping = Attribute.STRIPING.resolveModelAttribute(context, model).asBoolean();
+
+        Supplier<LockingConfiguration> configurationFactory = new Supplier<>() {
+            @Override
+            public LockingConfiguration get() {
+                return new ConfigurationBuilder().locking()
+                        .lockAcquisitionTimeout(timeout)
+                        .concurrencyLevel(concurrency)
+                        .isolationLevel(isolation)
+                        .useLockStriping(striping)
+                        .create();
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, configurationFactory).build();
     }
 }

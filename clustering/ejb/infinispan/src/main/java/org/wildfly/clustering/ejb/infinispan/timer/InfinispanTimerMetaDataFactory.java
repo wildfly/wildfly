@@ -5,15 +5,19 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import static org.wildfly.clustering.cache.function.Functions.constantFunction;
+import static org.wildfly.common.function.Functions.discardingConsumer;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.wildfly.clustering.ee.Mutator;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
-import org.wildfly.clustering.ee.infinispan.CacheEntryComputeMutator;
+import org.wildfly.clustering.cache.CacheEntryMutator;
+import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheEntryComputer;
 import org.wildfly.clustering.ejb.cache.timer.DefaultImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.cache.timer.DefaultTimerMetaData;
 import org.wildfly.clustering.ejb.cache.timer.MutableTimerMetaDataEntry;
@@ -26,11 +30,12 @@ import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataFactory;
 import org.wildfly.clustering.ejb.cache.timer.TimerMetaDataKey;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimerMetaData;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>, C> {
+public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactory<I, RemappableTimerMetaDataEntry<C>> {
 
     private final Cache<TimerIndexKey, I> indexCache;
     private final Cache<TimerMetaDataKey<I>, RemappableTimerMetaDataEntry<C>> readCache;
@@ -40,38 +45,37 @@ public class InfinispanTimerMetaDataFactory<I, C> implements TimerMetaDataFactor
 
     public InfinispanTimerMetaDataFactory(InfinispanTimerMetaDataConfiguration<C> config) {
         this.config = config;
-        this.indexCache = config.getCache();
+        this.indexCache = config.<TimerIndexKey, I>getCache().getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK);
         this.readCache = config.getReadForUpdateCache();
         this.writeCache = config.getSilentWriteCache();
         this.removeCache = config.getCache();
     }
 
     @Override
-    public RemappableTimerMetaDataEntry<C> createValue(I id, Map.Entry<RemappableTimerMetaDataEntry<C>, TimerIndex> entry) {
+    public CompletionStage<RemappableTimerMetaDataEntry<C>> createValueAsync(I id, Map.Entry<RemappableTimerMetaDataEntry<C>, TimerIndex> entry) {
         RemappableTimerMetaDataEntry<C> metaData = entry.getKey();
         TimerIndex index = entry.getValue();
-        // If an timer with the same index already exists, return null;
-        if ((index != null) && (this.indexCache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK).putIfAbsent(new InfinispanTimerIndexKey(index), id) != null)) return null;
-
-        this.writeCache.put(new InfinispanTimerMetaDataKey<>(id), metaData);
-        return metaData;
+        // Create index, if necessary
+        CompletionStage<I> existingIndex = (index != null) ? this.indexCache.putIfAbsentAsync(new InfinispanTimerIndexKey(index), id) : CompletableFuture.completedStage(null);
+        // If a timer with the same index already exists, return null;
+        return existingIndex.thenCompose(indexId -> (indexId == null) ? this.writeCache.putAsync(new InfinispanTimerMetaDataKey<>(id), metaData).thenApply(constantFunction(metaData)) : CompletableFuture.completedStage(null));
     }
 
     @Override
-    public RemappableTimerMetaDataEntry<C> findValue(I id) {
-        return this.readCache.get(new InfinispanTimerMetaDataKey<>(id));
+    public CompletionStage<RemappableTimerMetaDataEntry<C>> findValueAsync(I id) {
+        return this.readCache.getAsync(new InfinispanTimerMetaDataKey<>(id));
     }
 
     @Override
-    public boolean remove(I id) {
-        return this.removeCache.remove(new InfinispanTimerMetaDataKey<>(id)) != null;
+    public CompletionStage<Void> removeAsync(I id) {
+        return this.removeCache.removeAsync(new InfinispanTimerMetaDataKey<>(id)).thenAccept(discardingConsumer());
     }
 
     @Override
     public TimerMetaData createTimerMetaData(I id, RemappableTimerMetaDataEntry<C> entry) {
         Duration lastTimeout = entry.getLastTimeout();
         OffsetValue<Duration> lastTimeoutOffset = OffsetValue.from(Optional.ofNullable(lastTimeout).orElse(Duration.ZERO));
-        Mutator mutator = new CacheEntryComputeMutator<>(this.writeCache, new InfinispanTimerMetaDataKey<>(id), new TimerMetaDataEntryFunction<>(lastTimeoutOffset));
+        CacheEntryMutator mutator = new EmbeddedCacheEntryComputer<>(this.writeCache, new InfinispanTimerMetaDataKey<>(id), new TimerMetaDataEntryFunction<>(lastTimeoutOffset));
         return new DefaultTimerMetaData<>(this.config, (lastTimeout != null) ? new MutableTimerMetaDataEntry<>(entry, lastTimeoutOffset) : entry, mutator);
     }
 

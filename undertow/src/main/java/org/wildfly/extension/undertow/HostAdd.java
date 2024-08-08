@@ -88,7 +88,7 @@ final class HostAdd extends AbstractAddStepHandler {
         } else {
             hostConsumer = csb.provides(HostDefinition.HOST_CAPABILITY);
         }
-        final Supplier<Server> sSupplier = csb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<Server> sSupplier = csb.requires(Server.SERVICE_DESCRIPTOR, serverName);
         final Supplier<UndertowService> usSupplier = csb.requiresCapability(Capabilities.CAPABILITY_UNDERTOW, UndertowService.class);
         final Supplier<ControlledProcessStateService> cpssSupplier = csb.requires(ControlledProcessStateService.SERVICE_NAME);
         final Supplier<SuspendController> scSupplier = csb.requires(context.getCapabilityServiceName(Capabilities.REF_SUSPEND_CONTROLLER, SuspendController.class));
@@ -133,7 +133,7 @@ final class HostAdd extends AbstractAddStepHandler {
 
         final CapabilityServiceBuilder<?> sb = context.getCapabilityServiceTarget().addCapability(WebHost.CAPABILITY);
         final Consumer<WebHost> whConsumer = sb.provides(capabilitiesParam, serviceNamesParam);
-        final Supplier<Server> sSupplier = sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName);
+        final Supplier<Server> sSupplier = sb.requires(Server.SERVICE_DESCRIPTOR, serverName);
         final Supplier<Host> hSupplier = sb.requires(virtualHostServiceName);
         final Supplier<RequestController> rcSupplier = rqCapabilityAvailable ? sb.requiresCapability(Capabilities.REF_REQUEST_CONTROLLER, RequestController.class) : null;
         sb.setInstance(new WebHostService(whConsumer, sSupplier, hSupplier, rcSupplier));

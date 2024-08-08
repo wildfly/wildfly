@@ -5,70 +5,110 @@
 
 package org.wildfly.clustering.singleton.server;
 
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.DelegatingServiceBuilder;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.service.SimpleServiceNameProvider;
-import org.wildfly.clustering.service.SupplierDependency;
-import org.wildfly.clustering.singleton.SingletonElectionListener;
-import org.wildfly.clustering.singleton.SingletonElectionPolicy;
-import org.wildfly.clustering.singleton.SingletonService;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.service.SingletonServiceConfigurator;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.singleton.Singleton;
+import org.wildfly.clustering.singleton.SingletonState;
+import org.wildfly.clustering.singleton.election.SingletonElectionListener;
+import org.wildfly.clustering.singleton.election.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.service.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.service.SingletonServiceController;
+import org.wildfly.service.ServiceDependency;
 
 /**
- * Local {@link SingletonServiceConfigurator} implementation that uses JBoss MSC 1.3.x service installation.
+ * A service builder that installs a local singleton service.
  * @author Paul Ferraro
  */
-@Deprecated
-public class LocalSingletonServiceBuilder<T> extends SimpleServiceNameProvider implements SingletonServiceBuilder<T>, LocalSingletonServiceContext {
+public class LocalSingletonServiceBuilder<T> extends DelegatingServiceBuilder<T> implements SingletonServiceBuilder<T> {
 
-    private final Service<T> service;
-    private final SupplierDependency<Group> group;
-    private volatile SingletonElectionListener listener;
+    private final Supplier<SingletonState> localState;
+    private volatile SingletonElectionListener listener = null;
+    private final Consumer<Singleton> singleton;
+    private final SingletonReference reference = new SingletonReference();
 
-    public LocalSingletonServiceBuilder(ServiceName name, Service<T> service, LocalSingletonServiceConfiguratorContext context) {
-        super(name);
-        this.service = service;
-        this.group = context.getGroupDependency();
-        this.listener = new DefaultSingletonElectionListener(name, this.group);
+    public LocalSingletonServiceBuilder(ServiceBuilder<T> builder, ServiceDependency<GroupMember> member, Function<ServiceBuilder<?>, Consumer<Singleton>> singletonFactory) {
+        super(builder);
+        member.accept(builder);
+        this.localState = member.map(LocalSingletonState::new);
+        this.singleton = singletonFactory.apply(builder).andThen(this.reference);
+    }
+
+    @Override
+    public SingletonServiceBuilder<T> addListener(LifecycleListener listener) {
+        this.getDelegate().addListener(listener);
+        return this;
+    }
+
+    @Override
+    public SingletonServiceBuilder<T> setInstance(Service service) {
+        Singleton localSingleton = new SimpleSingleton(this.localState);
+        this.getDelegate().setInstance(new Service() {
+            @Override
+            public void start(StartContext context) throws StartException {
+                service.start(context);
+                LocalSingletonServiceBuilder.this.singleton.accept(localSingleton);
+            }
+
+            @Override
+            public void stop(StopContext context) {
+                LocalSingletonServiceBuilder.this.singleton.accept(null);
+                service.stop(context);
+            }
+        });
+        return this;
+    }
+
+    @Override
+    public SingletonServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
+        this.getDelegate().setInitialMode(mode);
+        return this;
+    }
+
+    @Override
+    public SingletonServiceController<T> install() {
+        Supplier<SingletonState> state = this.localState;
+        SingletonElectionListener listener = this.listener;
+        if (listener != null) {
+            // Trigger election listener when service starts
+            this.getDelegate().addListener(new LifecycleListener() {
+                @Override
+                public void handleEvent(ServiceController<?> controller, LifecycleEvent event) {
+                    if (event == LifecycleEvent.UP) {
+                        GroupMember elected = state.get().getPrimaryProvider().get();
+                        listener.elected(List.of(elected), elected);
+                    }
+                }
+            });
+        }
+        return new DistributedSingletonServiceController<>(this.getDelegate().install(), this.reference);
     }
 
     @Override
     public SingletonServiceBuilder<T> requireQuorum(int quorum) {
-        // Quorum requirements are inconsequential to a local singleton
         return this;
     }
 
     @Override
-    public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy) {
-        // Election policies are inconsequential to a local singleton
+    public SingletonServiceBuilder<T> withElectionPolicy(SingletonElectionPolicy policy) {
         return this;
     }
 
     @Override
-    public SingletonServiceBuilder<T> electionListener(SingletonElectionListener listener) {
+    public SingletonServiceBuilder<T> withElectionListener(SingletonElectionListener listener) {
         this.listener = listener;
         return this;
-    }
-
-    @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        SingletonService<T> service = new LocalLegacySingletonService<>(this.service, this);
-        return this.group.register(target.addService(this.getServiceName(), service));
-    }
-
-    @Override
-    public Supplier<Group> getGroup() {
-        return this.group;
-    }
-
-    @Override
-    public SingletonElectionListener getElectionListener() {
-        return this.listener;
     }
 }

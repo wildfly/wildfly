@@ -5,52 +5,57 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RequirementServiceBuilder;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
-import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.security.CredentialReferenceWriteAttributeHandler;
+import org.jboss.dmr.ModelNode;
 import org.jgroups.auth.AuthToken;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.wildfly.security.credential.PasswordCredential;
+import org.wildfly.security.credential.source.CredentialSource;
+import org.wildfly.security.password.interfaces.ClearPassword;
+import org.wildfly.service.descriptor.BinaryServiceDescriptor;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResourceDefinition<ManagementResourceRegistration> {
+public abstract class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator, ResourceModelResolver<Map.Entry<Function<String, T>, Consumer<RequirementServiceBuilder<?>>>> {
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
     static PathElement pathElement(String value) {
         return PathElement.pathElement("token", value);
     }
 
-    enum Capability implements org.jboss.as.clustering.controller.Capability, UnaryRequirement {
-        AUTH_TOKEN("org.wildfly.clustering.jgroups.auth-token", AuthToken.class),
-        ;
-        private final RuntimeCapability<Void> definition;
-
-        Capability(String name, Class<?> type) {
-            this.definition = RuntimeCapability.Builder.of(name, true).setServiceType(type).setAllowMultipleRegistrations(true).setDynamicNameMapper(UnaryCapabilityNameResolver.GRANDPARENT).build();
-        }
-
-        @Override
-        public RuntimeCapability<?> getDefinition() {
-            return this.definition;
-        }
-    }
+    static final BinaryServiceDescriptor<AuthToken> SERVICE_DESCRIPTOR = BinaryServiceDescriptor.of("org.wildfly.clustering.jgroups.auth-token", AuthToken.class);
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(SERVICE_DESCRIPTOR).setAllowMultipleRegistrations(true).setDynamicNameMapper(BinaryCapabilityNameResolver.GRANDPARENT_PARENT).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute {
-        SHARED_SECRET(CredentialReference.getAttributeBuilder("shared-secret-reference", null, false, new CapabilityReference(Capability.AUTH_TOKEN, CommonUnaryRequirement.CREDENTIAL_STORE)).build()),
+        SHARED_SECRET(CredentialReference.getAttributeBuilder("shared-secret-reference", null, false, CapabilityReferenceRecorder.builder(CAPABILITY, CommonServiceDescriptor.CREDENTIAL_STORE).build()).build()),
         ;
         private final AttributeDefinition definition;
 
@@ -64,13 +69,24 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         }
     }
 
-    protected final UnaryOperator<ResourceDescriptor> configurator;
-    protected final ResourceServiceConfiguratorFactory serviceConfiguratorFactory;
+    private static final Function<CredentialSource, String> CREDENTIAL_SOURCE_MAPPER = new Function<>() {
+        @Override
+        public String apply(CredentialSource sharedSecretSource) {
+            try {
+                PasswordCredential credential = sharedSecretSource.getCredential(PasswordCredential.class);
+                ClearPassword password = credential.getPassword(ClearPassword.class);
+                return String.valueOf(password.getPassword());
+            } catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    };
 
-    AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator, ResourceServiceConfiguratorFactory serviceConfiguratorFactory) {
+    protected final UnaryOperator<ResourceDescriptor> configurator;
+
+    AuthTokenResourceDefinition(PathElement path, UnaryOperator<ResourceDescriptor> configurator) {
         super(path, JGroupsExtension.SUBSYSTEM_RESOLVER.createChildResolver(path, WILDCARD_PATH));
         this.configurator = configurator;
-        this.serviceConfiguratorFactory = serviceConfiguratorFactory;
     }
 
     @Override
@@ -78,9 +94,19 @@ public class AuthTokenResourceDefinition<T extends AuthToken> extends ChildResou
         ManagementResourceRegistration registration = parent.registerSubModel(this);
         ResourceDescriptor descriptor = this.configurator.apply(new ResourceDescriptor(this.getResourceDescriptionResolver()))
                 .addAttribute(Attribute.SHARED_SECRET, new CredentialReferenceWriteAttributeHandler(Attribute.SHARED_SECRET.getDefinition()))
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(CAPABILITY))
                 ;
-        new SimpleResourceRegistrar(descriptor, new SimpleResourceServiceHandler(this.serviceConfiguratorFactory)).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        ServiceDependency<CredentialSource> credentialSource = ServiceDependency.from(CredentialReference.getCredentialSourceDependency(context, Attribute.SHARED_SECRET.getDefinition(), model));
+        Map.Entry<Function<String, T>, Consumer<RequirementServiceBuilder<?>>> entry = this.resolve(context, model);
+        return CapabilityServiceInstaller.builder(CAPABILITY, CREDENTIAL_SOURCE_MAPPER.andThen(entry.getKey()), credentialSource)
+                .requires(List.of(credentialSource, entry.getValue()))
+                .build();
     }
 }

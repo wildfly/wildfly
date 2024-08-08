@@ -7,18 +7,12 @@ package org.jboss.as.test.clustering.cluster.ejb.timer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.BeforeClass;
 
 /**
  * @author Paul Ferraro
  */
 public class DistributedTimerServiceTestCase extends AbstractTimerServiceTestCase {
-    @BeforeClass
-    public static void beforeClass() {
-        IntermittentFailure.thisTestIsFailingIntermittently("WFLY-18314");
-    }
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(NODE_1)

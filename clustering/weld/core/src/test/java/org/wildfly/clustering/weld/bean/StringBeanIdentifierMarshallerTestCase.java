@@ -4,12 +4,12 @@
  */
 package org.wildfly.clustering.weld.bean;
 
-import java.io.IOException;
-
 import org.jboss.weld.bean.StringBeanIdentifier;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Validates marshalling of {@link StringBeanIdentifier}.
@@ -17,9 +17,10 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class StringBeanIdentifierMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        Tester<StringBeanIdentifier> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new StringBeanIdentifier("foo"));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
+        Tester<StringBeanIdentifier> tester = factory.createTester();
+        tester.accept(new StringBeanIdentifier("foo"));
     }
 }

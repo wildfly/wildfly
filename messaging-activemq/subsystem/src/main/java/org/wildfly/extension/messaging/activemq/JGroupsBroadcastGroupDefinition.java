@@ -25,13 +25,13 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.DynamicNameMappers;
+import org.jboss.as.controller.capability.BinaryCapabilityNameResolver;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
-import org.wildfly.clustering.server.service.ClusteringRequirement;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 /**
  * Broadcast group definition using Jgroups.
  *
@@ -40,8 +40,8 @@ import org.wildfly.clustering.server.service.ClusteringRequirement;
 public class JGroupsBroadcastGroupDefinition extends PersistentResourceDefinition {
 
     public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.activemq.jgroups-broadcast-group", true)
-            .setDynamicNameMapper(DynamicNameMappers.PARENT)
-            .addRequirements(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getName())
+            .setDynamicNameMapper(BinaryCapabilityNameResolver.PARENT_CHILD)
+            .addRequirements(ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY.getName())
             .build();
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = new StringListAttributeDefinition.Builder(CONNECTORS)
@@ -76,7 +76,7 @@ public class JGroupsBroadcastGroupDefinition extends PersistentResourceDefinitio
             .build();
 
     public static final SimpleAttributeDefinition JGROUPS_CHANNEL = create(CommonAttributes.JGROUPS_CHANNEL)
-            .setCapabilityReference(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getName())
+            .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, ClusteringServiceDescriptor.COMMAND_DISPATCHER_FACTORY).build())
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {JGROUPS_CHANNEL_FACTORY, JGROUPS_CHANNEL, JGROUPS_CLUSTER,

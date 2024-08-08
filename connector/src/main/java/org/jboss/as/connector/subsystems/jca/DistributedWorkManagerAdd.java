@@ -39,8 +39,8 @@ import org.jboss.jca.core.workmanager.selector.PingTime;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.service.ClusteringDefaultRequirement;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
 
 /**
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -128,7 +128,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager);
         ServiceBuilder<NamedDistributedWorkManager> builder = serviceTarget
                 .addService(ConnectorServices.WORKMANAGER_SERVICE.append(name), wmService);
-        builder.addDependency(ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(context), CommandDispatcherFactory.class, wmService.getCommandDispatcherFactoryInjector());
+        builder.addDependency(context.getCapabilityServiceName(ClusteringServiceDescriptor.DEFAULT_COMMAND_DISPATCHER_FACTORY), CommandDispatcherFactory.class, wmService.getCommandDispatcherFactoryInjector());
 
         if (resource.hasChild(PathElement.pathElement(Element.LONG_RUNNING_THREADS.getLocalName()))) {
             builder.addDependency(ThreadsServices.EXECUTOR.append(WORKMANAGER_LONG_RUNNING).append(name), Executor.class, wmService.getExecutorLongInjector());
