@@ -1,0 +1,19 @@
+name: Check PR Logging
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-logging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set execute permission
+        run: chmod +x check_logging.sh
+
+      - name: Run logging check
+        run: ./check_logging.sh
