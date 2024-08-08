@@ -741,9 +741,12 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
                                     <resources>
                                         <resource>
+                                            <!-- TODO: [WFLY-19606] remove bin/common.bat & bin/common.sh shell scripts from this patch when
+                                                 either Infinispan ISPN-16346 issue is accepted & Infinispan is upgraded to 14.0.31.Final version
+                                                 or Infinispan version is upgraded to 15.x series where security manager support was eliminated -->
                                             <directory>src/test/resources/infinispan-server-overlay</directory>
                                             <filtering>true</filtering>
                                         </resource>
