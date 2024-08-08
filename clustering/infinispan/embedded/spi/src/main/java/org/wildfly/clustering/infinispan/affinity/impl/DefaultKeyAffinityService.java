@@ -16,11 +16,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -36,12 +35,10 @@ import org.infinispan.notifications.Listener.Observation;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
+import org.infinispan.util.concurrent.BlockingManager;
 import org.jboss.logging.Logger;
-import org.wildfly.clustering.context.DefaultExecutorService;
-import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.infinispan.distribution.ConsistentHashKeyDistribution;
 import org.wildfly.clustering.infinispan.distribution.KeyDistribution;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A custom key affinity service implementation with the following distinct characteristics (as compared to {@link org.infinispan.affinity.impl.KeyAffinityServiceImpl}):
@@ -59,7 +56,6 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     static final int DEFAULT_QUEUE_SIZE = 100;
     private static final Logger LOGGER = Logger.getLogger(DefaultKeyAffinityService.class);
-    private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(DefaultKeyAffinityService.class);
 
     private final Cache<? extends K, ?> cache;
     private final KeyGenerator<? extends K> generator;
@@ -69,7 +65,7 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     private volatile int queueSize = DEFAULT_QUEUE_SIZE;
     private volatile Duration timeout = Duration.ofMillis(100L);
-    private volatile ExecutorService executor;
+    private volatile Executor executor;
 
     private interface KeyAffinityState<K> {
         KeyDistribution getDistribution();
@@ -84,14 +80,15 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
      */
     @SuppressWarnings("deprecation")
     public DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyGenerator<? extends K> generator, Predicate<Address> filter) {
-        this(cache, cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), generator, filter);
+        this(cache, cache.getAdvancedCache().getComponentRegistry().getLocalComponent(KeyPartitioner.class), generator, filter, cache.getCacheManager().getGlobalComponentRegistry().getComponent(BlockingManager.class).asExecutor(DefaultKeyAffinityService.class.getSimpleName()));
     }
 
-    DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyPartitioner partitioner, KeyGenerator<? extends K> generator, Predicate<Address> filter) {
+    DefaultKeyAffinityService(Cache<? extends K, ?> cache, KeyPartitioner partitioner, KeyGenerator<? extends K> generator, Predicate<Address> filter, Executor executor) {
         this.cache = cache;
         this.partitioner = partitioner;
         this.generator = generator;
         this.filter = filter;
+        this.executor = executor;
     }
 
     /**
@@ -118,13 +115,11 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
 
     @Override
     public boolean isStarted() {
-        ExecutorService executor = this.executor;
-        return (executor != null) && !executor.isShutdown();
+        return this.currentState.get() != null;
     }
 
     @Override
     public void start() {
-        this.executor = Executors.newCachedThreadPool(THREAD_FACTORY);
         this.accept(this.cache.getAdvancedCache().getDistributionManager().getCacheTopology().getWriteConsistentHash());
         this.cache.addListener(this);
     }
@@ -132,28 +127,25 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
     @Override
     public void stop() {
         this.cache.removeListener(this);
-        WildFlySecurityManager.doUnchecked(this.executor, DefaultExecutorService.SHUTDOWN_NOW_ACTION);
     }
 
     @Override
     public K getCollocatedKey(K otherKey) {
         KeyAffinityState<K> currentState = this.currentState.get();
-        if (currentState == null) {
-            // Not yet started!
-            throw new IllegalStateException();
-        }
         return this.getCollocatedKey(currentState, otherKey);
     }
 
     private K getCollocatedKey(KeyAffinityState<K> state, K otherKey) {
-        K key = this.poll(state.getRegistry(), state.getDistribution().getPrimaryOwner(otherKey));
-        if (key != null) {
-            return key;
-        }
-        KeyAffinityState<K> currentState = this.currentState.get();
-        // If state is out-dated, retry
-        if (state != currentState) {
-            return this.getCollocatedKey(currentState, otherKey);
+        if (state != null) {
+            K key = this.poll(state.getRegistry(), state.getDistribution().getPrimaryOwner(otherKey));
+            if (key != null) {
+                return key;
+            }
+            KeyAffinityState<K> currentState = this.currentState.get();
+            // If state is out-dated, retry
+            if (state != currentState) {
+                return this.getCollocatedKey(currentState, otherKey);
+            }
         }
         LOGGER.debugf("Could not obtain pre-generated key with same affinity as %s -- generating random key", otherKey);
         return this.generator.getKey();
@@ -164,23 +156,20 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
         if (!this.filter.test(address)) {
             throw new IllegalArgumentException(address.toString());
         }
-        KeyAffinityState<K> currentState = this.currentState.get();
-        if (currentState == null) {
-            // Not yet started!
-            throw new IllegalStateException();
-        }
-        return this.getKeyForAddress(currentState, address);
+        return this.getKeyForAddress(this.currentState.get(), address);
     }
 
     private K getKeyForAddress(KeyAffinityState<K> state, Address address) {
-        K key = this.poll(state.getRegistry(), address);
-        if (key != null) {
-            return key;
-        }
-        KeyAffinityState<K> currentState = this.currentState.get();
-        // If state is out-dated, retry
-        if (state != currentState) {
-            return this.getKeyForAddress(currentState, address);
+        if (state != null) {
+            K key = this.poll(state.getRegistry(), address);
+            if (key != null) {
+                return key;
+            }
+            KeyAffinityState<K> currentState = this.currentState.get();
+            // If state is out-dated, retry
+            if (state != currentState) {
+                return this.getKeyForAddress(currentState, address);
+            }
         }
         LOGGER.debugf("Could not obtain pre-generated key with affinity for %s -- generating random key", address);
         return this.generator.getKey();
@@ -227,7 +216,9 @@ public class DefaultKeyAffinityService<K> implements KeyAffinityService<K>, Supp
         try {
             for (Address address : addresses) {
                 BlockingQueue<K> keys = registry.getKeys(address);
-                futures.add(this.executor.submit(new GenerateKeysTask<>(this.generator, distribution, address, keys)));
+                FutureTask<Void> task = new FutureTask<>(new GenerateKeysTask<>(this.generator, distribution, address, keys), null);
+                futures.add(task);
+                this.executor.execute(task);
             }
             KeyAffinityState<K> previousState = this.currentState.getAndSet(new KeyAffinityState<K>() {
                 @Override

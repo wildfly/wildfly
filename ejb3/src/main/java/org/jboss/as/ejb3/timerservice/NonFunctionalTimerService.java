@@ -43,6 +43,10 @@ public class NonFunctionalTimerService implements ManagedTimerService {
     }
 
     @Override
+    public void close() {
+    }
+
+    @Override
     public ManagedTimer findTimer(String id) {
         return null;
     }
