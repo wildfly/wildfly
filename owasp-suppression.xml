@@ -361,4 +361,13 @@
         <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
         <cve>CVE-2023-5763</cve>
     </suppress>
+
+    <!--  undertow 2.3.15.Final contains fix for CVE-2024-5971  -->
+    <suppress>
+        <notes><![CDATA[
+        file name: undertow-core-2.3.15.Final.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@2\.3\.15.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-5971</vulnerabilityName>
+    </suppress>
 </suppressions>
