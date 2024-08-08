@@ -67,7 +67,8 @@ public class CoarseSessionAttributes extends SimpleImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = this.attributes.get(name);
-        if (!this.immutability.test(value)) {
+        // Bypass immutability check if session is already dirty
+        if (!this.dirty.get() && !this.immutability.test(value)) {
             this.dirty.set(true);
         }
         return value;
