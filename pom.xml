@@ -514,7 +514,7 @@
         <version.org.glassfish.jaxb>4.0.4</version.org.glassfish.jaxb>
         <version.org.glassfish.jaxb.jaxb-xjc>${version.org.glassfish.jaxb}</version.org.glassfish.jaxb.jaxb-xjc>
         <version.org.glassfish.soteria>3.0.3</version.org.glassfish.soteria>
-        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
+        <version.org.glassfish.web.jakarta.servlet.jsp.jstl>3.0.1.SP1</version.org.glassfish.web.jakarta.servlet.jsp.jstl>
         <version.org.hibernate.commons.annotations>6.0.6.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate>6.4.10.Final</version.org.hibernate>
         <version.org.hibernate.search>7.1.1.Final</version.org.hibernate.search>
