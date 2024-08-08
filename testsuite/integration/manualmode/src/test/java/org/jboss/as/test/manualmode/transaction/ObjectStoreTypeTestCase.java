@@ -110,22 +110,17 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
     }
 
     private void useJdbcStore() throws IOException, MgmtOperationException {
-        useJdbcStore(true);
-    }
-
-    private void useJdbcStore(boolean expectedResults) throws IOException, MgmtOperationException {
         setDefaultObjectStore();
         // 1 - Create DS - required for the JDBC store
         createDataSource();
-        // 2 - Set the value for 'jdbc-store-datasource'
-        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/"
-                + JDBC_STORE_DS_NAME + ")");
+        // 2 - Set the value for 'jdbc-store-datasource-name'
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource-name, value=" + JDBC_STORE_DS_NAME + ")");
         CLIOpResult result = cli.readAllAsOpResult();
-        assertTrue("Failed to set jdbc-store-datasource.", result.isIsOutcomeSuccess());
+        assertTrue("Failed to set jdbc-store-datasource-name.", result.isIsOutcomeSuccess());
         // 3 - set 'use-jdbc-store' to true
         cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)");
         result = cli.readAllAsOpResult();
-        assertEquals("Failed to set use-jdbc-store to expected value", expectedResults, result.isIsOutcomeSuccess());
+        assertEquals("Failed to set use-jdbc-store to expected value", true, result.isIsOutcomeSuccess());
     }
 
     @Test
@@ -134,7 +129,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
             // try to set use-jdbc-store to true without defining datasource
             cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store, value=true)", true);
             CLIOpResult result = cli.readAllAsOpResult();
-            assertFalse("Expected failure when jdbc-store-datasource is not set.", result.isIsOutcomeSuccess());
+            assertFalse("Expected failure when jdbc-store-datasource-name is not set.", result.isIsOutcomeSuccess());
         } finally {
             setDefaultObjectStore();
         }
@@ -145,11 +140,11 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         try {
             // Use JDBC store
             useJdbcStore();
-            // try, and fail, to undefine jdbc-store-datasource when use-jdbc-store is set to true
-            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource", true);
+            // try, and fail, to undefine jdbc-store-datasource-name when use-jdbc-store is set to true
+            cli.sendLine("/subsystem=transactions:undefine-attribute(name=jdbc-store-datasource-name", true);
             CLIOpResult result = cli.readAllAsOpResult();
             if (result.isIsOutcomeSuccess())
-                fail("The jdbc-store-datasource attribute has been undefined, while JDBC store is in use.");
+                fail("The jdbc-store-datasource-name attribute has been undefined, while JDBC store is in use.");
         } finally {
             cleanJdbcSettingsAndResetToObjectStore();
         }
@@ -232,8 +227,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
         createDataSource();
         cli.sendLine("batch");
         cli.sendLine("/subsystem=transactions:write-attribute(name=use-journal-store,value=true)");
-        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/"
-                + JDBC_STORE_DS_NAME + ")");
+        cli.sendLine("/subsystem=transactions:write-attribute(name=jdbc-store-datasource-name, value=" + JDBC_STORE_DS_NAME + ")");
         cli.sendLine("/subsystem=transactions:write-attribute(name=use-jdbc-store,value=true)");
         cli.sendLine("run-batch");
     }
@@ -309,7 +303,7 @@ public class ObjectStoreTypeTestCase extends AbstractCliTestBase {
             // Undefine 'use-jdbc-store' first, if defined
             undefinedAttributeIfDefined("use-jdbc-store");
             // then undefine 'jdbc-store'
-            undefinedAttributeIfDefined("jdbc-store-datasource");
+            undefinedAttributeIfDefined("jdbc-store-datasource-name");
             // finally delete Datasource if exists
             removeDatasource();
             // Reload configuration
