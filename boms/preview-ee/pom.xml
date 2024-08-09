@@ -23,7 +23,7 @@
 
     <artifactId>wildfly-preview-ee-bom</artifactId>
     <description>
-        Build of materials that can be used to build WildFly Preview maven modules 
+        Build of materials that can be used to build WildFly Preview maven modules
         that provide traditional capabilities like Jakarta EE.
     </description>
     <packaging>pom</packaging>
@@ -54,6 +54,7 @@
         <version.org.jboss.resteasy>7.0.0.Alpha2</version.org.jboss.resteasy>
         <version.org.jboss.weld.weld>6.0.0.Beta4</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.Beta5</version.org.jboss.weld.weld-api>
+        <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
     </properties>
 
     <dependencyManagement>
@@ -523,6 +524,29 @@
                 <groupId>org.jboss.weld.module</groupId>
                 <artifactId>weld-web</artifactId>
                 <version>${version.org.jboss.weld.weld}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate.validator}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator-cdi</artifactId>
+                <version>${version.org.hibernate.validator}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
