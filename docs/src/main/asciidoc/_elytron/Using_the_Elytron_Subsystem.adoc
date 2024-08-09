@@ -1881,6 +1881,86 @@ Sets the value of the maximum number of non-self-issued intermediate certificate
 /subsystem=elytron/trust-manager=twoWayTM:write-attribute(name=maximum-cert-path, value=10)
 ----
 
+[[configure-certificate-revocation-through-ocsp-stapling]]
+=== Configure certificate revocation through OCSP Staopling
+
+OCSP stapling allows the server, rather than the client to make requests to the OCSP responder. The server can
+pre-emptively add or "staple" the certificate's revocation status when starting the TLS handshake. This allows
+the server, rather than the CA to bear the cost of providing OCSP responses. The server is also able to cache
+the response and supply it to all clients, significantly reducing the load of the OCSP responder.
+
+[[configure-server-side-ocsp-stapling]]
+==== Configure server side-ocsp-stapling
+
+NOTE: OCSP-stapling support is a preview level feature, meaning the WildFly server's stability level must
+be set to `preview` or lower to enable the ability to enable this feature. The stability level must not be
+changed to community or higher after configuring the `ocsp-stapling`attribute. This also applies to client
+side ocsp-stapling configuration as well.
+For more information about the stability levels of the WildFly server, please refer to the
+link:Admin_Guide{outfilesuffix}[Admin Guide], particularly the
+link:Admin_Guide{outfilesuffix}#Feature_stability_levels[Feature stability levels] section.
+
+The WildFly server uses System properties to enable server side OCSP stapling. The value used for
+these properties can be configured with the server-ssl-context configuration. The system properties
+are used by JDK to determine the parameters to control the server side OCSP stapling behavior.
+
+The attributes used to configure server-side OCSP stapling can be found under the `server-ssl-context`
+resource and can be configured as follows:
+
+[source,options="nowrap"]
+----
+/subsystem=elytron/server-ssl-context=applicationSSC:write-attribute(name=ocsp-stapling, value={response-timeout=5000, cache-size=512, cache-lifetime=7200, responder-uri=http://localhost:8080/ocsp, responder-override=true, ignore-extensions=false})
+----
+
+The following system properties are set using the attributes above:
+* ocsp-stapling.response-timeout sets the value for `jdk.tls.stapling.responseTimeout` and indicates the maximum amount
+of time in milliseconds the server will use to obtain OCSP responses. If the attribute is not set, the default value,
+set by JDK is used, which is 5000 ms.
+* ocsp-stapling.cache-size sets the value for `jdk.tls.stapling.cacheSize` and indicates the size of the cache in terms
+of number of items. If the attribute is not set, the default value is used, which is 256 objects.
+* ocsp-stapling.cache-lifetime sets the value for `jdk.tls.stapling.cacheLifetime` and indicates the maximum lifetime
+of a cached response in seconds. If the attribute is not set, the default value is used, which is 3600 s or 1 hour.
+* ocsp-stapling.responder-uri sets the value for `jdk.tls.stapling.responderURI` and indicates the the responder to
+contact in case the certificate used by the server does not have the `Authority Info Access` (AIA) extension. This does
+not override the AIA extension value unless `responderOverride` is set to true. The default value for this is undefined.
+* ocsp-stapling.responder-override sets the value for `jdk.tls.stapling.responderOverride` and indicates whether the
+responder URI specified in the AIA extension would be overridden by the `jdk.tls.stapling.responderURI` system property.
+* ocsp-stapling.ignore-extentions sets the value for `jdk.tls.stapling.ignoreExtentions` and indicates whether the
+forwarding of OCSP extensions specified in the `status_request` or `status_request_v2` TLS extensions would be disabled.
+
+In addition to the properties above, the server configuration also sets `jdk.tls.server.enableStatusRequestExtension` to
+true, which enables server side support for OCSP stapling.
+
+Client side settings would need to be enabled so that the client would accept the certificate status stapled by the
+server. Not all browsers support OCSP stapling. In those cases, the client would fall back to other methods of
+client-side driven revocation checking.
+
+*NOTE:* Since server enables OCSP stapling using System properties, if there are multiple server-ssl-contexts
+configured, all of them will use the same system properties and enable OCSP stapling. In order to disable server
+side OCSP stapling, the `ocsp-stapling` attribute in the server-ssl-context would need to be undefined and the system
+property `jdk.tls.server.enableStatusRequestExtension` would need to be undefined or set to `false`.
+
+[[configure-client-side-ocsp-stapling]]
+==== Configure client side-ocsp-stapling
+
+WildFly Clients can be configured to accept ocsp stapling responses from other java clients. This is configured through
+the client-ssl-context resource. The client config would set the `ocsp.enable` security property and the
+`com.sun.net.ssl.checkRevocation` system property to `true`.
+
+In order to configure the client side setting to accept OCSP stapling, the following command can be used:
+[source,options="no-wrap"]
+----
+/subsystem=elytron/client-ssl-context=clientContext:add(trust-manager=clientSSLTM, accept-ocsp-stapling=true, ocsp-stapling-soft-fail=true)
+----
+
+`accept-ocsp-stapling` enables the client to accept OCSP stapling responses from the server.
+`ocsp-stapling-soft-fail` enables soft-fail behavior when the server sends an unknown certificate status. If this is
+set to true, the client will continue the handshake given an unknown certificate status. If set to false, it will enable
+hard fail behaviour, which will treat unknown certificate status as a bad status.
+
+*NOTE:* The default value for `ocsp-stapling-soft-fail` for client-ssl-context is `true`. However, this only takes
+effect when `accept-ocsp-stapling` is enabled. Otherwise, the value for `ocsp-stapling-soft-fail` is ignored.
+
 [[enable-one-way-ssltls-for-the-management-interfaces]]
 === Enable One-way SSL/TLS for the Management Interfaces
 
