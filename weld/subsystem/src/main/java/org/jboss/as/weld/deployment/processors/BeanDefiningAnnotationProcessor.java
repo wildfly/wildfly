@@ -11,17 +11,21 @@ import static org.jboss.as.weld.util.Indices.getAnnotatedClasses;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.transaction.TransactionScoped;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.Capabilities;
 import org.jboss.as.weld.CdiAnnotations;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
 import org.jboss.jandex.ClassInfo;
@@ -62,6 +66,16 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
 
         for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
             addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));
+        }
+
+        final CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);
+        try {
+            final WeldCapability preProcessingWeldCapability = support.getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
+            for (Map.Entry<String, Boolean> entry : preProcessingWeldCapability.getBeanDefiningAnnotations().entrySet()) {
+                addAnnotation(deploymentUnit, new AnnotationType(DotName.createSimple(entry.getKey()), entry.getValue()));
+            }
+        } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+            throw new RuntimeException(e);
         }
     }
 

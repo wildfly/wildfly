@@ -4,6 +4,9 @@
  */
 package org.jboss.as.weld;
 
+import java.lang.annotation.Annotation;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -22,8 +25,11 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public class WeldCapabilityImpl implements WeldCapability {
     static final WeldCapability INSTANCE = new WeldCapabilityImpl();
+    private final Map<String, Boolean> annotations;
 
-    private WeldCapabilityImpl() {}
+    private WeldCapabilityImpl() {
+        annotations = new ConcurrentHashMap<>();
+    }
 
     @Override
     public void registerExtensionInstance(final Extension extension, final DeploymentUnit unit) {
@@ -49,6 +55,16 @@ public class WeldCapabilityImpl implements WeldCapability {
         }
 
         return serviceBuilder;
+    }
+    @Override
+    public WeldCapability addBeanDefiningAnnotation(final Class<? extends Annotation> annotation, final boolean inherited) {
+        annotations.put(annotation.getName(), inherited);
+        return this;
+    }
+
+    @Override
+    public Map<String, Boolean> getBeanDefiningAnnotations() {
+        return Map.copyOf(annotations);
     }
 
     public boolean isPartOfWeldDeployment(final DeploymentUnit unit) {
