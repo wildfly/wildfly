@@ -3,21 +3,21 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:jboss:domain:datasources:7.0">
+<subsystem xmlns="urn:jboss:domain:datasources:7.2">
     <datasources>
         <xa-datasource jndi-name="java:jboss/datasources/DS" pool-name="DS">
             <xa-datasource-property name="DatabaseName">mydb</xa-datasource-property>
             <driver>h2</driver>
             <xa-pool>
-                <no-tx-separate-pools>false</no-tx-separate-pools>
                 <interleaving>false</interleaving>
+                <no-tx-separate-pools>false</no-tx-separate-pools>
             </xa-pool>
-            <statement>
-                <share-prepared-statements>false</share-prepared-statements>
-            </statement>
             <timeout>
                 <set-tx-query-timeout>false</set-tx-query-timeout>
             </timeout>
+            <statement>
+                <share-prepared-statements>false</share-prepared-statements>
+            </statement>
         </xa-datasource>
     </datasources>
 </subsystem>
