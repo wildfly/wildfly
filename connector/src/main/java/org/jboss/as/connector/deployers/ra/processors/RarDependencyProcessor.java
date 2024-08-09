@@ -5,7 +5,6 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import org.jboss.as.connector.subsystems.resourceadapters.Capabilities;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -21,6 +20,8 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 
 public class RarDependencyProcessor implements DeploymentUnitProcessor {
+
+    private static final String RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY = "org.wildfly.resource-adapters";
 
     private static String JMS_ID = "jakarta.jms.api";
     private static String IRON_JACAMAR_ID = "org.jboss.ironjacamar.api";
@@ -55,7 +56,7 @@ public class RarDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_ID, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, IRON_JACAMAR_IMPL_ID, false, true, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, HIBERNATE_VALIDATOR_ID, false, false, true, false));
-        if (support.hasCapability(Capabilities.RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY_NAME)) {
+        if (support.hasCapability(RESOURCE_ADAPTERS_SUBSYSTEM_CAPABILITY)) {
             phaseContext.addDeploymentDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, ResourceAdaptersSubsystemService.ATTACHMENT_KEY);
         }
     }
