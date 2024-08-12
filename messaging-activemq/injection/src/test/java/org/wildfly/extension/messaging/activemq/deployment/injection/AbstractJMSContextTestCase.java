@@ -72,9 +72,7 @@ public class AbstractJMSContextTestCase {
         }
 
         // Execute all tasks
-        for (Callable<JMSContext> task : tasks) {
-            executor.submit(task);
-        }
+        executor.invokeAll(tasks);
 
         // Shutdown the executor
         executor.shutdown();
