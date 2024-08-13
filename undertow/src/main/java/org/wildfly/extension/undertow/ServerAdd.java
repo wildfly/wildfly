@@ -7,6 +7,7 @@ package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.ServerDefinition.SERVER_CAPABILITY;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -18,6 +19,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
@@ -92,7 +94,11 @@ final class ServerAdd extends AbstractAddStepHandler {
         // We currently don't have any attributes that reference capabilities, but we have this code in case that changes
         // since we are not calling the superclass code.
         ModelNode model = resource.getModel();
-        for (AttributeDefinition ad : getAttributes()) {
+
+        Map<String, AttributeAccess> attributeAccessMap = context.getResourceRegistration().getAttributes(PathAddress.EMPTY_ADDRESS);
+        for (Map.Entry<String, AttributeAccess> entry : attributeAccessMap.entrySet()) {
+            AttributeAccess attributeAccess = entry.getValue();
+            AttributeDefinition ad = attributeAccess.getAttributeDefinition();
             if (model.hasDefined(ad.getName()) || ad.hasCapabilityRequirements()) {
                 ad.addCapabilityRequirements(context, resource, model.get(ad.getName()));
             }
