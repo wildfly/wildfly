@@ -22,17 +22,7 @@ public class RegistryFactoryServiceInstallerFactory<K, V> extends AbstractRegist
 
     @Override
     public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
-        BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, ServiceInstaller> factory = configuration.getParentName().equals(ModelDescriptionConstants.LOCAL) ? new LocalRegistryFactoryServiceInstallerFactory<>() : new CacheRegistryFactoryServiceInstallerFactory<>();
+        BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, ServiceInstaller> factory = (configuration.getParentName() == ModelDescriptionConstants.LOCAL) ? new LocalRegistryFactoryServiceInstallerFactory<>() : new CacheRegistryFactoryServiceInstallerFactory<>();
         return factory.apply(support, configuration);
-/*
-        ServiceDependency<Group<GroupMember>> group = configuration.getServiceDependency(ClusteringServiceDescriptor.GROUP);
-        return ServiceInstaller.builder(new ServiceInstaller() {
-            @Override
-            public ServiceController<?> install(RequirementServiceTarget target) {
-                BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, ServiceInstaller> factory = group.get().isSingleton() ? new LocalRegistryFactoryServiceInstallerFactory<>() : new CacheRegistryFactoryServiceInstallerFactory<>();
-                return factory.apply(support, configuration).install(target);
-            }
-        }, support).requires(group).build();
-*/
     }
 }

@@ -14,6 +14,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class DigestAuthTokenResourceTransformer extends AuthTokenResourceTransformer {
 
     DigestAuthTokenResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(DigestAuthTokenResourceDefinition.PATH));
+        super(parent.addChildResource(AuthTokenResourceDefinitionRegistrar.Token.DIGEST.getPathElement()));
     }
 }

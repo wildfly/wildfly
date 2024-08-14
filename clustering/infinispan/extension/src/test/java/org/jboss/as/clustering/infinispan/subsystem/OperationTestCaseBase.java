@@ -6,18 +6,19 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
-import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemInitialization;
+import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 
 /**
  * Base test case for testing management operations.
@@ -39,10 +40,10 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     AdditionalInitialization createAdditionalInitialization() {
         return new JGroupsSubsystemInitialization()
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-1")
-                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-2")
-                .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
-                .require(CommonServiceDescriptor.DATA_SOURCE, "new-datasource")
+                .require(ForkChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
+                .require(ForkChannelFactory.SERVICE_DESCRIPTOR, "maximal-channel")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, List.of("hotrod-server-1", "hotrod-server-2"))
+                .require(CommonServiceDescriptor.DATA_SOURCE, List.of("ExampleDS", "new-datasource"))
                 ;
     }
 

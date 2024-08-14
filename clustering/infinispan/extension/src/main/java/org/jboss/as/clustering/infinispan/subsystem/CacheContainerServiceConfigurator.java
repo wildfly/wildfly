@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
@@ -70,15 +70,11 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
         String name = context.getCurrentAddressValue();
         List<ModelNode> aliases = ALIASES.resolveModelAttribute(context, model).asListOrEmpty();
 
-        ServiceDependency<GlobalConfiguration> configuration = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, name);
-        ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
+        Object listener = new CacheLifecycleListener(name, this.registry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        Object listener = new CacheLifecycleListener(this.registry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
-
-        Supplier<EmbeddedCacheManager> factory = new Supplier<>() {
+        ServiceDependency<EmbeddedCacheManager> container = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, name).map(new Function<>() {
             @Override
-            public EmbeddedCacheManager get() {
-                GlobalConfiguration global = configuration.get();
+            public EmbeddedCacheManager apply(GlobalConfiguration global) {
                 String defaultCacheName = global.defaultCacheName().orElse(null);
                 ConfigurationBuilderHolder holder = new ConfigurationBuilderHolder(global.classLoader(), new GlobalConfigurationBuilder().read(global));
                 // We need to create a dummy default configuration if cache has a default cache
@@ -92,7 +88,8 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                 }
                 return manager;
             }
-        };
+        });
+        ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
         UnaryOperator<EmbeddedCacheManager> wrapper = new UnaryOperator<>() {
             @Override
             public EmbeddedCacheManager apply(EmbeddedCacheManager manager) {
@@ -172,12 +169,12 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                 InfinispanLogger.ROOT_LOGGER.infof("Stopped %s cache container", name);
             }
         };
-        CapabilityServiceInstaller.Builder<EmbeddedCacheManager, EmbeddedCacheManager> builder = CapabilityServiceInstaller.builder(this.capability, wrapper, factory);
+        CapabilityServiceInstaller.Builder<EmbeddedCacheManager, EmbeddedCacheManager> builder = CapabilityServiceInstaller.builder(this.capability, wrapper, container);
         for (ModelNode alias : aliases) {
             builder.provides(context.getCapabilityServiceSupport().getCapabilityServiceName(InfinispanServiceDescriptor.CACHE_CONTAINER, alias.asString()));
         }
         return builder.blocking()
-                .requires(List.of(configuration, loader))
+                .requires(List.of(container, loader))
                 .onStart(start)
                 .onStop(stop)
                 .asPassive()
@@ -186,22 +183,23 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
 
     @Listener
     static class CacheLifecycleListener {
+        private final String containerName;
         private final ServiceValueRegistry<Cache<?, ?>> registry;
         private final Registrar<String> registrar;
         private final Map<String, Registration> registrations = new ConcurrentHashMap<>();
 
-        CacheLifecycleListener(ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar) {
+        CacheLifecycleListener(String containerName, ServiceValueRegistry<Cache<?, ?>> registry, Registrar<String> registrar) {
+            this.containerName = containerName;
             this.registry = registry;
             this.registrar = registrar;
         }
 
         @CacheStarted
         public CompletionStage<Void> cacheStarted(CacheStartedEvent event) {
-            String containerName = event.getCacheManager().getCacheManagerConfiguration().cacheManagerName();
             String cacheName = event.getCacheName();
-            InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, containerName);
+            InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, this.containerName);
             this.registrations.put(cacheName, this.registrar.register(cacheName));
-            Consumer<Cache<?, ?>> captor = this.registry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
+            Consumer<Cache<?, ?>> captor = this.registry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, this.containerName, cacheName));
             EmbeddedCacheManager container = event.getCacheManager();
             // Use getCacheAsync(), once available
             BlockingManager blocking = GlobalComponentRegistry.componentOf(container, BlockingManager.class);
@@ -211,11 +209,10 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
 
         @CacheStopped
         public CompletionStage<Void> cacheStopped(CacheStoppedEvent event) {
-            String containerName = event.getCacheManager().getCacheManagerConfiguration().cacheManagerName();
             String cacheName = event.getCacheName();
-            this.registry.remove(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
+            this.registry.remove(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, this.containerName, cacheName));
             try (Registration registration = this.registrations.remove(cacheName)) {
-                InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, containerName);
+                InfinispanLogger.ROOT_LOGGER.cacheStopped(cacheName, this.containerName);
             }
             return CompletableFuture.completedStage(null);
         }

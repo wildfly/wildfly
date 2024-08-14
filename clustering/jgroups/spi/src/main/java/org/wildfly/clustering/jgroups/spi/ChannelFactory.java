@@ -21,7 +21,7 @@ public interface ChannelFactory extends org.wildfly.clustering.jgroups.ChannelFa
      * Returns the protocol stack configuration of this channel factory.
      * @return the protocol stack configuration of this channel factory
      */
-    ProtocolStackConfiguration getProtocolStackConfiguration();
+    ChannelFactoryConfiguration getConfiguration();
 
     /**
      * Determines whether or not the specified message response indicates the fork stack or fork channel

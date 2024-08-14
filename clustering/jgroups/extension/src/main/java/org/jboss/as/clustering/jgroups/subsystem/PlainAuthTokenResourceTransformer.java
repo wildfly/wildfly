@@ -14,6 +14,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class PlainAuthTokenResourceTransformer extends AuthTokenResourceTransformer {
 
     PlainAuthTokenResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(PlainAuthTokenResourceDefinition.PATH));
+        super(parent.addChildResource(AuthTokenResourceDefinitionRegistrar.Token.PLAIN.getPathElement()));
     }
 }

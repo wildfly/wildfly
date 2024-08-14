@@ -31,16 +31,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the default stack
-        ModelNode result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
+        ModelNode result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinitionRegistrar.DEFAULT_CHANNEL));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("ee", result.get(RESULT).asString());
 
         // write the default stack
-        result = services.executeOperation(getSubsystemWriteOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL, "bridge"));
+        result = services.executeOperation(getSubsystemWriteOperation(JGroupsSubsystemResourceDefinitionRegistrar.DEFAULT_CHANNEL, "bridge"));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
-        result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL));
+        result = services.executeOperation(getSubsystemReadOperation(JGroupsSubsystemResourceDefinitionRegistrar.DEFAULT_CHANNEL));
         Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("bridge", result.get(RESULT).asString());
     }
@@ -54,16 +54,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices services = this.buildKernelServices();
 
         // read the transport rack attribute
-        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK));
+        ModelNode result = services.executeOperation(getTransportReadOperation("maximal", "TCP", AbstractTransportResourceDefinitionRegistrar.TopologyAttribute.RACK.get()));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("rack1", ExpressionResolver.TEST_RESOLVER.resolveExpressions(result.get(RESULT)).asString());
 
         // write the rack attribute
-        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK, "new-rack"));
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", AbstractTransportResourceDefinitionRegistrar.TopologyAttribute.RACK.get(), "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK));
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", AbstractTransportResourceDefinitionRegistrar.TopologyAttribute.RACK.get()));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -79,11 +79,11 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // write the rack attribute
-        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK, "new-rack"));
+        result = services.executeOperation(getTransportWriteOperation("maximal", "TCP", AbstractTransportResourceDefinitionRegistrar.TopologyAttribute.RACK.get(), "new-rack"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the rack attribute
-        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", TransportResourceDefinition.Attribute.RACK));
+        result = services.executeOperation(getTransportReadOperation("maximal", "TCP", AbstractTransportResourceDefinitionRegistrar.TopologyAttribute.RACK.get()));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-rack", result.get(RESULT).asString());
     }
@@ -125,16 +125,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // read the socket binding attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", MulticastSocketProtocolResourceDefinition.Attribute.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get()));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("jgroups-mping", result.get(RESULT).asString());
 
         // write the attribute
-        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", MulticastSocketProtocolResourceDefinition.Attribute.SOCKET_BINDING, "new-socket-binding"));
+        result = services.executeOperation(getProtocolWriteOperation("maximal", "MPING", SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get(), "new-socket-binding"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the attribute
-        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", MulticastSocketProtocolResourceDefinition.Attribute.SOCKET_BINDING));
+        result = services.executeOperation(getProtocolReadOperation("maximal", "MPING", SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get()));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-socket-binding", result.get(RESULT).asString());
     }
