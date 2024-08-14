@@ -4,12 +4,12 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jgroups.JChannel;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Enumerates management metrics for a channel.
@@ -93,7 +93,7 @@ public enum ChannelMetric implements Metric<JChannel> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }
