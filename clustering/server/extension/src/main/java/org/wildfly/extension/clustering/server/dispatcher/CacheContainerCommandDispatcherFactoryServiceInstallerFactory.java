@@ -32,18 +32,7 @@ public enum CacheContainerCommandDispatcherFactoryServiceInstallerFactory implem
     INSTANCE() {
         @Override
         public ServiceInstaller apply(CapabilityServiceSupport support, Map.Entry<String, String> entry) {
-            BiFunction<CapabilityServiceSupport, Map.Entry<String, String>, ServiceInstaller> installerFactory = ModelDescriptionConstants.LOCAL.equals(entry.getValue()) ? LOCAL : CHANNEL;
-            return installerFactory.apply(support, entry);
-/*
-            ServiceDependency<GlobalConfiguration> global = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, entry.getKey());
-            return ServiceInstaller.builder(new ServiceInstaller() {
-                @Override
-                public ServiceController<?> install(RequirementServiceTarget target) {
-                    BiFunction<CapabilityServiceSupport, Map.Entry<String, String>, ServiceInstaller> installerFactory = (global.get().transport().transport() != null) ? CHANNEL : LOCAL;
-                    return installerFactory.apply(support, entry).install(target);
-                }
-            }, support).requires(global).build();
-*/
+            return ((entry.getValue() == ModelDescriptionConstants.LOCAL) ? LOCAL : CHANNEL).apply(support, entry);
         }
     },
     CHANNEL() {

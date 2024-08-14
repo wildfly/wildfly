@@ -22,7 +22,7 @@ public class JGroupsExtensionTransformerRegistration implements ExtensionTransfo
 
     @Override
     public String getSubsystemName() {
-        return JGroupsExtension.SUBSYSTEM_NAME;
+        return JGroupsSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override
