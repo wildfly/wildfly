@@ -73,12 +73,12 @@ public enum ChannelCommandDispatcherFactoryServiceInstallerFactory implements Bi
         JChannelCommandDispatcherFactoryConfiguration configuration = new JChannelCommandDispatcherFactoryConfiguration() {
             @Override
             public JChannel getChannel() {
-                return channelFactory.get().getForkStackConfiguration().getChannel();
+                return channelFactory.get().getConfiguration().getChannel();
             }
 
             @Override
             public ByteBufferMarshaller getMarshaller() {
-                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(moduleLoader.get())).load(channelFactory.get().getForkStackConfiguration().getModule().getClassLoader()).build());
+                return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(new ModuleClassLoaderMarshaller(moduleLoader.get())).load(channelFactory.get().getConfiguration().getChannelConfiguration().getModule().getClassLoader()).build());
             }
 
             @Override

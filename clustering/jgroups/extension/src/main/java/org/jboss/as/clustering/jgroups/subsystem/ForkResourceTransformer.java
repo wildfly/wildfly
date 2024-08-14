@@ -19,7 +19,7 @@ public class ForkResourceTransformer implements Consumer<ModelVersion> {
     private final ResourceTransformationDescriptionBuilder builder;
 
     ForkResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(ForkResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(ForkResourceDefinitionRegistrar.WILDCARD_PATH);
     }
 
     @Override

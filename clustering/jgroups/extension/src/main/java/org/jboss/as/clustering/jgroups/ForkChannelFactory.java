@@ -9,9 +9,9 @@ import java.util.List;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jgroups.JChannel;
 import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.jgroups.spi.ForkStackConfiguration;
 import org.wildfly.clustering.jgroups.spi.ProtocolConfiguration;
-import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
+import org.wildfly.clustering.jgroups.spi.ChannelFactoryConfiguration;
+import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 
 /**
  * Factory for creating forked channels.
@@ -19,14 +19,14 @@ import org.wildfly.clustering.jgroups.spi.ProtocolStackConfiguration;
  */
 public class ForkChannelFactory implements org.wildfly.clustering.jgroups.spi.ForkChannelFactory {
 
-    private final ForkStackConfiguration configuration;
+    private final ForkChannelFactoryConfiguration configuration;
 
-    public ForkChannelFactory(ForkStackConfiguration configuration) {
+    public ForkChannelFactory(ForkChannelFactoryConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public ForkStackConfiguration getForkStackConfiguration() {
+    public ForkChannelFactoryConfiguration getConfiguration() {
         return this.configuration;
     }
 
@@ -38,10 +38,10 @@ public class ForkChannelFactory implements org.wildfly.clustering.jgroups.spi.Fo
         List<ProtocolConfiguration<? extends Protocol>> protocolConfigurations = this.configuration.getProtocols();
         String stackName = protocolConfigurations.isEmpty() ? channel.getClusterName() : id;
 
-        ProtocolStackConfiguration stackConfiguration = this.configuration.getChannelFactory().getProtocolStackConfiguration();
+        ChannelFactoryConfiguration parentConfiguration = this.configuration.getChannelConfiguration().getChannelFactory().getConfiguration();
         Protocol[] protocols = new Protocol[protocolConfigurations.size()];
         for (int i = 0; i < protocols.length; ++i) {
-            protocols[i] = protocolConfigurations.get(i).createProtocol(stackConfiguration);
+            protocols[i] = protocolConfigurations.get(i).createProtocol(parentConfiguration);
         }
 
         return new ForkChannel(channel, stackName, id, protocols);
