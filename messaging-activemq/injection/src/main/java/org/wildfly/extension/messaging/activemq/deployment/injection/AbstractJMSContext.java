@@ -2,17 +2,17 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.extension.messaging.activemq.deployment.injection;
 
 import static org.wildfly.extension.messaging.activemq._private.MessagingLogger.ROOT_LOGGER;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSContext;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Abstract class for managing JMS Contexts.
@@ -23,12 +23,24 @@ import jakarta.jms.JMSContext;
  */
 public abstract class AbstractJMSContext implements Serializable {
 
-    private final Map<String, JMSContext> contexts = new ConcurrentHashMap<>();
+    private final transient ReentrantLock lock = new ReentrantLock();
+    private final transient Map<String, JMSContext> contexts = new ConcurrentHashMap<>();
 
     JMSContext getContext(String injectionPointId, JMSInfo info, ConnectionFactory connectionFactory) {
-        return contexts.computeIfAbsent(injectionPointId, key -> {
-            return createContext(info, connectionFactory);
-        });
+        JMSContext context = contexts.get(injectionPointId);
+        if (context == null) {
+            lock.lock();
+            try {
+                context = contexts.get(injectionPointId);
+                if (context == null) {
+                    context = createContext(info, connectionFactory);
+                    contexts.put(injectionPointId, context);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        return context;
     }
 
     private JMSContext createContext(JMSInfo info, ConnectionFactory connectionFactory) {
