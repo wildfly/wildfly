@@ -2798,7 +2798,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with ejb-lite -->
+                            <!-- Tests against the install with ee-concurrency -->
                             <execution>
                                 <id>ee-concurrency-layers.surefire</id>
                                 <phase>test</phase>
