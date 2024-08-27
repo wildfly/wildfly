@@ -19,7 +19,8 @@ target
 *.iml
 *.ipr
 *.iws
-.idea
+.idea/*
+!.idea/icon.png
 # ignore NetBeans files
 nbactions.xml
 nb-configuration.xml
