@@ -41,10 +41,18 @@ public class ServiceContributorImpl implements ServiceContributor {
 
         final Object regionFactoryInitiatorEnabled = serviceRegistryBuilder.getSettings().getOrDefault(CONTROL2LCINTEGRATION, true);
         final Object regionFactory = serviceRegistryBuilder.getSettings().get(HIBERNATE_REGION_FACTORY_CLASS);
-        if ((regionFactory instanceof String) && ((String) regionFactory).contains(EHCACHE)) {
-            JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using Ehcache via regionFactory=%s",
-                    regionFactory);
-        } else if (regionFactoryInitiatorEnabled == null ||
+        if ((regionFactory instanceof String)) {
+            String cacheRegionFactory = (String) regionFactory;
+            if (cacheRegionFactory.contains(EHCACHE)) {
+                JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using Ehcache via %s=%s",
+                        HIBERNATE_REGION_FACTORY_CLASS, cacheRegionFactory);
+                return;
+            } else {
+                // warn and ignore application cache region setting
+                JPA_LOGGER.ignoredCacheRegionSetting(HIBERNATE_REGION_FACTORY_CLASS, cacheRegionFactory);
+            }
+        }
+        if (regionFactoryInitiatorEnabled == null ||
                 (regionFactoryInitiatorEnabled instanceof Boolean && ((Boolean) regionFactoryInitiatorEnabled).booleanValue()) ||
                 Boolean.parseBoolean(regionFactoryInitiatorEnabled.toString())) {
             JPA_LOGGER.tracef("ServiceContributorImpl#contribute adding ORM initiator for 2lc region factory");
