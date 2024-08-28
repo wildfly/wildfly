@@ -6,6 +6,7 @@
 package org.jboss.as.jpa.hibernate;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.boot.archive.spi.ArchiveException;
 import org.jboss.logging.BasicLogger;
@@ -45,6 +46,10 @@ public interface JpaLogger extends BasicLogger {
      */
     @Message(id = 20261, value = "Hibernate ORM did not register LifeCycleListener")
     IllegalStateException HibernateORMDidNotRegisterLifeCycleListener();
+
+    @LogMessage(level = WARN)
+    @Message(id = 20262, value = "Application custom cache region setting is ignored %s=%s")
+    void ignoredCacheRegionSetting(String propertyName, String setting );
 
     /**
      * Creates an exception indicating application is setting persistence unit property "hibernate.id.new_generator_mappings" to
