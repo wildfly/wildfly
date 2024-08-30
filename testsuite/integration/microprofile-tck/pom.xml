@@ -47,6 +47,7 @@
         <ts.microprofile-tck-tests-dependency>FIXME-must-override</ts.microprofile-tck-tests-dependency>
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
 
         <!-- Properties used in certification script -->
         <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
@@ -62,7 +63,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -266,6 +267,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <build>
                 <plugins>
@@ -405,6 +407,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <build>
                 <plugins>
