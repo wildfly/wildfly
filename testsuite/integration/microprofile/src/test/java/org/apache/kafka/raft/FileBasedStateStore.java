@@ -33,7 +33,8 @@ import com.fasterxml.jackson.databind.node.ShortNode;
 
 /**
  * Applies https://github.com/apache/kafka/commit/f7cc920771735576d9cfba2afe6f26fdcfb2ccd4 to
- * https://github.com/apache/kafka/blob/trunk/raft/src/main/java/org/apache/kafka/raft/FileBasedStateStore.java
+ * https://github.com/apache/kafka/blob/3.7.1/raft/src/main/java/org/apache/kafka/raft/FileBasedStateStore.java
+ * Note that from 3.8.0 this file has been renamed to FileQuorumStateStore.java
  *
  * The fix is needed to be able to boot the embedded Kafka on Windows. The mentioned patch will not be
  * included in Kafka upstream, as Windows is not as a supported platform for Kafka.

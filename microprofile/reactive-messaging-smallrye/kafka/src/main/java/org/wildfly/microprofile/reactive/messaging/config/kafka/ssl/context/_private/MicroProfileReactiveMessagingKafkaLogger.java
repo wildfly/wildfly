@@ -9,7 +9,6 @@ import static org.jboss.logging.Logger.Level.INFO;
 
 import java.lang.invoke.MethodHandles;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
@@ -38,5 +37,5 @@ public interface MicroProfileReactiveMessagingKafkaLogger extends BasicLogger {
 
     @Message(id = 3, value = "Snappy compression is not supported when running on Windows or Mac OS. The MicroProfile Config " +
             "property configuring Snappy is: %s")
-    DeploymentUnitProcessingException snappyCompressionNotSupportedOnWindows(String propertyName);
+    RuntimeException snappyCompressionNotSupportedOnWindows(String propertyName);
 }
