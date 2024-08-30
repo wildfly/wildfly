@@ -6,6 +6,7 @@
 package org.wildfly.clustering.weld.contexts;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
 
 import jakarta.enterprise.context.spi.Contextual;
@@ -78,7 +79,8 @@ public class SerializableContextualInstanceImplMarshaller<C extends Contextual<I
                 public I run() {
                     try {
                         return (I) instantiator.newInstance(targetClass);
-                    } catch (InstantiationException | IllegalAccessException e) {
+                    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                             InvocationTargetException e) {
                         throw new IllegalStateException(e);
                     }
                 }
