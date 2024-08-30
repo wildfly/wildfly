@@ -246,6 +246,19 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Galleon universe dependencies (so that they are present in the channel manifest) -->
+
+        <dependency>
+            <groupId>org.jboss.universe</groupId>
+            <artifactId>community-universe</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.universe.producer</groupId>
+            <artifactId>wildfly-producers</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- module and copy artifact dependencies -->
 
         <dependency>
