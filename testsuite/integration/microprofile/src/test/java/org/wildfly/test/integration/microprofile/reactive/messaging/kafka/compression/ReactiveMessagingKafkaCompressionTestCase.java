@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class ReactiveMessagingKafkaCompressionTestCase {
 
     // Downstream we want to disable Snappy on Windows and Mac
-    // This setting should match that in KafkaReactiveMessagingSslConfigProcessor.DISABLE_SNAPPY_ON_WINDOWS_AND_MAC
+    // This setting should match that in KafkaClientCustomizer.DISABLE_SNAPPY_ON_WINDOWS_AND_MAC
     // I don't want to depend on that module from here
     static final boolean DISABLE_SNAPPY_ON_WINDOWS_AND_MAC = false;
 

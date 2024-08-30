@@ -17,6 +17,7 @@ import static org.wildfly.microprofile.reactive.messaging.common._private.MicroP
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ElytronSSLContextRegistry {
+    public static final String SSL_CONTEXT_PROPERTY = "wildfly.elytron.ssl.context";
 
     private static final ElytronSSLContextRegistry INSTANCE = new ElytronSSLContextRegistry();
     private static final ServiceName BASE_CLIENT_SSL_CONTEXT_NAME = ServiceName.of("org", "wildfly", "security", "ssl-context");
