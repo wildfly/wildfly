@@ -4,6 +4,7 @@
  */
 package org.jboss.as.connector.metadata.common;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
@@ -25,7 +26,7 @@ public class CredentialImpl implements Credential {
 
     private static final long serialVersionUID = 7990943957924515091L;
 
-    private static CommonBundle bundle = (CommonBundle) Messages.getBundle(CommonBundle.class);
+    private static CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
     private final String userName;
     private final String password;
     private final String securityDomain;

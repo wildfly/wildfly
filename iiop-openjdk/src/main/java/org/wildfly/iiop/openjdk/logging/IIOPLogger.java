@@ -26,6 +26,7 @@ import javax.naming.ConfigurationException;
 import javax.naming.InvalidNameException;
 import javax.naming.NamingException;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.net.MalformedURLException;
 
 import static org.jboss.logging.Logger.Level.*;
@@ -39,7 +40,7 @@ import static org.jboss.logging.Logger.Level.*;
 @MessageLogger(projectCode = "WFLYIIOP", length = 4)
 public interface IIOPLogger extends BasicLogger {
 
-    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(IIOPLogger.class, "org.wildfly.iiop.openjdk");
+    IIOPLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), IIOPLogger.class, "org.wildfly.iiop.openjdk");
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating IIOP Subsystem")

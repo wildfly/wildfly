@@ -5,6 +5,8 @@
 
 package org.jboss.as.connector.services.workmanager;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.threads.ManagedJBossThreadPoolExecutorService;
 import org.jboss.as.threads.ManagedQueueExecutorService;
 import org.jboss.as.threads.ManagedQueuelessExecutorService;
@@ -26,7 +28,8 @@ public class StatisticsExecutorImpl implements StatisticsExecutor {
     /**
      * The logger
      */
-    private static CoreLogger log = Logger.getMessageLogger(CoreLogger.class,
+    private static CoreLogger log = Logger.getMessageLogger(
+            MethodHandles.lookup(), CoreLogger.class,
             org.jboss.jca.core.workmanager.StatisticsExecutorImpl.class.getName());
 
     private final BlockingExecutor realExecutor;

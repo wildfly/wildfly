@@ -8,6 +8,7 @@ package org.jboss.as.connector.services.resourceadapters;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +46,7 @@ import org.jboss.msc.service.StopContext;
 public final class ResourceAdapterActivatorService extends AbstractResourceAdapterDeploymentService implements
         Service<ResourceAdapterDeployment> {
 
-    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, ResourceAdapterActivator.class.getName());
+    private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), DeployersLogger.class, ResourceAdapterActivator.class.getName());
 
     private final ClassLoader cl;
     private final Connector cmd;

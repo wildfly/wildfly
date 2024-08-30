@@ -8,6 +8,8 @@ package org.wildfly.extension.mod_cluster;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -25,7 +27,7 @@ interface ModClusterLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(ModClusterLogger.class, "org.wildfly.extension.mod_cluster");
+    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ModClusterLogger.class, "org.wildfly.extension.mod_cluster");
 
     /**
      * Logs an error message indicating an error when adding metrics.
