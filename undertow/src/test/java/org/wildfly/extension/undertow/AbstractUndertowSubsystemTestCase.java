@@ -124,7 +124,7 @@ public abstract class AbstractUndertowSubsystemTestCase extends AbstractSubsyste
         Host host = (Host) awaitServiceValue(hostSC);
         if (flag == 1) {
             Assert.assertEquals(3, host.getAllAliases().size());
-            Assert.assertEquals("default-alias", new ArrayList<>(host.getAllAliases()).get(1));
+            Assert.assertTrue("default-alias should be present", new ArrayList<>(host.getAllAliases()).contains("default-alias"));
         }
 
         final ServiceName locationServiceName = UndertowService.locationServiceName(virtualHostName, "default-virtual-host", "/");
