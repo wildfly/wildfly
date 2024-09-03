@@ -367,7 +367,8 @@
         <notes><![CDATA[
         file name: undertow-core-2.3.15.Final.jar
         ]]></notes>
-        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@2\.3\.15.*$</packageUrl>
+        <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@2\.3\.17.*$</packageUrl>
         <vulnerabilityName>CVE-2024-5971</vulnerabilityName>
+        <cve>CVE-2024-7885</cve>
     </suppress>
 </suppressions>
