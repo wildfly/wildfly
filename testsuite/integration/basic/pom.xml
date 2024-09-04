@@ -1432,13 +1432,31 @@
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
+                    <bootableJar>true</bootableJar>
+                    <skipDeployment>true</skipDeployment>
+                </configuration>
                 <executions>
                     <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                            <bootableJarName>test-wildfly-cloud-profile.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
@@ -1454,7 +1472,7 @@
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-jpa.jar</output-file-name>
+                            <bootableJarName>test-wildfly-jpa.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>

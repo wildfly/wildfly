@@ -196,6 +196,14 @@
                 <version>${version.org.wildfly.plugin}</version>
                 <configuration>
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
                 </configuration>
                 <executions>
                     <!-- Provision a non-slimmed server -->
@@ -207,14 +215,6 @@
                         <phase>${full-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${full.maven.groupId}</groupId>
@@ -234,14 +234,6 @@
                         <phase>${hibernate-search-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-hibernate-search</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -255,14 +247,45 @@
                         <phase>${mvc-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-mvc</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
+                            <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+                    <!-- Package a server with hibernate-search -->
+                    <execution>
+                        <id>bootable-jar-hibernate-search-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-hibernate-search.jar</bootableJarName>
+                            <extra-server-content-dirs>
+                                <!-- Uncomment if we add extra content
+                                <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                -->
+                            </extra-server-content-dirs>
+                            <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
+                        </configuration>
+                    </execution>
+
+                    <!-- Package a server with mvc -->
+                    <execution>
+                        <id>bootable-jar-mvc-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-mvc.jar</bootableJarName>
+                            <extra-server-content-dirs>
+                                <!-- Uncomment if we add extra content
+                                <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
+                                -->
+                            </extra-server-content-dirs>
                             <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -504,6 +527,7 @@
                 <glow.hibernate-search.phase>test-compile</glow.hibernate-search.phase>
                 <glow.mvc.phase>test-compile</glow.mvc.phase>
                 <ts.copy-wildfly-standalone-embedded-broker.phase>none</ts.copy-wildfly-standalone-embedded-broker.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
             </properties>
             <build>
                 <plugins>
@@ -535,47 +559,6 @@
                                             </includes>
                                         </resource>
                                     </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Package a server with hibernate-search -->
-                            <execution>
-                                <id>bootable-jar-hibernate-search-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-hibernate-search.jar</output-file-name>
-                                    <extra-server-content-dirs>
-                                        <!-- Uncomment if we add extra content
-                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
-                                        -->
-                                    </extra-server-content-dirs>
-                                    <provisioning-file>target/glow-scan/hibernate-search.layer.surefire/provisioning.xml</provisioning-file>
-                                </configuration>
-                            </execution>
-
-                            <!-- Package a server with mvc -->
-                            <execution>
-                                <id>bootable-jar-mvc-packaging</id>
-                                <goals>
-                                    <goal>package</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <output-file-name>test-wildfly-mvc.jar</output-file-name>
-                                    <extra-server-content-dirs>
-                                        <!-- Uncomment if we add extra content
-                                        <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
-                                        -->
-                                    </extra-server-content-dirs>
-                                    <provisioning-file>target/glow-scan/mvc.layer.surefire/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>
                         </executions>
