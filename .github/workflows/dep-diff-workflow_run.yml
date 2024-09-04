@@ -30,6 +30,11 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           path: ${{github.workspace}}/input.zip
+      - run: |
+          set -x
+          set +e
+          ls -al ${{github.workspace}}
+          ls -al input
 
       - name: Set needed env vars in outputs
         id: prepare
