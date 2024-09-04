@@ -46,6 +46,8 @@
         <module>boms/legacy-test</module>
         <module>boms/preview-ee</module>
         <module>boms/preview-expansion</module>
+        <module>boms/preview-test</module>
+        <module>boms/preview-test-expansion</module>
         <module>boms/standard-ee</module>
         <module>boms/standard-expansion</module>
         <module>boms/standard-test</module>
