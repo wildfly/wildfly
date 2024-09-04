@@ -277,6 +277,28 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- TODO (jrp) this is a huge hack to get around Wiremock setting the javax.xml.transform.TransformerFactory
+                            system property. A real fix would be to allow Wiremock to allow not setting the property.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>wiremock-cleanup</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.cleanup.WiremockCleanup</mainClass>
+                            <arguments>javax.xml.transform.TransformerFactory</arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
