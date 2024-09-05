@@ -70,6 +70,7 @@ import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.config.ConfigurationKey;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.configuration.spi.helpers.ExternalConfigurationBuilder;
+import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
@@ -213,8 +214,11 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 additional.getServices().add(entry.getKey(), Reflections.cast(entry.getValue()));
             }
         }
-
-        final Collection<Metadata<Extension>> extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit).getExtensions();
+        WeldPortableExtensions portableExtensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
+        // register LiteExtensionTranslator as the last extension so that we have all info on registered BCEs
+        // NOTE: I chose to register it under the dep. unit of the top level deployment, using its CL, not sure if this is correct
+        portableExtensions.registerLiteExtensionTranslatorIfNeeded(classes -> new LiteExtensionTranslator(classes, module.getClassLoader()), deploymentUnit);
+        final Collection<Metadata<Extension>> extensions = portableExtensions.getExtensions();
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders, deploymentUnit, rootBeanDeploymentModule, eeModuleDescriptors);
 
