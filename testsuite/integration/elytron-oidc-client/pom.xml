@@ -173,42 +173,46 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <stdout>none</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
-                </configuration>
                 <executions>
                     <execution>
+                        <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
-                    <!-- Provision a cloud server -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <!-- content that is installed in wildfly home -->
+                            <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly.jar</bootableJarName>
+                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
+                        </configuration>
                         <goals>
                             <goal>package</goal>
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
-                        <configuration>
-                            <!-- content that is installed in wildfly home -->
-                            <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                            <output-file-name>test-wildfly.jar</output-file-name>
-                            <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

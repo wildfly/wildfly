@@ -373,6 +373,36 @@
                             </feature-packs>
                         </configuration>
                     </execution>
+                     <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
+                    <execution>
+                        <id>bootable-jar-packaging</id>
+                        <configuration>
+                            <packaging-scripts>
+                                <cli-session>
+                                    <javaOpts>
+                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                    </javaOpts>
+                                    <scripts>
+                                        <script>wiremock-bootable.cli</script>
+                                    </scripts>
+                                    <propertiesFiles>${project.build.outputDirectory}/wiremock-bootable-cli.properties</propertiesFiles>
+                                </cli-session>
+                            </packaging-scripts>
+                            <feature-packs>
+                                <feature-pack>
+                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.galleon.pack.version}</version>
+                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
+                                    but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
+                                    provision it. -->
+                                    <included-packages>
+                                        <package>org.apache.commons.lang3</package>
+                                    </included-packages>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -419,39 +449,6 @@
                                     <value>${basedir}/beans.xml</value>
                                 </property>
                             </properties>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
-                    <!-- Override the bootable jar packaging from the parent to add res-client tck specific settings -->
-                    <execution>
-                        <id>bootable-jar-packaging</id>
-                        <configuration>
-                            <cli-sessions>
-                                <cli-session>
-                                    <script-files>
-                                        <script>wiremock-bootable.cli</script>
-                                    </script-files>
-                                    <properties-file>${project.build.outputDirectory}/wiremock-bootable-cli.properties</properties-file>
-                                </cli-session>
-                            </cli-sessions>
-                            <feature-packs>
-                                <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
-                                    <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
-                                    but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
-                                    provision it. -->
-                                    <included-packages>
-                                        <package>org.apache.commons.lang3</package>
-                                    </included-packages>
-                                </feature-pack>
-                            </feature-packs>
                         </configuration>
                     </execution>
                 </executions>

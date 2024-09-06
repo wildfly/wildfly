@@ -507,22 +507,40 @@
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
                 <executions>
                     <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-cloud-profile.jar</bootableJarName>
                             <!-- content that is installed in wildfly home -->
                             <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                            <cli-sessions>
+                            <packaging-scripts>
                                 <cli-session>
-                                    <script-files>
+                                    <javaOpts>
+                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                    </javaOpts>
+                                    <scripts>
                                         <script>clustering-ha-bootable-jar.cli</script>
-                                    </script-files>
+                                    </scripts>
                                 </cli-session>
-                            </cli-sessions>
+                            </packaging-scripts>
                             <provisioning-file>target/glow-scan/ts.surefire.clustering.microprofile/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -535,14 +553,28 @@
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-jpa-distributed.jar</output-file-name>
-                            <cli-sessions>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-jpa-distributed.jar</bootableJarName>
+                            <packaging-scripts>
                                 <cli-session>
-                                    <script-files>
+                                    <javaOpts>
+                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                    </javaOpts>
+                                    <scripts>
                                         <script>clustering-ha-bootable-jar.cli</script>
-                                    </script-files>
+                                    </scripts>
                                 </cli-session>
-                            </cli-sessions>
+                            </packaging-scripts>
                             <provisioning-file>target/glow-scan/ts.surefire.clustering.all.jpa2lc/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
@@ -555,14 +587,28 @@
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-cloud-profile-load-balancer.jar</output-file-name>
-                            <cli-sessions>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-cloud-profile-load-balancer.jar</bootableJarName>
+                            <packaging-scripts>
                                 <cli-session>
-                                    <script-files>
+                                    <javaOpts>
+                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                    </javaOpts>
+                                    <scripts>
                                         <script>clustering-load-balancer-bootable-jar.cli</script>
-                                    </script-files>
+                                    </scripts>
                                 </cli-session>
-                            </cli-sessions>
+                            </packaging-scripts>
                             <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
