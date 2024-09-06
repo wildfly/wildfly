@@ -130,6 +130,7 @@
                             </galleon-options>
                             <channels>
                                 <channel>
+                                    <name>wildfly</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
                                         <artifactId>wildfly</artifactId>
