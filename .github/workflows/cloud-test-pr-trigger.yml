@@ -51,13 +51,14 @@ jobs:
           echo $GITHUB_REPOSITORY
           
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
-          
+          PR_NUMBER="${{github.event.number}}"
           
           CLIENT_PAYLOAD=$( jq -n \
                   --arg tr "$GITHUB_REPOSITORY" \
                   --arg githubSha "$GITHUB_SHA" \
                   --arg prHeadSha "$PR_HEAD_SHA" \
-                  '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha}' )
+                  --arg pr "PR_NUMBER" \
+                  '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
           
           echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
 
@@ -79,47 +80,4 @@ jobs:
             echo "$resp"
             exit 1
           fi
-#      - name: Wait for remote job completion
-#        if: ${{ env.TOKEN }}
-#        run: |
-#          echo "Waiting/polling for remote test execution to complete"
-#          echo "Sleeping $RESULT_INITIAL_WAIT_SECONDS seconds before polling"
-#          sleep $RESULT_INITIAL_WAIT_SECONDS
-#          i=0
-#          while [[ "${RESULT}" != '0' ]]
-#          do
-#            echo "debug - fetching"
-#            git fetch origin
-#            echo "debug - resetting"
-#            git reset --hard origin/$STATUS_BRANCH
-#
-#            echo "debug - is $FILENAME there?"
-#            # Check file is there and break if it is
-#            if [ -f "$FILENAME" ]; then
-#              echo "debug - file is there"
-#              break
-#            fi
-#
-#
-#            echo "debug - incrementing counter"
-#            i=$((i+1))
-#            echo "debug - checking max poll attempts"
-#            if [ $i -eq $RESULT_MAX_POLL_ATTEMPTS ]; then
-#              1>&2 echo "Timeout receiving the results"
-#              exit 1
-#            fi
-#            echo "Sleeping $RESULT_POLL_WAIT_SECONDS seconds before polling again"
-#            sleep $RESULT_POLL_WAIT_SECONDS
-#          done
-#          # cat $FILENAME
-#          STATUS="$(jq -r .status $FILENAME)"
-#          MESSAGE="$(jq -r .message $FILENAME)"
-#
-#          # echo "Status: $STATUS"
-#
-#          if [[ "${STATUS}" == "failed" ]]; then
-#            echo -e "\e[31m${MESSAGE}\e[0m"
-#            exit 1
-#          fi
-#
-#          echo -e "\e[32m${MESSAGE}\e[0m"
+
