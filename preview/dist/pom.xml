@@ -120,6 +120,7 @@
                             </galleon-options>
                             <channels>
                                 <channel>
+                                    <name>wildfly-preview</name>
                                     <manifest>
                                         <groupId>org.wildfly.channels</groupId>
                                         <artifactId>wildfly-preview</artifactId>
