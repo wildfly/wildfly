@@ -21,6 +21,7 @@ public class ServiceContributorImpl implements ServiceContributor {
     private static final String TRANSACTION_PLATFORM = "hibernate.transaction.jta.platform";
     private static final String EHCACHE = "ehcache";
     private static final String HIBERNATE_REGION_FACTORY_CLASS = "hibernate.cache.region.factory_class";
+    private static final String DEFAULT_REGION_FACTORY = "org.infinispan.hibernate.cache.v62.InfinispanRegionFactory";
 
     @Override
     public void contribute(StandardServiceRegistryBuilder serviceRegistryBuilder) {
@@ -47,7 +48,7 @@ public class ServiceContributorImpl implements ServiceContributor {
                 JPA_LOGGER.tracef("ServiceContributorImpl#contribute application is using Ehcache via %s=%s",
                         HIBERNATE_REGION_FACTORY_CLASS, cacheRegionFactory);
                 return;
-            } else {
+            } else if (!DEFAULT_REGION_FACTORY.equals(cacheRegionFactory)) {
                 // warn and ignore application cache region setting
                 JPA_LOGGER.ignoredCacheRegionSetting(HIBERNATE_REGION_FACTORY_CLASS, cacheRegionFactory);
             }
