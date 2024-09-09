@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 env:
   # Repository where the cloud tests will be run
-  REPOSITORY: wildfly-extras/wildfly-cloud-tests
+  REPOSITORY: kabir/wildfly-cloud-tests
   # This must be set to a PAT with 'repo' permission for the target repository
   TOKEN: ${{ secrets.CLOUD_TESTS_REMOTE_DISPATCH_TOKEN }}
   # Just an identifier for the event - this one triggers the cloud tests
