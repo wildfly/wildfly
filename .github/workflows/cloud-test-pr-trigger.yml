@@ -57,7 +57,7 @@ jobs:
                   --arg tr "$GITHUB_REPOSITORY" \
                   --arg githubSha "$GITHUB_SHA" \
                   --arg prHeadSha "$PR_HEAD_SHA" \
-                  --arg pr "PR_NUMBER" \
+                  --arg pr "$PR_NUMBER" \
                   '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
           
           echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
