@@ -16,14 +16,13 @@
 
 package org.wildfly.extension.vertx;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
+
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.decorator;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS;
 
 /**
  * Parser used to parse the Vertx Subsystem.
@@ -56,26 +55,6 @@ public class VertxSubsystemParser_1_0 extends PersistentResourceXMLParser {
               .addChild(
                 builder(AddressResolverResourceDefinition.INSTANCE.getPathElement())
                   .addAttributes(AddressResolverResourceDefinition.getVertxAddressResolverOptionsAttrs().toArray(new AttributeDefinition[0]))
-              )
-              .addChild(
-                builder(EventBusResourceDefinition.INSTANCE.getPathElement())
-                  .addAttributes(EventBusResourceDefinition.getVertxEventbusAttrs().toArray(new AttributeDefinition[0]))
-              )
-              .addChild(
-                builder(ClusterNodeMetadataResourceDefinition.INSTANCE.getPathElement())
-                  .addAttributes(ClusterNodeMetadataResourceDefinition.getClusterNodeMetaAttrs().toArray(new AttributeDefinition[0]))
-              )
-              .addChild(
-                builder(KeyStoreOptionsResourceDefinition.INSTANCE.getPathElement())
-                  .addAttributes(KeyStoreOptionsResourceDefinition.getKeyStoreOptionsAttrs().toArray(new AttributeDefinition[0]))
-              )
-              .addChild(
-                builder(PemKeyCertOptionsResourceDefinition.INSTANCE.getPathElement())
-                  .addAttributes(PemKeyCertOptionsResourceDefinition.getPemKeyCertOptionsAttrs().toArray(new AttributeDefinition[0]))
-              )
-              .addChild(
-                builder(PemTrustOptionsResourceDefinition.INSTANCE.getPathElement())
-                  .addAttributes(PemTrustOptionsResourceDefinition.getPemTrustOptionsAttrs().toArray(new AttributeDefinition[0]))
               )
           )
           .build();

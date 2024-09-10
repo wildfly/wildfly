@@ -13,11 +13,9 @@
   -->
 
 <subsystem xmlns="urn:wildfly:vertx:1.0">
-  <vertx clustered="false" />
+  <vertx option-name="vo" />
   <vertx-options>
-    <vertx-option name="vo" eventbus-option="eo" address-resolver-option="aro" />
+    <vertx-option name="vo" address-resolver-option="aro" />
     <address-resolver-option name="aro" max-queries="20"/>
-    <eventbus-option name="eo" key-cert-option="kco"/>
-    <key-store-option name="kco" type="JKS" path="jks.keystore"/>
   </vertx-options>
 </subsystem>

@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2022 RedHat
+ *  Copyright (c) 2024 The original author or authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of Apache License v2.0 which
+ *  accompanies this distribution.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       The Apache License v2.0 is available at
+ *       http://www.opensource.org/licenses/apache2.0.php
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
  */
-
-package org.wildfly.extension.vertx.deployment.processors;
+package org.wildfly.extension.vertx.processors;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -26,10 +26,8 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.extension.vertx.deployment.VertxDeploymentAttachment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -38,7 +36,6 @@ import java.util.List;
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
-
 
     public static final Phase PHASE = Phase.DEPENDENCIES;
 
@@ -50,6 +47,9 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
     public static final int PRIORITY = 0x4000;
 
     private static final String MODULE_VERTX_EXTENSION = "org.wildfly.extension.vertx";
+    private static final String MODULE_VERTX_CORE = "io.vertx.core";
+    private static final String MODULE_VERTX_MUTINY_CORE = "io.smallrye.reactive.mutiny.vertx-core";
+    private static final String MODULE_MUTINY = "io.smallrye.reactive.mutiny";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -59,9 +59,12 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
         }
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        List<ModuleDependency> dependencies = new ArrayList<>();
-        dependencies.add(new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, true, true, false));
-        moduleSpecification.addSystemDependencies(dependencies);
+        moduleSpecification.addSystemDependencies(Set.of(
+                new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, true, true, false),
+                new ModuleDependency(moduleLoader, MODULE_VERTX_CORE, false, true, true, false),
+                new ModuleDependency(moduleLoader, MODULE_VERTX_MUTINY_CORE, false, true, true, false),
+                new ModuleDependency(moduleLoader, MODULE_MUTINY, false, true, true, false)
+        ));
     }
 
     @Override

@@ -16,9 +16,6 @@
 
 package org.wildfly.extension.vertx;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
 import io.vertx.core.Vertx;
 
 /**
@@ -28,62 +25,17 @@ import io.vertx.core.Vertx;
  */
 public class VertxProxy {
 
-    private static VertxProxy INSTANCE;
-
-    /** Flag that indicates if it is a clustered Vertx instance, it will be used to determine how Vertx instance is constructed. **/
-    private final boolean clustered;
-
-    /** The channel name in jgroups subsystem configuration, this is used when creating a clustered Vertx instance **/
-    private final String jgroupChannelName;
-
-    /** The alternative jgroups stack file for the jgroups transport **/
-    private final String jgroupsStackFile;
-
-    /** Flag that if the forked channel should be used when creating a clustered Vertx instance **/
-    private final boolean forkedChannel;
-
     /** The option name from which the Vert.x instance will be created upon **/
     private final String optionName;
+    private final Vertx vertx;
 
-    /** The Vertx reference, this will be set to null when VertxProxyService is stopped. **/
-    private final AtomicReference<Vertx> vertx = new AtomicReference<>();
-
-    public VertxProxy(boolean clustered, String jgroupChannelName, boolean forkedChannel, String jgroupsStackFile, String optionName) {
-        this.clustered = clustered;
-        this.jgroupChannelName = jgroupChannelName;
-        this.forkedChannel = forkedChannel;
-        this.jgroupsStackFile = jgroupsStackFile;
+    public VertxProxy(String optionName, Vertx vertx) {
         this.optionName = optionName;
-    }
-
-    void instrument(Vertx vertx) {
-        this.vertx.set(Objects.requireNonNull(vertx));
-        VertxProxyHolder.instance().instrument(this);
-    }
-
-    void release() {
-        this.vertx.set(null);
-        VertxProxyHolder.instance().release();
+        this.vertx = vertx;
     }
 
     public Vertx getVertx() {
-        return this.vertx.get();
-    }
-
-    public String getJgroupsStackFile() {
-        return jgroupsStackFile;
-    }
-
-    public boolean isClustered() {
-        return clustered;
-    }
-
-    public String getJgroupChannelName() {
-        return jgroupChannelName;
-    }
-
-    public boolean isForkedChannel() {
-        return forkedChannel;
+        return this.vertx;
     }
 
     public String getOptionName() {

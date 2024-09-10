@@ -14,7 +14,7 @@
  *  implied.  See the License for the specific language governing
  *  permissions and limitations under the License.
  */
-package org.wildfly.extension.vertx.deployment.processors;
+package org.wildfly.extension.vertx.processors;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
@@ -24,7 +24,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.weld.WeldCapability;
-import org.wildfly.extension.vertx.deployment.CDIExtension;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
 import static org.jboss.as.weld.Capabilities.*;
@@ -37,6 +36,12 @@ import static org.jboss.as.weld.Capabilities.*;
 public class DeploymentInjectionProcessor implements DeploymentUnitProcessor {
 
     public static final Phase PHASE = Phase.POST_MODULE;
+
+    /**
+     * The relative order of this processor within the {@link #PHASE}.
+     * The current number is large enough for it to happen after all
+     * the standard deployment unit processors that come with JBoss AS.
+     */
     public static final int PRIORITY = 0x4000;
 
     @Override
@@ -52,11 +57,6 @@ public class DeploymentInjectionProcessor implements DeploymentUnitProcessor {
         if (weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
             weldCapability.registerExtensionInstance(new CDIExtension(), deploymentUnit);
         }
-
     }
 
-    @Override
-    public void undeploy(DeploymentUnit context) {
-
-    }
 }

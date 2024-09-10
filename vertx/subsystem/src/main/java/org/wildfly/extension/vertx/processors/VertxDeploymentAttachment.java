@@ -1,19 +1,20 @@
 /*
- * Copyright (C) 2022 RedHat
+ *  Copyright (c) 2024 The original author or authors
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  All rights reserved. This program and the accompanying materials
+ *  are made available under the terms of Apache License v2.0 which
+ *  accompanies this distribution.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       The Apache License v2.0 is available at
+ *       http://www.opensource.org/licenses/apache2.0.php
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied.  See the License for the specific language governing
+ *  permissions and limitations under the License.
  */
-package org.wildfly.extension.vertx.deployment;
+package org.wildfly.extension.vertx.processors;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -25,10 +26,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
 public final class VertxDeploymentAttachment {
-    /**
-     * VertxDeploymentsMeta attachment key.
-     */
-    private static final AttachmentKey<VerticleDeploymentsMetaData> ATTACHMENT_KEY = AttachmentKey.create(VerticleDeploymentsMetaData.class);
 
     /**
      * Marker attachment key, this will be attached to the parent deployment unit if any.
@@ -44,14 +41,13 @@ public final class VertxDeploymentAttachment {
      *
      * @param deployment to be marked
      */
-    public static void attachVertxDeployments(final DeploymentUnit deployment, final VerticleDeploymentsMetaData vertxDeployments) {
-        deployment.putAttachment(ATTACHMENT_KEY, vertxDeployments);
+    public static void attachVertxDeployments(final DeploymentUnit deployment) {
         getRootDeploymentUnit(deployment).putAttachment(MARKER_ATTACHMENT_KEY, true);
     }
 
     /**
      * If the the parent deploymentUnit is marked as a vertx deployment, it is used by
-     * {@link org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor} to add vertx module dependencies.
+     * {@link org.wildfly.extension.vertx.processors.VertxDependenciesProcessor} to add vertx module dependencies.
      *
      * @param deploymentUnit the deployment unit
      * @return true if it is marked as a vertx deployment, false otherwise.
@@ -62,22 +58,12 @@ public final class VertxDeploymentAttachment {
     }
 
     /**
-     * Gets the vertx deployment meta from the deployment unit.
-     *
-     * @param deploymentUnit the deployment unit
-     * @return the vertx deployment meta or null
-     */
-    public static VerticleDeploymentsMetaData getVertxDeploymentsMeta(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getAttachment(ATTACHMENT_KEY);
-    }
-
-    /**
      * Removes the attachment from the deployment unit
      *
      * @param deploymentUnit the deployment unit
      */
     public static void removeVertxDeploymentsMeta(final DeploymentUnit deploymentUnit) {
-        deploymentUnit.removeAttachment(ATTACHMENT_KEY);
+        getRootDeploymentUnit(deploymentUnit).removeAttachment(MARKER_ATTACHMENT_KEY);
     }
 
     /**

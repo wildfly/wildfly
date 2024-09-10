@@ -21,7 +21,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 /**
- * This is the bare bones test example that tests subsystem
+ * This is the bare-bones test example that tests subsystem
  * It does same things that {@link VertxSubsystemParsingTestCase} does but most of internals are already done in AbstractSubsystemBaseTest
  * If you need more control over what happens in tests look at  {@link VertxSubsystemParsingTestCase}
  *

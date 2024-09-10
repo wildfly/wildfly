@@ -16,31 +16,7 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_HA_ENABLED;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_HA_GROUP;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_PREFER_NATIVE_TRANSPORT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_QUORUM_SIZE;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME_UNIT;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_WORKER_POOL_SIZE;
-import static org.wildfly.extension.vertx.VertxConstants.DEFAULT_VERTX_OPTION_NAME;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_EVENTBUS;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
-import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
-
-import java.util.concurrent.TimeUnit;
-
+import io.vertx.core.VertxOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -55,7 +31,24 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
-import io.vertx.core.VertxOptions;
+import java.util.concurrent.TimeUnit;
+
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_PREFER_NATIVE_TRANSPORT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME_UNIT;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_WORKER_POOL_SIZE;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -88,7 +81,7 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
   @Override
   public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
     super.registerAttributes(resourceRegistration);
-    AttrWriteHandler handler = new AttrWriteHandler(VertxOptionsAttributes.getVertxOptionsAttributes());
+    AttrWriteHandler handler = new AttrWriteHandler();
     for (AttributeDefinition attr : VertxOptionsAttributes.getVertxOptionsAttributes()) {
       resourceRegistration.registerReadWriteAttribute(attr, null, handler);
     }
@@ -96,16 +89,9 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
 
   static class VertxOptionAddHandler extends AbstractAddStepHandler {
 
-    VertxOptionAddHandler() {
-        super(new Parameters().addAttribute(VertxOptionsAttributes.getVertxOptionsAttributes()));
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
-      if (DEFAULT_VERTX_OPTION_NAME.equals(name)) {
-        throw VERTX_LOGGER.optionNameIsReserved(name);
-      }
       VertxOptions vertxOptions = parseOptions(operation);
       NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
 
@@ -113,11 +99,7 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       if (operation.hasDefined(ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER)) {
         addressResolverOptionName = VertxOptionsAttributes.ATTR_VERTX_OPTION_ADDRESS_RESOLVER.validateOperation(operation).asString();
       }
-      String eventBusName = null;
-      if (operation.hasDefined(ELEMENT_VERTX_EVENTBUS)) {
-        eventBusName = VertxOptionsAttributes.ATTR_EVENTBUS_OPTION.validateOperation(operation).asString();
-      }
-      NamedVertxOptionsService.installService(context, namedVertxOptions, addressResolverOptionName, eventBusName, null, null);
+      NamedVertxOptionsService.installService(context, namedVertxOptions, addressResolverOptionName);
     }
 
     VertxOptions parseOptions(ModelNode operation) throws OperationFailedException {
@@ -130,15 +112,6 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
       }
       if (operation.hasDefined(ATTR_INTERNAL_BLOCKING_POOL_SIZE)) {
         vertxOptions.setInternalBlockingPoolSize(VertxOptionsAttributes.ATTR_INTERNAL_BLOCKING_POOL_SIZE.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_HA_ENABLED)) {
-        vertxOptions.setHAEnabled(VertxOptionsAttributes.ATTR_HA_ENABLED.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_HA_GROUP)) {
-        vertxOptions.setHAGroup(VertxOptionsAttributes.ATTR_HA_GROUP.validateOperation(operation).asString());
-      }
-      if (operation.hasDefined(ATTR_QUORUM_SIZE)) {
-        vertxOptions.setQuorumSize(VertxOptionsAttributes.ATTR_QUORUM_SIZE.validateOperation(operation).asInt());
       }
       if (operation.hasDefined(ATTR_PREFER_NATIVE_TRANSPORT)) {
         vertxOptions.setPreferNativeTransport(VertxOptionsAttributes.ATTR_PREFER_NATIVE_TRANSPORT.validateOperation(operation).asBoolean());

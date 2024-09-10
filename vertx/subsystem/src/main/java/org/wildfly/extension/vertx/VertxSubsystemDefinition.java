@@ -25,10 +25,9 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.vertx.deployment.processors.DeploymentInjectionProcessor;
-import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentMarkerProcessor;
-import org.wildfly.extension.vertx.deployment.processors.VerticleDeploymentProcessor;
-import org.wildfly.extension.vertx.deployment.processors.VertxDependenciesProcessor;
+import org.wildfly.extension.vertx.processors.DeploymentInjectionProcessor;
+import org.wildfly.extension.vertx.processors.VerticleDeploymentMarkerProcessor;
+import org.wildfly.extension.vertx.processors.VertxDependenciesProcessor;
 
 /**
  * The root Vertx subsystem resource definition.
@@ -52,11 +51,6 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(VertxOptionFileResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(VertxOptionsResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(AddressResolverResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(EventBusResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(ClusterNodeMetadataResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(KeyStoreOptionsResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(PemKeyCertOptionsResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(PemTrustOptionsResourceDefinition.INSTANCE);
     }
 
     static class VertxSubsystemAdd extends AbstractBoottimeAddStepHandler {
@@ -74,9 +68,6 @@ public class VertxSubsystemDefinition extends SimpleResourceDefinition {
                     processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
                       DeploymentInjectionProcessor.PHASE, DeploymentInjectionProcessor.PRIORITY,
                       new DeploymentInjectionProcessor());
-                    processorTarget.addDeploymentProcessor(VertxSubsystemExtension.SUBSYSTEM_NAME,
-                            VerticleDeploymentProcessor.PHASE, VerticleDeploymentProcessor.PRIORITY,
-                            new VerticleDeploymentProcessor());
                 }
             }, OperationContext.Stage.RUNTIME);
         }

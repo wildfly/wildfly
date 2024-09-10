@@ -16,11 +16,8 @@
  */
 package org.wildfly.extension.vertx;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -46,8 +43,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.dns.AddressResolverOptions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -171,7 +170,7 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
   @Override
   public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
     super.registerAttributes(resourceRegistration);
-    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler(getVertxAddressResolverOptionsAttrs()) {
+    AbstractVertxOptionsResourceDefinition.AttrWriteHandler handler = new AbstractVertxOptionsResourceDefinition.AttrWriteHandler() {
       @Override
       protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         return AbstractVertxOptionsResourceDefinition.isAddressResolverUsed(context, context.getCurrentAddressValue());
@@ -196,15 +195,12 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
   }
 
   private static class VertxAddressResolverOptionAddHandler extends AbstractAddStepHandler {
-    VertxAddressResolverOptionAddHandler() {
-      super(new Parameters().addAttribute(VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS));
-    }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
       ServiceName addressResolverServiceName = VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getCapabilityServiceName(name);
-      ServiceBuilder<?> serviceBuilder = context.getServiceTarget().addService(addressResolverServiceName);
+      ServiceBuilder<?> serviceBuilder = context.getCapabilityServiceTarget().addService();
       final Consumer<AddressResolverOptions> consumer = serviceBuilder.provides(addressResolverServiceName);
       AddressResolverOptions addressResolverOptions = parseAddressResolverOptions(operation);
       Service addressResolverService = new Service() {

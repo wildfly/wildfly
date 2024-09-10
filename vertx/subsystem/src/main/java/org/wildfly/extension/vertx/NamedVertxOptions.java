@@ -18,14 +18,10 @@ package org.wildfly.extension.vertx;
 
 import io.vertx.core.VertxOptions;
 
-import static org.wildfly.extension.vertx.VertxConstants.*;
-
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
 public class NamedVertxOptions {
-
-  static final NamedVertxOptions DEFAULT = new NamedVertxOptions(DEFAULT_VERTX_OPTION_NAME, new VertxOptions());
 
   /** The name of the configured VertxOptions **/
   private final String name;

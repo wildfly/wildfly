@@ -16,22 +16,7 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTBUS_CLUSTER_NODE_METADATA;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTBUS_KEY_CERT_OPTION;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTBUS_TRUST_OPTION;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_EVENTBUS;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
-import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
-import static org.wildfly.extension.vertx.VertxResourceDefinition.VERTX_CAPABILITY_NAME;
-
-import java.util.Collection;
-import java.util.Optional;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -40,6 +25,14 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+
+import java.util.Optional;
+
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
+import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
+import static org.wildfly.extension.vertx.VertxResourceDefinition.VERTX_CAPABILITY_NAME;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -69,9 +62,6 @@ public abstract class AbstractVertxOptionsResourceDefinition extends SimpleResou
   }
 
   protected static class AttrWriteHandler extends AbstractWriteAttributeHandler<Void> {
-    protected AttrWriteHandler(final Collection<AttributeDefinition> definitions) {
-      super(definitions);
-    }
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
       return isVertxOptionUsed(context, context.getCurrentAddressValue());
@@ -103,46 +93,6 @@ public abstract class AbstractVertxOptionsResourceDefinition extends SimpleResou
       .map(Resource.ResourceEntry::getName)
       .findAny();
     return vertxOptionName.isPresent() && isVertxOptionUsedInternal(vertxResource, vertxOptionName.get());
-  }
-
-  static boolean isEventBusUsed(OperationContext context, String eventBusName) {
-    Resource vertxResource = readVertxRootResource(context);
-    return isEventBusUsedInternal(vertxResource, eventBusName);
-  }
-
-  private static boolean isEventBusUsedInternal(Resource vertxResource, String eventBusName) {
-    Optional<String> vertxOptionName = vertxResource.getChildren(ELEMENT_VERTX_OPTION).stream()
-      .filter(re -> re.getModel().get(ELEMENT_VERTX_EVENTBUS).asString().equals(eventBusName))
-      .map(Resource.ResourceEntry::getName)
-      .findAny();
-    return vertxOptionName.isPresent() && isVertxOptionUsedInternal(vertxResource, vertxOptionName.get());
-  }
-
-  static boolean isCluseterNodeMetaUsed(OperationContext context, String clusterMeta) {
-    Resource vertxResource = readVertxRootResource(context);
-    Optional<String> eventBusOptionName = vertxResource.getChildren(ELEMENT_VERTX_EVENTBUS).stream()
-      .filter(re -> re.getModel().get(ATTR_EVENTBUS_CLUSTER_NODE_METADATA).asString().equals(clusterMeta))
-      .map(Resource.ResourceEntry::getName)
-      .findAny();
-    return eventBusOptionName.isPresent() && isEventBusUsedInternal(vertxResource, eventBusOptionName.get());
-  }
-
-  static boolean isKeyCertOptionUsed(OperationContext context, String keyCertOptionName) {
-    Resource vertxResource = readVertxRootResource(context);
-    Optional<String> eventBusOptionName = vertxResource.getChildren(ELEMENT_VERTX_EVENTBUS).stream()
-      .filter(re -> re.getModel().get(ATTR_EVENTBUS_KEY_CERT_OPTION).asString().equals(keyCertOptionName))
-      .map(Resource.ResourceEntry::getName)
-      .findAny();
-    return eventBusOptionName.isPresent() && isEventBusUsedInternal(vertxResource, eventBusOptionName.get());
-  }
-
-  static boolean isTrustOptionUsed(OperationContext context, String trustOptionName) {
-    Resource vertxResource = readVertxRootResource(context);
-    Optional<String> eventBusOptionName = vertxResource.getChildren(ELEMENT_VERTX_EVENTBUS).stream()
-      .filter(re -> re.getModel().get(ATTR_EVENTBUS_TRUST_OPTION).asString().equals(trustOptionName))
-      .map(Resource.ResourceEntry::getName)
-      .findAny();
-    return eventBusOptionName.isPresent() && isEventBusUsedInternal(vertxResource, eventBusOptionName.get());
   }
 
 }

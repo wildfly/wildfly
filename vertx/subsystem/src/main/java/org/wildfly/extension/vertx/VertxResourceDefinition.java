@@ -15,14 +15,6 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_JGROUPS_STACK_FILE;
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
-import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
-import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
-
-import java.util.Collection;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +26,12 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+
+import java.util.Collection;
+
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_OPTION_NAME;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX;
+import static org.wildfly.extension.vertx.VertxConstants.VERTX_SERVICE;
 
 /**
  * This represents a Vert.x instance, and there is only one Vert.x instance can be defined in this subsystem.
@@ -62,22 +60,13 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
     }
 
     static class VertxResourceAdd extends AbstractAddStepHandler {
-        VertxResourceAdd() {
-            super(new Parameters().addAttribute(VertxAttributes.getSimpleAttributes()));
-        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            final boolean clustered = VertxAttributes.CLUSTERED.resolveModelAttribute(context, operation).asBoolean();
-            String jgroupChannel = operation.hasDefined(VertxConstants.ATTR_JGROUPS_CHANNEL) ? VertxAttributes.JGROUPS_CHANNEL.resolveModelAttribute(context, operation).asString() : null;
-            final boolean forkedChannel = VertxAttributes.FORKED_CHANNEL.resolveModelAttribute(context, operation).asBoolean();
-            final String jgroupsStackFile = operation.hasDefined(ATTR_JGROUPS_STACK_FILE) ? VertxAttributes.JGROUPS_STACK_FILE.resolveModelAttribute(context, operation).asString() : null;
-            if (clustered && jgroupChannel != null && jgroupsStackFile != null) {
-                throw VERTX_LOGGER.onlyOneJgroupsConfigNeeded();
-            }
             String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
-            final VertxProxy vertxProxy = new VertxProxy(clustered, jgroupChannel, forkedChannel, jgroupsStackFile, optionName);
-            VertxProxyService.installService(context, vertxProxy);
+            if (optionName != null) {
+                VertxProxyService.installService(context, optionName);
+            }
         }
 
     }

@@ -16,17 +16,15 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.AddressResolverResourceDefinition.VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.dmr.ModelType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -63,22 +61,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     .build();
 
   public static final SimpleAttributeDefinition ATTR_INTERNAL_BLOCKING_POOL_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE, ModelType.INT)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .setValidator(new IntRangeValidator(1,  true))
-    .build();
-
-  public static final SimpleAttributeDefinition ATTR_HA_ENABLED = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HA_ENABLED, ModelType.BOOLEAN)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .build();
-
-  public static final SimpleAttributeDefinition ATTR_HA_GROUP = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HA_GROUP, ModelType.STRING)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .build();
-
-  public static final SimpleAttributeDefinition ATTR_QUORUM_SIZE = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_QUORUM_SIZE, ModelType.INT)
     .setRequired(false)
     .setAllowExpression(true)
     .setValidator(new IntRangeValidator(1,  true))
@@ -151,14 +133,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
   public static final SimpleAttributeDefinition ATTR_VERTX_OPTION_ADDRESS_RESOLVER = new SimpleAttributeDefinitionBuilder(VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER, ModelType.STRING)
     .setRequired(false)
     .setAllowExpression(true)
-    .setCapabilityReference(VERTX_OPTIONS_ADDRESS_RESOLVER_CAPABILITY.getName())
-    .build();
-
-  // eventbus-option
-  public static final SimpleAttributeDefinition ATTR_EVENTBUS_OPTION = new SimpleAttributeDefinitionBuilder(VertxConstants.ELEMENT_VERTX_EVENTBUS, ModelType.STRING)
-    .setRequired(false)
-    .setAllowExpression(true)
-    .setCapabilityReference(EventBusResourceDefinition.VERTX_EVENT_BUS_OPTIONS_CAPABILITY.getName())
     .build();
 
   private static final List<AttributeDefinition> VERTX_OPTIONS_ATTRS = new ArrayList<>();
@@ -166,9 +140,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
     VERTX_OPTIONS_ATTRS.add(ATTR_EVENTLOOP_POOL_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_WORKER_POOL_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_INTERNAL_BLOCKING_POOL_SIZE);
-    VERTX_OPTIONS_ATTRS.add(ATTR_HA_ENABLED);
-    VERTX_OPTIONS_ATTRS.add(ATTR_HA_GROUP);
-    VERTX_OPTIONS_ATTRS.add(ATTR_QUORUM_SIZE);
     VERTX_OPTIONS_ATTRS.add(ATTR_PREFER_NATIVE_TRANSPORT);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL);
     VERTX_OPTIONS_ATTRS.add(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT);
@@ -185,10 +156,6 @@ public abstract class VertxOptionsAttributes implements VertxConstants {
 
     // address-resolver-option
     VERTX_OPTIONS_ATTRS.add(ATTR_VERTX_OPTION_ADDRESS_RESOLVER);
-
-    // evnetbus-option
-    VERTX_OPTIONS_ATTRS.add(ATTR_EVENTBUS_OPTION);
-
   }
 
   /**

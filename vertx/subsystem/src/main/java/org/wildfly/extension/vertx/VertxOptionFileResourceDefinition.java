@@ -16,21 +16,8 @@
  */
 package org.wildfly.extension.vertx;
 
-import static org.wildfly.extension.vertx.VertxConstants.ATTR_PATH;
-import static org.wildfly.extension.vertx.VertxConstants.DEFAULT_VERTX_OPTION_NAME;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS_FILE;
-import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
+import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -39,7 +26,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.dmr.ModelNode;
@@ -47,8 +33,17 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_PATH;
+import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTIONS_FILE;
+import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -69,7 +64,7 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
   @Override
   public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
     super.registerAttributes(resourceRegistration);
-    AttrWriteHandler handler = new AttrWriteHandler(VertxOptionsAttributes.getVertxOptionsFileAttributes());
+    AttrWriteHandler handler = new AttrWriteHandler();
     for (AttributeDefinition attr : VertxOptionsAttributes.getVertxOptionsFileAttributes()) {
       resourceRegistration.registerReadWriteAttribute(attr, null, handler);
     }
@@ -77,23 +72,15 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
 
   static class VertxOptionFileAddHandler extends AbstractAddStepHandler {
 
-    VertxOptionFileAddHandler() {
-        super(new Parameters().addAttribute(VertxOptionsAttributes.getVertxOptionsFileAttributes()));
-    }
-
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
       final String name = context.getCurrentAddressValue();
-      if (DEFAULT_VERTX_OPTION_NAME.equals(name)) {
-        throw VERTX_LOGGER.optionNameIsReserved(name);
-      }
-
       final String optionFilePath = operation.hasDefined(ATTR_PATH) ? VertxOptionsAttributes.VERTX_OPTION_FILE_PATH.resolveModelAttribute(context, operation).asString() : null;
-      if (optionFilePath == null || optionFilePath.trim().equals("")) {
+      if (optionFilePath == null || optionFilePath.trim().isEmpty()) {
         throw VERTX_LOGGER.noOptionsFileSpecified(name);
       }
       ServiceName vertxServiceName = VertxOptionFileResourceDefinition.VERTX_OPTIONS_CAPABILITY.getCapabilityServiceName(name);
-      ServiceBuilder<?> vertxServiceBuilder = context.getServiceTarget().addService(vertxServiceName);
+      ServiceBuilder<?> vertxServiceBuilder = context.getCapabilityServiceTarget().addService();
       Consumer<NamedVertxOptions> consumer = vertxServiceBuilder.provides(vertxServiceName);
       Supplier<ServerEnvironment> serverEnvSupplier = vertxServiceBuilder.requires(ServerEnvironmentService.SERVICE_NAME);
       VertxOptions vertxOptions = new VertxOptions(readJsonFromFile(optionFilePath, serverEnvSupplier.get().getServerConfigurationDir()));
@@ -108,24 +95,23 @@ class VertxOptionFileResourceDefinition extends AbstractVertxOptionsResourceDefi
 
   static JsonObject readJsonFromFile(String vertxOptionsFile, File configDir) throws OperationFailedException {
     Path path = Paths.get(vertxOptionsFile);
-    if (!path.isAbsolute()) {
-      path = Paths.get(configDir.getPath(), vertxOptionsFile);
+    if (path.isAbsolute()) {
+      throw VERTX_LOGGER.absoluteDirectoryNotAllowed(vertxOptionsFile);
     }
+    path = configDir.toPath().resolve(vertxOptionsFile);
     if (Files.exists(path) && Files.isReadable(path)) {
       String jsonContent;
-      try (InputStream inputStream = Files.newInputStream(path);
-           ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-        StreamUtils.copyStream(inputStream, outputStream);
-        jsonContent = outputStream.toString();
+      try {
+        jsonContent = Files.readString(path);
       } catch (IOException e) {
-        throw VERTX_LOGGER.failedToReadVertxOptions(vertxOptionsFile, e);
+        throw VERTX_LOGGER.failedToReadVertxOptions(path.toString(), e);
       }
       if (jsonContent != null) {
         return new JsonObject(jsonContent);
       }
       return new JsonObject();
     } else {
-      throw VERTX_LOGGER.cannotReadVertxOptionsFile(vertxOptionsFile);
+      throw VERTX_LOGGER.cannotReadVertxOptionsFile(path.toString());
     }
   }
 
