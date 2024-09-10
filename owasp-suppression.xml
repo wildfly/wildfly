@@ -371,4 +371,13 @@
         <vulnerabilityName>CVE-2024-5971</vulnerabilityName>
         <cve>CVE-2024-7885</cve>
     </suppress>
+
+    <!--    Keycloak is used only in integration tests          -->
+    <suppress>
+        <notes><![CDATA[
+        file name: keycloak-saml-wildfly-elytron-adapter-18.0.2.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.keycloak/keycloak-saml-wildfly-elytron-adapter@.*$</packageUrl>
+        <vulnerabilityName>CVE-2024-7341</vulnerabilityName>
+    </suppress>
 </suppressions>
