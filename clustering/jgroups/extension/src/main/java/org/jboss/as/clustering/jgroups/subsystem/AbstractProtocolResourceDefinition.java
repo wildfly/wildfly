@@ -21,7 +21,7 @@ import org.jboss.as.clustering.controller.PropertiesAttributeDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
@@ -68,7 +68,7 @@ public abstract class AbstractProtocolResourceDefinition<P extends Protocol, C e
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode("org.jgroups"))
-                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        .setValidator(ModuleIdentifierValidator.INSTANCE)
                         ;
             }
         },

@@ -22,7 +22,7 @@ import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
@@ -137,7 +137,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
         MODULES("modules") {
             @Override
             public StringListAttributeDefinition.Builder apply(StringListAttributeDefinition.Builder builder) {
-                return builder.setElementValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build());
+                return builder.setElementValidator(ModuleIdentifierValidator.INSTANCE);
             }
         },
         ;
