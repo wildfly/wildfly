@@ -14,9 +14,9 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
-import org.jboss.as.clustering.controller.validation.DoubleRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
+import org.jboss.as.clustering.controller.validation.DoubleRangeValidator;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,7 +48,7 @@ public class DistributedCacheResourceDefinition extends SegmentedCacheResourceDe
         CAPACITY_FACTOR("capacity-factor", ModelType.DOUBLE, new ModelNode(1.0f)) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setValidator(new DoubleRangeValidatorBuilder().lowerBound(0).upperBound(Float.MAX_VALUE).configure(builder).build());
+                return builder.setValidator(DoubleRangeValidator.NON_NEGATIVE_FLOAT);
             }
         },
         L1_LIFESPAN("l1-lifespan", ModelType.LONG, ModelNode.ZERO_LONG) {
