@@ -16,12 +16,10 @@ import org.infinispan.configuration.global.ThreadPoolConfigurationBuilder;
 import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.ResourceDefinitionProvider;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleAttribute;
-import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.LongRangeValidatorBuilder;
-import org.jboss.as.clustering.controller.validation.ParameterValidatorBuilder;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -32,6 +30,9 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -68,20 +69,20 @@ public enum ScheduledThreadPoolResourceDefinition implements ResourceDefinitionP
 
     ScheduledThreadPoolResourceDefinition(String name, int defaultMinThreads, long defaultKeepaliveTime) {
         this.path = pathElement(name);
-        this.minThreads = new SimpleAttribute(createBuilder("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), new IntRangeValidatorBuilder().min(0), null).build());
-        this.keepAliveTime = new SimpleAttribute(createBuilder("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), new LongRangeValidatorBuilder().min(0), null).build());
+        this.minThreads = new SimpleAttribute(createAttribute("min-threads", ModelType.INT, new ModelNode(defaultMinThreads), IntRangeValidator.NON_NEGATIVE));
+        this.keepAliveTime = new SimpleAttribute(createAttribute("keepalive-time", ModelType.LONG, new ModelNode(defaultKeepaliveTime), LongRangeValidator.NON_NEGATIVE));
         this.capability = RuntimeCapability.Builder.of(this).setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT).build();
     }
 
-    private static SimpleAttributeDefinitionBuilder createBuilder(String name, ModelType type, ModelNode defaultValue, ParameterValidatorBuilder validatorBuilder, InfinispanSubsystemModel deprecation) {
-        SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, type)
+    private static AttributeDefinition createAttribute(String name, ModelType type, ModelNode defaultValue, ParameterValidator validator) {
+        return new SimpleAttributeDefinitionBuilder(name, type)
                 .setAllowExpression(true)
                 .setRequired(false)
                 .setDefaultValue(defaultValue)
-                .setFlags((deprecation != null) ? AttributeAccess.Flag.RESTART_RESOURCE_SERVICES : AttributeAccess.Flag.RESTART_NONE)
+                .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                 .setMeasurementUnit((type == ModelType.LONG) ? MeasurementUnit.MILLISECONDS : null)
-                ;
-        return builder.setValidator(validatorBuilder.configure(builder).build());
+                .setValidator(validator)
+                .build();
     }
 
     @Override
