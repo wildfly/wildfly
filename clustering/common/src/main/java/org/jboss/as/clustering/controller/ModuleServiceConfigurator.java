@@ -18,7 +18,9 @@ import org.wildfly.subsystem.resource.ResourceModelResolver;
 /**
  * Configures a service providing a {@link Module}.
  * @author Paul Ferraro
+ * @deprecated Use {@link ModuleAttributeDefinition#resolve(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode)} instead.
  */
+@Deprecated(forRemoval = true)
 public class ModuleServiceConfigurator extends AbstractModulesServiceConfigurator<Module> {
 
     public ModuleServiceConfigurator(RuntimeCapability<Void> capability, AttributeDefinition attribute) {
