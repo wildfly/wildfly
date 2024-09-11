@@ -16,7 +16,6 @@ import org.jboss.as.clustering.controller.ModuleServiceConfigurator;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidatorBuilder;
 import org.jboss.as.clustering.naming.BinderServiceInstaller;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -28,6 +27,7 @@ import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.ModuleNameValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -85,7 +85,7 @@ public class ChannelResourceDefinition extends ChildResourceDefinition<Managemen
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setDefaultValue(new ModelNode("org.wildfly.clustering.server"))
-                        .setValidator(new ModuleIdentifierValidatorBuilder().configure(builder).build())
+                        .setValidator(ModuleNameValidator.INSTANCE)
                         ;
             }
         },
