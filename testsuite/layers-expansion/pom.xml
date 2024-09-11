@@ -86,6 +86,7 @@
 
         <!-- This module tests expanded funtionality, so use a bom that includes expansion dependencies -->
 		<dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
     </properties>
 
     <profiles>

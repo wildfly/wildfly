@@ -5,6 +5,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import org.jboss.jca.common.CommonBundle;
@@ -34,7 +35,7 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
     /**
      * The bundle
      */
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
 
 
     /**

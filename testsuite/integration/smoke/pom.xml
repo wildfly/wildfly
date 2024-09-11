@@ -494,6 +494,14 @@
                 <version>${version.org.wildfly.plugin}</version>
                 <configuration>
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
                 </configuration>
                 <executions>
                     <execution>
@@ -504,14 +512,6 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -535,6 +535,19 @@
                                     </included-configs>
                                 </feature-pack>
                             </feature-packs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bootable-jar-provisioning</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <configuration>
+                            <skipDeployment>true</skipDeployment>
+                            <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
+                            <bootableJar>true</bootableJar>
+                            <bootableJarName>test-wildfly-cloud-profile.jar</bootableJarName>
                         </configuration>
                     </execution>
                 </executions>
@@ -578,20 +591,6 @@
                         <configuration>
                             <expected-discovery>[sar]==>ee-core-profile-server,sar</expected-discovery>
                             <surefire-execution-for-included-classes>legacy-sar-layers.surefire</surefire-execution-for-included-classes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
-                    <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
-                    <execution>
-                        <id>bootable-jar-packaging</id>
-                        <configuration>
-                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
-                            <provisioning-file>target/glow-scan/microprofile.surefire/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
                 </executions>
@@ -857,7 +856,7 @@
                 </dependency>
             </dependencies>
             <properties>
-                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase.observability>test-compile</glow.phase.observability>
             </properties>
             <build>
@@ -944,7 +943,7 @@
                 </dependency>
             </dependencies>
             <properties>
-                <ts.bootable-jar-packaging.phase>test-compile</ts.bootable-jar-packaging.phase>
+                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
                 <glow.phase.observability>test-compile</glow.phase.observability>
             </properties>
             <build>

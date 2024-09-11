@@ -180,7 +180,7 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/wildfly-ee-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-core-feature-pack-galleon-pruned|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -237,12 +237,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- WFLY-19671. DO NOT include 'galleon content only' dependencies
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -321,8 +322,6 @@
                                                 <!-- Ignore the shared resource poms as those we want their
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
-                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-pruned</exclude>
-                                                <exclude>org.wildfly.core:wildfly-core-feature-pack-galleon-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-local</exclude>
                                             </excludes>

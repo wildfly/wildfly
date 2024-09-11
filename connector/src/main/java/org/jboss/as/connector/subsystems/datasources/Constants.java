@@ -24,8 +24,10 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.security.CredentialReference;
@@ -39,6 +41,7 @@ import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.DsPool;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.TransactionIsolation;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.XaDataSource;
 
@@ -431,7 +434,8 @@ public class Constants {
     static SimpleAttributeDefinition TRACK_STATEMENTS = new SimpleAttributeDefinitionBuilder(TRACKSTATEMENTS_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setXmlName(Statement.Tag.TRACK_STATEMENTS.getLocalName())
-            .setDefaultValue(new ModelNode(Defaults.TRACK_STATEMENTS.name()))
+            .setDefaultValue(new ModelNode(Defaults.TRACK_STATEMENTS.toString()))
+            .setValidator(EnumValidator.create(Statement.TrackStatementsEnum.class))
             .setRestartAllServices()
             .build();
 
@@ -444,6 +448,7 @@ public class Constants {
 
     static SimpleAttributeDefinition ALLOCATION_RETRY_WAIT_MILLIS = new SimpleAttributeDefinitionBuilder(ALLOCATION_RETRY_WAIT_MILLIS_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.ALLOCATION_RETRY_WAIT_MILLIS.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -472,6 +477,7 @@ public class Constants {
 
     static SimpleAttributeDefinition QUERY_TIMEOUT = new SimpleAttributeDefinitionBuilder(QUERYTIMEOUT_NAME, ModelType.LONG, true)
             .setXmlName(TimeOut.Tag.QUERY_TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
@@ -492,6 +498,9 @@ public class Constants {
     static SimpleAttributeDefinition TRANSACTION_ISOLATION = new SimpleAttributeDefinitionBuilder(TRANSACTION_ISOLATION_NAME, ModelType.STRING, true)
             .setXmlName(DataSource.Tag.TRANSACTION_ISOLATION.getLocalName())
             .setAllowExpression(true)
+            .setAllowedValues(TransactionIsolation.TRANSACTION_NONE.name(), TransactionIsolation.TRANSACTION_READ_COMMITTED.name(),
+                    TransactionIsolation.TRANSACTION_READ_UNCOMMITTED.name(), TransactionIsolation.TRANSACTION_REPEATABLE_READ.name(),
+                    TransactionIsolation.TRANSACTION_SERIALIZABLE.name())
             .setRestartAllServices()
             .build();
 
@@ -623,6 +632,7 @@ public class Constants {
 
     static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinitionBuilder(XA_RESOURCE_TIMEOUT_NAME, ModelType.INT, true)
             .setXmlName(TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();

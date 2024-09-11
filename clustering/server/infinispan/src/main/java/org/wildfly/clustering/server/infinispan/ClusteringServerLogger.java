@@ -6,6 +6,7 @@ package org.wildfly.clustering.server.infinispan;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,7 @@ public interface ClusteringServerLogger extends BasicLogger {
     /**
      * The root logger.
      */
-    ClusteringServerLogger ROOT_LOGGER = Logger.getMessageLogger(ClusteringServerLogger.class, ROOT_LOGGER_CATEGORY);
+    ClusteringServerLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ClusteringServerLogger.class, ROOT_LOGGER_CATEGORY);
 
     /* Command dispatcher messages */
 

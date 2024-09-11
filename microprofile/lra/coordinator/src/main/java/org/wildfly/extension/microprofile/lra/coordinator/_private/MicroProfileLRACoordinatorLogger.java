@@ -18,13 +18,15 @@ import org.jboss.msc.service.StartException;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * Log messages for WildFly microprofile-lra-coordinator Extension.
  */
 @MessageLogger(projectCode = "WFLYTXLRACOORD", length = 4)
 public interface MicroProfileLRACoordinatorLogger extends BasicLogger {
 
-    MicroProfileLRACoordinatorLogger LOGGER = Logger.getMessageLogger(MicroProfileLRACoordinatorLogger.class, "org.wildfly.extension.microprofile.lra.coordinator");
+    MicroProfileLRACoordinatorLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(),MicroProfileLRACoordinatorLogger.class, "org.wildfly.extension.microprofile.lra.coordinator");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

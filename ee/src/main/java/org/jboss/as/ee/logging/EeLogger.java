@@ -11,6 +11,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -53,7 +54,7 @@ public interface EeLogger extends BasicLogger {
     /**
      * A logger with a category of the package name.
      */
-    EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
+    EeLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), EeLogger.class, "org.jboss.as.ee");
 
 //    /**
 //     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,

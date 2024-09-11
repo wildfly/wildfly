@@ -32,6 +32,7 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
         <!-- Use the legacy WF javax.* dependencies. -->
         <dependency.management.import.artifact>wildfly-legacy-ee-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
     </properties>
 
     <dependencyManagement>

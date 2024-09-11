@@ -8,6 +8,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Set;
 
 import org.jboss.logging.BasicLogger;
@@ -24,7 +25,7 @@ import org.jboss.logging.annotations.MessageLogger;
  */
 @MessageLogger(projectCode = "WFLYMPOAI", length = 4)
 public interface MicroProfileOpenAPILogger extends BasicLogger {
-    MicroProfileOpenAPILogger LOGGER = Logger.getMessageLogger(MicroProfileOpenAPILogger.class, "org.wildfly.extension.microprofile.openapi.smallrye");
+    MicroProfileOpenAPILogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileOpenAPILogger.class, "org.wildfly.extension.microprofile.openapi.smallrye");
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating MicroProfile OpenAPI Subsystem")

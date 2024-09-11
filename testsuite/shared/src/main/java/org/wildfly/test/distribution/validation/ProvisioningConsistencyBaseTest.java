@@ -25,6 +25,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.logging.Logger;
+import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -64,6 +66,17 @@ public abstract class ProvisioningConsistencyBaseTest {
 
     protected ProvisioningConsistencyBaseTest(String targetDist) {
         DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+    }
+
+    /**
+     * This test case is not relevant when the test suite/module is executed against a distribution
+     * externally given through the jboss.dist Maven property.
+     */
+    @BeforeClass
+    public static void assumeJbossDistIsNotExternallySet() throws IOException {
+        Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
+        Path defaultJbossDist = SOURCE_HOME.resolve("build").resolve("target").resolve(getDistDir());
+        Assume.assumeTrue(jbossDist.equals(defaultJbossDist));
     }
 
     /**

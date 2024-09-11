@@ -607,6 +607,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-weld-common</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-cli</artifactId>
             <scope>test</scope>
@@ -783,6 +788,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-subsystem</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
         </dependency>
@@ -814,6 +824,11 @@
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -919,6 +934,32 @@
                                 <include>**/META-INF/services/jakarta.enterprise.inject.spi.Extension</include>
                             </includes>
                             <finalName>weldTest</finalName>
+                            <classifier>bootableJar</classifier>
+                        </configuration>
+                    </execution><execution>
+                        <id>create-module-cdidBcExtensionModule</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>${bootable-jar-maven-jar-plugin.create.modules.phase}</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/extraContent/modules/test/build-compatible-extension/main</outputDirectory>
+                            <classesDirectory>${project.build.testOutputDirectory}</classesDirectory>
+                            <includes>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCEDeploymentUnitProcessor.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemModel.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar$1.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemRegistrar$1$1.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/BCEExtension$BCESubsystemSchema.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/RegisteredExtension.class</include>
+                                <include>**/org/jboss/as/test/integration/weld/extensions/buildcompatible/subsystem/RegisteredBean.class</include>
+                                <include>**/META-INF/services/jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension</include>
+                                <include>**/META-INF/services/org.jboss.as.controller.Extension</include>
+                                <include>**/META-INF/beans.xml</include>
+                            </includes>
+                            <finalName>bce-extension</finalName>
                             <classifier>bootableJar</classifier>
                         </configuration>
                     </execution>
@@ -1432,13 +1473,31 @@
             </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
+                <configuration>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
+                    <bootableJar>true</bootableJar>
+                    <skipDeployment>true</skipDeployment>
+                </configuration>
                 <executions>
                     <!-- Package a cloud-profile server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-cloud-profile.jar</output-file-name>
+                            <bootableJarName>test-wildfly-cloud-profile.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
@@ -1454,7 +1513,7 @@
                         </goals>
                         <phase>${ts.bootable-jar-packaging.phase}</phase>
                         <configuration>
-                            <output-file-name>test-wildfly-jpa.jar</output-file-name>
+                            <bootableJarName>test-wildfly-jpa.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extraServerContent>${project.build.directory}/extraContent/</extraServerContent>
                             </extra-server-content-dirs>
@@ -2798,7 +2857,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Tests against the install with ejb-lite -->
+                            <!-- Tests against the install with ee-concurrency -->
                             <execution>
                                 <id>ee-concurrency-layers.surefire</id>
                                 <phase>test</phase>

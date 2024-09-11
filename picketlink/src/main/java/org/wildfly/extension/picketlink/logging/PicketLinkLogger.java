@@ -7,6 +7,8 @@ package org.wildfly.extension.picketlink.logging;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -21,7 +23,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYPL", length = 4)
 public interface PicketLinkLogger extends BasicLogger {
 
-    PicketLinkLogger ROOT_LOGGER = Logger.getMessageLogger(PicketLinkLogger.class, "org.wildfly.extension.picketlink");
+    PicketLinkLogger ROOT_LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), PicketLinkLogger.class, "org.wildfly.extension.picketlink");
 
     // General Messages 1-49
     @LogMessage(level = INFO)

@@ -7,6 +7,8 @@ package org.wildfly.extension.microprofile.reactive.messaging._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import java.lang.invoke.MethodHandles;
+
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.BasicLogger;
@@ -23,7 +25,7 @@ import org.jboss.logging.annotations.MessageLogger;
 @MessageLogger(projectCode = "WFLYRXMESS", length = 4)
 public interface MicroProfileReactiveMessagingLogger extends BasicLogger {
 
-    MicroProfileReactiveMessagingLogger LOGGER = Logger.getMessageLogger(MicroProfileReactiveMessagingLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
+    MicroProfileReactiveMessagingLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), MicroProfileReactiveMessagingLogger.class, "org.wildfly.extension.microprofile.reactive.messaging");
 
     /**
      * Logs an informational message indicating the subsystem is being activated.

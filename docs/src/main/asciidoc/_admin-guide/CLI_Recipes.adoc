@@ -190,15 +190,30 @@ Assume you have a host that is called "primary"
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] /host=primary:read-config-as-xml
+[domain@localhost:9990 /] attachment display --operation=/host=primary:read-config-as-xml-file
+----
+
+If you want to get the configuration of the server "main-one" hosted on "primary":
+
+[source,options="nowrap"]
+----
+[domain@localhost:9990 /] attachment display --operation=/host=primary/server=main-one:read-config-as-xml-file
 ----
 
 Just for the domain or standalone
 
 [source,options="nowrap"]
 ----
-[domain@localhost:9990 /] :read-config-as-xml
+[domain@localhost:9990 /] attachment display --operation=:read-config-as-xml-file
 ----
+
+If you want to save the file you can use:
+----
+[standalone@localhost:9990 /] attachment save --operation=:read-config-as-xml-file --file=/home/wildfly/tmp/standalone-runtime.xml
+----
+
+Please note that the operation "read-config-as-xml" that used to return the XML as a String has been deprecated.
+
 
 [[take-a-snapshot-of-what-the-current-domain-is]]
 === Take a snapshot of what the current domain is
@@ -214,6 +229,7 @@ Just for the domain or standalone
     }
 }
 ----
+
 
 [[take-the-latest-snapshot-of-the-host.xml-for-a-particular-host]]
 === Take the latest snapshot of the host.xml for a particular host

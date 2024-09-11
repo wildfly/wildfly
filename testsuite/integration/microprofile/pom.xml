@@ -36,13 +36,14 @@
 
         <!-- Use the expansion bom -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -445,41 +446,50 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>${version.org.wildfly.plugin}</version>
-                <configuration>
-                    <offline>true</offline>
-                    <scripts>
-                        <script>${wildfly.dir}/docs/examples/enable-microprofile.cli</script>
-                    </scripts>
-                    <jboss-home>${wildfly.dir}</jboss-home>
-                    <stdout>none</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
-                        <module.path>${jboss.dist}/modules</module.path>
-                    </system-properties>
-                </configuration>
                 <executions>
                     <execution>
+                        <configuration>
+                            <offline>true</offline>
+                            <scripts>
+                                <script>${wildfly.dir}/docs/examples/enable-microprofile.cli</script>
+                            </scripts>
+                            <jboss-home>${wildfly.dir}</jboss-home>
+                            <stdout>none</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                <module.path>${jboss.dist}/modules</module.path>
+                            </system-properties>
+                        </configuration>
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>execute-commands</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
                     <!-- Provision a cloud server including all the MicroProfile specs layers -->
                     <execution>
                         <id>bootable-jar-packaging</id>
                         <configuration>
+                            <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
                             <!-- content that is installed in wildfly home -->
                             <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                            <output-file-name>test-wildfly.jar</output-file-name>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly.jar</bootableJarName>
                             <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -654,6 +664,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <ts.glow.phase>test-compile</ts.glow.phase>
                 <ts.config-as.copy-mgmt-users.phase>test</ts.config-as.copy-mgmt-users.phase>
@@ -934,6 +945,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <build>
                 <plugins>

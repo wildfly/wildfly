@@ -47,6 +47,7 @@
         <ts.microprofile-tck-tests-dependency>FIXME-must-override</ts.microprofile-tck-tests-dependency>
         <!-- Use the complete WF dependencyManagement set, not just the default EE set -->
         <dependency.management.import.artifact>wildfly-standard-expansion-bom</dependency.management.import.artifact>
+        <dependency.management.import.test.artifact>wildfly-standard-test-expansion-bom</dependency.management.import.test.artifact>
 
         <!-- Properties used in certification script -->
         <version.config>${version.org.eclipse.microprofile.config.api}</version.config>
@@ -62,7 +63,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-standard-test-expansion-bom</artifactId>
+                <artifactId>${dependency.management.import.test.artifact}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -145,6 +146,15 @@
                 <version>${version.org.wildfly.plugin}</version>
                 <configuration>
                     <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <record-provisioning-state>false</record-provisioning-state>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <galleon-options>
+                        <jboss-maven-dist/>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                    </galleon-options>
+                    <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                 </configuration>
                 <executions>
                     <!-- Provision a server slimmed to only what we want for a particular TCK. -->
@@ -158,29 +168,21 @@
                         <phase>${ts.microprofile-tck-provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
-                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                            <offline-provisioning>${galleon.offline}</offline-provisioning>
-                            <galleon-options>
-                                <jboss-maven-dist/>
-                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                <optional-packages>passive+</optional-packages>
-                            </galleon-options>
-                            <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>bootable-jar-packaging</id>
                         <configuration>
-                            <output-file-name>test-wildfly-microprofile-tck.jar</output-file-name>
-                            <provisioning-file>target/glow-scan/default-test/provisioning.xml</provisioning-file>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-microprofile-tck.jar</bootableJarName>
                         </configuration>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <!-- Use a property to drive whether this execution is enabled.
+                             Default is 'none', i.e. disabled. -->
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -266,6 +268,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <build>
                 <plugins>
@@ -324,16 +327,6 @@
                             <!-- Provision a server slimmed to only what we want for a particular TCK. -->
                             <execution>
                                 <id>microprofile-tck-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-microprofile-tck-packaging</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -405,6 +398,7 @@
                      This is set in this profile in a parent module, but the explicit global override
                      in this module takes precedence. -->
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
+                <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>
             <build>
                 <plugins>

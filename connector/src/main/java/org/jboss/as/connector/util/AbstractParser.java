@@ -10,6 +10,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
+import java.lang.invoke.MethodHandles;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -32,7 +33,7 @@ public abstract class AbstractParser {
     /**
      * The bundle
      */
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
+    private static CommonBundle bundle = Messages.getBundle(MethodHandles.lookup(), CommonBundle.class);
 
 
     /**

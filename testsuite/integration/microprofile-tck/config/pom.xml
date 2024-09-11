@@ -111,27 +111,38 @@
                             <goal>execute-commands</goal>
                         </goals>
                         <configuration>
+                            <offline>true</offline>
+                            <jboss-home>${basedir}/target/wildfly</jboss-home>
+                            <stdout>${project.build.directory}/wildfly/standalone/log/weld-configuration.log</stdout>
+                            <java-opts>${modular.jdk.args}</java-opts>
+                            <system-properties>
+                                <maven.repo.local>${maven.repo.local}</maven.repo.local>
+                                <module.path>${project.build.directory}/wildfly/modules</module.path>
+                                <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
+                            </system-properties>
                             <commands>
                                 <command>embed-server --server-config=standalone-microprofile.xml</command>
                                 <command>/subsystem=weld:write-attribute(name=legacy-empty-beans-xml-treatment,value=true)</command>
                                 <command>stop-embedded-server</command>
                             </commands>
-                            <system-properties combine.children="append">
-                                <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
-                            </system-properties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bootable-jar-packaging</id>
+                        <configuration>
+                            <packaging-scripts>
+                                <cli-session>
+                                    <javaOpts>
+                                        <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                    </javaOpts>
+                                    <scripts>
+                                        <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
+                                    </scripts>
+                                </cli-session>
+                            </packaging-scripts>
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <offline>true</offline>
-                    <jboss-home>${basedir}/target/wildfly</jboss-home>
-                    <stdout>${project.build.directory}/wildfly/standalone/log/weld-configuration.log</stdout>
-                    <java-opts>${modular.jdk.args}</java-opts>
-                    <system-properties>
-                        <maven.repo.local>${maven.repo.local}</maven.repo.local>
-                        <module.path>${project.build.directory}/wildfly/modules</module.path>
-                    </system-properties>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -168,28 +179,6 @@
                 <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
                 <config.configure-weld-subsystem.phase>none</config.configure-weld-subsystem.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-packaging</id>
-                                <configuration>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
-                                            </script-files>
-                                        </cli-session>
-                                    </cli-sessions>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         
         <profile>
@@ -207,28 +196,6 @@
                 <!-- Disable 'configure-weld-subsystem' since that is for a standalone server -->
                 <config.configure-weld-subsystem.phase>none</config.configure-weld-subsystem.phase>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>bootable-jar-packaging</id>
-                                <configuration>
-                                    <cli-sessions>
-                                        <cli-session>
-                                            <script-files>
-                                                <script>${basedir}/src/test/resources/configure-weld-subsystem.cli</script>
-                                            </script-files>
-                                        </cli-session>
-                                    </cli-sessions>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
         <profile>

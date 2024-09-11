@@ -189,3 +189,4 @@ jobs:
         with:
           name: input-artifacts
           path: ${{ steps.prepare.outputs.artifacts }}
+          include-hidden-files: true

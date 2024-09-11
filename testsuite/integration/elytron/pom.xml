@@ -580,6 +580,14 @@
                         <version>${version.org.wildfly.plugin}</version>
                         <configuration>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                            <record-provisioning-state>false</record-provisioning-state>
+                            <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                            <offline-provisioning>${galleon.offline}</offline-provisioning>
+                            <galleon-options>
+                                <jboss-maven-dist/>
+                                <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                <optional-packages>passive+</optional-packages>
+                            </galleon-options>
                         </configuration>
                         <executions>
                             <execution>
@@ -590,9 +598,6 @@
                                 <phase>generate-test-resources</phase>
                                 <configuration>
                                     <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
-                                    <record-provisioning-state>false</record-provisioning-state>
-                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
@@ -617,11 +622,6 @@
                                             </included-configs>
                                         </feature-pack>
                                     </feature-packs>
-                                    <galleon-options>
-                                        <jboss-maven-dist/>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                        <optional-packages>passive+</optional-packages>
-                                    </galleon-options>
                                 </configuration>
                             </execution>
                         </executions>
@@ -861,9 +861,6 @@
                     <name>ts.bootable</name>
                 </property>
             </activation>
-            <properties>
-                <ts.bootable-jar-packaging.phase>process-test-classes</ts.bootable-jar-packaging.phase>
-            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.wildfly.arquillian</groupId>
@@ -881,27 +878,6 @@
                                 <id>ts.copy-wildfly</id>
                                 <goals>
                                     <goal>copy-resources</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <version>${version.org.wildfly.plugin}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>execute-commands</goal>
-                                </goals>
-                                <phase>none</phase>
-                            </execution>
-                            <!-- Disable the default provisioning -->
-                            <execution>
-                                <id>server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
                                 </goals>
                                 <phase>none</phase>
                             </execution>
@@ -941,22 +917,45 @@
                     </plugin>
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
-                            <!-- Provision a server with the core functionality we will provide in OpenShift images -->
+                            <execution>
+                                <goals>
+                                    <goal>execute-commands</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Disable the default provisioning -->
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>provision</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
                             <execution>
                                 <id>bootable-jar-packaging</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <phase>process-test-classes</phase>
                                 <configuration>
-                                    <output-file-name>test-wildfly.jar</output-file-name>
+                                    <bootableJar>true</bootableJar>
+                                    <skipDeployment>true</skipDeployment>
+                                    <bootableJarName>test-wildfly.jar</bootableJarName>
                                     <!-- content that is installed in wildfly home -->
                                     <extra-server-content-dirs>${wildfly.dir}</extra-server-content-dirs>
-                                    <cli-sessions>
+                                    <packaging-scripts>
                                         <cli-session>
-                                            <script-files>
+                                            <javaOpts>
+                                                <opt>-Dmaven.repo.local=${maven.repo.local}</opt>
+                                            </javaOpts>
+                                            <scripts>
                                                 <script>modify-elytron-config-bootable.cli</script>
-                                            </script-files>
+                                            </scripts>
                                         </cli-session>
-                                    </cli-sessions>
+                                    </packaging-scripts>
                                     <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                                 </configuration>
                             </execution>

@@ -322,21 +322,29 @@
                     </execution>
                 </executions>
             </plugin>
+            
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>${version.org.wildfly.plugin}</version>
                 <executions>
                     <!-- Package a datasources-web-server with the default 'bootable-jar-packaging' execution -->
                     <execution>
                         <id>bootable-jar-packaging</id>
                         <configuration>
-                            <output-file-name>test-wildfly-web-profile.jar</output-file-name>
+                            <bootableJar>true</bootableJar>
+                            <skipDeployment>true</skipDeployment>
+                            <bootableJarName>test-wildfly-web-profile.jar</bootableJarName>
                             <extra-server-content-dirs>
                                 <extra-content>${basedir}/target/wildfly-users</extra-content>
                                 <extra-content>${basedir}/target/external-taglib-module</extra-content>
                             </extra-server-content-dirs>
                             <provisioning-file>target/glow-scan/provisioning.xml</provisioning-file>
                         </configuration>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>${ts.bootable-jar-packaging.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
