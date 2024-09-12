@@ -7,8 +7,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfiguration;
+import org.infinispan.persistence.sifs.configuration.SoftIndexFileStoreConfigurationBuilder;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -18,13 +18,14 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/store=STORE
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class FileStoreResourceDefinition extends StoreResourceDefinition {
+public class FileStoreResourceDefinition extends StoreResourceDefinition<SoftIndexFileStoreConfiguration, SoftIndexFileStoreConfigurationBuilder> {
 
     static final PathElement PATH = pathElement("file");
 
@@ -38,7 +39,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         RELATIVE_TO("relative-to", ModelType.STRING, InfinispanSubsystemModel.VERSION_16_0_0) {
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
-                return builder.setCapabilityReference(new CapabilityReference(Capability.PERSISTENCE, CommonUnaryRequirement.PATH));
+                return builder.setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, PathManager.PATH_SERVICE_DESCRIPTOR).build());
             }
         },
         ;
@@ -55,7 +56,7 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     }
 
     FileStoreResourceDefinition() {
-        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(DeprecatedAttribute.class), FileStoreServiceConfigurator::new);
+        super(PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH, WILDCARD_PATH), new SimpleResourceDescriptorConfigurator<>(DeprecatedAttribute.class), SoftIndexFileStoreConfigurationBuilder.class);
     }
 
     @Override

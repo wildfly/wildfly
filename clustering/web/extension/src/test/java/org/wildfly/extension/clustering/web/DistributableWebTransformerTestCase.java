@@ -24,10 +24,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.infinispan.client.service.InfinispanClientRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanRequirement;
+import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 
 /**
  * Transformer tests for distributable-web subsystem.
@@ -50,14 +48,12 @@ public class DistributableWebTransformerTestCase extends AbstractSubsystemTest {
         this.controller = controller;
         this.version = this.getModelVersion().getVersion();
         this.additionalInitialization = new AdditionalInitialization()
-                .require(InfinispanRequirement.CONTAINER.resolve("foo"))
-                .require(InfinispanDefaultCacheRequirement.CACHE.resolve("foo"))
-                .require(InfinispanDefaultCacheRequirement.CONFIGURATION.resolve("foo"))
-                .require(InfinispanCacheRequirement.CACHE.resolve("foo", "bar"))
-                .require(InfinispanCacheRequirement.CONFIGURATION.resolve("foo", "bar"))
-                .require(InfinispanClientRequirement.REMOTE_CONTAINER.resolve("foo"))
-                .require(InfinispanCacheRequirement.CACHE.resolve("foo", "routing"))
-                .require(InfinispanCacheRequirement.CONFIGURATION.resolve("foo", "routing"))
+                .require(InfinispanServiceDescriptor.CACHE_CONTAINER, "foo")
+                .require(InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION, "foo")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "bar")
+                .require(InfinispanServiceDescriptor.CACHE, "foo", "routing")
+                .require(InfinispanServiceDescriptor.CACHE_CONFIGURATION, "foo", "routing")
+                .require(HotRodServiceDescriptor.REMOTE_CACHE_CONTAINER, "foo")
                 ;
     }
 

@@ -64,14 +64,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-infinispan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-jgroups-api</artifactId>
         </dependency>
         <dependency>
@@ -88,23 +80,15 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -148,6 +132,12 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-cachestore-remote</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -170,6 +160,10 @@
             <artifactId>infinispan-query-dsl</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-remote-query-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
         </dependency>
@@ -184,6 +178,22 @@
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
@@ -208,11 +218,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-jgroups-extension</artifactId>
             <scope>test</scope>
         </dependency>
@@ -225,10 +230,19 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-server-extension</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-infinispan</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-connector</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-common-api</artifactId>
@@ -246,7 +260,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
-    <artifactId>ironjacamar-deployers-common</artifactId>
+            <artifactId>ironjacamar-deployers-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

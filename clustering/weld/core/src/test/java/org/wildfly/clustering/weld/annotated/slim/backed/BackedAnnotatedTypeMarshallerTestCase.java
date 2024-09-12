@@ -4,13 +4,14 @@
  */
 package org.wildfly.clustering.weld.annotated.slim.backed;
 
-import java.io.IOException;
-
 import org.jboss.weld.annotated.slim.backed.BackedAnnotatedType;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ReflectionCache;
 import org.jboss.weld.resources.SharedObjectCache;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 import org.wildfly.clustering.weld.BeanManagerProvider;
 import org.wildfly.clustering.weld.annotated.slim.AnnotatedTypeMarshallerTestCase;
 
@@ -20,12 +21,13 @@ import org.wildfly.clustering.weld.annotated.slim.AnnotatedTypeMarshallerTestCas
  */
 public class BackedAnnotatedTypeMarshallerTestCase extends AnnotatedTypeMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) {
         BeanManagerImpl manager = BeanManagerProvider.INSTANCE.apply("foo", "bar");
         SharedObjectCache objectCache = manager.getServices().get(SharedObjectCache.class);
         ReflectionCache reflectionCache = manager.getServices().get(ReflectionCache.class);
 
-        this.test(BackedAnnotatedType.of(BackedAnnotatedTypeMarshallerTestCase.class, objectCache, reflectionCache, "foo", "bar"));
+        this.test(factory.createTester(), BackedAnnotatedType.of(BackedAnnotatedTypeMarshallerTestCase.class, objectCache, reflectionCache, "foo", "bar"));
     }
 }

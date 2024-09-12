@@ -8,8 +8,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.PathElement;
-import org.wildfly.clustering.server.service.LocalCacheServiceConfiguratorProvider;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -17,7 +17,7 @@ import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class LocalCacheResourceDefinition extends CacheResourceDefinition<LocalCacheServiceConfiguratorProvider> {
+public class LocalCacheResourceDefinition extends CacheResourceDefinition {
 
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
     static PathElement pathElement(String name) {
@@ -25,6 +25,6 @@ public class LocalCacheResourceDefinition extends CacheResourceDefinition<LocalC
     }
 
     LocalCacheResourceDefinition(FunctionExecutorRegistry<Cache<?, ?>> executors) {
-        super(WILDCARD_PATH, UnaryOperator.identity(), new LocalCacheServiceHandler(), executors);
+        super(WILDCARD_PATH, UnaryOperator.identity(), CacheMode.LOCAL, executors);
     }
 }

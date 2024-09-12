@@ -8,11 +8,13 @@ import java.util.EnumSet;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -70,11 +72,18 @@ public class JGroupsSubsystemTestCase extends AbstractSubsystemSchemaTest<JGroup
     @Override
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.SOCKET_BINDING, "jgroups-tcp", "jgroups-udp", "some-binding", "jgroups-diagnostics", "jgroups-mping", "jgroups-tcp-fd", "jgroups-client-fd")
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "node1", "node2")
-                .require(CommonUnaryRequirement.KEY_STORE, "my-key-store")
-                .require(CommonUnaryRequirement.CREDENTIAL_STORE, "my-credential-store")
-                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-udp")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "some-binding")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-diagnostics")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-mping")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-tcp-fd")
+                .require(SocketBinding.SERVICE_DESCRIPTOR, "jgroups-client-fd")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "node1")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "node2")
+                .require(CommonServiceDescriptor.KEY_STORE, "my-key-store")
+                .require(CommonServiceDescriptor.CREDENTIAL_STORE, "my-credential-store")
+                .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
                 ;
     }
 

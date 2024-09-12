@@ -29,6 +29,7 @@
         <module name="java.naming"/>
         <module name="java.sql"/>
         <module name="java.transaction.xa"/>
+        <module name="java.xml"/>
 
         <!-- io.undertow.core is required only if http-acceptor are used -->
         <module name="io.undertow.core" optional="true" />
@@ -83,17 +84,15 @@
         <module name="org.jboss.xnio" optional="true"/>
         <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
         <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true"/>
-        <module name="org.wildfly.clustering.ee.cache"/>
-        <module name="org.wildfly.clustering.ee.spi"/>
         <module name="org.wildfly.clustering.marshalling.jboss"/>
         <module name="org.wildfly.clustering.server.api"/>
         <module name="org.wildfly.clustering.server.service"/>
-        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.server.spi"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
         <module name="org.wildfly.transaction.client"/>
         <!-- Use the HornetQ client module to create the legacy connection factory and destination resources -->
         <module name="org.hornetq.client" optional="true"/>
         <module name="org.slf4j"/>
-
-        <module name="java.xml"/>
     </dependencies>
 </module>

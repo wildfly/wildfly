@@ -17,6 +17,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.AbstractClusteringTestCase;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
+import org.jboss.as.test.clustering.cluster.registry.bean.legacy.LegacyRegistryRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
@@ -43,7 +44,8 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
 
     private static Archive<?> createDeployment() {
         return ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war")
-                .addPackage(RegistryRetriever.class.getPackage())
+                .addPackage(RegistryRetrieverBean.class.getPackage())
+                .addPackage(LegacyRegistryRetrieverBean.class.getPackage())
                 .setWebXML(RegistryTestCase.class.getPackage(), "web.xml")
                 .addAsManifestResource(createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read"), new RuntimePermission("getClassLoader")), "permissions.xml")
                 ;
@@ -51,8 +53,17 @@ public class RegistryTestCase extends AbstractClusteringTestCase {
 
     @Test
     public void test() throws Exception {
+        this.test(RegistryRetrieverBean.class);
+    }
+
+    @Test
+    public void legacy() throws Exception {
+        this.test(LegacyRegistryRetrieverBean.class);
+    }
+
+    public void test(Class<? extends RegistryRetriever> beanClass) throws Exception {
         try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
-            RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
+            RegistryRetriever bean = context.lookupStateless(beanClass, RegistryRetriever.class);
 
             Collection<String> names = bean.getNodes();
             assertEquals(2, names.size());

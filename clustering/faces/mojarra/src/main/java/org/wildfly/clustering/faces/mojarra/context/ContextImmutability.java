@@ -15,14 +15,13 @@ import jakarta.servlet.http.HttpSession;
 import com.sun.faces.context.SessionMap;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.immutable.InstanceOfImmutability;
+import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
  * @author Paul Ferraro
  */
 @MetaInfServices(Immutability.class)
-public class ContextImmutability  extends InstanceOfImmutability {
+public class ContextImmutability  implements Immutability {
 
     static Object createMutex() {
         // Capture private Mutex object/class via public method
@@ -88,7 +87,10 @@ public class ContextImmutability  extends InstanceOfImmutability {
         return mutex.getPlain();
     }
 
-    public ContextImmutability() {
-        super(List.of(createMutex().getClass()));
+    private final Immutability immutability = Immutability.instanceOf(List.of(createMutex().getClass()));
+
+    @Override
+    public boolean test(Object object) {
+        return this.immutability.test(object);
     }
 }

@@ -14,7 +14,7 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.wildfly.clustering.singleton.service.SingletonPolicy;
+import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 
 /**
  * @author Paul Ferraro
@@ -27,5 +27,5 @@ public interface SingletonLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Singleton deployment detected. Deployment will reset using %s policy.")
-    void singletonDeploymentDetected(SingletonPolicy policy);
+    void singletonDeploymentDetected(ServiceTargetFactory policy);
 }

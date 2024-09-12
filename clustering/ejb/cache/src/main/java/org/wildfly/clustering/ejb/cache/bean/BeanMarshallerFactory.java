@@ -12,13 +12,11 @@ import org.jboss.marshalling.ModularClassResolver;
 import org.jboss.modules.Module;
 import org.wildfly.clustering.ejb.bean.BeanDeploymentMarshallingContext;
 import org.wildfly.clustering.ejb.client.EJBProxyResolver;
-import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.DynamicExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.IdentitySerializabilityChecker;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jboss.SimpleSerializabilityChecker;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * Enumerates factory implementations for all supported bean marshallers.
@@ -29,7 +27,7 @@ public enum BeanMarshallerFactory implements Function<BeanDeploymentMarshallingC
     JBOSS() {
         @Override
         public ByteBufferMarshaller apply(BeanDeploymentMarshallingContext context) {
-            MarshallingConfigurationRepository repository = new SimpleMarshallingConfigurationRepository(MarshallingVersion.class, MarshallingVersion.CURRENT, context);
+            MarshallingConfigurationRepository repository = MarshallingConfigurationRepository.from(MarshallingVersion.CURRENT, context);
             return new JBossByteBufferMarshaller(repository, context.getModule().getClassLoader());
         }
     };
@@ -40,10 +38,8 @@ public enum BeanMarshallerFactory implements Function<BeanDeploymentMarshallingC
             @Override
             public MarshallingConfiguration apply(BeanDeploymentMarshallingContext context) {
                 Module module = context.getModule();
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setSerializabilityChecker(new SimpleSerializabilityChecker(context.getBeanClasses()));
-                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+                MarshallingConfiguration config = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).load(module.getClassLoader()).build();
+                config.setSerializabilityChecker(new IdentitySerializabilityChecker(context.getBeanClasses()));
                 config.setObjectTable(new org.wildfly.clustering.ejb.client.EJBProxyObjectTable());
                 return config;
             }
@@ -52,12 +48,9 @@ public enum BeanMarshallerFactory implements Function<BeanDeploymentMarshallingC
             @Override
             public MarshallingConfiguration apply(BeanDeploymentMarshallingContext context) {
                 Module module = context.getModule();
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassResolver(ModularClassResolver.getInstance(module.getModuleLoader()));
-                config.setSerializabilityChecker(new SimpleSerializabilityChecker(context.getBeanClasses()));
-                config.setClassTable(new DynamicClassTable(module.getClassLoader()));
+                MarshallingConfiguration config = MarshallingConfigurationBuilder.newInstance(ModularClassResolver.getInstance(module.getModuleLoader())).load(module.getClassLoader()).build();
+                config.setSerializabilityChecker(new IdentitySerializabilityChecker(context.getBeanClasses()));
                 config.setObjectResolver(new EJBProxyResolver());
-                config.setObjectTable(new DynamicExternalizerObjectTable(module.getClassLoader()));
                 return config;
             }
         },

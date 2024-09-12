@@ -23,7 +23,6 @@
     <module name="io.undertow.core"/>
     <module name="io.undertow.servlet"/>
     <module name="org.wildfly.extension.undertow"/>
-    <module name="org.wildfly.clustering.service"/>
 
     <!-- Loading JAX-RS dependencies for LRA coordinator boot up -->
     <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>

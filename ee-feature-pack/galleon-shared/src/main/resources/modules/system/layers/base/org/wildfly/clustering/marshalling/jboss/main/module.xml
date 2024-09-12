@@ -12,13 +12,17 @@
     </properties>
 
     <resources>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-marshalling-jboss}"/>
         <artifact name="${org.wildfly:wildfly-clustering-marshalling-jboss}"/>
     </resources>
 
     <dependencies>
+        <module name="java.sql"/>
+
         <module name="org.jboss.marshalling"/>
         <module name="org.wildfly.clustering.marshalling.api"/>
         <module name="org.wildfly.clustering.marshalling.spi"/>
+        <module name="org.wildfly.common"/>
         <module name="org.wildfly.security.elytron-private"/>
     </dependencies>
 </module>

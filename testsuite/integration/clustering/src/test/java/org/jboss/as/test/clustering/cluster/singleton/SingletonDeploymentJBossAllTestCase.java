@@ -15,7 +15,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 /**
  * @author Paul Ferraro
  */
-@org.junit.Ignore("WFLY-16973")
 public class SingletonDeploymentJBossAllTestCase extends SingletonDeploymentTestCase {
 
     private static final String MODULE_NAME = SingletonDeploymentJBossAllTestCase.class.getSimpleName();

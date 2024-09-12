@@ -30,6 +30,11 @@
     <dependencies>
         <!-- Build-only dependencies -->
         <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
             <scope>provided</scope>
@@ -42,19 +47,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-hotrod</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-infinispan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-client-api</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -62,15 +55,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -82,10 +67,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-api</artifactId>
         </dependency>
         <dependency>
@@ -94,31 +75,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-server-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-hotrod</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-infinispan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-web-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-web-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -163,12 +120,24 @@
             <artifactId>jboss-metadata-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-cache-infinispan-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-session-spec-servlet-6.0</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

@@ -30,7 +30,6 @@
     <module name="io.undertow.core"/>
     <module name="io.undertow.servlet"/>
     <module name="org.wildfly.extension.undertow"/>
-    <module name="org.wildfly.clustering.service"/>
 
     <!-- Loading JAX-RS dependencies for LRA Participant Proxy bootup -->
     <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>

@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimerConfiguration;
 import org.wildfly.clustering.ejb.timer.TimerType;
-import org.wildfly.clustering.marshalling.spi.Marshaller;
+import org.wildfly.clustering.marshalling.Marshaller;
 
 /**
  * Unit test for {@link DefaultImmutableTimerMetaData}.

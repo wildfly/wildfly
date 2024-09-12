@@ -28,12 +28,4 @@
         The API is independent of the backing marshalling framework.
     </description>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
 </project>

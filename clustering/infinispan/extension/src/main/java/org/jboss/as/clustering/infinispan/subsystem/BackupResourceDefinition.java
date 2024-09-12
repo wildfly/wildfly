@@ -15,8 +15,8 @@ import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.OperationHandler;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.ResourceServiceConfiguratorFactory;
-import org.jboss.as.clustering.controller.RestartParentResourceRegistrar;
+import org.jboss.as.clustering.controller.ResourceServiceHandler;
+import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -25,6 +25,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
@@ -125,12 +126,12 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
         }
     }
 
-    private final ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory;
+    private final ResourceOperationRuntimeHandler parentRuntimeHandler;
     private final FunctionExecutorRegistry<Cache<?, ?>> executors;
 
-    BackupResourceDefinition(ResourceServiceConfiguratorFactory parentServiceConfiguratorFactory, FunctionExecutorRegistry<Cache<?, ?>> executors) {
+    BackupResourceDefinition(ResourceOperationRuntimeHandler parentRuntimeHandler, FunctionExecutorRegistry<Cache<?, ?>> executors) {
         super(WILDCARD_PATH, InfinispanExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
-        this.parentServiceConfiguratorFactory = parentServiceConfiguratorFactory;
+        this.parentRuntimeHandler = parentRuntimeHandler;
         this.executors = executors;
     }
 
@@ -143,7 +144,8 @@ public class BackupResourceDefinition extends ChildResourceDefinition<Management
                 .addAttributes(TakeOfflineAttribute.class)
                 .addAttributes(DeprecatedAttribute.class)
                 ;
-        new RestartParentResourceRegistrar(this.parentServiceConfiguratorFactory, descriptor).register(registration);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.restartParent(this.parentRuntimeHandler);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         if (registration.isRuntimeOnlyRegistrationValid()) {
             new OperationHandler<>(new BackupOperationExecutor(this.executors), BackupOperation.class).register(registration);

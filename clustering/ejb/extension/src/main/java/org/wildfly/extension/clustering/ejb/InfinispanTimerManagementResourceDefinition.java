@@ -5,54 +5,53 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
-import org.jboss.as.clustering.controller.CapabilityReference;
 import org.jboss.as.clustering.controller.ChildResourceDefinition;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.ResourceServiceHandler;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;
-import org.jboss.as.clustering.controller.SimpleResourceServiceHandler;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
 import org.jboss.as.clustering.controller.validation.IntRangeValidatorBuilder;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
-import org.wildfly.clustering.service.UnaryRequirement;
+import org.jboss.modules.Module;
+import org.wildfly.clustering.ejb.infinispan.timer.InfinispanTimerManagementProvider;
+import org.wildfly.clustering.ejb.timer.TimerManagementConfiguration;
+import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.resource.operation.ResourceOperationRuntimeHandler;
+import org.wildfly.subsystem.service.ResourceServiceConfigurator;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanTimerManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> {
+public class InfinispanTimerManagementResourceDefinition extends ChildResourceDefinition<ManagementResourceRegistration> implements ResourceServiceConfigurator {
 
     static PathElement pathElement(String name) {
         return PathElement.pathElement("infinispan-timer-management", name);
     }
     static final PathElement WILDCARD_PATH = pathElement(PathElement.WILDCARD_VALUE);
 
-    enum Capability implements CapabilityProvider {
-        TIMER_MANAGEMENT_PROVIDER(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-    }
+    private static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(TimerManagementProvider.SERVICE_DESCRIPTOR).build();
 
     enum Attribute implements org.jboss.as.clustering.controller.Attribute, UnaryOperator<SimpleAttributeDefinitionBuilder> {
         CACHE_CONTAINER("cache-container", ModelType.STRING) {
@@ -60,7 +59,7 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
                         .setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.TIMER_MANAGEMENT_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
                         ;
             }
         },
@@ -68,7 +67,7 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setAllowExpression(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.TIMER_MANAGEMENT_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER.getDefinition()).build());
             }
         },
         MAX_ACTIVE_TIMERS("max-active-timers", ModelType.INT) {
@@ -102,6 +101,8 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
         }
     }
 
+    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.CACHE_CONTAINER.getDefinition(), Attribute.CACHE.getDefinition());
+
     InfinispanTimerManagementResourceDefinition() {
         super(WILDCARD_PATH, DistributableEjbExtension.SUBSYSTEM_RESOLVER.createChildResolver(WILDCARD_PATH));
     }
@@ -113,13 +114,31 @@ public class InfinispanTimerManagementResourceDefinition extends ChildResourceDe
         // create the resolver for the infinispan-bean-management resource
         ResourceDescriptor descriptor = new ResourceDescriptor(this.getResourceDescriptionResolver())
                 .addAttributes(Attribute.class)
-                .addCapabilities(Capability.class)
+                .addCapabilities(List.of(CAPABILITY))
                 ;
         // create the service handler for the infinispan-brean-management resource
-        ResourceServiceHandler handler = new SimpleResourceServiceHandler(InfinispanTimerManagementServiceConfigurator::new);
+        ResourceOperationRuntimeHandler handler = ResourceOperationRuntimeHandler.configureService(this);
         // register the resource descriptor and the handler
-        new SimpleResourceRegistrar(descriptor, handler).register(registration);
+        new SimpleResourceRegistrar(descriptor, ResourceServiceHandler.of(handler)).register(registration);
 
         return registration;
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        OptionalInt maxActiveTimers = Optional.ofNullable(Attribute.MAX_ACTIVE_TIMERS.getDefinition().resolveModelAttribute(context, model).asIntOrNull()).map(OptionalInt::of).orElse(OptionalInt.empty());
+        Function<Module, ByteBufferMarshaller> marshallerFactory = TimerContextMarshallerFactory.valueOf(Attribute.MARSHALLER.resolveModelAttribute(context, model).asString());
+        TimerManagementConfiguration config = new TimerManagementConfiguration() {
+            @Override
+            public Function<Module, ByteBufferMarshaller> getMarshallerFactory() {
+                return marshallerFactory;
+            }
+
+            @Override
+            public OptionalInt getMaxActiveTimers() {
+                return maxActiveTimers;
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanTimerManagementProvider(config, this.resolver.resolve(context, model))).build();
     }
 }

@@ -53,7 +53,15 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-infinispan-embedded-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-server-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-server-service</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -65,7 +73,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-singleton-service</artifactId>
+            <artifactId>wildfly-clustering-singleton-compat</artifactId>
+        </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-singleton-server</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -84,6 +96,18 @@
         <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-infinispan</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

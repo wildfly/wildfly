@@ -16,6 +16,7 @@ import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 /**
  * An schedule-based timer metadata cache entry.
  * @author Paul Ferraro
+ * @param <C> the timer context type
  */
 public class ScheduleTimerMetaDataEntry<C> extends AbstractTimerMetaDataEntry<C> implements ImmutableScheduleTimerMetaDataEntry<C> {
 

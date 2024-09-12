@@ -5,7 +5,10 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -16,8 +19,8 @@ import java.util.function.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.clustering.ee.cache.offset.OffsetValue;
 import org.wildfly.clustering.ejb.timer.TimerType;
+import org.wildfly.clustering.server.offset.OffsetValue;
 
 /**
  * @author Paul Ferraro

@@ -30,6 +30,5 @@
     <modules>
         <module>api</module>
         <module>service</module>
-        <module>spi</module>
     </modules>
 </project>

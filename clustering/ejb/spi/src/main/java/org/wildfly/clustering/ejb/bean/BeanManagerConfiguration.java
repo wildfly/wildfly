@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.bean;
 
-import java.util.function.Supplier;
+import org.wildfly.clustering.server.manager.ManagerConfiguration;
 
 /**
  * Encapsulates the configuration of a bean manager.
@@ -14,8 +14,7 @@ import java.util.function.Supplier;
  * @param <K> the bean identifier type
  * @param <V> the bean instance type
  */
-public interface BeanManagerConfiguration<K, V extends BeanInstance<K>> {
-    Supplier<K> getIdentifierFactory();
+public interface BeanManagerConfiguration<K, V extends BeanInstance<K>> extends ManagerConfiguration<K> {
     String getBeanName();
     BeanExpirationConfiguration<K, V> getExpiration();
 }

@@ -29,24 +29,6 @@
     </description>
 
     <dependencies>
-        <!-- Internal dependencies -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-ee-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-service</artifactId>
-        </dependency>
-
         <!-- External dependencies -->
         <dependency>
             <groupId>org.jboss</groupId>
@@ -61,12 +43,16 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-server-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
     </dependencies>
 </project>

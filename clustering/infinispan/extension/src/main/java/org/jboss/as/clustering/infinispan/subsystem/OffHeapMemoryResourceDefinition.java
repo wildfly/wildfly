@@ -54,7 +54,7 @@ public class OffHeapMemoryResourceDefinition extends MemoryResourceDefinition {
     }
 
     OffHeapMemoryResourceDefinition() {
-        super(StorageType.OFF_HEAP, PATH, new ResourceDescriptorConfigurator(), Attribute.SIZE_UNIT);
+        super(StorageType.OFF_HEAP, PATH, new ResourceDescriptorConfigurator(), Attribute.SIZE_UNIT.getDefinition());
     }
 
     @Override

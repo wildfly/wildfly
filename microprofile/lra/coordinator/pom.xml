@@ -50,10 +50,6 @@
       <groupId>${ee.maven.groupId}</groupId>
       <artifactId>wildfly-undertow</artifactId>
     </dependency>
-    <dependency>
-      <groupId>${ee.maven.groupId}</groupId>
-      <artifactId>wildfly-clustering-service</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.undertow</groupId>

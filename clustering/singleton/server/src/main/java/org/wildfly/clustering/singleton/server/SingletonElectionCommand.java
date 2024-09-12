@@ -7,29 +7,28 @@ package org.wildfly.clustering.singleton.server;
 
 import java.util.List;
 
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.singleton.SingletonElectionListener;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.dispatcher.Command;
+import org.wildfly.clustering.singleton.election.SingletonElectionListener;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonElectionCommand implements Command<Void, SingletonElectionListener> {
-    private static final long serialVersionUID = 8457549139382922406L;
+public class SingletonElectionCommand implements Command<Void, SingletonElectionListener, RuntimeException> {
 
-    private final List<Node> candidates;
+    private final List<GroupMember> candidates;
     private final Integer index;
 
-    public SingletonElectionCommand(List<Node> candidates, Node elected) {
+    public SingletonElectionCommand(List<GroupMember> candidates, GroupMember elected) {
         this(candidates, (elected != null) ? candidates.indexOf(elected) : null);
     }
 
-    SingletonElectionCommand(List<Node> candidates, Integer index) {
+    SingletonElectionCommand(List<GroupMember> candidates, Integer index) {
         this.candidates = candidates;
         this.index = index;
     }
 
-    List<Node> getCandidates() {
+    List<GroupMember> getCandidates() {
         return this.candidates;
     }
 

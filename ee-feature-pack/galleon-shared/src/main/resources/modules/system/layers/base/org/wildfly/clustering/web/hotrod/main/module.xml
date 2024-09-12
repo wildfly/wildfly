@@ -4,40 +4,12 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
+<!--
+    END USER MODULE USAGE: Deprecated module alias.
 
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.hotrod">
-
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <exports>
-        <exclude path="org/wildfly/clustering/web/hotrod/logging"/>
-    </exports>
-
-    <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-web-hotrod}"/>
-    </resources>
-
-    <dependencies>
-        <module name="jakarta.transaction.api"/>
-
-        <module name="com.github.ben-manes.caffeine"/>
-        <module name="org.infinispan.client.hotrod"/>
-        <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.wildfly.clustering.context"/>
-        <module name="org.wildfly.clustering.ee.cache" services="import"/>
-        <module name="org.wildfly.clustering.ee.hotrod"/>
-        <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.client.spi"/>
-        <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.clustering.server.api"/>
-        <module name="org.wildfly.clustering.web.cache"/>
-        <module name="org.wildfly.clustering.web.spi"/>
-        <module name="org.wildfly.common"/>
-        <module name="org.wildfly.security.elytron-private"/>
-    </dependencies>
-</module>
+    This module is an alias for the module specified in the 'target-name' attribute,
+    provided for compatibility purposes.
+    Uses of this module should be updated to use the target module.
+    This alias is deprecated and will be removed in a future release.
+-->
+<module-alias xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.hotrod" target-name="org.wildfly.clustering.session.infinispan.remote"/>

@@ -5,7 +5,7 @@
 
 package org.wildfly.extension.undertow.session;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 
@@ -17,9 +17,9 @@ public interface SessionManagementProviderFactory {
     /**
      * Returns the appropriate {@link SessionManagementProvider} for the specified deployment unit,
      * generated from the specified {@link ReplicationConfig} if necessary.
-     * @param unit a deployment unit
+     * @param context a deployment phase context
      * @param config a legacy {@link ReplicationConfig}
      * @return a session management provider
      */
-    SessionManagementProvider createSessionManagementProvider(DeploymentUnit unit, ReplicationConfig config);
+    SessionManagementProvider createSessionManagementProvider(DeploymentPhaseContext context, ReplicationConfig config);
 }

@@ -49,10 +49,6 @@
         <!-- Internal dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-service</artifactId>
         </dependency>
         <dependency>
@@ -66,16 +62,12 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-controller</artifactId>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-context</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-network</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-server</artifactId>
+            <artifactId>wildfly-subsystem</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>

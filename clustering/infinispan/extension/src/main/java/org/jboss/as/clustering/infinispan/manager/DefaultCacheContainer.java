@@ -11,7 +11,6 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.security.auth.Subject;
 
@@ -28,15 +27,16 @@ import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.LocalModeAddress;
 import org.jboss.as.clustering.infinispan.dataconversion.MediaTypeFactory;
+import org.jboss.as.clustering.infinispan.marshalling.MarshallerFactory;
+import org.jboss.as.clustering.infinispan.marshalling.UserMarshallerFactory;
 import org.jboss.modules.ModuleLoader;
-import org.wildfly.clustering.infinispan.marshall.EncoderRegistry;
-import org.wildfly.clustering.infinispan.marshalling.ByteBufferMarshallerFactory;
-import org.wildfly.clustering.infinispan.marshalling.MarshalledValueTranscoder;
-import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledKeyFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
+import org.wildfly.clustering.cache.infinispan.embedded.marshall.EncoderRegistry;
+import org.wildfly.clustering.cache.infinispan.marshalling.MarshalledValueTranscoder;
+import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledKeyFactory;
+import org.wildfly.clustering.marshalling.ByteBufferMarshalledValueFactory;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -46,16 +46,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager {
 
     private final EmbeddedCacheManagerAdmin administrator;
-    private final Function<ClassLoader, ByteBufferMarshaller> marshallerFactory;
+    private final ModuleLoader loader;
+    private final MarshallerFactory marshallerFactory;
 
     public DefaultCacheContainer(EmbeddedCacheManager container, ModuleLoader loader) {
-        this(container, new ByteBufferMarshallerFactory(container.getCacheManagerConfiguration().serialization().marshaller().mediaType(), loader));
-    }
-
-    private DefaultCacheContainer(EmbeddedCacheManager container, Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
         super(container);
         this.administrator = new DefaultCacheContainerAdmin(this);
-        this.marshallerFactory = marshallerFactory;
+        this.loader = loader;
+        this.marshallerFactory = UserMarshallerFactory.forMediaType(container.getCacheManagerConfiguration().serialization().marshaller().mediaType());
     }
 
     @Override
@@ -104,7 +102,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         CacheMode mode = configuration.clustering().cacheMode();
         boolean hasStore = configuration.persistence().usingStores();
         // Bypass deployment-specific media types for local cache w/out a store or if using a non-ProtoStream marshaller
-        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(ProtoStreamMarshaller.MEDIA_TYPE)) {
+        if ((!mode.isClustered() && !hasStore) || !this.cm.getCacheManagerConfiguration().serialization().marshaller().mediaType().equals(MediaTypes.WILDFLY_PROTOSTREAM.get())) {
             return new DefaultCache<>(this, cache);
         }
         ClassLoader loader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -124,7 +122,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                         return new AggregatedClassLoader(List.of(loader, managerLoader));
                     }
                 };
-                ByteBufferMarshaller marshaller = this.marshallerFactory.apply(WildFlySecurityManager.doUnchecked(action));
+                ByteBufferMarshaller marshaller = this.marshallerFactory.createByteBufferMarshaller(this.loader, List.of(WildFlySecurityManager.doUnchecked(action)));
                 if (registerKeyMediaType) {
                     MarshalledValueFactory<ByteBufferMarshaller> keyFactory = new ByteBufferMarshalledKeyFactory(marshaller);
                     registry.registerTranscoder(new MarshalledValueTranscoder<>(keyType, keyFactory));
@@ -191,7 +189,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
 
     @Override
     public EmbeddedCacheManager withSubject(Subject subject) {
-        return new DefaultCacheContainer(this.cm.withSubject(subject), this.marshallerFactory);
+        return new DefaultCacheContainer(this.cm.withSubject(subject), this.loader);
     }
 
     @Override

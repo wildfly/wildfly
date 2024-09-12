@@ -7,7 +7,6 @@ package org.jboss.as.clustering.jgroups;
 
 import org.jgroups.util.ThreadFactory;
 import org.wildfly.clustering.context.ContextClassLoaderReference;
-import org.wildfly.clustering.context.ContextReferenceExecutor;
 import org.wildfly.clustering.context.Contextualizer;
 
 /**
@@ -22,7 +21,7 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
     public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
         this.factory = factory;
         this.targetLoader = targetLoader;
-        this.contextualizer = new ContextReferenceExecutor<>(targetLoader, ContextClassLoaderReference.INSTANCE);
+        this.contextualizer = Contextualizer.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(targetLoader));
     }
 
     @Override

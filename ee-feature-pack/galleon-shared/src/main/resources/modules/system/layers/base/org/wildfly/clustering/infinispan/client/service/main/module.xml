@@ -18,10 +18,10 @@
     <dependencies>
         <module name="org.infinispan.client.hotrod"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.infinispan.client.api"/>
-        <module name="org.wildfly.clustering.service"/>
+        <module name="org.wildfly.clustering.server.service"/>
+        <module name="org.wildfly.service"/>
+        <module name="org.wildfly.subsystem"/>
     </dependencies>
 </module>

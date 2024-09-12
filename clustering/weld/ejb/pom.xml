@@ -54,10 +54,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ejb3</artifactId>
         </dependency>
         <dependency>
@@ -91,6 +87,10 @@
             <artifactId>weld-ejb</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.common</groupId>
             <artifactId>wildfly-common</artifactId>
         </dependency>
@@ -108,23 +108,14 @@
 
         <!-- Internal test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>

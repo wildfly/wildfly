@@ -19,7 +19,8 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.ejb.timer.TimerServiceRequirement;
+import org.wildfly.clustering.ejb.timer.TimerManagementProvider;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
 
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +68,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.DEFAULT_DATA_STORE)
-                    .setCapabilityReference(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getName(), TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final SimpleAttributeDefinition DEFAULT_TRANSIENT_TIMER_MANAGEMENT =
@@ -75,7 +76,7 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setRequired(true)
                     .setAlternatives(EJB3SubsystemModel.THREAD_POOL_NAME)
-                    .setCapabilityReference(TimerServiceRequirement.TIMER_MANAGEMENT_PROVIDER.getName(), TIMER_SERVICE_CAPABILITY)
+                    .setCapabilityReference(CapabilityReferenceRecorder.builder(TIMER_SERVICE_CAPABILITY, TimerManagementProvider.SERVICE_DESCRIPTOR).build())
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { THREAD_POOL_NAME, DEFAULT_DATA_STORE, DEFAULT_PERSISTENT_TIMER_MANAGEMENT, DEFAULT_TRANSIENT_TIMER_MANAGEMENT };
@@ -84,18 +85,18 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     public TimerServiceResourceDefinition(final PathManager pathManager) {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE))
-                .setAddHandler(TimerServiceAdd.INSTANCE)
+                .setAddHandler(new TimerServiceAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setAddRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
                 .setRemoveRestartLevel(OperationEntry.Flag.RESTART_ALL_SERVICES)
-                .setCapabilities(TIMER_SERVICE_CAPABILITY));
+                .setCapabilities(TIMER_SERVICE_CAPABILITY, TIMER_PERSISTENCE_CAPABILITY));
         this.pathManager = pathManager;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
     }
 

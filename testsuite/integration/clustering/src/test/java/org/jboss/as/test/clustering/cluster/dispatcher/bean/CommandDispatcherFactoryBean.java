@@ -14,20 +14,21 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.GroupListener;
-import org.wildfly.clustering.group.Membership;
+import org.wildfly.clustering.server.Registration;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.Group;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.GroupMembershipEvent;
+import org.wildfly.clustering.server.GroupMembershipListener;
 
 @Singleton
 @Startup
 @Local(CommandDispatcherFactory.class)
-public class CommandDispatcherFactoryBean implements CommandDispatcherFactory, GroupListener {
+public class CommandDispatcherFactoryBean implements CommandDispatcherFactory<GroupMember>, GroupMembershipListener<GroupMember> {
 
-    @Resource(name = "clustering/dispatcher")
-    private CommandDispatcherFactory factory;
+    @Resource(name = "clustering/command-dispatcher-factory")
+    private CommandDispatcherFactory<GroupMember> factory;
     private Registration registration;
 
     @PostConstruct
@@ -41,24 +42,24 @@ public class CommandDispatcherFactoryBean implements CommandDispatcherFactory, G
     }
 
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object service, C context) {
-        return this.factory.createCommandDispatcher(service, context);
+    public <C> CommandDispatcher<GroupMember, C> createCommandDispatcher(Object service, C context, ClassLoader loader) {
+        return this.factory.createCommandDispatcher(service, context, loader);
     }
 
     @Override
-    public Group getGroup() {
+    public Group<GroupMember> getGroup() {
         return this.factory.getGroup();
     }
 
     @Override
-    public void membershipChanged(Membership previousMembership, Membership membership, boolean merged) {
+    public void updated(GroupMembershipEvent<GroupMember> event) {
         try {
             // Ensure the thread context classloader of the notification is correct
             Thread.currentThread().getContextClassLoader().loadClass(this.getClass().getName());
             // Ensure the correct naming context is set
             Context context = new InitialContext();
             try {
-                context.lookup("java:comp/env/clustering/dispatcher");
+                context.lookup("java:comp/env/clustering/command-dispatcher-factory");
             } finally {
                 context.close();
             }
@@ -67,6 +68,6 @@ public class CommandDispatcherFactoryBean implements CommandDispatcherFactory, G
         } catch (NamingException e) {
             throw new IllegalStateException(e);
         }
-        System.out.println(String.format("Previous membership = %s, current membership = %s, merged = %s", previousMembership, membership, merged));
+        System.out.println(String.format("Previous membership = %s, current membership = %s", event.getPreviousMembership(), event.getCurrentMembership()));
     }
 }

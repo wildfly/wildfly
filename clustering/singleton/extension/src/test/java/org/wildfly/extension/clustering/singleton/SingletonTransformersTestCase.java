@@ -8,12 +8,12 @@ package org.wildfly.extension.clustering.singleton;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -23,8 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.singleton.SingletonCacheRequirement;
-import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
+import org.wildfly.clustering.singleton.service.SingletonServiceTargetFactory;
 
 /**
  * Transform/reject tests for singleton subsystem.
@@ -91,14 +90,15 @@ public class SingletonTransformersTestCase extends AbstractSubsystemTest {
         }
     }
 
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     protected org.jboss.as.subsystem.test.AdditionalInitialization createAdditionalInitialization() {
         return new AdditionalInitialization()
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "binding0", "binding1")
-                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container")
-                .require(SingletonCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, "singleton-container", "singleton-cache")
-                .require(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, "singleton-container")
-                .require(SingletonCacheRequirement.SINGLETON_SERVICE_CONFIGURATOR_FACTORY, "singleton-container", "singleton-cache")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding0")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "binding1")
+                .require(SingletonServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
+                .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.DEFAULT_SERVICE_DESCRIPTOR, "singleton-container")
+                .require(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
+                .require(org.wildfly.clustering.singleton.service.SingletonServiceConfiguratorFactory.SERVICE_DESCRIPTOR, "singleton-container", "singleton-cache")
                 ;
     }
 

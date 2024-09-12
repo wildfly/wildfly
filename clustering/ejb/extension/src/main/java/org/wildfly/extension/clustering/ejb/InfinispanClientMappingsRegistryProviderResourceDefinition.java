@@ -4,17 +4,24 @@
  */
 package org.wildfly.extension.clustering.ejb;
 
-import org.jboss.as.clustering.controller.CapabilityReference;
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.infinispan.service.InfinispanCacheRequirement;
-import org.wildfly.clustering.infinispan.service.InfinispanDefaultCacheRequirement;
-
-import java.util.function.UnaryOperator;
+import org.wildfly.clustering.ejb.infinispan.remote.InfinispanClientMappingsRegistryProvider;
+import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.subsystem.resource.ResourceModelResolver;
+import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Definition of the /subsystem=distributable-ejb/client-mappings-registry=infinispan resource.
@@ -31,7 +38,7 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(true)
-                        .setCapabilityReference(new CapabilityReference(Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, InfinispanDefaultCacheRequirement.CONFIGURATION))
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.DEFAULT_CACHE_CONFIGURATION).build())
                         ;
             }
         },
@@ -39,7 +46,7 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
             @Override
             public SimpleAttributeDefinitionBuilder apply(SimpleAttributeDefinitionBuilder builder) {
                 return builder.setRequired(false)
-                        .setCapabilityReference(new CapabilityReference(Capability.CLIENT_MAPPINGS_REGISTRY_PROVIDER, InfinispanCacheRequirement.CONFIGURATION, CACHE_CONTAINER));
+                        .setCapabilityReference(CapabilityReferenceRecorder.builder(CAPABILITY, InfinispanServiceDescriptor.CACHE_CONFIGURATION).withParentAttribute(CACHE_CONTAINER.getDefinition()).build());
             }
         }
         ;
@@ -59,7 +66,14 @@ public class InfinispanClientMappingsRegistryProviderResourceDefinition extends 
         }
     }
 
+    private final ResourceModelResolver<BinaryServiceConfiguration> resolver = BinaryServiceConfiguration.resolver(Attribute.CACHE_CONTAINER.getDefinition(), Attribute.CACHE.getDefinition());
+
     InfinispanClientMappingsRegistryProviderResourceDefinition() {
-        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class), InfinispanClientMappingsRegistryProviderServiceConfigurator::new);
+        super(PATH, new SimpleResourceDescriptorConfigurator<>(Attribute.class));
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return CapabilityServiceInstaller.builder(CAPABILITY, new InfinispanClientMappingsRegistryProvider(this.resolver.resolve(context, model))).build();
     }
 }

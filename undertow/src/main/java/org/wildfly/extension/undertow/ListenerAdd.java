@@ -85,7 +85,7 @@ abstract class ListenerAdd<S extends ListenerService> extends AbstractAddStepHan
         service.getWorker().set(sb.requiresCapability(REF_IO_WORKER, XnioWorker.class, workerName));
         service.getBinding().set(sb.requires(SocketBinding.SERVICE_DESCRIPTOR, bindingRef));
         service.getBufferPool().set(sb.requiresCapability(Capabilities.CAPABILITY_BYTE_BUFFER_POOL, ByteBufferPool.class, bufferPoolName));
-        service.getServerService().set(sb.requiresCapability(Capabilities.CAPABILITY_SERVER, Server.class, serverName));
+        service.getServerService().set(sb.requires(Server.SERVICE_DESCRIPTOR, serverName));
 
         configureAdditionalDependencies(context, sb, model, service);
         sb.install();

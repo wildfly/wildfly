@@ -7,9 +7,10 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import java.util.EnumSet;
 import java.util.Properties;
 
-import org.jboss.as.clustering.controller.CommonRequirement;
-import org.jboss.as.clustering.controller.CommonUnaryRequirement;
+import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsSubsystemResourceDefinition;
+import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemSchemaTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -19,7 +20,7 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.wildfly.clustering.jgroups.spi.JGroupsDefaultRequirement;
+import org.wildfly.clustering.jgroups.spi.ChannelFactory;
 
 /**
  * Tests parsing / booting / marshalling of Infinispan configurations.
@@ -52,12 +53,13 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return new InfinispanSubsystemInitialization()
-                .require(CommonUnaryRequirement.OUTBOUND_SOCKET_BINDING, "hotrod-server-1", "hotrod-server-2")
-                .require(CommonUnaryRequirement.DATA_SOURCE, "ExampleDS")
-                .require(CommonUnaryRequirement.PATH, "jboss.server.temp.dir")
-                .require(JGroupsDefaultRequirement.CHANNEL_FACTORY)
-                .require(CommonRequirement.LOCAL_TRANSACTION_PROVIDER)
-                .require(TransactionResourceDefinition.TransactionRequirement.XA_RESOURCE_RECOVERY_REGISTRY)
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-1")
+                .require(OutboundSocketBinding.SERVICE_DESCRIPTOR, "hotrod-server-2")
+                .require(CommonServiceDescriptor.DATA_SOURCE, "ExampleDS")
+                .require(PathManager.PATH_SERVICE_DESCRIPTOR, "jboss.server.temp.dir")
+                .require(ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
+                .require(TransactionResourceDefinition.LOCAL_TRANSACTION_PROVIDER)
+                .require(TransactionResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 

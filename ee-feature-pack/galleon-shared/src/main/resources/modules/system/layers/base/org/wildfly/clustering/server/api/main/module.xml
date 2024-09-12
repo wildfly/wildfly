@@ -9,5 +9,6 @@
 
     <resources>
         <artifact name="${org.wildfly:wildfly-clustering-server-api}"/>
+        <artifact name="${org.wildfly.clustering:wildfly-clustering-server-api}"/>
     </resources>
 </module>

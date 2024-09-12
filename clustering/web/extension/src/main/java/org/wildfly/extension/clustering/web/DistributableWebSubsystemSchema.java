@@ -46,8 +46,8 @@ public enum DistributableWebSubsystemSchema implements PersistentSubsystemSchema
         return builder(DistributableWebResourceDefinition.PATH, this.namespace).addAttributes(Attribute.stream(DistributableWebResourceDefinition.Attribute.class))
                 .addChild(this.getInfinispanSessionManagementResourceXMLBuilder())
                 .addChild(this.getHotRodSessionManagementResourceXMLBuilder())
-                .addChild(builder(InfinispanSSOManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanSSOManagementResourceDefinition.Attribute.class)))
-                .addChild(builder(HotRodSSOManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(HotRodSSOManagementResourceDefinition.Attribute.class)))
+                .addChild(builder(InfinispanUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(InfinispanUserManagementResourceDefinition.Attribute.class)))
+                .addChild(builder(HotRodUserManagementResourceDefinition.WILDCARD_PATH).addAttributes(Attribute.stream(HotRodUserManagementResourceDefinition.Attribute.class)))
                 .addChild(builder(LocalRoutingProviderResourceDefinition.PATH).setXmlElementName("local-routing"))
                 .addChild(builder(InfinispanRoutingProviderResourceDefinition.PATH).addAttributes(Attribute.stream(InfinispanRoutingProviderResourceDefinition.Attribute.class)).setXmlElementName("infinispan-routing"))
                 .build();

@@ -5,7 +5,7 @@
 
 package org.wildfly.clustering.ejb.infinispan.bean;
 
-import org.wildfly.clustering.ee.infinispan.GroupedKey;
+import org.wildfly.clustering.cache.infinispan.CacheKey;
 import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
 
 /**
@@ -13,7 +13,7 @@ import org.wildfly.clustering.ejb.cache.bean.BeanGroupKey;
  * @author Paul Ferraro
  * @param <K> the bean group identifier type
  */
-public class InfinispanBeanGroupKey<K> extends GroupedKey<K> implements BeanGroupKey<K> {
+public class InfinispanBeanGroupKey<K> extends CacheKey<K> implements BeanGroupKey<K> {
 
     public InfinispanBeanGroupKey(K id) {
         super(id);

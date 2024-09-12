@@ -5,22 +5,26 @@
 
 package org.wildfly.extension.clustering.web;
 
-import java.util.EnumSet;
-import java.util.function.UnaryOperator;
+import static org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition.Attribute.DELIMITER;
+import static org.wildfly.extension.clustering.web.RankedAffinityResourceDefinition.Attribute.MAX_ROUTES;
 
-import org.jboss.as.clustering.controller.CapabilityProvider;
-import org.jboss.as.clustering.controller.ResourceDescriptor;
-import org.jboss.as.clustering.controller.UnaryRequirementCapability;
+import org.jboss.as.clustering.controller.SimpleResourceDescriptorConfigurator;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.capability.UnaryCapabilityNameResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.service.UnaryRequirement;
-import org.wildfly.clustering.web.service.WebProviderRequirement;
-import org.wildfly.clustering.web.service.WebRequirement;
+import org.wildfly.clustering.session.cache.affinity.NarySessionAffinityConfiguration;
+import org.wildfly.clustering.web.service.routing.RouteLocatorProvider;
+import org.wildfly.clustering.web.service.routing.RoutingProvider;
+import org.wildfly.common.function.Functions;
+import org.wildfly.extension.clustering.web.routing.infinispan.RankedRouteLocatorProvider;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -29,27 +33,11 @@ public class RankedAffinityResourceDefinition extends AffinityResourceDefinition
 
     static final PathElement PATH = pathElement("ranked");
 
-    enum Capability implements CapabilityProvider, UnaryOperator<RuntimeCapability.Builder<Void>> {
-        AFFINITY(WebProviderRequirement.AFFINITY),
-        ;
-        private final org.jboss.as.clustering.controller.Capability capability;
-
-        Capability(UnaryRequirement requirement) {
-            this.capability = new UnaryRequirementCapability(requirement, this);
-        }
-
-        @Override
-        public org.jboss.as.clustering.controller.Capability getCapability() {
-            return this.capability;
-        }
-
-        @Override
-        public RuntimeCapability.Builder<Void> apply(RuntimeCapability.Builder<Void> builder) {
-            return builder.setAllowMultipleRegistrations(true)
-                    .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
-                    .addRequirements(WebRequirement.INFINISPAN_ROUTING_PROVIDER.getName());
-        }
-    }
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(RouteLocatorProvider.SERVICE_DESCRIPTOR)
+            .setAllowMultipleRegistrations(true)
+            .setDynamicNameMapper(UnaryCapabilityNameResolver.PARENT)
+            .addRequirements(RoutingProvider.INFINISPAN_SERVICE_DESCRIPTOR.getName())
+            .build();
 
     public enum Attribute implements org.jboss.as.clustering.controller.Attribute {
         DELIMITER("delimiter", ModelType.STRING, new ModelNode(".")),
@@ -71,14 +59,25 @@ public class RankedAffinityResourceDefinition extends AffinityResourceDefinition
         }
     }
 
-    static class ResourceDescriptorConfigurator implements UnaryOperator<ResourceDescriptor> {
-        @Override
-        public ResourceDescriptor apply(ResourceDescriptor descriptor) {
-            return descriptor.addCapabilities(Capability.class).addAttributes(Attribute.class);
-        }
+    RankedAffinityResourceDefinition() {
+        super(PATH, CAPABILITY, new SimpleResourceDescriptorConfigurator<>(Attribute.class));
     }
 
-    RankedAffinityResourceDefinition() {
-        super(PATH, EnumSet.allOf(Capability.class), new ResourceDescriptorConfigurator(), RankedAffinityServiceConfigurator::new);
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        String delimiter = DELIMITER.resolveModelAttribute(context, model).asString();
+        int maxRoutes = MAX_ROUTES.resolveModelAttribute(context, model).asInt();
+        NarySessionAffinityConfiguration configuration = new NarySessionAffinityConfiguration() {
+            @Override
+            public int getMaxMembers() {
+                return maxRoutes;
+            }
+
+            @Override
+            public String getDelimiter() {
+                return delimiter;
+            }
+        };
+        return CapabilityServiceInstaller.builder(CAPABILITY, RankedRouteLocatorProvider::new, Functions.constantSupplier(configuration)).build();
     }
 }

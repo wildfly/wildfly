@@ -7,7 +7,13 @@ package org.wildfly.extension.clustering.web;
 
 import java.util.function.UnaryOperator;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.extension.clustering.web.routing.LocalRoutingProvider;
+import org.wildfly.subsystem.service.ResourceServiceInstaller;
+import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
 
 /**
  * Definition of the /subsystem=distributable-web/routing=local resource.
@@ -18,6 +24,11 @@ public class LocalRoutingProviderResourceDefinition extends RoutingProviderResou
     static final PathElement PATH = pathElement("local");
 
     LocalRoutingProviderResourceDefinition() {
-        super(PATH, UnaryOperator.identity(), LocalRoutingProviderServiceConfigurator::new);
+        super(PATH, UnaryOperator.identity());
+    }
+
+    @Override
+    public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
+        return CapabilityServiceInstaller.builder(ROUTING_PROVIDER, new LocalRoutingProvider()).build();
     }
 }

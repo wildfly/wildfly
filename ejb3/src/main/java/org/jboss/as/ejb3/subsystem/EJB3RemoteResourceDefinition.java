@@ -26,7 +26,8 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.server.GroupMember;
+import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     public static final String EJB_REMOTE_CAPABILITY_NAME = "org.wildfly.ejb.remote";
 
     @SuppressWarnings("unchecked")
-    static final UnaryServiceDescriptor<Registry<String, List<ClientMapping>>> CLIENT_MAPPINGS_REGISTRY = UnaryServiceDescriptor.of("org.wildfly.ejb.remote.client-mappings-registry", (Class<Registry<String, List<ClientMapping>>>) (Class<?>) Registry.class);
+    static final UnaryServiceDescriptor<Registry<GroupMember, String, List<ClientMapping>>> CLIENT_MAPPINGS_REGISTRY = UnaryServiceDescriptor.of("org.wildfly.ejb.remote.client-mappings-registry", (Class<Registry<GroupMember, String, List<ClientMapping>>>) (Class<?>) Registry.class);
 
     static final RuntimeCapability<Void> EJB_REMOTE_CAPABILITY = RuntimeCapability.Builder.of(EJB_REMOTE_CAPABILITY_NAME)
             .setServiceType(Void.class)
@@ -114,7 +115,7 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+            resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
         }
 
         // register custom handlers for deprecated attribute connector-ref

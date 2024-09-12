@@ -5,36 +5,33 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
-import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.immutable.CompositeImmutability;
-import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.session.SessionAttributeImmutability;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.web.session.SpecificationProvider;
-import org.wildfly.common.iteration.CompositeIterable;
+import org.wildfly.clustering.web.service.session.DistributableSessionManagementConfiguration;
+import org.wildfly.elytron.web.undertow.server.servlet.ServletSecurityContextImpl.IdentityContainer;
+import org.wildfly.security.cache.CachedIdentity;
+
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.servlet.util.SavedRequest;
 
 /**
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.web.session.SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Map<String, Object>> {
+public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> extends WebDeploymentConfigurationAdapter implements org.wildfly.clustering.session.SessionManagerFactoryConfiguration<Map<String, Object>> {
 
-    private final Integer maxActiveSessions;
+    private final OptionalInt maxActiveSessions;
     private final ByteBufferMarshaller marshaller;
     private final Immutability immutability;
     private final SessionAttributePersistenceStrategy attributePersistenceStrategy;
@@ -49,12 +46,16 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
         for (Immutability loadedImmutability : module.loadService(Immutability.class)) {
             loadedImmutabilities.add(loadedImmutability);
         }
-        this.immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(UndertowSessionAttributeImmutability.class), loadedImmutabilities, List.of(immutability)));
+        this.immutability = Immutability.composite(List.of(
+                Immutability.getDefault(),
+                Immutability.classes(List.of(AuthenticatedSession.class, SavedRequest.class, CachedIdentity.class, IdentityContainer.class)),
+                Immutability.composite(loadedImmutabilities),
+                immutability));
         this.attributePersistenceStrategy = managementConfiguration.getAttributePersistenceStrategy();
     }
 
     @Override
-    public Integer getMaxActiveSessions() {
+    public OptionalInt getMaxActiveSessions() {
         return this.maxActiveSessions;
     }
 
@@ -64,18 +65,13 @@ public class SessionManagerFactoryConfigurationAdapter<C extends DistributableSe
     }
 
     @Override
-    public Supplier<Map<String, Object>> getLocalContextFactory() {
-        return LocalSessionContextFactory.INSTANCE;
+    public Supplier<Map<String, Object>> getSessionContextFactory() {
+        return ConcurrentHashMap::new;
     }
 
     @Override
     public Immutability getImmutability() {
         return this.immutability;
-    }
-
-    @Override
-    public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
-        return UndertowSpecificationProvider.INSTANCE;
     }
 
     @Override

@@ -5,16 +5,20 @@
 
 package org.wildfly.extension.clustering.ejb;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.ClientMapping;
-import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceConfigurator;
+import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceInstallerFactory;
 import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
-import org.wildfly.clustering.server.service.ProvidedCacheServiceConfigurator;
-import org.wildfly.clustering.server.service.group.LocalCacheGroupServiceConfiguratorProvider;
-import org.wildfly.clustering.server.service.registry.LocalRegistryServiceConfiguratorProvider;
-import org.wildfly.clustering.service.SupplierDependency;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
+import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
+import org.wildfly.clustering.server.service.FilteredBinaryServiceInstallerProvider;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * A local client mappings registry provider implementation.
@@ -22,14 +26,15 @@ import org.wildfly.clustering.service.SupplierDependency;
  * @author Paul Ferraro
  * @author Richard Achmatowicz
  */
-public class LocalClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
-    static final String NAME = "ejb";
+public enum LocalClientMappingsRegistryProvider implements ClientMappingsRegistryProvider {
+    INSTANCE;
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getServiceConfigurators(String connectorName, SupplierDependency<List<ClientMapping>> clientMappings) {
-        CapabilityServiceConfigurator registryEntryConfigurator = new ClientMappingsRegistryEntryServiceConfigurator(NAME, connectorName, clientMappings);
-        CapabilityServiceConfigurator registryConfigurator = new ProvidedCacheServiceConfigurator<>(LocalRegistryServiceConfiguratorProvider.class, NAME, connectorName);
-        CapabilityServiceConfigurator groupConfigurator = new ProvidedCacheServiceConfigurator<>(LocalCacheGroupServiceConfiguratorProvider.class, NAME, connectorName);
-        return List.of(registryEntryConfigurator, registryConfigurator, groupConfigurator);
+    public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String connectorName, ServiceDependency<List<ClientMapping>> clientMappings) {
+        BinaryServiceConfiguration configuration = BinaryServiceConfiguration.of(ModelDescriptionConstants.LOCAL, connectorName);
+        List<ServiceInstaller> installers = new LinkedList<>();
+        installers.add(new ClientMappingsRegistryEntryServiceInstallerFactory(clientMappings).apply(configuration));
+        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(support, configuration).forEach(installers::add);
+        return installers;
     }
 }

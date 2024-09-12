@@ -12,15 +12,8 @@ import java.io.Serializable;
  * @param <C> the command context type
  * @param <R> the command return type
  * @author Paul Ferraro
+ * @deprecated Superseded by {@link org.wildfly.clustering.server.dispatcher.Command}.
  */
-public interface Command<R, C> extends Serializable {
-
-    /**
-     * Execute this command with the specified context.
-     *
-     * @param context the execution context
-     * @return the result of this command
-     * @throws Exception exception that occurred during execution
-     */
-    R execute(C context) throws Exception;
+@Deprecated(forRemoval = true)
+public interface Command<R, C> extends org.wildfly.clustering.server.dispatcher.Command<R, C, Exception>, Serializable {
 }

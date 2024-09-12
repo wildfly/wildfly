@@ -29,8 +29,9 @@ import org.jboss.as.ejb3.timerservice.TimerHandleImpl;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimer;
 import org.jboss.as.ejb3.timerservice.spi.ManagedTimerService;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.ee.BatchContext;
+import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.cache.batch.BatchContext;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.ejb.timer.ImmutableScheduleExpression;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerConfiguration;
 import org.wildfly.clustering.ejb.timer.Timer;
@@ -43,13 +44,13 @@ import org.wildfly.clustering.ejb.timer.TimerManager;
  */
 public class DistributableTimer<I> implements ManagedTimer {
 
-    private final TimerManager<I, Batch> manager;
+    private final TimerManager<I> manager;
     private final Timer<I> timer;
-    private final Batch suspendedBatch;
+    private final SuspendedBatch suspendedBatch;
     private final TimedObjectInvoker invoker;
     private final TimerSynchronizationFactory<I> synchronizationFactory;
 
-    public DistributableTimer(TimerManager<I, Batch> manager, Timer<I> timer, Batch suspendedBatch, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
+    public DistributableTimer(TimerManager<I> manager, Timer<I> timer, SuspendedBatch suspendedBatch, TimedObjectInvoker invoker, TimerSynchronizationFactory<I> synchronizationFactory) {
         this.manager = manager;
         this.timer = timer;
         this.suspendedBatch = suspendedBatch;
@@ -100,12 +101,20 @@ public class DistributableTimer<I> implements ManagedTimer {
     public void cancel() {
         this.validateInvocationContext();
         Transaction transaction = ManagedTimerService.getActiveTransaction();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             if (transaction != null) {
                 // Cancel timer on tx commit
                 // Reactivate timer on tx rollback
                 this.timer.suspend();
-                transaction.registerSynchronization(this.synchronizationFactory.createCancelSynchronization(this.timer, this.suspendedBatch, this.manager.getBatcher()));
+                try {
+                    transaction.registerSynchronization(this.synchronizationFactory.createCancelSynchronization(this.timer, this.manager.getBatchFactory(), this.suspendedBatch));
+                } catch (RollbackException e) {
+                    // getActiveTransaction() would have returned null
+                    throw new IllegalStateException(e);
+                } catch (SystemException e) {
+                    context.get().discard();
+                    throw new EJBException(e);
+                }
                 @SuppressWarnings("unchecked")
                 Set<I> inactiveTimers = (Set<I>) this.invoker.getComponent().getTransactionSynchronizationRegistry().getResource(this.manager);
                 if (inactiveTimers != null) {
@@ -114,19 +123,13 @@ public class DistributableTimer<I> implements ManagedTimer {
             } else {
                 this.synchronizationFactory.getCancelTask().accept(this.timer);
             }
-        } catch (RollbackException e) {
-            // getActiveTransaction() would have returned null
-            throw new IllegalStateException(e);
-        } catch (SystemException e) {
-            this.suspendedBatch.discard();
-            throw new EJBException(e);
         }
     }
 
     @Override
     public long getTimeRemaining() {
         this.validateInvocationContext();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Duration.between(Instant.now(), next).toMillis();
         }
@@ -135,7 +138,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public Date getNextTimeout() {
         this.validateInvocationContext();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             Instant next = this.timer.getMetaData().getNextTimeout().orElseThrow(NoMoreTimeoutsException::new);
             return Date.from(next);
         }
@@ -144,7 +147,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public Serializable getInfo() {
         this.validateInvocationContext();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return (Serializable) this.timer.getMetaData().getContext();
         }
     }
@@ -156,10 +159,8 @@ public class DistributableTimer<I> implements ManagedTimer {
         if (!this.timer.getMetaData().isPersistent()) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
         }
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
-            // Create handle w/OOB timer
-            return new TimerHandleImpl(new OOBTimer<>(this.manager, this.timer.getId(), this.invoker, this.synchronizationFactory), this.invoker.getComponent());
-        }
+        // Create handle w/OOB timer
+        return new TimerHandleImpl(new OOBTimer<>(this.manager, this.timer.getId(), this.invoker, this.synchronizationFactory), this.invoker.getComponent());
     }
 
     @Override
@@ -168,7 +169,7 @@ public class DistributableTimer<I> implements ManagedTimer {
         if (!this.timer.getMetaData().getType().isCalendar()) {
             throw EjbLogger.EJB3_TIMER_LOGGER.invalidTimerNotCalendarBaseTimer(this);
         }
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             ImmutableScheduleExpression expression = this.timer.getMetaData().getConfiguration(ScheduleTimerConfiguration.class).getScheduleExpression();
             ScheduleExpression result = new ScheduleExpression()
                     .second(expression.getSecond())
@@ -197,7 +198,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public boolean isCalendarTimer() {
         this.validateInvocationContext();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return this.timer.getMetaData().getType().isCalendar();
         }
     }
@@ -205,7 +206,7 @@ public class DistributableTimer<I> implements ManagedTimer {
     @Override
     public boolean isPersistent() {
         this.validateInvocationContext();
-        try (BatchContext context = this.manager.getBatcher().resumeBatch(this.suspendedBatch)) {
+        try (BatchContext<Batch> context = this.suspendedBatch.resumeWithContext()) {
             return this.timer.getMetaData().isPersistent();
         }
     }

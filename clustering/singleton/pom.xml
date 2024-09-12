@@ -29,8 +29,8 @@
 
     <modules>
         <module>api</module>
+        <module>compat</module>
         <module>extension</module>
         <module>server</module>
-        <module>service</module>
     </modules>
 </project>

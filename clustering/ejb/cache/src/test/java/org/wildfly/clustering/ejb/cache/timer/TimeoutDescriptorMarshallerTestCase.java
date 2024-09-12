@@ -5,11 +5,11 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import java.io.IOException;
-
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.MarshallingTesterFactory;
 import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * Unit test for {@link TimeoutDescriptorMarshaller}.
@@ -17,13 +17,14 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
  */
 public class TimeoutDescriptorMarshallerTestCase {
 
-    @Test
-    public void test() throws NoSuchMethodException, IOException {
-        Tester<TimeoutDescriptor> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
-        tester.test(new TimeoutDescriptor(this.getClass().getDeclaredMethod("ejbTimeout")));
-        tester.test(new TimeoutDescriptor(this.getClass().getDeclaredMethod("ejbTimeout", Object.class)));
-        tester.test(new TimeoutDescriptor(this.getClass().getDeclaredMethod("timeout")));
-        tester.test(new TimeoutDescriptor(this.getClass().getDeclaredMethod("timeout", Object.class)));
+    @ParameterizedTest
+    @TesterFactorySource(MarshallingTesterFactory.class)
+    public void test(TesterFactory factory) throws NoSuchMethodException {
+        Tester<TimeoutDescriptor> tester = factory.createTester();
+        tester.accept(new TimeoutDescriptor(this.getClass().getDeclaredMethod("ejbTimeout")));
+        tester.accept(new TimeoutDescriptor(this.getClass().getDeclaredMethod("ejbTimeout", Object.class)));
+        tester.accept(new TimeoutDescriptor(this.getClass().getDeclaredMethod("timeout")));
+        tester.accept(new TimeoutDescriptor(this.getClass().getDeclaredMethod("timeout", Object.class)));
     }
 
     void timeout() {

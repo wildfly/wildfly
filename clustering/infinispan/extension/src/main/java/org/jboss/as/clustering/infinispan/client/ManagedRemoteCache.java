@@ -24,7 +24,6 @@ import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.Flag;
 import org.infinispan.client.hotrod.MetadataValue;
-import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.ServerStatistics;
 import org.infinispan.client.hotrod.StreamingRemoteCache;
@@ -41,15 +40,16 @@ import org.infinispan.commons.util.CloseableIteratorSet;
 import org.infinispan.commons.util.IntSet;
 import org.infinispan.query.dsl.Query;
 import org.reactivestreams.Publisher;
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.Registration;
+import org.wildfly.clustering.infinispan.client.RemoteCache;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
+import org.wildfly.clustering.server.Registrar;
+import org.wildfly.clustering.server.Registration;
 
 /**
  * {@link RemoteCache} decorator that handles registration on {@link #start()} and deregistration on {@link #stop()}.
  * @author Paul Ferraro
  */
-public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements InternalRemoteCache<K, V>, UnaryOperator<Registration> {
+public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implements InternalRemoteCache<K, V>, RemoteCache<K, V>, UnaryOperator<Registration> {
 
     private final Registrar<String> registrar;
     private final AtomicReference<Registration> registration;
@@ -57,7 +57,7 @@ public class ManagedRemoteCache<K, V> extends RemoteCacheSupport<K, V> implement
     private final RemoteCacheManager manager;
     private final InternalRemoteCache<K, V> cache;
 
-    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, RemoteCache<K, V> cache, Registrar<String> registrar) {
+    public ManagedRemoteCache(RemoteCacheContainer container, RemoteCacheManager manager, org.infinispan.client.hotrod.RemoteCache<K, V> cache, Registrar<String> registrar) {
         this(container, manager, (InternalRemoteCache<K, V>) cache, registrar, new AtomicReference<>());
     }
 

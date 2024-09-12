@@ -5,8 +5,9 @@
 
 package org.wildfly.clustering.web.undertow.routing;
 
+import java.util.function.UnaryOperator;
+
 import org.jboss.as.web.session.AffinityLocator;
-import org.wildfly.clustering.web.routing.RouteLocator;
 
 /**
  * The {@link AffinityLocator} implementation that leverages distributable {@link RouteLocator}.
@@ -15,14 +16,14 @@ import org.wildfly.clustering.web.routing.RouteLocator;
  */
 public class DistributableAffinityLocator implements AffinityLocator {
 
-    private final RouteLocator locator;
+    private final UnaryOperator<String> locator;
 
-    public DistributableAffinityLocator(RouteLocator locator) {
+    public DistributableAffinityLocator(UnaryOperator<String> locator) {
         this.locator = locator;
     }
 
     @Override
     public String locate(String sessionId) {
-        return this.locator.locate(sessionId);
+        return this.locator.apply(sessionId);
     }
 }

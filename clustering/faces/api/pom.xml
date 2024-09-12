@@ -53,15 +53,15 @@
         </dependency>
 
         <!-- Internal dependencies -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-        </dependency>
 
         <!-- External dependencies -->
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.clustering</groupId>
+            <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.security</groupId>
@@ -77,23 +77,14 @@
 
         <!-- Internal test dependencies -->
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-marshalling-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly.clustering</groupId>
             <artifactId>wildfly-clustering-marshalling-spi</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>

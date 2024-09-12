@@ -31,19 +31,19 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+
+import javax.naming.NamingException;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RequirementServiceTarget;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -147,17 +147,16 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.singleton.SingletonDefaultRequirement;
-import org.wildfly.clustering.singleton.service.SingletonPolicy;
+import org.wildfly.clustering.server.registry.Registry;
+import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 import org.wildfly.transaction.client.LocalTransactionContext;
-
-import io.undertow.server.handlers.PathHandler;
 import org.wildfly.transaction.client.naming.txn.TxnNamingContextFactory;
 
-import javax.naming.NamingException;
+import io.undertow.server.handlers.PathHandler;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -180,8 +179,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final Iterable<String> outflowSecurityDomains;
     private final AtomicBoolean denyAccessByDefault;
 
-    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault, AttributeDefinition... attributes) {
-        super(attributes);
+    EJB3SubsystemAdd(AtomicReference<String> defaultSecurityDomainName, Iterable<ApplicationSecurityDomainConfig> knownApplicationSecurityDomains, Iterable<String> outflowSecurityDomains, AtomicBoolean denyAccessByDefault) {
         this.defaultSecurityDomainName = defaultSecurityDomainName;
         this.knownApplicationSecurityDomains = knownApplicationSecurityDomains;
         this.outflowSecurityDomains = outflowSecurityDomains;
@@ -457,13 +455,9 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL.updatePoolService(context, model);
         }
 
-        if (model.hasDefined(DEFAULT_SFSB_CACHE)) {
-            EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, model);
-        }
+        EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE.updateCacheService(context, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.resolveModelAttribute(context, model).asStringOrNull());
 
-        if (model.hasDefined(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
-            EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE.updateCacheService(context, model);
-        }
+        EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE.updateCacheService(context, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.resolveModelAttribute(context, model).asStringOrNull());
 
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
             DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model);
@@ -592,14 +586,21 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private static void addClusteringServices(final OperationContext context, final boolean appclient) {
-        ServiceTarget target = context.getServiceTarget();
         if (appclient) {
             return;
         }
-        if (context.hasOptionalCapability(SingletonDefaultRequirement.POLICY.getName(), CLUSTERED_SINGLETON_CAPABILITY.getName(), null)) {
-            ServiceBuilder<?> builder = target.addService(SingletonBarrierService.SERVICE_NAME);
-            Supplier<SingletonPolicy> policy = builder.requires(context.getCapabilityServiceName(SingletonDefaultRequirement.POLICY.getName(), SingletonDefaultRequirement.POLICY.getType()));
-            builder.setInstance(new SingletonBarrierService(policy)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        if (context.hasOptionalCapability(ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR, CLUSTERED_SINGLETON_CAPABILITY, null)) {
+            ServiceDependency<ServiceTargetFactory> targetFactory = ServiceDependency.on(ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR);
+            ServiceInstaller installer = new ServiceInstaller() {
+                @Override
+                public ServiceController<?> install(RequirementServiceTarget target) {
+                    ServiceBuilder<?> builder = targetFactory.get().createSingletonServiceTarget(target).addService();
+                    return builder.setInstance(org.jboss.msc.Service.newInstance(builder.provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()), null))
+                            .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                            .install();
+                }
+            };
+            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).build();
         }
     }
 

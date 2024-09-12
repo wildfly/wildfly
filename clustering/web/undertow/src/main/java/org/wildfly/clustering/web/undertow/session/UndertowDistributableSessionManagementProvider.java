@@ -5,48 +5,79 @@
 
 package org.wildfly.clustering.web.undertow.session;
 
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
-import org.jboss.as.clustering.controller.CapabilityServiceConfigurator;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import jakarta.servlet.ServletContext;
+
+import io.undertow.servlet.api.SessionConfigWrapper;
+
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.service.ServiceSupplierDependency;
+import org.wildfly.clustering.server.immutable.Immutability;
+import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.web.container.SessionManagementProvider;
 import org.wildfly.clustering.web.container.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.container.WebDeploymentConfiguration;
+import org.wildfly.clustering.web.service.WebDeploymentServiceDescriptor;
 import org.wildfly.clustering.web.service.session.DistributableSessionManagementProvider;
-import org.wildfly.clustering.web.session.DistributableSessionManagementConfiguration;
-import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocatorServiceConfigurator;
-import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodecServiceConfigurator;
-import org.wildfly.extension.undertow.session.SessionConfigWrapperFactoryServiceConfigurator;
+import org.wildfly.clustering.web.undertow.routing.DistributableAffinityLocator;
+import org.wildfly.clustering.web.undertow.routing.DistributableSessionIdentifierCodec;
+import org.wildfly.common.function.Functions;
+import org.wildfly.extension.undertow.CookieConfig;
+import org.wildfly.extension.undertow.session.AffinitySessionConfigWrapper;
+import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
+import org.wildfly.subsystem.service.DeploymentServiceInstaller;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
 /**
  * {@link SessionManagementProvider} for Undertow.
  * @author Paul Ferraro
  */
-public class UndertowDistributableSessionManagementProvider<C extends DistributableSessionManagementConfiguration<DeploymentUnit>> implements SessionManagementProvider {
+public class UndertowDistributableSessionManagementProvider implements SessionManagementProvider {
 
-    private final DistributableSessionManagementProvider<C> provider;
+    private final DistributableSessionManagementProvider provider;
     private final Immutability immutability;
 
-    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider<C> provider, Immutability immutability) {
+    public UndertowDistributableSessionManagementProvider(DistributableSessionManagementProvider provider, Immutability immutability) {
         this.provider = provider;
         this.immutability = immutability;
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getSessionManagerFactoryServiceConfigurators(ServiceName name, SessionManagerFactoryConfiguration configuration) {
-        CapabilityServiceConfigurator configurator = this.provider.getSessionManagerFactoryServiceConfigurator(new SessionManagerFactoryConfigurationAdapter<>(configuration, this.provider.getSessionManagementConfiguration(), this.immutability));
-        return List.of(configurator, new DistributableSessionManagerFactoryServiceConfigurator<>(name, configuration, new ServiceSupplierDependency<>(configurator)));
+    public DeploymentServiceInstaller getSessionManagerFactoryServiceInstaller(ServiceName name, SessionManagerFactoryConfiguration configuration) {
+
+        DeploymentServiceInstaller providedInstaller = this.provider.getSessionManagerFactoryServiceInstaller(new SessionManagerFactoryConfigurationAdapter<>(configuration, this.provider.getSessionManagementConfiguration(), this.immutability));
+
+        Function<SessionManagerFactory<ServletContext, Map<String, Object>>, io.undertow.servlet.api.SessionManagerFactory> mapper = new Function<>() {
+            @Override
+            public io.undertow.servlet.api.SessionManagerFactory apply(SessionManagerFactory<ServletContext, Map<String, Object>> factory) {
+                return new DistributableSessionManagerFactory(factory, configuration);
+            }
+        };
+        DeploymentServiceInstaller installer = ServiceInstaller.builder(ServiceDependency.on(WebDeploymentServiceDescriptor.SESSION_MANAGER_FACTORY, configuration.getDeploymentName()).map(mapper)).provides(name).build();
+
+        return DeploymentServiceInstaller.combine(providedInstaller, installer);
     }
 
     @Override
-    public Iterable<CapabilityServiceConfigurator> getSessionAffinityServiceConfigurators(ServiceName name, WebDeploymentConfiguration configuration) {
-        CapabilityServiceConfigurator routeLocatorConfigurator = this.provider.getRouteLocatorServiceConfigurator(new WebDeploymentConfigurationAdapter(configuration));
-        CapabilityServiceConfigurator codecConfigurator = new DistributableSessionIdentifierCodecServiceConfigurator(name.append("codec"), new ServiceSupplierDependency<>(routeLocatorConfigurator));
-        CapabilityServiceConfigurator affinityLocatorConfigurator = new DistributableAffinityLocatorServiceConfigurator(name.append("affinity"), new ServiceSupplierDependency<>(routeLocatorConfigurator));
-        CapabilityServiceConfigurator wrapperFactoryConfigurator = new SessionConfigWrapperFactoryServiceConfigurator(name, new ServiceSupplierDependency<>(codecConfigurator), new ServiceSupplierDependency<>(affinityLocatorConfigurator));
-        return List.of(routeLocatorConfigurator, codecConfigurator, affinityLocatorConfigurator, wrapperFactoryConfigurator);
+    public DeploymentServiceInstaller getSessionAffinityServiceInstaller(DeploymentPhaseContext context, ServiceName name, WebDeploymentConfiguration configuration) {
+        DeploymentServiceInstaller locatorInstaller = this.provider.getRouteLocatorServiceInstaller(context, new WebDeploymentConfigurationAdapter(configuration));
+
+        ServiceDependency<UnaryOperator<String>> locator = ServiceDependency.on(WebDeploymentServiceDescriptor.ROUTE_LOCATOR, configuration.getDeploymentName());
+        Function<CookieConfig, SessionConfigWrapper> wrapperFactory = new Function<>() {
+            @Override
+            public SessionConfigWrapper apply(CookieConfig config) {
+                UnaryOperator<String> routeLocator = locator.get();
+                SessionIdentifierCodec codec = new DistributableSessionIdentifierCodec(routeLocator);
+                return (config != null) ? new AffinitySessionConfigWrapper(config, new DistributableAffinityLocator(routeLocator)) : new CodecSessionConfigWrapper(codec);
+            }
+        };
+        DeploymentServiceInstaller wrapperFactoryInstaller = ServiceInstaller.builder(Functions.constantSupplier(wrapperFactory)).requires(locator).provides(name).build();
+
+        return DeploymentServiceInstaller.combine(locatorInstaller, wrapperFactoryInstaller);
     }
 }

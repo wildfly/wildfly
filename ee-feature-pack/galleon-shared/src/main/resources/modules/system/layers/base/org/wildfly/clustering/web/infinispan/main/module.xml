@@ -4,43 +4,12 @@
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
   -->
+<!--
+    END USER MODULE USAGE: Deprecated module alias.
 
-<module xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.infinispan">
-
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <exports>
-        <exclude path="org/wildfly/clustering/web/infinispan/logging"/>
-    </exports>
-
-    <resources>
-        <artifact name="${org.wildfly:wildfly-clustering-web-infinispan}"/>
-    </resources>
-
-    <dependencies>
-        <module name="jakarta.transaction.api"/>
-
-        <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.core"/>
-        <module name="org.infinispan.protostream"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.wildfly.clustering.context"/>
-        <module name="org.wildfly.clustering.ee.cache" services="import"/>
-        <module name="org.wildfly.clustering.ee.infinispan" services="import"/>
-        <module name="org.wildfly.clustering.ee.spi"/>
-        <module name="org.wildfly.clustering.infinispan.embedded.api"/>
-        <module name="org.wildfly.clustering.infinispan.embedded.spi" services="import"/>
-        <module name="org.wildfly.clustering.marshalling.protostream"/>
-        <module name="org.wildfly.clustering.marshalling.spi"/>
-        <module name="org.wildfly.clustering.server.api"/>
-        <!-- Make sure galleon includes this module -->
-        <module name="org.wildfly.clustering.server.infinispan" optional="true"/>
-        <module name="org.wildfly.clustering.server.spi"/>
-        <module name="org.wildfly.clustering.web.cache"/>
-        <module name="org.wildfly.clustering.web.spi"/>
-        <module name="org.wildfly.common"/>
-        <module name="org.wildfly.security.elytron-private"/>
-    </dependencies>
-</module>
+    This module is an alias for the module specified in the 'target-name' attribute,
+    provided for compatibility purposes.
+    Uses of this module should be updated to use the target module.
+    This alias is deprecated and will be removed in a future release.
+-->
+<module-alias xmlns="urn:jboss:module:1.9" name="org.wildfly.clustering.web.infinispan" target-name="org.wildfly.clustering.session.infinispan.embedded"/>

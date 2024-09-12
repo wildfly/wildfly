@@ -9,7 +9,6 @@ import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
-import org.jboss.as.ejb3.clustering.SingletonBarrierService;
 import org.jboss.as.ejb3.component.messagedriven.MdbDeliveryControllerService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
@@ -48,7 +47,6 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
         CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-        boolean clusteredSingletonFound = false;
         for (final ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
             ComponentDescription description = configuration.getComponentDescription();
             if (description instanceof MessageDrivenComponentDescription) {
@@ -59,7 +57,6 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                             .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class, mdbDeliveryControllerService.getMdbComponent())
                             .setInitialMode(Mode.PASSIVE);
                     if (mdbDescription.isClusteredSingleton()) {
-                        clusteredSingletonFound = true;
                         builder.requires(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
                     }
                     if (mdbDescription.getDeliveryGroups() != null) {
@@ -74,11 +71,6 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                     builder.install();
                 }
             }
-        }
-        if (clusteredSingletonFound) {
-            // Add dependency on the singleton barrier, which starts on-demand
-            // (the MDB delivery controller won't demand the singleton barrier service to start)
-            serviceTarget.addDependency(SingletonBarrierService.SERVICE_NAME);
         }
     }
 

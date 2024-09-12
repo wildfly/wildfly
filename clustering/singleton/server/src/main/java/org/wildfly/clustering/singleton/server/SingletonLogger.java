@@ -18,7 +18,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.server.GroupMember;
 
 /**
  * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
@@ -60,7 +60,7 @@ public interface SingletonLogger extends BasicLogger {
     void quorumJustReached(String service, int quorum);
 
     @Message(id = 8, value = "Detected multiple primary providers for %s service: %s")
-    IllegalArgumentException multiplePrimaryProvidersDetected(String serviceName, Collection<Node> nodes);
+    IllegalArgumentException multiplePrimaryProvidersDetected(String serviceName, Collection<GroupMember> providers);
 
     @Message(id = 9, value = "Singleton service %s is not started.")
     IllegalStateException notStarted(String serviceName);
