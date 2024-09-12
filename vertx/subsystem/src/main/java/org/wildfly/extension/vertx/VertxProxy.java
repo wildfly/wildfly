@@ -16,8 +16,6 @@
 
 package org.wildfly.extension.vertx;
 
-import io.vertx.core.Vertx;
-
 /**
  * This is a resource used to manage the Vertx instances in the subsystem.
  *
@@ -27,15 +25,21 @@ public class VertxProxy {
 
     /** The option name from which the Vert.x instance will be created upon **/
     private final String optionName;
-    private final Vertx vertx;
+    private final io.vertx.core.Vertx vertx;
+    private final io.vertx.mutiny.core.Vertx mutiyVertx;
 
-    public VertxProxy(String optionName, Vertx vertx) {
+    public VertxProxy(String optionName, io.vertx.core.Vertx vertx) {
         this.optionName = optionName;
         this.vertx = vertx;
+        this.mutiyVertx = new io.vertx.mutiny.core.Vertx(vertx);
     }
 
-    public Vertx getVertx() {
+    public io.vertx.core.Vertx getVertx() {
         return this.vertx;
+    }
+
+    public io.vertx.mutiny.core.Vertx getMutiyVertx() {
+        return mutiyVertx;
     }
 
     public String getOptionName() {

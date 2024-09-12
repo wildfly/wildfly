@@ -16,11 +16,21 @@
  */
 package org.wildfly.extension.vertx.processors;
 
+import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanAttributes;
+import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
-import jakarta.inject.Singleton;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
 import org.wildfly.extension.vertx.VertxProxyHolder;
+import org.wildfly.extension.vertx.logging.VertxLogger;
+
+import java.util.Set;
 
 /**
  * CDI Extension which adds the ability to inject the Vertx instances by the member name.
@@ -32,26 +42,89 @@ public class CDIExtension implements Extension {
     public CDIExtension() {
     }
 
-    public void registerRawVertxBean(@Observes AfterBeanDiscovery afterBeanDiscovery) {
-        afterBeanDiscovery.addBean()
-                .scope(Singleton.class)
-                .types(io.vertx.core.Vertx.class)
-                .beanClass(io.vertx.core.Vertx.class)
-                .createWith(
-                        creationalContext -> VertxProxyHolder.instance().getVertxProxy() != null ?
-                                VertxProxyHolder.instance().getVertxProxy().getVertx() :
-                                io.vertx.core.Vertx.vertx());
+    public void registerVertxBean(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        if (VertxProxyHolder.instance().getVertxProxy() != null) {
+            VertxLogger.VERTX_LOGGER.useVertxFromSubsystem();
+            AnnotatedType<io.vertx.core.Vertx> rawVertxAnnotatedType = beanManager.createAnnotatedType(io.vertx.core.Vertx.class);
+            BeanAttributes<io.vertx.core.Vertx> rawVertxBeanAttributes = beanManager.createBeanAttributes(rawVertxAnnotatedType);
+            afterBeanDiscovery.addBean(beanManager.createBean(rawVertxBeanAttributes, io.vertx.core.Vertx.class, new RawVertxProducer()));
+
+            AnnotatedType<io.vertx.mutiny.core.Vertx> annotatedType = beanManager.createAnnotatedType(io.vertx.mutiny.core.Vertx.class);
+            BeanAttributes<io.vertx.mutiny.core.Vertx> beanAttributes = beanManager.createBeanAttributes(annotatedType);
+            afterBeanDiscovery.addBean(beanManager.createBean(beanAttributes, io.vertx.mutiny.core.Vertx.class, new MunityVertxProducer()));
+        }
     }
 
-    public void registerMutinyVertxBean(@Observes AfterBeanDiscovery afterBeanDiscovery) {
-        afterBeanDiscovery.addBean()
-                .scope(Singleton.class)
-                .types(io.vertx.mutiny.core.Vertx.class)
-                .beanClass(io.vertx.mutiny.core.Vertx.class)
-                .createWith(
-                        creationalContext -> VertxProxyHolder.instance().getVertxProxy() != null ?
-                                new io.vertx.mutiny.core.Vertx(VertxProxyHolder.instance().getVertxProxy().getVertx()) :
-                                io.vertx.mutiny.core.Vertx.vertx());
+    private class MunityVertxProducer implements InjectionTargetFactory<io.vertx.mutiny.core.Vertx> {
+        @Override
+        public InjectionTarget<io.vertx.mutiny.core.Vertx> createInjectionTarget(Bean<io.vertx.mutiny.core.Vertx> bean) {
+            return new InjectionTarget<>() {
+                @Override
+                public void inject(io.vertx.mutiny.core.Vertx instance, CreationalContext<io.vertx.mutiny.core.Vertx> ctx) {
+                }
+
+                @Override
+                public void postConstruct(io.vertx.mutiny.core.Vertx instance) {
+                }
+
+                @Override
+                public void preDestroy(io.vertx.mutiny.core.Vertx instance) {
+                }
+
+                @Override
+                public io.vertx.mutiny.core.Vertx produce(CreationalContext<io.vertx.mutiny.core.Vertx> ctx) {
+                    return mutinyVertx();
+                }
+
+                @Override
+                public void dispose(io.vertx.mutiny.core.Vertx instance) {
+                }
+
+                @Override
+                public Set<InjectionPoint> getInjectionPoints() {
+                    return Set.of();
+                }
+            };
+        }
+    }
+    private class RawVertxProducer implements InjectionTargetFactory<io.vertx.core.Vertx> {
+        @Override
+        public InjectionTarget<io.vertx.core.Vertx> createInjectionTarget(Bean<io.vertx.core.Vertx> bean) {
+            return new InjectionTarget<>() {
+                @Override
+                public void inject(io.vertx.core.Vertx instance, CreationalContext<io.vertx.core.Vertx> ctx) {
+                }
+
+                @Override
+                public void postConstruct(io.vertx.core.Vertx instance) {
+                }
+
+                @Override
+                public void preDestroy(io.vertx.core.Vertx instance) {
+                }
+
+                @Override
+                public io.vertx.core.Vertx produce(CreationalContext<io.vertx.core.Vertx> ctx) {
+                    return rawVertx();
+                }
+
+                @Override
+                public void dispose(io.vertx.core.Vertx instance) {
+                }
+
+                @Override
+                public Set<InjectionPoint> getInjectionPoints() {
+                    return Set.of();
+                }
+            };
+        }
     }
 
+    private io.vertx.mutiny.core.Vertx mutinyVertx() {
+        return VertxProxyHolder.instance().getVertxProxy().getMutiyVertx();
+    }
+
+    private io.vertx.core.Vertx rawVertx() {
+        return VertxProxyHolder.instance().getVertxProxy().getVertx();
+    }
 }

@@ -15,6 +15,7 @@
  */
 package org.wildfly.extension.vertx.logging;
 
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -53,4 +54,8 @@ public interface VertxLogger extends BasicLogger {
 
     @Message(id = 7, value = "Absolute directory %s is not allowed for the VertxOptions file")
     OperationFailedException absoluteDirectoryNotAllowed(String dir);
+
+    @LogMessage(level = INFO)
+    @Message(id = 8, value = "Use Vertx instance from vertx subsystem")
+    void useVertxFromSubsystem();
 }
