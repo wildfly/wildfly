@@ -82,7 +82,7 @@ database tables can be employed.
 If it's no possible to avoid storing large number of job execution records,
 the job repositories can be configured to limit the number of job executions
 that is returned by them by setting the `execution-records-limit` attribute.
-If the attribute is set, Wildfly will only load specified maximum number of
+If the attribute is set, WildFly will only load specified maximum number of
 job executions from the backing storage mechanism.
 
 [[deployment-descriptors]]

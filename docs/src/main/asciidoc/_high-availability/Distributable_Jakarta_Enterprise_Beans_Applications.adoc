@@ -21,7 +21,7 @@ In the case of Jakarta Enterprise Beans applications, whether or not a bean is d
 an application-wide basis as in the case of distributed HttpSessions.
 
 A stateful session bean within a Jakarta Enterprise Beans application indicates its intention to be distributable by using a passivation-capable cache
-to store its session state. Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#caches[Jakarta Enterprise Beans section of the Wildfly Admin Guide].
+to store its session state. Cache factories were discussed in the link:Admin_Guide{outfilesuffix}#caches[Jakarta Enterprise Beans section of the WildFly Admin Guide].
 Additionally, the EJB application needs to be deployed into a server which uses an High Availability (HA) server profile, such as standalone-ha.xml
 or standalone-full-ha.xml.
 
@@ -32,7 +32,7 @@ achieved using the _passivationCapable_ attribute of the @Stateful annotation (o
 
 NOTE: More information on passivation-capable beans can be found in Section 4.6.5 of the Jakarta Enterprise Beans specification.
 
-In the sections that follow, we discuss some aspects of configuring distributable Jakarta Enterprise Beans applications in Wildfly.
+In the sections that follow, we discuss some aspects of configuring distributable Jakarta Enterprise Beans applications in WildFly.
 
 [[distributable-ejb-subsystem]]
 == Distributable EJB Subsystem

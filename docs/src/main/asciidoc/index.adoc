@@ -112,7 +112,7 @@ features which have been removed from WildFly.
 
 == Client Guide
 
-* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new Wildfly client and how to use it.
+* The link:Client_Guide{outfilesuffix}[WildFly Client Configuration] guide walks you through the new WildFly client and how to use it.
 
 [[quickstarts]]
 == Quickstarts
