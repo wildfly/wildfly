@@ -23,6 +23,7 @@ embed-server --server-config=standalone-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(interface=private,port=7601)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(interface=private,port=57601)
+batch
 /subsystem=jgroups/stack=tcp-bridge:add
 /subsystem=jgroups/stack=tcp-bridge/transport=TCP:add(socket-binding=jgroups-tcp-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
@@ -37,6 +38,7 @@ embed-server --server-config=standalone-ha.xml
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
+run-batch
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
@@ -69,6 +71,8 @@ embed-server --server-config=standalone-full-ha.xml
 /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=node-4-bridge:add(host=${node3},port=7901)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-bridge:add(interface=private,port=7601)
 /socket-binding-group=standard-sockets/socket-binding=jgroups-tcp-fd-bridge:add(interface=private,port=57601)
+
+batch
 /subsystem=jgroups/stack=tcp-bridge:add
 /subsystem=jgroups/stack=tcp-bridge/transport=TCP:add(socket-binding=jgroups-tcp-bridge)
 /subsystem=jgroups/stack=tcp-bridge/protocol=RED:add
@@ -83,6 +87,7 @@ embed-server --server-config=standalone-full-ha.xml
 /subsystem=jgroups/stack=tcp-bridge/protocol=pbcast.GMS:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=MFC:add
 /subsystem=jgroups/stack=tcp-bridge/protocol=FRAG4:add
+run-batch
 
 # UDP stack configuration
 /subsystem=jgroups/stack=udp:remove
