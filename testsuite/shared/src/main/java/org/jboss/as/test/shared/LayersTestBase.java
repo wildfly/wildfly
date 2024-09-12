@@ -260,7 +260,8 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy"
+            "org.eclipse.krazo.resteasy",
+            "org.wildfly.extension.vertx"
     };
 
     /**

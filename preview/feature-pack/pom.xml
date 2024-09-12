@@ -98,6 +98,11 @@
                                     <classifier>shaded-model</classifier>
                                     <type>zip</type>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.extras.vertx</groupId>
+                                    <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
                             </artifactItems>
                             <!-- The feature pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
@@ -217,6 +222,7 @@
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-vertx-extension-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
@@ -373,6 +379,12 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.extras.vertx</groupId>
+            <artifactId>wildfly-vertx-feature-pack-content</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -438,6 +450,7 @@
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
+                                                <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>
