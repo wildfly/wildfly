@@ -20,15 +20,22 @@
         <jbossas.ts.integ.dir>${basedir}/../..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.rest.client:microprofile-rest-client-tck</ts.microprofile-tck-tests-dependency>
         <!-- properties to enable plugins shared by various bootable profiles -->
         <bootable-jar-generate-properties-file.phase>none</bootable-jar-generate-properties-file.phase>
         <ts.microprofile-tck-tests-dependency>org.eclipse.microprofile.rest.client:microprofile-rest-client-tck</ts.microprofile-tck-tests-dependency>
         <ts.install-as-module-wiremock.phase>generate-test-resources</ts.install-as-module-wiremock.phase>
         <ts.add-wiremock-module.phase>process-test-resources</ts.add-wiremock-module.phase>
         <ts.wiremock-maven-plugin.phase>generate-test-sources</ts.wiremock-maven-plugin.phase>
-        <!-- Resource path -->
-        <wiremock.resource.path>${project.build.directory}/wildfly/wiremock/wiremock.jar${:}${project.build.directory}/wildfly/wiremock/junit.jar${:}${project.build.directory}/wildfly/wiremock/jetty-io.jar${:}${project.build.directory}/wildfly/wiremock/jetty-http.jar${:}${project.build.directory}/wildfly/wiremock/jetty-server.jar${:}${project.build.directory}/wildfly/wiremock/jetty-util.jar${:}${project.build.directory}/wildfly/wiremock/jboss-servlet-api_4.0_spec.jar</wiremock.resource.path>
+        <!-- Setup properties -->
+        <wiremock.lib.path>${project.build.directory}/wiremock</wiremock.lib.path>
+        <wiremock.module.included.groupIds>org.wiremock,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
+        <wiremock.module.xml.path>${basedir}/module.xml</wiremock.module.xml.path>
+
+        <!-- Wiremock dependency information -->
+        <wiremock.groupId>com.github.tomakehurst</wiremock.groupId>
+        <wiremock.version>${version.com.github.tomakehurst.wiremock}</wiremock.version>
+        <version.wiremock-maven-plugin>7.3.0</version.wiremock-maven-plugin>
+
         <!-- Expose timeout property to be configurable from CLI because of environment issues -->
         <org.eclipse.microprofile.rest.client.tck.timeoutCushion>90000</org.eclipse.microprofile.rest.client.tck.timeoutCushion>
         <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
@@ -66,6 +73,12 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-core-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${wiremock.groupId}</groupId>
+            <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -126,10 +139,12 @@
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-tck</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wiremock</groupId>
+                    <artifactId>wiremock</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jboss.weld.se</groupId>
@@ -241,7 +256,7 @@
             <plugin>
                 <groupId>uk.co.automatictester</groupId>
                 <artifactId>wiremock-maven-plugin</artifactId>
-                <version>4.1.0</version>
+                <version>${version.wiremock-maven-plugin}</version>
                 <executions>
                     <execution>
                         <phase>${ts.wiremock-maven-plugin.phase}</phase>
@@ -254,6 +269,35 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${wiremock.groupId}</groupId>
+                        <artifactId>wiremock</artifactId>
+                        <version>${wiremock.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!-- TODO (jrp) this is a huge hack to get around Wiremock setting the javax.xml.transform.TransformerFactory
+                            system property. A real fix would be to allow Wiremock to allow not setting the property.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>wiremock-cleanup</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.wildfly.cleanup.WiremockCleanup</mainClass>
+                            <arguments>javax.xml.transform.TransformerFactory</arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -263,41 +307,104 @@
                         <id>install-as-module-wiremock</id>
                         <phase>${ts.install-as-module-wiremock.phase}</phase>
                         <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeGroupIds>${wiremock.module.included.groupIds}</includeGroupIds>
+                            <stripVersion>true</stripVersion>
+                            <outputDirectory>${wiremock.lib.path}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>install-wiremock</id>
+                        <phase>${ts.install-as-module-wiremock.phase}</phase>
+                        <goals>
                             <goal>copy</goal>
                         </goals>
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>com.github.tomakehurst</groupId>
+                                    <groupId>${wiremock.groupId}</groupId>
                                     <artifactId>wiremock</artifactId>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>junit</groupId>
-                                    <artifactId>junit</artifactId>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
-                                    <artifactId>jetty-io</artifactId>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
-                                    <artifactId>jetty-http</artifactId>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
-                                    <artifactId>jetty-server</artifactId>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
-                                    <artifactId>jetty-util</artifactId>
-                                </artifactItem>
+                                <!-- This is required for the MicroProfile REST Client 3.0 TCK. This will always copy it,
+                                     but we'll only use it in the 3.0 TCK runner.
+                                 -->
                                 <artifactItem>
                                     <groupId>org.jboss.spec.javax.servlet</groupId>
                                     <artifactId>jboss-servlet-api_4.0_spec</artifactId>
                                 </artifactItem>
                             </artifactItems>
                             <stripVersion>true</stripVersion>
-                            <outputDirectory>${project.build.directory}/wildfly/wiremock</outputDirectory>
+                            <outputDirectory>${wiremock.lib.path}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>wiremock-resource-path</id>
+                        <phase>${ts.install-as-module-wiremock.phase}</phase>
+                        <configuration>
+                            <!-- Export the properties defined below so they can be used for the signature tests -->
+                            <exportAntProperties>true</exportAntProperties>
+                            <target>
+                                <!-- Wiremock JAR's -->
+                                <fileset id="wiremock-jars"
+                                         dir="${wiremock.lib.path}">
+                                    <!-- All JAR's -->
+                                    <include name="**/*.jar"/>
+                                </fileset>
+                                <pathconvert pathsep="${path.separator}" property="wiremock.resource.path" refid="wiremock-jars"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>echo-wiremock-resource-path</id>
+                        <phase>${ts.install-as-module-wiremock.phase}</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="wiremock.resource.path=${wiremock.resource.path}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.internetitem</groupId>
+                <artifactId>write-properties-file-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-properties-file</id>
+                        <phase>${bootable-jar-generate-properties-file.phase}</phase>
+                        <goals>
+                            <goal>write-properties-file</goal>
+                        </goals>
+                        <configuration>
+                            <filename>wiremock-bootable-cli.properties</filename>
+                            <properties>
+                                <property>
+                                    <name>wiremock.resource.path</name>
+                                    <value>${wiremock.resource.path}</value>
+                                </property>
+                                <property>
+                                    <name>module.xml.path</name>
+                                    <value>${wiremock.module.xml.path}</value>
+                                </property>
+                                <property>
+                                    <name>beansxml.path</name>
+                                    <value>${basedir}/beans.xml</value>
+                                </property>
+                            </properties>
                         </configuration>
                     </execution>
                 </executions>
@@ -327,7 +434,7 @@
                                 <beansxml.path>${basedir}/beans.xml</beansxml.path>
                             </system-properties>
                             <commands>
-                                <command>module add --name=com.github.tomakehurst.wiremock --resources=${wiremock.resource.path} --module-xml=${basedir}/module.xml</command>
+                                <command>module add --name=org.wiremock --resources=${wiremock.resource.path} --module-xml=${wiremock.module.xml.path}</command>
                             </commands>
                             <scripts>
                                 <script>wiremock.cli</script>
@@ -423,37 +530,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.internetitem</groupId>
-                <artifactId>write-properties-file-maven-plugin</artifactId>
-                <version>1.0.1</version>
-                <executions>
-                    <execution>
-                        <id>generate-properties-file</id>
-                        <phase>${bootable-jar-generate-properties-file.phase}</phase>
-                        <goals>
-                            <goal>write-properties-file</goal>
-                        </goals>
-                        <configuration>
-                            <filename>wiremock-bootable-cli.properties</filename>
-                            <properties>
-                                <property>
-                                    <name>wiremock.resource.path</name>
-                                    <value>${wiremock.resource.path}</value>
-                                </property>
-                                <property>
-                                    <name>module.xml.path</name>
-                                    <value>${basedir}/module.xml</value>
-                                </property>
-                                <property>
-                                    <name>beansxml.path</name>
-                                    <value>${basedir}/beans.xml</value>
-                                </property>
-                            </properties>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -492,7 +568,7 @@
                 <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
                 <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
                 <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase>
-                <ts.install-as-module-wiremock.phase>process-test-classes</ts.install-as-module-wiremock.phase>
+                <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase>
             </properties>
             <build>
                 <plugins>
@@ -522,7 +598,7 @@
             <properties>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
-                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
+                <bootable-jar-generate-properties-file.phase>process-test-resources</bootable-jar-generate-properties-file.phase>
             </properties>
             <build>
                 <plugins>
@@ -557,8 +633,23 @@
             <properties>
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
-                <bootable-jar-generate-properties-file.phase>compile</bootable-jar-generate-properties-file.phase>
+                <bootable-jar-generate-properties-file.phase>process-test-resources</bootable-jar-generate-properties-file.phase>
+                <!-- Setup properties -->
+                <wiremock.module.xml.path>${basedir}/config/preview/module.xml</wiremock.module.xml.path>
+                <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
+
+                <wiremock.groupId>org.wiremock</wiremock.groupId>
+                <wiremock.version>${version.org.wiremock}</wiremock.version>
+
+                <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-multipart-provider</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -582,7 +673,7 @@
             </build>
         </profile>
 
-        <!-- Test against the ee 9 feature pack -->
+        <!-- Test against the preview feature pack -->
         <profile>
             <id>preview.test.profile</id>
             <activation>
@@ -595,8 +686,23 @@
                 <ts.microprofile-tck-provisioning.phase>test-compile</ts.microprofile-tck-provisioning.phase>
                 <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
                 <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase>
-                <ts.install-as-module-wiremock.phase>process-test-classes</ts.install-as-module-wiremock.phase>
+                <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase>
+                <!-- Setup properties -->
+                <wiremock.module.xml.path>${basedir}/config/preview/module.xml</wiremock.module.xml.path>
+                <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
+
+                <wiremock.groupId>org.wiremock</wiremock.groupId>
+                <wiremock.version>${version.org.wiremock}</wiremock.version>
+
+                <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-multipart-provider</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>

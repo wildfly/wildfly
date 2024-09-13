@@ -57,6 +57,10 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <!-- This TCK uses TestNG internal types which have been removed, Explictily it uses org.testng.internal.ObjectFactoryImpl.
+                 For this reason we need to explicitly override the version.
+             -->
+            <version>7.4.0</version>
             <scope>test</scope>
         </dependency>
 
