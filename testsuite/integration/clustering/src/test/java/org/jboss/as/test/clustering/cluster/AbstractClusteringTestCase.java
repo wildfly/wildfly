@@ -187,6 +187,10 @@ public abstract class AbstractClusteringTestCase {
     }
 
     // Node and deployment lifecycle management convenience methods
+
+    /**
+     * @deprecated Use {@link AbstractClusteringTestCase#start(String)} and {@link AbstractClusteringTestCase#start(Set)} instead.
+     */
     @Deprecated
     protected void start(String... containers) {
         start(Set.of(containers));
@@ -204,6 +208,9 @@ public abstract class AbstractClusteringTestCase {
         NodeUtil.start(this.controller, containers);
     }
 
+    /**
+     * @deprecated Use {@link AbstractClusteringTestCase#stop(String)} and {@link AbstractClusteringTestCase#stop(Set)} instead.
+     */
     @Deprecated
     protected void stop(String... containers) {
         stop(Set.of(containers));
@@ -225,6 +232,9 @@ public abstract class AbstractClusteringTestCase {
         return NodeUtil.isStarted(this.controller, container);
     }
 
+    /**
+     * @deprecated Use {@link AbstractClusteringTestCase#stop(String, int)} and {@link AbstractClusteringTestCase#stop(Set, int)} instead.
+     */
     @Deprecated
     protected void stop(int timeout, String... containers) {
         stop(Set.of(containers), timeout);
@@ -238,6 +248,9 @@ public abstract class AbstractClusteringTestCase {
         NodeUtil.stop(this.controller, containers, timeout);
     }
 
+    /**
+     * @deprecated Use {@link AbstractClusteringTestCase#deploy(String)} and {@link AbstractClusteringTestCase#deploy(Set)} instead.
+     */
     @Deprecated
     protected void deploy(String... deployments) {
         deploy(Set.of(deployments));
@@ -255,6 +268,9 @@ public abstract class AbstractClusteringTestCase {
         NodeUtil.deploy(this.deployer, deployments);
     }
 
+    /**
+     * @deprecated Use {@link AbstractClusteringTestCase#undeploy(String)} and {@link AbstractClusteringTestCase#undeploy(Set)} instead.
+     */
     @Deprecated
     protected void undeploy(String... deployments) {
         undeploy(Set.of(deployments));
