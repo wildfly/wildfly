@@ -7,15 +7,16 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-common}"/>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
     </resources>
 
     <dependencies>
         <module name="io.opentelemetry.api"/>
         <module name="io.opentelemetry.context"/>
         <module name="io.opentelemetry.sdk"/>
+        <module name="io.opentelemetry.exporter"/>
+        <module name="io.smallrye.opentelemetry" services="import"/>
         <module name="org.slf4j"/>
 
         <module name="java.logging"/>

@@ -58,9 +58,11 @@ class OpenTelemetrySubsystemRegistrar implements SubsystemResourceDefinitionRegi
     public static final String API_MODULE = "org.wildfly.extension.opentelemetry-api";
     public static final String[] EXPORTED_MODULES = {
             "io.opentelemetry.api",
-            "io.opentelemetry.context",
+            "io.opentelemetry.api.events",
             "io.opentelemetry.exporter",
+            "io.opentelemetry.otlp",
             "io.opentelemetry.sdk",
+            "io.opentelemetry.semconv",
             "io.smallrye.opentelemetry"
     };
 
