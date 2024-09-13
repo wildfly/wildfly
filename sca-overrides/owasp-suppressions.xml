@@ -264,4 +264,13 @@
       <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-6162</vulnerabilityName>
    </suppress>
+   <suppress until="2025-09-13">
+      <notes><![CDATA[
+      file name: undertow-core-2.3.17.Final.jar
+
+      [WFLY-19732] This has been addressed under UNDERTOW-2429.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-7885</vulnerabilityName>
+   </suppress>
 </suppressions>
