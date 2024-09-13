@@ -28,8 +28,8 @@ import org.jboss.as.test.clustering.cluster.ejb.forwarding.bean.stateful.RemoteS
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.NamingEJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
-import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.IntermittentFailure;
+import org.jboss.as.test.shared.ManagementServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.EJBClientPermission;
 import org.jboss.logging.Logger;
@@ -76,7 +76,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
     private static final Logger logger = Logger.getLogger(AbstractRemoteEJBForwardingTestCase.class);
 
     AbstractRemoteEJBForwardingTestCase(ExceptionSupplier<EJBDirectory, NamingException> directorySupplier, String implementationClass) {
-        super(FOUR_NODES);
+        super(NODE_1_2_3_4);
 
         this.directorySupplier = directorySupplier;
         this.implementationClass = implementationClass;
@@ -138,7 +138,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             // get the correct forwarder deployment on cluster A
             RemoteStatefulSB bean = directory.lookupStateful(implementationClass, RemoteStatefulSB.class);
 
-            // Allow sufficient time for client to receive full topology
+            // Allow enough time for the client to receive full topology
             logger.debug("Waiting for clusters to form.");
             Thread.sleep(FAILURE_FREE_TIME);
 
@@ -150,12 +150,12 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             // set up the client invocations
             executor.scheduleWithFixedDelay(client, 0, INVOCATION_WAIT, TimeUnit.MILLISECONDS);
 
-            // a few seconds of non-failure behaviour
+            // a few seconds of non-failure behavior
             Thread.sleep(FAILURE_FREE_TIME);
             client.assertNoExceptions("at the beginning of the test");
 
             logger.debugf("------ Shutdown clusterA-node0 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_1);
+            stop(NODE_1, GRACEFUL_SHUTDOWN_TIMEOUT);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterA-node0 was shut down");
 
@@ -165,7 +165,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterA-node0 was brought up");
 
             logger.debug("----- Shutdown clusterA-node1 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_2);
+            stop(NODE_2, GRACEFUL_SHUTDOWN_TIMEOUT);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.debug("------ Startup clusterA-node1 -----");
@@ -174,7 +174,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterA-node1 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node0 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_3);
+            stop(NODE_3, GRACEFUL_SHUTDOWN_TIMEOUT);
             Thread.sleep(SERVER_DOWN_TIME);
             client.assertNoExceptions("after clusterB-node0 was shut down");
 
@@ -184,7 +184,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
             client.assertNoExceptions("after clusterB-node0 was brought back up");
 
             logger.debug("----- Shutdown clusterB-node1 -----");
-            stop(GRACEFUL_SHUTDOWN_TIMEOUT, NODE_4);
+            stop(NODE_4, GRACEFUL_SHUTDOWN_TIMEOUT);
             Thread.sleep(SERVER_DOWN_TIME);
 
             logger.debug("------ Startup clusterB-node1 -----");
@@ -198,7 +198,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         }
     }
 
-    private class ClientInvocationTask implements Runnable {
+    private static class ClientInvocationTask implements Runnable {
         private final RemoteStatefulSB bean;
         private int expectedSerial;
         private volatile Exception firstException;
@@ -215,7 +215,7 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         void assertNoExceptions(String when) {
             if (firstException != null) {
                 logger.error(firstException);
-                fail("Client threw an exception " + when + ": " + firstException); // Arrays.stream(firstException.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.joining("\n")));
+                fail("Client threw an exception " + when + ": " + firstException);
             }
         }
 
@@ -240,21 +240,30 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         }
     }
 
-    public static class ServerSetupTask extends CLIServerSetupTask {
+    public static class ServerSetupTask extends ManagementServerSetupTask {
         public ServerSetupTask() {
-            this.builder
-                    // clusterA is called 'ejb-forwarder'; clusterB uses default name 'ejb'
-                    .node(NODE_1, NODE_2)
-                    .setup("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb-forwarder)")
-                    .setup(String.format("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s,port=8280)", TESTSUITE_NODE3))
-                    .setup("/core-service=management/security-realm=PasswordRealm:add")
-                    .setup("/core-service=management/security-realm=PasswordRealm/server-identity=secret:add(value=\"cmVtQHRlZWpicGFzc3dkMQ==\")")
-                    .setup("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection,protocol=http-remoting,security-realm=PasswordRealm,username=remoteejbuser)")
-                    .teardown("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove")
-                    .teardown("/core-service=management/security-realm=PasswordRealm:remove")
-                    .teardown("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
-                    .teardown("/subsystem=jgroups/channel=ee:write-attribute(name=cluster,value=ejb)")
-            ;
+            super(NODE_1_2, createContainerConfigurationBuilder()
+                    .setupScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=jgroups/channel=ee:write-attribute(name=cluster, value=ejb-forwarder)")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:add(host=%s, port=8280)", TESTSUITE_NODE3)
+                            // n.b. user/password is configured statically via testsuite/shared/src/main/resources/application-users.properties file.
+                            .add("/subsystem=elytron/authentication-configuration=remote-ejb-configuration:add(authentication-name=remoteejbuser, security-domain=ApplicationDomain, realm=ApplicationRealm, forwarding-mode=authorization, credential-reference={clear-text=rem@teejbpasswd1})")
+                            .add("/subsystem=elytron/authentication-context=remote-ejb-context:add(match-rules=[{authentication-configuration=remote-ejb-configuration, match-protocol=http-remoting}])")
+                            .add("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:add(outbound-socket-binding-ref=binding-remote-ejb-connection, authentication-context=remote-ejb-context)")
+                            .endBatch()
+                            .build())
+                    .tearDownScript(createScriptBuilder()
+                            .startBatch()
+                            .add("/subsystem=remoting/remote-outbound-connection=remote-ejb-connection:remove")
+                            .add("/subsystem=elytron/authentication-configuration=remote-ejb-configuration:remove")
+                            .add("/subsystem=elytron/authentication-context=remote-ejb-context:remove")
+                            .add("/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=binding-remote-ejb-connection:remove")
+                            .add("/subsystem=jgroups/channel=ee:write-attribute(name=cluster, value=ejb)")
+                            .endBatch()
+                            .build())
+                    .build());
         }
     }
+
 }
