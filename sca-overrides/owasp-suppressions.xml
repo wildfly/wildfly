@@ -4,13 +4,6 @@
    <!-- Sometimes the mapping from GAV to CPE creates a bad match, this section supresses those matches. -->
    <suppress>
       <notes><![CDATA[
-      file name: expressly-5.0.0.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.glassfish\.expressly/expressly@.*$</packageUrl>
-      <cpe>cpe:/a:eclipse:glassfish</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
       file name: jakarta-client-resteasy-3.0.3.Final.jar
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.security\.jakarta/jakarta\-client\-resteasy@.*$</packageUrl>
@@ -57,14 +50,6 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.core/wildfly\-.*@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
-   </suppress>
-   <suppress>
-      <notes><![CDATA[
-      file name: wildfly-plugin-core-4.1.1.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.wildfly\.plugins/wildfly\-plugin\-core@.*$</packageUrl>
-      <cpe>cpe:/a:redhat:wildfly</cpe>
-      <cpe>cpe:/a:redhat:wildfly_core</cpe>
    </suppress>
    <suppress>
       <notes><![CDATA[
@@ -228,40 +213,5 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy/resteasy\-tracing\-api@.*$</packageUrl>
       <cve>CVE-2021-20293</cve>
-   </suppress>
-   <suppress until="2025-03-15">
-      <notes><![CDATA[
-      file name: resteasy-spring-3.1.2.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/org\.jboss\.resteasy\.spring/resteasy\-spring@.*$</packageUrl>
-      <cve>CVE-2018-1051</cve>
-   </suppress>
-   <suppress until="2025-04-10">
-      <notes><![CDATA[
-      file name: undertow-core-2.3.12.Final.jar
-
-      [WFLY-19224] Since WildFly moved to using WildFly Elytron exclusively for security the
-      authentication mechanism from undertow-core is not used. This is a false positive.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow\-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2023-1973</vulnerabilityName>
-   </suppress>
-   <suppress until="2025-04-12">
-      <notes><![CDATA[
-      file name: joda-time-2.12.6.jar
-
-      [WFLY-19237] This CVE is disputed as the only proposed reason for the CVE is a NullPointerException is possible.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/joda\-time/joda\-time@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-23080</vulnerabilityName>
-   </suppress>   
-   <suppress until="2025-07-03">
-      <notes><![CDATA[
-      file name: undertow-core-2.3.14.Final.jar
-
-      [WFLY-19494] This has already been addressed within UNDERTOW-2334.
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
-      <vulnerabilityName>CVE-2024-6162</vulnerabilityName>
    </suppress>
 </suppressions>
