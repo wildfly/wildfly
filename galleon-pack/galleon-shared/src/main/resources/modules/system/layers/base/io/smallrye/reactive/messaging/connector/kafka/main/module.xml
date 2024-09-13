@@ -32,6 +32,7 @@
         <module name="io.vertx.core"/>
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.enterprise.api" />
+        <module name="jakarta.inject.api" />
         <module name="org.apache.kafka.client" export="true" services="export"/>
         <module name="org.eclipse.microprofile.reactive-messaging.api"/>
         <module name="org.eclipse.microprofile.reactive-streams-operators.api"/>
@@ -43,6 +44,7 @@
         <module name="org.jboss.weld.spi"/>
         <module name="org.reactivestreams"/>
         <module name="org.wildfly.reactive.messaging.config" optional="true" export="true" services="export"/>
+        <module name="org.wildfly.reactive.messaging.kafka" services="import"/>
         <module name="org.slf4j"/>
     </dependencies>
 </module>
