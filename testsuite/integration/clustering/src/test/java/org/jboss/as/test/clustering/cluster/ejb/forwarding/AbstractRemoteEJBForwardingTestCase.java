@@ -8,6 +8,7 @@ package org.jboss.as.test.clustering.cluster.ejb.forwarding;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.fail;
 
+import java.io.FilePermission;
 import java.net.SocketPermission;
 import java.util.PropertyPermission;
 import java.util.concurrent.Executors;
@@ -109,9 +110,11 @@ public abstract class AbstractRemoteEJBForwardingTestCase extends AbstractCluste
         // remote outbound connection configuration
         ejbJar.addAsManifestResource(AbstractRemoteEJBForwardingTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         ejbJar.addAsResource(createPermissionsXmlAsset(
-                new SocketPermission("localhost", "resolve"),
                 new EJBClientPermission("changeWeakAffinity"),
-                new PropertyPermission("jboss.node.name", "read")
+                new FilePermission("<<ALL FILES>>", "read"),
+                new PropertyPermission("jboss.node.name", "read"),
+                new RuntimePermission("getClassLoader"),
+                new SocketPermission("localhost", "resolve")
         ), "META-INF/jboss-permissions.xml");
         return ejbJar;
     }
