@@ -23,8 +23,8 @@ To set a system property, pass its new value using the standard jvm
 
 [source,options="nowrap"]
 ----
-$JBOSS_HOME/bin/standalone.sh -Djboss.home.dir=some/location/wildFly \
-    -Djboss.server.config.dir=some/location/wildFly/custom-standalone
+$JBOSS_HOME/bin/standalone.sh -Djboss.home.dir=some/location/wildfly \
+    -Djboss.server.config.dir=some/location/wildfly/custom-standalone
 ----
 
 This command starts up a standalone server instance using a non-standard
@@ -44,7 +44,7 @@ $JBOSS_HOME/bin/domain.sh -P=/some/location/jboss.properties
 Note however, that properties set this way (`-D` and `-P`) are not processed as part of
 JVM launch. They are processed early in the boot process, but this
 mechanism should not be used for setting properties that control JVM
-behavior (e.g. java.net.perferIPv4Stack) or the behavior of the JBoss
+behavior (e.g. java.net.preferIPv4Stack) or the behavior of the JBoss
 Modules classloading system.
 
 The syntax for passing in parameters and properties files is the same
@@ -56,8 +56,8 @@ The properties file is a standard Java property file containing
 
 [source,options="nowrap"]
 ----
-jboss.home.dir=/some/location/wildFly
-jboss.domain.config.dir=/some/location/wildFly/custom-domain
+jboss.home.dir=/some/location/wildfly
+jboss.domain.config.dir=/some/location/wildfly/custom-domain
 ----
 
 System properties can also be set via the xml configuration files. Note

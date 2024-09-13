@@ -14,7 +14,7 @@ endif::[]
 This subsystem exposes only base metrics from the WildFly Management Model and JVM MBeans.
 
 https://microprofile.io/project/eclipse/microprofile-metrics[MicroProfile Metrics] is no longer supported by WildFly. For
-a more robust alternative, see https://micrometer.io[Micrometer] and the _micrometer_ susbsystem.
+a more robust alternative, see https://micrometer.io[Micrometer] and the _micrometer_ subsystem.
 ====
 
 [[metrics-required-extension-metrics]]
@@ -99,7 +99,7 @@ For example Undertow exposes a metric attribute `request-count` for every Servle
 This attribute will be exposed to Prometheus with the name `wildfly_undertow_request_count`.
 Other information such as the name of the Servlet are added to the labels of the metrics.
 
-The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in Wildfly.
+The https://github.com/wildfly/quickstart/tree/main/helloworld[helloworld quickstart] demonstrates the use of CDI and Servlet in WildFly.
 A corresponding metric will be exposed for it with the name and labels:
 
 * `wildfly_undertow_request_count_total{deployment="helloworld.war",servlet="org.jboss.as.quickstarts.helloworld.HelloWorldServlet",subdeployment="helloworld.war"}`
