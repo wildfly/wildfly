@@ -7,7 +7,6 @@ package org.wildfly.extension.clustering.singleton;
 
 import java.util.List;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.server.service.DefaultCacheServiceInstallerProvider;
@@ -22,7 +21,7 @@ public class DefaultSingletonServiceTargetFactoryServiceInstallerProvider implem
 
     @SuppressWarnings({ "deprecation", "removal" })
     @Override
-    public Iterable<ServiceInstaller> apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public Iterable<ServiceInstaller> apply(BinaryServiceConfiguration configuration) {
         BinaryServiceConfiguration defaultConfiguration = configuration.withChildName(null);
         return List.of(ServiceInstaller.builder(configuration.getServiceDependency(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
                 .provides(defaultConfiguration.resolveServiceName(SingletonServiceTargetFactory.SERVICE_DESCRIPTOR))
