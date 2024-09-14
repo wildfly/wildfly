@@ -21,7 +21,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.server.service.CacheContainerServiceInstallerProvider;
 import org.wildfly.clustering.server.service.ProvidedBiServiceInstallerProvider;
-import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.subsystem.service.ResourceServiceInstaller;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
@@ -55,7 +54,7 @@ public class NoTransportResourceDefinition extends TransportResourceDefinition {
         };
         installers.add(CapabilityServiceInstaller.builder(CAPABILITY, configurationFactory).requires(environment).build());
 
-        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), MapEntry.of(containerName, ModelDescriptionConstants.LOCAL)).forEach(installers::add);
+        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(containerName, ModelDescriptionConstants.LOCAL).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }

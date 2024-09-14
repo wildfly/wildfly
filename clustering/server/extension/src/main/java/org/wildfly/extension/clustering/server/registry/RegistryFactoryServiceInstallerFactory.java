@@ -4,9 +4,6 @@
  */
 package org.wildfly.extension.clustering.server.registry;
 
-import java.util.function.BiFunction;
-
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
@@ -21,8 +18,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class RegistryFactoryServiceInstallerFactory<K, V> extends AbstractRegistryFactoryServiceInstallerFactory<K, V> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
-        BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, ServiceInstaller> factory = (configuration.getParentName() == ModelDescriptionConstants.LOCAL) ? new LocalRegistryFactoryServiceInstallerFactory<>() : new CacheRegistryFactoryServiceInstallerFactory<>();
-        return factory.apply(support, configuration);
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
+        return ((configuration.getParentName() == ModelDescriptionConstants.LOCAL) ? new LocalRegistryFactoryServiceInstallerFactory<>() : new CacheRegistryFactoryServiceInstallerFactory<>()).apply(configuration);
     }
 }
