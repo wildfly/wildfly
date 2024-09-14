@@ -39,7 +39,6 @@ import org.wildfly.clustering.jgroups.spi.ForkChannelFactory;
 import org.wildfly.clustering.jgroups.spi.ForkChannelFactoryConfiguration;
 import org.wildfly.clustering.server.service.CacheContainerServiceInstallerProvider;
 import org.wildfly.clustering.server.service.ProvidedBiServiceInstallerProvider;
-import org.wildfly.clustering.server.util.MapEntry;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 import org.wildfly.subsystem.resource.capability.CapabilityReference;
 import org.wildfly.subsystem.resource.capability.ResourceCapabilityReference;
@@ -146,7 +145,7 @@ public class JGroupsTransportResourceDefinition extends TransportResourceDefinit
         });
         installers.add(CapabilityServiceInstaller.builder(TransportResourceDefinition.CAPABILITY, transport).build());
 
-        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), MapEntry.of(containerName, channelName)).forEach(installers::add);
+        new ProvidedBiServiceInstallerProvider<>(CacheContainerServiceInstallerProvider.class, CacheContainerServiceInstallerProvider.class.getClassLoader()).apply(containerName, channelName).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }
