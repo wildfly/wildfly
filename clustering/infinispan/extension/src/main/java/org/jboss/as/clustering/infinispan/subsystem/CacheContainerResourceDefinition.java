@@ -246,7 +246,7 @@ public class CacheContainerResourceDefinition extends ChildResourceDefinition<Ma
                 installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheConfigurationBinding(defaultConfiguration), DEFAULT_CACHE_CONFIGURATION_CAPABILITY.getCapabilityServiceName(address)));
             }
 
-            new ProvidedBinaryServiceInstallerProvider<>(DefaultCacheServiceInstallerProvider.class, DefaultCacheServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), configuration).forEach(installers::add);
+            new ProvidedBinaryServiceInstallerProvider<>(DefaultCacheServiceInstallerProvider.class, DefaultCacheServiceInstallerProvider.class.getClassLoader()).apply(configuration).forEach(installers::add);
         }
 
         return ResourceServiceInstaller.combine(installers);
