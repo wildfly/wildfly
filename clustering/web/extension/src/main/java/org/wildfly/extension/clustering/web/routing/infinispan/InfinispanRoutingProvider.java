@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.infinispan.service.CacheServiceInstallerFactory;
 import org.wildfly.clustering.infinispan.service.TemplateConfigurationServiceInstallerFactory;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
@@ -38,7 +37,7 @@ public class InfinispanRoutingProvider extends LocalRoutingProvider {
     }
 
     @Override
-    public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String serverName, ServiceDependency<String> route) {
+    public Iterable<ServiceInstaller> getServiceInstallers(String serverName, ServiceDependency<String> route) {
         BinaryServiceConfiguration serverConfiguration = this.configuration.withChildName(serverName);
         List<ServiceInstaller> installers = new LinkedList<>();
 
@@ -49,8 +48,8 @@ public class InfinispanRoutingProvider extends LocalRoutingProvider {
         installers.add(new TemplateConfigurationServiceInstallerFactory(this.configurator).apply(this.configuration, serverConfiguration));
         installers.add(CacheServiceInstallerFactory.INSTANCE.apply(serverConfiguration));
 
-        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(support, serverConfiguration).forEach(installers::add);
+        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(serverConfiguration).forEach(installers::add);
 
-        return new CompositeIterable<>(List.of(installers, super.getServiceInstallers(support, serverName, route)));
+        return new CompositeIterable<>(List.of(installers, super.getServiceInstallers(serverName, route)));
     }
 }

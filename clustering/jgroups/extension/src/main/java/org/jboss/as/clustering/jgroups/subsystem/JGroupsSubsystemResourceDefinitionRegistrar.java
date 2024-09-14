@@ -194,7 +194,7 @@ public class JGroupsSubsystemResourceDefinitionRegistrar implements SubsystemRes
                 installers.add(new BinderServiceInstaller(JGroupsBindingFactory.CHANNEL_FACTORY.apply(ModelDescriptionConstants.DEFAULT), context.getCapabilityServiceName(ForkChannelFactory.SERVICE_DESCRIPTOR, defaultChannel)));
             }
 
-            new ProvidedUnaryServiceInstallerProvider<>(DefaultChannelServiceInstallerProvider.class, DefaultChannelServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), defaultChannel).forEach(installers::add);
+            new ProvidedUnaryServiceInstallerProvider<>(DefaultChannelServiceInstallerProvider.class, DefaultChannelServiceInstallerProvider.class.getClassLoader()).apply(defaultChannel).forEach(installers::add);
         }
         return ResourceServiceInstaller.combine(installers);
     }

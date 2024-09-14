@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.network.ClientMapping;
 import org.wildfly.clustering.ejb.infinispan.network.ClientMappingsRegistryEntryServiceInstallerFactory;
 import org.wildfly.clustering.ejb.remote.ClientMappingsRegistryProvider;
@@ -49,13 +48,13 @@ public class InfinispanClientMappingsRegistryProvider implements ClientMappingsR
     }
 
     @Override
-    public Iterable<ServiceInstaller> getServiceInstallers(CapabilityServiceSupport support, String connectorName, ServiceDependency<List<ClientMapping>> clientMappings) {
+    public Iterable<ServiceInstaller> getServiceInstallers(String connectorName, ServiceDependency<List<ClientMapping>> clientMappings) {
         BinaryServiceConfiguration configuration = this.configuration.withChildName(connectorName);
         List<ServiceInstaller> installers = new LinkedList<>();
         installers.add(new TemplateConfigurationServiceInstallerFactory(this.configurator).apply(this.configuration, configuration));
         installers.add(CacheServiceInstallerFactory.INSTANCE.apply(configuration));
         installers.add(new ClientMappingsRegistryEntryServiceInstallerFactory(clientMappings).apply(configuration));
-        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(support, configuration).forEach(installers::add);
+        new FilteredBinaryServiceInstallerProvider(Set.of(ClusteringServiceDescriptor.REGISTRY, ClusteringServiceDescriptor.REGISTRY_FACTORY)).apply(configuration).forEach(installers::add);
         return installers;
     }
 }

@@ -11,7 +11,6 @@ import java.util.ServiceLoader;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.RequirementServiceTarget;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.msc.service.ServiceController;
 import org.kohsuke.MetaInfServices;
@@ -44,12 +43,11 @@ public class UndertowDistributableServerInstallerFactory implements Distributabl
     @Override
     public ResourceServiceInstaller getServiceInstaller(OperationContext context, String serverName) {
         ServiceDependency<RoutingProvider> provider = this.getRoutingProvider(context, serverName);
-        CapabilityServiceSupport support = context.getCapabilityServiceSupport();
         ServiceInstaller installer = new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 ServiceDependency<String> route = ServiceDependency.on(Server.SERVICE_DESCRIPTOR, serverName).map(Server::getRoute);
-                for (ServiceInstaller installer : provider.get().getServiceInstallers(support, serverName, route)) {
+                for (ServiceInstaller installer : provider.get().getServiceInstallers(serverName, route)) {
                     installer.install(target);
                 }
                 return null;

@@ -238,7 +238,7 @@ public class ChannelResourceDefinitionRegistrar extends AbstractChannelResourceD
 
         installers.add(super.configure(context, model));
 
-        new ProvidedUnaryServiceInstallerProvider<>(ChannelServiceInstallerProvider.class, ChannelServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), name).forEach(installers::add);
+        new ProvidedUnaryServiceInstallerProvider<>(ChannelServiceInstallerProvider.class, ChannelServiceInstallerProvider.class.getClassLoader()).apply(name).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }
