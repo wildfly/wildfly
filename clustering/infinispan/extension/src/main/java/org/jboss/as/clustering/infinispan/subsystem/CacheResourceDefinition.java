@@ -9,8 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -44,7 +44,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModuleNameValidator;
@@ -232,8 +231,8 @@ public class CacheResourceDefinition extends ChildResourceDefinition<ManagementR
         installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheConfigurationBinding(configuration), CacheResourceDefinition.CACHE_CONFIGURATION_CAPABILITY.getCapabilityServiceName(address)));
         installers.add(new BinderServiceInstaller(InfinispanBindingFactory.createCacheBinding(configuration), lazyCacheServiceName));
 
-        Class<? extends BiFunction<CapabilityServiceSupport, BinaryServiceConfiguration, Iterable<ServiceInstaller>>> providerClass = this.mode.isClustered() ? ClusteredCacheServiceInstallerProvider.class : LocalCacheServiceInstallerProvider.class;
-        new ProvidedBinaryServiceInstallerProvider<>(providerClass, providerClass.getClassLoader()).apply(context.getCapabilityServiceSupport(), configuration).forEach(installers::add);
+        Class<? extends Function<BinaryServiceConfiguration, Iterable<ServiceInstaller>>> providerClass = this.mode.isClustered() ? ClusteredCacheServiceInstallerProvider.class : LocalCacheServiceInstallerProvider.class;
+        new ProvidedBinaryServiceInstallerProvider<>(providerClass, providerClass.getClassLoader()).apply(configuration).forEach(installers::add);
 
         return ResourceServiceInstaller.combine(installers);
     }

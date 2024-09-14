@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.infinispan.Cache;
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
@@ -30,7 +29,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class CacheRegistryFactoryServiceInstallerFactory<K, V> extends AbstractRegistryFactoryServiceInstallerFactory<K, V> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<CacheContainerGroup> group = configuration.getServiceDependency(ClusteringServiceDescriptor.GROUP).map(CacheContainerGroup.class::cast);
         ServiceDependency<Cache<?, ?>> cache = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE);
         CacheRegistryConfiguration config = new CacheRegistryConfiguration() {
