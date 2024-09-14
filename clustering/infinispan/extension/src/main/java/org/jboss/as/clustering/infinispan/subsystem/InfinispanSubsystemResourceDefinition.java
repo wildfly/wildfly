@@ -88,11 +88,11 @@ public class InfinispanSubsystemResourceDefinition extends SubsystemResourceDefi
         Collection<ResourceServiceInstaller> installers = new LinkedList<>();
 
         // Install local group services
-        new ProvidedUnaryServiceInstallerProvider<>(LocalServiceInstallerProvider.class, LocalServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), ModelDescriptionConstants.LOCAL).forEach(installers::add);
+        new ProvidedUnaryServiceInstallerProvider<>(LocalServiceInstallerProvider.class, LocalServiceInstallerProvider.class.getClassLoader()).apply(ModelDescriptionConstants.LOCAL).forEach(installers::add);
 
         // If JGroups subsystem is not available, install default group aliases to local group.
         if (!context.getCapabilityServiceSupport().hasCapability(ChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)) {
-            new ProvidedUnaryServiceInstallerProvider<>(DefaultChannelServiceInstallerProvider.class, DefaultChannelServiceInstallerProvider.class.getClassLoader()).apply(context.getCapabilityServiceSupport(), ModelDescriptionConstants.LOCAL).forEach(installers::add);
+            new ProvidedUnaryServiceInstallerProvider<>(DefaultChannelServiceInstallerProvider.class, DefaultChannelServiceInstallerProvider.class.getClassLoader()).apply(ModelDescriptionConstants.LOCAL).forEach(installers::add);
         }
 
         return ResourceServiceInstaller.combine(installers);
