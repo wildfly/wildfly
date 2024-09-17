@@ -26,7 +26,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.infinispan.util.concurrent.BlockingManager;
+import org.jboss.as.clustering.infinispan.cache.LazyCache;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.manager.DefaultCacheContainer;
 import org.jboss.as.controller.OperationContext;
@@ -137,12 +137,8 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             String cacheName = event.getCacheName();
             InfinispanLogger.ROOT_LOGGER.cacheStarted(cacheName, containerName);
             this.registrations.put(cacheName, this.registrar.register(cacheName));
-            Consumer<Cache<?, ?>> captor = this.registry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
             EmbeddedCacheManager container = event.getCacheManager();
-            // Use getCacheAsync(), once available
-            @SuppressWarnings("deprecation")
-            BlockingManager blocking = container.getGlobalComponentRegistry().getComponent(BlockingManager.class);
-            blocking.asExecutor(event.getCacheName()).execute(() -> captor.accept(container.getCache(cacheName)));
+            this.registry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName)).accept(new LazyCache<>(container, cacheName));
             return CompletableFuture.completedStage(null);
         }
 
