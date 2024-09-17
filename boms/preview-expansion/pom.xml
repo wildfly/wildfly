@@ -48,12 +48,12 @@
             </dependency>
 
             <!--
-                Re-expose the standard-expansion deps.
+                Re-expose the common-expansion deps.
              -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-standard-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
+                <artifactId>wildfly-common-expansion-dependency-management</artifactId>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
