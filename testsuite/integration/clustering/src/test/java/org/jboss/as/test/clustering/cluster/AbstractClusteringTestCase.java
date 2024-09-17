@@ -310,6 +310,12 @@ public abstract class AbstractClusteringTestCase {
         void stop(Set<String> containers);
     }
 
+    /**
+     * A simple restart lifecycle which does *not* perform a graceful shutdown.
+     * In most cases the {@link GracefulRestartLifecycle} should be used instead.
+     *
+     * @see GracefulRestartLifecycle
+     */
     public class RestartLifecycle implements Lifecycle {
         @Override
         public void start(Set<String> containers) {
