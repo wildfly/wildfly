@@ -136,55 +136,6 @@ accept any more connections until the concurrent connection count drops below th
 * `no-request-timeout` - the time in milliseconds after which the server will close the
 connection if no new HTTP request has been received (Default 60000).
 
-When non-default values are set for these attributes the XML representation in the
-standlone.xml will look like:
-
-[source,xml,options="nowrap"]
-----
-    <management-interfaces>
-        <http-interface http-authentication-factory="management-http-authentication"
-        backlog="75"
-        no-request-timeout="60025"
-        connection-high-water="125"
-        connection-low-water="100">
-            <http-upgrade
-                enabled="true"
-                sasl-authentication-factory="management-sasl-authentication"/>
-            <socket-binding http="management-http"/>
-        </http-interface>
-    </management-interfaces>
-----
-
-Or via the CLI this will look like:
-
-[source,options="nowrap"]
-----
-[standalone@localhost:9990 /] /core-service=management/management-interface=http-interface:read-resource(include-defaults=true)
-{
-    "outcome" => "success",
-    "result" => {
-        "allowed-origins" => undefined,
-        "backlog" => 75,
-        "connection-high-water" => 125,
-        "connection-low-water" => 100,
-        "console-enabled" => true,
-        "constant-headers" => undefined,
-        "http-authentication-factory" => "management-http-authentication",
-        "http-upgrade" => {
-            "enabled" => true,
-            "sasl-authentication-factory" => "management-sasl-authentication"
-        },
-        "http-upgrade-enabled" => true,
-        "no-request-timeout" => 60025,
-        "sasl-protocol" => "remote",
-        "secure-socket-binding" => undefined,
-        "server-name" => undefined,
-        "socket-binding" => "management-http",
-        "ssl-context" => undefined
-    }
-}
-----
-
 When running at the stability level `Default` the management model attributes are not
 available but the default values defined here still apply. In this case the following
 system properties can be used to set the values:
