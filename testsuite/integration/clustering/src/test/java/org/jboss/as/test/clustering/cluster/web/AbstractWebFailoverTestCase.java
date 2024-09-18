@@ -72,7 +72,7 @@ public abstract class AbstractWebFailoverTestCase extends AbstractClusteringTest
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3) throws Exception {
-        this.testFailover(new RestartLifecycle(), baseURL1, baseURL2, baseURL3);
+        this.testFailover(new GracefulRestartLifecycle(), baseURL1, baseURL2, baseURL3);
     }
 
     @Test

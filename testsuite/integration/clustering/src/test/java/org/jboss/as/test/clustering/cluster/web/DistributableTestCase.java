@@ -166,7 +166,7 @@ public class DistributableTestCase extends AbstractClusteringTestCase {
     public void testGracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws Exception {
-        this.testGracefulServe(baseURL1, new RestartLifecycle());
+        this.testGracefulServe(baseURL1, new GracefulRestartLifecycle());
     }
 
     private void testGracefulServe(URL baseURL, Lifecycle lifecycle) throws URISyntaxException, IOException, InterruptedException {
