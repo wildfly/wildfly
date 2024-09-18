@@ -32,7 +32,7 @@ public class TestServlet extends HttpServlet {
 
     @PersistenceContext(unitName = "web_jpa_pc")
     EntityManager em;
-
+    Long databaseGeneratedID = null;
     @Resource
     private UserTransaction tx;
 
@@ -48,13 +48,28 @@ public class TestServlet extends HttpServlet {
 
                 if (mode.equals("write")) {
                     WebJPAEntity f = new WebJPAEntity();
-                    f.setId(1L);
+                    // Pasting from https://docs.jboss.org/hibernate/orm/6.6/migration-guide/migration-guide.html:
+                    // "
+                    // Merge versioned entity when row is deleted
+                    // Previously, merging a detached entity resulted in a SQL insert whenever there was no matching row in the database (for example, if the object had been deleted in another transaction). This behavior was unexpected and violated the rules of optimistic locking.
+                    //
+                    // An OptimisticLockException is now thrown when it is possible to determine that an entity is definitely detached, but there is no matching row. For this determination to be possible, the entity must have either:
+                    //
+                    // *  a generated @Id field, or
+                    // *  a non-primitive @Version field.
+                    //
+                    // For entities which have neither, it’s impossible to distinguish a new instance from a deleted detached instance, and there is no change from the previous behavior.
+                    // "
+                    // Previously, we specified the WebJPAEntity id value but as mentioned ^ we can no longer do that.
+                    // f.setId(1L);
+
                     f.setName("WebJPAEntity One");
-                    em.merge(f);
+                    f = em.merge(f);
+                    databaseGeneratedID = f.getId();
 
                 } else if (mode.equals("read")) {
 
-                    WebJPAEntity f = em.find(WebJPAEntity.class, 1L);
+                    WebJPAEntity f = em.find(WebJPAEntity.class, databaseGeneratedID);
                     resp.setContentType("text/plain");
                     PrintWriter out = resp.getWriter();
                     out.print(f.getName());
