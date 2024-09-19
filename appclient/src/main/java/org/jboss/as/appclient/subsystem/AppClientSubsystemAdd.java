@@ -69,7 +69,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
+        final String deployment = AppClientSubsystemResourceDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asStringOrNull();
         final File file = new File(AppClientSubsystemResourceDefinition.FILE.resolveModelAttribute(context, model).asString());
         if (!file.exists()) {
             context.setRollbackOnly();
