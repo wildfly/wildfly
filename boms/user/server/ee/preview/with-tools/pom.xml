@@ -10,7 +10,7 @@
 
     <parent>
         <groupId>org.wildfly.bom.builder</groupId>
-        <artifactId>wildfly-server-expansion</artifactId>
+        <artifactId>wildfly-server-ee-preview-builder</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -20,29 +20,29 @@
 
     <packaging>pom</packaging>
 
-    <artifactId>wildfly-server-expansion-preview-builder</artifactId>
+    <artifactId>wildfly-server-ee-preview-with-tools-builder</artifactId>
 
-    <name>WildFly BOM Builders: Server Expansion Preview Builder</name>
-    <description>This artifact builds a bill of materials (BOM) for Server Expansion Preview's Dependency Management</description>
+    <name>WildFly BOM Builders: Server EE Preview With Tools Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly Preview Server EE Dependency Management, with useful tools</description>
 
     <dependencyManagement>
+        <!-- add tools BOM in the builder's dep mngmnt, without importing -->
         <dependencies>
-            <!-- base import of server's dep management -->
             <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-preview-expansion-bom</artifactId>
-                <version>${full.maven.version}</version>
+                <groupId>${bomGroupId}</groupId>
+                <artifactId>${bomArtifactIdPrefix}-tools</artifactId>
+                <version>${project.version}</version>
                 <type>pom</type>
-                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <!-- enforces all BOM artifacts are available -->
     <dependencies>
+        <!-- depende on tools BOM builder to ensure such BOM is built before this builder runs -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-preview-feature-pack</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-tools-builder</artifactId>
+            <version>${project.version}</version>
             <type>pom</type>
         </dependency>
     </dependencies>
@@ -61,21 +61,27 @@
                         </goals>
                         <configuration>
                             <parent>
+                                <!-- parent is the BOM built by parent builder -->
                                 <groupId>${bomGroupId}</groupId>
                                 <artifactId>${bomArtifactIdPrefix}-ee-preview</artifactId>
                                 <version>${project.version}</version>
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
-                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-preview</bomArtifactId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-ee-preview-with-tools</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>${full.dist.product.release.name} Preview BOMs: Expansion</bomName>
-                            <bomDescription>${full.dist.product.release.name} Preview: Expansion Dependency Management</bomDescription>
-                            <inheritExclusions>UNMANAGED</inheritExclusions>
-                            <includeTransitives>true</includeTransitives>
-                            <includeDependencies combine.children="append">
-                                <!-- include here any <dependency /> exclusive to this BOM -->
-                            </includeDependencies>
+                            <bomName>${full.dist.product.release.name} Preview BOMs: EE With Tools</bomName>
+                            <bomDescription>${full.dist.product.release.name} Preview: EE Dependency Management, with useful tools</bomDescription>
+                            <!-- ensure no deps are re-included from parent -->
+                            <includeDependencies combine.self="override"/>
+                            <!-- the only entry in the BOM's dep mngmnt should be an import for the tools BOM -->
+                            <importDependencies>
+                                <dependency>
+                                    <groupId>${bomGroupId}</groupId>
+                                    <artifactId>${bomArtifactIdPrefix}-tools</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                            </importDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -83,8 +89,4 @@
         </plugins>
     </build>
 
-    <modules>
-        <module>with-tools</module>
-    </modules>
 </project>
-

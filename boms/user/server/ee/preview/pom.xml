@@ -90,4 +90,8 @@
         </plugins>
     </build>
 
+    <modules>
+        <module>with-tools</module>
+    </modules>
 </project>
+
