@@ -74,7 +74,6 @@ public class MDBRoleTestCase {
       // TODO WFLY-15289 The Elytron permissions need to be checked, should a deployment really need these?
       deployment.addAsResource(createPermissionsXmlAsset(new PropertyPermission("ts.timeout.factor", "read"),
                                                          new ElytronPermission("setRunAsPrincipal"),
-                                                         new ElytronPermission("handleSecurityEvent"),
                                                          new ChangeRoleMapperPermission("ejb")), "META-INF/jboss-permissions.xml");
       return deployment;
    }
