@@ -20,12 +20,14 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorB
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.test.shared.IntermittentFailure;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.PermissionUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.common.function.ExceptionSupplier;
@@ -39,6 +41,11 @@ import javax.naming.Context;
 @ServerSetup(TwoConnectorsEJBFailoverTestCase.ServerSetupTask.class)
 @RunWith(Arquillian.class)
 public class TwoConnectorsEJBFailoverTestCase extends AbstractClusteringTestCase {
+
+    @BeforeClass
+    public static void beforeClass() {
+        IntermittentFailure.thisTestIsFailingIntermittently("https://issues.redhat.com/browse/WFLY-17605");
+    }
 
     private static final int COUNT = 20;
     private static final long CLIENT_TOPOLOGY_UPDATE_WAIT = TimeoutUtil.adjust(5000);
