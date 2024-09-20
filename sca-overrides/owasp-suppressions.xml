@@ -92,6 +92,33 @@
       <packageUrl regex="true">^pkg:maven/org\.wildfly\.unstable\.api\.annotation/unstable-api-annotation-classpath-indexer@.*$</packageUrl>
       <cpe>cpe:/a:redhat:wildfly</cpe>
    </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-cache-infinispan-common-1.1.2.Final.jar
+
+      [WFLY-19762] Suppress wildfly-clustering mapping to infinispan CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*-infinispan.*@.*$</packageUrl>
+      <cpe>cpe:/a:infinispan:infinispan</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-server-api-1.1.2.Final.jar
+
+      [WFLY-19762] Suppress wildfly-clustering mapping to redhat:wildfly CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-.*@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:wildfly</cpe>
+   </suppress>
+   <suppress>
+      <notes><![CDATA[
+      file name: wildfly-clustering-server-jgroups-1.1.2.Final.jar
+      
+      [WFLY-19762] Suppress wildfly-clustering-server-jgroups mapping to redhat:jgroups CPE.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.wildfly\.clustering/wildfly-clustering-server-jgroups@.*$</packageUrl>
+      <cpe>cpe:/a:redhat:jgroups</cpe>
+   </suppress>
    <!-- CVE Expressions -->
 
    <!-- In this section specific CVEs are supressed where we have triaged we are not interested in them being reported. -->
@@ -222,5 +249,14 @@
       ]]></notes>
       <packageUrl regex="true">^pkg:maven/io\.undertow/undertow-core@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-7885</vulnerabilityName>
+   </suppress>
+   <suppress until="2025-09-20">
+      <notes><![CDATA[
+      file name: vertx-kafka-client-4.4.9.jar
+
+      [WFLY-19764] Suppress CVE-2024-8391 mapping to vertx-kafka-client
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
+      <cve>CVE-2024-8391</cve>
    </suppress>
 </suppressions>
