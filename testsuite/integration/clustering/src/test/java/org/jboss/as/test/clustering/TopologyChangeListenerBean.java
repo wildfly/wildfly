@@ -4,11 +4,14 @@
  */
 package org.jboss.as.test.clustering;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import jakarta.ejb.Remote;
 import jakarta.ejb.Stateless;
@@ -34,41 +37,47 @@ import org.jboss.logging.Logger;
  */
 @Stateless
 @Remote(TopologyChangeListener.class)
-@Listener(observation = Observation.POST)
-public class TopologyChangeListenerBean implements TopologyChangeListener, Runnable {
+public class TopologyChangeListenerBean implements TopologyChangeListener {
 
     private static final Logger logger = Logger.getLogger(TopologyChangeListenerBean.class);
 
     @Override
-    public void establishTopology(String containerName, String cacheName, long timeout, String... nodes) throws InterruptedException {
-        Set<String> expectedMembers = Stream.of(nodes).collect(Collectors.toSet());
+    public void establishTopology(String containerName, String cacheName, Set<String> desiredTopology, Duration timeout) throws TimeoutException {
         Cache<?, ?> cache = findCache(containerName, cacheName);
         if (cache == null) {
             throw new IllegalStateException(String.format("Cache %s.%s not found", containerName, cacheName));
         }
-        cache.addListener(this);
-        try {
-            synchronized (this) {
-                DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
-                LocalizedCacheTopology topology = dist.getCacheTopology();
-                Set<String> members = getMembers(topology);
-                long start = System.currentTimeMillis();
-                long now = start;
-                long endTime = start + timeout;
-                while (!expectedMembers.equals(members)) {
-                    logger.infof("%s != %s, waiting for a topology change event. Current topology id = %d", expectedMembers, members, topology.getTopologyId());
-                    this.wait(endTime - now);
-                    now = System.currentTimeMillis();
-                    if (now >= endTime) {
-                        throw new InterruptedException(String.format("Cache %s/%s failed to establish view %s within %d ms.  Current view is: %s", containerName, cacheName, expectedMembers, timeout, members));
+        DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
+        if (dist == null) return;
+        Object listener = new TopologyChangeListener();
+        synchronized (listener) {
+            cache.addListener(listener);
+            LocalizedCacheTopology topology = dist.getCacheTopology();
+            Set<String> currentTopology = getMembers(topology);
+            Instant now = Instant.now();
+            Instant start = now;
+            Instant stop = now.plus(timeout);
+            try {
+                while (!currentTopology.equals(desiredTopology) && now.isBefore(stop)) {
+                    logger.infof("%s != %s, waiting for a topology change event. Current topology id = %d", desiredTopology, currentTopology, topology.getTopologyId());
+                    long millis = Duration.between(Instant.now(), stop).toMillis();
+                    if (millis > 0) {
+                        listener.wait(millis);
                     }
                     topology = dist.getCacheTopology();
-                    members = getMembers(topology);
+                    currentTopology = getMembers(topology);
+                    now = Instant.now();
                 }
-                logger.infof("Cache %s/%s successfully established view %s within %d ms. Topology id = %d", containerName, cacheName, expectedMembers, now - start, topology.getTopologyId());
+                if (!currentTopology.equals(desiredTopology)) {
+                    throw new TimeoutException(String.format("Cache %s/%s failed to establish topology %s within %s. Current view is: %s", containerName, cacheName, desiredTopology, timeout, currentTopology));
+                }
+                logger.infof("Cache %s/%s successfully established topology %s in %s. Topology id = %d", containerName, cacheName, desiredTopology, Duration.between(start, now), topology.getTopologyId());
+            } catch (InterruptedException e) {
+                logger.warnf("Cache %s/%s interrupted while establishing topology %s. Topology id = %d", containerName, cacheName, desiredTopology, topology.getTopologyId());
+                Thread.currentThread().interrupt();
+            } finally {
+                cache.removeListener(listener);
             }
-        } finally {
-            cache.removeListener(this);
         }
     }
 
@@ -87,20 +96,24 @@ public class TopologyChangeListenerBean implements TopologyChangeListener, Runna
     }
 
     private static Set<String> getMembers(LocalizedCacheTopology topology) {
-        return topology.getMembers().stream().map(Object::toString).sorted().collect(Collectors.toSet());
+        return topology.getCurrentCH().getMembers().stream().map(Object::toString).collect(Collectors.toCollection(TreeSet::new));
     }
 
-    @TopologyChanged
-    public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
-        BlockingManager blocking = GlobalComponentRegistry.componentOf(event.getCache().getCacheManager(), BlockingManager.class);
-        blocking.asExecutor(this.getClass().getName()).execute(this);
-        return CompletableFuture.completedFuture(null);
-    }
+    @Listener(observation = Observation.POST)
+    static class TopologyChangeListener implements Runnable {
 
-    @Override
-    public void run() {
-        synchronized (this) {
-            this.notify();
+        @TopologyChanged
+        public CompletionStage<Void> topologyChanged(TopologyChangedEvent<?, ?> event) {
+            BlockingManager blocking = GlobalComponentRegistry.componentOf(event.getCache().getCacheManager(), BlockingManager.class);
+            blocking.asExecutor(this.getClass().getName()).execute(this);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public void run() {
+            synchronized (this) {
+                this.notify();
+            }
         }
     }
 }

@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
@@ -31,13 +35,13 @@ public class TopologyChangeListenerServlet extends HttpServlet {
     private static final String NODES = "nodes";
     private static final String TIMEOUT = "timeout";
 
-    public static URI createURI(URL baseURL, String container, String cache, long timeout, String... nodes) throws URISyntaxException {
+    public static URI createURI(URL baseURL, String container, String cache, Set<String> topology, Duration timeout) throws URISyntaxException {
         StringBuilder builder = new StringBuilder(baseURL.toURI().resolve(SERVLET_NAME).toString());
         builder.append('?').append(CONTAINER).append('=').append(container);
         builder.append('&').append(CACHE).append('=').append(cache);
-        builder.append('&').append(TIMEOUT).append('=').append(timeout);
-        for (String node: nodes) {
-            builder.append('&').append(NODES).append('=').append(node);
+        builder.append('&').append(TIMEOUT).append('=').append(timeout.toString());
+        for (String member : topology) {
+            builder.append('&').append(NODES).append('=').append(member);
         }
         return URI.create(builder.toString());
     }
@@ -50,12 +54,22 @@ public class TopologyChangeListenerServlet extends HttpServlet {
 
         String container = getRequiredParameter(request, CONTAINER);
         String cache = getRequiredParameter(request, CACHE);
-        String[] nodes = request.getParameterValues(NODES);
-        long timeout = parseLong(getRequiredParameter(request, TIMEOUT));
-        try {
-            this.listener.establishTopology(container, cache, timeout, nodes);
-        } catch (InterruptedException e) {
-            throw new ServletException(e);
+        Set<String> topology = Set.of(request.getParameterValues(NODES));
+        Duration timeout = Duration.parse(getRequiredParameter(request, TIMEOUT));
+        Instant now = Instant.now();
+        Instant stop = now.plus(timeout);
+        boolean established = false;
+        while (!established && now.isBefore(stop)) {
+            try {
+                this.listener.establishTopology(container, cache, topology, Duration.between(now, stop));
+                established = true;
+            } catch (TimeoutException e) {
+                throw new ServletException(e);
+            } catch (RuntimeException e) {
+                this.getServletContext().log(e.getLocalizedMessage(), e);
+                // Retry
+                now = Instant.now();
+            }
         }
     }
 
@@ -65,13 +79,5 @@ public class TopologyChangeListenerServlet extends HttpServlet {
             throw new ServletException(String.format("No '%s' parameter specified", name));
         }
         return value;
-    }
-
-    private static long parseLong(String value) throws ServletException {
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            throw new ServletException(String.format("Value '%s' cannot be parsed to long.", value), e);
-        }
     }
 }
