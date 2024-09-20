@@ -14,6 +14,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -31,22 +33,21 @@ import org.apache.http.impl.client.HttpClients;
  */
 public final class ClusterHttpClientUtil {
 
-    public static void establishTopology(URL baseURL, String container, String cache, String... nodes) throws URISyntaxException, IOException {
-        establishTopology(baseURL, container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
+    public static void establishTopology(URL baseURL, String container, String cache, Set<String> topology) throws URISyntaxException, IOException {
+        establishTopology(baseURL, container, cache, topology, TopologyChangeListener.DEFAULT_TIMEOUT);
     }
 
-    public static void establishTopology(URL baseURL, String container, String cache, long timeout, String... nodes) throws URISyntaxException, IOException {
+    public static void establishTopology(URL baseURL, String container, String cache, Set<String> topology, Duration timeout) throws URISyntaxException, IOException {
         HttpClient client = HttpClients.createDefault();
         try {
-            establishTopology(client, baseURL, container, cache, timeout, nodes);
+            establishTopology(client, baseURL, container, cache, topology, timeout);
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
     }
 
-    public static void establishTopology(HttpClient client, URL baseURL, String container, String cache, long timeout, String... nodes)
-            throws URISyntaxException, IOException {
-        URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, timeout, nodes);
+    public static void establishTopology(HttpClient client, URL baseURL, String container, String cache, Set<String> topology, Duration timeout) throws URISyntaxException, IOException {
+        URI uri = TopologyChangeListenerServlet.createURI(baseURL, container, cache, topology, timeout);
         HttpResponse response = client.execute(new HttpGet(uri));
         try {
             assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
