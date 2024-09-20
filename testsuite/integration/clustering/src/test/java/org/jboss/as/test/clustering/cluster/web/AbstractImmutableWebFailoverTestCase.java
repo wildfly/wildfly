@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -38,7 +39,7 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
     private final String deploymentName;
 
     protected AbstractImmutableWebFailoverTestCase(String deploymentName) {
-        super(THREE_NODES);
+        super(NODE_1_2_3);
 
         this.deploymentName = deploymentName;
     }
@@ -65,7 +66,7 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
         URI uri2 = SimpleServlet.createURI(baseURL2);
         URI uri3 = SimpleServlet.createURI(baseURL3);
 
-        this.establishTopology(baseURL1, THREE_NODES);
+        this.establishTopology(baseURL1, NODE_1_2_3);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(uri1));
@@ -141,8 +142,8 @@ public abstract class AbstractImmutableWebFailoverTestCase extends AbstractClust
         }
     }
 
-    private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException, InterruptedException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
+    private void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException, InterruptedException {
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, topology);
 
         // TODO we should be able to speed this up by observing changes in the routing registry
         // prevents failing assertions when topology information is expected, e.g.:

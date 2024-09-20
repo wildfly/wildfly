@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -71,7 +72,7 @@ public class InvalidateConversationTestCase extends AbstractClusteringTestCase {
 
         String conversation = null;
 
-        establishTopology(baseURL1, TWO_NODES);
+        establishTopology(baseURL1, NODE_1_2);
 
         try (CloseableHttpClient client = TestHttpClientUtils.promiscuousCookieHttpClient()) {
             HttpResponse response = client.execute(new HttpGet(ConversationServlet.createURI(baseURL1)));
@@ -106,7 +107,7 @@ public class InvalidateConversationTestCase extends AbstractClusteringTestCase {
         }
     }
 
-    private static void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, nodes);
+    private static void establishTopology(URL baseURL, Set<String> topology) throws URISyntaxException, IOException {
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", DEPLOYMENT_NAME, topology);
     }
 }
