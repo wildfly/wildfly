@@ -465,7 +465,7 @@
         <version.jakarta.security.enterprise>3.0.0</version.jakarta.security.enterprise>
         <version.jakarta.servlet.jakarta-servlet-api>6.0.0</version.jakarta.servlet.jakarta-servlet-api>
         <version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>3.1.1</version.jakarta.servlet.jsp.jakarta-servlet-jsp-api>
-        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.0</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
+        <version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>3.0.2</version.jakarta.servlet.jsp.jstl.jakarta-servlet-jsp-jstl-api>
         <version.jakarta.transaction.jakarta-transaction-api>2.0.1</version.jakarta.transaction.jakarta-transaction-api>
         <version.jakarta.validation.jakarta-validation-api>3.0.2</version.jakarta.validation.jakarta-validation-api>
         <version.jakarta.websocket.jakarta-websocket-api>2.1.1</version.jakarta.websocket.jakarta-websocket-api>
