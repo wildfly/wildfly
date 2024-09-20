@@ -12,9 +12,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.jar.Attributes;
@@ -48,7 +51,7 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
                     SubDeploymentMarker.mark(resourceRoot);
                     ModuleRootMarker.mark(resourceRoot);
                 } else {
-                    final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+                    final Manifest manifest = getManifest(resourceRoot);
                     if (manifest != null) {
                         Attributes main = manifest.getMainAttributes();
                         if (main != null) {
@@ -86,5 +89,21 @@ public class ApplicationClientDeploymentProcessor implements DeploymentUnitProce
                 }
             }
         }
+    }
+
+    private static Manifest getManifest(ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
+        Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+        if (manifest == null) {
+            // This is expected as ManifestAttachmentProcessor attaches when processing the subdeployment,
+            // but this DUP runs on the top level deployment before subdeployment processing starts.
+            // So find the manifest ourselves.
+            final VirtualFile deploymentRoot = resourceRoot.getRoot();
+            try {
+                manifest = VFSUtils.getManifest(deploymentRoot);
+            } catch (IOException e) {
+                throw ServerLogger.ROOT_LOGGER.failedToGetManifest(deploymentRoot, e);
+            }
+        }
+        return manifest;
     }
 }

@@ -32,19 +32,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
      * Tests a simple app client that calls an ejb with its command line parameters
      */
     public void simpleAppClientTest() throws Exception {
-        final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class,
-                APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
-        final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
-        remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
-                "client-annotation.jar", "${test.expr.applcient.param:cmdLineParam}");
-        try {
-            final String result = remote.awaitAppClientCall();
-            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
-            assertEquals("cmdLineParam", result);
-        } finally {
-            wrapper.quit();
-        }
+        testAppClient(null, "client-annotation.jar", "${test.expr.applcient.param:cmdLineParam}", "cmdLineParam");
     }
 
     /**
@@ -53,19 +41,7 @@ public abstract class AbstractSimpleApplicationClientTestCase {
      * @throws Exception
      */
     public void descriptorBasedAppClientTest() throws Exception {
-        final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class,
-                APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
-        final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
-        remote.reset();
-        final AppClientWrapper wrapper = new AppClientWrapper(getArchive(), getHostArgument(),
-                "client-dd.jar", "");
-        try {
-            final String result = remote.awaitAppClientCall();
-            assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
-            assertEquals("EnvEntry", result);
-        } finally {
-            wrapper.quit();
-        }
+        testAppClient(null, "client-dd.jar", null, "EnvEntry");
     }
 
     /**
@@ -74,22 +50,27 @@ public abstract class AbstractSimpleApplicationClientTestCase {
      * @throws Exception
      */
     public void testAppClientJBossDescriptor() throws Exception {
+        URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
+        testAppClient(" -Dnode0=" + managementClient.getMgmtAddress() + getEjbClientPropertiesArgument(props), "client-override.jar", null, "OverridenEnvEntry");
+    }
+
+    protected void testAppClient(String hostArgument,  String deploymentName, String appclientArgs, String expectedResult) throws Exception {
         final StatelessEJBLocator<AppClientSingletonRemote> locator = new StatelessEJBLocator(AppClientSingletonRemote.class,
                 APP_NAME, MODULE_NAME, AppClientStateSingleton.class.getSimpleName(), "");
         final AppClientSingletonRemote remote = EJBClient.createProxy(locator);
         remote.reset();
-        URL props = getClass().getClassLoader().getResource("jboss-ejb-client.properties");
         final AppClientWrapper wrapper = new AppClientWrapper(getArchive(),
-                " -Dnode0=" + managementClient.getMgmtAddress() + getEjbClientPropertiesArgument(props),
-                "client-override.jar",
-                "");
+                hostArgument == null ? getHostArgument() : hostArgument,
+                deploymentName,
+                appclientArgs == null ? "" : appclientArgs);
         try {
             final String result = remote.awaitAppClientCall();
             assertTrue("App client call failed. App client output: " + wrapper.readAllUnformated(1000), result != null);
-            assertEquals("OverridenEnvEntry", result);
+            assertEquals(expectedResult, result);
         } finally {
             wrapper.quit();
         }
+
     }
 
     private String getHostArgument() {
