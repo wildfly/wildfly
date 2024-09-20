@@ -70,8 +70,6 @@
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} Preview BOMs: EE</bomName>
                             <bomDescription>${full.dist.product.release.name} Preview: EE Dependency Management</bomDescription>
-                            <inheritExclusions>UNMANAGED</inheritExclusions>
-                            <includeTransitives>true</includeTransitives>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
                                 <dependency>

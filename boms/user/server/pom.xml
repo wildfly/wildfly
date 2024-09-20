@@ -64,6 +64,8 @@
                     <artifactId>wildfly-bom-builder-plugin</artifactId>
                     <configuration>
                         <!-- bom builder plugin config common to all server BOMs -->
+                        <inheritExclusions>UNMANAGED</inheritExclusions>
+                        <includeTransitives>true</includeTransitives>
                         <includeDependencies>
                             <!-- include client BOMs -->
                             <dependency>

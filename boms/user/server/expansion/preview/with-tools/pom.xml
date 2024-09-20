@@ -82,6 +82,9 @@
                                     <type>pom</type>
                                 </dependency>
                             </importDependencies>
+                            <includePlugins>
+                                <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
+                            </includePlugins>
                         </configuration>
                     </execution>
                 </executions>

@@ -85,6 +85,32 @@
                                     <groupId>io.micrometer</groupId>
                                     <artifactId>micrometer-core</artifactId>
                                 </dependency>
+                                <!-- include jakarta specs APIs -->
+                                <dependency>
+                                    <groupId>jakarta.annotation</groupId>
+                                    <artifactId>jakarta.annotation-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.interceptor</groupId>
+                                    <artifactId>jakarta.interceptor-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json</groupId>
+                                    <artifactId>jakarta.json-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.json.bind</groupId>
+                                    <artifactId>jakarta.json.bind-api</artifactId>
+                                </dependency>
+                                <!-- replaces org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec -->
+                                <dependency>
+                                    <groupId>jakarta.ws.rs</groupId>
+                                    <artifactId>jakarta.ws.rs-api</artifactId>
+                                </dependency>
                                 <!-- include Kafka client API -->
                                 <dependency>
                                     <groupId>org.apache.kafka</groupId>

@@ -61,9 +61,8 @@
                         </goals>
                         <configuration>
                             <parent>
-                                <groupId>${bomGroupId}</groupId>
-                                <artifactId>${bomArtifactIdPrefix}-ee-preview</artifactId>
-                                <version>${project.version}</version>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jboss-parent</artifactId>
                                 <relativePath/>
                             </parent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
@@ -71,8 +70,6 @@
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} Preview BOMs: Expansion</bomName>
                             <bomDescription>${full.dist.product.release.name} Preview: Expansion Dependency Management</bomDescription>
-                            <inheritExclusions>UNMANAGED</inheritExclusions>
-                            <includeTransitives>true</includeTransitives>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
                             </includeDependencies>
