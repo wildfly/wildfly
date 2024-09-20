@@ -7,6 +7,7 @@ package org.jboss.as.test.clustering;
 import static org.jboss.as.test.shared.PermissionUtils.createPermissionsXmlAsset;
 
 import java.util.PropertyPermission;
+import java.util.Set;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -33,9 +34,9 @@ public class ClusterTestUtil {
         return archive;
     }
 
-    public static void establishTopology(EJBDirectory directory, String container, String cache, String... nodes) throws Exception {
+    public static void establishTopology(EJBDirectory directory, String container, String cache, Set<String> topology) throws Exception {
         TopologyChangeListener listener = directory.lookupStateless(TopologyChangeListenerBean.class, TopologyChangeListener.class);
-        listener.establishTopology(container, cache, TopologyChangeListener.DEFAULT_TIMEOUT, nodes);
+        listener.establishTopology(container, cache, topology, TopologyChangeListener.DEFAULT_TIMEOUT);
     }
 
     // Model management convenience methods
