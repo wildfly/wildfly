@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.util.concurrent.ExecutionException;
+
 import org.wildfly.clustering.cache.CacheEntryRemover;
 import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
 import org.wildfly.clustering.ejb.timer.TimeoutListener;
@@ -72,7 +74,7 @@ public class InfinispanTimer<I> implements Timer<I> {
     }
 
     @Override
-    public void invoke() throws Exception {
+    public void invoke() throws ExecutionException {
         this.listener.timeout(this.manager, this);
     }
 
