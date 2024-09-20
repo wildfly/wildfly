@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.ejb.timer;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Describes the properties of a timer, and its controlling mechanisms.
  * @author Paul Ferraro
@@ -19,7 +21,7 @@ public interface Timer<I> {
 
     void cancel();
 
-    void invoke() throws Exception;
+    void invoke() throws ExecutionException;
 
     void activate();
     void suspend();
