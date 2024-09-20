@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -19,6 +20,8 @@ import java.util.stream.Stream;
 import io.github.resilience4j.retry.RetryConfig;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusteringConfiguration;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
 import org.wildfly.clustering.cache.batch.Batch;
@@ -68,6 +71,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     private final TimerFactory<I, RemappableTimerMetaDataEntry<C>> factory;
     private final Marshaller<Object, C> marshaller;
     private final IdentifierFactory<I> identifierFactory;
+    private final AtomicBoolean identifierFactoryStarted = new AtomicBoolean(false);
     private final Supplier<Batch> batchFactory;
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
     private final TimerRegistry<I> registry;
@@ -85,6 +89,14 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
         this.dispatcherFactory = config.getCommandDispatcherFactory();
         this.factory = config.getTimerFactory();
         this.registry = config.getRegistry();
+        ClusteringConfiguration clustering = this.cache.getCacheConfiguration().clustering();
+        CacheMode mode = clustering.cacheMode();
+        float capacityFactor = clustering.hash().capacityFactor();
+        // If cache is not suspended, start the affinity service now so that any timers created before start() will hash locally
+        if (mode.isClustered() && (capacityFactor > 0f) && (!mode.isDistributed() || capacityFactor > Float.MIN_VALUE)) {
+            this.identifierFactory.start();
+            this.identifierFactoryStarted.set(true);
+        }
     }
 
     @Override
@@ -139,12 +151,16 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
         scheduleTask.accept(CacheStreamFilter.local(this.cache));
 
-        this.identifierFactory.start();
+        if (this.identifierFactoryStarted.compareAndSet(false, true)) {
+            this.identifierFactory.start();
+        }
     }
 
     @Override
     public void stop() {
-        this.identifierFactory.stop();
+        if (this.identifierFactoryStarted.compareAndSet(true, false)) {
+            this.identifierFactory.stop();
+        }
 
         ListenerRegistration registration = this.schedulerListenerRegistration;
         if (registration != null) {
