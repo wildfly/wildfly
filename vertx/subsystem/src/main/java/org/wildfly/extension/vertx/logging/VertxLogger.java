@@ -58,4 +58,8 @@ public interface VertxLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 8, value = "Use Vertx instance from vertx subsystem")
     void useVertxFromSubsystem();
+
+    @Message(id = 9, value = "There is no vertx defined from vertx subsystem")
+    IllegalStateException noVertxDefined();
+
 }
