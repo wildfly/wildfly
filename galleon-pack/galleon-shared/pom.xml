@@ -657,7 +657,7 @@
                 <groupId>org.wildfly.unstable.api.annotation</groupId>
                 <artifactId>unstable-api-annotation-classpath-indexer-plugin</artifactId>
                 <configuration>
-                    <outputFile>${project.build.directory}/index/wildfly-galleon-pack.zip</outputFile>
+                    <outputFile>${project.build.directory}/index/wildfly-galleon-pack-unstable-api-annotation-index.zip</outputFile>
                     <filters>
                         <filter>
                             <annotation>io.smallrye.common.annotation.Experimental</annotation>

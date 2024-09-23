@@ -34,12 +34,20 @@
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.zip</location>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>true</exists>
     </file>
     <file>
-      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack.zip</location>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip</location>
+      <exists>false</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
       <exists>true</exists>
+    </file>
+    <file>
+      <location>target/${server.output.dir.prefix}-${server.output.dir.version}/wildfly-galleon-pack-unstable-api-annotation-index.zip</location>
+      <exists>false</exists>
     </file>
     <file>
       <location>target/${server.output.dir.prefix}-${server.output.dir.version}/jboss-modules.jar</location>
