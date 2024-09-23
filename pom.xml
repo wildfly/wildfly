@@ -392,7 +392,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.15.4</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.17.0</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>
@@ -439,7 +439,7 @@
         <version.io.smallrye.smallrye-fault-tolerance>6.4.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.4</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
-        <version.io.smallrye.smallrye-mutiny>2.6.1</version.io.smallrye.smallrye-mutiny>
+        <version.io.smallrye.smallrye-mutiny>2.6.2</version.io.smallrye.smallrye-mutiny>
         <version.io.smallrye.smallrye-mutiny-vertx>3.13.0</version.io.smallrye.smallrye-mutiny-vertx>
         <version.io.smallrye.smallrye-mutiny-zero>1.1.0</version.io.smallrye.smallrye-mutiny-zero>
         <version.io.smallrye.smallrye-opentelemetry>2.6.0</version.io.smallrye.smallrye-opentelemetry>

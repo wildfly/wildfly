@@ -1,0 +1,87 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom.builder</groupId>
+        <artifactId>wildfly-server-expansion</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>34.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>wildfly-server-expansion-preview-builder</artifactId>
+
+    <name>WildFly BOM Builders: Server Expansion Preview Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for Server Expansion Preview's Dependency Management</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- base import of server's dep management -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-preview-expansion-bom</artifactId>
+                <version>${full.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- enforces all BOM artifacts are available -->
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-preview-feature-pack</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jboss-parent</artifactId>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${bomGroupId}</bomGroupId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-preview</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>${full.dist.product.release.name} Preview BOMs: Expansion</bomName>
+                            <bomDescription>${full.dist.product.release.name} Preview: Expansion Dependency Management</bomDescription>
+                            <includeDependencies combine.children="append">
+                                <!-- include here any <dependency /> exclusive to this BOM -->
+                            </includeDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>with-tools</module>
+    </modules>
+</project>
+

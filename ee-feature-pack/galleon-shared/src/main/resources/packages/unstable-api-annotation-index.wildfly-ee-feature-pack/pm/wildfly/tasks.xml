@@ -5,6 +5,6 @@
   -->
 
 <tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:3.1">
-        <copy-path src="wildfly-ee-feature-pack.zip" relative-to="content" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-feature-pack.zip"/>
+        <copy-path src="wildfly-ee-galleon-pack-unstable-api-annotation-index.zip" target="modules/system/layers/base/org/wildfly/_internal/unstable-api-annotation-index/main/content/wildfly-ee-galleon-pack-unstable-api-annotation-index.zip"/>
 
 </tasks>
