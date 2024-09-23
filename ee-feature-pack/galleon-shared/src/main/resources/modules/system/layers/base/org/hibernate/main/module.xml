@@ -23,6 +23,8 @@
         <module name="com.fasterxml.jackson.core.jackson-core" optional="true"/>
         <module name="com.fasterxml.jackson.core.jackson-databind" optional="true"/>
         <module name="jakarta.annotation.api"/>
+        <!-- If Jakarta Data is provisioned, depend on it -->
+        <module name="jakarta.data.api" optional="true"/>
         <module name="jakarta.enterprise.api"/>
         <module name="jakarta.json.bind.api"/>
         <module name="jakarta.persistence.api"/>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<module name="jakarta.data.api" xmlns="urn:jboss:module:1.9">
+
+    <resources>
+        <artifact name="${jakarta.data:jakarta.data-api}"/>
+    </resources>
+
+    <dependencies>
+        <module name="org.jboss.logging"/>
+    </dependencies>
+</module>
