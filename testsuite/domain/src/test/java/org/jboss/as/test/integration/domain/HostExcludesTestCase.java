@@ -251,13 +251,14 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.telemetry"
         ));
 
-        // List of extensions added only by the WildFly Preview
+        // List of extensions added only by WildFly Preview.
         // We do not track changes between different versions of WildFly Preview.
         // From the point of view of this test, all extensions added in WildFly Preview are always extensions
         // added in the latest release of WildFly Preview. It is out of the scope of Host Exclusion test
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
         private final Set<String> previewExtensions = new HashSet<>(Arrays.asList(
+                "org.wildfly.extension.jakarta.data"
         ));
 
         ExtensionConf(String name, ExtensionConf parent, boolean supported) {
