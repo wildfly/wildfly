@@ -7,12 +7,10 @@ package org.jboss.as.clustering.controller;
 
 import java.security.KeyStore;
 
-import javax.management.MBeanServer;
 import javax.net.ssl.SSLContext;
 import javax.sql.DataSource;
 
 import org.wildfly.security.credential.store.CredentialStore;
-import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
@@ -20,8 +18,6 @@ import org.wildfly.service.descriptor.UnaryServiceDescriptor;
  * @author Paul Ferraro
  */
 public interface CommonServiceDescriptor {
-    NullaryServiceDescriptor<MBeanServer> MBEAN_SERVER = NullaryServiceDescriptor.of("org.wildfly.management.jmx", MBeanServer.class);
-
     UnaryServiceDescriptor<DataSource> DATA_SOURCE = UnaryServiceDescriptor.of("org.wildfly.data-source", DataSource.class);
 
     UnaryServiceDescriptor<CredentialStore> CREDENTIAL_STORE = UnaryServiceDescriptor.of("org.wildfly.security.credential-store", CredentialStore.class);

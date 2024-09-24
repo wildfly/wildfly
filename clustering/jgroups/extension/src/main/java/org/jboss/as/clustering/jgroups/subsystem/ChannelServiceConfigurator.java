@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 import javax.management.MBeanServer;
 
-import org.jboss.as.clustering.controller.CommonServiceDescriptor;
+import org.jboss.as.clustering.controller.MBeanServerResolver;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -44,7 +44,7 @@ public class ChannelServiceConfigurator implements ResourceServiceConfigurator {
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
         ChannelServiceConfiguration configuration = this.configuration;
-        ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, this.capability, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
+        ServiceDependency<MBeanServer> server = new MBeanServerResolver(this.capability).resolve(context, model);
         Supplier<JChannel> factory = new Supplier<>() {
             @Override
             public JChannel get() {

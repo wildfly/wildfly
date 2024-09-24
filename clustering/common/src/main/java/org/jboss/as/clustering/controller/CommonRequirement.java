@@ -20,7 +20,7 @@ import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 @Deprecated(forRemoval = true)
 public enum CommonRequirement implements Requirement, ServiceNameFactoryProvider {
     ELYTRON("org.wildfly.security.elytron", Void.class),
-    MBEAN_SERVER(CommonServiceDescriptor.MBEAN_SERVER),
+    MBEAN_SERVER(MBeanServerResolver.SERVICE_DESCRIPTOR),
     NAMING_STORE(NamingService.CAPABILITY_NAME, NamingStore.class),
     PATH_MANAGER(PathManager.SERVICE_DESCRIPTOR),
     SOCKET_BINDING_MANAGER(SocketBindingManager.SERVICE_DESCRIPTOR),
