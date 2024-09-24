@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom.builder</groupId>
+        <artifactId>wildfly</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>34.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-server</artifactId>
+
+    <packaging>pom</packaging>
+
+    <name>WildFly BOM Builders: Server</name>
+
+    <description>The base Server BOM Builder dependency management and Plugin configuration.</description>
+
+    <properties>
+        <!-- the server BOMs built's groupId -->
+        <bomGroupId>org.wildfly.bom</bomGroupId>
+    </properties>
+
+    <dependencyManagement>
+        <!-- dependency management common to all server BOMs -->
+        <dependencies>
+            <!-- include client BOMs -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-ejb-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jaxws-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-jms-client-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-bom-builder-plugin</artifactId>
+                    <configuration>
+                        <!-- bom builder plugin config common to all server BOMs -->
+                        <inheritExclusions>UNMANAGED</inheritExclusions>
+                        <includeTransitives>true</includeTransitives>
+                        <includeDependencies>
+                            <!-- include client BOMs -->
+                            <dependency>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-ejb-client-bom</artifactId>
+                                <type>pom</type>
+                                <transitive>false</transitive>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-jaxws-client-bom</artifactId>
+                                <type>pom</type>
+                                <transitive>false</transitive>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-jms-client-bom</artifactId>
+                                <type>pom</type>
+                                <transitive>false</transitive>
+                            </dependency>
+                        </includeDependencies>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>ee</module>
+        <module>expansion</module>
+    </modules>
+
+</project>

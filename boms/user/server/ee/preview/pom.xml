@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom.builder</groupId>
+        <artifactId>wildfly-server-ee</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>34.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>wildfly-server-ee-preview-builder</artifactId>
+
+    <name>WildFly BOM Builders: Server EE Preview Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly Preview Server EE Dependency Management</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- base import of server's dep management -->
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-preview-ee-bom</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- enforces all BOM artifacts are available -->
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-preview-feature-pack</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jboss-parent</artifactId>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${bomGroupId}</bomGroupId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-ee-preview</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>${full.dist.product.release.name} Preview BOMs: EE</bomName>
+                            <bomDescription>${full.dist.product.release.name} Preview: EE Dependency Management</bomDescription>
+                            <includeDependencies combine.children="append">
+                                <!-- include here any <dependency /> exclusive to this BOM -->
+                                <dependency>
+                                    <groupId>jakarta.el</groupId>
+                                    <artifactId>jakarta.el-api</artifactId>
+                                </dependency>
+                                <dependency>
+                                    <groupId>jakarta.enterprise</groupId>
+                                    <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                                </dependency>
+                            </includeDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>with-tools</module>
+    </modules>
+</project>
+

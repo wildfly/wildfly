@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.bom.builder</groupId>
+        <artifactId>wildfly-server-expansion-standard-builder</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>34.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+
+    <artifactId>wildfly-server-expansion-standard-with-tools-builder</artifactId>
+
+    <name>WildFly BOM Builders: Server Expansion Standard With Tools Builder</name>
+    <description>This artifact builds a bill of materials (BOM) for WildFly Server Expansion Standard's Dependency Management, with useful tools</description>
+
+    <dependencyManagement>
+        <!-- add tools BOM in the builder's dep mngmnt, without importing -->
+        <dependencies>
+            <dependency>
+                <groupId>${bomGroupId}</groupId>
+                <artifactId>${bomArtifactIdPrefix}-tools</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- depende on tools BOM builder to ensure such BOM is built before this builder runs -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-tools-builder</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-bom-builder-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-bom</id>
+                        <goals>
+                            <goal>build-bom</goal>
+                        </goals>
+                        <configuration>
+                            <parent>
+                                <!-- parent is the BOM built by parent builder -->
+                                <groupId>${bomGroupId}</groupId>
+                                <artifactId>${bomArtifactIdPrefix}-expansion</artifactId>
+                                <version>${project.version}</version>
+                                <relativePath/>
+                            </parent>
+                            <bomGroupId>${bomGroupId}</bomGroupId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-with-tools</bomArtifactId>
+                            <bomVersion>${project.version}</bomVersion>
+                            <bomName>${full.dist.product.release.name} BOMs: Expansion With Tools</bomName>
+                            <bomDescription>${full.dist.product.release.name}: Expansion Dependency Management, with useful tools</bomDescription>
+                            <!-- ensure no deps are re-included from parent -->
+                            <includeDependencies combine.self="override"/>
+                            <!-- the only entry in the BOM's dep mngmnt should be an import for the tools BOM -->
+                            <importDependencies>
+                                <dependency>
+                                    <groupId>${bomGroupId}</groupId>
+                                    <artifactId>${bomArtifactIdPrefix}-tools</artifactId>
+                                    <type>pom</type>
+                                </dependency>
+                            </importDependencies>
+                            <includePlugins>
+                                <includePlugin>org.wildfly.plugins:wildfly-maven-plugin</includePlugin>
+                            </includePlugins>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
