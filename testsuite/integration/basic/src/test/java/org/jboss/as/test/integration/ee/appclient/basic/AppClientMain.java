@@ -24,7 +24,8 @@ public class AppClientMain {
 
     public static void main(final String[] params) {
         logger.trace("Main method invoked");
-
+        Status status = new Status();
+        logger.info("Status class accessed via classloader = " + status.getClass().getClassLoader());
         if(!appclient) {
             logger.error("InAppClientContainer was not true");
             throw new RuntimeException("InAppClientContainer was not true");
