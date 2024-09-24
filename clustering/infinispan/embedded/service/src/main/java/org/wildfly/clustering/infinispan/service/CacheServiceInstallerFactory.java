@@ -19,6 +19,8 @@ import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.impl.BasicComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.BlockingManager;
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.suspend.ServerResumeContext;
 import org.jboss.as.server.suspend.ServerSuspendContext;
@@ -47,6 +49,7 @@ public enum CacheServiceInstallerFactory implements Function<BinaryServiceConfig
         ServiceDependency<EmbeddedCacheManager> container = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONTAINER);
         ServiceDependency<Configuration> cacheConfiguration = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONFIGURATION);
         ServiceDependency<SuspendableActivityRegistry> activityRegistry = ServiceDependency.on(SuspendableActivityRegistry.SERVICE_DESCRIPTOR);
+        ServiceDependency<ProcessStateNotifier> processStateProvider = ServiceDependency.on(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         ServiceDependency<ServerEnvironment> environment = ServiceDependency.on(ServerEnvironment.SERVICE_DESCRIPTOR);
         String cacheName = configuration.getChildName();
         Supplier<Cache<?, ?>> cache = new Supplier<>() {
@@ -60,17 +63,21 @@ public enum CacheServiceInstallerFactory implements Function<BinaryServiceConfig
                 // TODO Consider handling replicated/invalidation caches via zero capacity, though this will likely require special handling in CacheRegistry
                 Configuration suspendedConfiguration = originalConfiguration.clustering().cacheMode().isDistributed() ? new ConfigurationBuilder().read(originalConfiguration).clustering().hash().capacityFactor(Float.MIN_VALUE).build() : originalConfiguration;
                 // If we are starting in suspended mode, switch to suspended configuration
-                if ((registry.getState() != ServerSuspendController.State.RUNNING) && environment.get().isStartSuspended() && (suspendedConfiguration != originalConfiguration)) {
-                    LOGGER.debugf("%s cache of %s container will start using a suspended configuration", cacheName, manager.getCacheManagerConfiguration().cacheManagerName());
-                    manager.undefineConfiguration(cacheName);
-                    manager.defineConfiguration(cacheName, suspendedConfiguration);
+                if ((suspendedConfiguration != originalConfiguration) && (registry.getState() != ServerSuspendController.State.RUNNING)) {
+                    ControlledProcessState.State state = processStateProvider.get().getCurrentState();
+                    // If server is suspended, but will not auto-resume (e.g. server startup), start cache using suspended configuration
+                    if ((state == ControlledProcessState.State.RUNNING) || ((state == ControlledProcessState.State.STARTING) && environment.get().isStartSuspended())) {
+                        LOGGER.debugf("%s cache of %s container will start using a suspended configuration", cacheName, manager.getCacheManagerConfiguration().cacheManagerName());
+                        manager.undefineConfiguration(cacheName);
+                        manager.defineConfiguration(cacheName, suspendedConfiguration);
+                    }
                 }
                 return new DefaultCache<>(manager.getCache(cacheName), originalConfiguration, suspendedConfiguration, registry);
             }
         };
         return ServiceInstaller.builder(ManagedCache::new, cache).blocking()
                 .provides(configuration.resolveServiceName(InfinispanServiceDescriptor.CACHE))
-                .requires(List.of(container, cacheConfiguration, activityRegistry, environment))
+                .requires(List.of(container, cacheConfiguration, activityRegistry, processStateProvider, environment))
                 .onStart(Cache::start)
                 .onStop(Cache::stop)
                 .build();
