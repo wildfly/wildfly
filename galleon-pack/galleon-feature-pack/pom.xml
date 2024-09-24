@@ -128,7 +128,7 @@
                         </goals>
                         <configuration>
                             <!-- Just copy here rather than trying to get from the shared zip, since nothing else is using the zip -->
-                            <outputDirectory>${basedir}/target/resources/packages/unstable-api-annotation-index.wildfly-galleon-pack/content</outputDirectory>
+                            <outputDirectory>${basedir}/target/resources/packages/unstable-api-annotation-index.wildfly-galleon-pack/pm/wildfly</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${galleon.shared.generated.resources.directory}</directory>
