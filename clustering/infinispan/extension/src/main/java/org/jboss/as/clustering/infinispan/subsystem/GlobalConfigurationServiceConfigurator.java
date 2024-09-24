@@ -36,7 +36,7 @@ import org.infinispan.configuration.internal.PrivateGlobalConfigurationBuilder;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.SerializationContextInitializer;
-import org.jboss.as.clustering.controller.CommonServiceDescriptor;
+import org.jboss.as.clustering.controller.MBeanServerResolver;
 import org.jboss.as.clustering.infinispan.jmx.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.logging.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
@@ -68,7 +68,7 @@ public class GlobalConfigurationServiceConfigurator implements ResourceServiceCo
         PathAddress address = context.getCurrentAddress();
         String containerName = address.getLastElement().getValue();
 
-        ServiceDependency<MBeanServer> server = context.hasOptionalCapability(CommonServiceDescriptor.MBEAN_SERVER, this.capability, null) ? ServiceDependency.on(CommonServiceDescriptor.MBEAN_SERVER) : ServiceDependency.of(null);
+        ServiceDependency<MBeanServer> server = new MBeanServerResolver(this.capability).resolve(context, model);
         ServiceDependency<ModuleLoader> loader = ServiceDependency.on(Services.JBOSS_SERVICE_MODULE_LOADER);
         ServiceDependency<List<Module>> containerModules = ServiceDependency.on(CacheContainerResourceDefinition.CACHE_CONTAINER_MODULES, containerName);
         ServiceDependency<TransportConfiguration> transport = ServiceDependency.on(TransportResourceDefinition.SERVICE_DESCRIPTOR, containerName);
