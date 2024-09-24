@@ -252,7 +252,10 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mvc-krazo",
             "jakarta.mvc.api",
             "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy"
+            "org.eclipse.krazo.resteasy",
+            // Extension not included in the default config
+            "org.wildfly.extension.jakarta.data",
+            // "jakarta.data.api" this is an optional dep of org.hibernate
     };
 
     /**

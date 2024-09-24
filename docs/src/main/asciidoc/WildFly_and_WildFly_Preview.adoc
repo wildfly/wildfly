@@ -71,11 +71,11 @@ compliance of WildFly Preview should check the https://github.com/wildfly/certif
 [wildfly-preview-ee11]
 === EE 11 Support in WildFly Preview
 
-The 32 release introduces a significant inflection in how we are using WildFly Preview. Beginning with this release we are starting to use WildFly Preview to provide a look at what we're doing for Jakarta EE 11 support.  EE 11 is not yet GA, and standard WildFly won't support EE 11 before the WildFly 34 release, at earliest. But there are milestone, release candidate and final releases of many EE 11 specs and implementations available, so we decided to provide those in WildFly Preview. This means for a number of EE APIs, WildFly Preview no long provides an EE 10 compatible implementation.
+The 32 release introduces a significant inflection in how we are using WildFly Preview. Beginning with this release we are starting to use WildFly Preview to provide a look at what we're doing for Jakarta EE 11 support.  EE 11 is not yet GA, and standard WildFly won't support EE 11 before the WildFly 36 release, at earliest. But there are milestone, release candidate and final releases of many EE 11 specs and implementations available, so we decided to provide those in WildFly Preview. This means for a number of EE APIs, WildFly Preview no long provides an EE 10 compatible implementation.
 
 However, for a number of specifications that are planning changes for EE 11 we are still offering the EE 10 variant. In future releases we'll shift those to the EE 11 variants.
 
-The following table lists the various Jakarta technologies offered by WildFly Preview 32, along with information about which EE platform version the specification relates to. Note that a number of Jakarta specifications are unchanged between EE 10 and EE 11, while other EE technologies that WildFly offers are not part of EE 11.
+The following table lists the various Jakarta technologies offered by WildFly Preview, along with information about which EE platform version the specification relates to. Note that a number of Jakarta specifications are unchanged between EE 10 and EE 11, while other EE technologies that WildFly offers are not part of EE 11. Jakarta Data is a new specification added in EE 11.
 
 [cols=",,",options="header"]
 |=======================================================================
@@ -96,6 +96,9 @@ The following table lists the various Jakarta technologies offered by WildFly Pr
 |Jakarta Connectors| 2.1 |10 & 11
 
 |Jakarta Contexts and Dependency Injection| 4.1.0 |11
+
+|Jakarta Data
+(_xref:Admin_Guide.adoc#Feature_stability_levels[preview stability] only_)| 1.0 |11
 
 |Jakarta Debugging Support for Other Languages| 2.0 |10 & 11
 
@@ -120,7 +123,7 @@ The following table lists the various Jakarta technologies offered by WildFly Pr
 |Jakarta Messaging| 3.1 |10 & 11
 
 | Jakarta MVC
-(_preview stability only_)| 2.1| N/A xref:note2[^2^]
+(_xref:Admin_Guide.adoc#Feature_stability_levels[preview stability] only_)| 2.1| N/A xref:note2[^2^]
 
 |Jakarta Pages| 3.1 |10
 
