@@ -31,6 +31,8 @@ import org.jboss.as.version.Stability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.elytron.oidc.client.KeycloakConfiguration;
@@ -45,7 +47,9 @@ import org.wildfly.test.stabilitylevel.StabilityServerSetupSnapshotRestoreTasks;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({ OidcWithDeploymentConfigTest.PreviewStabilitySetupTask.class, OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class })
+@ServerSetup({ OidcWithDeploymentConfigTest.PreviewStabilitySetupTask.class,
+        OidcWithDeploymentConfigTest.KeycloakAndSystemPropertySetup.class,
+        OidcBaseTest.WildFlyServerSetupTask.class})
 public class OidcWithDeploymentConfigTest extends OidcBaseTest {
 
     private static final String OIDC_PROVIDER_URL = "oidc.provider.url";
@@ -115,6 +119,7 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
         APP_NAMES.put(PS_SIGNED_REQUEST_URI_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(INVALID_SIGNATURE_ALGORITHM_FILE, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
         APP_NAMES.put(MISSING_SECRET_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
+        APP_NAMES.put(FORM_WITH_OIDC_OIDC_APP, KeycloakConfiguration.ClientAppType.OIDC_CLIENT);
     }
 
     public OidcWithDeploymentConfigTest() {
@@ -350,6 +355,39 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
                 .addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(), MISSING_SECRET_WITH_HMAC_ALGORITHM_FILE, "oidc.json");
     }
 
+    @Deployment(name = FORM_WITH_OIDC_EAR_APP, managed = false, testable = false)
+    public static Archive<?> createFormWithOidcDeployment() {
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, FORM_WITH_OIDC_EAR_APP+".ear");
+        ear.addAsManifestResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_application.xml", "application.xml");
+
+        final WebArchive form = ShrinkWrap.create(WebArchive.class, "form.war");
+        form.addClasses(SimpleServlet.class);
+        form.addClasses(SimpleSecuredServlet.class);
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_web.xml", "web.xml");
+        form.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_form_jboss-web.xml", "jboss-web.xml");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_login.jsp", "login.jsp");
+        form.addAsWebResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP + "_error.jsp", "error.jsp");
+
+        ear.addAsModule(form);
+
+        final WebArchive oidc = ShrinkWrap.create(WebArchive.class, "oidc.war");
+        oidc.addClasses(SimpleServlet.class);
+        oidc.addClasses(SimpleSecuredServlet.class);
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_web.xml", "web.xml");
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_jboss-web.xml", "jboss-web.xml");
+        oidc.addAsWebInfResource(OidcWithDeploymentConfigTest.class.getPackage(),
+                FORM_WITH_OIDC_EAR_APP+"_oidc_oidc.json", "oidc.json");
+        ear.addAsModule(oidc);
+        return ear;
+    }
+
     @Test
     @InSequence(1)
     public void testWrongPasswordWithProviderUrl() throws Exception {
@@ -564,6 +602,28 @@ public class OidcWithDeploymentConfigTest extends OidcBaseTest {
             super.testCorsRequestWithEnableCorsWithInvalidOrigin();
         } finally {
             deployer.undeploy(CORS_PROVIDER_URL_APP);
+        }
+    }
+
+    @Test
+    @InSequence(27)
+    public void testFormWithOidc() throws Exception {
+        try {
+            deployer.deploy(FORM_WITH_OIDC_EAR_APP);
+            super.testFormWithOidc();
+        } finally {
+            deployer.undeploy(FORM_WITH_OIDC_EAR_APP);
+        }
+    }
+
+    @Test
+    @InSequence(28)
+    public void testInvalidFormWithOidcCredentials() throws Exception {
+        try {
+            deployer.deploy(FORM_WITH_OIDC_EAR_APP);
+            super.testInvalidFormWithOidcCredentials();
+        } finally {
+            deployer.undeploy(FORM_WITH_OIDC_EAR_APP);
         }
     }
 

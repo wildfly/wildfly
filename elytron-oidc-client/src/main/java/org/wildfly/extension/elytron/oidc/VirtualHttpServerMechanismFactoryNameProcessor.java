@@ -18,6 +18,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.security.AdvancedSecurityMetaData;
 import org.jboss.as.server.security.SecurityMetaData;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.metadata.web.spec.LoginConfigMetaData;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -35,8 +36,12 @@ public class VirtualHttpServerMechanismFactoryNameProcessor implements Deploymen
         if (warMetaData == null) {
             return;
         }
+
+        LoginConfigMetaData loginConfig = warMetaData.getMergedJBossWebMetaData().getLoginConfig();
         SecurityMetaData securityMetaData = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        if (securityMetaData != null && isVirtualMechanismFactoryRequired(deploymentUnit)) {
+        if (securityMetaData != null
+                && (loginConfig != null && OidcActivationProcessor.OIDC_AUTH_METHOD.equals(loginConfig.getAuthMethod()))
+                && isVirtualMechanismFactoryRequired(deploymentUnit)) {
             AdvancedSecurityMetaData advancedSecurityMetaData = new AdvancedSecurityMetaData();
             advancedSecurityMetaData.setHttpServerAuthenticationMechanismFactory(virtualMechanismFactoryName(deploymentUnit));
             ServiceName virtualDomainName = virtualDomainName(deploymentUnit);
