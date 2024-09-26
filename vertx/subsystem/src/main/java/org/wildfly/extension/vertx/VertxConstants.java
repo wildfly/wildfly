@@ -27,6 +27,7 @@ public interface VertxConstants {
 
     String[] TIME_UNITS = Arrays.stream(TimeUnit.values()).map(Enum::toString).collect(Collectors.toList()).toArray(new String[0]);
 
+    String CDI_NAMED_QUALIFIER = "vertx";
     String VERTX_SERVICE = "vertx";
     String ELEMENT_VERTX = "vertx";
 
