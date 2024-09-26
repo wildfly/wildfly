@@ -373,6 +373,12 @@
                         <standard.dist.version>${project.version}</standard.dist.version>
                     </systemPropertyVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>${surefire.default-test.phase}</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -464,6 +470,36 @@
             </activation>
             <properties>
                 <!-- Disable channel-provisioning executions to avoid interference between external settings and the test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>ignore-ee-feature-pack</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>wildfly-ee-galleon-pack</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Don't run expansion tests if we're configured to test wildfly-ee -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+                <!-- No point provisioning as we won't test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>ignore-ee-alt-dist</id>
+            <activation>
+                <property>
+                    <name>testsuite.default.build.project.prefix</name>
+                    <value>ee-</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Don't run expansion tests if we're configured to test wildfly-ee -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+                <!-- No point provisioning as we won't test -->
                 <channel.provisioning.phase>none</channel.provisioning.phase>
             </properties>
         </profile>
