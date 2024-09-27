@@ -56,7 +56,7 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
                         if (environment != null) {
                             DescriptorEnvironmentLifecycleMethodProcessor.handleMethods(environment, moduleDescription, mainClass);
                         }
-                    } catch (ClassNotFoundException e) {
+                    } catch (Throwable e) {
                         throw AppClientLogger.ROOT_LOGGER.cannotLoadAppClientMainClass(e);
                     }
 
@@ -64,4 +64,4 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
             }
         }
     }
-}
+
