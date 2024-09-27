@@ -132,7 +132,6 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
         <product.docs.server.version>34</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
@@ -269,6 +268,15 @@
              Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
         -->
         <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
+
+        <!-- WildFly Channels based provisioning configuration.
+             By default, if channels drive the provisioning we use the 'wildfly' channel.
+             Profiles that focus on wildfly-preview or wildfly-ee can change that.
+         -->
+        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
+        <channels.maven.artifactId>wildfly</channels.maven.artifactId>
+        <channels.maven.version>${full.maven.version}</channels.maven.version>
+
 
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
@@ -1558,6 +1566,13 @@
             <properties>
                 <!-- Allow online provisioning so wildfly-maven-plugin can resolve the latest manifests -->
                 <galleon.offline>false</galleon.offline>
+                <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
+                     if a wildfly.channels pom property is set.
+
+                     Here we don't specify the channel version, so wildfly-maven-plugin will use the latest.
+                     (See 'internal.channel.profile' where we specify the version.)
+                -->
+                <wildfly.channels>${channels.maven.groupId}:${channels.maven.artifactId}</wildfly.channels>
             </properties>
             <build>
                 <plugins>
@@ -1610,8 +1625,13 @@
             <activation><property><name>internal.wildfly.channels</name></property></activation>
             <properties>
                 <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
-                     if a wildfly.channels pom property is set. -->
-                <wildfly.channels>${channels.maven.groupId}:wildfly:${full.maven.version}</wildfly.channels>
+                     if a wildfly.channels pom property is set.
+
+                     Here we fully specify the channel GAV. The value of ${channels.maven.version}
+                     is expected to be the project.version of the relevant feature pack being
+                     built during this build.
+                -->
+                <wildfly.channels>${channels.maven.groupId}:${channels.maven.artifactId}:${channels.maven.version}</wildfly.channels>
             </properties>
         </profile>
 
@@ -1627,6 +1647,8 @@
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+                <!-- If we are using channel-driven provisioning, use the wildfly-preview channel -->
+                <channel.maven.artifactId>wildfly-preview</channel.maven.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -1879,6 +1901,9 @@
             <properties>
                 <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <!-- If we are using channel-driven provisioning, use the wildfly-ee channel -->
+                <channel.maven.artifactId>wildfly-ee</channel.maven.artifactId>
+                <channel.maven.version>${ee.maven.version}</channel.maven.version>
             </properties>
         </profile>
 
