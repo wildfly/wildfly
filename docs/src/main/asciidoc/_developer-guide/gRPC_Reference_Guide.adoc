@@ -122,7 +122,7 @@ and uses it to send a message to the server:
 ```
 HelloRequest request = HelloRequest.newBuilder().setName(name).build();
 HelloReply response = blockingStub.sayHello(request);
-logger.info("Greeting: " + response.getMessage());
+logger.debug("Greeting: " + response.getMessage());
 ```
 
 == WildFly grpc subsystem
