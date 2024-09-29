@@ -64,4 +64,5 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
             }
         }
     }
+}
 
