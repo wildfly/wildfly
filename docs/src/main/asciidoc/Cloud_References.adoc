@@ -15,8 +15,6 @@
 
 === WildFly
 * https://docs.wildfly.org/wildfly-maven-plugin/[WildFly Maven Plugin (wildfly-maven-plugin)]
-* https://github.com/wildfly-extras/wildfly-jar-maven-plugin[Bootable Jar GitHub repository]
-* https://docs.wildfly.org/bootablejar/[Bootable Jar Documentation]
 * https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/doc/index.md[WildFly Cloud Galleon Pack’s documentation]
 * https://github.com/wildfly-extras/wildfly-datasources-galleon-pack/[WildFly Datasources Galleon Pack github repository]
 * https://www.wildfly.org/news/2022/11/09/WildFly-s2i-wildfly-27-final/[What's new for WildFly 27 in the cloud]
