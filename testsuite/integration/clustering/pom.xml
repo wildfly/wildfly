@@ -787,7 +787,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>src/test/resources/infinispan-server-overlay</directory>
@@ -846,7 +846,7 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${infinispan.server.home.template}/server/conf</outputDirectory>
+                                    <outputDirectory>${infinispan.server.home.template}</outputDirectory>
                                     <resources>
                                         <resource>
                                             <directory>src/test/resources/infinispan-server-overlay</directory>
