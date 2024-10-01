@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
@@ -29,8 +30,11 @@ public abstract class AbstractModuleTest {
     }
 
     public static void doCleanup(String modulePath) {
-        File testModuleRoot = new File(getModulePath(), modulePath);
-        deleteRecursively(testModuleRoot);
+        if (!AssumeTestGroupUtil.isBootableJar()) {
+            // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+            File testModuleRoot = new File(getModulePath(), modulePath);
+            deleteRecursively(testModuleRoot);
+        }
     }
 
     private static void deleteRecursively(File file) {

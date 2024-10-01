@@ -20,6 +20,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -49,12 +50,14 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
     private static final String MODULE_XML_FILE = "module.xml";
 
     private static final String DEPLOY_SCR =
-            "deploy " + WEB_ARCHIVE_NAME + ".war\n" +
+            "deploy " + WEB_ARCHIVE_NAME + ".war";
+    private static final String MODULE_ADD_SCR =
             "module add --name=" + MODULE_NAME +
             " --resources=" + MODULE_ARCHIVE +
             " --module-xml=" + MODULE_XML_FILE;
     private static final String UNDEPLOY_SCR =
-            "undeploy " + WEB_ARCHIVE_NAME + ".war\n" +
+            "undeploy " + WEB_ARCHIVE_NAME + ".war";
+    private static final String MODULE_REMOVE_SCR =
             "module remove --name=" + MODULE_NAME;
 
     private static final String MODULE_XML =
@@ -79,7 +82,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        cliFile = createCliArchive();
+        cliFile = createCliArchive(!AssumeTestGroupUtil.isBootableJar());
         AbstractCliTestBase.initCLI();
     }
 
@@ -97,9 +100,17 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
     private void testDeploy() throws Exception {
 
+        File testModuleRoot = null;
         // check whether the module is not deployed
-        final File testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
-        assertFalse("Module is already deployed at " + testModuleRoot, testModuleRoot.exists());
+        if (!AssumeTestGroupUtil.isBootableJar()) {
+            // "module add/remove" operations doesn't make sense in bootablejar
+            // CLI isn't included in bootablejar and "module" is local command. It operates with module on its own
+            // MODULEPATH. It could be used with bootable jar with workaround:
+            //   $ JBOSS_HOME=<bootablejar_install_dir> jboss.cli.sh -c
+            // install-dir is by default folder with random suffix in /tmp
+            testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
+            assertFalse("Module is already deployed at " + testModuleRoot, testModuleRoot.exists());
+        }
 
         // deploy to server
         cli.sendLine("deploy " + cliFile.getAbsolutePath());
@@ -109,7 +120,9 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
         assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
         // check module deployment
-        assertTrue("Module deployment failed! Module dir does not exist: " + testModuleRoot, testModuleRoot.exists());
+        if (!AssumeTestGroupUtil.isBootableJar()) {
+            assertTrue("Module deployment failed! Module dir does not exist: " + testModuleRoot, testModuleRoot.exists());
+        }
     }
 
     private void testUndeploy() throws Exception {
@@ -121,23 +134,28 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
         assertTrue(checkUndeployed(getBaseURL(url) + WEB_ARCHIVE_NAME + "/SimpleServlet"));
 
         // check module undeployment
-        final File testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
-        assertFalse("Module undeployment failed.", testModuleRoot.exists());
+        if (!AssumeTestGroupUtil.isBootableJar()) {
+            final File testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
+            assertFalse("Module undeployment failed.", testModuleRoot.exists());
+        }
     }
 
-    private static File createCliArchive() {
+    private static File createCliArchive(boolean includeModule) {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, WEB_ARCHIVE_NAME + ".war");
         webArchive.addClass(SimpleServlet.class);
 
-        final JavaArchive moduleArchive = ShrinkWrap.create(JavaArchive.class, MODULE_ARCHIVE);
-        moduleArchive.addClass(DeploymentArchiveTestCase.class);
-
         final GenericArchive cliArchive = ShrinkWrap.create(GenericArchive.class, "deploymentarchive.cli");
-        cliArchive.add(new StringAsset(DEPLOY_SCR), "deploy.scr");
-        cliArchive.add(new StringAsset(UNDEPLOY_SCR), "undeploy.scr");
+        cliArchive.add(new StringAsset(includeModule ? DEPLOY_SCR + "\n" + MODULE_ADD_SCR : DEPLOY_SCR), "deploy.scr");
+        cliArchive.add(new StringAsset(includeModule ? UNDEPLOY_SCR + "\n" + MODULE_REMOVE_SCR : UNDEPLOY_SCR), "undeploy.scr");
         cliArchive.add(webArchive, "/", ZipExporter.class);
-        cliArchive.add(moduleArchive, "/", ZipExporter.class);
+
         cliArchive.add(new StringAsset(MODULE_XML), "/", "module.xml");
+
+        if (includeModule) {
+            final JavaArchive moduleArchive = ShrinkWrap.create(JavaArchive.class, MODULE_ARCHIVE);
+            moduleArchive.addClass(DeploymentArchiveTestCase.class);
+            cliArchive.add(moduleArchive, "/", ZipExporter.class);
+        }
 
         final String tempDir = TestSuiteEnvironment.getTmpDir();
         final File file = new File(tempDir, "deploymentarchive.cli");
