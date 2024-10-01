@@ -186,7 +186,7 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-microprofile-reactive-messaging-amqp</artifactId>
-                <version>${project.version}</version>
+                <version>${full.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

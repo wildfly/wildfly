@@ -328,7 +328,7 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-                <version>${project.version}</version>
+                <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -564,7 +564,7 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-elytron-oidc-client-subsystem</artifactId>
-                <version>${full.maven.version}</version>
+                <version>${ee.maven.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

@@ -689,20 +689,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-legacy-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -838,7 +824,7 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-legacy-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
