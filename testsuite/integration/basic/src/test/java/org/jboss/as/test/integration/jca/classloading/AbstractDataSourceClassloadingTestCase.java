@@ -11,6 +11,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.datasource.Datasource;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -72,7 +73,10 @@ public abstract class AbstractDataSourceClassloadingTestCase {
         public void setup(ManagementClient managementClient, String s) throws Exception {
             snapshot = ServerSnapshot.takeSnapshot(managementClient);
 
-            setupModule();
+            if (!AssumeTestGroupUtil.isBootableJar()){
+                // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+                setupModule();
+            }
             setupDriver(managementClient, classNamePropertyName, driverClass);
             setupDs(managementClient, "TestDS", false);
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
@@ -81,9 +85,12 @@ public abstract class AbstractDataSourceClassloadingTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             snapshot.close();
-            File testModuleRoot = new File(getModulePath(), "org/jboss/test/testDriver");
-            if (testModuleRoot.exists()) {
-                deleteRecursively(testModuleRoot);
+            if (!AssumeTestGroupUtil.isBootableJar()) {
+                // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+                File testModuleRoot = new File(getModulePath(), "org/jboss/test/testDriver");
+                if (testModuleRoot.exists()) {
+                    deleteRecursively(testModuleRoot);
+                }
             }
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }

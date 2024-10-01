@@ -16,6 +16,7 @@ import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.GlowUtil;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -51,7 +52,8 @@ public class ExtensionTestCase extends AbstractModuleTest {
     public static Archive<?> deploy() throws Exception {
 
         // No actual setup when scanning the deployment prior to test execution.
-        if (!GlowUtil.isGlowScan()) {
+        // And skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+        if (!GlowUtil.isGlowScan() && !AssumeTestGroupUtil.isBootableJar()) {
             doSetup();
         }
 
