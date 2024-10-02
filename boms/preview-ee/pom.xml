@@ -614,6 +614,45 @@
                 </exclusions>
             </dependency>
 
+            <!-- Import gRPC Dependencies -->
+            <dependency>
+                <groupId>org.wildfly.extras.grpc</groupId>
+                <artifactId>wildfly-grpc-galleon-pack-common</artifactId>
+                <version>${preview.version.org.wildfly.extras.grpc}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.grpc</groupId>
+                <artifactId>wildfly-grpc-galleon-pack-common</artifactId>
+                <version>${preview.version.org.wildfly.extras.grpc}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.grpc</groupId>
+                <artifactId>wildfly-grpc-galleon-pack-common</artifactId>
+                <version>${preview.version.org.wildfly.extras.grpc}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.extras.grpc</groupId>
+                <artifactId>wildfly-grpc-subsystem</artifactId>
+                <version>${preview.version.org.wildfly.extras.grpc}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>

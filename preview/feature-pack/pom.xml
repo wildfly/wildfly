@@ -18,7 +18,7 @@
         -->
         <version>34.0.0.Final-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>wildfly-preview-feature-pack</artifactId>
 
     <name>WildFly Preview: Galleon Feature Pack</name>
@@ -84,6 +84,11 @@
                                 <artifactItem>
                                     <groupId>org.wildfly</groupId>
                                     <artifactId>mvc-krazo-galleon-shared</artifactId>
+                                    <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.wildfly.extras.grpc</groupId>
+                                    <artifactId>wildfly-grpc-galleon-pack-common</artifactId>
                                     <type>zip</type>
                                 </artifactItem>
                             </artifactItems>
@@ -332,6 +337,12 @@
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.extras.grpc</groupId>
+            <artifactId>wildfly-grpc-galleon-pack-common</artifactId>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -397,6 +408,7 @@
                                                 <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
                                                 <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
+                                                <exclude>org.wildfly.extras.grpc:wildfly-grpc-galleon-pack-common</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>

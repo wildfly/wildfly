@@ -573,6 +573,7 @@
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.clustering>1.1.2.Final</version.org.wildfly.clustering>
         <version.org.wildfly.core>26.0.0.Beta5</version.org.wildfly.core>
+        <preview.version.org.wildfly.extras.grpc>0.1.11.Final</preview.version.org.wildfly.extras.grpc>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>
