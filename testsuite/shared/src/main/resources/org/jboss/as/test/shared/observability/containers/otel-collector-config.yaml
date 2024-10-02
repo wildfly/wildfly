@@ -1,0 +1,37 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+  prometheus:
+    endpoint: "0.0.0.0:1234"
+  otlp:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+extensions:
+  health_check:
+
+service:
+  extensions: [ health_check ]
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ ]
+      exporters: [ logging, otlp ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ ]
+      exporters: [ logging, prometheus ]
+    logs:
+      receivers: [ otlp ]
+      processors: [ ]
+      exporters: [ logging ]

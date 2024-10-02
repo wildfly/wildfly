@@ -19,16 +19,16 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
+import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
+import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService2;
-import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerSpan;
-import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerTrace;
-import org.wildfly.test.integration.observability.setuptask.OpenTelemetrySetupTask;
 
 /**
  * This test exercises the context propagation functionality. Two services are deployed, with the first calling the

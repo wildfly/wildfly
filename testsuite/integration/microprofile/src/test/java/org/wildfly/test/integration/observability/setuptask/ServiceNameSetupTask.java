@@ -6,6 +6,7 @@ package org.wildfly.test.integration.observability.setuptask;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.ServerReload;
+import org.jboss.as.test.shared.observability.setuptasks.AbstractSetupTask;
 
 public class ServiceNameSetupTask extends AbstractSetupTask {
     public static final String SERVICE_NAME = "custom-service-name";
