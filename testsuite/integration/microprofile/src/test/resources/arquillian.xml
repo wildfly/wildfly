@@ -8,6 +8,11 @@
 
     <defaultProtocol type="jmx-as7"/>
 
+    <engine>
+        <!-- Uncomment to inspect created deployments -->
+        <!-- <property name="deploymentExportPath">target/</property> -->
+    </engine>
+
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${basedir}/target/wildfly</property>
