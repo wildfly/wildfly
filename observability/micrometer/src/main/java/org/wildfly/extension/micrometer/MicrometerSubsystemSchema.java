@@ -5,19 +5,24 @@
 package org.wildfly.extension.micrometer;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.factory;
+import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.OTLP_REGISTRY;
+import static org.wildfly.extension.micrometer.MicrometerConfigurationConstants.PROMETHEUS_REGISTRY;
 
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.staxmapper.IntVersion;
+import org.wildfly.extension.micrometer.otlp.OtlpRegistryDefinitionRegistrar;
+import org.wildfly.extension.micrometer.prometheus.PrometheusRegistryDefinitionRegistrar;
 
 public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<MicrometerSubsystemSchema> {
     VERSION_1_0(1, 0), // WildFly 28
     VERSION_1_1(1, 1), // WildFly 29.0.0.Alpha1
+    VERSION_2_0(2, 0) // WildFly 33
     ;
 
-    public static final MicrometerSubsystemSchema CURRENT = VERSION_1_1;
+    public static final MicrometerSubsystemSchema CURRENT = VERSION_2_0;
 
     private final VersionedNamespace<IntVersion, MicrometerSubsystemSchema> namespace;
 
@@ -33,9 +38,22 @@ public enum MicrometerSubsystemSchema implements PersistentSubsystemSchema<Micro
 
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return factory(this)
-                .builder(MicrometerSubsystemRegistrar.PATH)
-                .addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES)
-                .build();
+        PersistentResourceXMLDescription.Factory factory = factory(this);
+        PersistentResourceXMLDescription.Builder builder =
+                factory.builder(MicrometerSubsystemRegistrar.PATH)
+                        .addChild(factory.builder(OtlpRegistryDefinitionRegistrar.PATH)
+                                .addAttributes(OtlpRegistryDefinitionRegistrar.ATTRIBUTES.stream())
+                                .setXmlElementName(OTLP_REGISTRY)
+                                .build());
+
+        builder.addAttributes(MicrometerSubsystemRegistrar.ATTRIBUTES.stream());
+        if (this.since(VERSION_2_0)) {
+            builder.addChild(factory.builder(PrometheusRegistryDefinitionRegistrar.PATH)
+                    .addAttributes(PrometheusRegistryDefinitionRegistrar.ATTRIBUTES.stream())
+                    .setXmlElementName(PROMETHEUS_REGISTRY)
+                    .build());
+        }
+
+        return builder.build();
     }
 }

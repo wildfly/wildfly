@@ -12,7 +12,6 @@ import static org.wildfly.extension.micrometer.MicrometerSubsystemRegistrar.MICR
 
 import java.util.function.Supplier;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Attachments;
@@ -80,7 +79,7 @@ class MicrometerDeploymentProcessor implements DeploymentUnitProcessor {
             if (!weldCapability.isPartOfWeldDeployment(deploymentUnit)) {
                 MICROMETER_LOGGER.noCdiDeployment();
             } else {
-                weldCapability.registerExtensionInstance(new MicrometerCdiExtension((MeterRegistry) config.getRegistry()), deploymentUnit);
+                weldCapability.registerExtensionInstance(new MicrometerCdiExtension(config.getRegistry()), deploymentUnit);
             }
         } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
             //We should not be here since the subsystem depends on weld capability. Just in case ...
