@@ -258,7 +258,8 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         // to compute on which WildFly Preview was added such a new extension and track the Host Exclusions between
         // different WildFly Preview releases.
         private final Set<String> previewExtensions = new HashSet<>(Arrays.asList(
-                "org.wildfly.extension.jakarta.data"
+                "org.wildfly.extension.jakarta.data",
+                "org.wildfly.extension.grpc"
         ));
 
         ExtensionConf(String name, ExtensionConf parent, boolean supported) {
