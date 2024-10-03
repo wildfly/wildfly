@@ -32,6 +32,7 @@
         <group name="org.jboss.metadata"/>
         <group name="org.wildfly"/>
         <group name="org.wildfly.core"/>
+        <group name="org.wildfly.extras.grpc"/>
     </package-schemas>
 
     <config name="standalone.xml" model="standalone"/>
