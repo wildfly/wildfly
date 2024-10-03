@@ -595,12 +595,12 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
                     ServiceBuilder<?> builder = targetFactory.get().createSingletonServiceTarget(target).addService();
-                    return builder.setInstance(org.jboss.msc.Service.newInstance(builder.provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()), null))
+                    return builder.setInstance(org.jboss.msc.Service.newInstance(builder.provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()), Boolean.TRUE))
                             .setInitialMode(ServiceController.Mode.ON_DEMAND)
                             .install();
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).build();
+            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).asPassive().build().install(context);
         }
     }
 
