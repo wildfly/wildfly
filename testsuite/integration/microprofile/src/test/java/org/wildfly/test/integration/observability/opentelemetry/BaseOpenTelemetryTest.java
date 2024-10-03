@@ -14,12 +14,12 @@ import java.util.PropertyPermission;
 
 import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.test.integration.observability.opentelemetry.application.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
-import org.wildfly.test.integration.observability.opentelemetry.jaeger.JaegerResponse;
 
 public abstract class BaseOpenTelemetryTest {
     private static final String WEB_XML
