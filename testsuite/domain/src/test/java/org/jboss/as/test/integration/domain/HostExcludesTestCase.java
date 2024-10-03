@@ -236,7 +236,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
         private final boolean supported;
 
         // List of extensions added by the wildfly-galleon-pack
-        private final Set<String> mpExtensions = new HashSet<>(Arrays.asList(
+        private final Set<String> expansionExtensions = new HashSet<>(Arrays.asList(
                 "org.wildfly.extension.micrometer",
                 "org.wildfly.extension.microprofile.config-smallrye",
                 "org.wildfly.extension.microprofile.health-smallrye",
@@ -244,11 +244,14 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 "org.wildfly.extension.microprofile.fault-tolerance-smallrye",
                 "org.wildfly.extension.microprofile.jwt-smallrye",
                 "org.wildfly.extension.microprofile.openapi-smallrye",
+                "org.wildfly.extension.microprofile.opentracing-smallrye",
                 "org.wildfly.extension.microprofile.reactive-messaging-smallrye",
                 "org.wildfly.extension.microprofile.reactive-streams-operators-smallrye",
                 "org.wildfly.extension.microprofile.lra-coordinator",
                 "org.wildfly.extension.microprofile.lra-participant",
-                "org.wildfly.extension.microprofile.telemetry"
+                "org.wildfly.extension.microprofile.telemetry",
+                "org.wildfly.extension.mvc-krazo",
+                "org.wildfly.extension.opentelemetry"
         ));
 
         // List of extensions added only by WildFly Preview.
@@ -316,7 +319,7 @@ public class HostExcludesTestCase extends BuildConfigurationTestBase {
                 this.extensions.addAll(previewExtensions);
             }
             if (!isFullDistribution && !isPreview) {
-                return diff.apply(extensions, mpExtensions);
+                return diff.apply(extensions, expansionExtensions);
             }
             return extensions;
         }
