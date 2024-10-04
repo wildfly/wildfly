@@ -565,7 +565,8 @@
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
-                        <standard.dist.version>${project.version}</standard.dist.version>
+                        <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
+                        <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
