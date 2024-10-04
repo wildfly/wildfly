@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -34,8 +34,9 @@
         <version.io.opentelemetry.instrumentation>2.5.0</version.io.opentelemetry.instrumentation>
         <version.io.opentelemetry.opentelemetry>1.39.0</version.io.opentelemetry.opentelemetry>
         <version.io.opentelemetry.opentelemetry-semconv>1.25.0-alpha</version.io.opentelemetry.opentelemetry-semconv>
+        <version.io.smallrye.smallrye-fault-tolerance>6.5.0</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-opentelemetry>2.8.0</version.io.smallrye.smallrye-opentelemetry>
-
+        <version.org.eclipse.microprofile.fault-tolerance.api>4.1.1</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>2.0</version.org.eclipse.microprofile.telemetry>
         <version.org.jboss.resteasy.microprofile>3.0.0.Final</version.org.jboss.resteasy.microprofile>
@@ -404,6 +405,63 @@
                 <groupId>org.jboss.resteasy.microprofile</groupId>
                 <artifactId>microprofile-rest-client-base</artifactId>
                 <version>${version.org.jboss.resteasy.microprofile}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- MicroProfile/SmallRye Fault Tolerance -->
+            <dependency>
+                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                <artifactId>microprofile-fault-tolerance-api</artifactId>
+                <version>${version.org.eclipse.microprofile.fault-tolerance.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-api</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-autoconfig-core</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>smallrye-fault-tolerance-core</artifactId>
+                <version>${version.io.smallrye.smallrye-fault-tolerance}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>

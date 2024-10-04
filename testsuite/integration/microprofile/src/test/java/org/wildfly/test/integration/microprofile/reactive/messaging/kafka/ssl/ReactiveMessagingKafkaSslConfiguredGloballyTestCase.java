@@ -17,8 +17,9 @@ import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CLIServerSetupTask;
+import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -28,13 +29,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.ConfigureElytronSslContextSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
-import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
 @ServerSetup({RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ConfigureElytronSslContextSetupTask.class})
+@DockerRequired
 public class ReactiveMessagingKafkaSslConfiguredGloballyTestCase {
 
     private static final long TIMEOUT = TimeoutUtil.adjust(15000);
@@ -47,7 +48,7 @@ public class ReactiveMessagingKafkaSslConfiguredGloballyTestCase {
         final WebArchive webArchive = ShrinkWrap.create(WebArchive.class, "reactive-messaging-kafka-tx.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addPackage(ReactiveMessagingKafkaSslConfiguredGloballyTestCase.class.getPackage())
-                .addClasses(RunKafkaSetupTask.class, RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, CLIServerSetupTask.class)
+                .addClasses(RunKafkaWithSslSetupTask.class, EnableReactiveExtensionsSetupTask.class, ServerSetupTask.class)
                 .addAsWebInfResource(ReactiveMessagingKafkaSslConfiguredGloballyTestCase.class.getPackage(), "microprofile-config-ssl-global.properties", "classes/META-INF/microprofile-config.properties")
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(createPermissionsXmlAsset(

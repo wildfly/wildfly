@@ -8,6 +8,7 @@ package org.wildfly.test.integration.microprofile.reactive.messaging.kafka.compr
 import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.CLIServerSetupTask;
 import org.jboss.as.test.shared.PermissionUtils;
@@ -22,6 +23,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
 import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@DockerRequired
 public class ReactiveMessagingKafkaCompressionTestCase {
 
     // Downstream we want to disable Snappy on Windows and Mac

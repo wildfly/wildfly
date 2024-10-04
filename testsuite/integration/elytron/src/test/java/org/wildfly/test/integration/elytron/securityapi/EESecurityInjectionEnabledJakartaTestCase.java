@@ -40,7 +40,7 @@ import org.wildfly.test.undertow.common.UndertowApplicationSecurityDomain;
  * implementing an {@link jakarta.security.enterprise.identitystore.IdentityStore IdentityStore}). Returns a custom
  * principal to client via {@link jakarta.security.enterprise.SecurityContext}.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient

@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -342,7 +342,7 @@
         <dependency>
             <groupId>org.wildfly.channels</groupId>
             <artifactId>wildfly-ee</artifactId>
-            <version>34.0.0.Final-SNAPSHOT</version>
+            <version>${ee.maven.version}</version>
             <type>yaml</type>
             <classifier>manifest</classifier>
         </dependency>
@@ -565,7 +565,8 @@
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
-                        <standard.dist.version>${project.version}</standard.dist.version>
+                        <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
+                        <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

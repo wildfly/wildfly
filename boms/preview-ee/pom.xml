@@ -17,7 +17,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -52,9 +52,9 @@
         <version.jakarta.ws.rs.jakarta-ws-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-ws-rs-api>
         <version.org.glassfish.expressly>6.0.0-M1</version.org.glassfish.expressly>
         <version.org.glassfish.jakarta.faces>4.1.0</version.org.glassfish.jakarta.faces>
-        <version.org.jboss.resteasy>7.0.0.Alpha3</version.org.jboss.resteasy>
-        <version.org.jboss.weld.weld>6.0.0.Beta4</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>6.0.Beta5</version.org.jboss.weld.weld-api>
+        <version.org.jboss.resteasy>7.0.0.Alpha4</version.org.jboss.resteasy>
+        <version.org.jboss.weld.weld>6.0.0.CR1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>6.0.CR1</version.org.jboss.weld.weld-api>
         <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
     </properties>
 

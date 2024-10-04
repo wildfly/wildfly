@@ -29,7 +29,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.preview.microprofile.telemetry.application.JaxRsActivator;
@@ -37,7 +36,7 @@ import org.wildfly.test.preview.microprofile.telemetry.application.MetricResourc
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 @RunAsClient
 public class MetricsTestCase {
     public static final int REQUEST_COUNT = 5;

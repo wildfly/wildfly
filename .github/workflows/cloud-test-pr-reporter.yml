@@ -1,7 +1,14 @@
 name: Report Cloud Test Status
 on:
   repository_dispatch:
-    types: [report-cloud-tests-pr-pending, report-cloud-tests-pr-complete]
+    types:
+      # These two come from cloud-test-pr-workflow-run.yml which does the remote dispatch in the
+      # wildfly-cloud-tests repository
+      - report-cloud-tests-workflow-run-pending
+      - report-cloud-tests-workflow-run-failed
+      # These two come from the remote job in the wildfly-cloud-tests repository
+      - report-cloud-tests-pr-pending
+      - report-cloud-tests-pr-complete
 env:
   DESC: ${{ github.event.client_payload.desc }}
   GH_TOKEN: ${{ github.token }}
@@ -18,10 +25,8 @@ jobs:
     steps:
       - name: Output
         env:
-          #MESSAGE: ${{ github.event.client_payload.message }}
           MESSAGE: ${{ toJSON(github.event.client_payload) }}
         run: echo $MESSAGE
-
       - name: Report status
         run: |        
           JSON_STRING=$(jq -c -n \

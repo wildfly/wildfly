@@ -11,7 +11,7 @@
   <parent>
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-microprofile-lra</artifactId>
-    <version>34.0.0.Final-SNAPSHOT</version>
+    <version>35.0.0.Beta1-SNAPSHOT</version>
   </parent>
 
   <artifactId>wildfly-microprofile-lra-coordinator</artifactId>
@@ -29,7 +29,7 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-coordinator-jar</artifactId>
       <exclusions>
         <exclusion>
@@ -39,7 +39,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-service-base</artifactId>
     </dependency>
     <dependency>

@@ -1,0 +1,38 @@
+#
+# Copyright The WildFly Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
+embed-server --server-config=standalone-full.xml
+batch
+/core-service=management/access=authorization:write-attribute(name=provider,value=rbac)
+
+/core-service=management/access=authorization/role-mapping=Monitor:add
+/core-service=management/access=authorization/role-mapping=Monitor/include=group-monitor:add(name=Monitor,type=GROUP)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user1:add(name=UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user2:add(name=UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user3:add(name=UserMappedToGroupDeployerAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user4:add(name=UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user5:add(name=UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=user6:add(name=UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor,type=USER)
+/core-service=management/access=authorization/role-mapping=Monitor/exclude=group1:add(name=ExcludingGroup,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=Operator:add
+/core-service=management/access=authorization/role-mapping=Operator/include=group-operator:add(name=Operator,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=Maintainer:add
+/core-service=management/access=authorization/role-mapping=Maintainer/include=group-maintainer:add(name=Maintainer,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=Deployer:add
+/core-service=management/access=authorization/role-mapping=Deployer/include=group-deployer:add(name=Deployer,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=Administrator:add
+/core-service=management/access=authorization/role-mapping=Administrator/include=group-administrator:add(name=Administrator,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=Auditor:add
+/core-service=management/access=authorization/role-mapping=Auditor/include=group-auditor:add(name=Auditor,type=GROUP)
+
+/core-service=management/access=authorization/role-mapping=SuperUser/include=group-superuser:add(name=SuperUser,type=GROUP)
+
+run-batch
+stop-embedded-server

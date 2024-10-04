@@ -5,75 +5,77 @@
 
 package org.wildfly.test.integration.microprofile.reactive;
 
-import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
-import io.smallrye.reactive.messaging.kafka.companion.test.EmbeddedKafkaBroker;
-import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 
-/**
- * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
- */
+import io.smallrye.reactive.messaging.kafka.companion.KafkaCompanion;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.testcontainers.kafka.KafkaContainer;
+import org.wildfly.security.manager.WildFlySecurityManager;
+
+@DockerRequired
 public class RunKafkaSetupTask implements ServerSetupTask {
-    volatile EmbeddedKafkaBroker broker;
+    volatile KafkaContainer container;
     volatile KafkaCompanion companion;
 
     @Override
     public void setup(ManagementClient managementClient, String s) throws Exception {
-        try {
-            broker = new EmbeddedKafkaBroker()
-                    .withNodeId(0)
-                    .withKafkaPort(9092)
-                    .withDeleteLogDirsOnClose(true);
+        String kafkaVersion = WildFlySecurityManager.getPropertyPrivileged("wildfly.test.kafka.version", null);
+        if (kafkaVersion == null) {
+            throw new IllegalArgumentException("Specify Kafka version with -Dwildfly.test.kafka.version");
+        }
+        container = new KafkaContainer("apache/kafka-native:" + kafkaVersion);
+        container.setPortBindings(Arrays.asList("9092:9092", "9093:9093"));
 
-            broker.withAdditionalProperties(props -> addBrokerProperties(props));
-            broker = augmentKafkaBroker(broker);
-            broker.start();
+        for (Map.Entry<String, String> entry : extraBrokerProperties().entrySet()) {
+            container.addEnv(entry.getKey(), entry.getValue());
+        }
 
-            companion = new KafkaCompanion(broker.getAdvertisedListeners());
+        container.start();
 
+        companion = new KafkaCompanion("INTERNAL://localhost:9092");
 
-            for (Map.Entry<String, Integer> topicAndPartition : getTopicsAndPartitions().entrySet()) {
-                companion.topics().createAndWait(topicAndPartition.getKey(), topicAndPartition.getValue(), Duration.of(10, ChronoUnit.SECONDS));
-            }
-        } catch (Exception e) {
-            try {
-                if (companion != null) {
-                    companion.close();
-                }
-                if (broker != null) {
-                    broker.close();
-                }
-            } finally {
-                throw e;
+        Map<String, Integer> topicsAndPartitions = getTopicsAndPartitions();
+        if (topicsAndPartitions == null || topicsAndPartitions.isEmpty()) {
+            companion.topics().createAndWait("testing", 1, Duration.of(10, ChronoUnit.SECONDS));
+        } else {
+            for (Map.Entry<String, Integer> entry : topicsAndPartitions.entrySet()) {
+                companion.topics().createAndWait(entry.getKey(), entry.getValue(), Duration.of(10, ChronoUnit.SECONDS));
             }
         }
-    }
-
-    protected EmbeddedKafkaBroker augmentKafkaBroker(EmbeddedKafkaBroker broker) {
-        return broker;
-    }
-
-    protected void addBrokerProperties(Properties brokerProperties) {
-
-    }
-
-    protected Map<String, Integer> getTopicsAndPartitions() {
-        return Collections.singletonMap("testing", 1);
     }
 
     @Override
     public void tearDown(ManagementClient managementClient, String s) throws Exception {
         if (companion != null) {
-            companion.close();
+            try {
+                companion.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        if (broker != null) {
-            broker.close();
+        if (container != null) {
+            try {
+                container.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
+
+
+
+    protected Map<String, String> extraBrokerProperties() {
+        return Collections.emptyMap();
+    }
+
+    protected Map<String, Integer> getTopicsAndPartitions() {
+        return null;
+    }
+
 }

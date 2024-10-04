@@ -23,7 +23,6 @@ import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
@@ -38,7 +37,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class MultipleDeploymentMetricsTestCase {
 
     public static final String DEPLOYMENT_1 = "deployment-1";

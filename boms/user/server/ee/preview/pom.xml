@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -43,6 +43,13 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-preview-feature-pack</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-preview</artifactId>
+            <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
     </dependencies>
@@ -70,8 +77,21 @@
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} Preview BOMs: EE</bomName>
                             <bomDescription>${full.dist.product.release.name} Preview: EE Dependency Management</bomDescription>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-preview</artifactId>
+                                        <version>${version.boms.channel.ee}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
+                                <dependency>
+                                    <groupId>jakarta.data</groupId>
+                                    <artifactId>jakarta.data-api</artifactId>
+                                </dependency>
                                 <dependency>
                                     <groupId>jakarta.el</groupId>
                                     <artifactId>jakarta.el-api</artifactId>

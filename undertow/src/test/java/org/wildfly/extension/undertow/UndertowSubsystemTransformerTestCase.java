@@ -112,8 +112,8 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         KernelServices services = this.build(builder);
 
         ModelFixer fixer = model -> {
-            model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
-            model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
+            model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
+            model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
             return model;
         };
 

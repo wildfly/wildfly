@@ -9,10 +9,10 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-A Galleon layer is a name that identifies a server capability (e.g.: jaxrs, 
+A Galleon layer is a name that identifies a server capability (e.g. jaxrs,
 ejb, microprofile-config, jpa) or an aggregation of such capabilities. A layer captures a server capability in the form of:
 
-* A piece of server XML configuration (e.g.: extension, configured subsystem, interfaces) that describes the capability.
+* A piece of server XML configuration (e.g. extension subsystem, interfaces, socket binding) that describes the capability.
 * A set of modules and other filesystem content that implements the capability.
 
 When you are using a layer, it delivers these pieces of information in order for 

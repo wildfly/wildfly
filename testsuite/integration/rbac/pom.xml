@@ -16,7 +16,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -66,45 +66,31 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>xml-maven-plugin</artifactId>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
                         <executions>
                             <execution>
-                                <id>adjust-default-server-configuration-for-basic-tests</id>
+                                <id>ts.config-as.configure-wildfly</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
-                                    <goal>transform</goal>
+                                    <goal>execute-commands</goal>
                                 </goals>
+                                <configuration>
+                                    <offline>true</offline>
+                                    <scripts>
+                                        <script>enable-rbac.cli</script>
+                                    </scripts>
+                                    <jboss-home>${wildfly.dir}</jboss-home>
+                                    <stdout>${project.build.directory}/wildfly-plugin.log</stdout>
+                                    <java-opts>${modular.jdk.args}</java-opts>
+                                    <system-properties>
+                                        <maven.repo.local>${settings.localRepository}</maven.repo.local>
+                                        <module.path>${jboss.dist}/modules</module.path>
+                                    </system-properties>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <transformationSets>
-                                <transformationSet>
-                                    <dir>${wildfly.standalone.config}</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/enableRbac.xsl</stylesheet>
-                                    <outputDir>${wildfly.standalone.config}</outputDir>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${wildfly.standalone.config}</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacRolesMappingTests.xsl</stylesheet>
-                                    <outputDir>${wildfly.standalone.config}</outputDir>
-                                    <fileMappers>
-                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                                            <pattern>^</pattern>
-                                            <replacement>properties-role-mapping-</replacement>
-                                        </fileMapper>
-                                    </fileMappers>
-                                </transformationSet>
-                            </transformationSets>
-                        </configuration>
                     </plugin>
 
                     <!-- Resources plugin. -->
@@ -164,7 +150,7 @@
                                     </includes>
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
-                                        <jboss.server.config.file.name>properties-role-mapping-standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>

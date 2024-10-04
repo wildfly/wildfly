@@ -1,0 +1,416 @@
+[[WildFly_Maven_Plugin_Guide]]
+= WildFly Maven Plugin Guide
+WildFly team;
+:revnumber: {version}
+:revdate: {localdate}
+:toc: macro
+:toclevels: 3
+:toc-title: WildFly Maven Plugin Guide
+:doctype: book
+:icons: font
+:source-highlighter: coderay
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+// ifndef::ebook-format[:leveloffset: 1]
+
+(C) The WildFly Authors.
+
+ifdef::basebackend-html[toc::[]]
+:numbered:
+
+[[wildfly_maven_plugin]]
+= WildFly Maven Plugin
+
+This document details the steps to follow in order to develop a WildFly application
+using the https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin].
+
+Developing an application with the WildFly Maven Plugin is not different from developing an application for a traditional
+WildFly server installation using Maven.
+The extra steps required to provision the WildFly server and deploy your application inside the server are handled by the 
+https://docs.wildfly.org/wildfly-maven-plugin[_org.wildfly.plugins:wildfly-maven-plugin_] Maven plugin `package` goal.
+
+In addition to the `package` goal, the plugin defines two other goals that can be used to provision a WildFly server:
+
+* The `provision` goal. This goal provisions a WildFly server with no application deployment. 
+* The `image` goal. This goal builds (and pushes) an application image containing the provisioned server and the deployment.
+
+This document contains the minimal information set required to use the WildFly Maven Plugin. 
+Complete information on the Maven plugin usage can be found in the WildFly Maven Plugin https://docs.wildfly.org/wildfly-maven-plugin/[documentation].
+
+[[wildfly-maven-plugin-pom-configuration]]
+== Adding the WildFly Maven Plugin to your pom file
+
+This is done by adding an extra build step to your application deployment Maven pom.xml file.
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        ...
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+The next section covers the plugin configuration items that are required to identify the WildFly server version and content.
+
+[[wildfly-maven-plugin-galleon-configuration]]
+== Galleon configuration
+
+The WildFly Maven Plugin depends on https://docs.wildfly.org/galleon/[Galleon] to provision a WildFly server installation.
+
+Galleon is configured thanks to the Maven plugin ```<configuration>``` element.
+
+The first required piece of information that Galleon needs is a reference to at least one WildFly Galleon feature-pack.
+A WildFly Galleon feature-pack is a maven artifact that contains everything needed to dynamically provision a server.
+This feature-pack, as well as the feature-packs on which it depends,
+are deployed in public maven repositories. 
+
+At plugin execution time the WildFly feature-packs are retrieved and their content is assembled to provision a server.
+
+Once you have identified a WildFly Galleon feature-pack, you need to select a set of 
+link:#wildfly_layers[WildFly Layers] that are used to compose the server.
+
+The set of Galleon layers to include is driven by the needs of the application you are developing.
+The list of link:#wildfly_layers[WildFly Layers] provides details on 
+the server features that each layer brings. Make sure that the API and server features you are using (e.g. Jakarta RESTful Web Services, MicroProfile Config, datasources)
+are provided by the layers you are choosing.
+
+If you decide not to specify Galleon layers, a complete server (WildFly server zip content) is provisioned.
+
+Following is a WildFly Maven Plugin configuration extract example:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <feature-packs>
+          <feature-pack>
+            <location>wildfly@maven(org.jboss.universe:community-universe)</location> (1)
+          </feature-pack>
+        </feature-packs>
+        <layers>
+          <layer>jaxrs-server</layer> (2)
+        </layers>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) In this plugin configuration extract, we are retrieving the latest WildFly Galleon feature-pack installed in the
+ ```org.jboss.universe:community-universe``` Galleon universe. In case you would like to provision a specific version of the server,
+you would need to specify the server version, for example ```wildfly@maven(org.jboss.universe:community-universe)#34.0.0.Final```
+
+(2) The link:#gal.jaxrs-server[jaxrs-server layer] and all its dependencies are provisioned.
+
+[NOTE]
+====
+
+If your project is using link:WildFly_and_WildFly_Preview{outfilesuffix}[WildFly Preview], the ``location`` to use
+is ``wildfly-preview@maven(org.jboss.universe:community-universe)``.
+
+====
+
+=== Specifying additional JBoss Modules modules
+
+In general, the JBoss Modules modules your application requires are provisioned by the specified Galleon layers. 
+To handle some special cases -- for example some uses of Jakarta REST where optional RESTEasy modules are not provided 
+by the `jaxrs` layer -- you can explicitly add some JBoss Modules modules:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <feature-packs>
+          <feature-pack>
+            <location>wildfly@maven(org.jboss.universe:community-universe)</location>
+            <included-packages>
+              <included-package>org.jboss.resteasy.resteasy-rxjava2</included-package> (1)
+            </included-packages>
+          </feature-pack>
+        </feature-packs>
+        ...
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) The Specified JBoss Modules module will be included in the provisioned server.
+
+[[wildfly-maven-plugin-glow-discovery]]
+=== Discovering the required Galleon configuration using WildFly Glow
+
+The link:https://github.com/wildfly/wildfly-glow[WildFly Glow] Galleon configuration
+discovery feature has been integrated into the WildFly Maven Plugin. WildFly Glow scans the application deployment to generate
+a Galleon `provisioning.xml` file containing the Galleon feature-packs and layers 
+that are then used by the WildFly Maven Plugin to provision the server.
+
+Complete documentation of the discovery plugin configuration can be found in the 
+link:https://docs.wildfly.org/wildfly-glow/#glow_wildfly_maven_plugin[WildFly Glow Documentation].
+
+Here's a WildFly Maven Plugin configuration extract example:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <discover-provisioning-info/> (1)
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) This option enables the discovery of Galleon feature-packs and layers. 
+
+[[wildfly-maven-plugin-galleon-stability-level]]
+=== Setting a stability level
+
+In order to support xref:Admin_Guide.adoc#Feature_stability_levels[WildFly feature stability levels], Galleon defines 
+some http://docs.wildfly.org/galleon/#_built_in_and_product_specific_options[options] that can be used at provisioning time 
+to provision server features at a specific stability level.
+
+The stability level handling described in the xref:Galleon_Guide.adoc#WildFly_Galleon_stability[Stability levels at provisioning time] 
+documentation applies when provisioning a WildFly server.
+
+For example, to provision a WildFly server that includes `preview` features and packages:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <feature-packs>
+          <feature-pack>
+            <location>wildfly@maven(org.jboss.universe:community-universe)</location>
+          </feature-pack>
+        </feature-packs>
+        <layers>
+          <layer>jaxrs-server</layer>
+        </layers>
+        <galleon-options>
+          <stability-level>preview</stability-level>
+        </galleon-options>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+[[wildfly-maven-plugin-additional-configuration]]
+== Additional configuration
+
+The plugin allows you to specify additional configuration items:
+
+* A set of WildFly CLI scripts to execute to fine tune the server configuration. 
+* Some extra content to be copied inside the server (e.g. a server keystore).
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        ...
+        <packaging-scripts> (1)
+          <packaging-script>
+            <scripts>
+              <script>scripts/script1.cli</script>
+            </scripts>
+          </packaging-script>
+        </packaging-scripts>
+        <extra-server-content-dirs> (2)
+          <dir>extra-content/</dir>
+        <extra-server-content-dirs>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) Execute the `scripts/script1.cli` script
+(2) Copy the content of the `extra-content/` directory to the root of the provisioned server.
+
+You can check https://docs.wildfly.org/wildfly-maven-plugin/[the WildFly Maven Plugin documentation]
+for more details on how to configure the WildFly Maven Plugin `package` goal and in particular how to 
+execute CLI scripts and add some extra content.
+
+[[wildfly-maven-plugin-build]]
+== Packaging your application
+
+Call ```mvn package```  to provision a server and deploy your application. The 
+directory ```${project.build.directory}/server``` contains the WildFly installation.
+
+In order to speed-up the development of your application (avoid rebuilding the server each time your application is re-compiled), 
+the Maven plugin offers a `dev` goal that allows you to provision and start the server only once.
+
+The `dev` goal runs a local instance of WildFly and watches the source directories for changes. 
+If required, your deployment will be recompiled and possibly redeployed. 
+
+You can check https://docs.wildfly.org/wildfly-maven-plugin[the WildFly Maven Plugin documentation] for more details on the `dev` goal.
+
+[[wildfly-maven-plugin-cloud]]
+== Packaging your application for the cloud
+
+The WildFly project provides a complete tool chain and workflow to deploy a WildFly application on the cloud.
+
+The steps to follow are:
+
+* Configure the WildFly Maven Plugin to provision a cloud ready WildFly server.
+* Push your Maven project to a Git repository (such as github.com).
+* Use the https://docs.wildfly.org/wildfly-charts/[Helm Chart for WildFly] to initiate the build and deployment.
+
+Example of a cloud ready WildFly Maven Plugin configuration. Such configuration must include 
+a reference to the https://github.com/wildfly-extras/wildfly-cloud-galleon-pack[WildFly cloud feature-pack]:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <feature-packs>
+            <feature-pack>
+                <location>org.wildfly:wildfly-galleon-pack:34.0.0.Final</location>
+            </feature-pack>
+            <feature-pack>
+                <location>org.wildfly.cloud:wildfly-cloud-galleon-pack:7.0.0.Final</location>
+            </feature-pack>
+            <layers>
+                <layer>cloud-server</layer>
+            </layers>
+        </feature-packs>
+        <layers>
+          <layer>jaxrs-server</layer>
+        </layers>
+        <galleon-options>
+          <stability-level>preview</stability-level>
+        </galleon-options>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+[NOTE]
+====
+
+When using WildFly Glow, you need to specify the `cloud` context in order to provision a cloud ready server.
+For example:
+
+[source,xml]
+----
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.wildfly.plugins</groupId>
+      <artifactId>wildfly-maven-plugin</artifactId>
+      <configuration>
+        <discover-provisioning-info>
+          <context>cloud</context> (1)
+        </discover-provisioning-info>
+      </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>package</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+----
+
+(1) Enable discovery for the cloud execution context.
+
+====
+Examples of projects that produce WildFly applications for the cloud 
+can be found in the https://github.com/wildfly/quickstart/[WildFly quickstarts]. 
+
+You can check https://github.com/wildfly-extras/wildfly-cloud-galleon-pack/blob/main/README.md[this documentation] 
+for more details on the WildFly cloud feature-pack .
+
+include::_galleon/Galleon_layers.adoc[]

@@ -15,7 +15,7 @@
 
   <dependencies>
     <module name="org.eclipse.microprofile.lra.api"/>
-    <module name="org.jboss.narayana.rts.lra-participant"/>
+    <module name="org.jboss.narayana.lra.lra-participant"/>
     <module name="io.smallrye.jandex"/>
 
     <module name="jakarta.enterprise.api" />

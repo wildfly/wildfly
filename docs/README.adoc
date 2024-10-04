@@ -23,12 +23,11 @@ You can activate the docs profile from the root directory with either `-Pdocs` o
 
 == Configuring the POM
 
-In the POM there are currently 4 main properties:
+In the POM there are currently 3 main properties:
 
 1. `appservername`
-2. `javaee_version`
-3. `oracle-javadoc`
-4. `wildflyversion`
+2. `oracle-javadoc`
+3. `wildflyversion`
 
 Currently the only property that may need to be changed is the `wildflyversion` property. This defaults to the property
 `product.docs.server.version` which can be found in the parent POM. It already should be set to the current major

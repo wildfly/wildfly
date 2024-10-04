@@ -5,6 +5,7 @@
 package org.jboss.as.ejb3.component;
 
 import static java.security.AccessController.doPrivileged;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.lang.reflect.Method;
 import java.security.AccessController;
@@ -426,10 +427,17 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
                 ProtectionDomain domain = new ProtectionDomain(null, null, null, JaccInterceptor.getGrantedRoles(getCallerSecurityIdentity()));
                 return policy.implies(domain, new EJBRoleRefPermission(getComponentName(), roleName));
             } else {
-                return checkCallerSecurityIdentityRole(roleName);
+                boolean tmpBool = checkCallerSecurityIdentityRole(roleName); // rls debug todo remove
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("## EJBComponent isCallerInRole checkCallerSecurityIdentityRole() returned: "
+                    + tmpBool);
+                }
+                return tmpBool;
             }
         }
-
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("## EJBComponent isCallerInRole No security, no role membership");
+        }
         // No security, no role membership.
         return false;
     }
@@ -601,6 +609,10 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
         Roles roles = identity.getRoles("ejb", true);
         if(roles != null) {
             if(roles.contains(roleName)) {
+                if (ROOT_LOGGER.isTraceEnabled()) {
+                    ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: " + roleName
+                            + "   found in identity.roles   principal: " + identity.getPrincipal().getName());
+                }
                 return true;
             }
             if(securityMetaData.getSecurityRoleLinks() != null) {
@@ -608,11 +620,20 @@ public abstract class EJBComponent extends BasicComponent implements ServerActiv
                 if(linked != null) {
                     for (String role : roles) {
                         if (linked.contains(role)) {
+                            if (ROOT_LOGGER.isTraceEnabled()) {
+                                ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole roleName: "
+                                        + roleName + "  found in securityMetaData.getSecurityRoleLinks(),"
+                                        + "  runAsPrincipal: " + securityMetaData.getRunAsPrincipal());
+                            }
                             return true;
                         }
                     }
                 }
             }
+        }
+        if (ROOT_LOGGER.isTraceEnabled()) {
+            ROOT_LOGGER.trace("## EJBComponent checkCallerSecurityIdentityRole  roleName: "
+                    + roleName + "  no role found    Principal: " + identity.getPrincipal().getName());
         }
         return false;
     }

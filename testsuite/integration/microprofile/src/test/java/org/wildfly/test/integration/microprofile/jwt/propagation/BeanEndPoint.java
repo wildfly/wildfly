@@ -16,7 +16,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.SecurityContext;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
-
 /**
  * A simple Jakarta RESTful Web Services endpoint deployed as a Jakarta Enterprise Beans bean.
  *
@@ -38,8 +37,17 @@ public class BeanEndPoint {
         Principal caller = ctx.getUserPrincipal();
         String name = caller == null ? "anonymous" : caller.getName();
         boolean hasJWT = jwt.getClaimNames() != null;
-        String helloReply = String.format("hello + %s, hasJWT: %s, targetCallerPrincipal: %s, targetIsCallerAdmin: %b", name, hasJWT, targetBean.getCallerPrincipal(), targetBean.isCallerInRole("Admin"));
 
+        //String helloReply = String.format("hello + %s, hasJWT: %s, targetCallerPrincipal: %s, targetIsCallerAdmin: %b",
+        //        name, hasJWT, targetBean.getCallerPrincipal(), targetBean.isCallerInRole("Admin"));
+        String helloReply = "hello " + name
+                        + "  hasJWT: " + hasJWT
+                        + "  targetCallerPrincipal: " + targetBean.getCallerPrincipal()
+                        + ", targetIsCallerAdmin: " + targetBean.isCallerInRole("Admin")
+                        + "  ctx: " + ctx
+                        //+ " targetBean: " + targetBean
+                        + "  targetBean context: " + targetBean.getSessionContext();
+                new Throwable(helloReply).printStackTrace(); // rls debug
         return helloReply;
     }
 

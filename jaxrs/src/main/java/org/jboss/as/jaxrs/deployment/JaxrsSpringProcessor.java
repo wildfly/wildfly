@@ -5,6 +5,16 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import java.io.Closeable;
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -21,24 +31,15 @@ import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.Closeable;
-import java.io.File;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Recognize Spring deployment and add the Jakarta RESTful Web Services integration to it
@@ -46,7 +47,7 @@ import java.util.List;
 public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
     private static final String JAR_LOCATION = "resteasy-spring-jar";
-    private static final ModuleIdentifier MODULE = ModuleIdentifier.create("org.jboss.resteasy.resteasy-spring");
+    private static final String MODULE = "org.jboss.resteasy.resteasy-spring";
 
     public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
@@ -80,33 +81,28 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (fileUrl == null) {
                 throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
             }
-            File dir = new File(fileUrl.toURI());
-            File file = null;
-            for (String jar : dir.list()) {
-                if (jar.endsWith(".jar")) {
-                    file = new File(dir, jar);
-                    break;
-                }
-            }
-            if (file == null) {
-                throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
+            final Path dir = Path.of(fileUrl.toURI());
+            File file;
+            try (Stream<Path> stream = Files.walk(dir)) {
+                file = stream.filter((f) -> f.getFileName().toString().endsWith(".jar"))
+                        .map(Path::toFile)
+                        .findFirst().orElseThrow(JaxrsLogger.JAXRS_LOGGER::noSpringIntegrationJar);
             }
             VirtualFile vf = VFS.getChild(file.toURI());
             final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
-            Service<Closeable> mountHandleService = new Service<Closeable>() {
-                public void start(StartContext startContext) throws StartException {
+            final ServiceBuilder<?> builder = serviceTarget.addService();
+            final Consumer<Closeable> consumer = builder.provides(ServiceName.JBOSS.append(SERVICE_NAME));
+            builder.setInstance(new org.jboss.msc.Service() {
+                @Override
+                public void start(final StartContext context) {
+                    consumer.accept(mountHandle);
                 }
 
-                public void stop(StopContext stopContext) {
+                @Override
+                public void stop(final StopContext context) {
                     VFSUtils.safeClose(mountHandle);
                 }
-
-                public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
-                    return mountHandle;
-                }
-            };
-            ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
-                    mountHandleService);
+            });
             builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             resourceRoot = vf;
 
@@ -122,7 +118,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             return;
         }
 
-        final List<DeploymentUnit> deploymentUnits = new ArrayList<DeploymentUnit>();
+        final List<DeploymentUnit> deploymentUnits = new ArrayList<>();
         deploymentUnits.add(deploymentUnit);
         deploymentUnits.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
 

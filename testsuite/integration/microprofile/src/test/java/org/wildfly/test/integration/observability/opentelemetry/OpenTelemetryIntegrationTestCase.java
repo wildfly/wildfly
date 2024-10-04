@@ -22,7 +22,6 @@ import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
@@ -30,7 +29,7 @@ import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask
 @RunWith(Arquillian.class)
 @ServerSetup({OpenTelemetrySetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;

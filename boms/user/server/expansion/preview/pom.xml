@@ -15,7 +15,7 @@
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
         -->
-        <version>34.0.0.Final-SNAPSHOT</version>
+        <version>35.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -38,11 +38,18 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- enforces all BOM artifacts are available -->
+    <!-- enforces all BOM artifacts and channels are available -->
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-preview-feature-pack</artifactId>
+            <version>${full.maven.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-preview</artifactId>
+            <version>${full.maven.version}</version>
             <type>pom</type>
         </dependency>
     </dependencies>
@@ -70,6 +77,15 @@
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} Preview BOMs: Expansion</bomName>
                             <bomDescription>${full.dist.product.release.name} Preview: Expansion Dependency Management</bomDescription>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-preview</artifactId>
+                                        <version>${version.boms.channel.full}</version>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
                             </includeDependencies>
