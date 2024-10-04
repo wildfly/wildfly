@@ -5,12 +5,8 @@
 package org.jboss.as.ee.subsystem;
 
 import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
+import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
@@ -26,24 +22,22 @@ import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
-import org.jboss.as.ee.logging.EeLogger;
+import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Eduardo Martins
  */
-public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefinition {
+public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleResourceDefinition {
 
     /**
      * the resource definition's dynamic runtime capability
      */
-    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.executor", true, ManagedExecutorServiceAdapter.class)
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.scheduled-executor", true, ManagedScheduledExecutorServiceAdapter.class)
             .build();
 
     public static final String JNDI_NAME = "jndi-name";
@@ -54,9 +48,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final String HUNG_TASK_THRESHOLD = "hung-task-threshold";
     public static final String LONG_RUNNING_TASKS = "long-running-tasks";
     public static final String CORE_THREADS = "core-threads";
-    public static final String MAX_THREADS = "max-threads";
     public static final String KEEPALIVE_TIME = "keepalive-time";
-    public static final String QUEUE_LENGTH = "queue-length";
     public static final String REJECT_POLICY = "reject-policy";
 
     public static final SimpleAttributeDefinition JNDI_NAME_AD =
@@ -91,6 +83,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setAlternatives(THREAD_FACTORY)
                     .build();
+
     public static final SimpleAttributeDefinition HUNG_TASK_TERMINATION_PERIOD_AD =
             new SimpleAttributeDefinitionBuilder(HUNG_TASK_TERMINATION_PERIOD, ModelType.LONG, true)
                     .setAllowExpression(true)
@@ -123,13 +116,6 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    public static final SimpleAttributeDefinition MAX_THREADS_AD =
-            new SimpleAttributeDefinitionBuilder(MAX_THREADS, ModelType.INT, true)
-                    .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .build();
-
     public static final SimpleAttributeDefinition KEEPALIVE_TIME_AD =
             new SimpleAttributeDefinitionBuilder(KEEPALIVE_TIME, ModelType.LONG, true)
                     .setAllowExpression(true)
@@ -137,13 +123,6 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(60000))
-                    .build();
-
-    public static final SimpleAttributeDefinition QUEUE_LENGTH_AD =
-            new SimpleAttributeDefinitionBuilder(QUEUE_LENGTH, ModelType.INT, true)
-                    .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
     public static final SimpleAttributeDefinition REJECT_POLICY_AD =
@@ -154,16 +133,16 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class))
                     .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, KEEPALIVE_TIME_AD, REJECT_POLICY_AD};
 
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE);
 
-    private static final ResourceDescriptionResolver RESOLVER = EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
+    private static final ResourceDescriptionResolver RESOLVER = EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE);
 
     /**
      * metrics op step handler
      */
-    private static final ManagedExecutorServiceMetricsHandler METRICS_HANDLER = new ManagedExecutorServiceMetricsHandler.Builder<ManagedExecutorServiceService>(CAPABILITY)
+    private static final ManagedExecutorServiceMetricsHandler METRICS_HANDLER = new ManagedExecutorServiceMetricsHandler.Builder<ManagedScheduledExecutorServiceService>(CAPABILITY)
             .addMetric(ManagedExecutorServiceMetricsAttributes.ACTIVE_THREAD_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getActiveThreadsCount()))
             .addMetric(ManagedExecutorServiceMetricsAttributes.COMPLETED_TASK_COUNT_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getCompletedTaskCount()))
             .addMetric(ManagedExecutorServiceMetricsAttributes.CURRENT_QUEUE_SIZE_AD, (context, service) -> context.getResult().set(service.getExecutorService().getRuntimeStats().getQueueSize()))
@@ -176,36 +155,35 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     /**
      * terminate hung threads op
      */
-    private static final ManagedExecutorTerminateHungTasksOperation<ManagedExecutorServiceService> TERMINATE_HUNG_TASKS_OP = new ManagedExecutorTerminateHungTasksOperation<>(CAPABILITY, RESOLVER, service -> service.getExecutorService());
+    private static final ManagedExecutorTerminateHungTasksOperation<ManagedScheduledExecutorServiceService> TERMINATE_HUNG_TASKS_OP = new ManagedExecutorTerminateHungTasksOperation<>(CAPABILITY, RESOLVER, service -> service.getExecutorService());
 
     /**
      *
      */
     private final boolean registerRuntimeOnly;
 
-    ManagedExecutorServiceResourceDefinition(boolean registerRuntimeOnly) {
+    public ManagedScheduledExecutorServiceResourceDefinition(boolean registerRuntimeOnly) {
         super(new SimpleResourceDefinition.Parameters(PATH_ELEMENT, RESOLVER)
-                .setAddHandler(ManagedExecutorServiceAdd.INSTANCE)
-                .setRemoveHandler(new ServiceRemoveStepHandler(ManagedExecutorServiceAdd.INSTANCE))
+                .setAddHandler(ManagedScheduledExecutorServiceAdd.INSTANCE)
+                .setRemoveHandler(new ServiceRemoveStepHandler(ManagedScheduledExecutorServiceAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));
         this.registerRuntimeOnly = registerRuntimeOnly;
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, ReloadRequiredWriteAttributeHandler.INSTANCE);
+        }
+        if (registerRuntimeOnly) {
+            METRICS_HANDLER.registerAttributes(resourceRegistration);
+        }
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         TERMINATE_HUNG_TASKS_OP.registerOperation(resourceRegistration);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ValidatingWriteHandler();
-        for (AttributeDefinition attr : ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
-        }
-        if (registerRuntimeOnly) {
-            METRICS_HANDLER.registerAttributes(resourceRegistration);
-        }
     }
 
     static void registerTransformers_4_0(final ResourceTransformationDescriptionBuilder builder) {
@@ -229,79 +207,5 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, HUNG_TASK_TERMINATION_PERIOD_AD)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, HUNG_TASK_TERMINATION_PERIOD_AD)
                 .end();
-    }
-
-    static class ValidatingWriteHandler extends ReloadRequiredWriteAttributeHandler {
-
-        @Override
-        protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
-            context.addStep(ExecutorQueueValidationStepHandler.MODEL_VALIDATION_INSTANCE, OperationContext.Stage.MODEL);
-            super.validateUpdatedModel(context, model);
-        }
-    }
-
-    static class ExecutorQueueValidationStepHandler implements OperationStepHandler {
-        static final ExecutorQueueValidationStepHandler MODEL_VALIDATION_INSTANCE = new ExecutorQueueValidationStepHandler(false);
-        private final boolean isRuntimeStage;
-
-        private ExecutorQueueValidationStepHandler(final boolean isRuntimeStage) {
-            this.isRuntimeStage = isRuntimeStage;
-        }
-
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-
-            final ModelNode coreThreads;
-            final ModelNode maxThreads;
-            final ModelNode queueLength;
-
-            if (isRuntimeStage) {
-                coreThreads = CORE_THREADS_AD.resolveModelAttribute(context, model);
-                maxThreads = MAX_THREADS_AD.resolveModelAttribute(context, model);
-                queueLength = QUEUE_LENGTH_AD.resolveModelAttribute(context, model);
-            } else {
-                coreThreads = model.get(CORE_THREADS);
-                maxThreads = model.get(MAX_THREADS);
-                queueLength = model.get(QUEUE_LENGTH);
-            }
-
-            if (coreThreads.getType() == ModelType.EXPRESSION
-                    || maxThreads.getType() == ModelType.EXPRESSION
-                    || queueLength.getType() == ModelType.EXPRESSION) {
-                context.addStep(new ExecutorQueueValidationStepHandler(true), OperationContext.Stage.RUNTIME, true);
-                return;
-            }
-
-            // Validate an unbounded queue
-            if ((!queueLength.isDefined() || queueLength.asInt() == Integer.MAX_VALUE)
-                    && coreThreads.isDefined()
-                    && coreThreads.asInt() <= 0) {
-                throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
-            }
-
-            // Validate a hand-off queue
-            if (queueLength.isDefined()
-                    && queueLength.asInt() == 0
-                    && coreThreads.isDefined()
-                    && coreThreads.asInt() <= 0) {
-                throw EeLogger.ROOT_LOGGER.invalidCoreThreadsSize(queueLength.asString());
-            }
-
-            // max-threads must be defined and greater than 0 if core-threads is 0
-            if (coreThreads.isDefined()
-                    && coreThreads.asInt() == 0
-                    && (!maxThreads.isDefined() || maxThreads.asInt() <= 0)) {
-                throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.isDefined() ? maxThreads.asInt() : 0,
-                        coreThreads.asInt());
-            }
-
-            // max-threads must be greater than or equal to core-threads
-            if (coreThreads.isDefined()
-                    && maxThreads.isDefined()
-                    && maxThreads.asInt() < coreThreads.asInt()) {
-                throw EeLogger.ROOT_LOGGER.invalidMaxThreads(maxThreads.asInt(), coreThreads.asInt());
-            }
-        }
     }
 }
