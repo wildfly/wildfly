@@ -38,8 +38,13 @@ public class BeanExpirationScheduler<K, V extends BeanInstance<K>, M> extends Ab
     private static final ThreadFactory THREAD_FACTORY = new DefaultThreadFactory(BeanExpirationScheduler.class, WildFlySecurityManager.getClassLoaderPrivileged(BeanExpirationScheduler.class));
     private final ImmutableBeanMetaDataFactory<K, M> factory;
 
-    public BeanExpirationScheduler(CacheContainerGroup group, Supplier<Batch> batchFactory, BeanFactory<K, V, M> factory, BeanExpirationConfiguration<K, V> expiration, Duration closeTimeout) {
+    public BeanExpirationScheduler(String name, CacheContainerGroup group, Supplier<Batch> batchFactory, BeanFactory<K, V, M> factory, BeanExpirationConfiguration<K, V> expiration, Duration closeTimeout) {
         super(new LocalScheduler<>(new LocalSchedulerConfiguration<>() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
             @Override
             public ScheduledEntries<K, Instant> getScheduledEntries() {
                 return group.isSingleton() ? ScheduledEntries.linked() : ScheduledEntries.sorted();

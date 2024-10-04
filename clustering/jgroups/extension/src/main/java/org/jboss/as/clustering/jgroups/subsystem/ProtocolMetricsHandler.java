@@ -8,7 +8,6 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -93,7 +93,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 }
             };
             try {
-                return AccessController.doPrivileged(action);
+                return WildFlySecurityManager.doUnchecked(action);
             } catch (PrivilegedActionException e) {
                 throw e.getException();
             }

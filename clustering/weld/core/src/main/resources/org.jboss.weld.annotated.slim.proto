@@ -1,11 +1,15 @@
+syntax = "proto3";
+
 package org.jboss.weld.annotated.slim;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(430)
  */
 message AnnotatedTypeIdentifier {
-	optional	bytes	manager	 = 1;
-	optional	bytes	className	 = 2;
-	optional	bytes	modifiedClassName	 = 3;
-	optional	string	suffix	 = 4;
+	org.wildfly.clustering.marshalling.protostream.Any	manager	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	className	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	modifiedClassName	 = 3;
+	string	suffix	 = 4;
 }

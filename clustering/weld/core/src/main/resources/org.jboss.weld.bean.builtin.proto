@@ -1,10 +1,14 @@
+syntax = "proto3";
+
 package org.jboss.weld.bean.builtin;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(425)
  */
 message InstanceImpl {
-	optional	bytes	injectionPoint	 = 1;
-	optional	bytes	creationalContext	 = 2;
-	optional	bytes	manager	 = 3;
+	org.wildfly.clustering.marshalling.protostream.Any	injectionPoint	 = 1;
+	org.wildfly.clustering.marshalling.protostream.Any	creationalContext	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	manager	 = 3;
 }

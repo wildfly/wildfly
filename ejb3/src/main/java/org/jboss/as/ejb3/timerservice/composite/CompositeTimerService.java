@@ -44,6 +44,11 @@ public class CompositeTimerService implements ManagedTimerService {
     }
 
     @Override
+    public boolean isStarted() {
+        return this.transientTimerService.isStarted() && this.persistentTimerService.isStarted();
+    }
+
+    @Override
     public void start() {
         this.transientTimerService.start();
         this.persistentTimerService.start();

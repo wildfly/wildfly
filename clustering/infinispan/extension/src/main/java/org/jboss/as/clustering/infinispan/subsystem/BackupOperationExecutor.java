@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.infinispan.Cache;
+import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.xsite.XSiteAdminOperations;
 import org.jboss.as.clustering.controller.Operation;
 import org.jboss.as.clustering.controller.OperationExecutor;
@@ -43,7 +44,7 @@ public class BackupOperationExecutor implements OperationExecutor<Map.Entry<Stri
             @Override
             public Map.Entry<String, XSiteAdminOperations> apply(Cache<?, ?> cache) {
                 String site = context.getCurrentAddressValue();
-                return new AbstractMap.SimpleImmutableEntry<>(site, cache.getAdvancedCache().getComponentRegistry().getLocalComponent(XSiteAdminOperations.class));
+                return new AbstractMap.SimpleImmutableEntry<>(site, ComponentRegistry.componentOf(cache, XSiteAdminOperations.class));
             }
         };
         FunctionExecutor<Cache<?, ?>> executor = this.executors.getExecutor(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));

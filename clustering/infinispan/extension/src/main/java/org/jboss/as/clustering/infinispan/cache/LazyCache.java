@@ -55,12 +55,6 @@ public class LazyCache<K, V> extends LazyBasicCache<K, V, Cache<K, V>> implement
         return this.get().getCacheConfiguration();
     }
 
-    @Deprecated
-    @Override
-    public Set<Object> getListeners() {
-        return this.get().getListeners();
-    }
-
     @Override
     public ComponentStatus getStatus() {
         return this.get().getStatus();

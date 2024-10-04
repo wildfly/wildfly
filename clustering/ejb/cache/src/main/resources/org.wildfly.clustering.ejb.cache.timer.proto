@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.ejb.cache.timer;
 
 import "java.lang.proto";
@@ -12,53 +14,53 @@ import "org.wildfly.clustering.marshalling.proto";
  * @TypeId(345)
  */
 message IntervalTimerMetaDataEntry {
-	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
-	optional	java.time.Instant	start	= 2;
-	optional	java.time.Duration	lastTimeout	= 3;
-	optional	java.time.Duration	interval	= 4;
+	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
+	java.time.Instant	start	= 2;
+	java.time.Duration	lastTimeout	= 3;
+	java.time.Duration	interval	= 4;
 }
 
 /**
  * @TypeId(346)
  */
 message ScheduleTimerMetaDataEntry {
-	optional	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
-	optional	java.time.Instant	start	= 2;
-	optional	java.time.Duration	lastTimeout	= 3;
-	optional	string	timeoutMatcher	= 4;
-	optional	java.util.Date	expressionStart	= 5;
-	optional	java.util.Date	expressionEnd	= 6;
-	optional	string	expressionYear	= 7;
-	optional	string	expressionMonth	= 8;
-	optional	string	expressionDayOfMonth	= 9;
-	optional	string	expressionDayOfWeek	= 10;
-	optional	string	expressionZone	= 11;
-	optional	string	expressionHour	= 12;
-	optional	string	expressionMinute	= 13;
-	optional	string	expressionSecond	= 14;
+	org.wildfly.clustering.marshalling.ByteBufferMarshalledValue	info	= 1;
+	java.time.Instant	start	= 2;
+	java.time.Duration	lastTimeout	= 3;
+	string	timeoutMatcher	= 4;
+	java.util.Date	expressionStart	= 5;
+	java.util.Date	expressionEnd	= 6;
+	string	expressionYear	= 7;
+	string	expressionMonth	= 8;
+	string	expressionDayOfMonth	= 9;
+	string	expressionDayOfWeek	= 10;
+	string	expressionZone	= 11;
+	string	expressionHour	= 12;
+	string	expressionMinute	= 13;
+	string	expressionSecond	= 14;
 }
 
 /**
  * @TypeId(347)
  */
 message TimerMetaDataEntryFunction {
-	optional	org.wildfly.clustering.server.offset.DurationOffset	lastTimeoutOffset	= 1;
+	org.wildfly.clustering.server.offset.DurationOffset	lastTimeoutOffset	= 1;
 }
 
 /**
  * @TypeId(348)
  */
 message TimeoutDescriptor {
-	optional	string	methodName	= 1;
-	optional	uint32	parameters	= 2;
+	string	methodName	= 1;
+	uint32	parameters	= 2;
 }
 
 /**
  * @TypeId(349)
  */
 message TimerIndex {
-	optional	string	className	= 1;
-	optional	string	methodName	= 2;
-	optional	uint32	parameters	= 3;
-	optional	uint32	index	= 4;
+	string	className	= 1;
+	string	methodName	= 2;
+	uint32	parameters	= 3;
+	uint32	index	= 4;
 }

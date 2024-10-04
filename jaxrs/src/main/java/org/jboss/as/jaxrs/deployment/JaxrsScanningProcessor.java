@@ -197,13 +197,13 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         if (webdata.getServlets() != null) {
             for (ServletMetaData servlet : webdata.getServlets()) {
                 String servletClass = servlet.getServletClass();
-                if (BOOT_CLASSES.contains(servletClass))
+                if (servletClass != null && BOOT_CLASSES.contains(servletClass))
                     return true;
             }
         }
         if (webdata.getFilters() != null) {
             for (FilterMetaData filter : webdata.getFilters()) {
-                if (BOOT_CLASSES.contains(filter.getFilterClass()))
+                if (filter.getFilterClass() != null && BOOT_CLASSES.contains(filter.getFilterClass()))
                     return true;
             }
         }

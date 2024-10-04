@@ -1,14 +1,18 @@
+syntax = "proto3";
+
 package org.glassfish.expressly.lang;
+
+import "org.wildfly.clustering.marshalling.protostream.proto";
 
 /**
  * @TypeId(415)
  */
 message Function {
-	optional	string	prefix	 = 1;
-	optional	string	localName	 = 2;
-	optional	string	declaringClass	 = 3;
-	optional	string	methodName	 = 4;
-	repeated	string	parameterType	 = 5;
+	string	prefix	 = 1;
+	string	localName	 = 2;
+	org.wildfly.clustering.marshalling.protostream.Any	declaringClass	 = 3;
+	string	methodName	 = 4;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	parameterType	 = 5;
 }
 
 /**
@@ -23,5 +27,5 @@ message FunctionMapperImpl {
  */
 message VariableMapperImpl {
 	repeated	string	variable	 = 1;
-	repeated	bytes	expression	 = 2;
+	repeated	org.wildfly.clustering.marshalling.protostream.Any	expression	 = 2;
 }

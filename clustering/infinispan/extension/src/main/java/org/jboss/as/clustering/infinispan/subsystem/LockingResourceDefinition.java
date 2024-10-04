@@ -10,8 +10,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.IsolationLevel;
 import org.infinispan.configuration.cache.LockingConfiguration;
-import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.controller.ManagementResourceRegistration;
 import org.jboss.as.clustering.controller.ResourceDescriptor;
 import org.jboss.as.clustering.controller.SimpleResourceRegistrar;

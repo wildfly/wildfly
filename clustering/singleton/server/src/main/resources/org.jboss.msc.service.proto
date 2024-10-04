@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.jboss.msc.service;
 
 import "java.lang.proto";
@@ -8,27 +10,27 @@ import "java.lang.proto";
  * @TypeId(150)
  */
 message ServiceName {
-	optional	string	name	= 1;
+	string	name	= 1;
 }
 
 /**
  * @TypeId(151)
  */
 message StartException {
-	optional	java.lang.Class	exceptionClass	= 1;
-	optional	string	message	= 2;
-	optional	java.lang.Throwable	cause	= 3;
-	repeated	java.lang.StackTraceElement	stackTraceElement	= 4;
-	repeated	java.lang.Throwable	suppressed	= 5;
+	java.lang.Class	exceptionClass	= 1;
+	string	message	= 2;
+	java.lang.Throwable	cause	= 3;
+	java.lang.StackTraceElement	stackTraceElement	= 4;
+	java.lang.Throwable	suppressed	= 5;
 }
 
 /**
  * @TypeId(152)
  */
 message ServiceNotFoundException {
-	optional	java.lang.Class	exceptionClass	= 1;
-	optional	string	message	= 2;
-	optional	java.lang.Throwable	cause	= 3;
+	java.lang.Class	exceptionClass	= 1;
+	string	message	= 2;
+	java.lang.Throwable	cause	= 3;
 	repeated	java.lang.StackTraceElement	stackTraceElement	= 4;
 	repeated	java.lang.Throwable	suppressed	= 5;
 }

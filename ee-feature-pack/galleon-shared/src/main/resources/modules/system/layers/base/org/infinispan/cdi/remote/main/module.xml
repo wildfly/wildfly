@@ -6,7 +6,7 @@
 <module xmlns="urn:jboss:module:1.9" name="org.infinispan.cdi.remote">
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-cdi-remote-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-cdi-remote}"/>
     </resources>
 
     <dependencies>

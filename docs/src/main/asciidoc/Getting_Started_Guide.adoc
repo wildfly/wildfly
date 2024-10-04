@@ -190,6 +190,52 @@ can install WildFly {wildflyVersion} on any operating system that supports the z
 tar formats. Refer to the Release Notes for additional information
 related to the release.
 
+[[installation_as_a_linux_service]]
+==== Installation as a Linux Service
+
+Once you have installed WildFly {wildflyVersion} from a Zip archive, you can create a Linux service so it can be started/stopped automatically when your system boots up or is shut down.
+
+The following steps describe the process to configure WildFly as a systemd service. WildFly is shipped with a default systemd unit file configuration for Standalone and Domain mode. These wildfly-[standalone,domain].service files are located at the `$WFLY_HOME/bin/systemd` directory and assume that by default WildFly was installed at `/opt/wildfly` directory and would be launched with the `wildfly:wildfly` user:group. These files can be adjusted by you to cover your needs, for example, you can change the user that runs the service, the location of the WildFly installation you want to launch, the locations of the logs, and so on.
+
+Alternatively, you can use the `generate_systemd_unit.sh` script to automatically generate a new systemd unit file
+using your current server installation as the WildFly home, or to specify a different user/group.
+
+Once you are fine with the current wildfly-[standalone,domain].service unit file, you can copy to the directory for systemd units of your Operating System, and enable the service to start WildFly automatically at boot time. You have to ensure that the user who runs the service has the necessary permissions to access the WildFly installation directory and to launch the server.
+
+As a quick guide, the following commands will show you how to generate a systemd unit file for your WildFly installation being `javauser:javagroup` the user:group that launch the server. All the following commands should be executed as the root user:
+
+First, create the user and group that will be used to launch the server:
+[source,shell,options="nowrap"]
+----
+groupadd -r javagroup
+useradd -r -g javagroup -d $WFLY_HOME -s /sbin/nologin javauser
+chown -R javauser:javagroup $WFLY_HOME
+----
+
+Secondly, generate the systemd unit file, in this example, we are generating the systemd unit file for a standalone server:
+[source,shell,options="nowrap"]
+----
+cd $WFLY_HOME/bin/systemd
+./generate_systemd_unit.sh standalone javauser javagroup
+----
+
+Thirdly, edit the `$WFLY_HOME/bin/systemd/wildfly-standalone.conf` file to configure the server environment, for example, to specify the JAVA_HOME environment variable, to add additional properties to the server launch command, and so on:
+[source,shell,options="nowrap"]
+----
+vim $WFLY_HOME/bin/systemd/wildfly-standalone.conf
+----
+
+Finally, copy the systemd unit file and the server configuration file to the expected location and enable the service:
+[source,shell,options="nowrap"]
+----
+cp $WFLY_HOME/bin/systemd/wildfly-standalone.service $(pkg-config systemd --variable=systemdsystemunitdir)
+cp $WFLY_HOME/bin/systemd/wildfly-standalone.conf /etc/sysconfig/
+systemctl enable wildfly-standalone
+systemctl start wildfly-standalone
+----
+
+If you want to remove the service, revert the above changes in an inverse order. For more information, consult the README file available in the `$WFLY_HOME/bin/systemd` directory.
+
 [[wildfly---a-quick-tour]]
 == WildFly - A Quick Tour
 
@@ -430,7 +476,7 @@ to what's shown below.
  
   JAVA: java
  
-  JAVA_OPTS:  -server -Xms64m -Xmx512m -XX:MetaspaceSize=96M -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=com.yourkit,org.jboss.byteman -Djava.awt.headless=true
+  JAVA_OPTS:  -server -Xms64m -Xmx512m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=com.yourkit,org.jboss.byteman -Djava.awt.headless=true
  
 =========================================================================
  

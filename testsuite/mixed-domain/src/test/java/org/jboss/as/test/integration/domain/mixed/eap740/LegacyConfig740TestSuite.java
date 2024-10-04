@@ -8,7 +8,6 @@ package org.jboss.as.test.integration.domain.mixed.eap740;
 import org.jboss.as.test.integration.domain.mixed.MixedDomainTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -23,7 +22,6 @@ import org.junit.runners.Suite;
         DomainHostExcludes740TestCase.class
 })
 @Version(Version.AsVersion.EAP_7_4_0)
-@Ignore("https://issues.redhat.com/browse/WFLY-16644")
 public class LegacyConfig740TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
