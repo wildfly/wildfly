@@ -100,7 +100,7 @@ public class ConcurrentContext {
     public synchronized void addFactory(ContextHandleFactory factory) {
         final String factoryName = factory.getName();
         if(factoryMap.containsKey(factoryName)) {
-            throw EeLogger.ROOT_LOGGER.factoryAlreadyExists(this, factoryName);
+            throw EeLogger.ROOT_LOGGER.factoryAlreadyExists(this.toString(), factoryName);
         }
         factoryMap.put(factoryName, factory);
         final Comparator<ContextHandleFactory> comparator = new Comparator<ContextHandleFactory>() {
@@ -199,7 +199,7 @@ public class ConcurrentContext {
                 factoryName = handle.getFactoryName();
                 factory = concurrentContext.factoryMap.get(factoryName);
                 if(factory == null) {
-                    throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
+                    throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext.toString(), factoryName);
                 }
                 out.writeUTF(factoryName);
                 factory.writeSetupContextHandle(handle, out);
@@ -254,7 +254,7 @@ public class ConcurrentContext {
                     factoryName = in.readUTF();
                     factory = concurrentContext.factoryMap.get(factoryName);
                     if(factory == null) {
-                        throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
+                        throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext.toString(), factoryName);
                     }
                     setupHandles.add(factory.readSetupContextHandle(in));
                 }

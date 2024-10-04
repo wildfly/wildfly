@@ -116,9 +116,14 @@ vi:ts=4:sw=4:expandtab
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
         </dependency>
+        <!-- FIXME remove this once impl-30 starts to be prepared -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

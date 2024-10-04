@@ -31,13 +31,18 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.as.ee.component.ConcurrencyAttachments;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 
@@ -74,6 +79,8 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         if (componentDescriptions == null) {
             return;
         }
+        Map<ComponentConfiguration, List<ContextHandleFactory>> additionalComponentFactories = new HashMap<>();
+        deploymentUnit.putAttachment(ConcurrencyAttachments.ADDITIONAL_COMPONENT_FACTORIES, additionalComponentFactories);
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription.getNamingMode() == ComponentNamingMode.NONE) {
                 // skip components without namespace
@@ -84,12 +91,12 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
     }
 
     private void processModuleDescription(final EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext, ServiceName localTransactionProviderCapabilityServiceName) {
-        final ConcurrentContext concurrentContext = moduleDescription.getConcurrentContext();
+        final ConcurrentContext concurrentContext = new ConcurrentContext();
         // setup context
         setupConcurrentContext(concurrentContext, moduleDescription.getApplicationName(), moduleDescription.getModuleName(), null, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), deploymentUnit, phaseContext.getServiceTarget(), localTransactionProviderCapabilityServiceName);
         // attach setup action
         final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction(concurrentContext);
-        deploymentUnit.putAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION, setupAction);
+        deploymentUnit.putAttachment(ConcurrencyAttachments.CONCURRENT_CONTEXT_SETUP_ACTION, setupAction);
         deploymentUnit.addToAttachmentList(Attachments.WEB_SETUP_ACTIONS, setupAction);
     }
 
@@ -97,7 +104,14 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         final ComponentConfigurator componentConfigurator = new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                final ConcurrentContext concurrentContext = configuration.getConcurrentContext();
+                final ConcurrentContext concurrentContext = new ConcurrentContext();
+                // add component only scoped additional factories
+                final List<ContextHandleFactory> additionalComponentFactories = context.getDeploymentUnit().getAttachment(ConcurrencyAttachments.ADDITIONAL_COMPONENT_FACTORIES).remove(configuration);
+                if (additionalComponentFactories != null) {
+                    for (ContextHandleFactory factory : additionalComponentFactories) {
+                        concurrentContext.addFactory(factory);
+                    }
+                }
                 // setup context
                 setupConcurrentContext(concurrentContext, description.getApplicationName(), description.getModuleName(), description.getComponentName(), configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), context.getDeploymentUnit(), context.getServiceTarget(), localTransactionProviderCapabilityServiceName);
                 // add the interceptor which manages the concurrent context
@@ -131,7 +145,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         // add default factories
         concurrentContext.addFactory(new NamingContextHandleFactory(namespaceContextSelector, deploymentUnit.getServiceName()));
         concurrentContext.addFactory(new ClassLoaderContextHandleFactory(moduleClassLoader));
-        for(ContextHandleFactory factory : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_FACTORIES)) {
+        for(ContextHandleFactory factory : deploymentUnit.getAttachmentList(ConcurrencyAttachments.ADDITIONAL_FACTORIES)) {
             concurrentContext.addFactory(factory);
         }
         concurrentContext.addFactory(new OtherEESetupActionsContextHandleFactory(deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS)));
@@ -157,9 +171,10 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        ConcurrentContextSetupAction action = deploymentUnit.removeAttachment(Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        SetupAction action = deploymentUnit.removeAttachment(ConcurrencyAttachments.CONCURRENT_CONTEXT_SETUP_ACTION);
         if (action != null) {
             deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).remove(action);
         }
+        deploymentUnit.removeAttachment(ConcurrencyAttachments.ADDITIONAL_COMPONENT_FACTORIES);
     }
 }

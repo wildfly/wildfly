@@ -49,7 +49,7 @@ public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, USE_TRANSACTION_SETUP_PROVIDER_AD};
 
-    ContextServiceResourceDefinition() {
+    public ContextServiceResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.CONTEXT_SERVICE))
                 .setAddHandler(ContextServiceAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ContextServiceAdd.INSTANCE))
