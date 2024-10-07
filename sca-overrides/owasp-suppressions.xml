@@ -268,4 +268,13 @@
       <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
       <cve>CVE-2024-45772</cve>
    </suppress>
+   <suppress until="2025-10-07">
+      <notes><![CDATA[
+      file name: velocity-engine-core-2.3.jar (shaded: commons-io:commons-io:2.8.0)
+
+      [WFLY-19822] Although some of commons-io is shaded in this affected class is not a part of the shading.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
+   </suppress>
 </suppressions>
