@@ -5,13 +5,16 @@
 
 package org.wildfly.clustering.faces.mojarra.context;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(SerializationContextInitializer.class)
 public class ContextSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
     public ContextSerializationContextInitializer() {
