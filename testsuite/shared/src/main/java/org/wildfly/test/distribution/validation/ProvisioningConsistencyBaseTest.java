@@ -59,13 +59,8 @@ public abstract class ProvisioningConsistencyBaseTest {
         }
     }
 
-    private static String getDistDir() {
-        return "wildfly-" + System.getProperty("standard.dist.version");
-    }
-
-
     protected ProvisioningConsistencyBaseTest(String targetDist) {
-        DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist).resolve("target").resolve(getDistDir());
+        DIST_INSTALLATION = SOURCE_HOME.resolve(targetDist);
     }
 
     /**
@@ -75,7 +70,7 @@ public abstract class ProvisioningConsistencyBaseTest {
     @BeforeClass
     public static void assumeJbossDistIsNotExternallySet() throws IOException {
         Path jbossDist = new File(System.getProperty("jboss.dist")).getCanonicalFile().toPath();
-        Path defaultJbossDist = SOURCE_HOME.resolve("build").resolve("target").resolve(getDistDir());
+        Path defaultJbossDist = SOURCE_HOME.resolve(System.getProperty("build.output.dir"));
         Assume.assumeTrue(jbossDist.equals(defaultJbossDist));
     }
 
