@@ -19,6 +19,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -35,7 +36,6 @@ import static org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition.MDB
  */
 public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor {
 
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -47,6 +47,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
         CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        boolean clusteredSingletonFound = false;
         for (final ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
             ComponentDescription description = configuration.getComponentDescription();
             if (description instanceof MessageDrivenComponentDescription) {
@@ -57,6 +58,7 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                             .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class, mdbDeliveryControllerService.getMdbComponent())
                             .setInitialMode(Mode.PASSIVE);
                     if (mdbDescription.isClusteredSingleton()) {
+                        clusteredSingletonFound = true;
                         builder.requires(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
                     }
                     if (mdbDescription.getDeliveryGroups() != null) {
@@ -71,6 +73,10 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
                     builder.install();
                 }
             }
+        }
+        if (clusteredSingletonFound) {
+            // Add dependency on the default policy, which allows CLUSTERED_SINGLETON_CAPABILITY to be installed
+            serviceTarget.addDependency(capabilityServiceSupport.getCapabilityServiceName(ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR));
         }
     }
 
