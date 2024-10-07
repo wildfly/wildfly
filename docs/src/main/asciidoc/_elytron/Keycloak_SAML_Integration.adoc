@@ -52,8 +52,8 @@ using both the `web-server` and `keycloak-client-saml` layers:
 ----
 <plugin>
     <groupId>org.wildfly.plugins</groupId>
-    <artifactId>wildfly-jar-maven-plugin</artifactId>
-    <version>${version.wildfly.jar.maven.plugin}</version>
+    <artifactId>wildfly-maven-plugin</artifactId>
+    <version>${version.wildfly.maven.plugin}</version>
     <configuration>
         <feature-packs>
             <feature-pack>
@@ -69,14 +69,15 @@ using both the `web-server` and `keycloak-client-saml` layers:
             <layer>web-server</layer>
             <layer>keycloak-client-saml</layer>
         </layers>
-        <context-root>simple-webapp</context-root>
-        <cli-sessions>
-            <cli-session>
-                <script-files>
-                    <script>configure-saml.cli</script>
-                </script-files>
-            </cli-session>
-        </cli-sessions>
+        <bootable-jar>true</bootable-jar>
+        <name>simple-webapp.war</name>
+        <packaging-scripts>
+          <packaging-script>
+            <scripts>
+              <script>configure-saml.cli</script>
+            </scripts>
+          </packaging-script>
+        </packaging-scripts>
     </configuration>
     <executions>
         <execution>
