@@ -259,4 +259,13 @@
       <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
       <cve>CVE-2024-8391</cve>
    </suppress>
+   <suppress until="2025-10-07">
+      <notes><![CDATA[
+      file name: lucene-core-9.11.1.jar
+
+      [WFLY-19821] Supress CVE-2024-45772 as we don't include the affected module.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
+      <cve>CVE-2024-45772</cve>
+   </suppress>
 </suppressions>
