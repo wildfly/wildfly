@@ -5,13 +5,15 @@
 
 package org.wildfly.clustering.ejb.infinispan.timer;
 
+import java.util.concurrent.ExecutionException;
+
+import org.wildfly.clustering.cache.CacheEntryRemover;
+import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
+import org.wildfly.clustering.ejb.timer.TimeoutListener;
 import org.wildfly.clustering.ejb.timer.Timer;
 import org.wildfly.clustering.ejb.timer.TimerManager;
 import org.wildfly.clustering.ejb.timer.TimerRegistry;
 import org.wildfly.clustering.server.scheduler.Scheduler;
-import org.wildfly.clustering.cache.CacheEntryRemover;
-import org.wildfly.clustering.ejb.timer.ImmutableTimerMetaData;
-import org.wildfly.clustering.ejb.timer.TimeoutListener;
 
 /**
  * @author Paul Ferraro
@@ -50,7 +52,7 @@ public class InfinispanTimer<I> implements Timer<I> {
 
     @Override
     public boolean isActive() {
-        return this.scheduler.contains(this.id);
+        return (this.scheduler != null) ? this.scheduler.contains(this.id) : false;
     }
 
     @Override
@@ -71,18 +73,20 @@ public class InfinispanTimer<I> implements Timer<I> {
     }
 
     @Override
-    public void invoke() throws Exception {
+    public void invoke() throws ExecutionException {
         this.listener.timeout(this.manager, this);
     }
 
     @Override
     public void suspend() {
-        this.scheduler.cancel(this.id);
+        if (this.scheduler != null) {
+            this.scheduler.cancel(this.id);
+        }
     }
 
     @Override
     public void activate() {
-        if (!this.isActive()) {
+        if ((this.scheduler != null) && !this.isActive()) {
             this.scheduler.schedule(this.id, this.metaData);
         }
     }
