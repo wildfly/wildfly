@@ -277,4 +277,13 @@
       <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
       <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
    </suppress>
+   <suppress until="2025-10-08">
+      <notes><![CDATA[
+      file name: artemis-commons-2.37.0.jar (shaded: jakarta.json:jakarta.json-api:1.1.6)
+
+      [WFLY-19827] Suppress CVE-2024-9329 as it related to the GlassFish server not the libraries.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/.*$</packageUrl>
+      <cve>CVE-2024-9329</cve>
+   </suppress>
 </suppressions>
