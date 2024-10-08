@@ -157,6 +157,13 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
                     .build();
 
+    protected static final SimpleAttributeDefinition ALLOW_QUERY_PARAMS =
+            new SimpleAttributeDefinitionBuilder(ElytronOidcDescriptionConstants.ALLOW_QUERY_PARAMS, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(0, 5, true, false))
+                    .setStability(Stability.PREVIEW)
+                    .build();
+
     static final List<SimpleAttributeDefinition> ALL_ATTRIBUTES = new ArrayList();
     static {
         ALL_ATTRIBUTES.add(REALM);
@@ -175,6 +182,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         ALL_ATTRIBUTES.add(CredentialDefinition.CREDENTIAL);
         ALL_ATTRIBUTES.add(SCOPE);
         ALL_ATTRIBUTES.add(RedirectRewriteRuleDefinition.REDIRECT_REWRITE_RULE);
+        ALL_ATTRIBUTES.add(ALLOW_QUERY_PARAMS);
         for (SimpleAttributeDefinition attribute : ProviderAttributeDefinitions.ATTRIBUTES) {
             ALL_ATTRIBUTES.add(attribute);
         }
@@ -199,6 +207,7 @@ class SecureDeploymentDefinition extends SimpleResourceDefinition {
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE);
         NON_DEFAULT_ATTRIBUTES.add(REQUEST_OBJECT_SIGNING_ALGORITHM);
+        NON_DEFAULT_ATTRIBUTES.add(ALLOW_QUERY_PARAMS);
     }
 
     @Override

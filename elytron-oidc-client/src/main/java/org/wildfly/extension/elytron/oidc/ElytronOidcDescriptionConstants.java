@@ -15,6 +15,7 @@ interface ElytronOidcDescriptionConstants {
     String ADAPTER_STATE_COOKIE_PATH = "adapter-state-cookie-path";
     String ALGORITHM = "algorithm";
     String ALLOW_ANY_HOSTNAME = "allow-any-hostname";
+    String ALLOW_QUERY_PARAMS = "allow-query-params";
     String ALWAYS_REFRESH_TOKEN = "always-refresh-token";
     String AUTH_SERVER_URL = "auth-server-url";
     String AUTHENTICATION_REQUEST_FORMAT = "authentication-request-format";
