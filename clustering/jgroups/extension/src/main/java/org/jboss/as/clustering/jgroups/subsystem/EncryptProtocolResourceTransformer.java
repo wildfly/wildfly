@@ -5,7 +5,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.subsystem.EncryptProtocolResourceDefinition.Attribute;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.security.CredentialReference;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -25,7 +24,7 @@ public class EncryptProtocolResourceTransformer extends ProtocolResourceTransfor
 
         if (JGroupsSubsystemModel.VERSION_8_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, Attribute.KEY_CREDENTIAL.getName())
+                    .addRejectCheck(CredentialReference.REJECT_CREDENTIAL_REFERENCE_WITH_BOTH_STORE_AND_CLEAR_TEXT, EncryptProtocolResourceDefinitionRegistrar.KEY_CREDENTIAL.getName())
                     .end();
         }
 

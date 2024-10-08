@@ -5,7 +5,6 @@
 
 package org.wildfly.extension.clustering.server.provider;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.wildfly.clustering.server.local.LocalGroup;
 import org.wildfly.clustering.server.local.provider.LocalServiceProviderRegistrar;
@@ -20,7 +19,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
 public class LocalServiceProviderRegistrarServiceInstallerFactory<T> extends ServiceProviderRegistrarServiceInstallerFactory<T> {
 
     @Override
-    public ServiceInstaller apply(CapabilityServiceSupport support, BinaryServiceConfiguration configuration) {
+    public ServiceInstaller apply(BinaryServiceConfiguration configuration) {
         ServiceDependency<LocalGroup> group = ServiceDependency.on(ClusteringServiceDescriptor.GROUP, ModelDescriptionConstants.LOCAL).map(LocalGroup.class::cast);
         return ServiceInstaller.builder(group.map(LocalServiceProviderRegistrar::of))
                 .provides(configuration.resolveServiceName(this.getServiceDescriptor()))
