@@ -1,0 +1,27 @@
+:_newdoc-version: 2.15.0
+:_template-generated: 2023-10-16
+
+ifdef::context[:parent-context-of-deploying-an-application-to-cloudplatform: {context}]
+
+:_mod-docs-content-type: ASSEMBLY
+
+ifndef::context[]
+[id="deploying-an-application-to-cloudplatform"]
+endif::[]
+ifdef::context[]
+[id="deploying-an-application-to-cloudplatform_{context}"]
+endif::[]
+= Building and deploying an application to {cloudPlatform}
+
+:context: deploying-an-application-to-cloudplatform
+
+[role="_abstract"]
+You can use the source-to-image (S2I) workflow to deploy your applications to {ProductShortname} on {cloudPlatform}. The S2I workflow takes source code from a Git repository and injects it into a container that's based on the language and framework you want to use. After the S2I workflow is completed, the `src` code is compiled, the application is packaged and is deployed to the {ProductShortName} server.
+
+include::{pathToModules}/proc_preparing-an-application-for-deployment-on-openshift.adoc[leveloffset=+1]
+
+include::{pathToModules}/proc_deploying-an-application-to-server-on-openshift-with-helm.adoc[leveloffset=+1]
+
+ifdef::parent-context-of-deploying-an-application-to-cloudplatform[:context: {parent-context-of-deploying-an-application-to-cloudplatform}]
+ifndef::parent-context-of-deploying-an-application-to-cloudplatform[:!context:]
+
