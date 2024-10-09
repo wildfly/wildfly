@@ -8,13 +8,13 @@ package org.jboss.as.test.integration.weld.extensions.cdiportableextensions;
 import static org.junit.Assert.assertEquals;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.GlowUtil;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -26,26 +26,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
-public class ExtensionTestCase extends AbstractModuleTest {
+public class ExtensionTestCase {
 
-    protected static String modulePath = "cidExtensionModule";
+    private static final String MODULE_NAME = "cidExtensionModule";
+    private static TestModule testModule;
 
     @AfterClass
     public static void tearDown() throws Exception {
-        doCleanup(modulePath);
+        if (!AssumeTestGroupUtil.isBootableJar()) {
+            testModule.remove();
+        }
     }
 
-    protected static void doSetup() throws Exception {
-        URL url = ExtensionTestCase.class.getResource("module.xml");
-        if (url == null) {
-            throw new IllegalStateException("Could not find module.xml");
-        }
-
-        JavaArchive moduleJar = ShrinkWrap.create(JavaArchive.class, "weldTest.jar");
-        moduleJar.addClasses(FunExtension.class, Funny.class);
-        moduleJar.addAsServiceProvider(Extension.class, FunExtension.class);
-
-        doSetup(modulePath, url.openStream(), moduleJar);
+    private static void doSetup() throws Exception {
+        testModule = new TestModule(MODULE_NAME, "jakarta.annotation.api", "jakarta.enterprise.api");
+        JavaArchive weldTestJar = testModule.addResource("weldTest.jar");
+        weldTestJar.addClasses(FunExtension.class, Funny.class);
+        weldTestJar.addAsServiceProvider(Extension.class, FunExtension.class);
+        testModule.create();
     }
 
     @Deployment
@@ -59,7 +57,7 @@ public class ExtensionTestCase extends AbstractModuleTest {
 
         JavaArchive jar = ShrinkWrap
                 .create(JavaArchive.class, "test.jar")
-                .addClasses(Clown.class, ExtensionTestCase.class, AbstractModuleTest.class, GlowUtil.class)
+                .addClasses(Clown.class, ExtensionTestCase.class, GlowUtil.class, TestModule.class)
                 .addAsManifestResource(new StringAsset("<beans bean-discovery-mode=\"all\"></beans>"), "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: cidExtensionModule services\n"),
                         "MANIFEST.MF");

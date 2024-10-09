@@ -19,6 +19,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -108,7 +109,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
             // MODULEPATH. It could be used with bootable jar with workaround:
             //   $ JBOSS_HOME=<bootablejar_install_dir> jboss.cli.sh -c
             // install-dir is by default folder with random suffix in /tmp
-            testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
+            testModuleRoot = new File(TestModule.getModulesDirectory(false), MODULE_NAME.replace('.', File.separatorChar));
             assertFalse("Module is already deployed at " + testModuleRoot, testModuleRoot.exists());
         }
 
@@ -135,7 +136,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
         // check module undeployment
         if (!AssumeTestGroupUtil.isBootableJar()) {
-            final File testModuleRoot = new File(getModulePath(), MODULE_NAME.replace('.', File.separatorChar));
+            final File testModuleRoot = new File(TestModule.getModulesDirectory(false), MODULE_NAME.replace('.', File.separatorChar));
             assertFalse("Module undeployment failed.", testModuleRoot.exists());
         }
     }
@@ -161,30 +162,6 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
         final File file = new File(tempDir, "deploymentarchive.cli");
         cliArchive.as(ZipExporter.class).exportTo(file, true);
         return file;
-    }
-
-    private File getModulePath() {
-        String modulePath = TestSuiteEnvironment.getSystemProperty("module.path", null);
-        if (modulePath == null) {
-            String jbossHome = TestSuiteEnvironment.getSystemProperty("jboss.home", null);
-            if (jbossHome == null) {
-                throw new IllegalStateException(
-                        "Neither -Dmodule.path nor -Djboss.home were set");
-            }
-            modulePath = jbossHome + File.separatorChar + "modules";
-        } else {
-            modulePath = modulePath.split(File.pathSeparator)[0];
-        }
-        File moduleDir = new File(modulePath);
-        if (!moduleDir.exists()) {
-            throw new IllegalStateException(
-                    "Determined module path does not exist");
-        }
-        if (!moduleDir.isDirectory()) {
-            throw new IllegalStateException(
-                    "Determined module path is not a dir");
-        }
-        return moduleDir;
     }
 
 }
