@@ -16,9 +16,10 @@
  */
 package org.wildfly.extension.vertx.processors;
 
+import io.smallrye.common.annotation.Identifier;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.literal.NamedLiteral;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.Bean;
@@ -37,7 +38,7 @@ import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.wildfly.extension.vertx.VertxConstants.CDI_NAMED_QUALIFIER;
+import static org.wildfly.extension.vertx.VertxConstants.CDI_QUALIFIER;
 
 /**
  * CDI Extension which adds the ability to inject the Vertx instances by the member name.
@@ -51,27 +52,36 @@ public class CDIExtension implements Extension {
 
     public void registerVertxBean(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         if (VertxProxyHolder.instance().getVertxProxy() != null) {
-            final String vpName = CDI_NAMED_QUALIFIER;
-            AnnotatedType<io.vertx.core.Vertx> rawVertxAnnotatedType = beanManager.createAnnotatedType(io.vertx.core.Vertx.class);
-            BeanAttributes<io.vertx.core.Vertx> rawVertxBeanAttributes =
-                    new BeanAttributesWrapper<>(beanManager.createBeanAttributes(rawVertxAnnotatedType), Set.of(NamedLiteral.of(vpName)));
-            afterBeanDiscovery.addBean(beanManager.createBean(rawVertxBeanAttributes, io.vertx.core.Vertx.class, new RawVertxProducer()));
+            // Expose the Bean with @Any and @Identifier qualifiers, client side needs to use the same Qualifiers to select this instance.
+            final Set<Annotation> qualifiers = Set.of(Any.Literal.INSTANCE, Identifier.Literal.of(CDI_QUALIFIER));
+            AnnotatedType<io.vertx.core.Vertx> rawAnnotatedType = beanManager.createAnnotatedType(io.vertx.core.Vertx.class);
+            BeanAttributes<io.vertx.core.Vertx> rawBeanAttributes =
+                    new BeanAttributesWrapper<>(beanManager.createBeanAttributes(rawAnnotatedType), qualifiers);
+            afterBeanDiscovery.addBean(beanManager.createBean(rawBeanAttributes, io.vertx.core.Vertx.class, new AbstractVertxProducer<>() {
+                @Override
+                protected io.vertx.core.Vertx produceBeanObject(CreationalContext<io.vertx.core.Vertx> ctx) {
+                    return rawVertx();
+                }
+            }));
 
-            AnnotatedType<io.vertx.mutiny.core.Vertx> annotatedType = beanManager.createAnnotatedType(io.vertx.mutiny.core.Vertx.class);
-            BeanAttributes<io.vertx.mutiny.core.Vertx> beanAttributes =
-                    new BeanAttributesWrapper<>(beanManager.createBeanAttributes(annotatedType), Set.of(NamedLiteral.of(vpName)));
-            afterBeanDiscovery.addBean(beanManager.createBean(beanAttributes, io.vertx.mutiny.core.Vertx.class, new MunityVertxProducer()));
+            AnnotatedType<io.vertx.mutiny.core.Vertx> mutinyAnnotatedType = beanManager.createAnnotatedType(io.vertx.mutiny.core.Vertx.class);
+            BeanAttributes<io.vertx.mutiny.core.Vertx> mutinyBeanAttributes =
+                    new BeanAttributesWrapper<>(beanManager.createBeanAttributes(mutinyAnnotatedType), qualifiers);
+            afterBeanDiscovery.addBean(beanManager.createBean(mutinyBeanAttributes, io.vertx.mutiny.core.Vertx.class, new AbstractVertxProducer<>() {
+                @Override
+                protected io.vertx.mutiny.core.Vertx produceBeanObject(CreationalContext<io.vertx.mutiny.core.Vertx> ctx) {
+                    return mutinyVertx();
+                }
+            }));
         }
     }
 
     private static class BeanAttributesWrapper<T> implements BeanAttributes<T> {
         private final BeanAttributes<T> delegate;
         private final Set<Annotation> qualifiers;
-
-        BeanAttributesWrapper(BeanAttributes<T> delegate, Set<Annotation> additionalQualifiers) {
+        BeanAttributesWrapper(BeanAttributes<T> delegate, Set<Annotation> qualifiers) {
             this.delegate = delegate;
-            this.qualifiers = new HashSet<>(delegate.getQualifiers());
-            this.qualifiers.addAll(additionalQualifiers);
+            this.qualifiers = new HashSet<>(qualifiers);
         }
 
         @Override
@@ -106,51 +116,42 @@ public class CDIExtension implements Extension {
 
     }
 
-    private abstract static class AbstractVertxInjectionTarget<T> implements InjectionTarget<T> {
-        @Override
-        public void inject(T instance, CreationalContext<T> ctx) {
-        }
+    private abstract static class AbstractVertxProducer<T> implements InjectionTargetFactory<T> {
 
         @Override
-        public void postConstruct(T instance) {
-        }
-
-        @Override
-        public void preDestroy(T instance) {
-        }
-
-        @Override
-        public void dispose(T instance) {
-        }
-
-        @Override
-        public Set<InjectionPoint> getInjectionPoints() {
-            return Set.of();
-        }
-    }
-
-    private static class MunityVertxProducer implements InjectionTargetFactory<io.vertx.mutiny.core.Vertx> {
-        @Override
-        public InjectionTarget<io.vertx.mutiny.core.Vertx> createInjectionTarget(Bean<io.vertx.mutiny.core.Vertx> bean) {
-            return new AbstractVertxInjectionTarget<>() {
+        public InjectionTarget<T> createInjectionTarget(Bean<T> bean) {
+            return new InjectionTarget<>() {
 
                 @Override
-                public io.vertx.mutiny.core.Vertx produce(CreationalContext<io.vertx.mutiny.core.Vertx> ctx) {
-                    return mutinyVertx();
+                public T produce(CreationalContext<T> ctx) {
+                    return produceBeanObject(ctx);
+                }
+
+                @Override
+                public void dispose(T instance) {
+                }
+
+                @Override
+                public Set<InjectionPoint> getInjectionPoints() {
+                    return Set.of();
+                }
+
+                @Override
+                public void inject(T instance, CreationalContext<T> ctx) {
+                }
+
+                @Override
+                public void postConstruct(T instance) {
+                }
+
+                @Override
+                public void preDestroy(T instance) {
                 }
             };
         }
-    }
-    private static class RawVertxProducer implements InjectionTargetFactory<io.vertx.core.Vertx> {
-        @Override
-        public InjectionTarget<io.vertx.core.Vertx> createInjectionTarget(Bean<io.vertx.core.Vertx> bean) {
-            return new AbstractVertxInjectionTarget<>() {
-                @Override
-                public io.vertx.core.Vertx produce(CreationalContext<io.vertx.core.Vertx> ctx) {
-                    return rawVertx();
-                }
-            };
-        }
+
+        protected abstract T produceBeanObject(CreationalContext<T> ctx);
+
     }
 
     private static io.vertx.mutiny.core.Vertx mutinyVertx() {
