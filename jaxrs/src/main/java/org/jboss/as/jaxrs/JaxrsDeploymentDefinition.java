@@ -9,10 +9,11 @@ import static org.wildfly.extension.undertow.DeploymentDefinition.CONTEXT_ROOT;
 import static org.wildfly.extension.undertow.DeploymentDefinition.SERVER;
 import static org.wildfly.extension.undertow.DeploymentDefinition.VIRTUAL_HOST;
 
-import io.undertow.servlet.handlers.ServletHandler;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import io.undertow.servlet.handlers.ServletHandler;
 import jakarta.servlet.Servlet;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -31,10 +32,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.resteasy.spi.ResourceInvoker;
 import org.jboss.resteasy.core.ResourceMethodInvoker;
 import org.jboss.resteasy.core.ResourceMethodRegistry;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
+import org.jboss.resteasy.spi.ResourceInvoker;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
@@ -56,6 +57,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
             = new SimpleListAttributeDefinition.Builder("resource-methods", METHOD).setStorageRuntime().build();
     public static final ObjectTypeAttributeDefinition JAXRS_RESOURCE
             = new ObjectTypeAttributeDefinition.Builder("jaxrs-resource", CLASSNAME, PATH, METHODS).setStorageRuntime().build();
+    public static final JaxrsDeploymentDefinition INSTANCE = new JaxrsDeploymentDefinition();
 
     JaxrsDeploymentDefinition() {
           super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver()).setFeature(false).setRuntime(true));

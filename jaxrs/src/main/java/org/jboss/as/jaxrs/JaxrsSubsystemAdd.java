@@ -38,8 +38,6 @@ import org.jboss.resteasy.spi.ResteasyDeployment;
  */
 class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final JaxrsSubsystemAdd INSTANCE = new JaxrsSubsystemAdd();
-
     JaxrsSubsystemAdd(AttributeDefinition... attributes) {
         super(attributes);
     }
