@@ -24,8 +24,9 @@ public class ReactiveMessagingConfigSource implements ConfigSource {
     private static final Map<String, String> PROPERTIES;
     static {
         Map<String, String> map = new HashMap<>();
-        map.put("mp.messaging.connector.smallrye-amqp.tracing-enabled", "false");
-        map.put("mp.messaging.connector.smallrye-kafka.tracing-enabled", "false");
+        // TODO - make configurable
+        map.put("mp.messaging.connector.smallrye-amqp.tracing-enabled", "true");
+        map.put("mp.messaging.connector.smallrye-kafka.tracing-enabled", "true");
         map.put("smallrye-messaging-strict-binding", "true");
         PROPERTIES = Collections.unmodifiableMap(map);
     }
