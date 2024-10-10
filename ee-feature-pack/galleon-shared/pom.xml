@@ -2953,19 +2953,6 @@
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-cli</artifactId>
-            <classifier>client</classifier>
-            <!-- TODO add global excludes in the wf core depMgmt -->
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-elytron-integration</artifactId>
             <exclusions>
                 <exclusion>
@@ -3426,7 +3413,18 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-client-all</artifactId>
+            <artifactId>wildfly-client-properties</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
