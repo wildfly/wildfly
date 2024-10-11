@@ -38,11 +38,11 @@ public enum JaxrsAnnotations {
     private final String simpleName;
     private final DotName dotName;
 
-    private JaxrsAnnotations(String simpleName) {
+    JaxrsAnnotations(String simpleName) {
         this.simpleName = simpleName;
         this.dotName = DotName.createComponentized(Constants.JAVAX_WS_RS, simpleName);
     }
-    private JaxrsAnnotations(DotName prefix,String simpleName) {
+    JaxrsAnnotations(DotName prefix, String simpleName) {
         this.simpleName = simpleName;
         this.dotName = DotName.createComponentized(prefix, simpleName);
     }

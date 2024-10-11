@@ -378,8 +378,6 @@ public abstract class JaxrsAttribute {
             TRACING_THRESHOLD,
     };
 
-    static final List<AttributeDefinition> ATTRIBUTE_LIST = List.of(ATTRIBUTES);
-
     private static void handleList(final String tag,
                                    final XMLExtendedStreamReader reader,
                                    final ModelNode subsystem,

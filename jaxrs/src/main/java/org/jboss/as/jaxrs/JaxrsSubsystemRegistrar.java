@@ -6,8 +6,6 @@
 package org.jboss.as.jaxrs;
 
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.wildfly.subsystem.resource.ManagementResourceRegistrationContext;
 import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
@@ -16,9 +14,6 @@ import org.wildfly.subsystem.resource.SubsystemResourceDefinitionRegistrar;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class JaxrsSubsystemRegistrar implements SubsystemResourceDefinitionRegistrar {
-
-    static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(JaxrsExtension.SUBSYSTEM_NAME,
-            JaxrsSubsystemRegistrar.class);
 
     @Override
     public ManagementResourceRegistration register(final SubsystemRegistration parent, final ManagementResourceRegistrationContext context) {

@@ -44,20 +44,20 @@ import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
  *
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014 Red Hat, inc.
  */
-public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
+class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
 
-    public static final String SHOW_RESOURCES = "show-resources";
-    public static final AttributeDefinition CLASSNAME
+    private static final String SHOW_RESOURCES = "show-resources";
+    private static final AttributeDefinition CLASSNAME
             = new SimpleAttributeDefinitionBuilder("resource-class", ModelType.STRING, true).setStorageRuntime().build();
-    public static final AttributeDefinition PATH
+    private static final AttributeDefinition PATH
             = new SimpleAttributeDefinitionBuilder("resource-path", ModelType.STRING, true).setStorageRuntime().build();
-    public static final AttributeDefinition METHOD
+    private static final AttributeDefinition METHOD
             = new SimpleAttributeDefinitionBuilder("jaxrs-resource-method", ModelType.STRING, false).setStorageRuntime().build();
-    public static final AttributeDefinition METHODS
+    private static final AttributeDefinition METHODS
             = new SimpleListAttributeDefinition.Builder("resource-methods", METHOD).setStorageRuntime().build();
-    public static final ObjectTypeAttributeDefinition JAXRS_RESOURCE
+    private static final ObjectTypeAttributeDefinition JAXRS_RESOURCE
             = new ObjectTypeAttributeDefinition.Builder("jaxrs-resource", CLASSNAME, PATH, METHODS).setStorageRuntime().build();
-    public static final JaxrsDeploymentDefinition INSTANCE = new JaxrsDeploymentDefinition();
+    static final JaxrsDeploymentDefinition INSTANCE = new JaxrsDeploymentDefinition();
 
     JaxrsDeploymentDefinition() {
           super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver()).setFeature(false).setRuntime(true));
@@ -116,7 +116,7 @@ public class JaxrsDeploymentDefinition extends SimpleResourceDefinition {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-            //Getting Undertow deployment Model to access Servlet informations.
+            //Getting Undertow deployment Model to access Servlet information.
             final ModelNode subModel = context.readResourceFromRoot(address.subAddress(0, address.size() - 1).append(
                     SUBSYSTEM, UndertowExtension.SUBSYSTEM_NAME), false).getModel();
             final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();

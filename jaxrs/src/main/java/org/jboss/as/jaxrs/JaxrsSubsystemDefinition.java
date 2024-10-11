@@ -45,7 +45,7 @@ public class JaxrsSubsystemDefinition extends SimpleResourceDefinition {
 
     private JaxrsSubsystemDefinition() {
          super(new Parameters(JaxrsExtension.SUBSYSTEM_PATH, JaxrsExtension.getResolver())
-                 .setAddHandler(new JaxrsSubsystemAdd(JaxrsAttribute.ATTRIBUTES))
+                 .setAddHandler(new JaxrsSubsystemAdd())
                  .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                  .setAdditionalPackages(RuntimePackageDependency.passive(RESTEASY_CDI),
                          RuntimePackageDependency.passive(RESTEASY_VALIDATOR),

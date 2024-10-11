@@ -68,10 +68,6 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return result.toString();
     };
 
-    JaxrsSubsystemAdd(AttributeDefinition... attributes) {
-        super(attributes);
-    }
-
     protected void performBoottime(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();

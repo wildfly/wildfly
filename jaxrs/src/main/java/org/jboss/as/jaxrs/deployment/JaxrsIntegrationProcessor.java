@@ -5,24 +5,30 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import java.io.UnsupportedEncodingException;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
+import org.jboss.as.jaxrs.Jackson2Annotations;
+import org.jboss.as.jaxrs.JacksonAnnotations;
+import org.jboss.as.jaxrs.JaxrsExtension;
+import org.jboss.as.jaxrs.JaxrsServerConfig;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
@@ -38,22 +44,12 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossServletsMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
-
-import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
-import org.jboss.as.jaxrs.Jackson2Annotations;
-import org.jboss.as.jaxrs.JacksonAnnotations;
-import org.jboss.as.jaxrs.JaxrsExtension;
-import org.jboss.as.jaxrs.JaxrsServerConfig;
 
 
 /**
@@ -64,9 +60,6 @@ import org.jboss.as.jaxrs.JaxrsServerConfig;
 public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     private static final String JAX_RS_SERVLET_NAME = "jakarta.ws.rs.core.Application";
     private static final String SERVLET_INIT_PARAM = "jakarta.ws.rs.Application";
-    public static final String RESTEASY_SCAN = "resteasy.scan";
-    public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
-    public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
 
     private final JaxrsServerConfig contextConfiguration;
 
@@ -109,10 +102,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         final List<ParamValueMetaData> params = webdata.getContextParams();
         boolean entityExpandEnabled = false;
         if (params != null) {
-            Iterator<ParamValueMetaData> it = params.iterator();
-            while (it.hasNext()) {
-                final ParamValueMetaData param = it.next();
-                if(param.getParamName().equals(ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES)) {
+            for (final ParamValueMetaData param : params) {
+                if (param.getParamName().equals(ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES)) {
                     entityExpandEnabled = true;
                 }
             }
@@ -123,62 +114,35 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_EXPAND_ENTITY_REFERENCES, "false");
         }
 
-        final Map<ModuleIdentifier, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
-        final List<ResteasyDeploymentData> additionalData = new ArrayList<ResteasyDeploymentData>();
+        final Map<String, ResteasyDeploymentData> attachmentMap = parent.getAttachment(JaxrsAttachments.ADDITIONAL_RESTEASY_DEPLOYMENT_DATA);
+        final List<ResteasyDeploymentData> additionalData = new ArrayList<>();
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (moduleSpec != null && attachmentMap != null) {
-            final Set<ModuleIdentifier> identifiers = new HashSet<ModuleIdentifier>();
+            final Set<String> identifiers = new HashSet<>();
             for (ModuleDependency dep : moduleSpec.getAllDependencies()) {
                 //make sure we don't double up
-                if (!identifiers.contains(dep.getIdentifier())) {
-                    identifiers.add(dep.getIdentifier());
-                    if (attachmentMap.containsKey(dep.getIdentifier())) {
-                        additionalData.add(attachmentMap.get(dep.getIdentifier()));
+                if (!identifiers.contains(dep.getIdentifier().toString())) {
+                    identifiers.add(dep.getIdentifier().toString());
+                    if (attachmentMap.containsKey(dep.getIdentifier().toString())) {
+                        additionalData.add(attachmentMap.get(dep.getIdentifier().toString()));
                     }
                 }
             }
             resteasy.merge(additionalData);
         }
         if (!resteasy.getScannedResourceClasses().isEmpty()) {
-            StringBuilder buf = null;
-            for (String resource : resteasy.getScannedResourceClasses()) {
-                if (buf == null) {
-                    buf = new StringBuilder();
-                    buf.append(resource);
-                } else {
-                    buf.append(",").append(resource);
-                }
-            }
-            String resources = buf.toString();
+            final String resources = String.join(",", resteasy.getScannedResourceClasses());
             JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services resource classes: %s", resources);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_RESOURCES, resources);
         }
         if (!resteasy.getScannedProviderClasses().isEmpty()) {
-            StringBuilder buf = null;
-            for (String provider : resteasy.getScannedProviderClasses()) {
-                if (buf == null) {
-                    buf = new StringBuilder();
-                    buf.append(provider);
-                } else {
-                    buf.append(",").append(provider);
-                }
-            }
-            String providers = buf.toString();
+            final String providers = String.join(",", resteasy.getScannedProviderClasses());
             JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services provider classes: %s", providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_PROVIDERS, providers);
         }
 
         if (!resteasy.getScannedJndiComponentResources().isEmpty()) {
-            StringBuilder buf = null;
-            for (String resource : resteasy.getScannedJndiComponentResources()) {
-                if (buf == null) {
-                    buf = new StringBuilder();
-                    buf.append(resource);
-                } else {
-                    buf.append(",").append(resource);
-                }
-            }
-            String providers = buf.toString();
+            final String providers = String.join(",", resteasy.getScannedJndiComponentResources());
             JAXRS_LOGGER.debugf("Adding Jakarta RESTful Web Services jndi component resource classes: %s", providers);
             setContextParameter(webdata, ResteasyContextParameters.RESTEASY_SCANNED_JNDI_RESOURCES, providers);
         }
@@ -189,11 +153,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (findContextParam(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB) == null) {
             final String prop = WildFlySecurityManager.getPropertyPrivileged(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, null);
-            if (prop != null) {
-                setContextParameter(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, prop);
-            } else {
-                setContextParameter(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, Boolean.toString(hasJacksonAnnotations(deploymentUnit)));
-            }
+            setContextParameter(webdata, ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB,
+                    Objects.requireNonNullElseGet(prop, () -> Boolean.toString(hasJacksonAnnotations(deploymentUnit))));
         }
 
         boolean managementAdded = false;
@@ -235,7 +196,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         } else {
 
             for (Class<? extends Application> applicationClass : applicationClassSet) {
-                String servletName = null;
+                String servletName;
 
                 servletName = applicationClass.getName();
                 JBossServletMetaData servlet = new JBossServletMetaData();
@@ -247,32 +208,30 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
                 setServletInitParam(servlet, SERVLET_INIT_PARAM, applicationClass.getName());
                 addServlet(webdata, servlet);
                 if (!servletMappingsExist(webdata, servletName)) {
-                    try {
-                        //no mappings, add our own
-                        List<String> patterns = new ArrayList<String>();
-                        //for some reason the spec requires this to be decoded
-                        String pathValue = URLDecoder.decode(applicationClass.getAnnotation(ApplicationPath.class).value().trim(), "UTF-8");
-                        if (!pathValue.startsWith("/")) {
-                            pathValue = "/" + pathValue;
-                        }
-                        String prefix = pathValue;
-                        if (pathValue.endsWith("/")) {
-                            pathValue += "*";
-                        } else {
-                            pathValue += "/*";
-                        }
-                        patterns.add(pathValue);
-                        setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
-                        ServletMappingMetaData mapping = new ServletMappingMetaData();
-                        mapping.setServletName(servletName);
-                        mapping.setUrlPatterns(patterns);
-                        if (webdata.getServletMappings() == null) {
-                            webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
-                        }
-                        webdata.getServletMappings().add(mapping);
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
+                    //no mappings, add our own
+                    List<String> patterns = new ArrayList<>();
+                    //for some reason the spec requires this to be decoded
+                    String pathValue = URLDecoder.decode(applicationClass.getAnnotation(ApplicationPath.class)
+                            .value()
+                            .trim(), StandardCharsets.UTF_8);
+                    if (!pathValue.startsWith("/")) {
+                        pathValue = "/" + pathValue;
                     }
+                    String prefix = pathValue;
+                    if (pathValue.endsWith("/")) {
+                        pathValue += "*";
+                    } else {
+                        pathValue += "/*";
+                    }
+                    patterns.add(pathValue);
+                    setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
+                    ServletMappingMetaData mapping = new ServletMappingMetaData();
+                    mapping.setServletName(servletName);
+                    mapping.setUrlPatterns(patterns);
+                    if (webdata.getServletMappings() == null) {
+                        webdata.setServletMappings(new ArrayList<>());
+                    }
+                    webdata.getServletMappings().add(mapping);
                 } else {
                     setServletMappingPrefix(webdata, servletName, servlet);
                 }
@@ -322,7 +281,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         List<ParamValueMetaData> params = servlet.getInitParam();
         if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
+            params = new ArrayList<>();
             servlet.setInitParam(params);
         }
         params.add(param);
@@ -410,19 +369,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    protected void setFilterInitParam(FilterMetaData filter, String name, String value) {
-        ParamValueMetaData param = new ParamValueMetaData();
-        param.setParamName(name);
-        param.setParamValue(value);
-        List<ParamValueMetaData> params = filter.getInitParam();
-        if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
-            filter.setInitParam(params);
-        }
-        params.add(param);
-
-    }
-
     public static ParamValueMetaData findContextParam(JBossWebMetaData webdata, String name) {
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null)
@@ -454,7 +400,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         param.setParamValue(value);
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null) {
-            params = new ArrayList<ParamValueMetaData>();
+            params = new ArrayList<>();
             webdata.setContextParams(params);
         }
         params.add(param);
