@@ -19,7 +19,6 @@ import java.util.Set;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -34,8 +33,6 @@ import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.web.common.WarMetaData;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
@@ -46,8 +43,6 @@ import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -57,11 +52,8 @@ import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
 import org.jboss.as.jaxrs.Jackson2Annotations;
 import org.jboss.as.jaxrs.JacksonAnnotations;
-import org.jboss.as.jaxrs.JaxrsAttribute;
-import org.jboss.as.jaxrs.JaxrsConstants;
 import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.jaxrs.JaxrsServerConfig;
-import org.jboss.as.jaxrs.JaxrsServerConfigService;
 
 
 /**
@@ -75,6 +67,12 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     public static final String RESTEASY_SCAN = "resteasy.scan";
     public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
     public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
+
+    private final JaxrsServerConfig contextConfiguration;
+
+    public JaxrsIntegrationProcessor(final JaxrsServerConfig contextConfiguration) {
+        this.contextConfiguration = contextConfiguration;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -92,7 +90,8 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final JBossWebMetaData webdata = warMetaData.getMergedJBossWebMetaData();
 
-        setConfigParameters(phaseContext, webdata);
+        // Add the context parameters
+        contextConfiguration.getContextParameters().forEach((key, value) -> setContextParameter(webdata, key, value));
 
         final ResteasyDeploymentData resteasy = deploymentUnit.getAttachment(JaxrsAttachments.RESTEASY_DEPLOYMENT_DATA);
 
@@ -436,23 +435,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         return null;
     }
 
-    public static ParamValueMetaData findInitParam(JBossWebMetaData webdata, String name) {
-        JBossServletsMetaData servlets = webdata.getServlets();
-        if (servlets == null)
-            return null;
-        for (JBossServletMetaData servlet : servlets) {
-            List<ParamValueMetaData> initParams = servlet.getInitParam();
-            if (initParams != null) {
-                for (ParamValueMetaData param : initParams) {
-                    if (param.getParamName().equals(name)) {
-                        return param;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public static boolean servletMappingsExist(JBossWebMetaData webdata, String servletName) {
         List<ServletMappingMetaData> mappings = webdata.getServletMappings();
         if (mappings == null)
@@ -468,13 +450,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
     public static void setContextParameter(JBossWebMetaData webdata, String name, String value) {
         ParamValueMetaData param = new ParamValueMetaData();
-        String resteasyName = name;
-        if (resteasyName.equals(JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB)) {
-            resteasyName = ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB;
-        } else {
-            resteasyName = resteasyName.replace("-", ".");
-        }
-        param.setParamName(resteasyName);
+        param.setParamName(name);
         param.setParamValue(value);
         List<ParamValueMetaData> params = webdata.getContextParams();
         if (params == null) {
@@ -482,136 +458,6 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             webdata.setContextParams(params);
         }
         params.add(param);
-    }
-
-    private void setConfigParameters(DeploymentPhaseContext phaseContext, JBossWebMetaData webdata) {
-
-        ServiceRegistry registry = phaseContext.getServiceRegistry();
-        ServiceName name = JaxrsServerConfigService.CONFIG_SERVICE;
-        @SuppressWarnings("deprecation")
-        JaxrsServerConfig config =(JaxrsServerConfig) registry.getRequiredService(name).getValue();
-
-        ModelNode modelNode;
-        if (isTransmittable(JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING, modelNode = config.isJaxrs20RequestMatching())) {
-            setContextParameter(webdata, JaxrsConstants.JAXRS_2_0_REQUEST_MATCHING, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_ADD_CHARSET, modelNode = config.isResteasyAddCharset())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_ADD_CHARSET, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY, modelNode = config.isResteasyBufferExceptionEntity())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_BUFFER_EXCEPTION_ENTITY, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_DISABLE_HTML_SANITIZER, modelNode = config.isResteasyDisableHtmlSanitizer())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_DISABLE_HTML_SANITIZER, modelNode.asString());
-        }
-        if (isSubstantiveList(modelNode = config.getResteasyDisableProviders())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_DISABLE_PROVIDERS, convertListToString(modelNode));
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, modelNode = config.isResteasyDocumentExpandEntityReferences())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, modelNode = config.isResteasySecureDisableDTDs())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, modelNode = config.isResteasyDocumentSecureProcessingFeature())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT, modelNode = config.getResteasyGzipMaxInput())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_GZIP_MAX_INPUT, modelNode.asString());
-        }
-        if (isSubstantiveList(modelNode = config.getResteasyJndiResources())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_JNDI_RESOURCES, convertListToString(modelNode));
-        }
-        if (isSubstantiveList(modelNode = config.getResteasyLanguageMappings())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_LANGUAGE_MAPPINGS, convertMapToString(modelNode));
-        }
-        if (isSubstantiveList(modelNode = config.getResteasyMediaTypeMappings())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_MAPPINGS, convertMapToString(modelNode));
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode = config.getResteasyMediaTypeParamMapping())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode = config.isResteasyPreferJacksonOverJsonB())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode.asString());
-        }
-        if (isSubstantiveList(modelNode = config.getResteasyProviders())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_PROVIDERS, convertListToString(modelNode));
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS, modelNode = config.isResteasyRFC7232Preconditions())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_RFC7232_PRECONDITIONS, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY, modelNode = config.isResteasyRoleBasedSecurity())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_ROLE_BASED_SECURITY, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE, modelNode = config.getResteasySecureRandomMaxUse())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_SECURE_RANDOM_MAX_USE, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS, modelNode = config.isResteasyUseBuiltinProviders())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_USE_BUILTIN_PROVIDERS, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS, modelNode = config.isResteasyUseContainerFormParams())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_USE_CONTAINER_FORM_PARAMS, modelNode.asString());
-        }
-        if (isTransmittable(JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING, modelNode = config.isResteasyWiderRequestMatching())) {
-            setContextParameter(webdata, JaxrsConstants.RESTEASY_WIDER_REQUEST_MATCHING, modelNode.asString());
-        }
-
-        // Add the context parameters
-        config.getContextParameters().forEach((key, value) -> setContextParameter(webdata, key, value));
-    }
-
-    /**
-     * Send value to RESTEasy only if it's not null, empty string, or the default value.
-     */
-    private boolean isTransmittable(AttributeDefinition attribute, ModelNode modelNode) {
-        if (modelNode == null || ModelType.UNDEFINED.equals(modelNode.getType())) {
-            return false;
-        }
-        String value = modelNode.asString();
-        if ("".equals(value.trim())) {
-            return false;
-        }
-        return !value.equals(attribute.getDefaultValue() != null ? attribute.getDefaultValue().asString() : null);
-    }
-
-    /**
-     * List attributes can be reset to white space, but RESTEasy's ConfigurationBootstrap doesn't handle
-     * empty maps appropriately at present.
-     */
-    private boolean isSubstantiveList(ModelNode modelNode) {
-        if (modelNode == null || ModelType.UNDEFINED.equals(modelNode.getType())) {
-            return false;
-        }
-        return !modelNode.asList().isEmpty();
-    }
-
-    private String convertListToString(ModelNode modelNode) {
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (ModelNode value : modelNode.asList()) {
-            if (first) {
-                first = false;
-            } else {
-                sb.append(",");
-            }
-            sb.append(value.asString());
-        }
-        return sb.toString();
-    }
-
-    private String convertMapToString(ModelNode modelNode) {
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        for (String key : modelNode.keys()) {
-            ModelNode value = modelNode.get(key);
-            if (first) {
-                first = false;
-            } else {
-                sb.append(",");
-            }
-            sb.append(key + ":" + value.asString());
-        }
-        return sb.toString();
     }
 
     private static boolean useMicroProfileConfig(final Module module, final CapabilityServiceSupport support) {
