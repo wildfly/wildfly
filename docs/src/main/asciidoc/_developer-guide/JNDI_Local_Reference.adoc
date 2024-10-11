@@ -1,5 +1,5 @@
 [[JNDI_Local_Reference]]
-= Local JNDI
+== Local JNDI
 
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -34,13 +34,13 @@ For web deployments `java:comp` is aliased to `java:module`, so Jakarta Enterpri
 deployed in a war do not have their own comp namespace.
 
 [[binding-entries-to-jndi]]
-== Binding entries to JNDI
+=== Binding entries to JNDI
 
 There are several methods that can be used to bind entries into JNDI in
 WildFly.
 
 [[using-a-deployment-descriptor]]
-=== Using a deployment descriptor
+==== Using a deployment descriptor
 
 For Jakarta EE applications the recommended way is to use a
 <<Deployment_Descriptors_used_In_WildFly,deployment descriptor>> to create the binding. For
@@ -72,10 +72,10 @@ For more details, see the http://jcp.org/en/jsr/detail?id=342[Java EE
 Platform Specification].
 
 [[programmatically]]
-=== Programmatically
+==== Programmatically
 
 [[java-ee-applications]]
-==== Jakarta EE Applications
+===== Jakarta EE Applications
 
 Standard Jakarta EE applications may use the standard JNDI API, included
 with Java SE, to bind entries in the global namespaces (the standard
@@ -95,7 +95,7 @@ WildFly tracks which bindings belong to a deployment, and the bindings
 are automatically removed when the deployment is undeployed.
 
 [[wildfly-modules-and-extensions]]
-==== WildFly Modules and Extensions
+===== WildFly Modules and Extensions
 
 With respect to code in WildFly Modules/Extensions, which is executed
 out of a Jakarta EE application context, using the standard JNDI API may
@@ -121,7 +121,7 @@ of the module/extension domain usage should be avoided, unless entries
 are removed using unbind().
 
 [[naming-subsystem-configuration]]
-=== Naming Subsystem Configuration
+==== Naming Subsystem Configuration
 
 It is also possible to bind to one of the three global namespaces using
 configuration in the naming subsystem. This can be done by either
@@ -179,7 +179,7 @@ the Naming subsystem configuration.
 == Retrieving entries from JNDI
 
 [[resource-injection]]
-=== Resource Injection
+==== Resource Injection
 
 For Jakarta EE applications the recommended way to lookup a JNDI entry is
 to use `@Resource` injection:
@@ -227,7 +227,7 @@ the default instance of a managed executor service, the value in
 Concurrency Utilities 1.0 Specification (JSR 236).
 
 [[standard-java-se-jndi-api]]
-=== Standard Java SE JNDI API
+==== Standard Java SE JNDI API
 
 Jakarta EE applications may use, without any additional configuration
 needed, the standard JNDI API to lookup an entry from JNDI:
