@@ -39,7 +39,7 @@ public enum JacksonAnnotations {
     private final String simpleName;
     private final DotName dotName;
 
-    private JacksonAnnotations(String simpleName) {
+    JacksonAnnotations(String simpleName) {
         this.simpleName = simpleName;
         this.dotName = DotName.createComponentized(Constants.ANNOTATE, simpleName);
     }

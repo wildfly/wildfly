@@ -4,8 +4,6 @@
  */
 package org.jboss.as.jaxrs;
 
-import java.io.IOException;
-
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.junit.Test;
 
@@ -19,12 +17,12 @@ public class JaxrsSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
+    protected String getSubsystemXml() {
         return "<subsystem xmlns=\"urn:jboss:domain:jaxrs:1.0\"/>";
     }
 
     @Override
-    protected String getSubsystemXsdPath() throws Exception {
+    protected String getSubsystemXsdPath() {
         return "schema/jboss-as-jaxrs_1_0.xsd";
     }
 

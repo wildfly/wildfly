@@ -17,7 +17,7 @@ public class SimpleClassParamConverterProvider implements ParamConverterProvider
     public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType,
                                               Annotation[] annotations) {
         if (rawType.getName().equals(SimpleClass.class.getName())) {
-            return new ParamConverter<T>() {
+            return new ParamConverter<>() {
                 @Override
                 public T fromString(String value) {
                     throw new RuntimeException("Force a failure");
