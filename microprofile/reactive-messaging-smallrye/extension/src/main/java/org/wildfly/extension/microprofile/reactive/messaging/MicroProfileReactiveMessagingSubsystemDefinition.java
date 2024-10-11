@@ -41,7 +41,6 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MicroProfileReactiveMessagingSubsystemDefinition extends PersistentResourceDefinition {
-
     private static final String REACTIVE_MESSAGING_CAPABILITY_NAME = "org.wildfly.microprofile.reactive-messaging";
 
     private static final RuntimeCapability<Void> REACTIVE_STREAMS_OPERATORS_CAPABILITY = RuntimeCapability.Builder
@@ -58,12 +57,18 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
                 .setAddHandler(new AddHandler())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
+
         );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(ConnectorOpenTelemetryTracingResourceDefinition.INSTANCE);
     }
 
     @Override

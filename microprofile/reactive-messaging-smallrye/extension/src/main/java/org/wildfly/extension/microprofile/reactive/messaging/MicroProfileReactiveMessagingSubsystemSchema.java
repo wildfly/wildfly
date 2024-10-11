@@ -5,8 +5,7 @@
 
 package org.wildfly.extension.microprofile.reactive.messaging;
 
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
-
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentSubsystemSchema;
 import org.jboss.as.controller.SubsystemSchema;
@@ -20,8 +19,9 @@ import org.jboss.staxmapper.IntVersion;
 public enum MicroProfileReactiveMessagingSubsystemSchema implements PersistentSubsystemSchema<MicroProfileReactiveMessagingSubsystemSchema> {
 
     VERSION_1_0(1),
+    VERSION_2_0(2),
     ;
-    static final MicroProfileReactiveMessagingSubsystemSchema CURRENT = VERSION_1_0;
+    static final MicroProfileReactiveMessagingSubsystemSchema CURRENT = VERSION_2_0;
 
     private final VersionedNamespace<IntVersion, MicroProfileReactiveMessagingSubsystemSchema> namespace;
 
@@ -34,8 +34,22 @@ public enum MicroProfileReactiveMessagingSubsystemSchema implements PersistentSu
         return this.namespace;
     }
 
+
+
+
     @Override
     public PersistentResourceXMLDescription getXMLDescription() {
-        return builder(MicroProfileReactiveMessagingExtension.SUBSYSTEM_PATH, this.namespace).build();
+
+        PersistentResourceXMLDescription.Factory factory = PersistentResourceXMLDescription.factory(this);
+        PersistentResourceXMLDescription.Builder builder = factory.builder(MicroProfileReactiveMessagingExtension.SUBSYSTEM_PATH);
+        if (this.since(VERSION_2_0)) {
+            builder.addChild(
+                factory.builder(ConnectorOpenTelemetryTracingResourceDefinition.PATH)
+                        .setXmlElementName(ConnectorOpenTelemetryTracingResourceDefinition.PATH.getKey())
+                        .addAttributes(ConnectorOpenTelemetryTracingResourceDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                        .build());
+        }
+
+        return builder.build();
     }
 }
