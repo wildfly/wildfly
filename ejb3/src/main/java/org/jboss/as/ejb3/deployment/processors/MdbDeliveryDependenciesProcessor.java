@@ -5,6 +5,11 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_BARRIER;
+import static org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP;
+
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -18,15 +23,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.subsystem.service.ServiceDependency;
+import org.wildfly.subsystem.service.ServiceInstaller;
 
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
-import static org.jboss.as.ejb3.subsystem.MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY_NAME;
+import java.util.function.Supplier;
 
 /**
  * MdbDeliveryDependencies DUP, creates an MdbDeliveryControllerService to enable/disable delivery according to that MDBs
@@ -53,50 +55,34 @@ public class MdbDeliveryDependenciesProcessor implements DeploymentUnitProcessor
             if (description instanceof MessageDrivenComponentDescription) {
                 final MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
                 if (mdbDescription.isDeliveryControlled()) {
-                    final MdbDeliveryControllerService mdbDeliveryControllerService = new MdbDeliveryControllerService();
-                    final ServiceBuilder<MdbDeliveryControllerService> builder = serviceTarget.addService(mdbDescription.getDeliveryControllerName(), mdbDeliveryControllerService)
-                            .addDependency(description.getCreateServiceName(), MessageDrivenComponent.class, mdbDeliveryControllerService.getMdbComponent())
-                            .setInitialMode(Mode.PASSIVE);
+                    // Use of named service is required by MessageDrivenBeanRuntimeHandler
+                    ServiceBuilder<?> builder = serviceTarget.addService(mdbDescription.getDeliveryControllerName());
+
                     if (mdbDescription.isClusteredSingleton()) {
                         clusteredSingletonFound = true;
-                        builder.requires(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName());
+                        // Require clustered singleton
+                        builder.requires(capabilityServiceSupport.getCapabilityServiceName(CLUSTERED_SINGLETON));
                     }
+
                     if (mdbDescription.getDeliveryGroups() != null) {
                         for (String deliveryGroup : mdbDescription.getDeliveryGroups()) {
-                            final ServiceName deliveryGroupServiceName = capabilityServiceSupport.getCapabilityServiceName(MDB_DELIVERY_GROUP_CAPABILITY_NAME, deliveryGroup);
-                            if (phaseContext.getServiceRegistry().getService(deliveryGroupServiceName) == null) {
+                            if (!capabilityServiceSupport.hasCapability(MDB_DELIVERY_GROUP, deliveryGroup)) {
                                 throw EjbLogger.DEPLOYMENT_LOGGER.missingMdbDeliveryGroup(deliveryGroup);
                             }
-                            builder.requires(deliveryGroupServiceName);
+                            builder.requires(capabilityServiceSupport.getCapabilityServiceName(MDB_DELIVERY_GROUP, deliveryGroup));
                         }
                     }
-                    builder.install();
+
+                    Supplier<MessageDrivenComponent> component = builder.requires(description.getCreateServiceName());
+                    builder.setInstance(new MdbDeliveryControllerService(component))
+                            .setInitialMode(ServiceController.Mode.PASSIVE)
+                            .install();
                 }
             }
         }
         if (clusteredSingletonFound) {
-            // Add dependency on the default policy, which allows CLUSTERED_SINGLETON_CAPABILITY to be installed
-            serviceTarget.addDependency(capabilityServiceSupport.getCapabilityServiceName(ServiceTargetFactory.DEFAULT_SERVICE_DESCRIPTOR));
-        }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit deploymentUnit) {
-        final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(EE_MODULE_CONFIGURATION);
-        if (moduleConfiguration == null) {
-            return;
-        }
-        final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
-        boolean clusteredSingletonFound = false;
-        for (final ComponentConfiguration configuration : moduleConfiguration.getComponentConfigurations()) {
-            final ComponentDescription description = configuration.getComponentDescription();
-            if (description instanceof MessageDrivenComponentDescription) {
-                MessageDrivenComponentDescription mdbDescription = (MessageDrivenComponentDescription) description;
-                clusteredSingletonFound = clusteredSingletonFound || mdbDescription.isClusteredSingleton();
-                if (mdbDescription.isDeliveryControlled()) {
-                    serviceRegistry.getRequiredService(mdbDescription.getDeliveryControllerName()).setMode(Mode.REMOVE);
-                }
-            }
+            // Ensure singleton barrier is started
+            ServiceInstaller.builder(Boolean.TRUE).requires(ServiceDependency.on(CLUSTERED_SINGLETON_BARRIER)).build().install(phaseContext);
         }
     }
 }
