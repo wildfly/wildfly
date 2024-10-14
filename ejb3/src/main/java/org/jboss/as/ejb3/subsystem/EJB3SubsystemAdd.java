@@ -604,9 +604,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                             .build()
                             .install(targetFactory.get().createSingletonServiceTarget(target));
 
-                    // Install well-known on-demand service that will force singleton service to start.
+                    // Install well-known on-demand service that, once started, will force singleton service instrumentation to start.
                     ServiceInstaller.builder(Functions.constantSupplier(Boolean.TRUE))
                             .provides(ServiceNameFactory.resolveServiceName(CLUSTERED_SINGLETON_BARRIER))
+                            // N.B. Depend on ServiceName(s) provided by singleton service instrumentation
                             .requires(controller.provides().stream().map(ServiceDependency::on).collect(Collectors.toList()))
                             .build()
                             .install(target);
