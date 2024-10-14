@@ -28,7 +28,7 @@ the "Destination Server" but *not* on the "Client Server".
 == Application packaging
 
 In this example, we'll consider a EJB which is packaged in a myejb.jar
-which is within a myapp.ear. Here's how it would look like:
+which is within a myapp.ear. Here's how it would look:
 
 [source,java,options="nowrap"]
 ----
@@ -186,8 +186,7 @@ So far, we have built a EJB application and deployed it on the
 as the client for the deployed EJBs on the "Destination Server".
 
 [[configuring-the-client-server-to-point-to-the-ejb-remoting-connector-on-the-destination-server]]
-== Configuring the "Client Server" to point to the EJB remoting connector
-on the "Destination Server"
+== Configuring the "Client Server" to point to the EJB remoting connector on the "Destination Server"
 
 As a first step on the "Client Server", we need to let the server know
 about the "Destination Server"'s EJB remoting connector, over which it
@@ -382,7 +381,7 @@ jboss-ejb-client.xml is expected to be placed in .war/WEB-INF/ folder
 (i.e. the same location where you place any web.xml file).
 
 [[contents-on-jboss-ejb-client.xml]]
-== Contents on jboss-ejb-client.xml
+=== Contents of the jboss-ejb-client.xml
 
 The jboss-ejb-client.xml will look like:
 
