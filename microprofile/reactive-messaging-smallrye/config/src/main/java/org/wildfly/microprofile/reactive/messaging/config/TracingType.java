@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildfly.extension.microprofile.reactive.messaging;
+package org.wildfly.microprofile.reactive.messaging.config;
 
 public enum TracingType {
     NEVER,

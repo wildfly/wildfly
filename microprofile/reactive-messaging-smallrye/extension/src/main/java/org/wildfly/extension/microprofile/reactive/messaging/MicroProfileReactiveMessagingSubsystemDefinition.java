@@ -20,11 +20,13 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.RuntimePackageDependency;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -35,6 +37,8 @@ import org.jboss.modules.ModuleLoader;
 import org.wildfly.extension.microprofile.reactive.messaging._private.MicroProfileReactiveMessagingLogger;
 import org.wildfly.extension.microprofile.reactive.messaging.deployment.ReactiveMessagingDependencyProcessor;
 import org.wildfly.microprofile.reactive.messaging.common.security.ElytronSSLContextRegistry;
+import org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingConfigSetter;
+import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -104,6 +108,22 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
             }, RUNTIME);
 
             MicroProfileReactiveMessagingLogger.LOGGER.activatingSubsystem();
+            Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, true);
+
+            TracingType amqpTracingType = TracingType.NEVER;
+            TracingType kafkaTracingType = TracingType.NEVER;
+            Resource openTelemetry = resource.getChild(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
+
+            if (openTelemetry != null) {
+                ModelNode otelModel = resource.getModel();
+                amqpTracingType = TracingType.valueOf(
+                        ConnectorOpenTelemetryTracingResourceDefinition.AMQP
+                                .resolveModelAttribute(context, otelModel).asString());
+                kafkaTracingType = TracingType.valueOf(
+                        ConnectorOpenTelemetryTracingResourceDefinition.KAFKA
+                                .resolveModelAttribute(context, otelModel).asString());
+            }
+            ReactiveMessagingConfigSetter.setModelValues(amqpTracingType, kafkaTracingType);
         }
 
         private void installElytronSSLContextRegistryServiceIfPresent(OperationContext context) {

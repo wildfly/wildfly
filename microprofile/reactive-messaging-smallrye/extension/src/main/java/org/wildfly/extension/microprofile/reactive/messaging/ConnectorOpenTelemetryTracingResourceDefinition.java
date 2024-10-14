@@ -21,20 +21,21 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 
 public class ConnectorOpenTelemetryTracingResourceDefinition extends PersistentResourceDefinition {
     static final PathElement PATH = PathElement.pathElement("opentelemetry-tracing", "config");
 
     static final ConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new ConnectorOpenTelemetryTracingResourceDefinition();
 
-    private static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create("amqp-connector", ModelType.STRING)
+    static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create("amqp-connector", ModelType.STRING)
             .setAllowExpression(true)
             .setValidator(EnumValidator.create(TracingType.class))
             .setDefaultValue(new ModelNode(TracingType.NEVER.toString()))
             .setRestartAllServices()
             .build();
 
-    private static final AttributeDefinition KAFKA = SimpleAttributeDefinitionBuilder.create("kafka-connector", ModelType.STRING)
+    static final AttributeDefinition KAFKA = SimpleAttributeDefinitionBuilder.create("kafka-connector", ModelType.STRING)
             .setAllowExpression(true)
             .setValidator(EnumValidator.create(TracingType.class))
             .setDefaultValue(new ModelNode(TracingType.NEVER.toString()))

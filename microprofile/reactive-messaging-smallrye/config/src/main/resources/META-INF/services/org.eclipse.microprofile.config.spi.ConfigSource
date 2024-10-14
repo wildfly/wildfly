@@ -2,4 +2,5 @@
 # Copyright The WildFly Authors
 # SPDX-License-Identifier: Apache-2.0
 #
-org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingConfigSource
+org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingDefaultValuesConfigSource
+org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingLockedValuesConfigSource
