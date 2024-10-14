@@ -1,5 +1,5 @@
 [[EE_Concurrency_Utilities]]
-= EE Concurrency Utilities
+= Jakarta Concurrency Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:
