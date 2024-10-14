@@ -25,9 +25,11 @@ import org.wildfly.extension.vertx.processors.VertxDependenciesProcessor;
  */
 public class VertxSubsystemDefinition extends SimpleResourceDefinition {
 
+    static final VertxSubsystemDefinition INSTANCE = new VertxSubsystemDefinition();
+
     VertxSubsystemDefinition() {
         super(new SimpleResourceDefinition.Parameters(VertxSubsystemExtension.SUBSYSTEM_PATH,
-                VertxSubsystemExtension.getResourceDescriptionResolver(VertxSubsystemExtension.SUBSYSTEM_NAME))
+                VertxSubsystemRegistrar.RESOLVER)
                 .setAddHandler(new VertxSubsystemAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
         );

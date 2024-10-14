@@ -3,7 +3,7 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<subsystem xmlns="urn:wildfly:vertx:1.0">
+<subsystem xmlns="urn:wildfly:vertx:preview:1.0">
   <vertx option-name="vo" />
   <vertx-options>
     <vertx-option name="vo" address-resolver-option="aro" />

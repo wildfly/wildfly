@@ -5,30 +5,23 @@
 
 package org.wildfly.extension.vertx;
 
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.SubsystemModel;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.version.Stability;
+import org.wildfly.subsystem.SubsystemConfiguration;
+import org.wildfly.subsystem.SubsystemExtension;
+import org.wildfly.subsystem.SubsystemPersistence;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.wildfly.extension.vertx.VertxConstants.EXTENSION_STABILITY;
-import static org.wildfly.extension.vertx.logging.VertxLogger.VERTX_LOGGER;
 
 /**
  * @author <a href="aoingl@gmail.com">Lin Gao</a>
  */
-public class VertxSubsystemExtension implements Extension {
-    public static final String EXTENSION_NAME = "org.wildfly.extension.vertx";
+public class VertxSubsystemExtension extends SubsystemExtension<VertxSubsystemSchema> {
     public static final String SUBSYSTEM_NAME = "vertx";
-
-    protected static final ModelVersion VERSION_1_0_0 = ModelVersion.create(1, 0, 0);
-    private static final ModelVersion CURRENT_MODEL_VERSION = VERSION_1_0_0;
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = VertxSubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -44,23 +37,34 @@ public class VertxSubsystemExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, VertxSubsystemExtension.class.getClassLoader(), true, false);
     }
 
+    public VertxSubsystemExtension() {
+        super(SubsystemConfiguration.of(SUBSYSTEM_NAME, VertxSubsystemModel.CURRENT, VertxSubsystemRegistrar::new),
+                SubsystemPersistence.of(VertxSubsystemSchema.CURRENT));
+    }
+
     @Override
     public Stability getStability() {
         return EXTENSION_STABILITY;
     }
 
-    @Override
-    public void initialize(ExtensionContext context) {
-        VERTX_LOGGER.debug("Activating WildFly Vertx Extension.");
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, CURRENT_MODEL_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new VertxSubsystemDefinition());
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(VertxSubsystemParser_1_0::new);
-    }
+    /**
+     * Model for the vertx subsystem.
+     */
+    enum VertxSubsystemModel implements SubsystemModel {
+        VERSION_1_0_0(1, 0, 0),
+        ;
 
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, VertxSubsystemParser_1_0.NAMESPACE, VertxSubsystemParser_1_0::new);
+        static final VertxSubsystemModel CURRENT = VERSION_1_0_0;
+        private final ModelVersion version;
+
+        VertxSubsystemModel(int major, int minor, int micro) {
+            this.version = ModelVersion.create(major, minor, micro);
+        }
+
+        @Override
+        public ModelVersion getVersion() {
+            return version;
+        }
     }
 
 }
