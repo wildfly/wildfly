@@ -16,7 +16,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.vertx.logging.VertxLogger;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,10 +35,14 @@ public class VertxProxyService implements Service, VertxConstants {
     final Consumer<VertxProxy> vertxProxytConsumer;
 
     static void installService(OperationContext context, String optionName) {
-        Objects.requireNonNull(optionName, "optionName cannot be null.");
         CapabilityServiceBuilder<?> vertxServiceBuilder = context.getCapabilityServiceTarget().addService();
         Consumer<VertxProxy> vertxProxytConsumer = vertxServiceBuilder.provides(VERTX_RUNTIME_CAPABILITY);
-        Supplier<NamedVertxOptions> optionsSupplier = vertxServiceBuilder.requiresCapability(VERTX_OPTIONS_CAPABILITY.getName(), NamedVertxOptions.class, optionName);
+        final Supplier<NamedVertxOptions> optionsSupplier;
+        if (optionName == null) {
+            optionsSupplier = () -> NamedVertxOptions.DEFAULT;
+        } else {
+            optionsSupplier = vertxServiceBuilder.requiresCapability(VERTX_OPTIONS_CAPABILITY.getName(), NamedVertxOptions.class, optionName);
+        }
         VertxProxyService vertxProxyService = new VertxProxyService(optionName, optionsSupplier, vertxProxytConsumer);
         vertxServiceBuilder.setInstance(vertxProxyService);
         vertxServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);

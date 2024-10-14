@@ -52,10 +52,8 @@ public class VertxResourceDefinition extends PersistentResourceDefinition {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-            String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
-            if (optionName != null) {
-                VertxProxyService.installService(context, optionName);
-            }
+            final String optionName = operation.hasDefined(ATTR_OPTION_NAME) ? VertxAttributes.OPTION_NAME.resolveModelAttribute(context, operation).asString() : null;
+            VertxProxyService.installService(context, optionName);
         }
 
     }
