@@ -142,8 +142,7 @@ the server. Make sure that your deployment has been processed
 successfully and there aren't any errors.
 
 [[writing-a-remote-client-application-for-accessing-and-invoking-the-ejbs-deployed-on-the-server]]
-== Writing a remote client application for accessing and invoking the
-EJBs deployed on the server
+== Writing a remote client application for accessing and invoking the EJBs deployed on the server
 
 The next step is to write an application which will invoke the EJBs that
 you deployed on the server. In WildFly, you can either choose to use the
@@ -634,7 +633,7 @@ So that's how the jboss-ejb-client.properties file can be setup and
 placed in the classpath.
 
 [[section]]
-=====
+=== Specifying the client properties file
 
 The EJB client code will by default look for jboss-ejb-client.properties
 in the classpath. However, you can specify a different file of your
@@ -642,10 +641,10 @@ choice by setting the "jboss.ejb.client.properties.file.path" system
 property which points to a properties file on your filesystem,
 containing the client context configurations. An example for that would
 be
-"-Djboss.ejb.client.properties.file.path=/home/me/my-client/custom-jboss-ejb-client.properties"
+'-Djboss.ejb.client.properties.file.path=/home/me/my-client/custom-jboss-ejb-client.properties'
 
 [[section-1]]
-=====
+== Using the jboss-client.jar
 
 A jboss-client jar is shipped in the distribution. It's available at
 WILDFLY_HOME/bin/client/jboss-client.jar. Place this jar in the
