@@ -26,4 +26,5 @@ public interface WhoAmIRemote {
      */
     boolean isCallerInRole(String roleName);
 
+    public String getSessionContext(); // rls debug
 }
