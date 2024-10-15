@@ -1,5 +1,5 @@
 [[JPA_Reference_Guide]]
-= JPA Reference Guide
+= Jakarta Persistence Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:
