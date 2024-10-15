@@ -17,8 +17,6 @@ public class PrometheusSetupTask extends StabilityServerSetupSnapshotRestoreTask
     protected void doSetup(ManagementClient managementClient) throws Exception {
         super.doSetup(managementClient);
 
-        System.err.println("***** Adding prometheus support");
-
         ModelNode addOperation = Operations.createAddOperation(PROMETHEUS_REGISTRY_ADDRESS);
         addOperation.get("context").set(PROMETHEUS_CONTEXT);
         addOperation.get("security-enabled").set("false");
