@@ -16,6 +16,7 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_B
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVER_INTERCEPTORS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_BARRIER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.CLUSTERED_SINGLETON_CAPABILITY;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemRootResourceDefinition.DEFAULT_MDB_POOL_CONFIG_CAPABILITY;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import javax.naming.NamingException;
 
@@ -149,6 +151,7 @@ import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
 import org.wildfly.clustering.server.registry.Registry;
 import org.wildfly.clustering.singleton.service.ServiceTargetFactory;
+import org.wildfly.common.function.Functions;
 import org.wildfly.iiop.openjdk.rmi.DelegatingStubFactoryFactory;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.subsystem.service.ServiceDependency;
@@ -594,13 +597,25 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceInstaller installer = new ServiceInstaller() {
                 @Override
                 public ServiceController<?> install(RequirementServiceTarget target) {
-                    ServiceBuilder<?> builder = targetFactory.get().createSingletonServiceTarget(target).addService();
-                    return builder.setInstance(org.jboss.msc.Service.newInstance(builder.provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName()), Boolean.TRUE))
-                            .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                            .install();
+                    // Install on-demand singleton service
+                    // We don't want this to start until a deployment requires it
+                    ServiceController<?> controller = org.wildfly.service.ServiceInstaller.builder(Functions.constantSupplier(Boolean.TRUE))
+                            .provides(CLUSTERED_SINGLETON_CAPABILITY.getCapabilityServiceName())
+                            .build()
+                            .install(targetFactory.get().createSingletonServiceTarget(target));
+
+                    // Install well-known on-demand service that, once started, will force singleton service instrumentation to start.
+                    ServiceInstaller.builder(Functions.constantSupplier(Boolean.TRUE))
+                            .provides(ServiceNameFactory.resolveServiceName(CLUSTERED_SINGLETON_BARRIER))
+                            // N.B. Depend on ServiceName(s) provided by singleton service instrumentation
+                            .requires(controller.provides().stream().map(ServiceDependency::on).collect(Collectors.toList()))
+                            .build()
+                            .install(target);
+
+                    return controller;
                 }
             };
-            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).asPassive().build().install(context);
+            ServiceInstaller.builder(installer, context.getCapabilityServiceSupport()).requires(targetFactory).build().install(context);
         }
     }
 
