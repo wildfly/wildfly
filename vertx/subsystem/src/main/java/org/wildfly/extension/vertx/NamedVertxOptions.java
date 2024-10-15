@@ -11,6 +11,8 @@ import io.vertx.core.VertxOptions;
  */
 public class NamedVertxOptions {
 
+  public static final NamedVertxOptions DEFAULT = new NamedVertxOptions("", new VertxOptions());
+
   /** The name of the configured VertxOptions **/
   private final String name;
 
