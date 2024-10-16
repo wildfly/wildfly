@@ -15,11 +15,8 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import org.eclipse.microprofile.config.Config;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -31,9 +28,6 @@ public class TestReactiveMessagingOtelEndpoint {
 
     @Inject
     TestReactiveMessagingOtelBean testReactiveMessagingOtelBean;
-
-    @Inject
-    Config config;
 
     @POST
     @Path("/")
@@ -53,12 +47,4 @@ public class TestReactiveMessagingOtelEndpoint {
     public void deleteStoredMessages() {
         testReactiveMessagingOtelBean.clear();
     }
-
-    @GET
-    @Path("/property")
-    public boolean getConfigProperty(@QueryParam("prop") String property) {
-        boolean value = config.getValue(property, Boolean.class);
-        return value;
-    }
-
 }
