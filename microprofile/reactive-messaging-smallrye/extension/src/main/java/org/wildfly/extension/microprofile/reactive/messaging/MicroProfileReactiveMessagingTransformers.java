@@ -27,7 +27,7 @@ public class MicroProfileReactiveMessagingTransformers implements ExtensionTrans
 
         // Differences between the current version (2.0.0) and 1.0.0
         ResourceTransformationDescriptionBuilder builder_1_0_0 = chainedBuilder.createBuilder(subsystem.getCurrentSubsystemVersion(), MicroProfileReactiveMessagingExtension.VERSION_1_0_0);
-        builder_1_0_0.rejectChildResource(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH);
+        builder_1_0_0.rejectChildResource(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
         chainedBuilder.buildAndRegister(subsystem, new ModelVersion[]{MicroProfileReactiveMessagingExtension.VERSION_1_0_0});
     }
