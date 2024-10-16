@@ -23,13 +23,13 @@ endif::[]
 
 ifndef::ebook-format[:leveloffset: 1]
 
-(C) 2020 The original authors.
+(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:
 
 link:#Zipped_Installation[Zipped distribution], 
-link:#Galleon_Provisioning[Galleon provisioning] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
+link:#Galleon_Provisioning[Galleon provisioning], link:#WildFly_Maven_Plugin_Provisioning[WildFly Maven Plugin] or link:#Bootable_JAR[bootable JAR], this guide helps you identify the 
 installation strategy that best fits your application requirements.
 
 = WildFly or WildFly Preview
@@ -86,6 +86,27 @@ provision customized WildFly server using Galleon.
 Started Developing Applications Guide] shows you how to build Jakarta EE
 applications and deploy them to WildFly.
 
+[[WildFly_Maven_Plugin_Provisioning]]
+= Installing WildFly with the WildFly Maven Plugin
+
+The link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin] exposes a `package` goal that allows you 
+to provision a customized WildFly installation containing your application.
+
+Using the WildFly Maven Plugin is well suited when:
+
+* You are building your application using Maven.
+* Your application requires only a subset of the Jakarta EE or MicroProfile platform APIs
+(although the WildFly Maven Plugin can provision a server that supports the full set of Jakarta EE and MicroProfile platform APIs).
+* You are concerned by server installation size and memory footprint.
+* You are only using standalone operating mode (with support for High Availability or not).
+* Your server instances will contain one or more application deployments.
+* You are using WildFly link:https://docs.wildfly.org/wildfly-charts/[Helm Charts] to deploy your application on the cloud.
+
+If that is the kind of installation you are aiming at, the guide that you should read next is:
+
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] 
+shows you how to configure a Maven `pom.xml` file to provision a customized WildFly server containing your application.
+
 [[Bootable_JAR]]
 = WildFly Bootable JAR
 
@@ -93,8 +114,12 @@ A bootable JAR contains both a customized WildFly server and your deployment. Su
 then run with a simple java command such as ``java -jar myapp-bootable.jar``
 
 A bootable JAR is built using Maven. You need to integrate the  
-link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[bootable JAR Maven plugin] 
+link:https://github.com/wildfly/wildfly-maven-plugin[WildFly Maven plugin] 
 in the Maven project of your application.
+
+[NOTE]
+The ability to build a WildFly Bootable JAR has been added to the link:https://docs.wildfly.org/wildfly-maven-plugin[WildFly Maven Plugin].  
+The use of the link:https://github.com/wildfly-extras/wildfly-jar-maven-plugin[WildFly Bootable JAR Maven plugin] has been deprecated. 
 
 A Bootable JAR is well suited when:
 
@@ -104,7 +129,9 @@ A Bootable JAR is well suited when:
 * You are only using standalone operating mode (with support for High Availability or not).
 * You are building your application using Maven.
 
-If that is the kind of installation you are aiming at, the guide that you should read next is:
+If that is the kind of installation you are aiming at, the guides that you should read next are:
 
+* The link:WildFly_Maven_Plugin_Guide{outfilesuffix}[WildFly Maven Plugin Guide] 
+shows you how to configure a Maven `pom.xml` file to provision a customized WildFly server containing your application.
 * The link:Bootable_Guide{outfilesuffix}[Bootable JAR Guide] shows you how to package your application and the WildFly server
 into a bootable JAR.

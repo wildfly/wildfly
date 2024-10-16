@@ -52,6 +52,7 @@ import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the EJB3 subsystem's root management resource.
@@ -69,7 +70,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
     private static final String EJB_CAPABILITY_NAME = "org.wildfly.ejb3";
     private static final String EJB_CLIENT_CONFIGURATOR_CAPABILITY_NAME = "org.wildfly.ejb3.remote.client-configurator";
-    private static final String CLUSTERED_SINGLETON_CAPABILITY_NAME = "org.wildfly.ejb3.clustered.singleton";
     private static final String TRANSACTION_GLOBAL_DEFAULT_LOCAL_PROVIDER_CAPABILITY_NAME = "org.wildfly.transactions.global-default-local-provider";
 
     static final SimpleAttributeDefinition DEFAULT_SLSB_INSTANCE_POOL =
@@ -230,8 +230,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             .setMaxSize(Integer.MAX_VALUE)
             .build();
 
-    public static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(
-            CLUSTERED_SINGLETON_CAPABILITY_NAME, Void.class).build();
+    public static final NullaryServiceDescriptor<Void> CLUSTERED_SINGLETON_BARRIER = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton.barrier", Void.class);
+    public static final NullaryServiceDescriptor<Void> CLUSTERED_SINGLETON = NullaryServiceDescriptor.of("org.wildfly.ejb3.clustered.singleton", Void.class);
+    static final RuntimeCapability<Void> CLUSTERED_SINGLETON_CAPABILITY =  RuntimeCapability.Builder.of(CLUSTERED_SINGLETON).build();
 
     public static final RuntimeCapability<Void> EJB_CAPABILITY =  RuntimeCapability.Builder.of(EJB_CAPABILITY_NAME, Void.class)
             // EJBComponentDescription adds a create dependency on the local tx provider to all components,

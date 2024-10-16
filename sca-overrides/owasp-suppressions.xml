@@ -259,4 +259,31 @@
       <packageUrl regex="true">^pkg:maven/io\.vertx/vertx-kafka-client@.*$</packageUrl>
       <cve>CVE-2024-8391</cve>
    </suppress>
+   <suppress until="2025-10-07">
+      <notes><![CDATA[
+      file name: lucene-core-9.11.1.jar
+
+      [WFLY-19821] Supress CVE-2024-45772 as we don't include the affected module.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/org\.apache\.lucene/lucene-.*@.*$</packageUrl>
+      <cve>CVE-2024-45772</cve>
+   </suppress>
+   <suppress until="2025-10-07">
+      <notes><![CDATA[
+      file name: velocity-engine-core-2.3.jar (shaded: commons-io:commons-io:2.8.0)
+
+      [WFLY-19822] Although some of commons-io is shaded in this affected class is not a part of the shading.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/commons-io/commons-io@.*$</packageUrl>
+      <vulnerabilityName>CVE-2024-47554</vulnerabilityName>
+   </suppress>
+   <suppress until="2025-10-08">
+      <notes><![CDATA[
+      file name: artemis-commons-2.37.0.jar (shaded: jakarta.json:jakarta.json-api:1.1.6)
+
+      [WFLY-19827] Suppress CVE-2024-9329 as it related to the GlassFish server not the libraries.
+      ]]></notes>
+      <packageUrl regex="true">^pkg:maven/.*$</packageUrl>
+      <cve>CVE-2024-9329</cve>
+   </suppress>
 </suppressions>

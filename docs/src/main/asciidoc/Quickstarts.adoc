@@ -18,7 +18,7 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-(C) 2021 The original authors.
+(C) The WildFly Authors.
 
 ifdef::basebackend-html[toc::[]]
 :numbered:

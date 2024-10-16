@@ -16,9 +16,9 @@ import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.service.descriptor.UnaryServiceDescriptor;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for mdb delivery group.
@@ -27,9 +27,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String MDB_DELIVERY_GROUP_CAPABILITY_NAME = "org.wildfly.ejb3.mdb-delivery-group";
-    public static final RuntimeCapability<Void> MDB_DELIVERY_GROUP_CAPABILITY =
-            RuntimeCapability.Builder.of(MDB_DELIVERY_GROUP_CAPABILITY_NAME, true, Service.NULL.getClass()).build();
+    public static final UnaryServiceDescriptor<Void> MDB_DELIVERY_GROUP = UnaryServiceDescriptor.of("org.wildfly.ejb3.mdb-delivery-group", Void.class);
+    static final RuntimeCapability<Void> MDB_DELIVERY_GROUP_CAPABILITY = RuntimeCapability.Builder.of(MDB_DELIVERY_GROUP).build();
 
     public static final SimpleAttributeDefinition ACTIVE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MDB_DELVIERY_GROUP_ACTIVE, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
@@ -38,7 +37,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
 
     MdbDeliveryGroupResourceDefinition() {
         super(new SimpleResourceDefinition.Parameters(EJB3SubsystemModel.MDB_DELIVERY_GROUP_PATH, EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.MDB_DELIVERY_GROUP))
-                .setAddHandler(MdbDeliveryGroupAdd.INSTANCE)
+                .setAddHandler(new MdbDeliveryGroupAdd())
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .setCapabilities(MDB_DELIVERY_GROUP_CAPABILITY));
     }
@@ -46,7 +45,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(ACTIVE, null,
-                new AbstractWriteAttributeHandler<Void>(ACTIVE) {
+                new AbstractWriteAttributeHandler<Void>() {
                     @Override
                     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation,
                                                            String attributeName, ModelNode resolvedValue, ModelNode currentValue,
@@ -68,7 +67,7 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
                         }
 
                         String groupName = context.getCurrentAddressValue();
-                        ServiceName deliveryGroupServiceName = context.getCapabilityServiceName(MdbDeliveryGroupResourceDefinition.MDB_DELIVERY_GROUP_CAPABILITY_NAME, Service.NULL.getClass(), groupName);
+                        ServiceName deliveryGroupServiceName = context.getCapabilityServiceName(MDB_DELIVERY_GROUP, groupName);
 
                         context.getServiceRegistry(true).getRequiredService(deliveryGroupServiceName)
                                 .setMode(resolvedValue.asBoolean() ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);

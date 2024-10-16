@@ -190,6 +190,14 @@ public class ApplicationSecurityDomainDefinition extends SimpleResourceDefinitio
         }
 
         @Override
+        protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+            super.recordCapabilitiesAndRequirements(context, operation, resource);
+            context.deregisterCapability(
+                    RuntimeCapability.buildDynamicCapabilityName(CAPABILITY_APPLICATION_SECURITY_DOMAIN_KNOWN_DEPLOYMENTS, context.getCurrentAddressValue())
+            );
+        }
+
+        @Override
         protected ServiceName serviceName(String name) {
             return APPLICATION_SECURITY_DOMAIN_CAPABILITY.getCapabilityServiceName(ApplicationSecurityDomain.class, name);
         }

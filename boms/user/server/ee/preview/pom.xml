@@ -73,6 +73,10 @@
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
                                 <dependency>
+                                    <groupId>jakarta.data</groupId>
+                                    <artifactId>jakarta.data-api</artifactId>
+                                </dependency>
+                                <dependency>
                                     <groupId>jakarta.el</groupId>
                                     <artifactId>jakarta.el-api</artifactId>
                                 </dependency>
