@@ -22,4 +22,8 @@ public class ReactiveMessagingDefaultValuesConfigSource extends AbstractReactive
     public ReactiveMessagingDefaultValuesConfigSource() {
         super(ORDINAL, PROPERTIES);
     }
+
+    public static void init() {
+        PROPERTIES.clear();
+    }
 }

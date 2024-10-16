@@ -115,7 +115,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
             Resource openTelemetry = resource.getChild(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
             if (openTelemetry != null) {
-                ModelNode otelModel = resource.getModel();
+                ModelNode otelModel = openTelemetry.getModel();
                 amqpTracingType = TracingType.valueOf(
                         ConnectorOpenTelemetryTracingResourceDefinition.AMQP
                                 .resolveModelAttribute(context, otelModel).asString());

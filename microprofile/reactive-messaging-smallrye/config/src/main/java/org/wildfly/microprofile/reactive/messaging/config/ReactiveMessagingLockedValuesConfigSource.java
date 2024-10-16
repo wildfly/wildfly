@@ -17,13 +17,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReactiveMessagingLockedValuesConfigSource extends AbstractReactiveMessagingConfigSource {
 
     static final Map<String, String> PROPERTIES = new ConcurrentHashMap<>();
-    static {
-        PROPERTIES.put("smallrye-messaging-strict-binding", "true");
-    }
 
     private static final int ORDINAL = Integer.MAX_VALUE;
 
     public ReactiveMessagingLockedValuesConfigSource() {
         super(ORDINAL, PROPERTIES);
+    }
+
+    public static void init() {
+        PROPERTIES.clear();
+        PROPERTIES.put("smallrye-messaging-strict-binding", "true");
     }
 }

@@ -30,6 +30,7 @@ public abstract class AbstractReactiveMessagingConfigSource implements ConfigSou
         this.properties.putAll(properties);
 
         MicroProfileReactiveMessagingConfigLogger logger = MicroProfileReactiveMessagingConfigLogger.LOGGER;
+        System.out.printf("=====> Initialising ConfigSource '%s', ordinal: %d, properties: %s", this.name, this.ordinal, this.properties);
         if (logger.isDebugEnabled()) {
             logger.debugf("Initialising ConfigSource '%s', ordinal: %d, properties: %s", this.name, this.ordinal, this.properties);
         }

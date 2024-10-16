@@ -18,6 +18,10 @@ public class ReactiveMessagingConfigSetter {
 
 
     public static void setModelValues(TracingType amqpTracingType, TracingType kafkaTracingType) {
+        ReactiveMessagingLockedValuesConfigSource.init();
+        ReactiveMessagingDefaultValuesConfigSource.init();
+
+        System.out.printf("=====> Setting values in the ConfigProviders, amqp: %s, kafka: %s", amqpTracingType, kafkaTracingType);
         if (MicroProfileReactiveMessagingConfigLogger.LOGGER.isDebugEnabled()) {
             MicroProfileReactiveMessagingConfigLogger.LOGGER.debugf(
                     "Setting values in the ConfigProviders, amqp: %s, kafka: %s", amqpTracingType, kafkaTracingType);
