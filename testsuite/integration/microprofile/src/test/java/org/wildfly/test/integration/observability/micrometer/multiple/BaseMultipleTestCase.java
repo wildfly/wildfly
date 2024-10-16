@@ -16,12 +16,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.observability.container.OpenTelemetryCollectorContainer;
-import org.wildfly.test.integration.observability.container.PrometheusMetric;
-import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)

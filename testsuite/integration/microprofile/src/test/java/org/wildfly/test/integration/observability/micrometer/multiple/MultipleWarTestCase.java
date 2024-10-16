@@ -18,10 +18,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.test.integration.observability.container.PrometheusMetric;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.TestApplication;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 
 public class MultipleWarTestCase extends BaseMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)

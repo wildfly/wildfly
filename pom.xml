@@ -132,7 +132,6 @@
         <ee.dist.product.release.version>${full.dist.product.release.version}</ee.dist.product.release.version>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
         <product.docs.server.version>34</product.docs.server.version>
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>${product.docs.server.version}.0</verifier.product.release.version>
@@ -270,6 +269,15 @@
         -->
         <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
 
+        <!-- WildFly Channels based provisioning configuration.
+             By default, if channels drive the provisioning we use the 'wildfly' channel.
+             Profiles that focus on wildfly-preview or wildfly-ee can change that.
+         -->
+        <channels.maven.groupId>${project.groupId}.channels</channels.maven.groupId>
+        <channels.maven.artifactId>wildfly</channels.maven.artifactId>
+        <channels.maven.version>${full.maven.version}</channels.maven.version>
+
+
         <!-- Properties that set the phase used for different plugin executions.
              Profiles can override the values here to enable/disable executions.
              A value of 'none' disables the execution; to enable set the value to the
@@ -380,7 +388,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.20.1</version.org.testcontainers>
         <version.org.testng>7.5.1</version.org.testng>
-        <version.org.wildfly.arquillian>5.1.0.Beta5</version.org.wildfly.arquillian>
+        <version.org.wildfly.arquillian>5.1.0.Beta6</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
 
@@ -424,7 +432,7 @@
         <version.de.dentrassi.crypto>2.4.0</version.de.dentrassi.crypto>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.agroal>2.0</version.io.agroal>
-        <version.io.grpc>1.58.0</version.io.grpc>
+        <version.io.grpc>1.68.0</version.io.grpc>
         <version.io.micrometer>1.12.4</version.io.micrometer>
         <version.io.netty>4.1.112.Final</version.io.netty>
         <version.io.opentelemetry.opentelemetry>1.29.0</version.io.opentelemetry.opentelemetry>
@@ -437,7 +445,7 @@
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>2.5.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.9.1</version.io.smallrye.smallrye-config>
-        <version.io.smallrye.smallrye-fault-tolerance>6.4.0</version.io.smallrye.smallrye-fault-tolerance>
+        <version.io.smallrye.smallrye-fault-tolerance>6.4.1</version.io.smallrye.smallrye-fault-tolerance>
         <version.io.smallrye.smallrye-health>4.0.4</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>4.3.1</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-mutiny>2.6.2</version.io.smallrye.smallrye-mutiny>
@@ -692,20 +700,6 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-feature-pack</artifactId>
-                <version>${ee.maven.version}</version>
-                <type>zip</type>
-            </dependency>
-
-            <dependency>
-                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-legacy-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -841,7 +835,7 @@
             <dependency>
                 <groupId>${full.maven.groupId}</groupId>
                 <artifactId>wildfly-legacy-expansion-bom</artifactId>
-                <version>${ee.maven.version}</version>
+                <version>${full.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
@@ -1559,6 +1553,13 @@
             <properties>
                 <!-- Allow online provisioning so wildfly-maven-plugin can resolve the latest manifests -->
                 <galleon.offline>false</galleon.offline>
+                <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
+                     if a wildfly.channels pom property is set.
+
+                     Here we don't specify the channel version, so wildfly-maven-plugin will use the latest.
+                     (See 'internal.channel.profile' where we specify the version.)
+                -->
+                <wildfly.channels>${channels.maven.groupId}:${channels.maven.artifactId}</wildfly.channels>
             </properties>
             <build>
                 <plugins>
@@ -1611,8 +1612,13 @@
             <activation><property><name>internal.wildfly.channels</name></property></activation>
             <properties>
                 <!-- The wildfly-maven-plugin 'provision' mojo will provision using a channel
-                     if a wildfly.channels pom property is set. -->
-                <wildfly.channels>${channels.maven.groupId}:wildfly:${full.maven.version}</wildfly.channels>
+                     if a wildfly.channels pom property is set.
+
+                     Here we fully specify the channel GAV. The value of ${channels.maven.version}
+                     is expected to be the project.version of the relevant feature pack being
+                     built during this build.
+                -->
+                <wildfly.channels>${channels.maven.groupId}:${channels.maven.artifactId}:${channels.maven.version}</wildfly.channels>
             </properties>
         </profile>
 
@@ -1628,6 +1634,8 @@
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
+                <!-- If we are using channel-driven provisioning, use the wildfly-preview channel -->
+                <channel.maven.artifactId>wildfly-preview</channel.maven.artifactId>
                 <!-- Disable the surefire tests (at least the default ones) for all modules except for
                      those where this profile turns them back on. -->
                 <surefire.default-test.phase>none</surefire.default-test.phase>
@@ -1880,6 +1888,9 @@
             <properties>
                 <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <!-- If we are using channel-driven provisioning, use the wildfly-ee channel -->
+                <channel.maven.artifactId>wildfly-ee</channel.maven.artifactId>
+                <channel.maven.version>${ee.maven.version}</channel.maven.version>
             </properties>
         </profile>
 

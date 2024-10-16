@@ -122,6 +122,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -150,6 +151,7 @@
             </properties>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <module>manualmode</module>
             </modules>
         </profile>
@@ -168,6 +170,7 @@
             </properties>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <!--<module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
@@ -184,6 +187,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -212,6 +216,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <!--<module>ws</module>
                 <module>web</module>
                 <module>smoke</module>
@@ -253,6 +258,7 @@
             <modules>
                 <!--<module>ws</module>-->
                 <module>basic</module>
+                <module>expansion</module>
             </modules>
         </profile>
 
@@ -344,6 +350,7 @@
             </activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
             </modules>
         </profile>
 
@@ -353,6 +360,7 @@
             <activation><property><name>ts.standalone.microprofile</name></property></activation>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>
                 <module>clustering</module>
@@ -415,6 +423,7 @@
             </properties>
             <modules>
                 <module>basic</module>
+                <module>expansion</module>
                 <module>clustering</module>
                 <module>microprofile</module>
                 <module>microprofile-tck</module>

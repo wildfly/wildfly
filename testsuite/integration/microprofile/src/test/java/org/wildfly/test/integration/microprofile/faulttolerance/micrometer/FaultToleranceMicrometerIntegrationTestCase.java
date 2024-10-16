@@ -26,6 +26,7 @@ import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -35,7 +36,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
-import org.wildfly.test.integration.observability.setuptask.MicrometerSetupTask;
 
 /**
  * Test case to verify basic SmallRye Fault Tolerance integration with Micrometer. The test first invokes a REST

@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<suite name="MicroProfile TCKs" verbose="1" preserve-order="true" configfailurepolicy="continue">
+    <test name="microprofile-telemetry-tracing">
+        <groups>
+            <run>
+                <exclude name="optional-tests"/>
+                <exclude name="optional-jaxrs-tests"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="org.eclipse.microprofile.telemetry.tracing.tck.async.JaxRsServerAsyncTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.telemetry.tracing.tck.rest.JaegerPropagationTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.telemetry.tracing.tck.rest.B3MultiPropagationTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+            <class name="org.eclipse.microprofile.telemetry.tracing.tck.rest.B3PropagationTest">
+                <methods>
+                    <exclude name=".*"/>
+                </methods>
+            </class>
+        </classes>
+        <packages>
+            <package name="org.eclipse.microprofile.telemetry.tracing.*"/>
+        </packages>
+    </test>
+</suite>

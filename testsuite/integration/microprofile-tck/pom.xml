@@ -392,11 +392,12 @@
                 </dependency>
             </dependencies>
             <properties>
+                <jboss.dist>${project.build.directory}/wildfly</jboss.dist>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <!-- Disable the standard copy-based provisioning -->
                 <ts.copy-wildfly.phase>none</ts.copy-wildfly.phase>
-                <!-- Use the WFP dependencyManagement set.
-                     This is set in this profile in a parent module, but the explicit global override
-                     in this module takes precedence. -->
+                <!-- Use the wildfly-preview feature pack to provision -->
+                <ts.microprofile-tck-provisioning.fp.artifactId>wildfly-preview-feature-pack</ts.microprofile-tck-provisioning.fp.artifactId>
                 <dependency.management.import.artifact>wildfly-preview-expansion-bom</dependency.management.import.artifact>
                 <dependency.management.import.test.artifact>wildfly-preview-test-expansion-bom</dependency.management.import.test.artifact>
             </properties>

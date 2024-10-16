@@ -13,4 +13,5 @@
     <resources>
         <artifact name="${io.grpc:grpc-api}"/>
     </resources>
+
 </module>
