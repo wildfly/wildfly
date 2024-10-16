@@ -114,27 +114,6 @@
                 <version>${version.org.eclipse.jetty}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-logs-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-metrics-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.telemetry</groupId>
-                <artifactId>microprofile-telemetry-tracing-tck</artifactId>
-                <version>${version.org.eclipse.microprofile.telemetry}</version>
-                <scope>test</scope>
-                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
-            </dependency>
 
             <!-- End requirement -->
             <dependency>

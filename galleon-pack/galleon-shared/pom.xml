@@ -60,22 +60,28 @@
             </exclusions>
         </dependency>
 
+
+
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-incubator</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-runtime-telemetry-java8</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-incubator</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-logging</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-logs</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-metrics</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-trace</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
-        <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
 
         <dependency><groupId>io.perfmark</groupId><artifactId>perfmark-api</artifactId></dependency>
 
