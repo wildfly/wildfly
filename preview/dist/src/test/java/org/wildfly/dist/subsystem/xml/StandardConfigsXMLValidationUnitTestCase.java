@@ -105,4 +105,10 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     public void testStandaloneActiveMQEmbedded() throws Exception {
         parseXml("docs/examples/configs/standalone-activemq-embedded.xml");
     }
+
+    protected String fixExpressions(String line) {
+        String result = super.fixExpressions(line);
+        result = result.replace("${jboss.grpc.port:9555}", "9555");
+        return result;
+    }
 }

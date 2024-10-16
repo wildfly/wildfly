@@ -21,6 +21,7 @@
         <feature-group name="domain-mail-sockets"/>
         <feature-group name="domain-messaging-sockets"/>
         <feature-group name="domain-transactions-sockets"/>
+        <feature-group name="domain-grpc-sockets"/>
         <feature-group name="domain-server-groups"/>
     </feature>
 
