@@ -72,7 +72,7 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(ConnectorOpenTelemetryTracingResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.INSTANCE);
     }
 
     @Override
@@ -112,15 +112,15 @@ public class MicroProfileReactiveMessagingSubsystemDefinition extends Persistent
 
             TracingType amqpTracingType = TracingType.NEVER;
             TracingType kafkaTracingType = TracingType.NEVER;
-            Resource openTelemetry = resource.getChild(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
+            Resource openTelemetry = resource.getChild(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
             if (openTelemetry != null) {
                 ModelNode otelModel = openTelemetry.getModel();
                 amqpTracingType = TracingType.valueOf(
-                        ConnectorOpenTelemetryTracingResourceDefinition.AMQP
+                        MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.AMQP
                                 .resolveModelAttribute(context, otelModel).asString());
                 kafkaTracingType = TracingType.valueOf(
-                        ConnectorOpenTelemetryTracingResourceDefinition.KAFKA
+                        MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.KAFKA
                                 .resolveModelAttribute(context, otelModel).asString());
             }
             ReactiveMessagingConfigSetter.setModelValues(amqpTracingType, kafkaTracingType);

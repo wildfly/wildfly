@@ -44,9 +44,9 @@ public enum MicroProfileReactiveMessagingSubsystemSchema implements PersistentSu
         PersistentResourceXMLDescription.Builder builder = factory.builder(MicroProfileReactiveMessagingExtension.SUBSYSTEM_PATH);
         if (this.since(VERSION_2_0)) {
             builder.addChild(
-                factory.builder(ConnectorOpenTelemetryTracingResourceDefinition.PATH)
-                        .setXmlElementName(ConnectorOpenTelemetryTracingResourceDefinition.PATH.getKey())
-                        .addAttributes(ConnectorOpenTelemetryTracingResourceDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
+                factory.builder(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH)
+                        .setXmlElementName(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH.getKey())
+                        .addAttributes(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.ATTRIBUTES.toArray(new AttributeDefinition[0]))
                         .build());
         }
 

@@ -21,10 +21,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 
-public class ConnectorOpenTelemetryTracingResourceDefinition extends PersistentResourceDefinition {
+public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition extends PersistentResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement("opentelemetry-tracing", "config");
 
-    static final ConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new ConnectorOpenTelemetryTracingResourceDefinition();
+    static final MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition();
 
     static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create("amqp-connector", ModelType.STRING)
             .setAllowExpression(true)
@@ -44,7 +44,7 @@ public class ConnectorOpenTelemetryTracingResourceDefinition extends PersistentR
 
     static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(AMQP, KAFKA);
 
-    private ConnectorOpenTelemetryTracingResourceDefinition() {
+    private MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition() {
         super(
                 new SimpleResourceDefinition.Parameters(
                         PATH,

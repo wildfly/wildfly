@@ -1,17 +1,12 @@
 package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -21,11 +16,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.as.test.integration.management.util.ServerReload;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -33,7 +24,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.wildfly.extension.microprofile.reactive.messaging.ConnectorOpenTelemetryTracingResourceDefinition;
+import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.ConfigBeanAndEndpoint;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelApplication;
@@ -44,10 +35,10 @@ import org.wildfly.test.integration.microprofile.reactive.messaging.otel.applica
  * - subsystem configuration
  * - MP config values for the deployment
  */
-public class BaseReactiveMessagingAndOtelConfigTest {
+public abstract class BaseReactiveMessagingAndOtelConfigTest {
 
     private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(SUBSYSTEM, SUBSYSTEM_NAME);
-    private static final PathAddress RESOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
+    private static final PathAddress RESOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
     @ContainerResource
     ManagementClient managementClient;
@@ -161,9 +152,9 @@ public class BaseReactiveMessagingAndOtelConfigTest {
 
     private void ensureNoSubsystemConfigResourceAndSetSystemPropertyAndCheck(Boolean property,
                                                                              boolean expectedConfigValue) throws Exception {
-        enableConnectorOpenTelemetryResource(false);
-        setTracingConfigSystemProperty(property);
-        reload();
+        ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
+        ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, property);
+        ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
         Assert.assertEquals(expectedConfigValue, calculatedValue);
     }
@@ -171,9 +162,9 @@ public class BaseReactiveMessagingAndOtelConfigTest {
     private void adjustSubsystemConfigAndSystemPropertyAndCheck(TracingType subsystemAttributeValue,
                                                                 Boolean property,
                                                                 boolean expectedConfigValue) throws Exception {
-        setTracingConfigSystemProperty(property);
-        setConnectorTracingType(subsystemAttributeValue);
-        reload();
+        ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, property);
+        ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, subsystemAttributeValue);
+        ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         boolean calculatedValue = readEffectiveTracingEnabledValueFromConfig();
         Assert.assertEquals(expectedConfigValue, calculatedValue);
     }
@@ -191,79 +182,5 @@ public class BaseReactiveMessagingAndOtelConfigTest {
             }
         }
     }
-
-    private Set<String> readChildrenNames(PathAddress addr, String childType) throws Exception{
-        ModelNode readChildren = Operations.createOperation(ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION, addr.toModelNode());
-        readChildren.get(CHILD_TYPE).set(new ModelNode(childType));
-        ModelNode result = managementClient.getControllerClient().execute(readChildren);
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
-        result = Operations.readResult(result);
-        return result.asList().stream().map(ModelNode::asString).collect(Collectors.toSet());
-    }
-
-    private void enableConnectorOpenTelemetryResource(boolean add) throws Exception {
-        Set<String> names =
-                readChildrenNames(SUBSYSTEM_ADDRESS, ConnectorOpenTelemetryTracingResourceDefinition.PATH.getKey());
-
-
-        ModelNode op = null;
-        if (names.contains(ConnectorOpenTelemetryTracingResourceDefinition.PATH.getValue())) {
-            if (!add) {
-                // Remove it
-                op = Operations.createRemoveOperation(RESOURCE_ADDRESS.toModelNode());
-            }
-        } else {
-            if (add) {
-                // Add it
-                op = Operations.createAddOperation(RESOURCE_ADDRESS.toModelNode());
-            }
-        }
-
-        if (op != null) {
-            ModelNode result = managementClient.getControllerClient().execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
-        }
-    }
-
-    private void setTracingConfigSystemProperty(Boolean value) throws Exception {
-        Set<String> names =
-                readChildrenNames(PathAddress.EMPTY_ADDRESS, SYSTEM_PROPERTY);
-
-        PathAddress propAddr = PathAddress.pathAddress(SYSTEM_PROPERTY, tracingPropertyName);
-
-        ModelNode op = null;
-        if (value == null) {
-            if (names.contains(tracingPropertyName)) {
-                // Remove this
-                op = Operations.createRemoveOperation(propAddr.toModelNode());
-            }
-        } else {
-            if (names.contains(tracingPropertyName)) {
-                // Write the value
-                op = Operations.createWriteAttributeOperation(propAddr.toModelNode(), VALUE, value);
-            } else {
-                // Add the resource
-                op = Operations.createAddOperation(propAddr.toModelNode());
-                op.get(VALUE).set(new ModelNode(value));
-            }
-        }
-
-        if (op != null) {
-            ModelNode result = managementClient.getControllerClient().execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
-        }
-    }
-
-    private void setConnectorTracingType(TracingType tracingType) throws Exception {
-        enableConnectorOpenTelemetryResource(true);
-        ModelNode op =
-                Operations.createWriteAttributeOperation(
-                        RESOURCE_ADDRESS.toModelNode(), tracingAttributeName, tracingType.toString());
-            ModelNode result = managementClient.getControllerClient().execute(op);
-            Assert.assertTrue(Operations.isSuccessfulOutcome(result));
-    }
-
-    private void reload() throws Exception {
-        ServerReload.executeReloadAndWaitForCompletion(managementClient.getControllerClient());
-    }
 }
+

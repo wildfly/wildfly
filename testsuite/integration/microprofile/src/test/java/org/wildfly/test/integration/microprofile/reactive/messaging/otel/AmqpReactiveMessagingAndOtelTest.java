@@ -1,0 +1,47 @@
+/*
+ * Copyright The WildFly Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package org.wildfly.test.integration.microprofile.reactive.messaging.otel;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.arquillian.testcontainers.api.Testcontainer;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AssumptionViolatedException;
+import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
+import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
+
+
+@RunWith(Arquillian.class)
+@RunAsClient
+@ServerSetup({EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class, OpenTelemetrySetupTask.class})
+@DockerRequired(AssumptionViolatedException.class)
+public class AmqpReactiveMessagingAndOtelTest extends BaseReactiveMessagingAndOtelTest {
+    @Testcontainer
+    private OpenTelemetryCollectorContainer otelCollector;
+
+
+    public AmqpReactiveMessagingAndOtelTest() {
+        super("mp.messaging.connector.smallrye-amqp.tracing-enabled", "amqp-connector");
+    }
+
+    @Deployment
+    public static WebArchive createDeployment() {
+        return createDeployment(
+                "mp-rm-amqp-otel-config.war",
+                "amqp-microprofile-config.properties");
+    }
+
+    @Override
+    OpenTelemetryCollectorContainer getCollector() {
+        return otelCollector;
+    }
+}
