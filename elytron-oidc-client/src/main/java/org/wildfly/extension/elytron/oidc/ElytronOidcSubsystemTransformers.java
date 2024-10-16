@@ -9,6 +9,8 @@ import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_2_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_3_0_0;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_4_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcClientSubsystemModel.VERSION_5_0_0;
+import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.ALLOW_QUERY_PARAMS;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.AUTHENTICATION_REQUEST_FORMAT;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.PROVIDER;
 import static org.wildfly.extension.elytron.oidc.ElytronOidcDescriptionConstants.REALM;
@@ -46,6 +48,8 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
 
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(registration.getCurrentSubsystemVersion());
 
+        // 5.0.0 (WildFly 34) to 4.0.0 (WildFly 33)
+        from5(chainedBuilder);
         // 4.0.0 (WildFly 33) to 3.0.0 (WildFly 32)
         from4(chainedBuilder);
         // 3.0.0 (WildFly 32) to 2.0.0 (WildFly 29)
@@ -53,7 +57,7 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
         // 2.0.0 (WildFly 29) to 1.0.0 (WildFly 28)
         from2(chainedBuilder);
 
-        chainedBuilder.buildAndRegister(registration, new ModelVersion[] { VERSION_3_0_0.getVersion(), VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion() });
+        chainedBuilder.buildAndRegister(registration, new ModelVersion[] { VERSION_4_0_0.getVersion(), VERSION_3_0_0.getVersion(), VERSION_2_0_0.getVersion(), VERSION_1_0_0.getVersion() });
     }
 
     private static void from2(ChainedTransformationDescriptionBuilder chainedBuilder) {
@@ -168,4 +172,18 @@ public class ElytronOidcSubsystemTransformers implements ExtensionTransformerReg
                 .end();
     }
 
+    private static void from5(ChainedTransformationDescriptionBuilder chainedBuilder) {
+        ResourceTransformationDescriptionBuilder builder = chainedBuilder.createBuilder(VERSION_5_0_0.getVersion(), VERSION_4_0_0.getVersion());
+        builder.addChildResource(PathElement.pathElement(SECURE_SERVER))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_QUERY_PARAMS)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, ALLOW_QUERY_PARAMS)
+                .end();
+
+        builder.addChildResource(PathElement.pathElement(SECURE_DEPLOYMENT))
+                .getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ALLOW_QUERY_PARAMS)
+                .setDiscard(DiscardAttributeChecker.ALWAYS, ALLOW_QUERY_PARAMS)
+                .end();
+    }
 }
