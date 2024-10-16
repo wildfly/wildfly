@@ -19,7 +19,7 @@ public class ChannelResourceTransformer implements Consumer<ModelVersion> {
     private final ResourceTransformationDescriptionBuilder builder;
 
     ChannelResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(ChannelResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(ChannelResourceDefinitionRegistrar.WILDCARD_PATH);
     }
 
     @Override
