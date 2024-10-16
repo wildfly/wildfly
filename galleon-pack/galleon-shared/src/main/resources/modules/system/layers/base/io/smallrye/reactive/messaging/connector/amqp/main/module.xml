@@ -22,8 +22,7 @@
         <module name="io.smallrye.config" services="import"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging"/>
-        <!-- TODO Make optional. Should only be present if both Otel and Kafka/AMQP connectors are present -->
-        <module name="io.smallrye.reactive.messaging.otel"/>
+        <module name="io.smallrye.reactive.messaging.otel" optional="true"/>
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>
         <module name="io.smallrye.reactive.mutiny.vertx-core"/>

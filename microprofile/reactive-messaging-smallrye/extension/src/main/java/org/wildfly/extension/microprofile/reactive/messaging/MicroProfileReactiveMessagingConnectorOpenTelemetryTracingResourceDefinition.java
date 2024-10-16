@@ -16,15 +16,16 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
 
-public class ConnectorOpenTelemetryTracingResourceDefinition extends PersistentResourceDefinition {
+public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition extends PersistentResourceDefinition {
     public static final PathElement PATH = PathElement.pathElement("opentelemetry-tracing", "config");
 
-    static final ConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new ConnectorOpenTelemetryTracingResourceDefinition();
+    static final MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition();
 
     static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create("amqp-connector", ModelType.STRING)
             .setAllowExpression(true)
@@ -44,18 +45,23 @@ public class ConnectorOpenTelemetryTracingResourceDefinition extends PersistentR
 
     static final List<AttributeDefinition> ATTRIBUTES = Arrays.asList(AMQP, KAFKA);
 
-    private ConnectorOpenTelemetryTracingResourceDefinition() {
+    static final String OPENTELEMETRY_CAPABILITY_NAME = "org.wildfly.extension.opentelemetry";
+    static final String MICROPROFILE_REACTIVE_MESSAGING_CONNECTOR_OPENTELEMETRY_TRACING_CAPABILITY_NAME = "org.wildfly.microprofile.reactive-messaging.connector-otel-tracing";
+    static final RuntimeCapability<Void> MICROPROFILE_REACTIVE_MESSAGING_CONNECTOR_OPENTELEMETRY_TRACING_CAPABILITY =
+            RuntimeCapability.Builder.of(MICROPROFILE_REACTIVE_MESSAGING_CONNECTOR_OPENTELEMETRY_TRACING_CAPABILITY_NAME)
+                    .addRequirements(OPENTELEMETRY_CAPABILITY_NAME)
+                    .build();
+
+
+    private MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition() {
         super(
                 new SimpleResourceDefinition.Parameters(
                         PATH,
                         MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH.getKey())
                 )
-                .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
-                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
-
-                // TODO depend on OTel
-                //.setCapabilities(REACTIVE_STREAMS_OPERATORS_CAPABILITY)
-
+                        .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
+                        .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                        .setCapabilities(MICROPROFILE_REACTIVE_MESSAGING_CONNECTOR_OPENTELEMETRY_TRACING_CAPABILITY)
         );
     }
 

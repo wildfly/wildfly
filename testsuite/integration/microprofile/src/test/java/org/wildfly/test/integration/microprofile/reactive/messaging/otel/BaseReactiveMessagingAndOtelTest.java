@@ -20,13 +20,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.wildfly.extension.microprofile.reactive.messaging.ConnectorOpenTelemetryTracingResourceDefinition;
+import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelBean;
 
 public class BaseReactiveMessagingAndOtelTest {
 
     private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(SUBSYSTEM, SUBSYSTEM_NAME);
-    private static final PathAddress RESOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(ConnectorOpenTelemetryTracingResourceDefinition.PATH);
+    private static final PathAddress RESOURCE_ADDRESS = SUBSYSTEM_ADDRESS.append(MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition.PATH);
 
     @ContainerResource
     ManagementClient managementClient;
