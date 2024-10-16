@@ -90,9 +90,6 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                 Thread.sleep(1000);
 
                 body = target.request().get().readEntity(String.class);
-                System.err.println("*****");
-                System.err.println("blargh: body = " + body);
-                System.err.println("*****");
                 found = body.contains(nameToMonitor);
                 attemptCount++;
             }
