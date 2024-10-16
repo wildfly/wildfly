@@ -414,10 +414,22 @@
                 </exclusions>
             </dependency>
 
+            <!-- OpenTelemetry -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-api</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api-incubator</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -449,7 +461,7 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <artifactId>opentelemetry-exporter-logging</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}</version>
                 <exclusions>
                     <exclusion>
@@ -548,8 +560,63 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-api-incubator</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-java-http-client</artifactId>
                 <version>${version.io.opentelemetry.opentelemetry}-alpha</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
+                <version>${version.io.opentelemetry.instrumentation}-alpha</version>
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
@@ -568,6 +635,18 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>${version.io.opentelemetry.opentelemetry-semconv}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- OpenTelemetry -->
 
             <dependency>
                 <groupId>io.perfmark</groupId>

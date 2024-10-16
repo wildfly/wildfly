@@ -14,20 +14,20 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.shared.CdiUtils;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
-import org.wildfly.test.integration.observability.micrometer.multiple.application.TestApplication;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 
 public class MultipleWarTestCase extends BaseMultipleTestCase {
     @Deployment(name = SERVICE_ONE, order = 1, testable = false)
     public static WebArchive createDeployment1() {
         return ShrinkWrap.create(WebArchive.class, SERVICE_ONE + ".war")
-                .addClasses(TestApplication.class, DuplicateMetricResource1.class)
+                .addClasses(JaxRsActivator.class, DuplicateMetricResource1.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
 
     }
@@ -35,7 +35,7 @@ public class MultipleWarTestCase extends BaseMultipleTestCase {
     @Deployment(name = SERVICE_TWO, order = 2, testable = false)
     public static WebArchive createDeployment2() {
         return ShrinkWrap.create(WebArchive.class, SERVICE_TWO + ".war")
-                .addClasses(TestApplication.class, DuplicateMetricResource2.class)
+                .addClasses(JaxRsActivator.class, DuplicateMetricResource2.class)
                 .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
     }
 
