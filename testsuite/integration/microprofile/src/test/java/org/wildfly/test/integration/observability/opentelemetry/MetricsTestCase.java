@@ -2,11 +2,9 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.preview.microprofile.telemetry;
+package org.wildfly.test.integration.observability.opentelemetry;
 
-import static org.wildfly.test.preview.microprofile.telemetry.application.MetricResource.COUNTER_NAME;
-
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -21,25 +19,21 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.CdiUtils;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.preview.microprofile.telemetry.application.JaxRsActivator;
-import org.wildfly.test.preview.microprofile.telemetry.application.MetricResource;
+import org.wildfly.test.integration.observability.opentelemetry.application.MetricResource;
 
 @RunWith(Arquillian.class)
 @ServerSetup(OpenTelemetrySetupTask.class)
 @DockerRequired(AssumptionViolatedException.class)
 @RunAsClient
-public class MetricsTestCase {
+public class MetricsTestCase extends BaseOpenTelemetryTest {
     public static final int REQUEST_COUNT = 5;
     public static final String DEPLOYMENT_NAME = "metrics-test.war";
 
@@ -50,17 +44,15 @@ public class MetricsTestCase {
     private OpenTelemetryCollectorContainer otelCollector;
 
     @Deployment
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME)
-                .addClasses(JaxRsActivator.class, MetricResource.class)
-                .addAsWebInfResource(CdiUtils.createBeansXml(), "beans.xml");
+    public static Archive<?> getDeployment() {
+        return buildBaseArchive("metrics-test");
     }
 
     @Test
     @InSequence(1)
-    public void makeRequests() throws URISyntaxException {
+    public void makeRequests() throws MalformedURLException {
         try (Client client = ClientBuilder.newClient()) {
-            WebTarget target = client.target(url.toURI());
+            WebTarget target = client.target(getDeploymentUrl("metrics-test"));
             for (int i = 0; i < REQUEST_COUNT; i++) {
                 target.request().get();
             }
@@ -73,7 +65,7 @@ public class MetricsTestCase {
     @InSequence(2)
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(
-                COUNTER_NAME
+                MetricResource.COUNTER_NAME
         );
 
         final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));

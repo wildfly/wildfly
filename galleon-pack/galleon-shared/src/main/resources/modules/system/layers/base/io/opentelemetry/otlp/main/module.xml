@@ -7,7 +7,6 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp}"/>
         <artifact name="${io.opentelemetry:opentelemetry-exporter-otlp-common}"/>
     </resources>
 
