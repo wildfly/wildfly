@@ -13,20 +13,6 @@ import io.smallrye.opentelemetry.api.OpenTelemetryConfig;
 import org.wildfly.service.descriptor.NullaryServiceDescriptor;
 
 public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
-    public static final boolean IS_WILDFLY_PREVIEW;
-
-    static {
-        // Temporary check to determine if the server is WildFly Standard or WildFly Preview. This is
-        // a *temporary* check, so there should be no long-term dependencies on this. -- jdl
-        boolean classFound = false;
-        try {
-            Class.forName("io.smallrye.opentelemetry.implementation.exporters.metrics.VertxMetricsExporterProvider");
-            classFound = true;
-        } catch (ClassNotFoundException e) {
-        }
-        IS_WILDFLY_PREVIEW = classFound;
-    }
-
     public static NullaryServiceDescriptor<WildFlyOpenTelemetryConfig> SERVICE_DESCRIPTOR =
             NullaryServiceDescriptor.of("org.wildfly.extension.opentelemetry.config",
                 WildFlyOpenTelemetryConfig.class);
@@ -65,22 +51,16 @@ public final class WildFlyOpenTelemetryConfig implements OpenTelemetryConfig {
 
         addValue(config, OTEL_SERVICE_NAME, serviceName);
         addValue(config, OTEL_TRACES_EXPORTER, exporter);
+        addValue(config, OTEL_LOGS_EXPORTER, exporter);
+        addValue(config, OTEL_METRICS_EXPORTER, exporter);
         addValue(config, OTEL_PROPAGATORS, "tracecontext,baggage");
 
-        if (IS_WILDFLY_PREVIEW) {
-            addValue(config, OTEL_LOGS_EXPORTER, exporter);
-            addValue(config, OTEL_METRICS_EXPORTER, exporter);
-        } else {
-            addValue(config, OTEL_LOGS_EXPORTER, "none");
-            addValue(config, OTEL_METRICS_EXPORTER, "none");
-        }
 
         if (exporter.equals("otlp")) {
             addValue(config, OTEL_EXPORTER_OTLP_ENDPOINT, endpoint);
             addValue(config, OTEL_EXPORTER_OTLP_PROTOCOL, "grpc");
             addValue(config, OTEL_EXPORTER_OTLP_TIMEOUT, exportTimeout);
             addValue(config, "otel.metric.export.interval", batchDelay);
-
         } else {
             throw new IllegalArgumentException("An unexpected exporter type was found: " + exporter);
         }

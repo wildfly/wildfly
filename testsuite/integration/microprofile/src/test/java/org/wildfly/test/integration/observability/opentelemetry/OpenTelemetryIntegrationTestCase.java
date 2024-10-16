@@ -13,37 +13,28 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.testcontainers.api.DockerRequired;
-import org.jboss.arquillian.testcontainers.api.Testcontainer;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
-@RunWith(Arquillian.class)
-@ServerSetup({OpenTelemetrySetupTask.class, ServiceNameSetupTask.class})
+@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
-@DockerRequired(AssumptionViolatedException.class)
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
-    @Testcontainer
-    private OpenTelemetryCollectorContainer otelCollector;
+    private static final String DEPLOYMENT_NAME = "otelinteg";
 
     @Deployment(testable = false)
     public static WebArchive getDeployment() {
-        return buildBaseArchive("otelinteg");
+        return buildBaseArchive(DEPLOYMENT_NAME);
     }
 
     @Test
     public void testServiceNameOverride() throws Exception {
         try (Client client = ClientBuilder.newClient()) {
-            Response response = client.target(getDeploymentUrl("otelinteg")).request().get();
+            Response response = client.target(getDeploymentUrl(DEPLOYMENT_NAME)).request().get();
             Assert.assertEquals(200, response.getStatus());
         }
 

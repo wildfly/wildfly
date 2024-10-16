@@ -2,7 +2,7 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-package org.wildfly.test.preview.microprofile.telemetry.application;
+package org.wildfly.test.integration.observability.opentelemetry.application;
 
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
@@ -14,8 +14,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 
 @RequestScoped
-@Path("/")
-public class MetricResource {
+@Path("/metrics")
+public class OtelMetricResource {
     public static final String COUNTER_NAME = "testCounter";
     @Inject
     private Meter sdkMeter;

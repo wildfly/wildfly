@@ -121,7 +121,21 @@
                 <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.telemetry.tracing</groupId>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
+                <artifactId>microprofile-telemetry-logs-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
+                <artifactId>microprofile-telemetry-metrics-tck</artifactId>
+                <version>${version.org.eclipse.microprofile.telemetry}</version>
+                <scope>test</scope>
+                <!-- Don't exclude all TCK dependencies, only specific ones that cause problems -->
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.microprofile.telemetry</groupId>
                 <artifactId>microprofile-telemetry-tracing-tck</artifactId>
                 <version>${version.org.eclipse.microprofile.telemetry}</version>
                 <scope>test</scope>
@@ -228,6 +242,13 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
                 <version>${version.org.hamcrest.legacy}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-testcontainers</artifactId>
+                <version>${version.org.jboss.arquillian.testcontainers}</version>
                 <scope>test</scope>
             </dependency>
 
