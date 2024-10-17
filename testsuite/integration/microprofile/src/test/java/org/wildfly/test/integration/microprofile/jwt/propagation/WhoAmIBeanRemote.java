@@ -32,4 +32,9 @@ public class WhoAmIBeanRemote implements WhoAmIRemote {
     public boolean isCallerInRole(String roleName) {
         return context.isCallerInRole(roleName);
     }
+    // rls debug
+    @PermitAll
+    public String getSessionContext() {
+        return ""+ context;
+    }
 }
