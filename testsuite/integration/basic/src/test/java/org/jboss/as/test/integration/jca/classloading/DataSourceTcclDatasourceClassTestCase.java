@@ -16,7 +16,8 @@ public class DataSourceTcclDatasourceClassTestCase extends AbstractDataSourceCla
     public static class Setup extends AbstractDataSourceClassloadingTestCase.Setup {
 
         public Setup() {
-            super("driver-datasource-class-name", "org.jboss.as.test.integration.jca.classloading.ClassloadingDataSource");
+            super("org.jboss.test.testDriver." + DataSourceTcclDatasourceClassTestCase.class.getName(),
+                    "driver-datasource-class-name", "org.jboss.as.test.integration.jca.classloading.ClassloadingDataSource");
         }
     }
 }

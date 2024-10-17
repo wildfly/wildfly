@@ -26,7 +26,8 @@ public class DataSourceTcclXADatasourceClassTestCase extends AbstractDataSourceC
     public static class Setup extends AbstractDataSourceClassloadingTestCase.Setup {
 
         public Setup() {
-            super("driver-xa-datasource-class-name", ClassloadingXADataSource.class.getName());
+            super("org.jboss.test.testDriver." + DataSourceTcclXADatasourceClassTestCase.class.getName(),
+                    "driver-xa-datasource-class-name", ClassloadingXADataSource.class.getName());
         }
 
         protected void setupDs(ManagementClient managementClient, String dsName, boolean jta) throws Exception {
