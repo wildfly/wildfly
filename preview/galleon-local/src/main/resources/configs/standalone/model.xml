@@ -37,5 +37,9 @@
         <package name="org.wildfly.deployment.transformation"/>
         <package name="docs.licenses" optional="true"/>
         <package name="docs.licenses.merge" optional="true"/>
+
+        <!-- Unstable API Annotation Index -->
+        <package name="org.wildfly.unstable.annotation.api.indexer" optional="true" valid-for-stability="preview" />
+        <package name="org.wildfly._internal.unstable-api-annotation-index" optional="true" valid-for-stability="preview" />
     </packages>
 </config>

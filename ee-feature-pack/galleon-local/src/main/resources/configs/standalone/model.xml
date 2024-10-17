@@ -40,5 +40,7 @@
         <package name="docs.licenses.merge" optional="true"/>
         <!-- Unstable API Annotation Index -->
         <package name="unstable-api-annotation-index.wildfly-ee-feature-pack" optional="true" valid-for-stability="preview"/>
+        <package name="org.wildfly.unstable.annotation.api.indexer" optional="true" valid-for-stability="preview" />
+        <package name="org.wildfly._internal.unstable-api-annotation-index" optional="true" valid-for-stability="preview" />
     </packages>
 </config>
