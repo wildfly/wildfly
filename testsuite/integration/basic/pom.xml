@@ -551,6 +551,11 @@
         <!-- This is not desired, however the HungTasksTerminationTestCase test seems to require this -->
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-concurrency-spi</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-ee</artifactId>
             <scope>test</scope>
         </dependency>
