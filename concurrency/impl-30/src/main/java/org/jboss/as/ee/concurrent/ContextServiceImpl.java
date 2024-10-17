@@ -5,7 +5,6 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Proxy;
@@ -21,17 +20,16 @@ import static org.wildfly.common.Assert.checkNotNullParam;
  * An extension of Jakarta EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
  * @author Eduardo Martins
  */
-public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl {
+public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl implements WildflyContextService {
 
     private final ContextServiceTypesConfiguration contextServiceTypesConfiguration;
 
     /**
      *
      * @param name
-     * @param contextSetupProvider
      */
-    public ContextServiceImpl(String name, ContextSetupProvider contextSetupProvider, ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
-        super(name, contextSetupProvider, null);
+    public ContextServiceImpl(String name, ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
+        super(name, new DefaultContextSetupProviderImpl(), null);
         this.contextServiceTypesConfiguration = contextServiceTypesConfiguration;
     }
 
@@ -88,9 +86,8 @@ public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.Cont
         }
     }
 
+    @Override
     public ContextServiceTypesConfiguration getContextServiceTypesConfiguration() {
         return contextServiceTypesConfiguration;
     }
-
-    // TODO *FOLLOW UP* revisit RI impl of the async methods, which quality seems to have issues (e.g. each method uses a new Managed Executor instance...)
 }

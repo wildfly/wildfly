@@ -13,17 +13,17 @@ import java.util.concurrent.ThreadPoolExecutor;
  * Executor runtime stats obtained from a thread pool executor.
  * @author emmartins
  */
-class ManagedExecutorRuntimeStatsImpl implements ManagedExecutorRuntimeStats {
+class ManagedExecutorRuntimeStatsImpl30 implements ManagedExecutorRuntimeStats {
 
     private final AbstractManagedExecutorService abstractManagedExecutorService;
     private final ThreadPoolExecutor threadPoolExecutor;
 
-    ManagedExecutorRuntimeStatsImpl(ManagedExecutorServiceImpl executorService) {
+    ManagedExecutorRuntimeStatsImpl30(ManagedExecutorServiceImpl executorService) {
         this.abstractManagedExecutorService = executorService;
         this.threadPoolExecutor = executorService.getThreadPoolExecutor();
     }
 
-    ManagedExecutorRuntimeStatsImpl(ManagedScheduledExecutorServiceImpl executorService) {
+    ManagedExecutorRuntimeStatsImpl30(ManagedScheduledExecutorServiceImpl executorService) {
         this.abstractManagedExecutorService = executorService;
         this.threadPoolExecutor = executorService.getThreadPoolExecutor();
     }

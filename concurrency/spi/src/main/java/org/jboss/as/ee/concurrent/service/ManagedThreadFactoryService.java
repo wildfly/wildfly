@@ -5,34 +5,34 @@
 
 package org.jboss.as.ee.concurrent.service;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
+import org.jboss.as.ee.concurrent.WildflyContextService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 /**
  * @author Eduardo Martins
  */
-public class ManagedThreadFactoryService extends EEConcurrentAbstractService<ManagedThreadFactoryImpl> {
+public class ManagedThreadFactoryService extends EEConcurrentAbstractService<WildFlyManagedThreadFactory> {
 
-    private volatile ManagedThreadFactoryImpl managedThreadFactory;
-    private final Consumer<ManagedThreadFactoryImpl> consumer;
+    private volatile WildFlyManagedThreadFactory managedThreadFactory;
+    private final Consumer<WildFlyManagedThreadFactory> consumer;
     private final String name;
-    private final DelegatingSupplier<ContextServiceImpl> contextServiceSupplier = new DelegatingSupplier<>();
+    private final DelegatingSupplier<WildflyContextService> contextServiceSupplier = new DelegatingSupplier<>();
     private final int priority;
 
     /**
      * @param name
      * @param jndiName
      * @param priority
-     * @see org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
      */
-    public ManagedThreadFactoryService(final Consumer<ManagedThreadFactoryImpl> consumer, final Supplier<ContextServiceImpl> ctxServiceSupplier, String name, String jndiName, int priority) {
+    public ManagedThreadFactoryService(final Consumer<WildFlyManagedThreadFactory> consumer, final Supplier<WildflyContextService> ctxServiceSupplier, String name, String jndiName, int priority) {
         super(jndiName);
         this.consumer = consumer;
         this.name = name;
@@ -43,7 +43,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
     @Override
     void startValue(StartContext context) throws StartException {
         final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
-        consumer.accept(managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextServiceSupplier.get(), priority));
+        consumer.accept(managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory(threadFactoryName, contextServiceSupplier.get(), priority));
     }
 
     @Override
@@ -52,14 +52,14 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
         consumer.accept(managedThreadFactory = null);
     }
 
-    public ManagedThreadFactoryImpl getValue() throws IllegalStateException {
+    public WildFlyManagedThreadFactory getValue() throws IllegalStateException {
         if (this.managedThreadFactory == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return managedThreadFactory;
     }
 
-    public DelegatingSupplier<ContextServiceImpl> getContextServiceSupplier() {
+    public DelegatingSupplier<WildflyContextService> getContextServiceSupplier() {
         return contextServiceSupplier;
     }
 }

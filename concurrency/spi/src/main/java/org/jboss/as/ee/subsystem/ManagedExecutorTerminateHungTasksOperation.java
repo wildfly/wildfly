@@ -13,7 +13,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ee.concurrent.ManagedExecutorWithHungThreads;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -22,7 +22,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * Operation that manually terminates a managed executor's hung tasks, through its capability service.
  *
- * @author emmartins
+ * @author emartins
  */
 public class ManagedExecutorTerminateHungTasksOperation<T> {
 
@@ -62,7 +62,7 @@ public class ManagedExecutorTerminateHungTasksOperation<T> {
                             throw EeLogger.ROOT_LOGGER.executorServiceNotFound(serviceName);
                         }
                         final T service = (T) controller.getService();
-                        ManagedExecutorWithHungThreads executor = executorProvider.getExecutor(service);
+                        WildflyManagedExecutorService executor = executorProvider.getExecutor(service);
                         executor.terminateHungTasks();
                     }
                     context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -81,6 +81,6 @@ public class ManagedExecutorTerminateHungTasksOperation<T> {
          * @param service
          * @return the executor with the specified service
          */
-        ManagedExecutorWithHungThreads getExecutor(T service);
+        WildflyManagedExecutorService getExecutor(T service);
     }
 }

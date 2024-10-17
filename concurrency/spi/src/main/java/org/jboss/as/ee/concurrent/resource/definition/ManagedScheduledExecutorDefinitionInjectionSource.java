@@ -8,12 +8,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.RequirementServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
+import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
@@ -53,7 +53,7 @@ public class ManagedScheduledExecutorDefinitionInjectionSource extends ResourceD
     private long keepAliveTime = 60000;
     private TimeUnit keepAliveTimeUnit = TimeUnit.MILLISECONDS;
     private long threadLifeTime = 0L;
-    private AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.ABORT;
+    private WildflyManagedExecutorService.RejectPolicy rejectPolicy = WildflyManagedExecutorService.RejectPolicy.ABORT;
     private int threadPriority = Thread.NORM_PRIORITY;
 
     public ManagedScheduledExecutorDefinitionInjectionSource(final String jndiName) {
@@ -81,7 +81,7 @@ public class ManagedScheduledExecutorDefinitionInjectionSource extends ResourceD
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
-                    resourceService.getContextServiceSupplier().set(() -> (ContextServiceImpl)value.getReference().getInstance());
+                    resourceService.getContextServiceSupplier().set(() -> (WildflyContextService) value.getReference().getInstance());
                 }
                 @Override
                 public void uninject() {
@@ -182,11 +182,11 @@ public class ManagedScheduledExecutorDefinitionInjectionSource extends ResourceD
         this.threadLifeTime = threadLifeTime;
     }
 
-    public AbstractManagedExecutorService.RejectPolicy getRejectPolicy() {
+    public WildflyManagedExecutorService.RejectPolicy getRejectPolicy() {
         return rejectPolicy;
     }
 
-    public void setRejectPolicy(AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
+    public void setRejectPolicy(WildflyManagedExecutorService.RejectPolicy rejectPolicy) {
         this.rejectPolicy = rejectPolicy;
     }
 

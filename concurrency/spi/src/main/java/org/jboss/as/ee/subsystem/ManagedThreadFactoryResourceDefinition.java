@@ -17,7 +17,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -29,7 +29,7 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
     /**
      * the resource definition's dynamic runtime capability
      */
-    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.thread-factory", true, ManagedThreadFactoryImpl.class)
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.thread-factory", true, WildFlyManagedThreadFactory.class)
             .build();
 
     public static final String JNDI_NAME = "jndi-name";

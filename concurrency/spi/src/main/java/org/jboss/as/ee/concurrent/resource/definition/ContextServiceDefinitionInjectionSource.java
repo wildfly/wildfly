@@ -4,9 +4,8 @@
  */
 package org.jboss.as.ee.concurrent.resource.definition;
 
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
+import jakarta.enterprise.concurrent.ContextService;
 import org.jboss.as.ee.concurrent.ContextServiceTypesConfiguration;
-import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.ee.subsystem.ContextServiceResourceDefinition;
@@ -38,16 +37,16 @@ public class ContextServiceDefinitionInjectionSource extends ResourceDefinitionI
         final String resourceJndiName = "java:jboss/ee/concurrency/definition/context/"+resourceName;
         try {
             // install the resource service
-            final ContextServiceService resourceService = new ContextServiceService(resourceName, resourceJndiName, new DefaultContextSetupProviderImpl(), contextServiceTypesConfiguration);
+            final ContextServiceService resourceService = new ContextServiceService(resourceName, resourceJndiName, contextServiceTypesConfiguration);
             final ServiceName resourceServiceName = ContextServiceResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
             phaseContext.getServiceTarget()
                     .addService(resourceServiceName)
                     .setInstance(resourceService)
                     .install();
             // use a dependency to the resource service installed to inject the resource
-            serviceBuilder.addDependency(resourceServiceName, ContextServiceImpl.class, new Injector<>() {
+            serviceBuilder.addDependency(resourceServiceName, ContextService.class, new Injector<>() {
                 @Override
-                public void inject(final ContextServiceImpl resource) throws InjectionException {
+                public void inject(final ContextService resource) throws InjectionException {
                     injector.inject(() -> new ManagedReference() {
                         @Override
                         public void release() {

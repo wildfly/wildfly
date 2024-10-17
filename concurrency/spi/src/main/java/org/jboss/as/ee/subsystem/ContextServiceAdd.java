@@ -9,7 +9,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.concurrent.ContextServiceTypesConfiguration;
-import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.dmr.ModelNode;
 
@@ -32,7 +31,7 @@ public class ContextServiceAdd extends AbstractAddStepHandler {
         // WFLY-16705 deprecated USE_TRANSACTION_SETUP_PROVIDER_AD is ignored since it's of no use anymore (replaced by spec's context service config of context type Transaction)
         // TODO https://issues.redhat.com/browse/WFLY-17912 -- allow Context Service configuration via the subsystem management API
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, new DefaultContextSetupProviderImpl(), ContextServiceTypesConfiguration.DEFAULT);
+        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName, ContextServiceTypesConfiguration.DEFAULT);
         context.getCapabilityServiceTarget().addCapability(ContextServiceResourceDefinition.CAPABILITY).setInstance(contextServiceService).install();
     }
 }

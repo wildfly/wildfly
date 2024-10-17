@@ -70,8 +70,4 @@ public class Attachments {
 
     public static final AttachmentKey<StartupCountdown> STARTUP_COUNTDOWN = AttachmentKey.create(StartupCountdown.class);
     public static final AttachmentKey<ComponentRegistry> COMPONENT_REGISTRY = AttachmentKey.create(ComponentRegistry.class);
-
-    // moved to ConcurrencyAttachments FIXME cleanup
-    // public static final AttachmentKey<AttachmentList<ContextHandleFactory>> ADDITIONAL_FACTORIES = AttachmentKey.createList(ContextHandleFactory.class);
-    // public static final AttachmentKey<SetupAction> CONCURRENT_CONTEXT_SETUP_ACTION = AttachmentKey.create(SetupAction.class);
 }

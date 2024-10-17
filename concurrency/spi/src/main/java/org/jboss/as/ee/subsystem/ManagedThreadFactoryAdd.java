@@ -4,19 +4,20 @@
  */
 package org.jboss.as.ee.subsystem;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import jakarta.enterprise.concurrent.ContextService;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
+import org.jboss.as.ee.concurrent.WildflyContextService;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
 import org.jboss.dmr.ModelNode;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author Eduardo Martins
@@ -41,8 +42,8 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
         if (model.hasDefined(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
-        final Consumer<ManagedThreadFactoryImpl> consumer = serviceBuilder.provides(ManagedThreadFactoryResourceDefinition.CAPABILITY);
-        final Supplier<ContextServiceImpl> ctxServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextServiceImpl.class, contextService) : null;
+        final Consumer<WildFlyManagedThreadFactory> consumer = serviceBuilder.provides(ManagedThreadFactoryResourceDefinition.CAPABILITY);
+        final Supplier<WildflyContextService> ctxServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextService.class, contextService) : null;
         final ManagedThreadFactoryService service = new ManagedThreadFactoryService(consumer, ctxServiceSupplier, name, jndiName, priority);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();
