@@ -10,12 +10,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.ProcessStateNotifier;
-import org.jboss.as.ee.concurrent.ManagedScheduledExecutorServiceImpl;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
+import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildflyManagedScheduledExecutorService;
+import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -32,11 +33,11 @@ import org.wildfly.extension.requestcontroller.RequestController;
  */
 public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstractService<ManagedScheduledExecutorServiceAdapter> {
 
-    private volatile ManagedScheduledExecutorServiceImpl executorService;
+    private volatile ManagedScheduledExecutorServiceAdapter executorService;
 
     private final Consumer<ManagedScheduledExecutorServiceAdapter> consumer;
     private final String name;
-    private final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier;
+    private final Supplier<WildFlyManagedThreadFactory> managedThreadFactorySupplier;
     private final long hungTaskThreshold;
     private final long hungTaskTerminationPeriod;
     private final boolean longRunningTasks;
@@ -44,8 +45,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     private final long keepAliveTime;
     private final TimeUnit keepAliveTimeUnit;
     private final long threadLifeTime;
-    private final DelegatingSupplier<ContextServiceImpl> contextServiceSupplier = new DelegatingSupplier<>();
-    private final AbstractManagedExecutorService.RejectPolicy rejectPolicy;
+    private final DelegatingSupplier<WildflyContextService> contextServiceSupplier = new DelegatingSupplier<>();
+    private final WildflyManagedExecutorService.RejectPolicy rejectPolicy;
     private final Integer threadPriority;
     private final Supplier<ProcessStateNotifier> processStateNotifierSupplier;
     private final Supplier<RequestController> requestControllerSupplier;
@@ -70,14 +71,13 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
      * @param threadLifeTime
      * @param rejectPolicy
      * @param threadPriority
-     * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy, org.wildfly.extension.requestcontroller.ControlPoint)
      */
     public ManagedScheduledExecutorServiceService(final Consumer<ManagedScheduledExecutorServiceAdapter> consumer,
-                                                  final Supplier<ContextServiceImpl> contextServiceSupplier,
-                                                  final Supplier<ManagedThreadFactoryImpl> managedThreadFactorySupplier,
+                                                  final Supplier<WildflyContextService> contextServiceSupplier,
+                                                  final Supplier<WildFlyManagedThreadFactory> managedThreadFactorySupplier,
                                                   final Supplier<ProcessStateNotifier> processStateNotifierSupplier,
                                                   final Supplier<RequestController> requestControllerSupplier,
-                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, AbstractManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
+                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildflyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
         super(jndiName);
         this.consumer = consumer;
         this.contextServiceSupplier.set(contextServiceSupplier);
@@ -103,19 +103,19 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         if (threadPriority != null) {
             priority = threadPriority;
         } else {
-            ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactorySupplier != null ? managedThreadFactorySupplier.get() : null;
+            WildFlyManagedThreadFactory managedThreadFactory = managedThreadFactorySupplier != null ? managedThreadFactorySupplier.get() : null;
             priority = managedThreadFactory != null ? managedThreadFactory.getPriority() : Thread.NORM_PRIORITY;
         }
-        ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl("EE-ManagedScheduledExecutorService-" + name, null, priority);
+        WildFlyManagedThreadFactory managedThreadFactory = ConcurrencyImplementation.INSTANCE.newManagedThreadFactory("EE-ManagedScheduledExecutorService-" + name, null, priority);
         if (requestControllerSupplier != null) {
             final RequestController requestController = requestControllerSupplier.get();
             controlPoint = requestController != null ? requestController.getControlPoint(name, "managed-scheduled-executor-service") : null;
         }
-        executorService = new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint, processStateNotifierSupplier.get());
+        executorService = new ManagedScheduledExecutorServiceAdapter(ConcurrencyImplementation.INSTANCE.newManagedScheduledExecutorService(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextServiceSupplier != null ? contextServiceSupplier.get() : null, rejectPolicy, controlPoint, processStateNotifierSupplier.get()));
         if (hungTaskThreshold > 0 && hungTaskTerminationPeriod > 0) {
             hungTasksPeriodicTerminationFuture = hungTasksPeriodicTerminationService.get().startHungTaskPeriodicTermination(executorService, hungTaskTerminationPeriod);
         }
-        consumer.accept(executorService.getAdapter());
+        consumer.accept(executorService);
     }
 
     @Override
@@ -125,8 +125,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
             if (hungTasksPeriodicTerminationFuture != null) {
                 hungTasksPeriodicTerminationFuture.cancel(true);
             }
-            executorService.shutdownNow();
-            executorService.getManagedThreadFactory().stop();
+            executorService.getExecutorService().shutdownNow();
+            executorService.getWildFlyManagedThreadFactory().stop();
             this.executorService = null;
         }
         if(controlPoint != null) {
@@ -135,17 +135,17 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     }
 
     public ManagedScheduledExecutorServiceAdapter getValue() throws IllegalStateException {
-        return getExecutorService().getAdapter();
-    }
-
-    public ManagedScheduledExecutorServiceImpl getExecutorService() throws IllegalStateException {
-        if (executorService == null) {
-            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
-        }
         return executorService;
     }
 
-    public DelegatingSupplier<ContextServiceImpl> getContextServiceSupplier() {
+    public WildflyManagedScheduledExecutorService getExecutorService() throws IllegalStateException {
+        if (executorService == null) {
+            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
+        }
+        return executorService.getExecutorService();
+    }
+
+    public DelegatingSupplier<WildflyContextService> getContextServiceSupplier() {
         return contextServiceSupplier;
     }
 

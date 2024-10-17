@@ -6,8 +6,8 @@ package org.jboss.as.ee.concurrent.resource.definition;
 
 import java.util.function.Consumer;
 
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
+import org.jboss.as.ee.concurrent.WildflyContextService;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
@@ -46,12 +46,12 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
             // install the resource service
             final ServiceName resourceServiceName = ManagedThreadFactoryResourceDefinition.CAPABILITY.getCapabilityServiceName(resourceName);
             final ServiceBuilder resourceServiceBuilder = phaseContext.getServiceTarget().addService(resourceServiceName);
-            final Consumer<ManagedThreadFactoryImpl> consumer = resourceServiceBuilder.provides(resourceServiceName);
+            final Consumer<WildFlyManagedThreadFactory> consumer = resourceServiceBuilder.provides(resourceServiceName);
             final ManagedThreadFactoryService resourceService = new ManagedThreadFactoryService(consumer, null, resourceName, resourceJndiName, priority);
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
-                    resourceService.getContextServiceSupplier().set(() -> (ContextServiceImpl)value.getReference().getInstance());
+                    resourceService.getContextServiceSupplier().set(() -> (WildflyContextService) value.getReference().getInstance());
                 }
                 @Override
                 public void uninject() {
@@ -64,9 +64,9 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
             resourceServiceBuilder.setInstance(resourceService);
             resourceServiceBuilder.install();
             // use a dependency to the resource service installed to inject the resource
-            serviceBuilder.addDependency(resourceServiceName, ManagedThreadFactoryImpl.class, new Injector<>() {
+            serviceBuilder.addDependency(resourceServiceName, WildFlyManagedThreadFactory.class, new Injector<>() {
                 @Override
-                public void inject(final ManagedThreadFactoryImpl resource) throws InjectionException {
+                public void inject(final WildFlyManagedThreadFactory resource) throws InjectionException {
                     injector.inject(() -> new ManagedReference() {
                         @Override
                         public void release() {

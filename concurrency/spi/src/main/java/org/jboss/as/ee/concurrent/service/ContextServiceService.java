@@ -5,9 +5,9 @@
 
 package org.jboss.as.ee.concurrent.service;
 
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 import org.jboss.as.ee.concurrent.ContextServiceTypesConfiguration;
-import org.jboss.as.ee.concurrent.ContextServiceImpl;
+import org.jboss.as.ee.concurrent.WildflyContextService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
@@ -18,23 +18,21 @@ import org.jboss.msc.service.StopContext;
  * @author Eduardo Martins
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class ContextServiceService extends EEConcurrentAbstractService<ContextServiceImpl> {
+public final class ContextServiceService extends EEConcurrentAbstractService<WildflyContextService> {
 
     private final String name;
-    private final ContextSetupProvider contextSetupProvider;
     private final ContextServiceTypesConfiguration contextServiceTypesConfiguration;
-    private volatile ContextServiceImpl contextService;
+    private volatile WildflyContextService contextService;
 
-    public ContextServiceService(final String name, final String jndiName, final ContextSetupProvider contextSetupProvider, final ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
+    public ContextServiceService(final String name, final String jndiName, final ContextServiceTypesConfiguration contextServiceTypesConfiguration) {
         super(jndiName);
         this.name = name;
-        this.contextSetupProvider = contextSetupProvider;
         this.contextServiceTypesConfiguration = contextServiceTypesConfiguration;
     }
 
     @Override
     void startValue(final StartContext context) {
-        contextService = new ContextServiceImpl(name, contextSetupProvider, contextServiceTypesConfiguration);
+        contextService = ConcurrencyImplementation.INSTANCE.newContextService(name, contextServiceTypesConfiguration);
     }
 
     @Override
@@ -42,8 +40,8 @@ public final class ContextServiceService extends EEConcurrentAbstractService<Con
         contextService = null;
     }
 
-    public ContextServiceImpl getValue() throws IllegalStateException {
-        final ContextServiceImpl value = this.contextService;
+    public WildflyContextService getValue() throws IllegalStateException {
+        final WildflyContextService value = this.contextService;
         if (value == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }

@@ -9,12 +9,12 @@ package org.jboss.as.ee.concurrent.handle;
  *
  * @author Eduardo Martins
  */
-public interface SetupContextHandle extends org.glassfish.enterprise.concurrent.spi.ContextHandle {
+public interface SetupContextHandle extends ContextHandle {
 
     /**
-     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#setup(org.glassfish.enterprise.concurrent.spi.ContextHandle)
-     * @return
-     * @throws IllegalStateException
+     * Called by ManagedExecutorService before executing a task to set up thread context. It will be called in the thread that will be used for executing the task.
+     * @return A ContextHandle that will be passed to the reset method in the thread executing the task
+     * @throws IllegalStateException if the ContextHandle is no longer valid. For example, the application component that the ContextHandle was created for is no longer running or is undeployed.
      */
     ResetContextHandle setup() throws IllegalStateException;
 

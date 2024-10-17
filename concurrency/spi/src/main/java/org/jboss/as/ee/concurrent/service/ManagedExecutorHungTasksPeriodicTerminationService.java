@@ -7,7 +7,7 @@ package org.jboss.as.ee.concurrent.service;
 import static org.wildfly.common.Assert.checkNotNullParamWithNullPointerException;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.ee.concurrent.ManagedExecutorWithHungThreads;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,7 +58,7 @@ public class ManagedExecutorHungTasksPeriodicTerminationService implements Servi
      * @param hungTaskTerminationPeriod
      * @return a Future instance which may be used to cancel the hung task periodic termination
      */
-    public synchronized Future startHungTaskPeriodicTermination(final ManagedExecutorWithHungThreads executor, final long hungTaskTerminationPeriod) {
+    public synchronized Future startHungTaskPeriodicTermination(final WildflyManagedExecutorService executor, final long hungTaskTerminationPeriod) {
         checkNotNullParamWithNullPointerException("executor", executor);
         if (hungTaskTerminationPeriod <= 0) {
             throw EeLogger.ROOT_LOGGER.hungTaskTerminationPeriodIsNotBiggerThanZero();

@@ -4,6 +4,7 @@
  */
 package org.jboss.as.ee.concurrent;
 
+import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.jboss.as.ee.concurrent.handle.ResetContextHandle;
 import org.jboss.as.ee.concurrent.handle.SetupContextHandle;
@@ -29,20 +30,50 @@ public class DefaultContextSetupProviderImpl implements ContextSetupProvider {
     public org.glassfish.enterprise.concurrent.spi.ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
         final ConcurrentContext concurrentContext = ConcurrentContext.current();
         if (concurrentContext != null) {
-            return concurrentContext.saveContext(contextService, contextObjectProperties);
+            return new SetupContextHandleWrapper(concurrentContext.saveContext(contextService, contextObjectProperties));
         } else {
             EeLogger.ROOT_LOGGER.debug("ee concurrency context not found in invocation context");
-            return new NullContextHandle();
+            return new SetupContextHandleWrapper(new NullContextHandle());
         }
     }
 
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle setup(org.glassfish.enterprise.concurrent.spi.ContextHandle contextHandle) throws IllegalStateException {
-        return ((SetupContextHandle) contextHandle).setup();
+        return ((SetupContextHandleWrapper) contextHandle).setup();
     }
 
     @Override
     public void reset(org.glassfish.enterprise.concurrent.spi.ContextHandle contextHandle) {
         ((ResetContextHandle) contextHandle).reset();
+    }
+
+    static class SetupContextHandleWrapper implements SetupContextHandle, ContextHandle {
+        private final SetupContextHandle contextHandle;
+        public SetupContextHandleWrapper(SetupContextHandle contextHandle) {
+            this.contextHandle = contextHandle;
+        }
+        @Override
+        public ResetContextHandleWrapper setup() throws IllegalStateException {
+            return new ResetContextHandleWrapper(contextHandle.setup());
+        }
+        @Override
+        public String getFactoryName() {
+            return contextHandle.getFactoryName();
+        }
+    }
+
+    static class ResetContextHandleWrapper implements ResetContextHandle, ContextHandle {
+        private final ResetContextHandle contextHandle;
+        public ResetContextHandleWrapper(ResetContextHandle contextHandle) {
+            this.contextHandle = contextHandle;
+        }
+        @Override
+        public void reset() {
+            contextHandle.reset();
+        }
+        @Override
+        public String getFactoryName() {
+            return contextHandle.getFactoryName();
+        }
     }
 }

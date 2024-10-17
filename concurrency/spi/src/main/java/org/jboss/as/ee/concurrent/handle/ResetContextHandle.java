@@ -5,14 +5,14 @@
 package org.jboss.as.ee.concurrent.handle;
 
 /**
- * The Wildfly's EE context handle.
+ * The Wildfly's EE reset context handle.
  *
  * @author Eduardo Martins
  */
-public interface ResetContextHandle extends org.glassfish.enterprise.concurrent.spi.ContextHandle {
+public interface ResetContextHandle extends ContextHandle {
 
     /**
-     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#reset(org.glassfish.enterprise.concurrent.spi.ContextHandle)
+     * Called by ManagedExecutorService after executing a task to clean up and reset thread context. It will be called in the thread that was used for executing the task.
      */
     void reset();
 

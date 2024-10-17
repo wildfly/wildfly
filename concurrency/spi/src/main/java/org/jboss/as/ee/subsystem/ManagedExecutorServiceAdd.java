@@ -8,16 +8,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceAdapter;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ee.concurrent.ManagedThreadFactoryImpl;
+import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
+import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.adapter.ManagedExecutorServiceAdapter;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorServiceService;
@@ -86,7 +86,7 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
             queueLength = Integer.MAX_VALUE;
         }
 
-        final AbstractManagedExecutorService.RejectPolicy rejectPolicy = AbstractManagedExecutorService.RejectPolicy.valueOf(ManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
+        final WildflyManagedExecutorService.RejectPolicy rejectPolicy = WildflyManagedExecutorService.RejectPolicy.valueOf(ManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
         final Integer threadPriority;
         if(model.hasDefined(ManagedExecutorServiceResourceDefinition.THREAD_PRIORITY) || !model.hasDefined(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY)) {
@@ -104,12 +104,12 @@ public class ManagedExecutorServiceAdd extends AbstractAddStepHandler {
         if (model.hasDefined(ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
-        final Supplier<ContextServiceImpl> contextServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextServiceImpl.class, contextService) : null;
+        final Supplier<WildflyContextService> contextServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), WildflyContextService.class, contextService) : null;
         String threadFactory = null;
         if (model.hasDefined(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY)) {
             threadFactory = ManagedExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();
         }
-        final Supplier<ManagedThreadFactoryImpl> threadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), ManagedThreadFactoryImpl.class, threadFactory) : null;
+        final Supplier<WildFlyManagedThreadFactory> threadFactorySupplier = threadFactory != null ? serviceBuilder.requiresCapability(ManagedThreadFactoryResourceDefinition.CAPABILITY.getName(), WildFlyManagedThreadFactory.class, threadFactory) : null;
 
         final Supplier<ProcessStateNotifier> processStateNotifierSupplier = serviceBuilder.requires(ProcessStateNotifier.SERVICE_DESCRIPTOR);
         Supplier<RequestController> requestControllerSupplier = null;

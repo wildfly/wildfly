@@ -22,7 +22,7 @@ import java.security.PrivilegedAction;
  * @author <a href="mailto:jkalina@redhat.com">Jan Kalina</a>
  * @author emmartins
  */
-public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl {
+public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl implements WildFlyManagedThreadFactory {
 
     /**
      * the priority set on new threads
@@ -34,8 +34,8 @@ public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurren
      */
     private final AccessControlContext accessControlContext;
 
-    public ManagedThreadFactoryImpl(String name, ContextServiceImpl contextService, int priority) {
-        super(name, contextService, priority);
+    public ManagedThreadFactoryImpl(String name, WildflyContextService contextService, int priority) {
+        super(name, (ContextServiceImpl) contextService, priority);
         this.priority = priority;
         this.accessControlContext = AccessController.getContext();
     }

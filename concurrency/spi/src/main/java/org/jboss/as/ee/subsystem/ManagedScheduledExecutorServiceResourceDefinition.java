@@ -4,8 +4,6 @@
  */
 package org.jboss.as.ee.subsystem;
 
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -25,6 +23,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -129,8 +129,8 @@ public class ManagedScheduledExecutorServiceResourceDefinition extends SimpleRes
             new SimpleAttributeDefinitionBuilder(REJECT_POLICY, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-                    .setDefaultValue(new ModelNode(AbstractManagedExecutorService.RejectPolicy.ABORT.toString()))
-                    .setValidator(EnumValidator.create(AbstractManagedExecutorService.RejectPolicy.class))
+                    .setDefaultValue(new ModelNode(WildflyManagedExecutorService.RejectPolicy.ABORT.toString()))
+                    .setValidator(EnumValidator.create(WildflyManagedExecutorService.RejectPolicy.class))
                     .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, THREAD_PRIORITY_AD, HUNG_TASK_TERMINATION_PERIOD_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, KEEPALIVE_TIME_AD, REJECT_POLICY_AD};

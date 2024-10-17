@@ -18,10 +18,16 @@ import java.util.Map;
 public interface ContextHandleFactory {
 
     /**
-     * @param contextService
-     * @param contextObjectProperties
-     * @return
-     * @see org.glassfish.enterprise.concurrent.spi.ContextSetupProvider#saveContext(jakarta.enterprise.concurrent.ContextService, java.util.Map)
+     * Called by ManagedExecutorService in the same thread that submits a
+     * task to save the execution context of the submitting thread.
+     *
+     * @param contextService ContextService containing information on what
+     * context should be saved
+     * @param contextObjectProperties Additional properties specified for
+     * for a context object when the ContextService object was created.
+     *
+     * @return A ContextHandle that will be passed to the setup method
+     * in the thread executing the task
      */
     SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties);
 
