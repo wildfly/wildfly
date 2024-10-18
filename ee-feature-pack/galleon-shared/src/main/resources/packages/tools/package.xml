@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+
+<package-spec xmlns="urn:jboss:galleon:package:2.0" name="tools">
+    <dependencies>
+        <package name="org.wildfly.wildfly-client-all.shaded"/>
+        <package name="org.wildfly.core.wildfly-cli.shaded"/>
+    </dependencies>
+</package-spec>
