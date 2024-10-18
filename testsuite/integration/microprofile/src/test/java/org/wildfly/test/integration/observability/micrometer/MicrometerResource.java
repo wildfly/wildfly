@@ -19,7 +19,7 @@ import jakarta.ws.rs.Path;
  */
 @RequestScoped
 @Path("/")
-public class MetricResource {
+public class MicrometerResource {
     @Inject
     private MeterRegistry meterRegistry;
     private Counter counter;

@@ -14,6 +14,9 @@
         <artifact name="${io.micrometer:micrometer-commons}"/>
         <artifact name="${io.micrometer:micrometer-core}"/>
         <artifact name="${io.micrometer:micrometer-registry-otlp}"/>
+        <artifact name="${io.micrometer:micrometer-registry-prometheus}"/>
+        <artifact name="${io.prometheus:simpleclient}"/>
+        <artifact name="${io.prometheus:simpleclient_common}"/>
     </resources>
 
     <dependencies>
