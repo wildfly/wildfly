@@ -129,6 +129,10 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jr</groupId>
+            <artifactId>jackson-jr-objects</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
@@ -379,6 +383,46 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency><groupId>com.google.api.grpc</groupId><artifactId>proto-google-common-protos</artifactId></dependency>
+        <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java</artifactId></dependency>
+        <dependency><groupId>com.google.protobuf</groupId><artifactId>protobuf-java-util</artifactId></dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-commons</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-otlp</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
         <dependency>
             <groupId>io.netty</groupId>
@@ -413,6 +457,17 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -609,6 +664,26 @@
             </exclusions>
         </dependency>
 
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-context</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-common</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-logs</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-metrics</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-sdk-trace</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.proto</groupId><artifactId>opentelemetry-proto</artifactId></dependency>
+
+        <dependency><groupId>io.perfmark</groupId><artifactId>perfmark-api</artifactId></dependency>
+
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
@@ -617,6 +692,12 @@
             <groupId>io.reactivex.rxjava3</groupId>
             <artifactId>rxjava</artifactId>
         </dependency>
+
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-api</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-cdi</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-exporters</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-propagation</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-rest</artifactId></dependency>
 
         <dependency>
             <groupId>io.undertow.jastow</groupId>
@@ -645,6 +726,25 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-grpc-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-grpc-common</artifactId>
         </dependency>
 
         <dependency>
@@ -1039,7 +1139,7 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-features-logging</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-features-throttling</artifactId>
@@ -2785,6 +2885,8 @@
             <artifactId>reactive-streams</artifactId>
         </dependency>
 
+        <dependency><groupId>${full.maven.groupId}</groupId><artifactId>wildfly-opentelemetry-api</artifactId></dependency>
+
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming-client</artifactId>
@@ -3960,6 +4062,27 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-metrics</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-micrometer</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>${full.maven.groupId}</groupId>
+            <artifactId>wildfly-micrometer-deployment</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

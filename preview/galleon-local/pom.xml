@@ -30,10 +30,21 @@
 
     <dependencies>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-incubator</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-common</artifactId></dependency>
         <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-logging</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp-common</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations-support</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-annotations</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-incubator</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-runtime-telemetry-java8</artifactId></dependency>
         <dependency><groupId>io.opentelemetry.semconv</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-api</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-cdi</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-exporters</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-propagation</artifactId></dependency>
+        <dependency><groupId>io.smallrye.opentelemetry</groupId><artifactId>smallrye-opentelemetry-rest</artifactId></dependency>
 
         <dependency>
             <groupId>jakarta.data</groupId>

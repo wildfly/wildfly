@@ -75,6 +75,8 @@ class MicrometerSubsystemRegistrar implements SubsystemResourceDefinitionRegistr
     static final String[] EXPORTED_MODULES = {
             MICROMETER_API_MODULE,
             "io.opentelemetry.otlp",
+            "io.opentelemetry.instrumentation.api",
+            "io.opentelemetry.semconv",
             "io.micrometer"
     };
 

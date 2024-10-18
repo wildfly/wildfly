@@ -160,7 +160,8 @@ public abstract class LayersTestBase {
             "org.wildfly.extension.mod_cluster",
             "org.wildfly.mod_cluster.undertow",
             // Brought by galleon ServerRootResourceDefinition
-            "wildflyee.api"
+            "wildflyee.api",
+            // Extension not included in the default config
     };
 
 
@@ -172,6 +173,10 @@ public abstract class LayersTestBase {
             // Only injected by logging in 'wildfly-ee', but referenced in 'wildfly' and 'wildfly-preview'
             "org.apache.logging.log4j.api",
             "org.jboss.logmanager.log4j2",
+            "org.wildfly.extension.micrometer",
+            "org.wildfly.micrometer.deployment",
+            "io.micrometer",
+            "io.opentelemetry.proto",
     };
 
 
@@ -234,11 +239,6 @@ public abstract class LayersTestBase {
             "org.wildfly.micrometer.deployment",
             "io.micrometer",
             "io.opentelemetry.proto",
-            // Extension not included in the default config
-            "org.wildfly.extension.mvc-krazo",
-            "jakarta.mvc.api",
-            "org.eclipse.krazo.core",
-            "org.eclipse.krazo.resteasy",
     };
 
     /**
