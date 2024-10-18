@@ -11,16 +11,26 @@ import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.testcontainers.api.DockerRequired;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
+import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource1;
 import org.wildfly.test.integration.observability.micrometer.multiple.application.DuplicateMetricResource2;
-import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 
+@RunWith(Arquillian.class)
+@ServerSetup(MicrometerSetupTask.class)
+@DockerRequired
+@RunAsClient
 public class EarDeploymentTestCase extends BaseMultipleTestCase {
     protected static final String ENTERPRISE_APP = "enterprise-app";
 
