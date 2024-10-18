@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -83,12 +85,14 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     protected static WebArchive createDeployment(String deploymentName, String mpCfgPropertiesFileName) {
         BaseReactiveMessagingAndOtelTest.deploymentName = deploymentName;
-        WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName + ".war")
+        WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName)
             .addPackage(TestReactiveMessagingOtelBean.class.getPackage())
             .addAsWebInfResource(TestReactiveMessagingOtelBean.class.getPackage(), mpCfgPropertiesFileName, "classes/META-INF/microprofile-config.properties")
             .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-        return war;
 
+        war.as(ZipExporter.class).exportTo(new File("target/" + war.getName()));
+
+        return war;
     }
 
     abstract OpenTelemetryCollectorContainer getCollector();
@@ -117,8 +121,6 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
         List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
         System.out.println(traces);
-
-
     }
 
     @Test
@@ -147,7 +149,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, null);
         }
 
-        List<JaegerTrace> traces = getCollector().getTraces("jaeger-all-in-one");
+        List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
         System.out.println(traces);
     }
 

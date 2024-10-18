@@ -24,20 +24,20 @@ import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTas
 @RunAsClient
 @ServerSetup({EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class, OpenTelemetrySetupTask.class})
 @DockerRequired(AssumptionViolatedException.class)
-public class AmqpReactiveMessagingAndOtelTest extends BaseReactiveMessagingAndOtelTest {
+public class KafkaReactiveMessagingAndOtelTest extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
 
 
-    public AmqpReactiveMessagingAndOtelTest() {
-        super("mp.messaging.connector.smallrye-amqp.tracing-enabled", "amqp-connector");
+    public KafkaReactiveMessagingAndOtelTest() {
+        super("mp.messaging.connector.smallrye-kafka.tracing-enabled", "kafka-connector");
     }
 
     @Deployment
     public static WebArchive createDeployment() {
         return createDeployment(
-                "mp-rm-amqp-otel.war",
-                "amqp-microprofile-config.properties");
+                "mp-rm-kafka-otel.war",
+                "kafka-microprofile-config.properties");
     }
 
     @Override

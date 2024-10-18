@@ -10,9 +10,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ReloadRequiredAddStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -50,7 +50,7 @@ public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceD
                         PATH,
                         MicroProfileReactiveMessagingExtension.SUBSYSTEM_RESOLVER.createChildResolver(PATH.getKey())
                 )
-                .setAddHandler(ModelOnlyAddStepHandler.INSTANCE)
+                .setAddHandler(ReloadRequiredAddStepHandler.INSTANCE)
                 .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
 
                 // TODO depend on OTel
