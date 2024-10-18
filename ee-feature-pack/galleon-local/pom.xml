@@ -33,6 +33,12 @@
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-feature-pack-product-conf</artifactId>
         </dependency>
+
+        <!-- OpenTelemetry -->
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-api-events</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-semconv</artifactId></dependency>
+        <dependency><groupId>io.opentelemetry.instrumentation</groupId><artifactId>opentelemetry-instrumentation-api-semconv</artifactId></dependency>
+        <!-- OpenTelemetry -->
     </dependencies>
 
     <build>
