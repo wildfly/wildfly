@@ -263,4 +263,7 @@ public interface Constants {
     String DIRECT = "direct";
     String LEAK_DETECTION_PERCENT = "leak-detection-percent";
     String BYTE_BUFFER_POOL = "byte-buffer-pool";
+
+    String WEB_SOCKET_READ_TIMEOUT = "websocket-read-timeout";
+    String WEB_SOCKET_WRITE_TIMEOUT = "websocket-write-timeout";
 }
