@@ -19,7 +19,7 @@ public class StackResourceTransformer implements Consumer<ModelVersion> {
     private final ResourceTransformationDescriptionBuilder builder;
 
     StackResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(StackResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(StackResourceDefinitionRegistrar.WILDCARD_PATH);
     }
 
     @Override

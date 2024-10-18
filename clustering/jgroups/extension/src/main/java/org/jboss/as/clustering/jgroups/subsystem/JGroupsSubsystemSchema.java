@@ -36,7 +36,7 @@ public enum JGroupsSubsystemSchema implements SubsystemSchema<JGroupsSubsystemSc
     private final VersionedNamespace<IntVersion, JGroupsSubsystemSchema> namespace;
 
     JGroupsSubsystemSchema(int major, int minor) {
-        this.namespace = SubsystemSchema.createLegacySubsystemURN(JGroupsExtension.SUBSYSTEM_NAME, new IntVersion(major, minor));
+        this.namespace = SubsystemSchema.createLegacySubsystemURN(JGroupsSubsystemResourceDefinitionRegistrar.NAME, new IntVersion(major, minor));
     }
 
     @Override

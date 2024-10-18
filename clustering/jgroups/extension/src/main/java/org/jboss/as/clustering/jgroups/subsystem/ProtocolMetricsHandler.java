@@ -8,7 +8,6 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
@@ -21,13 +20,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceName;
 import org.jgroups.JChannel;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
+import org.wildfly.clustering.jgroups.spi.JGroupsServiceDescriptor;
 import org.wildfly.common.function.ExceptionFunction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.service.capture.FunctionExecutor;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
@@ -93,7 +93,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 }
             };
             try {
-                return AccessController.doPrivileged(action);
+                return WildFlySecurityManager.doUnchecked(action);
             } catch (PrivilegedActionException e) {
                 throw e.getException();
             }
@@ -219,7 +219,6 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         String name = operation.get(ModelDescriptionConstants.NAME).asString();
         String protocolName = context.getCurrentAddressValue();
-        ServiceName channelServiceName = ChannelResourceDefinition.CHANNEL_CAPABILITY.getCapabilityServiceName(context.getCurrentAddress().getParent());
         ExceptionFunction<JChannel, ModelNode, Exception> function = new ExceptionFunction<>() {
             @Override
             public ModelNode apply(JChannel channel) throws Exception {
@@ -241,7 +240,7 @@ public class ProtocolMetricsHandler extends AbstractRuntimeOnlyHandler {
                 return result;
             }
         };
-        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(channelServiceName));
+        FunctionExecutor<JChannel> executor = this.executors.getExecutor(ServiceDependency.on(JGroupsServiceDescriptor.CHANNEL, context.getCurrentAddress().getParent().getLastElement().getValue()));
         try {
             ModelNode value = (executor != null) ? executor.execute(function) : null;
             if (value != null) {
