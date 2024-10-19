@@ -884,7 +884,7 @@ public interface ResourceXMLElement extends ResourceRegistration, ResourceXMLCho
 
                 @Override
                 public boolean isEmpty(ModelNode parentModel) {
-                    return !parentModel.hasDefined(path.getKey()) || (!path.isWildcard() && !parentModel.hasDefined(path.getKeyValuePair()));// || element.isEmpty(new Property(path.getValue(), parentModel.get(path.getKeyValuePair())))));
+                    return !parentModel.hasDefined(path.getKey()) || (!path.isWildcard() && !parentModel.hasDefined(path.getKeyValuePair()));
                 }
 
                 @Override

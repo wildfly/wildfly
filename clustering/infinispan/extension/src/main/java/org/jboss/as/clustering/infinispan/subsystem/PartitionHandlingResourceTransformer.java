@@ -5,14 +5,11 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingResourceDefinition.Attribute.MERGE_POLICY;
-import static org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingResourceDefinition.Attribute.WHEN_SPLIT;
-import static org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingResourceDefinition.DeprecatedAttribute.ENABLED;
-
 import java.util.function.Consumer;
 
 import org.infinispan.partitionhandling.PartitionHandling;
 import org.jboss.as.clustering.controller.transform.SimpleAttributeConverter;
+import org.jboss.as.clustering.infinispan.subsystem.PartitionHandlingResourceDescription.DeprecatedAttribute;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -30,16 +27,16 @@ public class PartitionHandlingResourceTransformer implements Consumer<ModelVersi
     private final ResourceTransformationDescriptionBuilder builder;
 
     PartitionHandlingResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(PartitionHandlingResourceDefinition.PATH);
+        this.builder = parent.addChildResource(PartitionHandlingResourceDescription.INSTANCE.getPathElement());
     }
 
     @Override
     public void accept(ModelVersion version) {
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, MERGE_POLICY.getDefinition(), WHEN_SPLIT.getDefinition())
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, MERGE_POLICY.getDefinition())
-                    .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(PartitionHandling.ALLOW_READS.name())), WHEN_SPLIT.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, PartitionHandlingResourceDescription.MERGE_POLICY, PartitionHandlingResourceDescription.WHEN_SPLIT)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, PartitionHandlingResourceDescription.MERGE_POLICY)
+                    .addRejectCheck(new SimpleRejectAttributeChecker(new ModelNode(PartitionHandling.ALLOW_READS.name())), PartitionHandlingResourceDescription.WHEN_SPLIT)
                     .setValueConverter(new SimpleAttributeConverter(new SimpleAttributeConverter.Converter() {
                         @Override
                         public void convert(PathAddress address, String name, ModelNode value, ModelNode model, TransformationContext context) {
@@ -47,8 +44,8 @@ public class PartitionHandlingResourceTransformer implements Consumer<ModelVersi
                                 value.set(ModelNode.TRUE);
                             }
                         }
-                    }), WHEN_SPLIT.getDefinition())
-                    .addRename(WHEN_SPLIT.getDefinition(), ENABLED.getName())
+                    }), PartitionHandlingResourceDescription.WHEN_SPLIT)
+                    .addRename(PartitionHandlingResourceDescription.WHEN_SPLIT, DeprecatedAttribute.ENABLED.getName())
                     .end();
         }
     }
