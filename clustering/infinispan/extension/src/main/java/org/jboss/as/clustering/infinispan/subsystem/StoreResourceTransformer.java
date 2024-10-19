@@ -29,10 +29,10 @@ public class StoreResourceTransformer implements Consumer<ModelVersion> {
     public void accept(ModelVersion version) {
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, StoreResourceDefinition.Attribute.SEGMENTED.getDefinition())
-                .addRejectCheck(RejectAttributeChecker.DEFINED, StoreResourceDefinition.Attribute.SEGMENTED.getDefinition())
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDefinition.Attribute.PASSIVATION.getDefinition())
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDefinition.Attribute.PURGE.getDefinition())
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, StoreResourceDescription.Attribute.SEGMENTED.get())
+                .addRejectCheck(RejectAttributeChecker.DEFINED, StoreResourceDescription.Attribute.SEGMENTED.get())
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDescription.Attribute.PASSIVATION.get())
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, StoreResourceDescription.Attribute.PURGE.get())
                 .end();
         }
     }

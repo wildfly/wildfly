@@ -10,8 +10,6 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import org.jboss.as.clustering.infinispan.subsystem.InfinispanSubsystemModel;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.Attribute;
-import org.jboss.as.clustering.infinispan.subsystem.remote.RemoteCacheContainerResourceDefinition.ListAttribute;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -30,26 +28,47 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
     private final ResourceTransformationDescriptionBuilder builder;
 
     public RemoteCacheContainerResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        this.builder = parent.addChildResource(RemoteCacheContainerResourceDefinition.WILDCARD_PATH);
+        this.builder = parent.addChildResource(RemoteCacheContainerResourceDescription.INSTANCE.getPathElement());
     }
 
     @Override
     public void accept(ModelVersion version) {
         Map<String, String> legacyModules = new TreeMap<>();
+        if (InfinispanSubsystemModel.VERSION_19_0_0.requiresTransformation(version)) {
+            this.builder.getAttributeBuilder()
+                .setValueConverter(new AttributeConverter() {
+                    @Override
+                    public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                        this.convert(attributeValue);
+                    }
+
+                    @Override
+                    public void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        this.convert(attributeValue);
+                    }
+
+                    private void convert(ModelNode attributeValue) {
+                        if (attributeValue.isDefined()) {
+                            attributeValue.set((int) attributeValue.asLong());
+                        }
+                    }
+                }, RemoteCacheContainerResourceDescription.CONNECTION_TIMEOUT, RemoteCacheContainerResourceDescription.SOCKET_TIMEOUT)
+                .end();
+        }
         if (InfinispanSubsystemModel.VERSION_18_0_0.requiresTransformation(version)) {
             // Convert wildfly-clustering module to the appropriate module alias
             legacyModules.put("org.wildfly.clustering.session.infinispan.remote", "org.wildfly.clustering.web.hotrod");
         }
         if (InfinispanSubsystemModel.VERSION_16_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, Attribute.PROTOCOL_VERSION.getDefinition())
+                    .setValueConverter(AttributeConverter.DEFAULT_VALUE, RemoteCacheContainerResourceDescription.PROTOCOL_VERSION)
                     .end();
         }
         if (InfinispanSubsystemModel.VERSION_15_0_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                    .setDiscard(DiscardAttributeChecker.ALWAYS, Attribute.TRANSACTION_TIMEOUT.getDefinition())
-                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, Attribute.MARSHALLER.getDefinition())
-                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(Attribute.MARSHALLER.getDefinition().getDefaultValue()), Attribute.MARSHALLER.getDefinition())
+                    .setDiscard(DiscardAttributeChecker.ALWAYS, RemoteCacheContainerResourceDescription.TRANSACTION_TIMEOUT)
+                    .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, RemoteCacheContainerResourceDescription.MARSHALLER)
+                    .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(RemoteCacheContainerResourceDescription.MARSHALLER.getDefaultValue()), RemoteCacheContainerResourceDescription.MARSHALLER)
                     .end();
         }
 
@@ -66,7 +85,7 @@ public class RemoteCacheContainerResourceTransformer implements Consumer<ModelVe
                         }
                     }
                 }
-            }, ListAttribute.MODULES.getDefinition())
+            }, RemoteCacheContainerResourceDescription.MODULES)
             .end();
         }
     }
