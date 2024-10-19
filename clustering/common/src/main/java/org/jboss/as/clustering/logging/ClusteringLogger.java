@@ -8,15 +8,26 @@ package org.jboss.as.clustering.logging;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.clustering.controller.xml.XMLCardinality;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.projectodd.vdx.core.ErrorType;
+import org.projectodd.vdx.core.ValidationError;
+import org.projectodd.vdx.core.XMLStreamValidationException;
 
 /**
  * @author Paul Ferraro
@@ -57,4 +68,75 @@ public interface ClusteringLogger extends BasicLogger {
 
     @Message(id = 8, value = "%s:%s operation is only supported in admin-only mode.")
     OperationFailedException operationNotSupportedInNormalServerMode(String address, String operation);
+
+    default void attributeIgnored(QName elementName, QName attributeName) {
+        this.attributeIgnored(attributeName.getLocalPart(), elementName.getLocalPart());
+    }
+
+    default void elementIgnored(QName elementName) {
+        this.elementIgnored(elementName.toString());
+    }
+
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    @Message(id = 520, value = "Element '%s' already defines attribute: %s")
+    IllegalArgumentException duplicateAttributes(QName elementName, QName attributeName);
+
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    @Message(id = 521, value = "XML model group already defines element: %s")
+    IllegalArgumentException duplicateElements(QName elementName);
+
+    @Message(id = 522, value = "XML choice already defines resource: %s")
+    IllegalArgumentException duplicateElement(PathElement path);
+
+    @Message(id = 523, value = "XML choice already defines resource: %s")
+    IllegalArgumentException duplicatePathElement(PathElement path);
+
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    @Message(id = 524, value = "Element(s) '%s' must occur at least %d time(s)")
+    String minOccursNotReached(Set<QName> elements, int minOccurs);
+
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    @Message(id = 525, value = "Element(s) '%s' may not occur more than %d time(s)")
+    String maxOccursExceeded(Set<QName> elements, int maxOccurs);
+
+    /**
+     * Creates an exception reporting that a given element did not appear a sufficient number of times.
+     * @param reader the stream reader
+     * @param elementName the element name
+     * @return a validation exception
+     */
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    default XMLStreamException minOccursNotReached(XMLExtendedStreamReader reader, Set<QName> choices, XMLCardinality cardinality) {
+        XMLStreamException e = new XMLStreamException(this.minOccursNotReached(choices, cardinality.getMinOccurs()), reader.getLocation());
+        return this.createValidationException(e, ErrorType.REQUIRED_ELEMENT_MISSING, choices);
+    }
+
+    /**
+     * Creates an exception reporting that a given element appeared too many times.
+     * @param reader the stream reader
+     * @param elementName the element name
+     * @return a validation exception
+     */
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    default XMLStreamException maxOccursExceeded(XMLExtendedStreamReader reader, Set<QName> choices, XMLCardinality cardinality) {
+        XMLStreamException e = new XMLStreamException(this.maxOccursExceeded(choices, cardinality.getMaxOccurs().orElse(Integer.MAX_VALUE)), reader.getLocation());
+        return this.createValidationException(e, ErrorType.DUPLICATE_ELEMENT, choices);
+    }
+
+    // TODO Relocate to org.jboss.as.controller.parsing.ParseUtils.
+    default XMLStreamValidationException createValidationException(XMLStreamException e, ErrorType type, Set<QName> choices) {
+        ValidationError error = ValidationError.from(e, type);
+        Iterator<QName> names = choices.iterator();
+        if (names.hasNext()) {
+            error.element(names.next());
+        }
+        if (names.hasNext()) {
+            Set<String> alternatives = new TreeSet<>();
+            do {
+                alternatives.add(names.next().getLocalPart());
+            } while (names.hasNext());
+            error.alternatives(alternatives);
+        }
+        return new XMLStreamValidationException(e.getMessage(), error, e);
+    }
 }
