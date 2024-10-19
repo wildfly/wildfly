@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class JDBCStoreResourceTransformer extends StoreResourceTransformer {
 
     JDBCStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(JDBCStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.JDBC.getPathElement()));
     }
 }

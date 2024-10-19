@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class HotRodStoreResourceTransformer extends StoreResourceTransformer {
 
     HotRodStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(HotRodStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.HOTROD.getPathElement()));
     }
 }

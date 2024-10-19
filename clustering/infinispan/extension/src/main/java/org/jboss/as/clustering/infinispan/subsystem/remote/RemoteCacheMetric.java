@@ -8,13 +8,13 @@ package org.jboss.as.clustering.infinispan.subsystem.remote;
 import java.util.function.ToLongFunction;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * @author Paul Ferraro
@@ -113,7 +113,7 @@ public enum RemoteCacheMetric implements Metric<RemoteCacheClientStatisticsMXBea
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 
