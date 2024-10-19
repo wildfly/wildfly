@@ -67,7 +67,7 @@ import org.wildfly.subsystem.service.capability.CapabilityServiceInstaller;
  */
 public class JGroupsSubsystemResourceDefinitionRegistrar implements SubsystemResourceDefinitionRegistrar, BiPredicate<OperationContext, Resource>, ResourceServiceConfigurator {
 
-    static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("jgroups");
+    public static final SubsystemResourceRegistration REGISTRATION = SubsystemResourceRegistration.of("jgroups");
     static final ParentResourceDescriptionResolver RESOLVER = new SubsystemResourceDescriptionResolver(REGISTRATION.getName(), JGroupsSubsystemResourceDefinitionRegistrar.class);
 
     static final RuntimeCapability<Void> DEFAULT_CHANNEL_CAPABILITY = RuntimeCapability.Builder.of(JGroupsServiceDescriptor.DEFAULT_CHANNEL).build();

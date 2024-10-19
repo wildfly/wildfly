@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class FileStoreResourceTransformer extends StoreResourceTransformer {
 
     FileStoreResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(FileStoreResourceDefinition.PATH));
+        super(parent.addChildResource(StoreResourceRegistration.FILE.getPathElement()));
     }
 }
