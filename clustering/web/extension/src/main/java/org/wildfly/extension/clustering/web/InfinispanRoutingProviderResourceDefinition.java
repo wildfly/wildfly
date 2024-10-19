@@ -21,7 +21,6 @@ import org.jboss.dmr.ModelType;
 import org.wildfly.clustering.infinispan.service.InfinispanServiceDescriptor;
 import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 import org.wildfly.clustering.web.service.routing.RoutingProvider;
-import org.wildfly.common.function.Functions;
 import org.wildfly.extension.clustering.web.routing.infinispan.InfinispanRoutingProvider;
 import org.wildfly.subsystem.resource.ResourceModelResolver;
 import org.wildfly.subsystem.resource.capability.CapabilityReferenceRecorder;
@@ -88,7 +87,7 @@ public class InfinispanRoutingProviderResourceDefinition extends RoutingProvider
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
-        return CapabilityServiceInstaller.builder(ROUTING_PROVIDER, new InfinispanRoutingProvider(this.resolver.resolve(context, model), Functions.discardingConsumer()))
+        return CapabilityServiceInstaller.builder(ROUTING_PROVIDER, new InfinispanRoutingProvider(this.resolver.resolve(context, model), UnaryOperator.identity()))
                 .provides(INFINISPAN_ROUTING_PROVIDER.getCapabilityServiceName())
                 .build();
     }
