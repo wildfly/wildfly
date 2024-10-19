@@ -5,12 +5,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.interceptors.impl.CacheLoaderInterceptor;
-import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.subsystem.resource.executor.Metric;
 
 /**
  * Enumeration of management metrics for a cache store.
@@ -43,7 +43,7 @@ public enum StoreMetric implements Metric<CacheLoaderInterceptor> {
     }
 
     @Override
-    public AttributeDefinition getDefinition() {
+    public AttributeDefinition get() {
         return this.definition;
     }
 }

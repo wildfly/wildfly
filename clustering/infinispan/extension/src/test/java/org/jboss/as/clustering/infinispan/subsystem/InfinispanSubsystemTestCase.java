@@ -42,7 +42,7 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
     private final InfinispanSubsystemSchema schema;
 
     public InfinispanSubsystemTestCase(InfinispanSubsystemSchema schema) {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
+        super(InfinispanSubsystemResourceDescription.INSTANCE.getName(), new InfinispanExtension(), schema, InfinispanSubsystemSchema.CURRENT);
         this.schema = schema;
     }
 
@@ -59,8 +59,8 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
                 .require(PathManager.PATH_SERVICE_DESCRIPTOR, "jboss.server.temp.dir")
                 .require(ForkChannelFactory.DEFAULT_SERVICE_DESCRIPTOR)
                 .require(ForkChannelFactory.SERVICE_DESCRIPTOR, "maximal-channel")
-                .require(TransactionResourceDefinition.LOCAL_TRANSACTION_PROVIDER)
-                .require(TransactionResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY)
+                .require(TransactionResourceDescription.LOCAL_TRANSACTION_PROVIDER)
+                .require(XAResourceRecoveryServiceInstallerFactory.XA_RESOURCE_RECOVERY_REGISTRY)
                 ;
     }
 
@@ -89,12 +89,12 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
         if (!this.schema.since(InfinispanSubsystemSchema.VERSION_1_5)) {
             ModelNode model = services.readWholeModel();
 
-            Assert.assertTrue(model.get(InfinispanSubsystemResourceDefinition.PATH.getKey()).hasDefined(InfinispanSubsystemResourceDefinition.PATH.getValue()));
-            ModelNode subsystem = model.get(InfinispanSubsystemResourceDefinition.PATH.getKeyValuePair());
+            Assert.assertTrue(model.hasDefined(InfinispanSubsystemResourceDescription.INSTANCE.getPathElement().getKeyValuePair()));
+            ModelNode subsystem = model.get(InfinispanSubsystemResourceDescription.INSTANCE.getPathElement().getKeyValuePair());
 
-            for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.WILDCARD_PATH.getKey()).asPropertyList()) {
+            for (Property containerProp : subsystem.get(CacheContainerResourceDescription.INSTANCE.getPathElement().getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
+                        containerProp.getValue().get(CacheContainerResourceDescription.STATISTICS_ENABLED.getName()).asBoolean());
 
                 for (String key : containerProp.getValue().keys()) {
                     if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -102,7 +102,7 @@ public class InfinispanSubsystemTestCase extends AbstractSubsystemSchemaTest<Inf
                         if (caches.isDefined()) {
                             for (Property cacheProp : caches.asPropertyList()) {
                                 Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.Attribute.STATISTICS_ENABLED.getName()).asBoolean());
+                                        containerProp.getValue().get(CacheResourceDescription.STATISTICS_ENABLED.getName()).asBoolean());
                             }
                         }
                     }
