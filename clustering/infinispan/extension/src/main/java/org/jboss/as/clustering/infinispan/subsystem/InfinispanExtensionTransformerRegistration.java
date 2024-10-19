@@ -14,6 +14,7 @@ import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.kohsuke.MetaInfServices;
 
 /**
+ * Registers resource transformations for the extension providing the Infinispan subsystem.
  * @author Paul Ferraro
  */
 @MetaInfServices(ExtensionTransformerRegistration.class)
@@ -21,7 +22,7 @@ public class InfinispanExtensionTransformerRegistration implements ExtensionTran
 
     @Override
     public String getSubsystemName() {
-        return InfinispanExtension.SUBSYSTEM_NAME;
+        return InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName();
     }
 
     @Override

@@ -5,29 +5,51 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import org.jboss.as.clustering.controller.ChildResourceProvider;
-import org.jboss.as.clustering.controller.ComplexResource;
-import org.jboss.as.clustering.controller.SimpleChildResourceProvider;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
-import org.wildfly.common.function.Functions;
+import org.jboss.as.controller.registry.Resource;
+import org.wildfly.clustering.cache.function.Functions;
+import org.wildfly.subsystem.resource.ChildResourceProvider;
+import org.wildfly.subsystem.resource.DynamicResource;
 
 /**
+ * Provides component child resources for the runtime resource of a cache.
  * @author Paul Ferraro
  */
-public class CacheRuntimeResourceProvider extends SimpleChildResourceProvider {
+public class CacheRuntimeResourceProvider implements ChildResourceProvider {
 
-    private static final ChildResourceProvider CHILD_PROVIDER = new SimpleChildResourceProvider(Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            LockingRuntimeResourceDefinition.PATH.getValue(),
-            PersistenceRuntimeResourceDefinition.PATH.getValue(),
-            PartitionHandlingRuntimeResourceDefinition.PATH.getValue(),
-            TransactionRuntimeResourceDefinition.PATH.getValue()))));
+    private static final Map<String, Resource> COMPONENTS = EnumSet.of(ComponentResourceRegistration.LOCKING, ComponentResourceRegistration.PARTITION_HANDLING, ComponentResourceRegistration.PERSISTENCE, ComponentResourceRegistration.TRANSACTION)
+            .stream().map(ResourceRegistration::getPathElement).collect(Collectors.toMap(PathElement::getValue, Functions.constantFunction(PlaceholderResource.INSTANCE)));
 
-    public CacheRuntimeResourceProvider() {
-        super(ConcurrentHashMap.newKeySet(), Functions.constantSupplier(new ComplexResource(PlaceholderResource.INSTANCE, Collections.singletonMap(CacheComponentRuntimeResourceDefinition.WILDCARD_PATH.getKey(), CHILD_PROVIDER))));
+    private static final ChildResourceProvider COMPONENT_PROVIDER = new ChildResourceProvider() {
+        @Override
+        public Resource getChild(String name) {
+            return COMPONENTS.get(name);
+        }
+
+        @Override
+        public Set<String> getChildren() {
+            return COMPONENTS.keySet();
+        }
+    };
+    private static final Resource COMPONENT_RESOURCE = new DynamicResource(PlaceholderResource.INSTANCE, Map.of(ComponentResourceRegistration.WILDCARD.getPathElement().getKey(), COMPONENT_PROVIDER));
+
+    private final Set<String> children = ConcurrentHashMap.newKeySet();
+
+    @Override
+    public Resource getChild(String name) {
+        return this.children.contains(name) ? COMPONENT_RESOURCE : null;
+    }
+
+    @Override
+    public Set<String> getChildren() {
+        return this.children;
     }
 }

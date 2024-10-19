@@ -10,6 +10,7 @@ import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
+ * Describes resource transformations of a clustered cache resource.
  * @author Paul Ferraro
  */
 public class ClusteredCacheResourceTransformer extends CacheResourceTransformer {
@@ -22,7 +23,7 @@ public class ClusteredCacheResourceTransformer extends CacheResourceTransformer 
     public void accept(ModelVersion version) {
         if (InfinispanSubsystemModel.VERSION_17_1_0.requiresTransformation(version)) {
             this.builder.getAttributeBuilder()
-                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ClusteredCacheResourceDefinition.Attribute.REMOTE_TIMEOUT.getDefinition())
+                .setValueConverter(AttributeConverter.DEFAULT_VALUE, ClusteredCacheResourceDefinitionRegistrar.REMOTE_TIMEOUT)
                 .end();
         }
         super.accept(version);

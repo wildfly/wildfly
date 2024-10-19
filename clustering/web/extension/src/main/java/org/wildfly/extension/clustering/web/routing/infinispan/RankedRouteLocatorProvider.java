@@ -46,13 +46,14 @@ public class RankedRouteLocatorProvider extends LocalRouteLocatorProvider {
 
     @Override
     public ServiceInstaller getServiceInstaller(DeploymentPhaseContext context, BinaryServiceConfiguration configuration, DeploymentConfiguration deployment) {
+        ServiceInstaller localInstaller = super.getServiceInstaller(context, configuration, deployment);
         ServiceDependency<Configuration> cacheConfiguration = configuration.getServiceDependency(InfinispanServiceDescriptor.CACHE_CONFIGURATION);
         return ServiceInstaller.builder(new ServiceInstaller() {
             @Override
             public ServiceController<?> install(RequirementServiceTarget target) {
                 // Fallback to local routing if cache is local
                 if (!cacheConfiguration.get().clustering().cacheMode().isClustered()) {
-                    return RankedRouteLocatorProvider.super.getServiceInstaller(context, configuration, deployment).install(target);
+                    return localInstaller.install(target);
                 }
                 ServiceDependency<Cache<Key<String>, ?>> cache = configuration.withChildName(deployment.getDeploymentName()).getServiceDependency(InfinispanServiceDescriptor.CACHE).map(Cache.class::cast);
                 ServiceDependency<CacheContainerRegistry<String, Void>> registry = configuration.withChildName(deployment.getServerName()).getServiceDependency(ClusteringServiceDescriptor.REGISTRY).map(CacheContainerRegistry.class::cast);

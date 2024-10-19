@@ -38,8 +38,8 @@
                 <property name="location">location</property>
                 <property name="property2">location2</property>
             </store>
-            <state-transfer timeout="0" chunk-size="10000"/>
             <partition-handling merge-policy="REMOVE_ALL"/>
+            <state-transfer timeout="0" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
                 <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>
@@ -53,8 +53,8 @@
             <transaction mode="FULL_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <off-heap-memory size="20000" size-unit="BYTES"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
-            <state-transfer timeout="60000" chunk-size="10000"/>
             <partition-handling when-split="ALLOW_READS"/>
+            <state-transfer timeout="60000" chunk-size="10000"/>
             <backups>
                 <backup site="NYC" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="false"/>
                 <backup site="SFO" failure-policy="WARN" strategy="SYNC" timeout="12000" enabled="true"/>

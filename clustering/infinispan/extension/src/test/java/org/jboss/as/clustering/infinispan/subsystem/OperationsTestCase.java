@@ -37,16 +37,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
         // read the cache container default cache attribute
-        ModelNode result = servicesA.executeOperation(getCacheContainerReadOperation("maximal", CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE));
+        ModelNode result = servicesA.executeOperation(getCacheContainerReadOperation("maximal", CacheContainerResourceDefinitionRegistrar.DEFAULT_CACHE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("local", result.get(RESULT).asString());
 
         // write the default cache attribute
-        result = servicesA.executeOperation(getCacheContainerWriteOperation("maximal", CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE, "new-default-cache"));
+        result = servicesA.executeOperation(getCacheContainerWriteOperation("maximal", CacheContainerResourceDefinitionRegistrar.DEFAULT_CACHE, "new-default-cache"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default cache attribute
-        result = servicesA.executeOperation(getCacheContainerReadOperation("maximal", CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE));
+        result = servicesA.executeOperation(getCacheContainerReadOperation("maximal", CacheContainerResourceDefinitionRegistrar.DEFAULT_CACHE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default-cache", result.get(RESULT).asString());
     }
@@ -61,14 +61,14 @@ public class OperationsTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml();
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
-        ModelNode readOperation = getCacheReadOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "local", CacheResourceDefinition.Attribute.STATISTICS_ENABLED);
+        ModelNode readOperation = getCacheReadOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("local"), CacheResourceDefinitionRegistrar.STATISTICS_ENABLED);
 
         // read the cache container batching attribute
         ModelNode result = servicesA.executeOperation(readOperation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertTrue(result.get(RESULT).asBoolean());
 
-        ModelNode writeOperation = getCacheWriteOperation("maximal", LocalCacheResourceDefinition.WILDCARD_PATH.getKey(), "local", CacheResourceDefinition.Attribute.STATISTICS_ENABLED, "false");
+        ModelNode writeOperation = getCacheWriteOperation("maximal", CacheResourceRegistration.LOCAL.pathElement("local"), CacheResourceDefinitionRegistrar.STATISTICS_ENABLED, "false");
 
         // write the batching attribute
         result = servicesA.executeOperation(writeOperation);
@@ -91,16 +91,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
         KernelServices servicesA = this.createKernelServicesBuilder().setSubsystemXml(subsystemXml).build();
 
         // read the distributed cache mixed-keyed-jdbc-store datasource attribute
-        ModelNode result = servicesA.executeOperation(getJDBCCacheStoreReadOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", JDBCStoreResourceDefinition.Attribute.DATA_SOURCE));
+        ModelNode result = servicesA.executeOperation(getJDBCCacheStoreReadOperation("maximal", CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), JDBCStoreResourceDefinitionRegistrar.DATA_SOURCE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("ExampleDS", result.get(RESULT).asString());
 
         // write the batching attribute
-        result = servicesA.executeOperation(getJDBCCacheStoreWriteOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", JDBCStoreResourceDefinition.Attribute.DATA_SOURCE, "new-datasource"));
+        result = servicesA.executeOperation(getJDBCCacheStoreWriteOperation("maximal", CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), JDBCStoreResourceDefinitionRegistrar.DATA_SOURCE, "new-datasource"));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the batching attribute
-        result = servicesA.executeOperation(getJDBCCacheStoreReadOperation("maximal", DistributedCacheResourceDefinition.WILDCARD_PATH.getKey(), "dist", JDBCStoreResourceDefinition.Attribute.DATA_SOURCE));
+        result = servicesA.executeOperation(getJDBCCacheStoreReadOperation("maximal", CacheResourceRegistration.DISTRIBUTED.pathElement("dist"), JDBCStoreResourceDefinitionRegistrar.DATA_SOURCE));
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-datasource", result.get(RESULT).asString());
     }
@@ -109,26 +109,26 @@ public class OperationsTestCase extends OperationTestCaseBase {
     public void testStoreProperties() throws Exception {
         KernelServices services = this.createKernelServicesBuilder().setSubsystemXml(this.getSubsystemXml()).build();
 
-        PathAddress address = getRemoteCacheStoreAddress("maximal", InvalidationCacheResourceDefinition.WILDCARD_PATH.getKey(), "invalid");
+        PathAddress address = getRemoteCacheStoreAddress("maximal", CacheResourceRegistration.INVALIDATION.pathElement("invalid"));
         String key = "infinispan.client.hotrod.ping_on_startup";
         String value = "true";
 
-        ModelNode operation = Util.createMapPutOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key, value);
+        ModelNode operation = Util.createMapPutOperation(address, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), key, value);
         ModelNode result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Util.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
+        operation = Util.createMapGetOperation(address, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(value, result.get(RESULT).asString());
 
-        operation = Util.createMapRemoveOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
+        operation = Util.createMapRemoveOperation(address, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Util.createMapGetOperation(address, StoreResourceDefinition.Attribute.PROPERTIES.getName(), key);
+        operation = Util.createMapGetOperation(address, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), key);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
@@ -141,22 +141,22 @@ public class OperationsTestCase extends OperationTestCaseBase {
         PathAddress address = getCacheContainerAddress("minimal");
         String alias = "alias0";
 
-        ModelNode operation = Util.createListAddOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), alias);
+        ModelNode operation = Util.createListAddOperation(address, CacheContainerResourceDefinitionRegistrar.ALIASES.getName(), alias);
         ModelNode result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Util.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
+        operation = Util.createListGetOperation(address, CacheContainerResourceDefinitionRegistrar.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals(new ModelNode(alias), result.get(RESULT));
 
-        operation = Util.createListRemoveOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
+        operation = Util.createListRemoveOperation(address, CacheContainerResourceDefinitionRegistrar.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());
 
-        operation = Util.createListGetOperation(address, CacheContainerResourceDefinition.ListAttribute.ALIASES.getName(), 0);
+        operation = Util.createListGetOperation(address, CacheContainerResourceDefinitionRegistrar.ALIASES.getName(), 0);
         result = services.executeOperation(operation);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
         Assert.assertFalse(result.get(RESULT).isDefined());

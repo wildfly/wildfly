@@ -18,6 +18,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.wildfly.clustering.server.service.BinaryServiceConfiguration;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -39,6 +40,14 @@ public interface InfinispanLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Activating Infinispan subsystem.")
     void activatingSubsystem();
+
+    default void started(BinaryServiceConfiguration configuration) {
+        this.cacheStarted(configuration.getChildName(), configuration.getParentName());
+    }
+
+    default void stopped(BinaryServiceConfiguration configuration) {
+        this.cacheStopped(configuration.getChildName(), configuration.getParentName());
+    }
 
     /**
      * Logs an informational message indicating that a cache is being started.

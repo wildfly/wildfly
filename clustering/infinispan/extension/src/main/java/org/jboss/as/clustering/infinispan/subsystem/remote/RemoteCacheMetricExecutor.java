@@ -6,19 +6,20 @@
 package org.jboss.as.clustering.infinispan.subsystem.remote;
 
 import org.infinispan.client.hotrod.jmx.RemoteCacheClientStatisticsMXBean;
-import org.jboss.as.clustering.controller.Metric;
-import org.jboss.as.clustering.controller.MetricExecutor;
-import org.jboss.as.clustering.controller.MetricFunction;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.service.HotRodServiceDescriptor;
 import org.wildfly.service.capture.FunctionExecutor;
+import org.wildfly.subsystem.resource.executor.Metric;
+import org.wildfly.subsystem.resource.executor.MetricExecutor;
+import org.wildfly.subsystem.resource.executor.MetricFunction;
 import org.wildfly.subsystem.service.ServiceDependency;
 import org.wildfly.subsystem.service.capture.FunctionExecutorRegistry;
 
 /**
+ * Executor for remote cache metrics.
  * @author Paul Ferraro
  */
 public class RemoteCacheMetricExecutor implements MetricExecutor<RemoteCacheClientStatisticsMXBean> {
