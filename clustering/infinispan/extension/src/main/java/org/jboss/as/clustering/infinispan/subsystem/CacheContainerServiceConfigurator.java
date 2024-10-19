@@ -4,8 +4,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition.ListAttribute.ALIASES;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
@@ -56,21 +54,22 @@ import org.wildfly.subsystem.service.capture.ServiceValueRegistry;
  * @author Paul Ferraro
  */
 public class CacheContainerServiceConfigurator implements ResourceServiceConfigurator {
+    static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of(InfinispanServiceDescriptor.CACHE_CONTAINER).build();
 
-    private final RuntimeCapability<Void> capability;
-    private final ServiceValueRegistry<Cache<?, ?>> registry;
+    private final ServiceValueRegistry<EmbeddedCacheManager> containerRegistry;
+    private final ServiceValueRegistry<Cache<?, ?>> cacheRegistry;
 
-    public CacheContainerServiceConfigurator(RuntimeCapability<Void> capability, ServiceValueRegistry<Cache<?, ?>> registry) {
-        this.capability = capability;
-        this.registry = registry;
+    public CacheContainerServiceConfigurator(ServiceValueRegistry<EmbeddedCacheManager> containerRegistry, ServiceValueRegistry<Cache<?, ?>> cacheRegistry) {
+        this.containerRegistry = containerRegistry;
+        this.cacheRegistry = cacheRegistry;
     }
 
     @Override
     public ResourceServiceInstaller configure(OperationContext context, ModelNode model) throws OperationFailedException {
         String name = context.getCurrentAddressValue();
-        List<ModelNode> aliases = ALIASES.resolveModelAttribute(context, model).asListOrEmpty();
+        List<ModelNode> aliases = CacheContainerResourceDefinitionRegistrar.ALIASES.resolveModelAttribute(context, model).asListOrEmpty();
 
-        Object listener = new CacheLifecycleListener(name, this.registry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
+        Object listener = new CacheLifecycleListener(name, this.cacheRegistry, (CacheContainerResource) context.readResource(PathAddress.EMPTY_ADDRESS));
 
         ServiceDependency<EmbeddedCacheManager> container = ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER_CONFIGURATION, name).map(new Function<>() {
             @Override
@@ -96,6 +95,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                 return new DefaultCacheContainer(manager, loader.get());
             }
         };
+        ServiceValueRegistry<EmbeddedCacheManager> containerRegistry = this.containerRegistry;
         Consumer<EmbeddedCacheManager> start = new Consumer<>() {
             @Override
             public void accept(EmbeddedCacheManager manager) {
@@ -157,6 +157,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
                     }, false);
                     registry.rewire();
                 }
+                containerRegistry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER, name)).accept(manager);
                 manager.addListener(listener);
                 InfinispanLogger.ROOT_LOGGER.infof("Started %s cache container", name);
             }
@@ -165,11 +166,12 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             @Override
             public void accept(EmbeddedCacheManager manager) {
                 manager.removeListener(listener);
+                containerRegistry.remove(ServiceDependency.on(InfinispanServiceDescriptor.CACHE_CONTAINER, name));
                 manager.stop();
                 InfinispanLogger.ROOT_LOGGER.infof("Stopped %s cache container", name);
             }
         };
-        CapabilityServiceInstaller.Builder<EmbeddedCacheManager, EmbeddedCacheManager> builder = CapabilityServiceInstaller.builder(this.capability, wrapper, container);
+        CapabilityServiceInstaller.Builder<EmbeddedCacheManager, EmbeddedCacheManager> builder = CapabilityServiceInstaller.builder(CAPABILITY, wrapper, container);
         for (ModelNode alias : aliases) {
             builder.provides(context.getCapabilityServiceSupport().getCapabilityServiceName(InfinispanServiceDescriptor.CACHE_CONTAINER, alias.asString()));
         }
