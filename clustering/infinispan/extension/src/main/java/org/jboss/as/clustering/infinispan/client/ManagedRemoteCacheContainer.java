@@ -5,6 +5,8 @@
 
 package org.jboss.as.clustering.infinispan.client;
 
+import java.lang.reflect.Field;
+import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +67,7 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
 
     @Override
     public <K, V> RemoteCache<K, V> getCache(String cacheName) {
-        org.infinispan.client.hotrod.RemoteCache<K, V> cache = this.container.getCache(cacheName);
+        org.infinispan.client.hotrod.RemoteCache<K, V> cache = this.getRemoteCache(cacheName);
         if (cache == null) return null;
         Marshaller defaultMarshaller = this.container.getMarshaller();
         DataFormat.Builder builder = DataFormat.builder().from(cache.getDataFormat())
@@ -108,6 +110,33 @@ public class ManagedRemoteCacheContainer implements RemoteCacheContainer {
             }
         }
         return new ManagedRemoteCache<>(this, this.container, cache.withDataFormat(builder.build()), this.registrar);
+    }
+
+    <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getRemoteCache(String cacheName) {
+        // Workaround ConcurrentModificationException in HotRod client (https://github.com/infinispan/infinispan/issues/13272)
+        synchronized (unwrap(this.container.getConfiguration().remoteCaches())) {
+            return this.container.getCache(cacheName);
+        }
+    }
+
+    private static <K, V> Map<K, V> unwrap(Map<K, V> map) {
+        // Unwrap unmodifiable wrapper so that we can reference the underlying object monitor
+        return AccessController.doPrivileged(new PrivilegedAction<>() {
+            @Override
+            public Map<K, V> run() {
+                try {
+                    for (Field field : map.getClass().getDeclaredFields()) {
+                        if (Map.class.isAssignableFrom(field.getType())) {
+                            field.setAccessible(true);
+                            return (Map<K, V>) field.get(map);
+                        }
+                    }
+                } catch (IllegalAccessException e) {
+                    // Ignore
+                }
+                return map;
+            }
+        });
     }
 
     @Override
