@@ -9,10 +9,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.controller.CommonServiceDescriptor;
 import org.jboss.as.clustering.subsystem.AdditionalInitialization;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -31,7 +32,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     static final String SUBSYSTEM_XML_FILE = String.format("infinispan-%d.%d.xml", InfinispanSubsystemSchema.CURRENT.getVersion().major(), InfinispanSubsystemSchema.CURRENT.getVersion().minor());
 
     public OperationTestCaseBase() {
-        super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
+        super(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getName(), new InfinispanExtension());
     }
 
     KernelServicesBuilder createKernelServicesBuilder() {
@@ -50,14 +51,14 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     // cache container access
     protected static ModelNode getCacheContainerAddOperation(String containerName) {
         PathAddress address = getCacheContainerAddress(containerName);
-        return Util.createAddOperation(address, Map.of(CacheContainerResourceDefinition.Attribute.DEFAULT_CACHE.getName(), new ModelNode("default")));
+        return Util.createAddOperation(address, Map.of(CacheContainerResourceDefinitionRegistrar.DEFAULT_CACHE.getName(), new ModelNode("default")));
     }
 
-    protected static ModelNode getCacheContainerReadOperation(String containerName, Attribute attribute) {
+    protected static ModelNode getCacheContainerReadOperation(String containerName, AttributeDefinition attribute) {
         return Util.getReadAttributeOperation(getCacheContainerAddress(containerName), attribute.getName());
     }
 
-    protected static ModelNode getCacheContainerWriteOperation(String containerName, Attribute attribute, String value) {
+    protected static ModelNode getCacheContainerWriteOperation(String containerName, AttributeDefinition attribute, String value) {
         PathAddress cacheAddress = getCacheContainerAddress(containerName);
         return Util.getWriteAttributeOperation(cacheAddress, attribute.getName(), new ModelNode(value));
     }
@@ -68,84 +69,83 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     }
 
     // cache access
-    protected static ModelNode getCacheAddOperation(String containerName, String cacheType, String cacheName) {
-        PathAddress address = getCacheAddress(containerName, cacheType, cacheName);
+    protected static ModelNode getCacheAddOperation(String containerName, PathElement path) {
+        PathAddress address = getCacheAddress(containerName, path);
         return Util.createAddOperation(address, Map.of());
     }
 
-    protected static ModelNode getCacheReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Util.getReadAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute.getName());
+    protected static ModelNode getCacheReadOperation(String containerName, PathElement cachePath, AttributeDefinition attribute) {
+        return Util.getReadAttributeOperation(getCacheAddress(containerName, cachePath), attribute.getName());
     }
 
-    protected static ModelNode getCacheWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
-        return Util.getWriteAttributeOperation(getCacheAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
+    protected static ModelNode getCacheWriteOperation(String containerName, PathElement cachePath, AttributeDefinition attribute, String value) {
+        return Util.getWriteAttributeOperation(getCacheAddress(containerName, cachePath), attribute.getName(), new ModelNode(value));
     }
 
-    protected static ModelNode getCacheRemoveOperation(String containerName, String cacheType, String cacheName) {
-        return Util.createRemoveOperation(getCacheAddress(containerName, cacheType, cacheName));
+    protected static ModelNode getCacheRemoveOperation(String containerName, PathElement cachePath) {
+        return Util.createRemoveOperation(getCacheAddress(containerName, cachePath));
     }
 
     // cache store access
-    protected static ModelNode getCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Util.getReadAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName());
+    protected static ModelNode getCacheStoreReadOperation(String containerName, PathElement cachePath, AttributeDefinition attribute) {
+        return Util.getReadAttributeOperation(getCustomCacheStoreAddress(containerName, cachePath), attribute.getName());
     }
 
-    protected static ModelNode getCacheStoreWriteOperation(String containerName, String cacheName, String cacheType, Attribute attribute, String value) {
-        return Util.getWriteAttributeOperation(getCustomCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
+    protected static ModelNode getCacheStoreWriteOperation(String containerName, PathElement cachePath, AttributeDefinition attribute, String value) {
+        return Util.getWriteAttributeOperation(getCustomCacheStoreAddress(containerName, cachePath), attribute.getName(), new ModelNode(value));
     }
 
-    protected static ModelNode getJDBCCacheStoreReadOperation(String containerName, String cacheType, String cacheName, Attribute attribute) {
-        return Util.getReadAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName());
+    protected static ModelNode getJDBCCacheStoreReadOperation(String containerName, PathElement cachePath, AttributeDefinition attribute) {
+        return Util.getReadAttributeOperation(getJDBCCacheStoreAddress(containerName, cachePath), attribute.getName());
     }
 
-    protected static ModelNode getJDBCCacheStoreWriteOperation(String containerName, String cacheType, String cacheName, Attribute attribute, String value) {
-        return Util.getWriteAttributeOperation(getJDBCCacheStoreAddress(containerName, cacheType, cacheName), attribute.getName(), new ModelNode(value));
+    protected static ModelNode getJDBCCacheStoreWriteOperation(String containerName, PathElement cachePath, AttributeDefinition attribute, String value) {
+        return Util.getWriteAttributeOperation(getJDBCCacheStoreAddress(containerName, cachePath), attribute.getName(), new ModelNode(value));
     }
 
     // cache store property access
     protected static ModelNode getCacheStoreGetPropertyOperation(PathAddress cacheStoreAddress, String propertyName) {
-        return Util.createMapGetOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
+        return Util.createMapGetOperation(cacheStoreAddress, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getCacheStorePutPropertyOperation(PathAddress cacheStoreAddress, String propertyName, String propertyValue) {
-        return Util.createMapPutOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName, propertyValue);
+        return Util.createMapPutOperation(cacheStoreAddress, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), propertyName, propertyValue);
     }
 
     protected static ModelNode getCacheStoreRemovePropertyOperation(PathAddress cacheStoreAddress, String propertyName) {
-        return Util.createMapRemoveOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName(), propertyName);
+        return Util.createMapRemoveOperation(cacheStoreAddress, StoreResourceDefinitionRegistrar.PROPERTIES.getName(), propertyName);
     }
 
     protected static ModelNode getCacheStoreClearPropertiesOperation(PathAddress cacheStoreAddress) {
-        return Util.createMapClearOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName());
+        return Util.createMapClearOperation(cacheStoreAddress, StoreResourceDefinitionRegistrar.PROPERTIES.getName());
     }
 
     protected static ModelNode getCacheStoreUndefinePropertiesOperation(PathAddress cacheStoreAddress) {
-        return Util.getUndefineAttributeOperation(cacheStoreAddress, StoreResourceDefinition.Attribute.PROPERTIES.getName());
+        return Util.getUndefineAttributeOperation(cacheStoreAddress, StoreResourceDefinitionRegistrar.PROPERTIES.getName());
     }
 
-    protected static PathAddress getJDBCCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(JDBCStoreResourceDefinition.PATH);
+    protected static PathAddress getJDBCCacheStoreAddress(String containerName, PathElement cachePath) {
+        return getCacheAddress(containerName, cachePath).append(StoreResourceRegistration.JDBC.getPathElement());
     }
 
-    @SuppressWarnings("deprecation")
-    protected static PathAddress getRemoteCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(RemoteStoreResourceDefinition.PATH);
+    protected static PathAddress getRemoteCacheStoreAddress(String containerName, PathElement cachePath) {
+        return getCacheAddress(containerName, cachePath).append(StoreResourceRegistration.REMOTE.getPathElement());
     }
 
-    protected static PathAddress getFileCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(FileStoreResourceDefinition.PATH);
+    protected static PathAddress getFileCacheStoreAddress(String containerName, PathElement cachePath) {
+        return getCacheAddress(containerName, cachePath).append(StoreResourceRegistration.FILE.getPathElement());
     }
 
-    protected static PathAddress getCustomCacheStoreAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheAddress(containerName, cacheType, cacheName).append(CustomStoreResourceDefinition.PATH);
+    protected static PathAddress getCustomCacheStoreAddress(String containerName, PathElement cachePath) {
+        return getCacheAddress(containerName, cachePath).append(StoreResourceRegistration.CUSTOM.getPathElement());
     }
 
     protected static PathAddress getCacheContainerAddress(String containerName) {
-        return PathAddress.pathAddress(InfinispanSubsystemResourceDefinition.PATH).append(CacheContainerResourceDefinition.pathElement(containerName));
+        return PathAddress.pathAddress(InfinispanSubsystemResourceDefinitionRegistrar.REGISTRATION.getPathElement()).append(PathElement.pathElement(CacheContainerResourceDefinitionRegistrar.REGISTRATION.getPathElement().getKey(), containerName));
     }
 
-    protected static PathAddress getCacheAddress(String containerName, String cacheType, String cacheName) {
-        return getCacheContainerAddress(containerName).append(cacheType, cacheName);
+    protected static PathAddress getCacheAddress(String containerName, PathElement cachePath) {
+        return getCacheContainerAddress(containerName).append(cachePath);
     }
 
     protected String getSubsystemXml() throws IOException {

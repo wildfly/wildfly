@@ -13,6 +13,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 public class DistributedCacheResourceTransformer extends SegmentedCacheResourceTransformer {
 
     DistributedCacheResourceTransformer(ResourceTransformationDescriptionBuilder parent) {
-        super(parent.addChildResource(DistributedCacheResourceDefinition.WILDCARD_PATH));
+        super(parent.addChildResource(CacheResourceRegistration.DISTRIBUTED.getPathElement()));
     }
 }
