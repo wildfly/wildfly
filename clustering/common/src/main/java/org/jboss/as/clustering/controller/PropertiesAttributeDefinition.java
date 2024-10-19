@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 
@@ -25,6 +26,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -111,6 +113,10 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition implem
         @Override
         public void parseElement(AttributeDefinition attribute, XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
             assert attribute instanceof MapAttributeDefinition;
+            if (!reader.getLocalName().equals(Element.PROPERTY.getLocalName())) {
+                ParseUtils.unexpectedElement(reader, Set.of(Element.PROPERTY.getLocalName()));
+            }
+            ParseUtils.requireSingleAttribute(reader, ModelDescriptionConstants.NAME);
             String name = reader.getAttributeValue(null, ModelDescriptionConstants.NAME);
             ((MapAttributeDefinition) attribute).parseAndAddParameterElement(name, reader.getElementText(), operation, reader);
         }
