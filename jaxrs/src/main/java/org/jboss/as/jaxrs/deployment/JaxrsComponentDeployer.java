@@ -23,6 +23,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.WeldCapability;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
+import org.jboss.as.ee.component.ConcurrencyAttachments;
 
 /**
  * Integrates Jakarta RESTful Web Services with managed beans and Jakarta Enterprise Beans's
@@ -58,7 +59,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
         }
 
         // Set up the context for managed threads
-        phaseContext.getDeploymentUnit().addToAttachmentList(Attachments.ADDITIONAL_FACTORIES, ResteasyContextHandleFactory.INSTANCE);
+        phaseContext.getDeploymentUnit().addToAttachmentList(ConcurrencyAttachments.ADDITIONAL_FACTORIES, ResteasyContextHandleFactory.INSTANCE);
 
         // right now I only support resources
         if (!resteasy.isScanResources()) return;

@@ -17,6 +17,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
+import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 
 /**
  * JBossAS domain extension used to initialize the ee subsystem handlers and associated classes.
@@ -51,16 +52,11 @@ public class EeExtension implements Extension {
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // register submodels
-        final boolean runtimeOnlyRegistrationValid = context.isRuntimeOnlyRegistrationValid();
-        rootResource.registerSubModel(new ContextServiceResourceDefinition());
-        rootResource.registerSubModel(new ManagedThreadFactoryResourceDefinition());
-        rootResource.registerSubModel(new ManagedExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
-        rootResource.registerSubModel(new ManagedScheduledExecutorServiceResourceDefinition(runtimeOnlyRegistrationValid));
+        ConcurrencyImplementation.INSTANCE.registerRootResourceSubModels(rootResource, context);
         rootResource.registerSubModel(new DefaultBindingsResourceDefinition(new DefaultBindingsConfigurationProcessor()));
         rootResource.registerSubModel(new GlobalDirectoryResourceDefinition());
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
-
     }
 
     /**
