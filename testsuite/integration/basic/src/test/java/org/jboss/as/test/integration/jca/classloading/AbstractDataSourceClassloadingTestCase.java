@@ -9,11 +9,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.jca.datasource.Datasource;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.ServerReload;
 import org.jboss.as.test.shared.ServerSnapshot;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,9 +22,7 @@ import org.junit.Test;
 import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
@@ -62,17 +61,32 @@ public abstract class AbstractDataSourceClassloadingTestCase {
         private AutoCloseable snapshot;
         private String classNamePropertyName;
         private String driverClass;
+        private TestModule testModule;
 
         protected Setup(String classNamePropertyName, String driverClass) {
             this.classNamePropertyName = classNamePropertyName;
             this.driverClass = driverClass;
+
+            String testModuleName = "org.jboss.test.testDriver";
+            if (!AssumeTestGroupUtil.isBootableJar()) {
+                // use unique module name for each test because test cannot properly delete module in teardown on Windows
+                testModuleName = testModuleName + "." + this.getClass().getName();
+            }
+
+            testModule = new TestModule(testModuleName,
+                    "java.sql", "java.logging", "javax.orb.api");
+            JavaArchive driverJar = testModule.addResource("testDriver.jar");
+            driverJar.merge(getDeployment());
         }
 
         @Override
         public void setup(ManagementClient managementClient, String s) throws Exception {
             snapshot = ServerSnapshot.takeSnapshot(managementClient);
 
-            setupModule();
+            if (!AssumeTestGroupUtil.isBootableJar()){
+                // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+                setupModule();
+            }
             setupDriver(managementClient, classNamePropertyName, driverClass);
             setupDs(managementClient, "TestDS", false);
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
@@ -81,44 +95,15 @@ public abstract class AbstractDataSourceClassloadingTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String s) throws Exception {
             snapshot.close();
-            File testModuleRoot = new File(getModulePath(), "org/jboss/test/testDriver");
-            if (testModuleRoot.exists()) {
-                deleteRecursively(testModuleRoot);
+            if (!AssumeTestGroupUtil.isBootableJar()) {
+                // skip for bootable jar, module is injected to bootable jar during provisioning, see pom.xml
+                testModule.remove();
             }
             ServerReload.executeReloadAndWaitForCompletion(managementClient, 50000);
         }
 
         private void setupModule() throws IOException {
-            File testModuleRoot = new File(getModulePath(), "org/jboss/test/testDriver");
-            File file = new File(testModuleRoot, "main");
-            if (file.exists()) {
-                deleteRecursively(file);
-            }
-            if (!file.mkdirs()) {
-                // TODO handle
-            }
-
-            try(FileOutputStream jarFile = new FileOutputStream(new File(file, "module.xml"));
-                PrintWriter pw = new PrintWriter(jarFile)) {
-                pw.println("<module name=\"org.jboss.test.testDriver\" xmlns=\"urn:jboss:module:1.8\">\n" +
-                        "    <resources>\n" +
-                        "        <resource-root path=\"testDriver.jar\"/>\n" +
-                        "    </resources>\n" +
-                        "\n" +
-                        "    <dependencies>\n" +
-                        "        <module name=\"java.sql\"/>\n" +
-                        "        <module name=\"java.logging\"/>\n" +
-                        "        <module name=\"javax.orb.api\"/>\n" +
-                        "    </dependencies>\n" +
-                        "</module>");
-            }
-
-
-            JavaArchive deployment = getDeployment();
-            try(FileOutputStream jarFile = new FileOutputStream(new File(file, "testDriver.jar"))) {
-                deployment.as(ZipExporter.class).exportTo(jarFile);
-                jarFile.flush();
-            }
+            testModule.create();
         }
 
         private static void deleteRecursively(File file) {
@@ -132,27 +117,6 @@ public abstract class AbstractDataSourceClassloadingTestCase {
             }
         }
 
-        private static File getModulePath() {
-            String modulePath = System.getProperty("module.path", null);
-            if (modulePath == null) {
-                String jbossHome = System.getProperty("jboss.home", null);
-                if (jbossHome == null) {
-                    throw new IllegalStateException("Neither -Dmodule.path nor -Djboss.home were set");
-                }
-                modulePath = jbossHome + File.separatorChar + "modules";
-            } else {
-                modulePath = modulePath.split(File.pathSeparator)[0];
-            }
-            File moduleDir = new File(modulePath);
-            if (!moduleDir.exists()) {
-                throw new IllegalStateException("Determined module path does not exist");
-            }
-            if (!moduleDir.isDirectory()) {
-                throw new IllegalStateException("Determined module path is not a dir");
-            }
-            return moduleDir;
-        }
-
         private void setupDriver(ManagementClient managementClient, String classNamePropertyName, String driverClass) throws Exception {
             ModelNode address = new ModelNode();
             address.add("subsystem", "datasources");
@@ -161,7 +125,7 @@ public abstract class AbstractDataSourceClassloadingTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
             operation.get(OP_ADDR).set(address);
-            operation.get("driver-module-name").set("org.jboss.test.testDriver");
+            operation.get("driver-module-name").set(testModule.getName());
             operation.get("driver-name").set("test");
             operation.get("driver-datasource-class-name").set("org.jboss.as.test.integration.jca.classloading.ClassloadingDataSource");
             operation.get(classNamePropertyName).set(driverClass);
