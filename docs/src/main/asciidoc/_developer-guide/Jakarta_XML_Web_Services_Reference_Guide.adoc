@@ -1,5 +1,5 @@
 [[Jakarta_XML_Web_Services_Reference_guide]]
-= Webservices reference guide
+= Jakarta XML Webservices Reference
 
 ifdef::env-github[]
 :tip-caption: :bulb:
