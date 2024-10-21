@@ -227,6 +227,10 @@ public class Configuration {
     // key = provider class name, value = module name
     private static final Map<String, String> providerClassToModuleName = new HashMap<String, String>();
 
+    // Ignore bytecode enhancement for Jakarta EE TCK test classes as workaround for https://hibernate.atlassian.net/browse/HHH-16572
+    // Once https://hibernate.atlassian.net/browse/HHH-16572 is addressed, this workaround can be removed.
+    private static final String ignoreByteCodeEnhancementForClass = "com.sun.";
+
     static {
         // always choose the default hibernate version for the Hibernate provider class mapping
         // if the user wants a different version. they can specify the provider module name
@@ -409,5 +413,9 @@ public class Configuration {
             result = Boolean.parseBoolean((String) emf.getProperties().get(ALLOWJOINEDUNSYNCPC));
         }
         return result;
+    }
+
+    public static boolean ignoreClassTransform(String className) {
+        return className != null && className.replace('/','.').startsWith(ignoreByteCodeEnhancementForClass);
     }
 }
