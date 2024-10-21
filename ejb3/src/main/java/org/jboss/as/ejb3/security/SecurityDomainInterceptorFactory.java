@@ -43,8 +43,7 @@ public class SecurityDomainInterceptorFactory extends ComponentInterceptorFactor
             throw EjbLogger.ROOT_LOGGER.invalidSecurityForDomainSet(ejbComponent.getComponentName());
         }
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for EJB " + ejbComponent.getComponentName()
-            + " ## securityDomain: " + securityDomain);
+            ROOT_LOGGER.trace("Using security domain: " + securityDomainName + " for EJB " + ejbComponent.getComponentName());
         }
         return new SecurityDomainInterceptor(securityDomain);
     }

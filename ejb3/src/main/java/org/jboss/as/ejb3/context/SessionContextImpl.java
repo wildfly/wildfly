@@ -41,8 +41,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         if (ROOT_LOGGER.isTraceEnabled()) {
             java.security.Principal p = instance.getComponent().getCallerPrincipal();
             if (p != null) {
-                ROOT_LOGGER.trace("## SessionContextImpl  principal: " + p.getName()
-                        + ",  this: " + this);
+                ROOT_LOGGER.trace("## SessionContextImpl  principal: " + p.getName());
                 //new Throwable("## SessionContextImpl  principal: " + p.getName()
                 //+ ",  this: " + this).printStackTrace();
             }
