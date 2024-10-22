@@ -17,19 +17,19 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
-import org.wildfly.test.integration.microprofile.reactive.RunArtemisAmqpSetupTask;
+import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({EnableReactiveExtensionsSetupTask.class, RunArtemisAmqpSetupTask.class, OpenTelemetrySetupTask.class})
+@ServerSetup({EnableReactiveExtensionsSetupTask.class, RunKafkaSetupTask.class, OpenTelemetrySetupTask.class})
 @DockerRequired(AssumptionViolatedException.class)
-public class KafkaReactiveMessagingAndOtelTest extends BaseReactiveMessagingAndOtelTest {
+public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingAndOtelTest {
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
 
 
-    public KafkaReactiveMessagingAndOtelTest() {
+    public KafkaReactiveMessagingAndOtelTestCase() {
         super("mp.messaging.connector.smallrye-kafka.tracing-enabled", "kafka-connector");
     }
 

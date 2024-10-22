@@ -34,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -59,7 +60,8 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     @ArquillianResource
     URL url;
 
-    private static final int TIMEOUT = TimeoutUtil.adjust(20000);
+    private static final int REACTIVE_MESSAGING_TIMEOUT = TimeoutUtil.adjust(20000);
+    private static final int JAEGER_TIMEOUT = TimeoutUtil.adjust(60000);
 
     private final String tracingPropertyName;
     private final String tracingAttributeName;
@@ -98,7 +100,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     abstract OpenTelemetryCollectorContainer getCollector();
 
 //    @Test
-    public void testNoOtelTracing() throws Exception {
+    public void testNoOpenTelemetryTracing() throws Exception {
         // None of these should be set at this stage, but make sure they are not just in case
         ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, null);
@@ -124,10 +126,11 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     @Test
-    public void testOtelTracing() throws Exception {
+    public void testOpenTelemetryTracing() throws Exception {
         try {
             ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, TracingType.OFF);
             ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, true);
+            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 postData(client, "trace");
@@ -144,13 +147,31 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                     }
                 }
             }
+
+//            // For logging to console in IDE
+//            StringBuilder sb = new StringBuilder();
+//            List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
+//            for (JaegerTrace trace : traces) {
+//                sb.append("====== Trace");
+//                sb.append("\n");
+//                for (JaegerSpan span : trace.getSpans()) {
+//                    sb.append("---- span");
+//                    sb.append("\n");
+//                    sb.append(span);
+//                    sb.append("\n");
+//                }
+//            }
+//            System.out.println(traces);
+
+            checkJaegerTraces(JAEGER_TIMEOUT, 1);
+
+
+
         } finally {
             ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
             ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, null);
+            ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
         }
-
-        List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-        System.out.println(traces);
     }
 
 
@@ -167,15 +188,16 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     }
 
     private void waitForData(CloseableHttpClient client, String...expected) throws Exception {
-        long end = System.currentTimeMillis() + TIMEOUT;
+        long end = System.currentTimeMillis() + REACTIVE_MESSAGING_TIMEOUT;
         while (System.currentTimeMillis() < end) {
             List<String> read = getData(client);
             if (read.size() == expected.length) {
                 Assert.assertArrayEquals(expected, read.toArray(new String[0]));
-                break;
+                return;
             }
             Thread.sleep(2000);
         }
+        Assert.fail("Could not read data in time");
     }
 
     private List<String> getData(CloseableHttpClient client) throws Exception {
@@ -195,5 +217,47 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             }
         }
         return Collections.emptyList();
+    }
+
+    private void checkJaegerTraces(int timeout, int expectedCount) throws InterruptedException {
+        long end = System.currentTimeMillis() + timeout;
+        int count = 0;
+        while (System.currentTimeMillis() < end) {
+            count = 0;
+            List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
+            for (JaegerTrace trace : traces) {
+                if (hasPostAndReactiveMessagingSpans(trace)) {
+                    count++;
+                }
+            }
+
+            if (count == expectedCount) {
+                return;
+            }
+
+            Thread.sleep(1000);
+        }
+
+        Assert.assertEquals("Number of traces containing microprofile messaging traces was different from expected", expectedCount, count);
+    }
+
+    private boolean hasPostAndReactiveMessagingSpans(JaegerTrace trace) {
+        List<JaegerSpan> spans = trace.getSpans();
+
+        boolean post = false;
+        boolean publish = false;
+        boolean receive = false;
+
+        for (JaegerSpan span : spans) {
+            if (span.getOperationName().startsWith("POST /mp-rm")) {
+                post = true;
+            } else if (span.getOperationName().equals("testing publish")) {
+                publish = true;
+            } else if (span.getOperationName().equals("testing receive")) {
+                receive = true;
+            }
+        }
+
+        return post && publish && receive;
     }
 }

@@ -10,13 +10,15 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.SnapshotRestoreSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.microprofile.reactive.EnableReactiveExtensionsSetupTask;
+import org.wildfly.test.integration.microprofile.reactive.RunKafkaSetupTask;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({SnapshotRestoreSetupTask.class, EnableReactiveExtensionsSetupTask.class})
+@ServerSetup({SnapshotRestoreSetupTask.class, RunKafkaSetupTask.class, EnableReactiveExtensionsSetupTask.class, OpenTelemetrySetupTask.class})
 public class KafkaReactiveMessagingAndOtelConfigTestCase extends BaseReactiveMessagingAndOtelConfigTest {
 
     public KafkaReactiveMessagingAndOtelConfigTestCase() {
