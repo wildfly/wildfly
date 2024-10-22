@@ -7,7 +7,7 @@ package org.jboss.as.connector.deployers.ra.processors;
 
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemService;
+import org.jboss.as.connector.subsystems.resourceadapters.ConfiguredAdaptersService;
 import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -32,7 +32,7 @@ public class RaXmlDependencyProcessor implements DeploymentUnitProcessor {
         if (phaseContext.getDeploymentUnit().getAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY) == null) {
             return;  // Skip non ra deployments
         }
-        CopyOnWriteArrayListMultiMap<String,ServiceName> resourceAdaptersMap = phaseContext.getDeploymentUnit().getAttachment(ResourceAdaptersSubsystemService.ATTACHMENT_KEY).getAdapters();
+        CopyOnWriteArrayListMultiMap<String,ServiceName> resourceAdaptersMap = phaseContext.getDeploymentUnit().getAttachment(ConfiguredAdaptersService.ATTACHMENT_KEY);
         String deploymentUnitPrefix = "";
         if (deploymentUnit.getParent() != null) {
             deploymentUnitPrefix = deploymentUnit.getParent().getName() + "#";
