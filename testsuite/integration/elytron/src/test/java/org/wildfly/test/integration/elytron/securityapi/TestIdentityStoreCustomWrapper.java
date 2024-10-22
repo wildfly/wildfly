@@ -14,7 +14,7 @@ import jakarta.security.enterprise.identitystore.CredentialValidationResult;
  * A thin wrapper for {@link TestIdentityStore} which returns a {@link TestCustomPrincipal custom princpal} in place of
  * a {@link jakarta.security.enterprise.CallerPrincipal}.
  *
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 @ApplicationScoped
 public class TestIdentityStoreCustomWrapper extends TestIdentityStore {
