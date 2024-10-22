@@ -47,6 +47,12 @@
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+        </dependency>
     </dependencies>
 
     <build>
@@ -74,6 +80,14 @@
                             <bomWithDependencies>true</bomWithDependencies>
                             <licenses>true</licenses>
                             <inheritExclusions>UNMANAGED</inheritExclusions>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies>
                                 <!-- artemis jakarta jms client, the main artifact -->
                                 <!-- replaces org.apache.activemq:artemis-jms-client -->
