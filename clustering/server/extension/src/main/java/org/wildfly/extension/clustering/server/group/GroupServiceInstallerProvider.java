@@ -5,9 +5,8 @@
 
 package org.wildfly.extension.clustering.server.group;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.wildfly.clustering.server.Group;
 import org.wildfly.clustering.server.GroupMember;
 import org.wildfly.clustering.server.service.ClusteringServiceDescriptor;
@@ -20,7 +19,7 @@ import org.wildfly.subsystem.service.ServiceInstaller;
  */
 public class GroupServiceInstallerProvider extends UnaryServiceInstallerProvider<Group<GroupMember>> {
 
-    public GroupServiceInstallerProvider(BiFunction<CapabilityServiceSupport, String, ServiceInstaller> installerFactory) {
+    public GroupServiceInstallerProvider(Function<String, ServiceInstaller> installerFactory) {
         super(ClusteringServiceDescriptor.GROUP, installerFactory, ChannelJndiNameFactory.GROUP);
     }
 }

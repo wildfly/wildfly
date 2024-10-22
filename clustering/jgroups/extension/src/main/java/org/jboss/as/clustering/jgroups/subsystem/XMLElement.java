@@ -9,11 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.jboss.as.clustering.controller.Attribute;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.subsystem.resource.AttributeDefinitionProvider;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -24,28 +25,28 @@ public enum XMLElement {
 
     AUTH_PROTOCOL("auth-protocol"),
     CIPHER_TOKEN("cipher-token"),
-    CHANNEL(ChannelResourceDefinition.WILDCARD_PATH),
+    CHANNEL(ChannelResourceDefinitionRegistrar.WILDCARD_PATH),
     CHANNELS("channels"),
     DEFAULT_THREAD_POOL("default-thread-pool"),
     DIGEST_TOKEN("digest-token"),
     ENCRYPT_PROTOCOL("encrypt-protocol"),
-    FORK(ForkResourceDefinition.WILDCARD_PATH),
+    FORK(ForkResourceDefinitionRegistrar.WILDCARD_PATH),
     INTERNAL_THREAD_POOL("internal-thread-pool"),
     JDBC_PROTOCOL("jdbc-protocol"),
-    KEY_CREDENTIAL_REFERENCE(EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL),
+    KEY_CREDENTIAL_REFERENCE(EncryptProtocolResourceDefinitionRegistrar.KEY_CREDENTIAL),
     OOB_THREAD_POOL("oob-thread-pool"),
     PLAIN_TOKEN("plain-token"),
     PROPERTY(ModelDescriptionConstants.PROPERTY),
-    PROTOCOL(ProtocolResourceDefinition.WILDCARD_PATH),
-    RELAY(RelayResourceDefinition.WILDCARD_PATH),
-    REMOTE_SITE(RemoteSiteResourceDefinition.WILDCARD_PATH),
-    SHARED_SECRET_CREDENTIAL_REFERENCE(AuthTokenResourceDefinition.Attribute.SHARED_SECRET),
+    PROTOCOL(ProtocolResourceDefinitionRegistrar.WILDCARD_PATH),
+    RELAY(RelayResourceDefinitionRegistrar.WILDCARD_PATH),
+    REMOTE_SITE(RemoteSiteResourceDefinitionRegistrar.WILDCARD_PATH),
+    SHARED_SECRET_CREDENTIAL_REFERENCE(AuthTokenResourceDefinitionRegistrar.SHARED_SECRET),
     SOCKET_PROTOCOL("socket-protocol"),
     SOCKET_DISCOVERY_PROTOCOL("socket-discovery-protocol"),
-    STACK(StackResourceDefinition.WILDCARD_PATH),
+    STACK(StackResourceDefinitionRegistrar.WILDCARD_PATH),
     STACKS("stacks"),
     TIMER_THREAD_POOL("timer-thread-pool"),
-    TRANSPORT(TransportResourceDefinition.WILDCARD_PATH),
+    TRANSPORT(TransportResourceDefinitionRegistrar.WILDCARD_PATH),
     ;
 
     private final String name;
@@ -54,8 +55,12 @@ public enum XMLElement {
         this.name = path.isWildcard() ? path.getKey() : path.getValue();
     }
 
-    XMLElement(Attribute attribute) {
-        this.name = attribute.getName();
+    XMLElement(AttributeDefinitionProvider attribute) {
+        this(attribute.get());
+    }
+
+    XMLElement(AttributeDefinition attribute) {
+        this.name = attribute.getXmlName();
     }
 
     XMLElement(String name) {
@@ -112,31 +117,31 @@ public enum XMLElement {
             @Override
             public XMLElement apply(ModelNode model) {
                 // Use socket-protocol element only if optional socket-binding was defined
-                return model.hasDefined(SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
+                return model.hasDefined(SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.getName()) ? XMLElement.SOCKET_PROTOCOL : XMLElement.PROTOCOL;
             }
         };
-        for (ProtocolResourceRegistrar.SocketProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.SocketProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.SocketProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.SocketProtocol.class)) {
             protocols.put(protocol.name(), function);
         }
-        for (ProtocolResourceRegistrar.MulticastProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.MulticastProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.MulticastProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.MulticastProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.SOCKET_PROTOCOL);
         }
-        for (ProtocolResourceRegistrar.JdbcProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.JdbcProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.JdbcProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.JdbcProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.JDBC_PROTOCOL);
         }
-        for (ProtocolResourceRegistrar.EncryptProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.EncryptProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.EncryptProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.EncryptProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.ENCRYPT_PROTOCOL);
         }
-        for (ProtocolResourceRegistrar.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.InitialHostsProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.InitialHostsProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.InitialHostsProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.SOCKET_DISCOVERY_PROTOCOL);
         }
-        for (ProtocolResourceRegistrar.AuthProtocol protocol : EnumSet.allOf(ProtocolResourceRegistrar.AuthProtocol.class)) {
+        for (ProtocolResourceDefinitionRegistrar.AuthProtocol protocol : EnumSet.allOf(ProtocolResourceDefinitionRegistrar.AuthProtocol.class)) {
             protocols.put(protocol.name(), XMLElementFunction.AUTH_PROTOCOL);
         }
 
-        tokens.put(PlainAuthTokenResourceDefinition.PATH.getValue(), XMLElement.PLAIN_TOKEN);
-        tokens.put(DigestAuthTokenResourceDefinition.PATH.getValue(), XMLElement.DIGEST_TOKEN);
-        tokens.put(CipherAuthTokenResourceDefinition.PATH.getValue(), XMLElement.CIPHER_TOKEN);
+        tokens.put(PlainAuthTokenResourceDefinitionRegistrar.PATH.getValue(), XMLElement.PLAIN_TOKEN);
+        tokens.put(DigestAuthTokenResourceDefinitionRegistrar.PATH.getValue(), XMLElement.DIGEST_TOKEN);
+        tokens.put(CipherAuthTokenResourceDefinitionRegistrar.PATH.getValue(), XMLElement.CIPHER_TOKEN);
     }
 
     public static XMLElement forName(String localName) {

@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.clustering.controller.Attribute;
 import org.jboss.as.clustering.logging.ClusteringLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeParser;
@@ -42,7 +41,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
         Map<PathAddress, ModelNode> operations = new LinkedHashMap<>();
 
-        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
+        PathAddress address = PathAddress.pathAddress(JGroupsSubsystemResourceDefinitionRegistrar.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -51,12 +50,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         if (!this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) {
             defaultStack = require(reader, XMLAttribute.DEFAULT_STACK);
             // Fabricate a default channel
-            PathAddress channelAddress = address.append(ChannelResourceDefinition.pathElement("ee"));
+            PathAddress channelAddress = address.append(ChannelResourceDefinitionRegistrar.pathElement("ee"));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
-            channelOperation.get(ChannelResourceDefinition.Attribute.STACK.getName()).set(defaultStack);
-            channelOperation.get(ChannelResourceDefinition.Attribute.CLUSTER.getName()).set("ejb");
+            channelOperation.get(ChannelResourceDefinitionRegistrar.STACK.getName()).set(defaultStack);
+            channelOperation.get(ChannelResourceDefinitionRegistrar.CLUSTER.getName()).set("ejb");
             operations.put(channelAddress, channelOperation);
-            operation.get(JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL.getName()).set(channelAddress.getLastElement().getValue());
+            operation.get(JGroupsSubsystemResourceDefinitionRegistrar.DEFAULT_CHANNEL.getName()).set(channelAddress.getLastElement().getValue());
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -91,10 +90,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         if (!this.schema.since(JGroupsSubsystemSchema.VERSION_4_0)) {
             for (Map.Entry<PathAddress, ModelNode> entry : operations.entrySet()) {
                 PathAddress opAddr = entry.getKey();
-                if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinition.WILDCARD_PATH.getKey())) {
+                if (opAddr.getLastElement().getKey().equals(ChannelResourceDefinitionRegistrar.WILDCARD_PATH.getKey())) {
                     ModelNode op = entry.getValue();
-                    if (!op.hasDefined(ChannelResourceDefinition.Attribute.STACK.getName())) {
-                        op.get(ChannelResourceDefinition.Attribute.STACK.getName()).set(defaultStack);
+                    if (!op.hasDefined(ChannelResourceDefinitionRegistrar.STACK.getName())) {
+                        op.get(ChannelResourceDefinitionRegistrar.STACK.getName()).set(defaultStack);
                     }
                 }
             }
@@ -112,7 +111,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT: {
-                    readAttribute(reader, i, operation, JGroupsSubsystemResourceDefinition.Attribute.DEFAULT_CHANNEL);
+                    readAttribute(reader, i, operation, JGroupsSubsystemResourceDefinitionRegistrar.DEFAULT_CHANNEL);
                     break;
                 }
                 default: {
@@ -137,7 +136,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseChannel(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         String name = require(reader, XMLAttribute.NAME);
-        PathAddress address = subsystemAddress.append(ChannelResourceDefinition.pathElement(name));
+        PathAddress address = subsystemAddress.append(ChannelResourceDefinitionRegistrar.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -150,22 +149,22 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     break;
                 }
                 case STACK: {
-                    readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.STACK);
+                    readAttribute(reader, i, operation, ChannelResourceDefinitionRegistrar.STACK);
                     break;
                 }
                 case MODULE: {
-                    readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.MODULE);
+                    readAttribute(reader, i, operation, ChannelResourceDefinitionRegistrar.MODULE);
                     break;
                 }
                 case CLUSTER: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_4_0)) {
-                        readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.CLUSTER);
+                        readAttribute(reader, i, operation, ChannelResourceDefinitionRegistrar.CLUSTER);
                         break;
                     }
                 }
                 case STATISTICS_ENABLED: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_5_0)) {
-                        readAttribute(reader, i, operation, ChannelResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        readAttribute(reader, i, operation, ChannelResourceDefinitionRegistrar.STATISTICS_ENABLED);
                         break;
                     }
                 }
@@ -176,7 +175,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
 
         if (this.schema.since(JGroupsSubsystemSchema.VERSION_4_0)) {
-            require(reader, operation, ChannelResourceDefinition.Attribute.STACK);
+            require(reader, operation, ChannelResourceDefinitionRegistrar.STACK);
         }
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
@@ -195,7 +194,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseFork(XMLExtendedStreamReader reader, PathAddress channelAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         String name = require(reader, XMLAttribute.NAME);
-        PathAddress address = channelAddress.append(ForkResourceDefinition.pathElement(name));
+        PathAddress address = channelAddress.append(ForkResourceDefinitionRegistrar.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -265,7 +264,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseStack(XMLExtendedStreamReader reader, PathAddress subsystemAddress, Map<PathAddress, ModelNode> operations, String defaultStack) throws XMLStreamException {
         String name = require(reader, XMLAttribute.NAME);
-        PathAddress address = subsystemAddress.append(StackResourceDefinition.pathElement(name));
+        PathAddress address = subsystemAddress.append(StackResourceDefinitionRegistrar.pathElement(name));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -279,7 +278,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
                 case STATISTICS_ENABLED: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_5_0)) {
-                        readAttribute(reader, i, operation, StackResourceDefinition.Attribute.STATISTICS_ENABLED);
+                        readAttribute(reader, i, operation, StackResourceDefinitionRegistrar.STATISTICS_ENABLED);
                         break;
                     }
                 }
@@ -298,7 +297,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
                 case PROTOCOL: {
                     // If protocol contains socket-binding attribute, parse as a socket-protocol
-                    if (reader.getAttributeValue(null, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING.getDefinition().getXmlName()) != null) {
+                    if (reader.getAttributeValue(null, SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get().getXmlName()) != null) {
                         this.parseSocketProtocol(reader, address, operations);
                     } else {
                         this.parseProtocol(reader, address, operations);
@@ -351,7 +350,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseTransport(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(TransportResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractTransportResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -359,11 +358,11 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SOCKET_BINDING: {
-                    readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.SOCKET_BINDING);
+                    readAttribute(reader, i, operation, AbstractTransportResourceDefinitionRegistrar.SocketBindingAttribute.TRANSPORT.get());
                     break;
                 }
                 case DIAGNOSTICS_SOCKET_BINDING: {
-                    readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.DIAGNOSTICS_SOCKET_BINDING);
+                    readAttribute(reader, i, operation, AbstractTransportResourceDefinitionRegistrar.SocketBindingAttribute.DIAGNOSTICS.get());
                     break;
                 }
                 case SHARED:
@@ -378,25 +377,25 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     break;
                 case SITE: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_1_1)) {
-                        readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.SITE);
+                        readAttribute(reader, i, operation, AbstractTransportResourceDefinitionRegistrar.Attribute.SITE.get());
                         break;
                     }
                 }
                 case RACK: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_1_1)) {
-                        readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.RACK);
+                        readAttribute(reader, i, operation, AbstractTransportResourceDefinitionRegistrar.Attribute.RACK.get());
                         break;
                     }
                 }
                 case MACHINE: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_1_1)) {
-                        readAttribute(reader, i, operation, TransportResourceDefinition.Attribute.MACHINE);
+                        readAttribute(reader, i, operation, AbstractTransportResourceDefinitionRegistrar.Attribute.MACHINE.get());
                         break;
                     }
                 }
                 case CLIENT_SOCKET_BINDING: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_7_0)) {
-                        readAttribute(reader, i, operation, SocketTransportResourceDefinition.Attribute.CLIENT_SOCKET_BINDING);
+                        readAttribute(reader, i, operation, SocketTransportResourceDefinitionRegistrar.CLIENT_SOCKET_BINDING);
                         break;
                     }
                 }
@@ -411,7 +410,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             switch (element) {
                 case DEFAULT_THREAD_POOL: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) {
-                        this.parseThreadPool(ThreadPoolResourceDefinition.DEFAULT, reader, address, operations);
+                        this.parseThreadPool(ThreadPoolResourceDefinitionRegistrar.DEFAULT, reader, address, operations);
                         break;
                     }
                 }
@@ -435,8 +434,8 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         // Set default port_range for pre-WF11 schemas
         if (!this.schema.since(JGroupsSubsystemSchema.VERSION_5_0)) {
             String portRangeProperty = "port_range";
-            if (!operation.hasDefined(AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName(), portRangeProperty)) {
-                operation.get(AbstractProtocolResourceDefinition.Attribute.PROPERTIES.getName()).get(portRangeProperty).set("50");
+            if (!operation.hasDefined(ProtocolChildResourceDefinitionRegistrar.PROPERTIES.getName(), portRangeProperty)) {
+                operation.get(ProtocolChildResourceDefinitionRegistrar.PROPERTIES.getName()).get(portRangeProperty).set("50");
             }
         }
     }
@@ -444,7 +443,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseSocketProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -452,12 +451,12 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SOCKET_BINDING: {
-                    readAttribute(reader, i, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+                    readAttribute(reader, i, operation, SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get());
                     break;
                 }
                 case CLIENT_SOCKET_BINDING: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_7_0)) {
-                        readAttribute(reader, i, operation, SocketProtocolResourceDefinition.Attribute.CLIENT_SOCKET_BINDING);
+                        readAttribute(reader, i, operation, SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.CLIENT.get());
                         break;
                     }
                 }
@@ -467,7 +466,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, SocketProtocolResourceDefinition.Attribute.SOCKET_BINDING);
+        require(reader, operation, SocketProtocolResourceDefinitionRegistrar.SocketBindingAttribute.SERVER.get());
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
@@ -477,7 +476,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseSocketDiscoveryProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -485,7 +484,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case OUTBOUND_SOCKET_BINDINGS: {
-                    readAttribute(reader, i, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
+                    readAttribute(reader, i, operation, SocketDiscoveryProtocolResourceDefinitionRegistrar.OUTBOUND_SOCKET_BINDINGS);
                     break;
                 }
                 default: {
@@ -494,7 +493,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, SocketDiscoveryProtocolResourceDefinition.Attribute.OUTBOUND_SOCKET_BINDINGS);
+        require(reader, operation, SocketDiscoveryProtocolResourceDefinitionRegistrar.OUTBOUND_SOCKET_BINDINGS);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
@@ -504,7 +503,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseJDBCProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -512,7 +511,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATA_SOURCE: {
-                    readAttribute(reader, i, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
+                    readAttribute(reader, i, operation, JDBCProtocolResourceDefinitionRegistrar.DATA_SOURCE);
                     break;
                 }
                 default: {
@@ -521,7 +520,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
+        require(reader, operation, JDBCProtocolResourceDefinitionRegistrar.DATA_SOURCE);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseProtocolElement(reader, address, operations);
@@ -531,7 +530,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseEncryptProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -539,11 +538,11 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case KEY_ALIAS: {
-                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS);
+                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinitionRegistrar.KEY_ALIAS);
                     break;
                 }
                 case KEY_STORE: {
-                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
+                    readAttribute(reader, i, operation, EncryptProtocolResourceDefinitionRegistrar.KEY_STORE);
                     break;
                 }
                 default: {
@@ -552,7 +551,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, EncryptProtocolResourceDefinition.Attribute.KEY_ALIAS, EncryptProtocolResourceDefinition.Attribute.KEY_STORE);
+        require(reader, operation, EncryptProtocolResourceDefinitionRegistrar.KEY_ALIAS, EncryptProtocolResourceDefinitionRegistrar.KEY_STORE);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             this.parseEncryptProtocolElement(reader, address, operations);
@@ -562,7 +561,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseAuthProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -574,7 +573,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             this.parseAuthProtocolElement(reader, address, operations);
         }
 
-        if (!operations.containsKey(address.append(AuthTokenResourceDefinition.WILDCARD_PATH))) {
+        if (!operations.containsKey(address.append(AuthTokenResourceDefinitionRegistrar.WILDCARD_PATH))) {
             throw ParseUtils.missingOneOf(reader, EnumSet.of(XMLElement.PLAIN_TOKEN, XMLElement.DIGEST_TOKEN, XMLElement.CIPHER_TOKEN));
         }
     }
@@ -582,7 +581,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseProtocol(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
         String type = require(reader, XMLAttribute.TYPE);
-        PathAddress address = stackAddress.append(ProtocolResourceDefinition.pathElement(type));
+        PathAddress address = stackAddress.append(AbstractProtocolResourceDefinitionRegistrar.pathElement(type));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -606,18 +605,18 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 if (this.schema.since(JGroupsSubsystemSchema.VERSION_5_0)) {
                     throw ParseUtils.unexpectedAttribute(reader, index);
                 }
-                readAttribute(reader, index, operation, JDBCProtocolResourceDefinition.Attribute.DATA_SOURCE);
+                readAttribute(reader, index, operation, JDBCProtocolResourceDefinitionRegistrar.DATA_SOURCE);
                 break;
             }
             case MODULE: {
                 if (this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) {
-                    readAttribute(reader, index, operation, AbstractProtocolResourceDefinition.Attribute.MODULE);
+                    readAttribute(reader, index, operation, ProtocolChildResourceDefinitionRegistrar.MODULE);
                     break;
                 }
             }
             case STATISTICS_ENABLED: {
                 if (this.schema.since(JGroupsSubsystemSchema.VERSION_5_0)) {
-                    readAttribute(reader, index, operation, AbstractProtocolResourceDefinition.Attribute.STATISTICS_ENABLED);
+                    readAttribute(reader, index, operation, ProtocolChildResourceDefinitionRegistrar.STATISTICS_ENABLED);
                     break;
                 }
             }
@@ -632,7 +631,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         XMLElement element = XMLElement.forName(reader.getLocalName());
         switch (element) {
             case KEY_CREDENTIAL_REFERENCE: {
-                readElement(reader, operation, EncryptProtocolResourceDefinition.Attribute.KEY_CREDENTIAL);
+                readElement(reader, operation, EncryptProtocolResourceDefinitionRegistrar.KEY_CREDENTIAL);
                 break;
             }
             default: {
@@ -676,9 +675,9 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     }
 
     private void parsePlainAuthToken(XMLExtendedStreamReader reader, PathAddress protocolAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
-        PathAddress address = protocolAddress.append(PlainAuthTokenResourceDefinition.PATH);
+        PathAddress address = protocolAddress.append(PlainAuthTokenResourceDefinitionRegistrar.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(protocolAddress.append(AuthTokenResourceDefinition.WILDCARD_PATH), operation);
+        operations.put(protocolAddress.append(AuthTokenResourceDefinitionRegistrar.WILDCARD_PATH), operation);
 
         ParseUtils.requireNoAttributes(reader);
 
@@ -686,19 +685,19 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             this.parseAuthTokenElement(reader, protocolAddress, operations);
         }
 
-        require(reader, operation, AuthTokenResourceDefinition.Attribute.SHARED_SECRET);
+        require(reader, operation, AuthTokenResourceDefinitionRegistrar.SHARED_SECRET);
     }
 
     private void parseDigestAuthToken(XMLExtendedStreamReader reader, PathAddress protocolAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
-        PathAddress address = protocolAddress.append(DigestAuthTokenResourceDefinition.PATH);
+        PathAddress address = protocolAddress.append(DigestAuthTokenResourceDefinitionRegistrar.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(protocolAddress.append(AuthTokenResourceDefinition.WILDCARD_PATH), operation);
+        operations.put(protocolAddress.append(AuthTokenResourceDefinitionRegistrar.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ALGORITHM: {
-                    readAttribute(reader, i, operation, DigestAuthTokenResourceDefinition.Attribute.ALGORITHM);
+                    readAttribute(reader, i, operation, DigestAuthTokenResourceDefinitionRegistrar.Attribute.ALGORITHM.get());
                     break;
                 }
                 default: {
@@ -711,28 +710,28 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             this.parseAuthTokenElement(reader, protocolAddress, operations);
         }
 
-        require(reader, operation, AuthTokenResourceDefinition.Attribute.SHARED_SECRET);
+        require(reader, operation, AuthTokenResourceDefinitionRegistrar.SHARED_SECRET);
     }
 
     private void parseCipherAuthToken(XMLExtendedStreamReader reader, PathAddress protocolAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
 
-        PathAddress address = protocolAddress.append(CipherAuthTokenResourceDefinition.PATH);
+        PathAddress address = protocolAddress.append(CipherAuthTokenResourceDefinitionRegistrar.PATH);
         ModelNode operation = Util.createAddOperation(address);
-        operations.put(protocolAddress.append(AuthTokenResourceDefinition.WILDCARD_PATH), operation);
+        operations.put(protocolAddress.append(AuthTokenResourceDefinitionRegistrar.WILDCARD_PATH), operation);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case KEY_ALIAS: {
-                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinition.Attribute.KEY_ALIAS);
+                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinitionRegistrar.Attribute.KEY_ALIAS.get());
                     break;
                 }
                 case KEY_STORE: {
-                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinition.Attribute.KEY_STORE);
+                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinitionRegistrar.KEY_STORE);
                     break;
                 }
                 case ALGORITHM: {
-                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinition.Attribute.ALGORITHM);
+                    readAttribute(reader, i, operation, CipherAuthTokenResourceDefinitionRegistrar.Attribute.ALGORITHM.get());
                     break;
                 }
                 default: {
@@ -741,13 +740,13 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, CipherAuthTokenResourceDefinition.Attribute.KEY_ALIAS, CipherAuthTokenResourceDefinition.Attribute.KEY_STORE);
+        require(reader, operation, CipherAuthTokenResourceDefinitionRegistrar.Attribute.KEY_ALIAS.get(), CipherAuthTokenResourceDefinitionRegistrar.KEY_STORE);
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
             switch (element) {
                 case KEY_CREDENTIAL_REFERENCE: {
-                    readElement(reader, operation, CipherAuthTokenResourceDefinition.Attribute.KEY_CREDENTIAL);
+                    readElement(reader, operation, CipherAuthTokenResourceDefinitionRegistrar.KEY_CREDENTIAL);
                     break;
                 }
                 default: {
@@ -756,15 +755,15 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, CipherAuthTokenResourceDefinition.Attribute.KEY_CREDENTIAL, AuthTokenResourceDefinition.Attribute.SHARED_SECRET);
+        require(reader, operation, CipherAuthTokenResourceDefinitionRegistrar.KEY_CREDENTIAL, AuthTokenResourceDefinitionRegistrar.SHARED_SECRET);
     }
 
     private void parseAuthTokenElement(XMLExtendedStreamReader reader, PathAddress protocolAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
-        ModelNode operation = operations.get(protocolAddress.append(AuthTokenResourceDefinition.WILDCARD_PATH));
+        ModelNode operation = operations.get(protocolAddress.append(AuthTokenResourceDefinitionRegistrar.WILDCARD_PATH));
         XMLElement element = XMLElement.forName(reader.getLocalName());
         switch (element) {
             case SHARED_SECRET_CREDENTIAL_REFERENCE: {
-                readElement(reader, operation, AuthTokenResourceDefinition.Attribute.SHARED_SECRET);
+                readElement(reader, operation, AuthTokenResourceDefinitionRegistrar.SHARED_SECRET);
                 break;
             }
             default: {
@@ -776,10 +775,10 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     private void parseProperty(XMLExtendedStreamReader reader, PathAddress address, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         ModelNode operation = operations.get(address);
         ParseUtils.requireSingleAttribute(reader, XMLAttribute.NAME.getLocalName());
-        readElement(reader, operation, AbstractProtocolResourceDefinition.Attribute.PROPERTIES);
+        readElement(reader, operation, ProtocolChildResourceDefinitionRegistrar.PROPERTIES);
     }
 
-    private void parseThreadPool(ThreadPoolResourceDefinition pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
+    private void parseThreadPool(ThreadPoolResourceDefinitionRegistrar pool, XMLExtendedStreamReader reader, PathAddress parentAddress, Map<PathAddress, ModelNode> operations) throws XMLStreamException {
         PathAddress address = parentAddress.append(pool.getPathElement());
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
@@ -800,7 +799,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                     ClusteringLogger.ROOT_LOGGER.attributeIgnored(attribute.getLocalName(), reader.getLocalName());
                     break;
                 case KEEPALIVE_TIME:
-                    readAttribute(reader, i, operation, pool.getKeepAliveTime());
+                    readAttribute(reader, i, operation, pool.getKeepAlive());
                     break;
                 default:
                     throw ParseUtils.unexpectedAttribute(reader, i);
@@ -811,7 +810,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
     }
 
     private void parseRelay(XMLExtendedStreamReader reader, PathAddress stackAddress, Map<PathAddress, ModelNode> operations, String defaultStack) throws XMLStreamException {
-        PathAddress address = stackAddress.append(RelayResourceDefinition.PATH);
+        PathAddress address = stackAddress.append(RelayResourceDefinitionRegistrar.PATH);
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -819,7 +818,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             XMLAttribute attribute = XMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case SITE: {
-                    readAttribute(reader, i, operation, RelayResourceDefinition.Attribute.SITE);
+                    readAttribute(reader, i, operation, RelayResourceDefinitionRegistrar.Attribute.SITE.get());
                     break;
                 }
                 default: {
@@ -828,7 +827,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
             }
         }
 
-        require(reader, operation, RelayResourceDefinition.Attribute.SITE);
+        require(reader, operation, RelayResourceDefinitionRegistrar.Attribute.SITE.get());
 
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
             XMLElement element = XMLElement.forName(reader.getLocalName());
@@ -850,7 +849,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
 
     private void parseRemoteSite(XMLExtendedStreamReader reader, PathAddress relayAddress, Map<PathAddress, ModelNode> operations, String defaultStack) throws XMLStreamException {
         String site = require(reader, XMLAttribute.NAME);
-        PathAddress address = relayAddress.append(RemoteSiteResourceDefinition.pathElement(site));
+        PathAddress address = relayAddress.append(RemoteSiteResourceDefinitionRegistrar.pathElement(site));
         ModelNode operation = Util.createAddOperation(address);
         operations.put(address, operation);
 
@@ -880,7 +879,7 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
                 }
                 case CHANNEL: {
                     if (this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) {
-                        readAttribute(reader, i, operation, RemoteSiteResourceDefinition.Attribute.CHANNEL);
+                        readAttribute(reader, i, operation, RemoteSiteResourceDefinitionRegistrar.CHANNEL_CONFIGURATION);
                         break;
                     }
                 }
@@ -891,16 +890,16 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         }
 
         if (this.schema.since(JGroupsSubsystemSchema.VERSION_3_0)) {
-            require(reader, operation, RemoteSiteResourceDefinition.Attribute.CHANNEL);
+            require(reader, operation, RemoteSiteResourceDefinitionRegistrar.CHANNEL_CONFIGURATION);
         } else {
             String channel = (cluster != null) ? cluster : site;
-            setAttribute(reader, channel, operation, RemoteSiteResourceDefinition.Attribute.CHANNEL);
+            setAttribute(reader, channel, operation, RemoteSiteResourceDefinitionRegistrar.CHANNEL_CONFIGURATION);
 
             // We need to create a corresponding channel add operation
-            PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinition.PATH);
-            PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinition.pathElement(channel));
+            PathAddress subsystemAddress = PathAddress.pathAddress(JGroupsSubsystemResourceDefinitionRegistrar.PATH);
+            PathAddress channelAddress = subsystemAddress.append(ChannelResourceDefinitionRegistrar.pathElement(channel));
             ModelNode channelOperation = Util.createAddOperation(channelAddress);
-            setAttribute(reader, stack, channelOperation, ChannelResourceDefinition.Attribute.STACK);
+            setAttribute(reader, stack, channelOperation, ChannelResourceDefinitionRegistrar.STACK);
             operations.put(channelAddress, channelOperation);
         }
 
@@ -915,31 +914,29 @@ public class JGroupsSubsystemXMLReader implements XMLElementReader<List<ModelNod
         return value;
     }
 
-    private static void require(XMLExtendedStreamReader reader, ModelNode operation, Attribute... attributes) throws XMLStreamException {
-        for (Attribute attribute : attributes) {
+    private static void require(XMLExtendedStreamReader reader, ModelNode operation, AttributeDefinition... attributes) throws XMLStreamException {
+        for (AttributeDefinition attribute : attributes) {
             if (!operation.hasDefined(attribute.getName())) {
-                AttributeDefinition definition = attribute.getDefinition();
-                Set<String> names = Collections.singleton(definition.getXmlName());
-                throw definition.getParser().isParseAsElement() ? ParseUtils.missingRequiredElement(reader, names) : ParseUtils.missingRequired(reader, names);
+                Set<String> names = Collections.singleton(attribute.getXmlName());
+                throw attribute.getParser().isParseAsElement() ? ParseUtils.missingRequiredElement(reader, names) : ParseUtils.missingRequired(reader, names);
             }
         }
     }
 
-    private static void readAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation, Attribute attribute) throws XMLStreamException {
+    private static void readAttribute(XMLExtendedStreamReader reader, int index, ModelNode operation, AttributeDefinition attribute) throws XMLStreamException {
         setAttribute(reader, reader.getAttributeValue(index), operation, attribute);
     }
 
-    private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        attribute.getDefinition().getParser().parseAndSetParameter(attribute.getDefinition(), value, operation, reader);
+    private static void setAttribute(XMLExtendedStreamReader reader, String value, ModelNode operation, AttributeDefinition attribute) throws XMLStreamException {
+        attribute.getParser().parseAndSetParameter(attribute, value, operation, reader);
     }
 
-    private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, Attribute attribute) throws XMLStreamException {
-        AttributeDefinition definition = attribute.getDefinition();
-        AttributeParser parser = definition.getParser();
+    private static void readElement(XMLExtendedStreamReader reader, ModelNode operation, AttributeDefinition attribute) throws XMLStreamException {
+        AttributeParser parser = attribute.getParser();
         if (parser.isParseAsElement()) {
-            parser.parseElement(definition, reader, operation);
+            parser.parseElement(attribute, reader, operation);
         } else {
-            parser.parseAndSetParameter(definition, reader.getElementText(), operation, reader);
+            parser.parseAndSetParameter(attribute, reader.getElementText(), operation, reader);
         }
     }
 }
