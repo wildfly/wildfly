@@ -30,7 +30,7 @@ public class KafkaReactiveMessagingAndOtelTestCase extends BaseReactiveMessaging
 
 
     public KafkaReactiveMessagingAndOtelTestCase() {
-        super("mp.messaging.connector.smallrye-kafka.tracing-enabled", "kafka-connector");
+        super("kafka");
     }
 
     @Deployment

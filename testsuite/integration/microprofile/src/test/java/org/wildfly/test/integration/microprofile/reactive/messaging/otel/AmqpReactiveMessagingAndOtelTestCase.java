@@ -31,7 +31,7 @@ public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingA
 
 
     public AmqpReactiveMessagingAndOtelTestCase() {
-        super("mp.messaging.connector.smallrye-amqp.tracing-enabled", "amqp-connector");
+        super("amqp");
     }
 
     @Deployment

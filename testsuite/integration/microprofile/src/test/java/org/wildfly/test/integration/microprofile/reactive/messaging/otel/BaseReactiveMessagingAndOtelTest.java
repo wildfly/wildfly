@@ -67,11 +67,18 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     private final String tracingPropertyName;
     private final String tracingAttributeName;
+    private final String connectorSuffix;
 
     private static String deploymentName;
 
     private Set<String> previousTestsTraceIds = new HashSet<>();
     private Set<String> currentTraceIds = new HashSet<>();
+
+    public BaseReactiveMessagingAndOtelTest(String connectorSuffix) {
+        this.tracingPropertyName = String.format("mp.messaging.connector.smallrye-%s.tracing-enabled", connectorSuffix);
+        this.tracingAttributeName = String.format("%s-connector", connectorSuffix);
+        this.connectorSuffix = connectorSuffix;
+    }
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -87,12 +94,6 @@ public abstract class BaseReactiveMessagingAndOtelTest {
     public void after() throws Exception {
         previousTestsTraceIds.addAll(currentTraceIds);
         currentTraceIds.clear();
-    }
-
-
-    public BaseReactiveMessagingAndOtelTest(String tracingPropertyName, String tracingAttributeName) {
-        this.tracingPropertyName = tracingPropertyName;
-        this.tracingAttributeName = tracingAttributeName;
     }
 
     protected static WebArchive createDeployment(String deploymentName, String mpCfgPropertiesFileName) {
@@ -226,11 +227,11 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         boolean receive = false;
 
         for (JaegerSpan span : spans) {
-            if (span.getOperationName().startsWith("POST /mp-rm")) {
+            if (span.getOperationName().equals(String.format("POST /mp-rm-%s-otel/", connectorSuffix))) {
                 post = true;
-            } else if (span.getOperationName().equals("testing publish")) {
+            } else if (span.getOperationName().equals(String.format("test%s publish", connectorSuffix))) {
                 publish = true;
-            } else if (span.getOperationName().equals("testing receive")) {
+            } else if (span.getOperationName().equals(String.format("test%s receive", connectorSuffix))) {
                 receive = true;
             }
         }
