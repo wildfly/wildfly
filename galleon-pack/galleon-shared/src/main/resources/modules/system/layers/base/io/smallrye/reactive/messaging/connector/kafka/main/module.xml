@@ -21,10 +21,10 @@
         <module name="io.reactivex.rxjava2.rxjava"/>
         <module name="io.smallrye.config" services="import"/>
         <module name="io.smallrye.common.annotation"/>
+        <module name="io.smallrye.opentelemetry" optional="true"/>
         <module name="io.smallrye.reactive.converters.api"/>
         <module name="io.smallrye.reactive.messaging"/>
         <module name="io.smallrye.reactive.messaging.connector.kafka.api"/>
-        <!-- TODO Make optional. Should only be present if both Otel and Kafka/AMQP connectors are present -->
         <module name="io.smallrye.reactive.messaging.otel"/>
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.reactive-streams-operators"/>

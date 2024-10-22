@@ -21,6 +21,7 @@
         <module name="io.opentelemetry.api" optional="true"/>
         <module name="io.opentelemetry.context" optional="true"/>
         <module name="io.opentelemetry.instrumentation.api" optional="true"/>
+        <module name="io.smallrye.opentelemetry" optional="true"/>
         <module name="io.smallrye.reactive.messaging"/>
         <module name="jakarta.enterprise.api" />
         <!-- We need some classes from the smallrye-reactive-messaging-api-jar which are in this module -->
