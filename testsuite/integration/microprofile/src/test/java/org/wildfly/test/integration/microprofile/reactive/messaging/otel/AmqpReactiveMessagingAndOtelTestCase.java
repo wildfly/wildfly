@@ -29,7 +29,6 @@ public class AmqpReactiveMessagingAndOtelTestCase extends BaseReactiveMessagingA
     @Testcontainer
     private OpenTelemetryCollectorContainer otelCollector;
 
-
     public AmqpReactiveMessagingAndOtelTestCase() {
         super("amqp");
     }

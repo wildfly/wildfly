@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingExtension.SUBSYSTEM_NAME;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,6 +47,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition;
 import org.wildfly.microprofile.reactive.messaging.config.TracingType;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.wildfly.test.integration.microprofile.reactive.messaging.otel.application.TestReactiveMessagingOtelBean;
 
 public abstract class BaseReactiveMessagingAndOtelTest {
@@ -73,6 +72,8 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     private Set<String> previousTestsTraceIds = new HashSet<>();
     private Set<String> currentTraceIds = new HashSet<>();
+
+    private int ITERATIONS = Integer.valueOf(WildFlySecurityManager.getPropertyPrivileged("wildfly.mp.rm.otel.iterations", "2"));
 
     public BaseReactiveMessagingAndOtelTest(String connectorSuffix) {
         this.tracingPropertyName = String.format("mp.messaging.connector.smallrye-%s.tracing-enabled", connectorSuffix);
@@ -102,9 +103,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             .addPackage(TestReactiveMessagingOtelBean.class.getPackage())
             .addAsWebInfResource(TestReactiveMessagingOtelBean.class.getPackage(), mpCfgPropertiesFileName, "classes/META-INF/microprofile-config.properties")
             .add(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-
-        war.as(ZipExporter.class).exportTo(new File("target/" + war.getName()));
-
+        //war.as(ZipExporter.class).exportTo(new File("target/" + war.getName()));
         return war;
     }
 
@@ -131,17 +130,21 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     @Test
     public void testOpenTelemetryTracing() throws Exception {
+        String[] values = new String[ITERATIONS];
+        for (int i = 0; i < ITERATIONS; i++) {
+            values[i] = "trace-" + i;
+        }
         try {
             ReactiveMessagingOtelUtils.setConnectorTracingType(managementClient.getControllerClient(), tracingAttributeName, TracingType.OFF);
             ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, true);
             ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-                postData(client, "trace-1");
-                postData(client, "trace-2");
-                waitForData(client, "trace-1", "trace-2");
-
-                checkJaegerTraces(JAEGER_TIMEOUT, 2);
+                for (String value : values) {
+                    postData(client, value);
+                }
+                waitForData(client, values);
+                checkJaegerTraces(JAEGER_TIMEOUT, ITERATIONS);
             }
         } finally {
             ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
