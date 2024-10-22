@@ -11,7 +11,7 @@ endif::[]
 
 [abstract]
 
-WildFly {wildflyVersion} introduced the EJB client API for managing remote EJB
+WildFly includes an EJB client API for managing remote EJB
 invocations. The EJB client API works off EJBClientContext(s). An
 EJBClientContext can potentially contain any number of EJB receivers. An
 EJB receiver is a component which knows how to communicate with a server
@@ -418,8 +418,9 @@ can only use this context for EJB lookups or any other EJB related JNDI
 lookups. So it depends on your application and how it's coded.
 
 [[cant-the-scoped-ejb-client-context-be-automatically-closed-by-the-ejb-client-api-when-the-jndi-context-is-no-longer-in-scope-i.e.-on-gc]]
-=== Can't the scoped EJB client context be automatically closed by the
-EJB client API when the JNDI context is no longer in scope (i.e. on GC)?
+=== Can't the scoped EJB client context be automatically closed?
+
+Can't it be closed by the EJB client API when the JNDI context is no longer in scope (i.e. on GC)?
 
 That's one of the common questions that gets asked. No, the EJB client
 API can't take that decision. i.e. it cannot automatically go ahead and
