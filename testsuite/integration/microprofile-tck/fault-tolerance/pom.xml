@@ -81,6 +81,7 @@
                     </systemPropertyVariables>
                     <excludes>
                         <exclude>**/metrics/**</exclude>
+                        <exclude>**/telemetryMetrics/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
