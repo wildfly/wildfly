@@ -9,7 +9,6 @@ import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -40,11 +39,5 @@ public class TestReactiveMessagingOtelEndpoint {
     @Path("/")
     public List<String> readMessages() {
         return testReactiveMessagingOtelBean.getReceived();
-    }
-
-    @DELETE
-    @Path("/")
-    public void deleteStoredMessages() {
-        testReactiveMessagingOtelBean.clear();
     }
 }

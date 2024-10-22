@@ -33,18 +33,25 @@ public class TestReactiveMessagingOtelBean {
 
     public void send(String word) {
         System.out.println("Sending " + word);
-        emitter.send(word);
+        long end = System.currentTimeMillis() + 30000;
+        // Workaround
+        // TODO https://issues.redhat.com/browse/WFLY-19825 Remove this
+        while (!emitter.hasRequests() && System.currentTimeMillis() < end) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+            }
+        }
+        if (emitter.hasRequests()) {
+            emitter.send(word);
+        } else {
+            throw new IllegalStateException("Emitter was not ready in 30 seconds");
+        }
     }
 
     public List<String> getReceived() {
         synchronized (received) {
             return new ArrayList<>(received);
-        }
-    }
-
-    public void clear() {
-        synchronized (received) {
-            received.clear();
         }
     }
 }

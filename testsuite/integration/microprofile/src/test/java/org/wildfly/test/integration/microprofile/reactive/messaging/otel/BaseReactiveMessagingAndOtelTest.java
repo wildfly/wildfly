@@ -15,13 +15,14 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -41,6 +42,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -68,15 +70,23 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     private static String deploymentName;
 
+    private Set<String> previousTestsTraceIds = new HashSet<>();
+    private Set<String> currentTraceIds = new HashSet<>();
 
     @BeforeClass
-    public static void before() throws Exception {
+    public static void beforeClass() throws Exception {
         AbstractCliTestBase.initCLI();
     }
 
     @AfterClass
-    public static void after() throws Exception {
+    public static void afterClass() throws Exception {
         AbstractCliTestBase.closeCLI();
+    }
+
+    @After
+    public void after() throws Exception {
+        previousTestsTraceIds.addAll(currentTraceIds);
+        currentTraceIds.clear();
     }
 
 
@@ -99,30 +109,23 @@ public abstract class BaseReactiveMessagingAndOtelTest {
 
     abstract OpenTelemetryCollectorContainer getCollector();
 
-//    @Test
+    @Test
     public void testNoOpenTelemetryTracing() throws Exception {
         // None of these should be set at this stage, but make sure they are not just in case
         ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
         ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, null);
+        ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
         try (CloseableHttpClient client = HttpClientBuilder.create().build()){
             postData(client,"no-trace");
-            boolean success = false;
-            try {
-                waitForData(client, "no-trace");
-                success = true;
-            } finally {
-                HttpDelete delete = new HttpDelete(url.toString());
-                try (CloseableHttpResponse response = client.execute(delete)){
-                    if (success) {
-                        assertEquals(204, response.getStatusLine().getStatusCode());
-                    }
-                }
-            }
+            waitForData(client, "no-trace");
+
+            // We should not get any traces for reactive messaging. Since traces are not synchronous,
+            // sleep a little bit so that rogue ones can have time to come through.
+            List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
+            System.out.println(traces);
         }
 
-        List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-        System.out.println(traces);
     }
 
     @Test
@@ -135,24 +138,10 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 postData(client, "trace-1");
                 postData(client, "trace-2");
-                boolean success = false;
-                try {
-                    waitForData(client, "trace-1", "trace-2");
-                    success = true;
-                } finally {
-                    HttpDelete delete = new HttpDelete(url.toString());
-                    try (CloseableHttpResponse response = client.execute(delete)) {
-                        if (success) {
-                            assertEquals(204, response.getStatusLine().getStatusCode());
-                        }
-                    }
-                }
+                waitForData(client, "trace-1", "trace-2");
+
+                checkJaegerTraces(JAEGER_TIMEOUT, 2);
             }
-
-            checkJaegerTraces(JAEGER_TIMEOUT, 2);
-
-
-
         } finally {
             ReactiveMessagingOtelUtils.enableConnectorOpenTelemetryResource(managementClient.getControllerClient(), false);
             ReactiveMessagingOtelUtils.setTracingConfigSystemProperty(managementClient.getControllerClient(), tracingPropertyName, null);
@@ -160,15 +149,13 @@ public abstract class BaseReactiveMessagingAndOtelTest {
         }
     }
 
-
-
     private void postData(CloseableHttpClient client, String value) throws Exception {
         HttpPost post = new HttpPost(url.toString());
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(new BasicNameValuePair("value", value));
         post.setEntity(new UrlEncodedFormEntity(nvps));
 
-        try (CloseableHttpResponse response = client.execute(post);){
+        try (CloseableHttpResponse response = client.execute(post)){
             assertEquals(200, response.getStatusLine().getStatusCode());
         }
     }
@@ -212,6 +199,10 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             count = 0;
             List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
             for (JaegerTrace trace : traces) {
+                if (previousTestsTraceIds.contains(trace.getTraceID())) {
+                    continue;
+                }
+                currentTraceIds.add(trace.getTraceID());
                 if (hasPostAndReactiveMessagingSpans(trace)) {
                     count++;
                 }
