@@ -133,10 +133,11 @@ public abstract class BaseReactiveMessagingAndOtelTest {
             ReactiveMessagingOtelUtils.reload(managementClient.getControllerClient());
 
             try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-                postData(client, "trace");
+                postData(client, "trace-1");
+                postData(client, "trace-2");
                 boolean success = false;
                 try {
-                    waitForData(client, "trace");
+                    waitForData(client, "trace-1", "trace-2");
                     success = true;
                 } finally {
                     HttpDelete delete = new HttpDelete(url.toString());
@@ -148,22 +149,7 @@ public abstract class BaseReactiveMessagingAndOtelTest {
                 }
             }
 
-//            // For logging to console in IDE
-//            StringBuilder sb = new StringBuilder();
-//            List<JaegerTrace> traces = getCollector().getTraces(deploymentName);
-//            for (JaegerTrace trace : traces) {
-//                sb.append("====== Trace");
-//                sb.append("\n");
-//                for (JaegerSpan span : trace.getSpans()) {
-//                    sb.append("---- span");
-//                    sb.append("\n");
-//                    sb.append(span);
-//                    sb.append("\n");
-//                }
-//            }
-//            System.out.println(traces);
-
-            checkJaegerTraces(JAEGER_TIMEOUT, 1);
+            checkJaegerTraces(JAEGER_TIMEOUT, 2);
 
 
 
