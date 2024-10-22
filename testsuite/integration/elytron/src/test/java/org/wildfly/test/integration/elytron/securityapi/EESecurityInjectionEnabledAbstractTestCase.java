@@ -42,7 +42,7 @@ import org.wildfly.test.security.common.elytron.Module;
  * be used without a full implementation. Modified from {@link EESecurityAuthMechanismMultiConstraintsTestCase}.
  *
  * @see <a href="https://issues.redhat.com/browse/WFLY-17541">WFLY-17541</a>
- * @author <a href="mailto:carodrig@redhat.com">Cameron Rodriguez</a>
+ * @author <a href="mailto:jrodri@redhat.com">Jessica Rodriguez</a>
  */
 
 @RunWith(Arquillian.class)
