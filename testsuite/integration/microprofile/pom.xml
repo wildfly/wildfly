@@ -391,6 +391,18 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-microprofile-reactive-messaging</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- TODO confirm if this is needed -->
         <dependency>
             <groupId>org.wildfly</groupId>

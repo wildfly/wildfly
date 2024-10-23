@@ -15,5 +15,6 @@
 
     <dependencies>
         <module name="org.eclipse.microprofile.config.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

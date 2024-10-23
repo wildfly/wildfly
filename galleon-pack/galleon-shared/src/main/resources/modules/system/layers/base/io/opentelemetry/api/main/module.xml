@@ -9,6 +9,12 @@
 
     <resources>
         <artifact name="${io.opentelemetry:opentelemetry-api}"/>
+        <artifact name="${io.opentelemetry:opentelemetry-api-incubator}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-incubator}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations-support}"/>
+        <artifact name="${io.opentelemetry.instrumentation:opentelemetry-runtime-telemetry-java8}"/>
     </resources>
 
     <dependencies>
@@ -17,9 +23,11 @@
         <module name="io.opentelemetry.instrumentation.annotations"/>
         <module name="io.opentelemetry.instrumentation.api"/>
         <module name="io.opentelemetry.semconv"/>
-        <module name="io.smallrye.opentelemetry" services="import"/>
+        <module name="io.smallrye.opentelemetry" services="export"/>
 
         <module name="java.logging"/>
+        <module name="java.management"/>
+        <module name="jdk.management"/>
         <module name="jakarta.interceptor.api" />
     </dependencies>
 </module>
