@@ -35,6 +35,7 @@ interface CommonAttributes {
     String JDBC_STORE = "jdbc-store";
     String USE_JDBC_STORE = "use-jdbc-store";
     String JDBC_STORE_DATASOURCE = "jdbc-store-datasource";
+    String JDBC_STORE_DATASOURCE_NAME = "jdbc-store-datasource-name";
     String JDBC_ACTION_STORE_TABLE_PREFIX = "jdbc-action-store-table-prefix";
     String JDBC_ACTION_STORE_DROP_TABLE = "jdbc-action-store-drop-table";
     String JDBC_COMMUNICATION_STORE_TABLE_PREFIX = "jdbc-communication-store-table-prefix";
