@@ -57,6 +57,8 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>concurrency/impl-30</module>
+        <module>concurrency/spi</module>
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>

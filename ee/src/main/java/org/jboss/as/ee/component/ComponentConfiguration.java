@@ -17,7 +17,6 @@ import java.util.Set;
 
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
-import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.invocation.InterceptorFactory;
@@ -44,8 +43,6 @@ public class ComponentConfiguration {
     private final ClassReflectionIndex classIndex;
     private final ModuleLoader moduleLoader;
     private final ClassLoader moduleClassLoader;
-
-    private final ConcurrentContext concurrentContext;
 
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
@@ -85,7 +82,6 @@ public class ComponentConfiguration {
         this.classIndex = classIndex;
         this.moduleClassLoader = moduleClassLoader;
         this.moduleLoader = moduleLoader;
-        this.concurrentContext = new ConcurrentContext();
     }
 
     /**
@@ -549,10 +545,6 @@ public class ComponentConfiguration {
 
     public Set<Object> getInterceptorContextKeys() {
         return interceptorContextKeys;
-    }
-
-    public ConcurrentContext getConcurrentContext() {
-        return concurrentContext;
     }
 
     /**
