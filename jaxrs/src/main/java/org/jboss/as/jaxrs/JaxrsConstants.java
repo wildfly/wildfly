@@ -4,11 +4,6 @@
  */
 package org.jboss.as.jaxrs;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jboss.as.controller.AttributeDefinition;
-
 public class JaxrsConstants {
 
     public static final String JAXRS_2_0_REQUEST_MATCHING = "jaxrs-2-0-request-matching";
@@ -34,29 +29,4 @@ public class JaxrsConstants {
     public static final String RESTEASY_USE_BUILTIN_PROVIDERS = "resteasy-use-builtin-providers";
     public static final String RESTEASY_USE_CONTAINER_FORM_PARAMS = "resteasy-use-container-form-params";
     public static final String RESTEASY_WIDER_REQUEST_MATCHING = "resteasy-wider-request-matching";
-
-    public static final Map<String, AttributeDefinition> nameToAttributeMap = new HashMap<String,AttributeDefinition> ();
-    static {
-        nameToAttributeMap.put(JAXRS_2_0_REQUEST_MATCHING, JaxrsAttribute.JAXRS_2_0_REQUEST_MATCHING);
-        nameToAttributeMap.put(RESTEASY_ADD_CHARSET, JaxrsAttribute.RESTEASY_ADD_CHARSET);
-        nameToAttributeMap.put(RESTEASY_BUFFER_EXCEPTION_ENTITY, JaxrsAttribute.RESTEASY_BUFFER_EXCEPTION_ENTITY);
-        nameToAttributeMap.put(RESTEASY_DISABLE_HTML_SANITIZER, JaxrsAttribute.RESTEASY_DISABLE_HTML_SANITIZER);
-        nameToAttributeMap.put(RESTEASY_DISABLE_PROVIDERS, JaxrsAttribute.RESTEASY_DISABLE_PROVIDERS);
-        nameToAttributeMap.put(RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES, JaxrsAttribute.RESTEASY_DOCUMENT_EXPAND_ENTITY_REFERENCES);
-        nameToAttributeMap.put(RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS, JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_DISABLE_DTDS);
-        nameToAttributeMap.put(RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE, JaxrsAttribute.RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE);
-        nameToAttributeMap.put(RESTEASY_GZIP_MAX_INPUT, JaxrsAttribute.RESTEASY_GZIP_MAX_INPUT);
-        nameToAttributeMap.put(RESTEASY_JNDI_RESOURCES, JaxrsAttribute.RESTEASY_JNDI_RESOURCES);
-        nameToAttributeMap.put(RESTEASY_LANGUAGE_MAPPINGS, JaxrsAttribute.RESTEASY_LANGUAGE_MAPPINGS);
-        nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_MAPPINGS, JaxrsAttribute.RESTEASY_MEDIA_TYPE_MAPPINGS);
-        nameToAttributeMap.put(RESTEASY_MEDIA_TYPE_PARAM_MAPPING, JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING);
-        nameToAttributeMap.put(RESTEASY_PREFER_JACKSON_OVER_JSONB, JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB);
-        nameToAttributeMap.put(RESTEASY_PROVIDERS, JaxrsAttribute.RESTEASY_PROVIDERS);
-        nameToAttributeMap.put(RESTEASY_RFC7232_PRECONDITIONS, JaxrsAttribute.RESTEASY_RFC7232_PRECONDITIONS);
-        nameToAttributeMap.put(RESTEASY_ROLE_BASED_SECURITY, JaxrsAttribute.RESTEASY_ROLE_BASED_SECURITY);
-        nameToAttributeMap.put(RESTEASY_SECURE_RANDOM_MAX_USE, JaxrsAttribute.RESTEASY_SECURE_RANDOM_MAX_USE);
-        nameToAttributeMap.put(RESTEASY_USE_BUILTIN_PROVIDERS, JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS);
-        nameToAttributeMap.put(RESTEASY_USE_CONTAINER_FORM_PARAMS, JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS);
-        nameToAttributeMap.put(RESTEASY_WIDER_REQUEST_MATCHING, JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING);
-    }
 }

@@ -21,17 +21,17 @@ public class ResteasyDeploymentData {
     private boolean scanResources;
     private boolean scanProviders;
     private boolean dispatcherCreated;
-    private final Set<String> scannedResourceClasses = new LinkedHashSet<String>();
-    private final Set<String> scannedProviderClasses = new LinkedHashSet<String>();
-    private List<Class<? extends Application>> scannedApplicationClasses = new ArrayList<>();
+    private final Set<String> scannedResourceClasses = new LinkedHashSet<>();
+    private final Set<String> scannedProviderClasses = new LinkedHashSet<>();
+    private final List<Class<? extends Application>> scannedApplicationClasses = new ArrayList<>();
     private boolean bootClasses;
     private boolean unwrappedExceptionsParameterSet;
-    private final Set<String> scannedJndiComponentResources = new LinkedHashSet<String>();
+    private final Set<String> scannedJndiComponentResources = new LinkedHashSet<>();
 
     /**
      * Merges a list of additional Jakarta RESTful Web Services deployment data with this lot of deployment data.
      *
-     * @param deploymentData
+     * @param deploymentData the deployment data to merge
      */
     public void merge(final List<ResteasyDeploymentData> deploymentData) throws DeploymentUnitProcessingException {
         for (ResteasyDeploymentData data : deploymentData) {

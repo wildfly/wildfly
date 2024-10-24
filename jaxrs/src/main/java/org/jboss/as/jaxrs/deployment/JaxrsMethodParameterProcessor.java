@@ -5,25 +5,8 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.jaxrs.JaxrsAnnotations;
-import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.modules.Module;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.ext.ParamConverter;
-import jakarta.ws.rs.ext.ParamConverterProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +23,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jaxrs.JaxrsAnnotations;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.modules.Module;
 
 /**
  * This class addresses the spec requirement of pre-processing resource
@@ -57,6 +57,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
             DotName.createSimple("jakarta.ws.rs.ext.ParamConverter$Lazy");
     private final DotName DEFAULT_VALUE_DOTNAME =
             DotName.createSimple("jakarta.ws.rs.DefaultValue");
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext)
             throws DeploymentUnitProcessingException {
@@ -82,19 +83,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         processData(index, module.getClassLoader(), resteasy, false);
     }
 
-    /**
-     *
-     * @param index
-     * @param classLoader
-     * @param resteasy
-     * @param isFromUnitTest
-     * @throws DeploymentUnitProcessingException
-     */
     private void processData(final CompositeIndex index, final ClassLoader classLoader,
                              ResteasyDeploymentData resteasy, boolean isFromUnitTest)
             throws DeploymentUnitProcessingException {
 
-        List<ParamDetail> detailList = getResouceClasses(index, classLoader,
+        List<ParamDetail> detailList = getResourceClasses(index, classLoader,
                 resteasy.getScannedResourceClasses(), isFromUnitTest);
 
         if (!detailList.isEmpty()) {
@@ -108,14 +101,13 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     }
 
     /**
-     * Process all parameter DefaulValue objects.  Flag all parameters with
+     * Process all parameter {@link DefaultValue} objects.  Flag all parameters with
      * missing and invalid converters.
      *
-     * @param detailList
-     * @param paramConverterMap
+     * @param detailList the parameter details
+     * @param paramConverterMap the converters
      */
-    private void validateDefaultValues(List<ParamDetail> detailList,
-                                       HashMap<String, List<Validator>> paramConverterMap)
+    private void validateDefaultValues(List<ParamDetail> detailList, Map<String, List<Validator>> paramConverterMap)
             throws DeploymentUnitProcessingException {
 
         for(ParamDetail detail : detailList) {
@@ -151,8 +143,8 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
             }
 
             if (isCheckClazzMethods) {
-                Class baseType = detail.parameter;
-                Method valueOf = null;
+                Class<?> baseType = detail.parameter;
+                Method valueOf;
 
                 // constructor rule
                 try {
@@ -178,7 +170,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 } catch (NoSuchMethodException ignoredA) { }
 
                 // method fromString(String.class) rule
-                Method fromString = null;
+                Method fromString;
                 try {
                     fromString = baseType.getDeclaredMethod("fromString", String.class);
                     if (Modifier.isStatic(fromString.getModifiers())) {
@@ -193,7 +185,6 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     valueOf = baseType.getDeclaredMethod("valueOf", String.class);
                     if (Modifier.isStatic(valueOf.getModifiers())) {
                         validateBaseType(valueOf, detail.defaultValue.value(), detail);
-                        continue; // success move to next detail
                     }
                 } catch (NoSuchMethodException ignored) {
                 }
@@ -206,13 +197,10 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     /**
      * Create a list of ParamConverters and ParamConverterProviders present
      * in the application.
-     *
+     * <p>
      * When running unitTest the classes must be indexed.  In normal deployment
      * the indexing is already done.
-     *
-     * @param index
-     * @param classLoader
-     * @return
+     * </p>
      */
     private HashMap<String, List<Validator>>  getParamConverters(
             final CompositeIndex index, final ClassLoader classLoader,
@@ -222,7 +210,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         List<Validator> converterProviderList = new ArrayList<>();
         paramConverterMap.put(Object.class.getName(), converterProviderList);
 
-        Set<ClassInfo> paramConverterSet = new HashSet<ClassInfo>();
+        Set<ClassInfo> paramConverterSet = new HashSet<>();
         if(isFromUnitTest) {
             Indexer indexer = new Indexer();
             for (String className : knownProviderClasses) {
@@ -230,6 +218,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     String pathName = className.replace(".", File.separator);
                     InputStream stream = classLoader.getResourceAsStream(
                             pathName + ".class");
+                    assert stream != null;
                     indexer.index(stream);
                     stream.close();
                 } catch (IOException e) {
@@ -265,8 +254,8 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
 
         for (ClassInfo classInfo : paramConverterSet) {
 
-            Class<?> clazz = null;
-            Method method = null;
+            Class<?> clazz;
+            Method method;
             try {
                 String clazzName = classInfo.name().toString();
                 if (clazzName.endsWith("$1")) {
@@ -291,7 +280,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 }
 
                 if (object instanceof ParamConverter) {
-                    ParamConverter pc = (ParamConverter) object;
+                    ParamConverter<?> pc = (ParamConverter<?>) object;
                     method = getFromStringMethod(pc.getClass());
                     Class<?> returnClazz = method.getReturnType();
                     List<Validator> verifiers = paramConverterMap.get(returnClazz.getName());
@@ -305,9 +294,6 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     }
                 }
 
-            } catch(NoSuchMethodException nsne) {
-                JAXRS_LOGGER.classIntrospectionFailure(nsne.getClass().getName(),
-                        nsne.getMessage());
             } catch (Exception e) {
                 JAXRS_LOGGER.classIntrospectionFailure(e.getClass().getName(),
                         e.getMessage());
@@ -317,7 +303,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         return paramConverterMap;
     }
 
-    private Method getFromStringMethod(final Class clazz) {
+    private Method getFromStringMethod(final Class<?> clazz) {
         Method method = null;
         try {
             method = clazz.getMethod("fromString", String.class);
@@ -330,19 +316,13 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
 
     /**
      * Create list of objects that represents resource method parameters with a
-     * DefaultValue annontation assigned to it.
-     *
+     * DefaultValue annotation assigned to it.
+     * <p>
      * When running unitTest the classes must be indexed.  In normal deployment
      * the indexing is already done.
-     *
-     * @param index
-     * @param classLoader
-     * @return
+     * </p>
      */
-    private ArrayList<ParamDetail> getResouceClasses(final CompositeIndex index,
-                                   final ClassLoader classLoader,
-                                   Set<String> knownResourceClasses,
-                                   boolean isFromUnitTest) {
+    private ArrayList<ParamDetail> getResourceClasses(final CompositeIndex index, final ClassLoader classLoader, Set<String> knownResourceClasses, boolean isFromUnitTest) {
 
         ArrayList<ParamDetail> detailList = new ArrayList<>();
         ArrayList<String> classNameArr = new ArrayList<>();
@@ -352,6 +332,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                 try {
                     String pathName = className.replace(".", File.separator);
                     InputStream stream = classLoader.getResourceAsStream(pathName + ".class");
+                    assert stream != null;
                     ClassInfo classInfo = Index.singleClass(stream);
 
                     List<AnnotationInstance> defaultValuesList =
@@ -406,7 +387,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                             DefaultValue defaultValue = lookupDefaultValueAnn(annotationMatrix[j]);
 
                             if (defaultValue != null) {
-                                Class paramClazz = checkParamType(genParamTypeArr[j],
+                                Class<?> paramClazz = checkParamType(genParamTypeArr[j],
                                         method, j, classLoader);
 
                                 if (paramClazz != null) {
@@ -428,16 +409,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
 
     /**
      * Take steps to properly identify the parameter's data type
-     * @param genParamType
-     * @param method
-     * @param paramPos
-     * @param classLoader
-     * @return
      */
-    private Class checkParamType(Type genParamType, final Method method,
+    private Class<?> checkParamType(Type genParamType, final Method method,
                                  final int paramPos, final ClassLoader classLoader){
 
-        Class paramClazz = null;
+        Class<?> paramClazz = null;
 
         if (genParamType instanceof ParameterizedType) {
             ParameterizedType pType = (ParameterizedType) genParamType;
@@ -454,7 +430,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         } else {
             Class<?>[] paramArr = method.getParameterTypes();
             if (paramArr[paramPos].isArray()) {
-                Class compClazz = paramArr[paramPos].getComponentType();
+                Class<?> compClazz = paramArr[paramPos].getComponentType();
                 if (!compClazz.isPrimitive()) {
                     paramClazz = compClazz;
                 }
@@ -469,12 +445,11 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
 
     /**
      * Extract a DefaultValue annotation from the list of parameter annotations
-     * @param annotationArr
-     * @return
+     * @param annotationArr the annotations
+     * @return the default value, or {@code null} if the annotation was not found
      */
     private DefaultValue lookupDefaultValueAnn(Annotation[] annotationArr) {
         for (Annotation ann :  annotationArr) {
-
             if (ann instanceof DefaultValue) {
                 return (DefaultValue)ann;
             }
@@ -485,13 +460,13 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     /**
      * Data structure for passing around related parameter information
      */
-    private class ParamDetail {
-        public Method method;
-        public DefaultValue defaultValue;
-        public Class parameter;
-        public Annotation[] annotations;
+    private static class ParamDetail {
+        final Method method;
+        final DefaultValue defaultValue;
+        final Class<?> parameter;
+        final Annotation[] annotations;
 
-        public ParamDetail(Method method, DefaultValue defaultValue, Class parameter,
+        public ParamDetail(Method method, DefaultValue defaultValue, Class<?> parameter,
                            Annotation[] annotations) {
             this.method = method;
             this.defaultValue = defaultValue;
@@ -501,17 +476,18 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     }
 
     private interface Validator {
-      public Object verify(ParamDetail detail) throws Exception;
-      public boolean isLazyLoad();
+        Object verify(ParamDetail detail) throws Exception;
+
+        boolean isLazyLoad();
     }
 
     /**
      * ParamConverterProvider's getConverter method used for validation
      */
-    private class ConverterProvider implements Validator {
-        private ParamConverterProvider pcp;
-        private ParamConverter pc = null;
-        private Method method;
+    private static class ConverterProvider implements Validator {
+        private final ParamConverterProvider pcp;
+        private ParamConverter<?> pc;
+        private final Method method;
         private boolean isLazyLoad = false;
 
         public ConverterProvider(ParamConverterProvider pcp, Method method,
@@ -535,7 +511,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
                     detail.annotations);
 
             if (obj instanceof ParamConverter) {
-                this.pc = (ParamConverter) obj;
+                this.pc = (ParamConverter<?>) obj;
                 return pc.fromString(detail.defaultValue.value());
             }
 
@@ -554,18 +530,16 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
     /**
      * ParamConverter's method fromString  used for validation
      */
-    private class PConverter implements Validator {
-        private ParamConverter pc;
-        private Method method;
-        private boolean isLazyLoad = false;
+    private static class PConverter implements Validator {
+        private final ParamConverter<?> pc;
+        private final Method method;
+        private final boolean isLazyLoad;
 
-        public PConverter(ParamConverter pc, Method method,
+        public PConverter(ParamConverter<?> pc, Method method,
                           List<AnnotationInstance> lazyAnnotations) {
             this.pc = pc;
             this.method = method;
-            if (lazyAnnotations != null && !lazyAnnotations.isEmpty()) {
-                isLazyLoad = true;
-            }
+            isLazyLoad = lazyAnnotations != null && !lazyAnnotations.isEmpty();
         }
 
         public boolean isLazyLoad() {
@@ -573,8 +547,7 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
         }
 
         public Object verify(ParamDetail detail) throws Exception {
-                Object obj = method.invoke(pc, detail.defaultValue.value());
-                return obj;
+            return method.invoke(pc, detail.defaultValue.value());
         }
 
         @Override
@@ -587,11 +560,10 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
      * Confirm the method can handle the default value without throwing
      * and exception.
      *
-     * @param method
-     * @param defaultValue
+     * @param method the method to invoke
+     * @param defaultValue the default value
      */
-    private void validateBaseType(Method method, String defaultValue, ParamDetail detail)
-        throws DeploymentUnitProcessingException {
+    private void validateBaseType(Method method, String defaultValue, ParamDetail detail) {
         if (defaultValue != null) {
             try {
                 method.invoke(method.getDeclaringClass(), defaultValue);
@@ -606,7 +578,9 @@ public class JaxrsMethodParameterProcessor implements DeploymentUnitProcessor {
 
     /**
      * Method allows unit-test to provide processing data.
-     * @param resteasyDeploymentData
+     *
+     * @param classLoader the class loader to use
+     * @param resteasyDeploymentData the deployment data
      */
     public void testProcessor(final ClassLoader classLoader,
                               final ResteasyDeploymentData resteasyDeploymentData)
