@@ -38,11 +38,18 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- enforces all BOM artifacts are available -->
+    <!-- enforces all BOM artifacts and channels are available -->
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-preview-feature-pack</artifactId>
+            <version>${full.maven.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-preview</artifactId>
+            <version>${full.maven.version}</version>
             <type>pom</type>
         </dependency>
     </dependencies>
@@ -70,6 +77,14 @@
                             <bomVersion>${project.version}</bomVersion>
                             <bomName>${full.dist.product.release.name} Preview BOMs: Expansion</bomName>
                             <bomDescription>${full.dist.product.release.name} Preview: Expansion Dependency Management</bomDescription>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-preview</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeDependencies combine.children="append">
                                 <!-- include here any <dependency /> exclusive to this BOM -->
                             </includeDependencies>
