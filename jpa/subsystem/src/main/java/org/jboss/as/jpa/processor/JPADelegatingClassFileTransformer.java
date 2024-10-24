@@ -13,6 +13,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.modules.ClassTransformer;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
@@ -42,7 +43,10 @@ class JPADelegatingClassFileTransformer implements ClassTransformer {
                     // run as security privileged action
                     @Override
                     public ByteBuffer run() {
-
+                        if(Configuration.ignoreClassTransform(className)) {
+                            // indicate that class change was not made as workaround for https://hibernate.atlassian.net/browse/HHH-16572
+                            return null;
+                        }
                         byte[] transformedBuffer = getBytes(classBytes);
                         boolean transformed = false;
                         for (jakarta.persistence.spi.ClassTransformer transformer : persistenceUnitMetadata.getTransformers()) {
