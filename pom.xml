@@ -153,9 +153,8 @@
         <maven.min.version>3.6.0</maven.min.version>
 
         <!--
-             To build, we require a Java 17 or higher compiler, but with a Java 11
-             source and binary level. This means we can compile against Java 17
-             dependencies, but our own code and binaries only require Java 11.
+             To build, we require a Java 17 or higher compiler, but with a Java 17
+             source and binary level.
              We allow builds with a compiler version higher than 17 to allow
              testing on later SE releases.
 
@@ -167,9 +166,9 @@
          -->
         <required.java.build.version>[17,)</required.java.build.version>
         <required.java.deploy.version>[17,18)</required.java.deploy.version>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
 
         <!-- TarArchiver behavior -->
         <assembly.tarLongFileMode>posix</assembly.tarLongFileMode>
