@@ -21,7 +21,7 @@ class ConcurrencyImplementationLoader {
 
     /**
      *
-     * @return the implementation loaded using JBoss Module classloader, if found, otherwise using current thread's class loader
+     * @return the implementation loaded using JBoss Module classloader, if found, otherwise uses current thread's class loader (needed for unit testing)
      */
     static ConcurrencyImplementation load() {
         try {

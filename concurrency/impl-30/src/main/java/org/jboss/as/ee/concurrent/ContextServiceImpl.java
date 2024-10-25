@@ -20,7 +20,7 @@ import static org.wildfly.common.Assert.checkNotNullParam;
  * An extension of Jakarta EE RI {@link org.glassfish.enterprise.concurrent.ContextServiceImpl}, which properly supports a security manager.
  * @author Eduardo Martins
  */
-public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl implements WildflyContextService {
+public class ContextServiceImpl extends org.glassfish.enterprise.concurrent.ContextServiceImpl implements WildFlyContextService {
 
     private final ContextServiceTypesConfiguration contextServiceTypesConfiguration;
 

@@ -1228,6 +1228,9 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 141, value="Running with a SecurityManager enabled is not allowed in a Jakarta EE 11 or later environment")
     OperationFailedException securityManagerNotAllowed();
 
-    @Message(id = 142, value = "Failed to load Jakarta Concurrency Implementation")
+    @Message(id = 142, value = "Failed to load Jakarta Concurrency implementation")
     RuntimeException failedToLoadConcurrencyImplementation(@Cause Throwable cause);
+
+    @Message(id = 143, value = "Lifecycle operation not supported")
+    IllegalStateException lifecycleOperationNotSupported();
 }

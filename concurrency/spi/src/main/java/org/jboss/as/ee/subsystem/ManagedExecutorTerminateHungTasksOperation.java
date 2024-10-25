@@ -13,7 +13,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -62,7 +62,7 @@ public class ManagedExecutorTerminateHungTasksOperation<T> {
                             throw EeLogger.ROOT_LOGGER.executorServiceNotFound(serviceName);
                         }
                         final T service = (T) controller.getService();
-                        WildflyManagedExecutorService executor = executorProvider.getExecutor(service);
+                        WildFlyManagedExecutorService executor = executorProvider.getExecutor(service);
                         executor.terminateHungTasks();
                     }
                     context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -81,6 +81,6 @@ public class ManagedExecutorTerminateHungTasksOperation<T> {
          * @param service
          * @return the executor with the specified service
          */
-        WildflyManagedExecutorService getExecutor(T service);
+        WildFlyManagedExecutorService getExecutor(T service);
     }
 }

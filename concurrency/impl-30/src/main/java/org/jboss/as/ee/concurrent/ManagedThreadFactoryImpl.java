@@ -34,7 +34,7 @@ public class ManagedThreadFactoryImpl extends org.glassfish.enterprise.concurren
      */
     private final AccessControlContext accessControlContext;
 
-    public ManagedThreadFactoryImpl(String name, WildflyContextService contextService, int priority) {
+    public ManagedThreadFactoryImpl(String name, WildFlyContextService contextService, int priority) {
         super(name, (ContextServiceImpl) contextService, priority);
         this.priority = priority;
         this.accessControlContext = AccessController.getContext();

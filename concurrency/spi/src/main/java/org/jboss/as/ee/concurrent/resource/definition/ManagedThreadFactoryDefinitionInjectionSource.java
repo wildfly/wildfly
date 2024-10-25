@@ -7,7 +7,7 @@ package org.jboss.as.ee.concurrent.resource.definition;
 import java.util.function.Consumer;
 
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultBindingProcessor;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
@@ -51,7 +51,7 @@ public class ManagedThreadFactoryDefinitionInjectionSource extends ResourceDefin
             final Injector<ManagedReferenceFactory> contextServiceLookupInjector = new Injector<>() {
                 @Override
                 public void inject(ManagedReferenceFactory value) throws InjectionException {
-                    resourceService.getContextServiceSupplier().set(() -> (WildflyContextService) value.getReference().getInstance());
+                    resourceService.getContextServiceSupplier().set(() -> (WildFlyContextService) value.getReference().getInstance());
                 }
                 @Override
                 public void uninject() {

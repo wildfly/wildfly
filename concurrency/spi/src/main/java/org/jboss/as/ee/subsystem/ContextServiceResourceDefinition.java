@@ -15,7 +15,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -27,7 +27,7 @@ public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
     /**
      * the resource definition's dynamic runtime capability
      */
-    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.context.service", true, WildflyContextService.class)
+    public static final RuntimeCapability<Void> CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ee.concurrent.context.service", true, WildFlyContextService.class)
             .build();
 
     public static final String JNDI_NAME = "jndi-name";

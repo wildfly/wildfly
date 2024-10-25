@@ -10,5 +10,5 @@ import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
  *
  * @author Eduardo Martins
  */
-public interface WildflyManagedScheduledExecutorService extends WildflyManagedExecutorService, ManagedScheduledExecutorService {
+public interface WildFlyManagedScheduledExecutorService extends WildFlyManagedExecutorService, ManagedScheduledExecutorService {
 }

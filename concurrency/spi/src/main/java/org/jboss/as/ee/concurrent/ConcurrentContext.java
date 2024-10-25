@@ -122,7 +122,7 @@ public class ConcurrentContext {
      * @return
      */
     public SetupContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        final ContextServiceTypesConfiguration contextServiceTypesConfiguration = ((WildflyContextService)contextService).getContextServiceTypesConfiguration();
+        final ContextServiceTypesConfiguration contextServiceTypesConfiguration = ((WildFlyContextService)contextService).getContextServiceTypesConfiguration();
         final List<SetupContextHandle> handles = new ArrayList<>(factoryOrderedList.size());
         for (ContextHandleFactory factory : factoryOrderedList) {
             // TODO *FOLLOW UP* migrate all factories on other subsystems to use the new EE10ContextHandleFactory API, and once all done replace the legacy ContextHandleFactory API with the new one, no need to keep both

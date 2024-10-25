@@ -13,9 +13,9 @@ import java.util.function.Supplier;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
-import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
-import org.jboss.as.ee.concurrent.WildflyManagedScheduledExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
+import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyManagedScheduledExecutorService;
 import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
@@ -45,8 +45,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
     private final long keepAliveTime;
     private final TimeUnit keepAliveTimeUnit;
     private final long threadLifeTime;
-    private final DelegatingSupplier<WildflyContextService> contextServiceSupplier = new DelegatingSupplier<>();
-    private final WildflyManagedExecutorService.RejectPolicy rejectPolicy;
+    private final DelegatingSupplier<WildFlyContextService> contextServiceSupplier = new DelegatingSupplier<>();
+    private final WildFlyManagedExecutorService.RejectPolicy rejectPolicy;
     private final Integer threadPriority;
     private final Supplier<ProcessStateNotifier> processStateNotifierSupplier;
     private final Supplier<RequestController> requestControllerSupplier;
@@ -73,11 +73,11 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
      * @param threadPriority
      */
     public ManagedScheduledExecutorServiceService(final Consumer<ManagedScheduledExecutorServiceAdapter> consumer,
-                                                  final Supplier<WildflyContextService> contextServiceSupplier,
+                                                  final Supplier<WildFlyContextService> contextServiceSupplier,
                                                   final Supplier<WildFlyManagedThreadFactory> managedThreadFactorySupplier,
                                                   final Supplier<ProcessStateNotifier> processStateNotifierSupplier,
                                                   final Supplier<RequestController> requestControllerSupplier,
-                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildflyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
+                                                  String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
         super(jndiName);
         this.consumer = consumer;
         this.contextServiceSupplier.set(contextServiceSupplier);
@@ -138,14 +138,14 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         return executorService;
     }
 
-    public WildflyManagedScheduledExecutorService getExecutorService() throws IllegalStateException {
+    public WildFlyManagedScheduledExecutorService getExecutorService() throws IllegalStateException {
         if (executorService == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return executorService.getExecutorService();
     }
 
-    public DelegatingSupplier<WildflyContextService> getContextServiceSupplier() {
+    public DelegatingSupplier<WildFlyContextService> getContextServiceSupplier() {
         return contextServiceSupplier;
     }
 

@@ -5,6 +5,9 @@
 
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JACC_CAPABILITY;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -68,9 +71,6 @@ import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringPr
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.subsystem.EeCapabilities.ELYTRON_JACC_CAPABILITY;
 
 /**
  * Handler for adding the ee subsystem.

@@ -10,7 +10,7 @@ import jakarta.enterprise.concurrent.ContextService;
  *
  * @author Eduardo Martins
  */
-public interface WildflyContextService extends ContextService {
+public interface WildFlyContextService extends ContextService {
 
     ContextServiceTypesConfiguration getContextServiceTypesConfiguration();
 }

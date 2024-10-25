@@ -25,27 +25,27 @@ import static org.jboss.as.ee.concurrent.SecurityIdentityUtils.doIdentityWrap;
  * @author Stuart Douglas
  * @author emmartins
  */
-public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl implements WildflyManagedExecutorService {
+public class ManagedExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl implements WildFlyManagedExecutorService {
 
     private final ControlPoint controlPoint;
     private final ProcessStateNotifier processStateNotifier;
     private final ManagedExecutorRuntimeStats runtimeStats;
 
-    public ManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildflyContextService contextService, WildflyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
+    public ManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, BlockingQueue<Runnable> queue, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy), queue);
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ManagedExecutorRuntimeStatsImpl30(this);
     }
 
-    public ManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildflyContextService contextService, WildflyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
+    public ManagedExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, maxPoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, queueCapacity, (ContextServiceImpl) contextService, convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;
         this.runtimeStats = new ManagedExecutorRuntimeStatsImpl30(this);
     }
 
-    public static AbstractManagedExecutorService.RejectPolicy convertRejectPolicy(WildflyManagedExecutorService.RejectPolicy rejectPolicy) {
+    public static AbstractManagedExecutorService.RejectPolicy convertRejectPolicy(WildFlyManagedExecutorService.RejectPolicy rejectPolicy) {
         return rejectPolicy != null ? AbstractManagedExecutorService.RejectPolicy.valueOf(rejectPolicy.toString()) : null;
     }
 

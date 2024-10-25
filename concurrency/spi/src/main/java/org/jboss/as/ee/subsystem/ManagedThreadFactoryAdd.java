@@ -12,7 +12,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
 import org.jboss.dmr.ModelNode;
 
@@ -43,7 +43,7 @@ public class ManagedThreadFactoryAdd extends AbstractAddStepHandler {
             contextService = ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
         final Consumer<WildFlyManagedThreadFactory> consumer = serviceBuilder.provides(ManagedThreadFactoryResourceDefinition.CAPABILITY);
-        final Supplier<WildflyContextService> ctxServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextService.class, contextService) : null;
+        final Supplier<WildFlyContextService> ctxServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), ContextService.class, contextService) : null;
         final ManagedThreadFactoryService service = new ManagedThreadFactoryService(consumer, ctxServiceSupplier, name, jndiName, priority);
         serviceBuilder.setInstance(service);
         serviceBuilder.install();

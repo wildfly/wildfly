@@ -14,8 +14,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
-import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
+import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
 import org.jboss.as.ee.concurrent.adapter.ManagedScheduledExecutorServiceAdapter;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedExecutorHungTasksPeriodicTerminationService;
@@ -55,7 +55,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         final long keepAliveTime = ManagedScheduledExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.resolveModelAttribute(context, model).asLong();
         final TimeUnit keepAliveTimeUnit = TimeUnit.MILLISECONDS;
         final long threadLifeTime = 0L;
-        final WildflyManagedExecutorService.RejectPolicy rejectPolicy = WildflyManagedExecutorService.RejectPolicy.valueOf(ManagedScheduledExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
+        final WildFlyManagedExecutorService.RejectPolicy rejectPolicy = WildFlyManagedExecutorService.RejectPolicy.valueOf(ManagedScheduledExecutorServiceResourceDefinition.REJECT_POLICY_AD.resolveModelAttribute(context, model).asString());
 
         final Integer threadPriority;
         if(model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.THREAD_PRIORITY) || !model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY)) {
@@ -73,7 +73,7 @@ public class ManagedScheduledExecutorServiceAdd extends AbstractAddStepHandler {
         if (model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE)) {
             contextService = ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.resolveModelAttribute(context, model).asString();
         }
-        final Supplier<WildflyContextService> contextServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), WildflyContextService.class, contextService) : null;
+        final Supplier<WildFlyContextService> contextServiceSupplier = contextService != null ? serviceBuilder.requiresCapability(ContextServiceResourceDefinition.CAPABILITY.getName(), WildFlyContextService.class, contextService) : null;
         String threadFactory = null;
         if (model.hasDefined(ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY)) {
             threadFactory = ManagedScheduledExecutorServiceResourceDefinition.THREAD_FACTORY_AD.resolveModelAttribute(context, model).asString();

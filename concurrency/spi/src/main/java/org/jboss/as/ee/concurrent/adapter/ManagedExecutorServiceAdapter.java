@@ -7,7 +7,7 @@ package org.jboss.as.ee.concurrent.adapter;
 import jakarta.enterprise.concurrent.ContextService;
 import org.jboss.as.ee.concurrent.ManagedExecutorRuntimeStats;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,13 +24,13 @@ import java.util.function.Supplier;
  */
 public class ManagedExecutorServiceAdapter extends AbstractManagedExecutorServiceAdapter {
 
-    private final WildflyManagedExecutorService executorService;
+    private final WildFlyManagedExecutorService executorService;
 
-    public ManagedExecutorServiceAdapter(WildflyManagedExecutorService executorService) {
+    public ManagedExecutorServiceAdapter(WildFlyManagedExecutorService executorService) {
         this.executorService = executorService;
     }
 
-    public WildflyManagedExecutorService getExecutorService() {
+    public WildFlyManagedExecutorService getExecutorService() {
         return executorService;
     }
 

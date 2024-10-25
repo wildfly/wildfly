@@ -5,6 +5,7 @@
 package org.jboss.as.ee.concurrent.adapter;
 
 import jakarta.enterprise.concurrent.ManagedExecutorService;
+import org.jboss.as.ee.logging.EeLogger;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,30 +15,28 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractManagedExecutorServiceAdapter implements ManagedExecutorService {
 
-    protected static final String LIFECYCLE_OPER_NOT_SUPPORTED = "Lifecycle operation not supported";
-
     @Override
     public void shutdown() {
-        throw new IllegalStateException(LIFECYCLE_OPER_NOT_SUPPORTED);
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 
     @Override
     public List<Runnable> shutdownNow() {
-        throw new IllegalStateException(LIFECYCLE_OPER_NOT_SUPPORTED);
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 
     @Override
     public boolean isShutdown() {
-        throw new IllegalStateException(LIFECYCLE_OPER_NOT_SUPPORTED);
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 
     @Override
     public boolean isTerminated() {
-        throw new IllegalStateException(LIFECYCLE_OPER_NOT_SUPPORTED);
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-        throw new IllegalStateException(LIFECYCLE_OPER_NOT_SUPPORTED);
+        throw EeLogger.ROOT_LOGGER.lifecycleOperationNotSupported();
     }
 }

@@ -4,7 +4,7 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:ee:4.0" >
-	<concurrent>
+    <concurrent>
         <context-services>
             <context-service name="context-service-name" jndi-name="${test-exp4:name}" use-transaction-setup-provider="${test-exp5:true}"/>
         </context-services>

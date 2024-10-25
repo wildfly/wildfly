@@ -8,7 +8,7 @@ import jakarta.enterprise.concurrent.ContextService;
 import jakarta.enterprise.concurrent.Trigger;
 import org.jboss.as.ee.concurrent.ManagedExecutorRuntimeStats;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyManagedScheduledExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyManagedScheduledExecutorService;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,15 +24,15 @@ import java.util.function.Supplier;
 /**
  * Abstract base class for {@code ManagedExecutorService} and {@code ManagedScheduledExecutorService} implementation with life cycle operations disabled for handing out to application components.
  */
-public class ManagedScheduledExecutorServiceAdapter extends AbstractManagedExecutorServiceAdapter implements WildflyManagedScheduledExecutorService {
+public class ManagedScheduledExecutorServiceAdapter extends AbstractManagedExecutorServiceAdapter implements WildFlyManagedScheduledExecutorService {
 
-    private final WildflyManagedScheduledExecutorService executorService;
+    private final WildFlyManagedScheduledExecutorService executorService;
 
-    public ManagedScheduledExecutorServiceAdapter(WildflyManagedScheduledExecutorService executorService) {
+    public ManagedScheduledExecutorServiceAdapter(WildFlyManagedScheduledExecutorService executorService) {
         this.executorService = executorService;
     }
 
-    public WildflyManagedScheduledExecutorService getExecutorService() {
+    public WildFlyManagedScheduledExecutorService getExecutorService() {
         return executorService;
     }
 

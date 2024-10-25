@@ -5,16 +5,16 @@
 
 package org.jboss.as.ee.concurrent.service;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Eduardo Martins
@@ -24,7 +24,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Wil
     private volatile WildFlyManagedThreadFactory managedThreadFactory;
     private final Consumer<WildFlyManagedThreadFactory> consumer;
     private final String name;
-    private final DelegatingSupplier<WildflyContextService> contextServiceSupplier = new DelegatingSupplier<>();
+    private final DelegatingSupplier<WildFlyContextService> contextServiceSupplier = new DelegatingSupplier<>();
     private final int priority;
 
     /**
@@ -32,7 +32,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Wil
      * @param jndiName
      * @param priority
      */
-    public ManagedThreadFactoryService(final Consumer<WildFlyManagedThreadFactory> consumer, final Supplier<WildflyContextService> ctxServiceSupplier, String name, String jndiName, int priority) {
+    public ManagedThreadFactoryService(final Consumer<WildFlyManagedThreadFactory> consumer, final Supplier<WildFlyContextService> ctxServiceSupplier, String name, String jndiName, int priority) {
         super(jndiName);
         this.consumer = consumer;
         this.name = name;
@@ -59,7 +59,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Wil
         return managedThreadFactory;
     }
 
-    public DelegatingSupplier<WildflyContextService> getContextServiceSupplier() {
+    public DelegatingSupplier<WildFlyContextService> getContextServiceSupplier() {
         return contextServiceSupplier;
     }
 }

@@ -6,9 +6,20 @@
 package org.jboss.as.ejb3.component.session;
 
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.LockType;
 import jakarta.ejb.TransactionManagementType;
+
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -36,17 +47,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Jaikiran Pai

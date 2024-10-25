@@ -5,11 +5,16 @@
 
 package org.jboss.as.ee.concurrent.service;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import org.jboss.as.controller.ProcessStateNotifier;
 import org.jboss.as.ee.concurrent.ConcurrencyImplementation;
 import org.jboss.as.ee.concurrent.WildFlyManagedThreadFactory;
-import org.jboss.as.ee.concurrent.WildflyContextService;
-import org.jboss.as.ee.concurrent.WildflyManagedExecutorService;
+import org.jboss.as.ee.concurrent.WildFlyContextService;
+import org.jboss.as.ee.concurrent.WildFlyManagedExecutorService;
 import org.jboss.as.ee.concurrent.adapter.ManagedExecutorServiceAdapter;
 import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
@@ -17,11 +22,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.requestcontroller.ControlPoint;
 import org.wildfly.extension.requestcontroller.RequestController;
-
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Service responsible for creating, starting and stopping a ManagedExecutorServiceImpl.
@@ -47,8 +47,8 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
     private final TimeUnit keepAliveTimeUnit;
     private final long threadLifeTime;
     private final int queueCapacity;
-    private final DelegatingSupplier<WildflyContextService> contextServiceSupplier = new DelegatingSupplier<>();
-    private final WildflyManagedExecutorService.RejectPolicy rejectPolicy;
+    private final DelegatingSupplier<WildFlyContextService> contextServiceSupplier = new DelegatingSupplier<>();
+    private final WildFlyManagedExecutorService.RejectPolicy rejectPolicy;
     private final Integer threadPriority;
     private final Supplier<ProcessStateNotifier> processStateNotifierSupplier;
     private final Supplier<RequestController> requestControllerSupplier;
@@ -78,11 +78,11 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
      * @param threadPriority
      */
     public ManagedExecutorServiceService(final Consumer<ManagedExecutorServiceAdapter> consumer,
-                                         final Supplier<WildflyContextService> contextServiceSupplier,
+                                         final Supplier<WildFlyContextService> contextServiceSupplier,
                                          final Supplier<WildFlyManagedThreadFactory> managedThreadFactorySupplier,
                                          final Supplier<ProcessStateNotifier> processStateNotifierSupplier,
                                          final Supplier<RequestController> requestControllerSupplier,
-                                         String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildflyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
+                                         String name, String jndiName, long hungTaskThreshold, long hungTaskTerminationPeriod, boolean longRunningTasks, int corePoolSize, int maxPoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, int queueCapacity, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, Integer threadPriority, final Supplier<ManagedExecutorHungTasksPeriodicTerminationService> hungTasksPeriodicTerminationService) {
         super(jndiName);
         this.consumer = consumer;
         this.contextServiceSupplier.set(contextServiceSupplier);
@@ -145,14 +145,14 @@ public class ManagedExecutorServiceService extends EEConcurrentAbstractService<M
         return executorService;
     }
 
-    public WildflyManagedExecutorService getExecutorService() throws IllegalStateException {
+    public WildFlyManagedExecutorService getExecutorService() throws IllegalStateException {
         if (executorService == null) {
             throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return executorService.getExecutorService();
     }
 
-    public DelegatingSupplier<WildflyContextService> getContextServiceSupplier() {
+    public DelegatingSupplier<WildFlyContextService> getContextServiceSupplier() {
         return contextServiceSupplier;
     }
 

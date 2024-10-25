@@ -25,13 +25,13 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Eduardo Martins
  */
-public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl implements WildflyManagedScheduledExecutorService {
+public class ManagedScheduledExecutorServiceImpl extends org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl implements WildFlyManagedScheduledExecutorService {
 
     private final ControlPoint controlPoint;
     private final ProcessStateNotifier processStateNotifier;
     private final ManagedExecutorRuntimeStats runtimeStats;
 
-    public ManagedScheduledExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildflyContextService contextService, WildflyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
+    public ManagedScheduledExecutorServiceImpl(String name, WildFlyManagedThreadFactory managedThreadFactory, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, WildFlyContextService contextService, WildFlyManagedExecutorService.RejectPolicy rejectPolicy, ControlPoint controlPoint, ProcessStateNotifier processStateNotifier) {
         super(name, (ManagedThreadFactoryImpl) managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, (ContextServiceImpl) contextService, ManagedExecutorServiceImpl.convertRejectPolicy(rejectPolicy));
         this.controlPoint = controlPoint;
         this.processStateNotifier = processStateNotifier;

@@ -10,7 +10,7 @@ import jakarta.enterprise.concurrent.ManagedExecutorService;
  *
  * @author Eduardo Martins
  */
-public interface WildflyManagedExecutorService extends ManagedExecutorService {
+public interface WildFlyManagedExecutorService extends ManagedExecutorService {
 
     WildFlyManagedThreadFactory getWildFlyManagedThreadFactory();
 

@@ -7,7 +7,7 @@ package org.jboss.as.ee.concurrent.handle;
 import java.io.Serializable;
 
 /**
- * The Wildfly's EE context handle.
+ * The WildFly's EE context handle.
  *
  * @author Eduardo Martins
  */
