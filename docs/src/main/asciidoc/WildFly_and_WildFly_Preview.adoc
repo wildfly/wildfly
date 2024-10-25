@@ -156,18 +156,6 @@ Notes:
 . [[note2]]Jakarta Data is a new specification in EE 11.
 . [[note3]]Jakarta MVC is an independent specification that is not part of the Jakarta EE Platform or the Web or Core Profile.
 
-=== MicroProfile 7 Support in WildFly Preview
-
-In the 34 release, WildFly Preview began integrating support for some (but not all) of the MicroProfile 7 versions of the MicroProfile specifications, replacing the MicroProfile 6.1 variants that are included in standard WildFly. The following table illustrates the differences in MicroProfile support between standard WildFly and WildFly Preview:
-
-[cols=",,",options="header"]
-|=======================================================================
-|MicroProfile Technology |Standard WildFly Version| WildFly Preview Version
-
-|MicroProfile REST Client| 3.0 |4.0
-|MicroProfile Telemetry| 1.1 |2.0
-|=======================================================================
-
 === WildFly Preview Support for EE 8 Deployments
 
 The APIs that WildFly Preview exposes to deployments are the EE 10 or 11 APIs, so all the classes and interfaces are in the
