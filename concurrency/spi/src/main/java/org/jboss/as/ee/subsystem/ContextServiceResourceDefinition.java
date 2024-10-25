@@ -13,6 +13,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.ee.concurrent.WildFlyContextService;
@@ -49,8 +51,10 @@ public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, USE_TRANSACTION_SETUP_PROVIDER_AD};
 
+    private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver(EESubsystemModel.CONTEXT_SERVICE, EeExtension.class.getPackage().getName() + ".LocalDescriptions", EeExtension.class.getClassLoader(), true, true);
+
     public ContextServiceResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.CONTEXT_SERVICE))
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE), RESOLVER)
                 .setAddHandler(ContextServiceAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ContextServiceAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));

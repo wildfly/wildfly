@@ -22,27 +22,27 @@ public class ConcurrentEESubsystemXMLPersister {
     public static void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
         boolean started = false;
         if (eeSubSystem.hasDefined(EESubsystemModel.CONTEXT_SERVICE)) {
-            writer.writeStartElement(Element.CONCURRENT.getLocalName());
+            writer.writeStartElement(ConcurrentElement.CONCURRENT.getLocalName());
             started = true;
             writeContextServices(writer, eeSubSystem.get(EESubsystemModel.CONTEXT_SERVICE));
         }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_THREAD_FACTORY)) {
             if(!started) {
-                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                writer.writeStartElement(ConcurrentElement.CONCURRENT.getLocalName());
                 started = true;
             }
             writeManagedThreadFactories(writer, eeSubSystem.get(EESubsystemModel.MANAGED_THREAD_FACTORY));
         }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)) {
             if(!started) {
-                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                writer.writeStartElement(ConcurrentElement.CONCURRENT.getLocalName());
                 started = true;
             }
             writeManagedExecutorServices(writer, eeSubSystem.get(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
         }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
             if(!started) {
-                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                writer.writeStartElement(ConcurrentElement.CONCURRENT.getLocalName());
                 started = true;
             }
             writeManagedScheduledExecutorServices(writer, eeSubSystem.get(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
@@ -53,10 +53,10 @@ public class ConcurrentEESubsystemXMLPersister {
     }
 
     private static void writeContextServices(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.CONTEXT_SERVICES.getLocalName());
+        writer.writeStartElement(ConcurrentElement.CONTEXT_SERVICES.getLocalName());
         for (Property property : subModel.asPropertyList()) {
-            writer.writeStartElement(Element.CONTEXT_SERVICE.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            writer.writeStartElement(ConcurrentElement.CONTEXT_SERVICE.getLocalName());
+            writer.writeAttribute(ConcurrentAttribute.NAME.getLocalName(), property.getName());
             for(SimpleAttributeDefinition ad : ContextServiceResourceDefinition.ATTRIBUTES) {
                 ad.marshallAsAttribute(property.getValue(), writer);
             }
@@ -66,10 +66,10 @@ public class ConcurrentEESubsystemXMLPersister {
     }
 
     private static void writeManagedThreadFactories(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGED_THREAD_FACTORIES.getLocalName());
+        writer.writeStartElement(ConcurrentElement.MANAGED_THREAD_FACTORIES.getLocalName());
         for (Property property : subModel.asPropertyList()) {
-            writer.writeStartElement(Element.MANAGED_THREAD_FACTORY.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            writer.writeStartElement(ConcurrentElement.MANAGED_THREAD_FACTORY.getLocalName());
+            writer.writeAttribute(ConcurrentAttribute.NAME.getLocalName(), property.getName());
             for(SimpleAttributeDefinition ad : ManagedThreadFactoryResourceDefinition.ATTRIBUTES) {
                 ad.marshallAsAttribute(property.getValue(), writer);
             }
@@ -79,10 +79,10 @@ public class ConcurrentEESubsystemXMLPersister {
     }
 
     private static void writeManagedExecutorServices(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGED_EXECUTOR_SERVICES.getLocalName());
+        writer.writeStartElement(ConcurrentElement.MANAGED_EXECUTOR_SERVICES.getLocalName());
         for (Property property : subModel.asPropertyList()) {
-            writer.writeStartElement(Element.MANAGED_EXECUTOR_SERVICE.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            writer.writeStartElement(ConcurrentElement.MANAGED_EXECUTOR_SERVICE.getLocalName());
+            writer.writeAttribute(ConcurrentAttribute.NAME.getLocalName(), property.getName());
             for(SimpleAttributeDefinition ad : ManagedExecutorServiceResourceDefinition.ATTRIBUTES) {
                 ad.marshallAsAttribute(property.getValue(), writer);
             }
@@ -92,10 +92,10 @@ public class ConcurrentEESubsystemXMLPersister {
     }
 
     private static void writeManagedScheduledExecutorServices(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.MANAGED_SCHEDULED_EXECUTOR_SERVICES.getLocalName());
+        writer.writeStartElement(ConcurrentElement.MANAGED_SCHEDULED_EXECUTOR_SERVICES.getLocalName());
         for (Property property : subModel.asPropertyList()) {
-            writer.writeStartElement(Element.MANAGED_SCHEDULED_EXECUTOR_SERVICE.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            writer.writeStartElement(ConcurrentElement.MANAGED_SCHEDULED_EXECUTOR_SERVICE.getLocalName());
+            writer.writeAttribute(ConcurrentAttribute.NAME.getLocalName(), property.getName());
             for(SimpleAttributeDefinition ad : ManagedScheduledExecutorServiceResourceDefinition.ATTRIBUTES) {
                 ad.marshallAsAttribute(property.getValue(), writer);
             }

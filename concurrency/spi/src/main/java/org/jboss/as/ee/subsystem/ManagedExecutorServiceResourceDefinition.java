@@ -18,6 +18,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
@@ -159,7 +160,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
 
-    private static final ResourceDescriptionResolver RESOLVER = EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE);
+    private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver(EESubsystemModel.MANAGED_EXECUTOR_SERVICE, EeExtension.class.getPackage().getName() + ".LocalDescriptions", EeExtension.class.getClassLoader(), true, true);
 
     /**
      * metrics op step handler

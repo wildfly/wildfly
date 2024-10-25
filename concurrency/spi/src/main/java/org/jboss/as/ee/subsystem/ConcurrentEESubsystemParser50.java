@@ -33,7 +33,7 @@ public class ConcurrentEESubsystemParser50 {
     public static void parseConcurrent(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
+            final ConcurrentElement element = ConcurrentElement.forName(reader.getLocalName());
             switch (element) {
                 case CONTEXT_SERVICES: {
                     parseContextServices(reader, operations, subsystemPathAddress);
@@ -62,7 +62,7 @@ public class ConcurrentEESubsystemParser50 {
         requireNoAttributes(reader);
         boolean empty = true;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Element.forName(reader.getLocalName())) {
+            switch (ConcurrentElement.forName(reader.getLocalName())) {
                 case CONTEXT_SERVICE: {
                     empty = false;
                     parseContextService(reader, operations, subsystemPathAddress);
@@ -74,7 +74,7 @@ public class ConcurrentEESubsystemParser50 {
             }
         }
         if (empty) {
-            throw missingRequired(reader, EnumSet.of(Element.CONTEXT_SERVICE));
+            throw missingRequired(reader, EnumSet.of(ConcurrentElement.CONTEXT_SERVICE));
         }
     }
 
@@ -115,7 +115,7 @@ public class ConcurrentEESubsystemParser50 {
         requireNoAttributes(reader);
         boolean empty = true;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Element.forName(reader.getLocalName())) {
+            switch (ConcurrentElement.forName(reader.getLocalName())) {
                 case MANAGED_EXECUTOR_SERVICE: {
                     empty = false;
                     parseManagedExecutorService(reader, operations, subsystemPathAddress);
@@ -127,7 +127,7 @@ public class ConcurrentEESubsystemParser50 {
             }
         }
         if (empty) {
-            throw missingRequired(reader, EnumSet.of(Element.MANAGED_EXECUTOR_SERVICE));
+            throw missingRequired(reader, EnumSet.of(ConcurrentElement.MANAGED_EXECUTOR_SERVICE));
         }
     }
 
@@ -195,7 +195,7 @@ public class ConcurrentEESubsystemParser50 {
         requireNoAttributes(reader);
         boolean empty = true;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Element.forName(reader.getLocalName())) {
+            switch (ConcurrentElement.forName(reader.getLocalName())) {
                 case MANAGED_SCHEDULED_EXECUTOR_SERVICE: {
                     empty = false;
                     parseManagedScheduledExecutorService(reader, operations, subsystemPathAddress);
@@ -207,7 +207,7 @@ public class ConcurrentEESubsystemParser50 {
             }
         }
         if (empty) {
-            throw missingRequired(reader, EnumSet.of(Element.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+            throw missingRequired(reader, EnumSet.of(ConcurrentElement.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
         }
     }
 
@@ -269,7 +269,7 @@ public class ConcurrentEESubsystemParser50 {
         requireNoAttributes(reader);
         boolean empty = true;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Element.forName(reader.getLocalName())) {
+            switch (ConcurrentElement.forName(reader.getLocalName())) {
                 case MANAGED_THREAD_FACTORY: {
                     empty = false;
                     parseManagedThreadFactory(reader, operations, subsystemPathAddress);
@@ -281,7 +281,7 @@ public class ConcurrentEESubsystemParser50 {
             }
         }
         if (empty) {
-            throw missingRequired(reader, EnumSet.of(Element.MANAGED_THREAD_FACTORY));
+            throw missingRequired(reader, EnumSet.of(ConcurrentElement.MANAGED_THREAD_FACTORY));
         }
     }
 

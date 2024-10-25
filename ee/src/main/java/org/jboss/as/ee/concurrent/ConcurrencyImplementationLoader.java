@@ -27,7 +27,7 @@ class ConcurrencyImplementationLoader {
         try {
             final ModuleLoader moduleLoader = Module.getCallerModuleLoader();
             if (moduleLoader != null) {
-                final Module module = moduleLoader.loadModule("org.jboss.as.ee");
+                final Module module = moduleLoader.loadModule("org.wildfly.concurrency");
                 if (module != null) {
                     return load(module.getClassLoader());
                 }

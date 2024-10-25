@@ -13,6 +13,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -60,8 +62,10 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, PRIORITY_AD};
 
+    private static final ResourceDescriptionResolver RESOLVER = new StandardResourceDescriptionResolver(EESubsystemModel.MANAGED_THREAD_FACTORY, EeExtension.class.getPackage().getName() + ".LocalDescriptions", EeExtension.class.getClassLoader(), true, true);
+
     public ManagedThreadFactoryResourceDefinition() {
-        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY), EeExtension.getResourceDescriptionResolver(EESubsystemModel.MANAGED_THREAD_FACTORY))
+        super(new SimpleResourceDefinition.Parameters(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY), RESOLVER)
                 .setAddHandler(ManagedThreadFactoryAdd.INSTANCE)
                 .setRemoveHandler(new ServiceRemoveStepHandler(ManagedThreadFactoryAdd.INSTANCE))
                 .addCapabilities(CAPABILITY));
