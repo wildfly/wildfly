@@ -416,7 +416,7 @@
         <version.com.google.code.gson>2.8.9</version.com.google.code.gson>
         <version.com.google.guava>33.0.0-jre</version.com.google.guava>
         <version.com.google.guava.failureaccess>1.0.2</version.com.google.guava.failureaccess>
-        <version.com.google.protobuf>3.25.5</version.com.google.protobuf>
+        <version.com.google.protobuf>4.28.3</version.com.google.protobuf>
         <version.com.h2database>2.2.224</version.com.h2database>
         <version.com.ibm.async.asyncutil>0.1.0</version.com.ibm.async.asyncutil>
         <version.com.microsoft.azure>8.6.6</version.com.microsoft.azure>
