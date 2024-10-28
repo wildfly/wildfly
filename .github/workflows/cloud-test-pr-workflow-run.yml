@@ -126,7 +126,7 @@ jobs:
             exit 1
           fi
 
-      - name: Remote Dispatch to report failure
+      - name: Report failure
         if: ${{ failure() }}
         env:
           REPORTER_EVENT_TYPE: report-cloud-tests-workflow-run-failed
