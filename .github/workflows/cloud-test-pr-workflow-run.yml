@@ -67,7 +67,7 @@ jobs:
 
           set -x
 
-          resp=$(curl -X POST -s "https://api.github.com/repos/${TRIGGER_REPOSITORY}/dispatches" \
+          resp=$(curl -X POST -s "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -145,7 +145,7 @@ jobs:
             
             echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
   
-            resp=$(curl -X POST -s "https://api.github.com/repos/${TRIGGER_REPOSITORY}/dispatches" \
+            resp=$(curl -X POST -s "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Content-Type: application/json" \
                 -H "Authorization: Bearer ${GH_TOKEN}" \
