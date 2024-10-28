@@ -100,7 +100,7 @@ jobs:
           
           CLIENT_PAYLOAD=$( jq -n \
                   --arg tr "$GITHUB_REPOSITORY" \
-                  --arg githubSha "GITHUB_SHA_FOR_PR" \
+                  --arg githubSha "$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA" \
                   --arg prHeadSha "$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA" \
                   --arg pr "$PR_NUMBER" \
                   '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
