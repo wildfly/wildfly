@@ -13,7 +13,7 @@
         <!-- The empty relativePath makes Maven lookup it in the repository. Missing tag default is ../pom.xml. -->
         <relativePath/>
     </parent>
-
+<!-- TEST -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
     <!--
