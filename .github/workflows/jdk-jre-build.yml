@@ -1,0 +1,110 @@
+name: WildFly JRE build
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".mvn/**"
+      - "docs/**"
+      - ".github/workflows/build-manual.yml"
+      - ".github/workflows/shared-wildfly-build.yml"
+      - '.gitattributes'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'build.bat'
+      - 'build.sh'
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "integration-tests.bat"
+      - "integration-tests.sh"
+      - "LICENSE.txt"
+      - "mvnw"
+      - "mvnw.cmd"
+      - "README.md"
+      - "SECURITY.md"
+      - "**/README.md"
+      - "**/README.adoc"
+  pull_request:
+    branches:
+      - '**'
+    paths-ignore:
+      - ".mvn/**"
+      - "docs/**"
+      - ".github/workflows/build-manual.yml"
+      - ".github/workflows/shared-wildfly-build.yml"
+      - '.gitattributes'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'build.bat'
+      - 'build.sh'
+      - "CODE_OF_CONDUCT.md"
+      - "CONTRIBUTING.md"
+      - "integration-tests.bat"
+      - "integration-tests.sh"
+      - "LICENSE.txt"
+      - "mvnw"
+      - "mvnw.cmd"
+      - "README.md"
+      - "SECURITY.md"
+      - "**/README.md"
+      - "**/README.adoc"
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  wildfly-jre-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['11', '17', '21']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JRE ${{ matrix.java }} for building
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+          java-package: 'jre'
+
+      - name: Set the JRE Home
+        id: jre-home
+        run: |
+          echo "JRE_HOME=$JAVA_HOME" >> "$GITHUB_OUTPUT"
+
+      - name: Setup JDK ${{ matrix.java }} for building
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build and verify WildFly with JRE ${{ matrix.java }}
+        run: |
+          mvn -B clean install -DskipTests -Denforcer.skip=true -Dcheckstyle.skip=true
+          cd testsuite
+          echo "Running: mvn -B verify -Dcontainer.java.home=${{ steps.jre-home.outputs.JRE_HOME }} -fae"
+          mvn -B verify -DnoCompile -Dcontainer.java.home=${{ steps.jre-home.outputs.JRE_HOME }} -fae
+
+      - name: Upload Surefire Reports on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: surefire-reports-${{ matrix.java }}
+          path: '**/surefire-reports/'
+
+      - name: Upload Server Logs on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: server-logs-${{ matrix.java }}
+          path: '**/server.log'

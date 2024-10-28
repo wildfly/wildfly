@@ -1,0 +1,78 @@
+name: Manual Build and Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'OS'
+        required: false
+        default: 'ubuntu-latest'
+        type: choice
+        options:
+          - ubuntu-latest
+          - windows-latest
+      jdk-distribution:
+        description: 'JDK Distribution'
+        required: false
+        default: 'temurin'
+        type: choice
+        options:
+          - temurin
+          - semeru
+          - microsoft
+          - oracle
+          - zulu
+          - corretto
+          - liberica
+      jdk-version:
+        description: 'JDK Version'
+        required: true
+        type: string
+      args:
+        description: 'Arguments like -Dquickly | -DskipTests | -DallTests'
+        required: false
+        default: '-Dquickly'
+        type: string
+      timeout:
+        description: 'Job Timeout Minutes'
+        required: false
+        default: 120
+        type: number
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: ${{ fromJSON(inputs.timeout) }}
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{ inputs.jdk-distribution }} 17 to build for JDK 11 test
+        if: inputs.jdk-version == 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ inputs.jdk-distribution }}
+          java-version: 17
+          cache: 'maven'
+      - name: Build with Maven and JDK 17 for JDK 11 Tests
+        if: inputs.jdk-version == 11
+        run: mvn -U -B -ntp clean install ${{ inputs.args }} -DskipTests
+      - name: Set up JDK ${{ inputs.jdk-distribution }} ${{ inputs.jdk-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: ${{ inputs.jdk-distribution }}
+          java-version: ${{ inputs.jdk-version }}
+          cache: 'maven'
+      - name: Test with Maven and JDK 11 with -DnoCompile
+        if: inputs.jdk-version == 11
+        run: mvn -U -B -ntp test -DnoCompile ${{ inputs.args }} -rf testsuite
+      - name: Build and test with Maven
+        if: inputs.jdk-version != 11
+        run: mvn -U -B -ntp clean install ${{ inputs.args }}

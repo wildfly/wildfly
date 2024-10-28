@@ -1,0 +1,192 @@
+name: Dependency Tree Input Builder
+# To deal with https://securitylab.github.com/research/github-actions-preventing-pwn-requests
+# we need to split this across two jobs. The part that writes to the pull request lives in
+# ./dep-diff-workflow_run.yml
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**/pom.xml"
+env:
+  # The modules to check for dependencies. If there is more than one they are comma separated
+  MODULES_TO_CHECK: ee-feature-pack/galleon-shared,ee-feature-pack/galleon-local,galleon-pack/galleon-shared,galleon-pack/galleon-local,galleon-pack,ee-feature-pack/common,microprofile/galleon-common,servlet-feature-pack/common,elytron-oidc-client/galleon-common
+  ADDITIONAL_BUILD_MODULES: boms/common-ee,boms/common-expansion,boms/standard-ee,boms/standard-expansion,boms/standard-test
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACTS: .pr_artifacts
+    steps:
+      - name: Prepare
+        id: prepare
+        run: |
+          # Make ARTIFACTS absolute
+          ARTIFACTS="${GITHUB_WORKSPACE}/${ARTIFACTS}"
+          echo "ARTIFACTS=${ARTIFACTS}" >> $GITHUB_ENV
+
+          mkdir ${ARTIFACTS}
+          echo ${{ github.event.number }} > "${ARTIFACTS}/pr"
+
+          echo "base=${GITHUB_BASE_REF}" >> $GITHUB_OUTPUT
+          echo "artifacts=${ARTIFACTS}" >> $GITHUB_OUTPUT
+
+      - name: Clone base version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.prepare.outputs.base }}
+          path: base
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # Run the caching against the base version only
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Clone PR version
+        uses: actions/checkout@v4
+        with:
+          path: pr
+
+      - name: Find valid base modules to check
+        working-directory: base
+        run: |
+          i=0
+          validBaseModules=""
+          for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
+          do
+            if [ -d ${module} ]; then
+              if [ $i -gt 0 ]; then
+                validBaseModules="${validBaseModules},${module}"
+              else
+                validBaseModules="${module}"
+              fi
+              i=$((i + 1))
+            fi
+          done
+          echo "validBaseModules="$validBaseModules
+          echo "validBaseModules=${validBaseModules}" >> $GITHUB_ENV
+
+      - name: Find valid base additional modules
+        working-directory: base
+        run: |
+          i=0
+          validAddlBaseModules=""
+          for module in $(echo "${ADDITIONAL_BUILD_MODULES}" | sed "s/,/ /g")
+          do
+            if [ -d ${module} ]; then
+              if [ $i -gt 0 ]; then
+                validAddlBaseModules="${validAddlBaseModules},${module}"
+              else
+                validAddlBaseModules="${module}"
+              fi
+              i=$((i + 1))
+            fi
+          done
+          echo "validAddlBaseModules="validAddlBaseModules
+          echo "validAddlBaseModules=${validAddlBaseModules}" >> $GITHUB_ENV
+
+      - name: Find valid PR modules to check
+        working-directory: pr
+        run: |
+          i=0
+          validPRModules=""
+          for module in $(echo "${MODULES_TO_CHECK}" | sed "s/,/ /g")
+          do
+            if [ -d ${module} ]; then
+              if [ $i -gt 0 ]; then
+                validPRModules="${validPRModules},${module}"
+              else
+                validPRModules="${module}"
+              fi
+              i=$((i + 1))
+            fi
+          done
+          echo "validPRModules="$validPRModules
+          echo "validPRModules=${validPRModules}" >> $GITHUB_ENV
+
+      - name: Find valid pr additional modules
+        working-directory: pr
+        run: |
+          i=0
+          validAddlPRModules=""
+          for module in $(echo "${ADDITIONAL_BUILD_MODULES}" | sed "s/,/ /g")
+          do
+            if [ -d ${module} ]; then
+              if [ $i -gt 0 ]; then
+                validAddlPRModules="${validAddlPRModules},${module}"
+              else
+                validAddlPRModules="${module}"
+              fi
+              i=$((i + 1))
+            fi
+          done
+          echo "validAddlPRModules="validAddlPRModules
+          echo "validAddlPRModules=${validAddlPRModules}" >> $GITHUB_ENV
+
+      - name: Build base
+        working-directory: base
+        run: |
+          mvn -B -ntp install -DskipTests -pl ${{ env.validBaseModules }},${{ env.validAddlBaseModules }} -am
+
+      - name: Grab base dependencies
+        id: base-versions
+        working-directory: base
+        run: |
+          i=0
+          baseVersionFiles=""
+          for module in $(echo "${{ env.validBaseModules }}" | sed "s/,/ /g")
+          do
+            baseVersionFile="_base-versions-$i.txt"
+            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${baseVersionFile}" || exit 1
+
+            if [ $i -gt 0 ]; then
+              baseVersionFiles="${baseVersionFiles},${baseVersionFile}"
+            else
+              baseVersionFiles="${baseVersionFile}"
+            fi
+            i=$((i + 1))
+          done
+          echo "${baseVersionFiles}" > ${ARTIFACTS}/baseVersions
+
+      - name: Build PR
+        working-directory: pr
+        run: |
+          echo "validPRModules="$validPRModules
+          echo "env.validPRModules="${{ env.validPRModules }}
+          mvn -B -ntp install -DskipTests -pl ${{ env.validPRModules }},${{ env.validAddlPRModules }} -am
+
+      - name: Grab PR Dependencies
+        working-directory: pr
+        id: new-versions
+        run: |
+          i=0
+          newVersionFiles=""
+          for module in $(echo "${{ env.validPRModules }}" | sed "s/,/ /g")
+          do
+            newVersionFile="_new-versions-$i.txt"
+            mvn -B -ntp dependency:tree -pl "${module}" -DoutputFile="${ARTIFACTS}/${newVersionFile}" || exit 1
+
+            if [ $i -gt 0 ]; then
+              newVersionFiles="${newVersionFiles},${newVersionFile}"
+            else
+              newVersionFiles="${newVersionFile}"
+            fi
+            i=$((i + 1))
+          done
+          echo "${newVersionFiles}" > ${ARTIFACTS}/newVersions
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: input-artifacts
+          path: ${{ steps.prepare.outputs.artifacts }}
+          include-hidden-files: true

@@ -1,0 +1,22 @@
+name: Check non-i18n logging
+
+on:
+  pull_request:
+    branches:
+      - main
+      - '*.x'
+
+jobs:
+  check-logging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run logging check
+        env:
+          GITHUB_BASE_REF: '${{ github.base_ref }}'
+        shell: bash
+        run: bash check_logging.sh
