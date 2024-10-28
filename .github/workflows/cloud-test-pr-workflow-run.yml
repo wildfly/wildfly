@@ -22,10 +22,6 @@ env:
   # Just an identifier for the event - this one triggers the cloud tests
   EVENT_TYPE: trigger-cloud-tests-pr
 
-permissions:
-  checks: write
-  statuses: write
-
 jobs:
   run-tests:
     runs-on: ubuntu-latest
@@ -51,7 +47,6 @@ jobs:
         # We do that by reporting back via the same mechanism as the remote cloud test does.
         env:
           REPORTER_EVENT_TYPE: report-cloud-tests-workflow-run-pending
-          GH_TOKEN: ${{ github.token }}
         run: |
           STATUS="pending"
           RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
@@ -70,7 +65,7 @@ jobs:
           resp=$(curl -X POST -s "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Authorization: Bearer ${REMOTE_DISPATCH_TOKEN}" \
               -d "{\"event_type\": \"${REPORTER_EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
           
           set +x
@@ -130,7 +125,6 @@ jobs:
         if: ${{ failure() }}
         env:
           REPORTER_EVENT_TYPE: report-cloud-tests-workflow-run-failed
-          GH_TOKEN: ${{ github.token }}
         run: |
             # There is no 'cancelled' status, just error, failure, pending and success
             STATUS="failure"
@@ -148,7 +142,7 @@ jobs:
             resp=$(curl -X POST -s "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" \
                 -H "Accept: application/vnd.github.v3+json" \
                 -H "Content-Type: application/json" \
-                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Authorization: Bearer ${REMOTE_DISPATCH_TOKEN}" \
                 -d "{\"event_type\": \"${REPORTER_EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
             if [ -z "$resp" ]
             then

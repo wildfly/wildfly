@@ -8,7 +8,7 @@ on:
       - report-cloud-tests-workflow-run-failed
       # These two come from the remote job in the wildfly-cloud-tests repository
       - report-cloud-tests-pr-pending
-      - report-cloud-tests-pr-complete]
+      - report-cloud-tests-pr-complete
 env:
   DESC: ${{ github.event.client_payload.desc }}
   GH_TOKEN: ${{ github.token }}
