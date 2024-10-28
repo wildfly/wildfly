@@ -1,7 +1,7 @@
 name: DELETE_ME on pull_request_target
 
 on:
-  pull_request_trigger:
+  pull_request_target: 
 
 permissions:
   checks: write
