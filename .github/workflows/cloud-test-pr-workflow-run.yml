@@ -1,0 +1,82 @@
+# This will be invoked by the cloud-test-pr-trigger.yml workflow
+# The other job runs handles the 'pull_request' event and thus its GITHUB_SHA will have the value
+# of the merge commit from the PR into the main branch of WildFly. However, it can not access the secrets needed
+# to perform the remote dispatch.
+# So it stores that sha in an environment variable, along with the pull request head sha, and delegates to this job
+# which can read secrets and do the dispatch.
+name: Cloud Tests Workflow Run
+on:
+  workflow_run:
+    workflows:
+      - 'Cloud Tests Trigger'
+    types:
+      - completed
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} - ${{ github.event.workflow_run.event }}: ${{ github.event.workflow_run.head_repository.full_name }}@${{ github.event.workflow_run.head_branch }}'
+  cancel-in-progress: true
+env:
+  # Repository where the cloud tests will be run
+  REPOSITORY: wildfly-extras/wildfly-cloud-tests
+  # This must be set to a PAT with 'repo' permission for the target repository
+  TOKEN: ${{ secrets.CLOUD_TESTS_REMOTE_DISPATCH_TOKEN }}
+  # Just an identifier for the event - this one triggers the cloud tests
+  EVENT_TYPE: trigger-cloud-tests-pr
+
+permissions: {}
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - uses: actions/download-artifact@v4
+        with:
+          name: .job-env
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Read environment variables from the previous job
+        run: |
+          text="$(cat .job-env)"
+          echo "${text}"        
+          echo "${text}" >> "$GITHUB_ENV"
+      - name: Remote Dispatch
+        env:
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        if: ${{ env.TOKEN }}
+        run: |
+          echo $GITHUB_REPOSITORY
+          
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          
+          CLIENT_PAYLOAD=$( jq -n \
+                  --arg tr "$GITHUB_REPOSITORY" \
+                  --arg githubSha "$GITHUB_SHA" \
+                  --arg prHeadSha "$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA" \
+                  --arg pr "$PR_NUMBER" \
+                  '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
+          
+          echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
+
+          set -x
+
+          resp=$(curl -X POST -s "https://api.github.com/repos/${REPOSITORY}/dispatches" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -d "{\"event_type\": \"${EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
+          
+          set +x
+          
+          if [ -z "$resp" ]
+          then
+            sleep 2
+          else
+            echo "Workflow failed to trigger"
+            echo "$resp"
+            exit 1
+          fi
+

@@ -1,7 +1,11 @@
-
+# This job needs to handle the 'pull_request' event to get the merge commit from the PR into the main branch of WildFly
+# in the GITHUB_SHA environment variable. This is also stored in github.event.pull_request.head.sha.
+# To do the remote dispatch, we need a secret containing the PAT that has the permissions to do invoke workflows in the
+# remote repository. Since 'pull_request' jobs don't have access to secrets, we delegate to the
+# 'cloud-test-pr-workflow-run.yml' workflow to do the remote dispatch.
 name: Cloud Tests Trigger
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - main
     paths-ignore:
@@ -28,57 +32,34 @@ on:
 
 # Only run the latest job
 concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  group: '${{ github.workflow }} @ ${{ github.ref || github.run_id }}'
   cancel-in-progress: true
-env:
-  # Repository where the cloud tests will be run
-  REPOSITORY: wildfly-extras/wildfly-cloud-tests
-  # This must be set to a PAT with 'repo' permission for the target repository
-  TOKEN: ${{ secrets.CLOUD_TESTS_REMOTE_DISPATCH_TOKEN }}
-  # Just an identifier for the event - this one triggers the cloud tests
-  EVENT_TYPE: trigger-cloud-tests-pr
 
 permissions: {}
 jobs:
-  run-tests:
+  trigger:
     runs-on: ubuntu-latest
     steps:
-
-      - name: Remote Dispatch
-        env:
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        if: ${{ env.TOKEN }}
-        run: |
-          echo $GITHUB_REPOSITORY
-          
-          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
-          PR_NUMBER="${{github.event.number}}"
-          
-          CLIENT_PAYLOAD=$( jq -n \
-                  --arg tr "$GITHUB_REPOSITORY" \
-                  --arg githubSha "$GITHUB_SHA" \
-                  --arg prHeadSha "$PR_HEAD_SHA" \
-                  --arg pr "$PR_NUMBER" \
-                  '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
-          
-          echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
-
-          set -x
-
-          resp=$(curl -X POST -s "https://api.github.com/repos/${REPOSITORY}/dispatches" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${TOKEN}" \
-              -d "{\"event_type\": \"${EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
-          
-          set +x
-          
-          if [ -z "$resp" ]
-          then
-            sleep 2
-          else
-            echo "Workflow failed to trigger"
-            echo "$resp"
-            exit 1
-          fi
-
+    - name: Get pull request number
+      run: |
+        event_name="${{ github.event_name }}"
+        
+        if [ "${event_name}" == "pull_request" ]; then
+          echo "This is a pull request"
+          echo "PR_NUMBER=${{ github.event.number }}" >> .job-env
+          echo "GITHUB_SHA=${{ github.sha }}" >> .job-env
+          echo "GITHUB_EVENT_PULL_REQUEST_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> .job-env
+        elif [ "${event_name}" == "push" ]; then
+          echo "This is a push"
+          echo "PR_NUMBER=push" >> .job-env
+          echo "GITHUB_SHA=${{ github.sha }}" >> .job-env
+        else
+          echo "The ${event_name} event is not handled by this workflow"
+          exit 1
+        fi
+        cat .job-env
+    - uses: actions/upload-artifact@v4
+      with:
+        name: .job-env
+        path: .job-env
+        include-hidden-files: true
