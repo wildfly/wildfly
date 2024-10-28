@@ -576,7 +576,7 @@
         <version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
         <version.org.lz4.lz4-java>1.8.0</version.org.lz4.lz4-java>
         <version.org.opensaml.opensaml>4.3.0</version.org.opensaml.opensaml>
-        <version.org.ow2.asm>9.7</version.org.ow2.asm>
+        <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.clustering>1.1.2.Final</version.org.wildfly.clustering>
         <version.org.wildfly.core>27.0.0.Beta1</version.org.wildfly.core>
