@@ -18,6 +18,7 @@ jobs:
     steps:
       - name: Output
         env:
+          #MESSAGE: ${{ github.event.client_payload.message }}
           MESSAGE: ${{ toJSON(github.event.client_payload) }}
         run: echo $MESSAGE
 
