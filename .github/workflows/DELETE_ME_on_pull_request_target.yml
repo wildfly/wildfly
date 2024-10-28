@@ -1,4 +1,4 @@
-name: DELETE_ME on pull_request_trigger
+name: DELETE_ME on pull_request_target
 
 on:
   pull_request_trigger:
