@@ -41,6 +41,43 @@ jobs:
           text="$(cat .job-env)"
           echo "${text}"        
           echo "${text}" >> "$GITHUB_ENV"
+
+      - name: Report Progress
+        # This workflow_run job is invisible on the pull requests, so we need to report back whether we work
+        # or fail.
+        # We do that by reporting back via the same mechanism as the remote cloud test does.
+        if: ${{ env.TOKEN }}
+        run: |
+          STATUS="pending"
+          RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          DESC="Invoking remote job"
+          CLIENT_PAYLOAD=$( jq -n \
+                  --arg prHeadSha "$PR_HEAD_SHA" \
+                  --arg state "$STATUS" \
+                  --arg runUrl "$RUN_URL" \
+                  --arg desc "$DESC" \
+                  '{prHeadSha: $prHeadSha, state: $state, runUrl: $runUrl, desc: $desc}' )
+
+          echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
+
+          set -x
+
+          resp=$(curl -X POST -s "https://api.github.com/repos/${TRIGGER_REPOSITORY}/dispatches" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${TOKEN}" \
+              -d "{\"event_type\": \"${REPORTER_EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
+          
+          set +x
+          
+          if [ -z "$resp" ]
+          then
+            sleep 2
+          else
+            echo "Workflow failed to trigger"
+            echo "$resp"
+            exit 1
+          fi
       - name: Remote Dispatch
         env:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -62,7 +99,7 @@ jobs:
                   --arg prHeadSha "$GITHUB_EVENT_PULL_REQUEST_HEAD_SHA" \
                   --arg pr "$PR_NUMBER" \
                   '{triggerRepo: $tr, githubSha: $githubSha, prHeadSha: $prHeadSha, pr: $pr}' )
-          
+
           echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
 
           set -x
@@ -84,3 +121,30 @@ jobs:
             exit 1
           fi
 
+      - name: Remote Dispatch to report failure
+        if: ${{ env.TOKEN }} && ${{ failure() }}
+        run: |
+            TEXT="The attempt to start the remote job failed, or was cancelled"
+            RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            CLIENT_PAYLOAD=$( jq -n \
+                    --arg prHeadSha "$PR_HEAD_SHA" \
+                    --arg state "$STATUS" \
+                    --arg runUrl "$RUN_URL" \
+                    --arg desc "$TEXT" \
+                    '{prHeadSha: $prHeadSha, state: $state, runUrl: $runUrl, desc: $desc}' )
+            
+            echo "CLIENT_PAYLOAD: $CLIENT_PAYLOAD"
+  
+            resp=$(curl -X POST -s "https://api.github.com/repos/${TRIGGER_REPOSITORY}/dispatches" \
+                -H "Accept: application/vnd.github.v3+json" \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -d "{\"event_type\": \"${REPORTER_EVENT_TYPE}\", \"client_payload\": ${CLIENT_PAYLOAD} }")
+            if [ -z "$resp" ]
+            then
+              sleep 2
+            else
+              echo "Workflow failed to trigger"
+              echo "$resp"
+              exit 1
+            fi
