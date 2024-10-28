@@ -42,7 +42,7 @@ jobs:
         if [ "${event_name}" == "pull_request" ]; then
           echo "This is a pull request"
           echo "PR_NUMBER=${{ github.event.number }}" >> .job-env
-          echo "GITHUB_SHA=${{ github.sha }}" >> .job-env
+          echo "GITHUB_SHA_FOR_PR=${{ github.sha }}" >> .job-env
           echo "GITHUB_EVENT_PULL_REQUEST_HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> .job-env
         elif [ "${event_name}" == "push" ]; then
           echo "This is a push"
