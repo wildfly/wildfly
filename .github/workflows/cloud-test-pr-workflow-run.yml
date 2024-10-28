@@ -124,6 +124,8 @@ jobs:
       - name: Remote Dispatch to report failure
         if: ${{ env.TOKEN }} && ${{ failure() }}
         run: |
+            # There is no 'cancelled' status, just error, failure, pending and success
+            STATUS="failure"
             TEXT="The attempt to start the remote job failed, or was cancelled"
             RUN_URL="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
             CLIENT_PAYLOAD=$( jq -n \
