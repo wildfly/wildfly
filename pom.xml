@@ -34,7 +34,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
     <modules>
         <module>appclient</module>
         <module>batch-jberet</module>
