@@ -111,13 +111,32 @@ public class UndertowSubsystemTransformerTestCase extends AbstractSubsystemTest 
         KernelServicesBuilder builder = this.createKernelServicesBuilder(this.createAdditionalInitialization()).setSubsystemXml(this.readResource("undertow-transform.xml"));
         KernelServices services = this.build(builder);
 
-        ModelFixer fixer = model -> {
-            model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
-            model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
-            return model;
-        };
+        // TODO https://issues.redhat.com/browse/WFLY-19886. Remove the try/catch block and keep only the
+        // .setEmptyObject() version of the ModelFixer. Also get rid of all the comments :-)
+        try {
+            // Try to use the approach introduced by https://issues.redhat.com/browse/WFCORE-7036
+            // If it fails we will fall back to the old approach
+            // This is for before https://issues.redhat.com/browse/WFCORE-7036 is merged and released
+            // Once it is released, we should remove this and use the code in the try block only
+            ModelFixer fixer = model -> {
+                model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
+                model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).setEmptyObject();
+                return model;
+            };
 
-        this.checkSubsystemModelTransformation(services, this.modelVersion, fixer, false);
+            this.checkSubsystemModelTransformation(services, this.modelVersion, fixer, false);
+
+        } catch (AssertionError firstAssertionError) {
+            // This is for before https://issues.redhat.com/browse/WFCORE-7036 is merged and released
+            // Once it is released, we should remove this and use the code in the try block only
+            ModelFixer fixer = model -> {
+                model.get(HandlerDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
+                model.get(FilterDefinitions.PATH_ELEMENT.getKeyValuePair()).set(new ModelNode());
+                return model;
+            };
+
+            this.checkSubsystemModelTransformation(services, this.modelVersion, fixer, false);
+        }
     }
 
     @Test

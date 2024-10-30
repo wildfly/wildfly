@@ -5,7 +5,7 @@
 # * build-arguments: Arguments used during build. That is where you can override the version of the dependency.
 # * maven-repo-path: The path to a tar.gz file of a maven repo that contains the built dependency(ies) you are using.
 # * maven-repo-name: The name that identifies the maven repo to be downloaded.
-# * java-versions: A string containing a JSON array of JDK versions. For example: "['11', '17']"
+# * java-versions: A string containing a JSON array of JDK versions. For example: "['17', '21']"
 # * os: A string containing a JSON array of operating systems. For example: "['ubuntu-latest', 'windows-latest']"
 # 
 # Example Usage (WildFly main branch is built and tested with a custom build of a dependency named 'my-dependency'.
@@ -42,13 +42,13 @@
 #          retention-days: 5
 #
 #  wildfly-build-and-test-galleon-layers:
-#    name: Galleon Linux - JDK11
+#    name: Galleon Linux - JDK17
 #    uses: wildfly/wildfly/.github/workflows/shared-wildfly-build-and-test.yml@main
 #    with:
 #      test-arguments: '-Dts.layers -Dts.galleon'
 #      build-arguments: '-Dversion.org.wildfly.my-dependency=${{needs.my-dependency-build.outputs.my-dependency-version}}'
 #      os: "['ubuntu-latest']"
-#      java-versions: "['11']"
+#      java-versions: "['17']"
 #      maven-repo-name: my-dependency-maven-repository
 #      maven-repo-path: my-dependency-maven-repository.tar.gz
 #    needs: my-dependency-build
@@ -111,38 +111,13 @@ jobs:
         shell: bash
         run: |
          tar -xzf ${{ inputs.maven-repo-path }} -C ~
-        # Do not compile with JDK 11. If 11 is specified, we will build with 17 and test with 11
-        # So, setup 17
-      - name: Set up JDK 17 and JDK 11 for JDK11 execution
-        if: matrix.java == 11
-        uses: actions/setup-java@v4
-        with:
-          java-version: |
-            17
-            11
-          distribution: 'temurin'
-          # Cache must be computed prior to build WildFly. On Windows we run into https://github.com/actions/upload-artifact/issues/240
-          # when computing cache hash (**/pom.xml) due to galleon generated feature long file names.
-          cache: 'maven'
       - name: Set up JDK ${{ matrix.java }}
-        if: matrix.java != 11
         uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'maven'
-        # For JDK 11 tests, build with 17, skipping tests
-      - name: Build WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with JDK 17 for JDK 11 tests
-        if: matrix.java == 11
-        run: JAVA_HOME=$JAVA_HOME_17_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -DskipTests
-        shell: bash
-        # For JDK 11 tests, we already built, so just run the 'test' goal with the -DnoCompile setting to disable recompile
-      - name: Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }} with -DnoCompile for JDK 11 tests
-        if: matrix.java == 11
-        run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp test -DnoCompile ${{ inputs.build-arguments }} ${{ inputs.test-arguments }} -rf testsuite
-        shell: bash
       - name: Build and Test WildFly SNAPSHOT ${{ inputs.build-arguments }}  ${{ inputs.test-arguments }}
-        if: matrix.java != 11
         run: JAVA_HOME=$JAVA_HOME_${{ matrix.java }}_${{ runner.arch }} mvn -U -B -ntp clean install ${{ inputs.build-arguments }} ${{ inputs.test-arguments }}
         shell: bash
         # We need this due to long file names on Windows: https://github.com/actions/upload-artifact/issues/240
