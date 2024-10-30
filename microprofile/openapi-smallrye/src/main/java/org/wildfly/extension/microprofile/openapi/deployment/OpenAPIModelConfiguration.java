@@ -5,13 +5,13 @@
 
 package org.wildfly.extension.microprofile.openapi.deployment;
 
-import java.util.Map;
+import java.net.URL;
+import java.util.Optional;
+import java.util.function.Function;
 
-import io.smallrye.openapi.api.OpenApiConfig;
-import io.smallrye.openapi.runtime.io.Format;
+import io.smallrye.openapi.api.SmallRyeOpenAPI;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
-import org.jboss.vfs.VirtualFile;
+import org.eclipse.microprofile.config.Config;
 import org.wildfly.service.descriptor.TernaryServiceDescriptor;
 
 /**
@@ -19,7 +19,7 @@ import org.wildfly.service.descriptor.TernaryServiceDescriptor;
  * @author Paul Ferraro
  */
 public interface OpenAPIModelConfiguration extends OpenAPIEndpointConfiguration {
-    TernaryServiceDescriptor<OpenAPI> SERVICE_DESCRIPTOR = TernaryServiceDescriptor.of("org.wildfly.open-api.model", OpenAPI.class);
+    TernaryServiceDescriptor<SmallRyeOpenAPI> SERVICE_DESCRIPTOR = TernaryServiceDescriptor.of("org.wildfly.open-api.model", SmallRyeOpenAPI.class);
 
     /**
      * Indicates whether or not an OpenAPI endpoint is enabled for this deployment.
@@ -28,16 +28,22 @@ public interface OpenAPIModelConfiguration extends OpenAPIEndpointConfiguration 
     boolean isEnabled();
 
     /**
-     * Returns the OpenAPI configuration for this deployment.
-     * @return the OpenAPI configuration for this deployment.
+     * Returns the MicroProfile configuration for this deployment.
+     * @return the MicroProfile configuration for this deployment.
      */
-    OpenApiConfig getOpenApiConfig();
+    Config getMicroProfileConfig();
 
     /**
-     * Returns a tuple containing the static file and its format, or null, if the deployment does not define a static file.
-     * @return a tuple containing the static file and its format, or null, if the deployment does not define a static file.
+     * Returns an optional static file, only present if the deployment defines one.
+     * @return an optional static file, only present if the deployment defines one.
      */
-    Map.Entry<VirtualFile, Format> getStaticFile();
+    Optional<URL> getStaticFile();
+
+    /**
+     * Returns a function that resolves a relative deployment path to a URL.
+     * @return a function that resolves a relative deployment path to a URL.
+     */
+    Function<String, URL> getResourceResolver();
 
     /**
      * Indicates whether or not the OpenAPI document should use relative URLs.

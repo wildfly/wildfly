@@ -5,12 +5,16 @@
 
 package org.wildfly.extension.microprofile.openapi.deployment;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
-import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.runtime.io.Format;
 
 import org.eclipse.microprofile.config.Config;
@@ -46,41 +50,40 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
                 "/WEB-INF/classes/META-INF/openapi.json"));
     }
 
-    private static Map.Entry<VirtualFile, Format> findStaticFile(VirtualFile root) {
-        // Format search order
-        for (Format format : EnumSet.of(Format.YAML, Format.JSON)) {
-            for (String resource : STATIC_FILES.get(format)) {
-                VirtualFile file = root.getChild(resource);
-                if (file.exists()) {
-                    return Map.entry(file, format);
-                }
-            }
-        }
-        return null;
-    }
-
     private final boolean enabled;
-    private final OpenApiConfig openApiConfig;
-    private final Map.Entry<VirtualFile, Format> staticFile;
+    private final Config config;
+    private final Optional<URL> staticFile;
     private final String serverName;
     private final String hostName;
     private final String path;
+    private final Function<String, URL> resolver;
     private final boolean relativeServerURLs;
 
     DeploymentUnitOpenAPIModelConfiguration(DeploymentUnit unit) {
-        Config config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
-        this.enabled = config.getOptionalValue(ENABLED, Boolean.class).orElse(Boolean.TRUE);
-        this.openApiConfig = OpenApiConfig.fromConfig(config);
-        this.staticFile = findStaticFile(unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot());
+        this.config = ConfigProvider.getConfig(unit.getAttachment(Attachments.MODULE).getClassLoader());
+        this.enabled = this.config.getOptionalValue(ENABLED, Boolean.class).orElse(Boolean.TRUE);
+        VirtualFile root = unit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+        this.resolver = new Function<>() {
+            @Override
+            public URL apply(String path) {
+                try {
+                    VirtualFile file = root.getChild(path);
+                    return file.exists() ? file.toURL() : null;
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        this.staticFile = Stream.of(Format.YAML, Format.JSON).map(STATIC_FILES::get).flatMap(List::stream).map(this.resolver).filter(Objects::nonNull).findFirst();
         // Fetch server/host as determined by Undertow DUP
         ModelNode model = unit.getAttachment(Attachments.DEPLOYMENT_RESOURCE_SUPPORT).getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
         this.serverName = model.get(DeploymentDefinition.SERVER.getName()).asString();
         this.hostName = model.get(DeploymentDefinition.VIRTUAL_HOST.getName()).asString();
-        this.path = config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
+        this.path = this.config.getOptionalValue(PATH, String.class).orElse(DEFAULT_PATH);
         if (!this.path.equals(DEFAULT_PATH)) {
             MicroProfileOpenAPILogger.LOGGER.nonStandardEndpoint(unit.getName(), this.path, DEFAULT_PATH);
         }
-        this.relativeServerURLs = config.getOptionalValue(RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE);
+        this.relativeServerURLs = this.config.getOptionalValue(RELATIVE_SERVER_URLS, Boolean.class).orElse(Boolean.TRUE);
     }
 
     @Override
@@ -89,12 +92,12 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
     }
 
     @Override
-    public OpenApiConfig getOpenApiConfig() {
-        return this.openApiConfig;
+    public Config getMicroProfileConfig() {
+        return this.config;
     }
 
     @Override
-    public Map.Entry<VirtualFile, Format> getStaticFile() {
+    public Optional<URL> getStaticFile() {
         return this.staticFile;
     }
 
@@ -111,6 +114,11 @@ public class DeploymentUnitOpenAPIModelConfiguration implements OpenAPIModelConf
     @Override
     public String getPath() {
         return this.path;
+    }
+
+    @Override
+    public Function<String, URL> getResourceResolver() {
+        return this.resolver;
     }
 
     @Override
