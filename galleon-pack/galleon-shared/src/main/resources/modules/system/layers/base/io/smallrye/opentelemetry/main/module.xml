@@ -24,9 +24,11 @@
         <module name="io.opentelemetry.semconv"/>
         <module name="io.opentelemetry.instrumentation.api"/>
         <module name="io.opentelemetry.instrumentation.annotations"/>
+        <module name="io.smallrye.reactive.mutiny"/>
 
         <module name="org.jboss.resteasy.resteasy-core"/>
         <module name="org.jboss.resteasy.resteasy-core-spi"/>
+        <module name="io.grpc" />
         <module name="io.vertx.core" />
         <module name="io.vertx.grpc-client" />
         <module name="io.vertx.grpc-common" />
