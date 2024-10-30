@@ -45,6 +45,15 @@
         </dependencies>
     </dependencyManagement>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.channels</groupId>
+            <artifactId>wildfly-ee</artifactId>
+            <version>${ee.maven.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -68,6 +77,14 @@
                             <bomName>${full.dist.product.release.name} BOMs: Tools</bomName>
                             <bomDescription>Dependency Management with Tools useful for ${full.dist.product.release.name}</bomDescription>
                             <inheritExclusions>NONE</inheritExclusions>
+                            <channels>
+                                <channel>
+                                    <manifest>
+                                        <groupId>org.wildfly.channels</groupId>
+                                        <artifactId>wildfly-ee</artifactId>
+                                    </manifest>
+                                </channel>
+                            </channels>
                             <includeTransitives>false</includeTransitives>
                             <includeDependencies>
                                 <dependency>

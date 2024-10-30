@@ -13,14 +13,14 @@ https://wildfly.org
 * Modular Design
 * Unified Configuration and Management
 
-And of course Jakarta EE!
+And of course Jakarta EE and MicroProfile!
 
 Building
 -------------------
 
 Prerequisites:
 
-* JDK 11 or newer - check `java -version`
+* JDK 17 or newer - check `java -version`
 * Maven 3.6.0 or newer - check `mvn -v`
 * On *nix systems, make sure that the maximum number of open files for the user running the build is at least 4096
   (check `ulimit -n`) or more, depending on what other i/o intensive processes the user is running.
