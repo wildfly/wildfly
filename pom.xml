@@ -348,7 +348,6 @@
             Properties for dependencies that relate to production code go in the production code section below.
          -->
         <version.com.beust>1.78</version.com.beust>
-        <version.com.github.tomakehurst.wiremock>2.27.2</version.com.github.tomakehurst.wiremock>
         <version.org.wiremock>3.9.1</version.org.wiremock>
         <version.dom4j>2.1.4</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
@@ -364,7 +363,7 @@
         <version.org.apache.groovy>4.0.23</version.org.apache.groovy>
         <version.org.awaitility.awaitility>4.0.3</version.org.awaitility.awaitility>
         <version.org.codehaus.plexus.plexus-utils>3.5.1</version.org.codehaus.plexus.plexus-utils>
-        <version.org.eclipse.jetty>9.4.56.v20240826</version.org.eclipse.jetty>
+        <version.org.eclipse.jetty>11.0.20</version.org.eclipse.jetty>
         <version.org.hamcrest>2.2</version.org.hamcrest>
         <version.org.hamcrest.legacy>1.3</version.org.hamcrest.legacy>
         <version.org.javassist>3.29.2-GA</version.org.javassist>
@@ -388,6 +387,10 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.20.1</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
+        <!-- The MicroProfile REST Client TCK requires a newer version of TestNG. The version is explicitly overridden
+             on the dependency on the MicroProfile REST Client TCK POM.
+         -->
+        <version.org.testng.mp.rest.client>7.10.2</version.org.testng.mp.rest.client>
         <version.org.wildfly.arquillian>5.1.0.Beta6</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
@@ -518,7 +521,7 @@
         <version.org.eclipse.microprofile.openapi>4.0.2</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
-        <version.org.eclipse.microprofile.rest.client.api>3.0.1</version.org.eclipse.microprofile.rest.client.api>
+        <version.org.eclipse.microprofile.rest.client.api>4.0</version.org.eclipse.microprofile.rest.client.api>
         <version.org.eclipse.microprofile.telemetry>2.0</version.org.eclipse.microprofile.telemetry>
         <version.org.eclipse.persistence.eclipselink>4.0.4</version.org.eclipse.persistence.eclipselink>
         <version.org.eclipse.yasson>3.0.4</version.org.eclipse.yasson>
@@ -553,7 +556,7 @@
         <version.org.jboss.openjdk-orb>10.1.0.Final</version.org.jboss.openjdk-orb>
         <version.org.jboss.resteasy>6.2.10.Final</version.org.jboss.resteasy>
         <version.org.jboss.resteasy.extensions>2.0.1.Final</version.org.jboss.resteasy.extensions>
-        <version.org.jboss.resteasy.microprofile>2.1.5.Final</version.org.jboss.resteasy.microprofile>
+        <version.org.jboss.resteasy.microprofile>3.0.0.Final</version.org.jboss.resteasy.microprofile>
         <version.org.jboss.resteasy.spring>3.1.3.Final</version.org.jboss.resteasy.spring>
         <version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>4.0.1.Final</version.org.jboss.spec.jakarta.el.jboss-el-api_5.0_spec>
         <version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.jakarta.xml.soap.saaj-api_3.0_spec>

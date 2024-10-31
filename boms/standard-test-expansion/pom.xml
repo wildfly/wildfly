@@ -32,13 +32,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock</artifactId>
-                <version>${version.com.github.tomakehurst.wiremock}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- Microprofile TCK test dependencies -->
             <dependency>
                 <groupId>org.eclipse.microprofile.config</groupId>
@@ -270,6 +263,18 @@
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>${version.org.testng}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.github.tomakehurst</groupId>
+                        <artifactId>wiremock</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${version.org.wiremock}</version>
                 <scope>test</scope>
             </dependency>
 

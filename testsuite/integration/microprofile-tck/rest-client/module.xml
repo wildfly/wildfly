@@ -10,15 +10,15 @@
     <resources>
         <resource-root path="wiremock.jar"/>
         <resource-root path="junit.jar"/>
-        <resource-root path="jetty-io.jar"/>
         <resource-root path="jetty-http.jar"/>
+        <resource-root path="jetty-io.jar"/>
         <resource-root path="jetty-server.jar"/>
         <resource-root path="jetty-util.jar"/>
-        <resource-root path="jboss-servlet-api_4.0_spec.jar">
-            <conditions>
-                <property-equal name="ts.include.servlet.4" value="true"/>
-            </conditions>
-        </resource-root>
+        <resource-root path="httpclient5.jar"/>
+        <resource-root path="httpcore5.jar"/>
+        <resource-root path="httpcore5-h2.jar"/>
+        <resource-root path="http2-common.jar"/>
+        <resource-root path="http2-hpack.jar"/>
     </resources>
 
     <dependencies>
@@ -29,6 +29,8 @@
         <module name="com.fasterxml.jackson.core.jackson-annotations"/>
         <module name="com.fasterxml.jackson.core.jackson-core"/>
         <module name="com.fasterxml.jackson.core.jackson-databind"/>
+        <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+        <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi"/>
         <module name="jakarta.enterprise.api"/>
@@ -36,12 +38,12 @@
         <module name="jakarta.annotation.api"/>
         <module name="jakarta.servlet.api"/>
         <module name="org.jboss.resteasy.resteasy-cdi" services="export" export="true">
-          <imports>
-            <include path="META-INF"/>
-          </imports>
-          <exports>
-            <include path="META-INF"/>
-          </exports>
+            <imports>
+                <include path="META-INF"/>
+            </imports>
+            <exports>
+                <include path="META-INF"/>
+            </exports>
         </module>
         <module name="org.slf4j"/>
     </dependencies>
