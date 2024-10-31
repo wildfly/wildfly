@@ -43,10 +43,7 @@ public class BeanEndPoint {
         String helloReply = "hello " + name
                         + "  hasJWT: " + hasJWT
                         + "  targetCallerPrincipal: " + targetBean.getCallerPrincipal()
-                        + ", targetIsCallerAdmin: " + targetBean.isCallerInRole("Admin")
-                        + "  ctx: " + ctx
-                        //+ " targetBean: " + targetBean
-                        + "  targetBean context: " + targetBean.getSessionContext();
+                        + ", targetIsCallerAdmin: " + targetBean.isCallerInRole("Admin");
                 new Throwable(helloReply).printStackTrace(); // rls debug
         return helloReply;
     }
