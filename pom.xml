@@ -387,7 +387,7 @@
         <version.org.mockito>3.10.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>1.20.1</version.org.testcontainers>
-        <version.org.testng>7.5.1</version.org.testng>
+        <version.org.testng>7.8.0</version.org.testng>
         <version.org.wildfly.arquillian>5.1.0.Beta6</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
         <legacy.version.org.wildfly.naming-client>1.0.17.Final</legacy.version.org.wildfly.naming-client>
@@ -442,7 +442,7 @@
         <version.io.perfmark>0.23.0</version.io.perfmark>
         <version.io.reactivex.rxjava2>2.2.21</version.io.reactivex.rxjava2>
         <version.io.reactivex.rxjava3>3.1.9</version.io.reactivex.rxjava3>
-        <version.io.smallrye.open-api>3.10.0</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>4.0.0</version.io.smallrye.open-api>
         <version.io.smallrye.reactive-utils>2.6.0</version.io.smallrye.reactive-utils>
         <version.io.smallrye.smallrye-common>2.5.0</version.io.smallrye.smallrye-common>
         <version.io.smallrye.smallrye-config>3.9.1</version.io.smallrye.smallrye-config>
@@ -515,7 +515,7 @@
         <version.org.eclipse.microprofile.health.api>4.0.1</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>2.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.lra.api>2.0</version.org.eclipse.microprofile.lra.api>
-        <version.org.eclipse.microprofile.openapi>3.1.2</version.org.eclipse.microprofile.openapi>
+        <version.org.eclipse.microprofile.openapi>4.0.2</version.org.eclipse.microprofile.openapi>
         <version.org.eclipse.microprofile.reactive-messaging.api>3.0.1</version.org.eclipse.microprofile.reactive-messaging.api>
         <version.org.eclipse.microprofile.reactive-streams-operators.api>3.0.1</version.org.eclipse.microprofile.reactive-streams-operators.api>
         <version.org.eclipse.microprofile.rest.client.api>3.0.1</version.org.eclipse.microprofile.rest.client.api>
