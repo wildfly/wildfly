@@ -26,6 +26,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.faulttolerance.DisableTelemetryServerSetupTask;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 
@@ -37,7 +38,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup(MicrometerSetupTask.class)
+@ServerSetup({MicrometerSetupTask.class, DisableTelemetryServerSetupTask.class})
 @DockerRequired(AssumptionViolatedException.class)
 public class MultipleDeploymentMetricsTestCase {
 
