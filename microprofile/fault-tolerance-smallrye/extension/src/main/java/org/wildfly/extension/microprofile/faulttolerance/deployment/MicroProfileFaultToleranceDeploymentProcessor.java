@@ -7,7 +7,9 @@ package org.wildfly.extension.microprofile.faulttolerance.deployment;
 
 import static org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultToleranceLogger.ROOT_LOGGER;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.smallrye.faulttolerance.FaultToleranceExtension;
 import io.smallrye.faulttolerance.metrics.MetricsIntegration;
@@ -49,9 +51,19 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
         // Configure which metrics provider to use
         Set<String> registeredSubsystems = deploymentUnit.getAttachment(Attachments.REGISTERED_SUBSYSTEMS);
 
-        MetricsIntegration metricsIntegration = registeredSubsystems.contains("micrometer") ? MetricsIntegration.MICROMETER : MetricsIntegration.NOOP;
-        ROOT_LOGGER.metricsProvider(metricsIntegration.name());
+        Set<MetricsIntegration> metricsIntegrations = new HashSet<>();
 
-        weldCapability.registerExtensionInstance(new FaultToleranceExtension(metricsIntegration), deploymentUnit);
+        // TODO ST FT needs a fix to support multiple metrics integrations, for now prefer spec-defined behavior
+        if (registeredSubsystems.contains("microprofile-telemetry")) {
+            metricsIntegrations.add(MetricsIntegration.OPENTELEMETRY);
+        } else if (registeredSubsystems.contains("micrometer")) {
+            metricsIntegrations.add(MetricsIntegration.MICROMETER);
+        } else {
+            metricsIntegrations.add(MetricsIntegration.NOOP);
+        }
+
+        ROOT_LOGGER.metricsProvider(metricsIntegrations.stream().map(Enum::name).collect(Collectors.toSet()));
+
+        weldCapability.registerExtensionInstance(new FaultToleranceExtension(metricsIntegrations), deploymentUnit);
     }
 }

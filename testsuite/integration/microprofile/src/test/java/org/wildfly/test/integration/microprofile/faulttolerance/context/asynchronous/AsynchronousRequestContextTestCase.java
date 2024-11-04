@@ -11,11 +11,13 @@ import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.faulttolerance.DisableTelemetryServerSetupTask;
 
 /**
  * Adapted from Thorntail/SmallRye.
@@ -24,6 +26,7 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
+@ServerSetup(DisableTelemetryServerSetupTask.class)
 public class AsynchronousRequestContextTestCase {
 
     @Deployment

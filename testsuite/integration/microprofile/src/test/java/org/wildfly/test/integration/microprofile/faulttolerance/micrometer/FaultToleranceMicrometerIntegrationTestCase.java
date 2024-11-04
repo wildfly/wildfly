@@ -12,11 +12,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import jakarta.inject.Inject;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.search.Search;
-import jakarta.inject.Inject;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,6 +35,7 @@ import org.junit.Assert;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.integration.microprofile.faulttolerance.DisableTelemetryServerSetupTask;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.TimeoutService;
 
@@ -45,7 +47,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@ServerSetup(MicrometerSetupTask.class)
+@ServerSetup({MicrometerSetupTask.class, DisableTelemetryServerSetupTask.class})
 @DockerRequired(AssumptionViolatedException.class)
 public class FaultToleranceMicrometerIntegrationTestCase {
 
@@ -87,7 +89,8 @@ public class FaultToleranceMicrometerIntegrationTestCase {
     @Test
     @InSequence(3)
     public void checkCounters() {
-        // Use specific tags to lookup proper counters - review definitions in io.smallrye.faulttolerance.metrics.MicrometerProvider for reference
+        // Use specific tags to lookup proper counters
+        // For reference, review definitions in io.smallrye.faulttolerance.core.metrics.MicroProfileMetricsRecorder
         Iterable<Tag> timeoutServiceMethodTag = Collections.singleton(Tag.of("method", TimeoutService.class.getName().concat(".alwaysTimeout")));
 
         // First verify total invocation count for the method + value returned + fallback applied
@@ -95,12 +98,12 @@ public class FaultToleranceMicrometerIntegrationTestCase {
         Assert.assertEquals(1, counters.size());
         Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
 
-        // Verify number of timeouts being equal to number of invocations
+        // Verify the number of timeouts being equal to number of invocations
         counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "true").counters();
         Assert.assertEquals(1, counters.size());
         Assert.assertEquals(INVOCATION_COUNT, counters.iterator().next().count(), 0);
 
-        // Verify number of successful invocations to be none, since it always fails
+        // Verify the number of successful invocations to be none, since it always fails
         counters = Search.in(meterRegistry).name("ft.timeout.calls.total").tags(timeoutServiceMethodTag).tags("timedOut", "false").counters();
         Assert.assertEquals(1, counters.size());
         Assert.assertEquals(0, counters.iterator().next().count(), 0);
