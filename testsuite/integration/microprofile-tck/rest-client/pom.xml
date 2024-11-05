@@ -28,17 +28,15 @@
         <ts.wiremock-maven-plugin.phase>generate-test-sources</ts.wiremock-maven-plugin.phase>
         <!-- Setup properties -->
         <wiremock.lib.path>${project.build.directory}/wiremock</wiremock.lib.path>
-        <wiremock.module.included.groupIds>org.wiremock,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
+        <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
         <wiremock.module.xml.path>${basedir}/module.xml</wiremock.module.xml.path>
 
         <!-- Wiremock dependency information -->
-        <wiremock.groupId>com.github.tomakehurst</wiremock.groupId>
-        <wiremock.version>${version.com.github.tomakehurst.wiremock}</wiremock.version>
         <version.wiremock-maven-plugin>7.3.0</version.wiremock-maven-plugin>
 
         <!-- Expose timeout property to be configurable from CLI because of environment issues -->
         <org.eclipse.microprofile.rest.client.tck.timeoutCushion>90000</org.eclipse.microprofile.rest.client.tck.timeoutCushion>
-        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
+        <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
     </properties>
     <dependencies>
         <!-- Required by the RESTEasy Client -->
@@ -77,7 +75,7 @@
         </dependency>
 
         <dependency>
-            <groupId>${wiremock.groupId}</groupId>
+            <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
@@ -217,6 +215,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-multipart-provider</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.arquillian.testng</groupId>
             <artifactId>arquillian-testng-container</artifactId>
             <scope>test</scope>
@@ -236,6 +239,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
+            <version>${version.org.testng.mp.rest.client}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -271,9 +275,9 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>${wiremock.groupId}</groupId>
+                        <groupId>org.wiremock</groupId>
                         <artifactId>wiremock</artifactId>
-                        <version>${wiremock.version}</version>
+                        <version>${version.org.wiremock}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -324,7 +328,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>${wiremock.groupId}</groupId>
+                                    <groupId>org.wiremock</groupId>
                                     <artifactId>wiremock</artifactId>
                                 </artifactItem>
                                 <!-- This is required for the MicroProfile REST Client 3.0 TCK. This will always copy it,
@@ -634,22 +638,7 @@
                 <!-- Enable bootable jar packaging -->
                 <ts.bootable-jar-packaging.phase>process-test-resources</ts.bootable-jar-packaging.phase>
                 <bootable-jar-generate-properties-file.phase>process-test-resources</bootable-jar-generate-properties-file.phase>
-                <!-- Setup properties -->
-                <wiremock.module.xml.path>${basedir}/config/preview/module.xml</wiremock.module.xml.path>
-                <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
-
-                <wiremock.groupId>org.wiremock</wiremock.groupId>
-                <wiremock.version>${version.org.wiremock}</wiremock.version>
-
-                <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-multipart-provider</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -687,22 +676,7 @@
                 <ts.microprofile-tck-glow.phase>test-compile</ts.microprofile-tck-glow.phase>
                 <ts.add-wiremock-module.phase>process-test-classes</ts.add-wiremock-module.phase>
                 <ts.install-as-module-wiremock.phase>process-test-resources</ts.install-as-module-wiremock.phase>
-                <!-- Setup properties -->
-                <wiremock.module.xml.path>${basedir}/config/preview/module.xml</wiremock.module.xml.path>
-                <wiremock.module.included.groupIds>org.wiremock,org.apache.httpcomponents.client5,org.apache.httpcomponents.core5,junit,org.eclipse.jetty</wiremock.module.included.groupIds>
-
-                <wiremock.groupId>org.wiremock</wiremock.groupId>
-                <wiremock.version>${version.org.wiremock}</wiremock.version>
-
-                <ts.microprofile-tck-glow.expected-discovery>[cdi, ee-integration, jaxrs, jsonb, jsonp, microprofile-config, microprofile-rest-client, servlet]==>ee-core-profile-server,jaxrs,microprofile-rest-client</ts.microprofile-tck-glow.expected-discovery>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-multipart-provider</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
