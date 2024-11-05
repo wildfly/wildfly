@@ -4,17 +4,20 @@
  */
 package org.wildfly.extension.vertx.processors;
 
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.Type;
+import org.jboss.vfs.VirtualFile;
 
 import java.util.HashSet;
 import java.util.List;
@@ -49,9 +52,21 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
-        if (annotated(index, DOT_NAME_INJECTION)) {
+        if (annotated(index, DOT_NAME_INJECTION) || descriptorExists(deploymentUnit)) {
             VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit);
         }
+    }
+
+    private boolean descriptorExists(DeploymentUnit deploymentUnit) {
+        ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        if (deploymentRoot != null && deploymentRoot.getRoot() != null) {
+            VirtualFile vertxDeploymentFile = deploymentRoot.getRoot().getChild("WEB-INF/vertx.json");
+            if (vertxDeploymentFile == null || !vertxDeploymentFile.exists()) {
+                vertxDeploymentFile = deploymentRoot.getRoot().getChild("META-INF/vertx.json");
+            }
+            return vertxDeploymentFile != null && vertxDeploymentFile.exists() && vertxDeploymentFile.isFile();
+        }
+        return false;
     }
 
     private boolean annotated(CompositeIndex index, DotName injectAnnotationName) {
