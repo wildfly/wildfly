@@ -27,7 +27,6 @@
         <module name="jakarta.interceptor.api"/>
         <module name="jakarta.security.jacc.api"/>
         <module name="jakarta.transaction.api" optional="true"/>
-        <module name="org.glassfish.jakarta.enterprise.concurrent"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.naming" optional="true"/>
@@ -43,6 +42,7 @@
         <module name="org.jboss.metadata.ear"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.common"/>
+        <module name="org.wildfly.concurrency" export="true"/>
         <module name="org.wildfly.service"/>
         <module name="org.wildfly.transaction.client" optional="true" />
     </dependencies>
