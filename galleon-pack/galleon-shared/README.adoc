@@ -1,0 +1,55 @@
+= Use of wildfly-feature-pack-galleon-shared
+:icons: font
+:source-highlighter: coderay
+
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+== Overview
+
+The `wildfly-feature-pack-galleon-shared` module is used to control the source code and dependency management for items that
+are relevant to *both* the `wildfly` and `wildfly-preview` feature
+packs.
+
+[WARNING]
+====
+If something is only relevant to one of `wildfly` *or* `wildfly-preview`, *DO NOT* include it here.
+
+* If it's only for `wildfly`, use the `wildfly-feature-pack-galleon-local` maven module.
+* If it's only for `wildfly-preview`, use the `wildfly-preview-feature-pack-galleon-local` maven module.
+* If it's relevant to standard WildFly but needs to be provisioned when *only* the `wildfly-ee` feature pack is used, use either the `wildfly-ee-feature-pack-galleon-shared` or `wildfly-ee-feature-pack-galleon-local` maven module.
+====
+
+This module is a dependency of both the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules. Its content and dependency entries are used by the build of those modules when they create their respective feature packs.
+
+== Galleon Content
+
+Galleon content refers to content other than maven artifacts that Galleon provisions. This includes:
+
+* Files that are directly provisioned. The primary example here is `module.xml` files, along with the directory structure in which they are found.
+** The `module.xml` files and their directory structure go in the `modules` folder.
+** Other content, including the relevant directory structure, goes in the `content` folder.
+* Configuration generation instructions. These are found in `configs`, `feature_groups` and `layers` folders.
+* Explicit Galleon package content, found in folders under the `packages` folder.
+
+== Dependency Management
+
+The `pom.xml` file for this module *must* include `dependency` entries for all artifacts mentioned in the `module.xml` files included in this maven module. It *must not* include `dependency` entries for other artifacts.
+
+The build of the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules relies on the dependency information in this pom to tell it what artifacts the feature pack should include.  Missing information will break the build. Extraneous information may result in the feature pack provisioning the wrong version of artifacts.
+
+== Licenses
+
+If the wildfly-license-plugin needs special instructions to identify the license used by an artifact declared in this module's `pom.xml`, that information *must* be included in the `src/main/resources/license/licenses.xml` file. This is expected to be an uncommon situation.
+
+== Build Output
+
+The build of this feature pack produces a zip that basically packages the content. This is for two reasons:
+
+* Nexus balks at this module not producing an artifact, preventing deploying.
+* Ideally, the `wildfly-galleon-pack` and the `wildfly-preview-feature-pack` maven modules would depend on and unzip these zip artifacts and consume their content that way. But, at least at the time this document was written, they don't do this and instead just copy in source from this maven module.

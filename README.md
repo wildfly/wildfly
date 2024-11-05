@@ -100,7 +100,7 @@ To run all the tests
 Using Eclipse
 -------------
 1. Install the latest version of eclipse
-2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using Java 11
+2. Make sure Xmx in eclipse.ini is at least 1280M, and it's using JDK 17
 3. Launch eclipse and install the m2e plugin, make sure it uses your repo configs
    (get it from: http://www.eclipse.org/m2e/
    or install "Maven Integration for Eclipse" from the Eclipse Marketplace)
