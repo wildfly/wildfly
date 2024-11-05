@@ -14,13 +14,14 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.Type;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX;
+import static org.jboss.jandex.Type.Kind.PARAMETERIZED_TYPE;
 
 /**
  *
@@ -33,23 +34,22 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
     public static final Phase PHASE = Phase.PARSE;
     public static final int PRIORITY = 0x4000;
 
-    private static final String VERTX_ANNOTATION_NAME = "io.vertx.core.Vertx";
-    private static final String VERTX_MUTINY_ANNOTATION_NAME = "io.vertx.mutiny.core.Vertx";
+    private static final DotName DOT_NAME_INJECTION = DotName.createSimple("jakarta.inject.Inject");
+    private static final DotName DOT_NAME_VERTX_ANNOTATION = DotName.createSimple("io.vertx.core.Vertx");
+    private static final DotName DOT_NAME_VERTX_MUTINY_ANNOTATION = DotName.createSimple("io.vertx.mutiny.core.Vertx");
+    private static final DotName DOT_NAME_CDI_INSTANCE = DotName.createSimple("jakarta.enterprise.inject.Instance");
 
-    private static final List<DotName> dotNames = new ArrayList<>();
-    private static final Set<String> VERTX_CLASSES = new HashSet<>();
+    private static final Set<DotName> VERTX_CLASSES = new HashSet<>();
     static {
-        dotNames.add(DotName.createSimple("jakarta.inject.Inject"));
-        dotNames.add(DotName.createSimple("jakarta.annotation.Resource"));
-        VERTX_CLASSES.add(VERTX_ANNOTATION_NAME);
-        VERTX_CLASSES.add(VERTX_MUTINY_ANNOTATION_NAME);
+        VERTX_CLASSES.add(DOT_NAME_VERTX_ANNOTATION);
+        VERTX_CLASSES.add(DOT_NAME_VERTX_MUTINY_ANNOTATION);
     }
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         final CompositeIndex index = deploymentUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
-        if (dotNames.stream().anyMatch(dotName -> annotated(index, dotName))) {
+        if (annotated(index, DOT_NAME_INJECTION)) {
             VertxDeploymentAttachment.attachVertxDeployments(deploymentUnit);
         }
     }
@@ -59,9 +59,16 @@ public class VerticleDeploymentMarkerProcessor implements DeploymentUnitProcesso
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();
             if (annotationTarget instanceof FieldInfo) {
-                final String fieldType = annotationTarget.asField().type().name().toString();
+                Type type = annotationTarget.asField().type();
+                final DotName fieldType = type.name();
                 if (VERTX_CLASSES.contains(fieldType)) {
                     return true;
+                }
+                if (DOT_NAME_CDI_INSTANCE.equals(fieldType) && type.kind() == PARAMETERIZED_TYPE) {
+                    List<Type> arguments = type.asParameterizedType().arguments();
+                    if (arguments.size() == 1 && VERTX_CLASSES.contains(arguments.get(0).name())) {
+                        return true;
+                    }
                 }
             }
         }

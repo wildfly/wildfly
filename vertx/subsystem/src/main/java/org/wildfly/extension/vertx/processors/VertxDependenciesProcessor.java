@@ -38,6 +38,7 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
     private static final String MODULE_VERTX_CORE = "io.vertx.core";
     private static final String MODULE_VERTX_MUTINY_CORE = "io.smallrye.reactive.mutiny.vertx-core";
     private static final String MODULE_MUTINY = "io.smallrye.reactive.mutiny";
+    private static final String MODULE_SMALLRYE_COMMON_ANNOTATION = "io.smallrye.common.annotation";
 
     @Override
     public void deploy(DeploymentPhaseContext context) throws DeploymentUnitProcessingException {
@@ -51,7 +52,8 @@ public class VertxDependenciesProcessor implements DeploymentUnitProcessor {
                 new ModuleDependency(moduleLoader, MODULE_VERTX_EXTENSION, false, true, true, false),
                 new ModuleDependency(moduleLoader, MODULE_VERTX_CORE, false, true, true, false),
                 new ModuleDependency(moduleLoader, MODULE_VERTX_MUTINY_CORE, false, true, true, false),
-                new ModuleDependency(moduleLoader, MODULE_MUTINY, false, true, true, false)
+                new ModuleDependency(moduleLoader, MODULE_MUTINY, false, true, true, false),
+                new ModuleDependency(moduleLoader, MODULE_SMALLRYE_COMMON_ANNOTATION, true, false, false, false)
         ));
     }
 
