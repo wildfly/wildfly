@@ -6,6 +6,7 @@
 package org.wildfly.microprofile.reactive.messaging.config;
 
 public class AmqpTracingTypeConfigTestCase extends TracingTypeConfigTest {
+
     public AmqpTracingTypeConfigTestCase() {
         super("smallrye-amqp");
     }

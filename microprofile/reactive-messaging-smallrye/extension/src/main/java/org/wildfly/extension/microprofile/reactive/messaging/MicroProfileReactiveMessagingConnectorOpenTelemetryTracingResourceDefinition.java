@@ -6,6 +6,8 @@
 package org.wildfly.extension.microprofile.reactive.messaging;
 
 import static org.wildfly.extension.microprofile.reactive.messaging.MicroProfileReactiveMessagingSubsystemDefinition.REACTIVE_MESSAGING_CAPABILITY_NAME;
+import static org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingConfigSetter.AMQP_CONNECTOR_ATTRIBUTE;
+import static org.wildfly.microprofile.reactive.messaging.config.ReactiveMessagingConfigSetter.KAFKA_CONNECTOR_ATTRIBUTE;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +41,7 @@ public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceD
 
     static final MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition INSTANCE = new MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceDefinition();
 
-    static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create("amqp-connector", ModelType.STRING)
+    static final AttributeDefinition AMQP = SimpleAttributeDefinitionBuilder.create(AMQP_CONNECTOR_ATTRIBUTE, ModelType.STRING)
             .setAllowExpression(true)
             .setRequired(false)
             .setValidator(EnumValidator.create(TracingType.class))
@@ -47,7 +49,7 @@ public class MicroProfileReactiveMessagingConnectorOpenTelemetryTracingResourceD
             .setRestartAllServices()
             .build();
 
-    static final AttributeDefinition KAFKA = SimpleAttributeDefinitionBuilder.create("kafka-connector", ModelType.STRING)
+    static final AttributeDefinition KAFKA = SimpleAttributeDefinitionBuilder.create(KAFKA_CONNECTOR_ATTRIBUTE, ModelType.STRING)
             .setAllowExpression(true)
             .setRequired(false)
             .setValidator(EnumValidator.create(TracingType.class))

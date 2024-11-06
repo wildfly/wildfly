@@ -5,6 +5,8 @@
 
 package org.wildfly.microprofile.reactive.messaging.config;
 
+import static org.wildfly.microprofile.reactive.messaging.config._private.MicroProfileReactiveMessagingConfigLogger.LOGGER;
+
 import io.smallrye.config.ConfigSourceInterceptor;
 import io.smallrye.config.ConfigSourceInterceptorContext;
 import io.smallrye.config.ConfigValue;
@@ -73,12 +75,16 @@ class TracingTypeInterceptor implements ConfigSourceInterceptor {
                 return value;
             }
 
+
+
             switch (tracingType) {
                 // NEVER and ALWAYS both disregard the tracing properties, and force tracing to either be
                 // totally disabled or always enabled
                 case NEVER:
+                    logTracingTypeOverridesProperty(tracingType, value);
                     return configValue(name, Boolean.FALSE);
                 case ALWAYS:
+                    logTracingTypeOverridesProperty(tracingType, value);
                     return configValue(name, Boolean.TRUE);
                 // For OFF/ON, we can override the default values with the values of the tracing properties.
                 // Note that SmallRye's ConnectorConfig (which is the consumer of these properties), it will first
@@ -95,6 +101,26 @@ class TracingTypeInterceptor implements ConfigSourceInterceptor {
             return null;
         }
 
+        private void logTracingTypeOverridesProperty(TracingType type, ConfigValue value) {
+            if (value != null && value.getValue() != null) {
+                // Only NEVER and ALWAYS will be passed in here
+                String fromTracingType = type == TracingType.NEVER ? "false" : "true";
+                if (!value.getValue().equals(fromTracingType)) {
+                    String attributeName = getConnectorAttributeName();
+                    LOGGER.tracingTypeOverridesProperty(name, value.getValue(), attributeName, type, fromTracingType);
+                }
+            }
+        }
+
+        private String getConnectorAttributeName() {
+            switch (connector) {
+                case AMQP:
+                    return ReactiveMessagingConfigSetter.AMQP_CONNECTOR_ATTRIBUTE;
+                case KAFKA:
+                    return ReactiveMessagingConfigSetter.KAFKA_CONNECTOR_ATTRIBUTE;
+            }
+            return null;
+        }
 
         private ConfigValue defaultIfNotSetAndNotChannel(String name, ConfigValue foundValue, Boolean defaultValue) {
             if (foundValue != null && foundValue.getValue() != null) {

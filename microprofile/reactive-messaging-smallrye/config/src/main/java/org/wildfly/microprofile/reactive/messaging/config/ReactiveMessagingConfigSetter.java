@@ -10,6 +10,9 @@ package org.wildfly.microprofile.reactive.messaging.config;
  * in this package
  */
 public class ReactiveMessagingConfigSetter {
+    public static final String AMQP_CONNECTOR_ATTRIBUTE = "amqp-connector";
+    public static final String KAFKA_CONNECTOR_ATTRIBUTE = "kafka-connector";
+
     public static void setModelValues(TracingType amqpTracingType, TracingType kafkaTracingType) {
         TracingTypeInterceptorFactory.AMQP_TRACING_TYPE = amqpTracingType;
         TracingTypeInterceptorFactory.KAFKA_TRACING_TYPE = kafkaTracingType;
