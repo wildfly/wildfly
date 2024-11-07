@@ -150,4 +150,20 @@
         <public-client>true</public-client>
         <ssl-required>EXTERNAL</ssl-required>
     </secure-server>
+    <secure-server name="all-apps-oidc-logout">
+        <provider>keycloak</provider>
+        <client-id>wildfly-console</client-id>
+        <logout-path>/myLogout</logout-path>
+        <logout-callback-path>/logout/myCallback</logout-callback-path>
+        <post-logout-uri>http://localhost:8080/app/aCallback</post-logout-uri>
+        <logout-session-required>true</logout-session-required>
+    </secure-server>
+    <secure-deployment name="app-oidc-logout">
+        <provider>keycloak</provider>
+        <client-id>wildfly-management</client-id>
+        <logout-path>/myLogout</logout-path>
+        <logout-callback-path>/logout/myCallback</logout-callback-path>
+        <post-logout-uri>http://localhost:8080/app/aCallback</post-logout-uri>
+        <logout-session-required>true</logout-session-required>
+    </secure-deployment>
 </subsystem>
