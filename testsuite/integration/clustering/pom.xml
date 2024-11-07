@@ -259,22 +259,22 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-common-jakarta</artifactId>
+            <artifactId>infinispan-cdi-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-embedded-jakarta</artifactId>
+            <artifactId>infinispan-cdi-embedded</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-cdi-remote-jakarta</artifactId>
+            <artifactId>infinispan-cdi-remote</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod-jakarta</artifactId>
+            <artifactId>infinispan-client-hotrod</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

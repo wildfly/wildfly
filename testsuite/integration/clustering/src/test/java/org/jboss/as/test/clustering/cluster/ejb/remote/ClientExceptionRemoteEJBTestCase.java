@@ -54,7 +54,7 @@ public class ClientExceptionRemoteEJBTestCase extends AbstractClusteringTestCase
         return ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar")
                 .addPackage(EJBDirectory.class.getPackage())
                 .addClasses(Result.class, Incrementor.class, IncrementorBean.class, InfinispanExceptionThrowingIncrementorBean.class)
-                .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"))
+                .setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan.commons\n"))
                 .addAsManifestResource(PermissionUtils.createPermissionsXmlAsset(new PropertyPermission(NODE_NAME_PROPERTY, "read")), "permissions.xml")
                 ;
     }

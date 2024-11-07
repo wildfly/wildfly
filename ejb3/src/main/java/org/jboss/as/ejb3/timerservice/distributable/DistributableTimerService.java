@@ -79,6 +79,11 @@ public class DistributableTimerService<I> implements ManagedTimerService {
     }
 
     @Override
+    public boolean isStarted() {
+        return this.manager.isStarted();
+    }
+
+    @Override
     public void start() {
         this.manager.start();
 

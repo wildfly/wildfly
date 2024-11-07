@@ -18,6 +18,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import io.github.resilience4j.retry.RetryConfig;
+
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
@@ -43,7 +45,7 @@ import org.wildfly.clustering.server.infinispan.CacheContainerGroup;
 import org.wildfly.clustering.server.infinispan.CacheContainerGroupMember;
 import org.wildfly.clustering.server.infinispan.affinity.UnaryGroupMemberAffinity;
 import org.wildfly.clustering.server.infinispan.dispatcher.CacheContainerCommandDispatcherFactory;
-import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommandFactory;
+import org.wildfly.clustering.server.infinispan.expiration.ScheduleWithExpirationMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.manager.AffinityIdentifierFactory;
 import org.wildfly.clustering.server.infinispan.scheduler.CacheEntryScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
@@ -66,6 +68,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
 
     private final Cache<Key<K>, Object> cache;
     private final CacheProperties properties;
+    private final RetryConfig retryConfig;
     private final BeanFactory<K, V, M> beanFactory;
     private final IdentifierFactory<K> identifierFactory;
     private final CacheContainerCommandDispatcherFactory dispatcherFactory;
@@ -83,6 +86,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         this.beanFactory = configuration.getBeanFactory();
         this.cache = configuration.getCache();
         this.properties = configuration.getCacheProperties();
+        this.retryConfig = configuration.getRetryConfig();
         this.batchFactory = configuration.getBatchFactory();
         this.identifierFactory = new AffinityIdentifierFactory<>(configuration.getIdentifierFactory(), this.cache);
         this.dispatcherFactory = configuration.getCommandDispatcherFactory();
@@ -93,13 +97,18 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
         this.filter = new InfinispanBeanMetaDataFilter<>(configuration.getBeanName());
     }
 
+    @Override
+    public boolean isStarted() {
+        return this.identifierFactory.isStarted();
+    }
+
     @SuppressWarnings("resource")
     @Override
     public void start() {
         this.identifierFactory.start();
 
         Duration stopTimeout = Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout());
-        CacheEntryScheduler<K, ExpirationMetaData> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.dispatcherFactory.getGroup(), this.batchFactory, this.beanFactory, this.expiration, stopTimeout) : null;
+        CacheEntryScheduler<K, ExpirationMetaData> localScheduler = (this.expiration != null) && !this.expiration.getTimeout().isZero() ? new BeanExpirationScheduler<>(this.cache.getName(), this.dispatcherFactory.getGroup(), this.batchFactory, this.beanFactory, this.expiration, stopTimeout) : null;
 
         String dispatcherName = String.join("/", this.cache.getName(), this.filter.toString());
         this.scheduler = (localScheduler != null) ? (this.dispatcherFactory.getGroup().isSingleton() ? localScheduler : new PrimaryOwnerScheduler<>(new PrimaryOwnerSchedulerConfiguration<>() {
@@ -125,7 +134,12 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
 
             @Override
             public BiFunction<K, ExpirationMetaData, ScheduleCommand<K, ExpirationMetaData>> getScheduleCommandFactory() {
-                return InfinispanBeanManager.this.properties.isTransactional() ? new ScheduleWithExpirationMetaDataCommandFactory<>() : ScheduleWithTransientMetaDataCommand::new;
+                return InfinispanBeanManager.this.properties.isTransactional() ? ScheduleWithExpirationMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+            }
+
+            @Override
+            public RetryConfig getRetryConfig() {
+                return InfinispanBeanManager.this.retryConfig;
             }
         })) : null;
 
@@ -231,7 +245,7 @@ public class InfinispanBeanManager<K, V extends BeanInstance<K>, M> implements B
                 return null;
             }
             return this.transformer.apply(bean);
-        } catch (org.infinispan.util.concurrent.TimeoutException e) {
+        } catch (org.infinispan.commons.TimeoutException e) {
             throw new TimeoutException(e.getLocalizedMessage());
         }
     }

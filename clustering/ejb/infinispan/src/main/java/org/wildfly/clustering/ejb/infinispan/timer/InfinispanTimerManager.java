@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import io.github.resilience4j.retry.RetryConfig;
+
 import org.infinispan.Cache;
 import org.wildfly.clustering.cache.CacheProperties;
 import org.wildfly.clustering.cache.Key;
@@ -46,7 +48,7 @@ import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerScheduler;
 import org.wildfly.clustering.server.infinispan.scheduler.PrimaryOwnerSchedulerConfiguration;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleLocalKeysTask;
-import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithMetaDataCommand;
+import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithPersistentMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.ScheduleWithTransientMetaDataCommand;
 import org.wildfly.clustering.server.infinispan.scheduler.SchedulerTopologyChangeListener;
 import org.wildfly.clustering.server.manager.IdentifierFactory;
@@ -60,6 +62,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
     private final Cache<Key<I>, ?> cache;
     private final CacheProperties properties;
+    private final RetryConfig retryConfig;
     private final TimerFactory<I, RemappableTimerMetaDataEntry<C>> factory;
     private final Marshaller<Object, C> marshaller;
     private final IdentifierFactory<I> identifierFactory;
@@ -74,6 +77,7 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     public InfinispanTimerManager(InfinispanTimerManagerConfiguration<I, C> config) {
         this.cache = config.getCache();
         this.properties = config.getCacheProperties();
+        this.retryConfig = config.getRetryConfig();
         this.marshaller = config.getMarshaller();
         this.identifierFactory = new AffinityIdentifierFactory<>(config.getIdentifierFactory(), this.cache);
         this.batchFactory = config.getBatchFactory();
@@ -83,10 +87,15 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
     }
 
     @Override
+    public boolean isStarted() {
+        return this.identifierFactory.isStarted();
+    }
+
+    @Override
     public void start() {
         Supplier<Locality> locality = () -> Locality.forCurrentConsistentHash(this.cache);
 
-        TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
+        TimerScheduler<I, RemappableTimerMetaDataEntry<C>> localScheduler = new TimerScheduler<>(this.cache.getName(), this.factory, this, locality, Duration.ofMillis(this.cache.getCacheConfiguration().transaction().cacheStopTimeout()), this.registry);
         this.scheduledTimers = localScheduler;
 
         CacheContainerGroup group = this.dispatcherFactory.getGroup();
@@ -113,7 +122,12 @@ public class InfinispanTimerManager<I, C> implements TimerManager<I> {
 
             @Override
             public BiFunction<I, ImmutableTimerMetaData, ScheduleCommand<I, ImmutableTimerMetaData>> getScheduleCommandFactory() {
-                return InfinispanTimerManager.this.properties.isTransactional() ? ScheduleWithMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+                return InfinispanTimerManager.this.properties.isTransactional() ? ScheduleWithPersistentMetaDataCommand::new : ScheduleWithTransientMetaDataCommand::new;
+            }
+
+            @Override
+            public RetryConfig getRetryConfig() {
+                return InfinispanTimerManager.this.retryConfig;
             }
         });
 

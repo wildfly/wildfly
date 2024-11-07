@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.ejb.infinispan.timer;
 
 import "java.lang.proto";
@@ -11,17 +13,17 @@ import "org.wildfly.clustering.ejb.cache.timer.proto";
  * @TypeId(340)
  */
 message InfinispanTimerMetaDataKey {
-	optional	java.util.UUID	id	 = 1;
+	java.util.UUID	id	 = 1;
 }
 
 /**
  * @TypeId(341)
  */
 message InfinispanTimerIndexKey {
-	optional	string	className	= 1;
-	optional	string	methodName	= 2;
-	optional	uint32	parameters	= 3;
-	optional	uint32	index	= 4;
+	string	className	= 1;
+	string	methodName	= 2;
+	uint32	parameters	= 3;
+	uint32	index	= 4;
 }
 
 /**

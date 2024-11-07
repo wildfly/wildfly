@@ -21,6 +21,7 @@ import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.util.AggregatedClassLoader;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
@@ -109,8 +110,7 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         Map.Entry<MediaType, MediaType> types = MediaTypeFactory.INSTANCE.apply(loader);
         MediaType keyType = types.getKey();
         MediaType valueType = (!mode.isInvalidation() || hasStore) ? types.getValue() : MediaType.APPLICATION_OBJECT;
-        @SuppressWarnings("deprecation")
-        EncoderRegistry registry = (EncoderRegistry) this.cm.getGlobalComponentRegistry().getComponent(org.infinispan.marshall.core.EncoderRegistry.class);
+        EncoderRegistry registry = (EncoderRegistry) GlobalComponentRegistry.of(this.cm).getComponent(org.infinispan.marshall.core.EncoderRegistry.class);
         synchronized (registry) {
             boolean registerKeyMediaType = !registry.isConversionSupported(keyType, MediaType.APPLICATION_OBJECT);
             boolean registerValueMediaType = !registry.isConversionSupported(valueType, MediaType.APPLICATION_OBJECT);

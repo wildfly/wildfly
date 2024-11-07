@@ -16,6 +16,8 @@
     </resources>
 
     <dependencies>
+        <module name="io.github.resilience4j.core"/>
+        <module name="io.github.resilience4j.retry"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.core"/>
         <module name="org.infinispan.protostream"/>

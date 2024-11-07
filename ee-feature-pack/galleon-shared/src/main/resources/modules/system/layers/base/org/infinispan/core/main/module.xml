@@ -10,7 +10,7 @@
     </properties>
 
     <resources>
-        <artifact name="${org.infinispan:infinispan-core-jakarta}"/>
+        <artifact name="${org.infinispan:infinispan-core}"/>
     </resources>
 
     <dependencies>

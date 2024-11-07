@@ -19,6 +19,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
@@ -140,8 +141,7 @@ public class CacheContainerServiceConfigurator implements ResourceServiceConfigu
             Consumer<Cache<?, ?>> captor = this.registry.add(ServiceDependency.on(InfinispanServiceDescriptor.CACHE, containerName, cacheName));
             EmbeddedCacheManager container = event.getCacheManager();
             // Use getCacheAsync(), once available
-            @SuppressWarnings("deprecation")
-            BlockingManager blocking = container.getGlobalComponentRegistry().getComponent(BlockingManager.class);
+            BlockingManager blocking = GlobalComponentRegistry.componentOf(container, BlockingManager.class);
             blocking.asExecutor(event.getCacheName()).execute(() -> captor.accept(container.getCache(cacheName)));
             return CompletableFuture.completedStage(null);
         }

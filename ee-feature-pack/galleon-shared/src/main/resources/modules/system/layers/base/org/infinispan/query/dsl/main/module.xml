@@ -10,6 +10,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.infinispan.commons"/>
         <module name="org.infinispan.objectfilter"/>
         <module name="org.jboss.logging"/>
     </dependencies>

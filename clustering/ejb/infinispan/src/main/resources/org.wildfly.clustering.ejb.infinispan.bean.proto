@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import "java.time.proto";
@@ -9,12 +11,12 @@ import "org.jboss.ejb.client.proto";
  * @TypeId(310)
  */
 message InfinispanBeanGroupKey {
-	optional	org.jboss.ejb.client.SessionID	id	= 1;
+	org.jboss.ejb.client.SessionID	id	= 1;
 }
 
 /**
  * @TypeId(311)
  */
 message InfinispanBeanMetaDataKey {
-	optional	org.jboss.ejb.client.SessionID	id	= 1;
+	org.jboss.ejb.client.SessionID	id	= 1;
 }

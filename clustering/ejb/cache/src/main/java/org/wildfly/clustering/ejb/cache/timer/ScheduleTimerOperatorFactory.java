@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.ejb.cache.timer;
 
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.Instant;
 import java.util.ServiceLoader;
@@ -13,6 +12,7 @@ import java.util.function.UnaryOperator;
 
 import org.wildfly.clustering.ejb.timer.ImmutableScheduleExpression;
 import org.wildfly.clustering.ejb.timer.ScheduleTimerOperationProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
@@ -27,7 +27,7 @@ public enum ScheduleTimerOperatorFactory implements ScheduleTimerOperationProvid
     }
 
     private static ScheduleTimerOperationProvider load() {
-        return AccessController.doPrivileged(new PrivilegedAction<>() {
+        return WildFlySecurityManager.doUnchecked(new PrivilegedAction<>() {
             @Override
             public ScheduleTimerOperationProvider run() {
                 return ServiceLoader.load(ScheduleTimerOperationProvider.class, ScheduleTimerOperationProvider.class.getClassLoader()).findFirst().orElseThrow(IllegalStateException::new);

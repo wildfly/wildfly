@@ -17,7 +17,6 @@ import org.jboss.dmr.ModelType;
  *
  * @author Paul Ferraro
  */
-@SuppressWarnings("rawtypes")
 public enum TransactionMetric implements Metric<TxInterceptor> {
 
     COMMITS("commits", ModelType.LONG, AttributeAccess.Flag.COUNTER_METRIC) {
