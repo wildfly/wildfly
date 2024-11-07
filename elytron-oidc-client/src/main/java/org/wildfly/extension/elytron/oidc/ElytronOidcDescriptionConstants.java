@@ -42,9 +42,13 @@ interface ElytronOidcDescriptionConstants {
     String ENABLE_CORS = "enable-cors";
     String EXPOSE_TOKEN = "expose-token";
     String IGNORE_OAUTH_QUERY_PARAMTER = "ignore-oauth-query-parameter";
+    String LOGOUT_CALLBACK_PATH = "logout-callback-path";
+    String LOGOUT_PATH = "logout-path";
+    String LOGOUT_SESSION_REQUIRED ="logout-session-required";
     String MIN_TIME_BETWEEN_JWKS_REQUESTS = "min-time-between-jwks-requests";
     String OAUTH2 = "oauth2";
     String PATTERN = "pattern";
+    String POST_LOGOUT_URI ="post-logout-uri";
     String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     String PROVIDER = "provider";
     String PROVIDER_URL = "provider-url";

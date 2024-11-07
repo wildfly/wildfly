@@ -25,6 +25,9 @@ import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.DI
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.ENABLE_CORS;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.EXPOSE_TOKEN;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.IGNORE_OAUTH_QUERY_PARAMETER;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_CALLBACK_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_PATH;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.LOGOUT_SESSION_REQUIRED;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PRINCIPAL_ATTRIBUTE;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROVIDER_URL;
 import static org.wildfly.extension.elytron.oidc.ProviderAttributeDefinitions.PROXY_URL;
@@ -51,6 +54,7 @@ import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.BEAR
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.CLIENT_ID;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.ENABLE_BASIC_AUTH;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.MIN_TIME_BETWEEN_JWKS_REQUESTS;
+import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.POST_LOGOUT_URI;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_CLIENT;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.PUBLIC_KEY_CACHE_TTL;
 import static org.wildfly.extension.elytron.oidc.SecureDeploymentDefinition.RESOURCE;
@@ -141,8 +145,11 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
                 REQUEST_OBJECT_SIGNING_KEYSTORE_FILE, REQUEST_OBJECT_SIGNING_KEYSTORE_PASSWORD,
                 REQUEST_OBJECT_SIGNING_KEY_ALIAS, REQUEST_OBJECT_SIGNING_KEY_PASSWORD, REQUEST_OBJECT_SIGNING_KEYSTORE_TYPE};
 
-        redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT);
-        Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute));
+        SimpleAttributeDefinition[] oidcLogoutChannelAttributes = {LOGOUT_PATH, LOGOUT_CALLBACK_PATH,
+                POST_LOGOUT_URI, LOGOUT_SESSION_REQUIRED};
+
+        redirectRewriteRuleDefinitionBuilder.addAttribute(RedirectRewriteRuleDefinition.REPLACEMENT, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER);
+        Stream.of(CredentialDefinition.ATTRIBUTES).forEach(attribute -> credentialDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(secureDeploymentDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
@@ -150,11 +157,9 @@ public enum ElytronOidcSubsystemSchema implements PersistentSubsystemSchema<Elyt
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         Stream.of(providerDefaultAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
 
-        if (this.since(VERSION_4_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {
-            Stream.of(requestObjectAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-            Stream.of(requestObjectAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-            Stream.of(requestObjectAttributes).forEach(attribute -> realmDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
-            Stream.of(requestObjectAttributes).forEach(attribute -> providerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+        if (this.since(VERSION_4_0_PREVIEW) && this.enables(LOGOUT_PATH)) {
+            Stream.of(oidcLogoutChannelAttributes).forEach(attribute -> secureDeploymentDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
+            Stream.of(oidcLogoutChannelAttributes).forEach(attribute -> secureServerDefinitionBuilder.addAttribute(attribute, SIMPLE_ATTRIBUTE_PARSER, SIMPLE_ATTRIBUTE_MARSHALLER));
         }
 
         if (this.since(VERSION_3_0_PREVIEW) && this.enables(AUTHENTICATION_REQUEST_FORMAT)) {

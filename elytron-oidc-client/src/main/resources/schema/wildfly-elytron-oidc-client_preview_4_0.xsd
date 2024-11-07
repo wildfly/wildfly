@@ -1463,6 +1463,64 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+
+            <xs:element name="logout-path"
+                        type="xs:string" minOccurs="0" default="/logout">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This option designates the path component of a URL.  Elytron
+                        uses it to identify a URL that is used to start an OIDC logout request.
+                        The default values is "/logout". It is expected that the text start with a
+                        forward slash (e.g. "/").  A path with multiple directories may
+                        be specified (e.g. "/call/back/home"). This path must be the last
+                        text in the base URL.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="logout-callback-path"
+                        type="xs:string" minOccurs="0"  default="/logout/callback">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        This attribute must be an absolute URI.  It must be registered with
+                        the OpenId Provider.  This URI will be called after logout has been executed.
+                        It can be defined for a Front-Channel and Back-Channel Logout.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="post-logout-uri"
+                        type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                         This attribute must be an absolute URI.  It must be registered with
+                         the OpenId Provider.  This URI will be called after logout is executed.
+                         It is used in a RP-Initiated logout only.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
+            <xs:element name="logout-session-required"
+                        type="xs:boolean" minOccurs="0" default="true">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                    A boolean value that indicates whether `elytron-oidc-client` should enforce
+                    both `sid` and `iss` parameters when processing front-channel logout requests and should enforce the `sid`
+                    parameter when processing back-channel requests. If set to false, for front-channel logout, there will
+                    be no check and any authenticated request is going to invalidate the local user session. To make use of back-channel
+                    logout, this must be set to `true`. (This is because the `sid` will be marked for invalidation using a bounded map
+                    so that subsequent requests from the user will force the session to be invalidated.) This defaults to `true`.
+                    ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
