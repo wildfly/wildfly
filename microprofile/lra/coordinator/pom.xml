@@ -29,7 +29,7 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-coordinator-jar</artifactId>
       <exclusions>
         <exclusion>
@@ -39,7 +39,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-service-base</artifactId>
     </dependency>
     <dependency>

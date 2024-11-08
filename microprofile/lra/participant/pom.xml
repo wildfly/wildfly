@@ -52,11 +52,11 @@
       <artifactId>microprofile-lra-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>narayana-lra</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.narayana.rts</groupId>
+      <groupId>org.jboss.narayana.lra</groupId>
       <artifactId>lra-proxy-api</artifactId>
     </dependency>
     <dependency>
