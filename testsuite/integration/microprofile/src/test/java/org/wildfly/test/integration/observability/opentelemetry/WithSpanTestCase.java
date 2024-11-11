@@ -17,14 +17,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 
 @RunAsClient
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class})
 @DockerRequired
 public class WithSpanTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "with-span-test";

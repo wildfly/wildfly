@@ -21,7 +21,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,7 +44,7 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunAsClient
 @DockerRequired
 // This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, MicrometerSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class, MicrometerSetupTask.class})
 public class FaultToleranceOpenTelemetryIntegrationTestCase {
 
     @Testcontainer
