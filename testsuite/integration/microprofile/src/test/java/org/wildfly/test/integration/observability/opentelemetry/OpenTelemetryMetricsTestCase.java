@@ -17,14 +17,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 
-@ServerSetup(OpenTelemetryWithCollectorSetupTask.class)
+@ServerSetup(OpenTelemetrySetupTask.class)
 @RunAsClient
 public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     private static final int REQUEST_COUNT = 5;
@@ -58,13 +58,10 @@ public class OpenTelemetryMetricsTestCase extends BaseOpenTelemetryTest {
     @InSequence(2)
     public void getMetrics() throws InterruptedException {
         List<String> metricsToTest = List.of(
-                OtelMetricResource.COUNTER_NAME
+            PrometheusMetric.sanitizeMetricName(OtelMetricResource.COUNTER_NAME)
         );
 
         final List<PrometheusMetric> metrics = otelCollector.fetchMetrics(metricsToTest.get(0));
-        System.err.println("**************\nPrometheus metrics:");
-        System.err.println(metrics);
-        System.err.println("**************");
 
         metricsToTest.forEach(n -> Assert.assertTrue("Missing metric: " + n,
                 metrics.stream().anyMatch(m -> m.getKey().startsWith(n))));

@@ -16,7 +16,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerSpan;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -30,7 +30,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.Otel
  * test then retrieves the traces from the Jaeger container and verifies that all spans produced belong to the same trace.
  */
 @RunAsClient
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class})
 public class ContextPropagationTestCase extends BaseOpenTelemetryTest {
 
     private static final String DEPLOYMENT_SERVICE1 = "service1";
