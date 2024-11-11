@@ -56,4 +56,24 @@ public class PrometheusMetric {
                 ", help='" + help + '\'' +
                 '}';
     }
+
+    /**
+     * Sanitize metric name
+     */
+    public static String sanitizeMetricName(String metricName) {
+        int length = metricName.length();
+        char[] sanitized = new char[length];
+        for(int i = 0; i < length; i++) {
+            char ch = metricName.charAt(i);
+            if(ch == ':' ||
+                (ch >= 'a' && ch <= 'z') ||
+                (ch >= 'A' && ch <= 'Z') ||
+                (i > 0 && ch >= '0' && ch <= '9')) {
+                sanitized[i] = ch;
+            } else {
+                sanitized[i] = '_';
+            }
+        }
+        return new String(sanitized);
+    }
 }
