@@ -14,14 +14,14 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
+import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetrySetupTask;
 import org.jboss.as.test.shared.observability.signals.jaeger.JaegerTrace;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.test.integration.observability.setuptask.ServiceNameSetupTask;
 
-@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, ServiceNameSetupTask.class})
+@ServerSetup({OpenTelemetrySetupTask.class, ServiceNameSetupTask.class})
 @RunAsClient
 public class OpenTelemetryIntegrationTestCase extends BaseOpenTelemetryTest {
     private static final String DEPLOYMENT_NAME = "otelinteg";

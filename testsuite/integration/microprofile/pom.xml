@@ -500,9 +500,12 @@
                     <environmentVariables>
                         <!-- dummy env property for MicroProfile Config testing -->
                         <MPCONFIG_TEST_ENV_VAR>integ-basicmpconfig-test-env-var-value</MPCONFIG_TEST_ENV_VAR>
+                        <!--<TESTCONTAINERS_RYUK_DISABLED>true</TESTCONTAINERS_RYUK_DISABLED>-->
+                        <TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>/var/run/docker.sock</TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE>
                         <TC_LOGGING>true</TC_LOGGING>
                     </environmentVariables>
                     <systemPropertyVariables>
+                        <testcontainers.reuse.enable>false</testcontainers.reuse.enable>
                         <jboss.install.dir>${basedir}/target/wildfly</jboss.install.dir>
                     </systemPropertyVariables>
                 </configuration>

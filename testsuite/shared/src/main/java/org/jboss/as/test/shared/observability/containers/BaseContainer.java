@@ -18,9 +18,9 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
     private final String containerName;
 
     private static final int STARTUP_ATTEMPTS = Integer.parseInt(
-            System.getProperty("testsuite.integration.container.startup.attempts", "5"));
+        System.getProperty("testsuite.integration.container.startup.attempts", "5"));
     private static final Duration ATTEMPT_DURATION = Duration.parse(
-            System.getProperty("testsuite.integration.container.attempt.duration", "PT10S"));
+        System.getProperty("testsuite.integration.container.attempt.duration", "PT10S"));
     protected Boolean loggingEnabled; // Default: null/false
 
     public BaseContainer(String containerName,
@@ -34,6 +34,7 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
         setExposedPorts(exposedPorts);
         setStartupAttempts(STARTUP_ATTEMPTS);
         setNetwork(Network.SHARED);
+        withReuse(false);
 
         checkForLogging(containerName);
 
@@ -49,7 +50,7 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
 
     private void checkForLogging(String containerName) {
         loggingEnabled =
-                Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||
+            Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||
                 Boolean.parseBoolean(System.getProperty("testsuite.integration.container.logging")) ||
                 Boolean.parseBoolean(System.getProperty("testsuite.integration.container." + containerName.toLowerCase() + ".logging"));
     }
