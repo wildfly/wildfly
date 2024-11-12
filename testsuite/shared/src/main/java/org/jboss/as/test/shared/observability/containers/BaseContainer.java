@@ -34,6 +34,7 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
         setExposedPorts(exposedPorts);
         setStartupAttempts(STARTUP_ATTEMPTS);
         setNetwork(Network.SHARED);
+        withReuse(false);
 
         checkForLogging(containerName);
 
@@ -46,7 +47,7 @@ public abstract class BaseContainer<SELF extends GenericContainer<SELF>> extends
             }));
         }
     }
-
+    
     private void checkForLogging(String containerName) {
         loggingEnabled =
                 Boolean.parseBoolean(System.getenv().get("TC_LOGGING")) ||

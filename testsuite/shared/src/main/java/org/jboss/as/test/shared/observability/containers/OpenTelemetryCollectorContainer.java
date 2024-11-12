@@ -39,7 +39,7 @@ public class OpenTelemetryCollectorContainer extends BaseContainer<OpenTelemetry
                                 "/otel-collector-config.yaml"),
                 OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML
         );
-        withCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML);
+        setCommand("--config " + OpenTelemetryCollectorContainer.OTEL_COLLECTOR_CONFIG_YAML);
         jaegerContainer = new JaegerContainer();
     }
 
