@@ -57,6 +57,8 @@
         <module>client/properties</module>
         <module>client/shade</module>
         <module>clustering</module>
+        <module>concurrency/impl-30</module>
+        <module>concurrency/spi</module>
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
@@ -329,7 +331,7 @@
         <version.org.jboss.galleon>6.0.2.Final</version.org.jboss.galleon>
         <version.org.jboss.wildscribe>3.1.0.Final</version.org.jboss.wildscribe>
         <version.org.owasp.dependency-check>10.0.2</version.org.owasp.dependency-check>
-        <version.org.wildfly.bom-builder-plugin>2.0.7.Final</version.org.wildfly.bom-builder-plugin>
+        <version.org.wildfly.bom-builder-plugin>2.0.8.Final</version.org.wildfly.bom-builder-plugin>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.6.0.Final</version.org.wildfly.common>
         <version.org.wildfly.galleon-plugins>7.2.1.Final</version.org.wildfly.galleon-plugins>
@@ -581,7 +583,7 @@
         <version.org.ow2.asm>9.7.1</version.org.ow2.asm>
         <version.org.reactivestreams>1.0.4</version.org.reactivestreams>
         <version.org.wildfly.clustering>1.1.2.Final</version.org.wildfly.clustering>
-        <version.org.wildfly.core>27.0.0.Beta1</version.org.wildfly.core>
+        <version.org.wildfly.core>27.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.http-client>2.0.7.Final</version.org.wildfly.http-client>
         <version.org.wildfly.mvc.krazo>1.0.0.Final</version.org.wildfly.mvc.krazo>
         <version.org.wildfly.naming-client>2.0.1.Final</version.org.wildfly.naming-client>

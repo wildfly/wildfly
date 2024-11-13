@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import jakarta.enterprise.inject.spi.Extension;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
-import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
 import org.jboss.as.ee.naming.JavaNamespaceSetup;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
@@ -74,6 +73,7 @@ import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import org.jboss.weld.manager.api.ExecutorServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
+import org.jboss.as.ee.component.ConcurrencyAttachments;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -328,7 +328,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         if (naming != null) {
             setupActions.add(naming);
         }
-        final ConcurrentContextSetupAction concurrentContext = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.CONCURRENT_CONTEXT_SETUP_ACTION);
+        final SetupAction concurrentContext = deploymentUnit.getAttachment(ConcurrencyAttachments.CONCURRENT_CONTEXT_SETUP_ACTION);
         if (concurrentContext != null) {
             setupActions.add(concurrentContext);
         }
