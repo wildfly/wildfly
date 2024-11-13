@@ -30,6 +30,9 @@
     <properties>
         <!-- the BOMs built's artifactId prefix-->
         <bomArtifactIdPrefix>wildfly</bomArtifactIdPrefix>
+        <!-- overridable channel versions -->
+        <version.boms.channel.ee>${ee.maven.version}</version.boms.channel.ee>
+        <version.boms.channel.full>${full.maven.version}</version.boms.channel.full>
     </properties>
 
     <licenses>
