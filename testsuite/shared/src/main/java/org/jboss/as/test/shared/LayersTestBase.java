@@ -193,9 +193,9 @@ public abstract class LayersTestBase {
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.lra-coordinator",
             "org.wildfly.extension.microprofile.lra-participant",
-            "org.jboss.narayana.rts.lra-service-base",
-            "org.jboss.narayana.rts.lra-coordinator",
-            "org.jboss.narayana.rts.lra-participant",
+            "org.jboss.narayana.lra.lra-service-base",
+            "org.jboss.narayana.lra.lra-coordinator",
+            "org.jboss.narayana.lra.lra-participant",
             "org.eclipse.microprofile.lra.api",
             // Extension not included in the default config
             "org.wildfly.extension.microprofile.openapi-smallrye",
@@ -306,6 +306,7 @@ public abstract class LayersTestBase {
             // TODO we need to add an rts layer
             "org.wildfly.extension.rts",
             "org.jboss.narayana.rts",
+            "org.jboss.narayana.lra",
     };
 
     /**

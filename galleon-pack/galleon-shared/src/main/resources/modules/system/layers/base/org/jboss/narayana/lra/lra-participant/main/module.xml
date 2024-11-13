@@ -5,15 +5,15 @@
   ~ SPDX-License-Identifier: Apache-2.0
   -->
 
-<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.rts.lra-participant">
+<module xmlns="urn:jboss:module:1.9" name="org.jboss.narayana.lra.lra-participant">
 
   <properties>
     <property name="jboss.api" value="private"/>
   </properties>
   <resources>
-    <artifact name="${org.jboss.narayana.rts:lra-client}" />
-    <artifact name="${org.jboss.narayana.rts:lra-proxy-api}" />
-    <artifact name="${org.jboss.narayana.rts:narayana-lra}" />
+    <artifact name="${org.jboss.narayana.lra:lra-client}" />
+    <artifact name="${org.jboss.narayana.lra:lra-proxy-api}" />
+    <artifact name="${org.jboss.narayana.lra:narayana-lra}" />
   </resources>
 
   <dependencies>
@@ -21,7 +21,7 @@
     <module name="org.jboss.modules"/>
     <module name="org.jboss.logging" />
     <module name="jakarta.ws.rs.api" />
-    <module name="org.jboss.narayana.rts.lra-service-base" />
+    <module name="org.jboss.narayana.lra.lra-service-base" />
 
     <!-- lra-client -->
     <module name="jakarta.enterprise.api"/>
