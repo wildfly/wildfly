@@ -245,7 +245,7 @@
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
-        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=1024m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
+        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
