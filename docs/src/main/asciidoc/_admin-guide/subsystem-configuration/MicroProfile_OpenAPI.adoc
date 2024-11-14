@@ -75,7 +75,7 @@ Alternatively, a JSON document can be requested via an `Accept` HTTP header, or 
 
 e.g.
 
-[source,shell]
+[source,shell,subs="attributes+"]
 ----
 $ curl -v http://localhost:8080/openapi?format=JSON
 < HTTP/1.1 200 OK
