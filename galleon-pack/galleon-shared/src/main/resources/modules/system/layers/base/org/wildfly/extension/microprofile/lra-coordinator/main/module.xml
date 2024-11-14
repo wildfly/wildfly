@@ -14,7 +14,7 @@
   </resources>
 
   <dependencies>
-    <module name="org.jboss.narayana.rts.lra-coordinator"/>
+    <module name="org.jboss.narayana.lra.lra-coordinator"/>
     <module name="org.jboss.jts"/>
     <module name="org.jboss.jboss-transaction-spi"/>
 
