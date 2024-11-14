@@ -36,15 +36,6 @@ The MicroProfile Fault Tolerance implementation is provided by the https://githu
 This extension is automatically included in the `standalone-microprofile` server profiles,
 however, it is not included in the default configuration of WildFly.
 
-This extension requires the MicroProfile Telemetry extension and subsystem
-to provide metrics collection integration as defined by the specification.
-Please follow the instructions in the <<MicroProfile_Telemetry,MicroProfile Telemetry Subsystem section>>.
-If the MicroProfile Telemetry subsystem is not available, metrics collection will be collected using Micrometer.
-If neither subsystem is available, no Fault Tolerance metrics data will be collected.
-
-NOTE: Please note that while the specification defines metrics integration with MicroProfile Metrics,
-WildFly no longer provides this specification implementation, subsystem and thus neither the integration.
-
 You can add the extension to an existing server profile by using the following CLI operations:
 
 [source,options="nowrap"]
@@ -79,6 +70,22 @@ and then the subsystem in the `<profile>` section:
 
 The subsystem itself does not have any configurable attributes nor resources.
 
+[[metrics-microprofile-fault-tolerance-smallrye]]
+== Metrics
+
+This extension requires the MicroProfile Telemetry extension and subsystem
+to provide metrics collection integration as defined by the specification.
+Please follow the instructions in the <<MicroProfile_Telemetry,MicroProfile Telemetry Subsystem section>>.
+
+If the Micrometer subsystem is available, metrics collection will be also done by Micrometer.
+In cases where both subsystems are available, metrics will be collected using both system unless disabled explicitly
+using the MicroProfile Config properties below.
+
+If neither subsystem is available, no Fault Tolerance metrics data will be collected.
+
+NOTE: Please note that while the specification defines metrics integration with MicroProfile Metrics,
+WildFly no longer provides this specification implementation, subsystem and thus neither the integration.
+
 
 == Configuration
 
@@ -96,5 +103,13 @@ configuration properties which can be provided using standard MicroProfile Confi
 |`io.smallrye.faulttolerance.mainThreadPoolQueueSize`
 |`-1` (unbounded)
 |Size of the queue that the thread pool should use.
+
+|`smallrye.faulttolerance.micrometer.disabled`
+|`false`
+|Explicitly disable metrics collection using Micrometer.
+
+|`smallrye.faulttolerance.opentelemetry.disabled`
+|`false`
+|Explicitly disable metrics collection using MicroProfile Telemetry.
 
 |===

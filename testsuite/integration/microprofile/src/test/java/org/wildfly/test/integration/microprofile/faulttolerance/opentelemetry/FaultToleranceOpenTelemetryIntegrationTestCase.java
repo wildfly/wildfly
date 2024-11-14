@@ -5,18 +5,14 @@
 
 package org.wildfly.test.integration.microprofile.faulttolerance.opentelemetry;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.arquillian.testcontainers.api.Testcontainer;
@@ -24,6 +20,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorContainer;
+import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.setuptasks.OpenTelemetryWithCollectorSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.jboss.shrinkwrap.api.Archive;
@@ -47,7 +44,8 @@ import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deplo
 @RunWith(Arquillian.class)
 @RunAsClient
 @DockerRequired(AssumptionViolatedException.class)
-@ServerSetup(OpenTelemetryWithCollectorSetupTask.class)
+// This test case does not use Micrometer *but* we enable it to verify CompoundMetricsProvider functionality in WF
+@ServerSetup({OpenTelemetryWithCollectorSetupTask.class, MicrometerSetupTask.class})
 public class FaultToleranceOpenTelemetryIntegrationTestCase {
 
     @Testcontainer
@@ -73,20 +71,18 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
     private URL url;
 
     @Test
-    public void makeRequests() throws IOException, ExecutionException, TimeoutException {
+    public void test() throws Exception {
+        // First make requests
         for (int i = 0; i < INVOCATION_COUNT; i++) {
             HttpRequest.get(url.toString() + "app/timeout", 10, TimeUnit.SECONDS);
         }
-    }
 
-    @Test
-    @InSequence(3)
-    public void checkCounters() throws InterruptedException {
         // Pick a random metric to make sure that metrics are already collected and available for inspection
         // Subsequently we will use concrete tags to lookup specific counters
         List<PrometheusMetric> metrics = otelCollector.fetchMetrics("ft_invocations_total");
 
-        // Uncomment the following line for debugging:
+        // Uncomment the following lines for debugging:
+        //System.out.println("Metrics collected:");
         //metrics.forEach(metric -> System.out.println(metric.toString()));
 
         // First verify total invocation count for the method + value returned + fallback applied
@@ -107,7 +103,8 @@ public class FaultToleranceOpenTelemetryIntegrationTestCase {
                 .filter(metric -> metric.getKey().equals("ft_timeout_calls_total"))
                 .filter(metric -> Boolean.FALSE.toString().equalsIgnoreCase(metric.getTags().get("timedOut")))
                 .findFirst();
-        Assert.assertFalse(prometheusMetric.isPresent());
+        Assert.assertTrue(prometheusMetric.isPresent());
+        Assert.assertEquals(0, Integer.parseInt(prometheusMetric.get().getValue()), 0);
     }
 
 }

@@ -26,19 +26,19 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.test.integration.microprofile.faulttolerance.DisableTelemetryServerSetupTask;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.FaultToleranceMicrometerIntegrationTestCase;
 import org.wildfly.test.integration.microprofile.faulttolerance.micrometer.deployment.FaultTolerantApplication;
 
 /**
  * Test that reuses existing {@link FaultTolerantApplication} application which deploys twice simultaneously with
  * Micrometer metrics enabled.
+ * Essentially a test case for WFLY-19747.
  *
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@ServerSetup({MicrometerSetupTask.class, DisableTelemetryServerSetupTask.class})
+@ServerSetup({MicrometerSetupTask.class})
 @DockerRequired(AssumptionViolatedException.class)
 public class MultipleDeploymentMetricsTestCase {
 
