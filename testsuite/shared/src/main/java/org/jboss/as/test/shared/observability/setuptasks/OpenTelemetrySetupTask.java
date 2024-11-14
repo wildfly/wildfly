@@ -14,14 +14,19 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
     protected static final ModelNode extensionAddress = Operations.createAddress("extension", "org.wildfly.extension.opentelemetry");
     protected static final ModelNode subsystemAddress = Operations.createAddress("subsystem", SUBSYSTEM_NAME);
 
+    private volatile boolean addedExtension;
+    private volatile boolean addedSubsystem;
+
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, extensionAddress))) {
             executeOp(managementClient, Operations.createAddOperation(extensionAddress));
+            addedExtension = true;
         }
 
         if (!Operations.isSuccessfulOutcome(executeRead(managementClient, subsystemAddress))) {
             executeOp(managementClient, Operations.createAddOperation(subsystemAddress));
+            addedSubsystem = true;
         }
 
         executeOp(managementClient, writeAttribute(SUBSYSTEM_NAME, "batch-delay", "1"));
@@ -32,8 +37,12 @@ public class OpenTelemetrySetupTask extends AbstractSetupTask {
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
-        executeOp(managementClient, Operations.createRemoveOperation(extensionAddress));
+        if (addedSubsystem) {
+            executeOp(managementClient, Operations.createRemoveOperation(subsystemAddress));
+        }
+        if (addedExtension) {
+            executeOp(managementClient, Operations.createRemoveOperation(extensionAddress));
+        }
 
         ServerReload.executeReloadAndWaitForCompletion(managementClient);
     }
