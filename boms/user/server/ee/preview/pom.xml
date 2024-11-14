@@ -82,6 +82,7 @@
                                     <manifest>
                                         <groupId>org.wildfly.channels</groupId>
                                         <artifactId>wildfly-preview</artifactId>
+                                        <version>${version.boms.channel.ee}</version>
                                     </manifest>
                                 </channel>
                             </channels>
