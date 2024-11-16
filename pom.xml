@@ -245,7 +245,7 @@
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
-        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=1024m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
+        <surefire.non-modular.system.args>-ea -Duser.region=US -Duser.language=en ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.non-modular.system.args>
         <surefire.system.args>${modular.jdk.args} ${security.manager.props} ${surefire.non-modular.system.args}</surefire.system.args>
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
@@ -350,7 +350,7 @@
             Properties for dependencies that relate to production code go in the production code section below.
          -->
         <version.com.beust>1.78</version.com.beust>
-        <version.org.wiremock>3.9.1</version.org.wiremock>
+        <version.org.wiremock>3.9.2</version.org.wiremock>
         <version.dom4j>2.1.4</version.dom4j>
         <version.httpunit>1.7.3</version.httpunit>
         <legacy.version.io.netty>4.0.19.Final</legacy.version.io.netty>
@@ -383,11 +383,11 @@
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>2.0.0.Final</legacy.version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>2.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_4.0_spec>
-        <version.org.junit>5.10.4</version.org.junit>
+        <version.org.junit>5.10.5</version.org.junit>
         <version.org.keycloak>25.0.2</version.org.keycloak>
         <version.org.mockito>3.10.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.testcontainers>1.20.1</version.org.testcontainers>
+        <version.org.testcontainers>1.20.3</version.org.testcontainers>
         <version.org.testng>7.8.0</version.org.testng>
         <!-- The MicroProfile REST Client TCK requires a newer version of TestNG. The version is explicitly overridden
              on the dependency on the MicroProfile REST Client TCK POM.
@@ -406,7 +406,7 @@
         <version.antlr>4.13.0</version.antlr>
         <version.com.carrotsearch.hppc>0.8.1</version.com.carrotsearch.hppc>
         <version.com.fasterxml.classmate>1.5.1</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.17.2</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.17.3</version.com.fasterxml.jackson>
         <version.com.fasterxml.jackson.databind>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.databind>
         <version.com.fasterxml.jackson.jr.jackson-jr-objects>${version.com.fasterxml.jackson}</version.com.fasterxml.jackson.jr.jackson-jr-objects>
         <version.com.github.ben-manes.caffeine>3.1.8</version.com.github.ben-manes.caffeine>

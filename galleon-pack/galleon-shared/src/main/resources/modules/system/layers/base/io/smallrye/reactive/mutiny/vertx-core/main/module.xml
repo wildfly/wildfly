@@ -14,6 +14,7 @@
 
     <dependencies>
         <module name="io.vertx.core"/>
+        <module name="io.netty.netty-transport" />
         <module name="io.smallrye.reactive.mutiny"/>
         <module name="io.smallrye.reactive.mutiny.vertx-runtime"/>
 
