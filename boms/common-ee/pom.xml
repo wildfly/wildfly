@@ -4156,6 +4156,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.launcher</groupId>
+                <artifactId>wildfly-launcher</artifactId>
+                <version>${version.org.wildfly.launcher}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.transaction</groupId>
                 <artifactId>wildfly-transaction-client</artifactId>
                 <version>${version.org.wildfly.transaction.client}</version>
