@@ -42,7 +42,7 @@ public class LRAParticipantDeploymentDependencyProcessor implements DeploymentUn
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "org.eclipse.microprofile.lra.api", false, false, false, false));
-        ModuleDependency lraParticipantDependency = new ModuleDependency(moduleLoader, "org.jboss.narayana.rts.lra-participant", false, false, true, false);
+        ModuleDependency lraParticipantDependency = new ModuleDependency(moduleLoader, "org.jboss.narayana.lra.lra-participant", false, false, true, false);
         lraParticipantDependency.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(lraParticipantDependency);
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, "io.smallrye.jandex", false, false, true, false));

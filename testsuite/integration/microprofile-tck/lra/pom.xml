@@ -60,9 +60,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-test-arquillian-extension</artifactId>
-            <version>${version.org.jboss.narayana}</version>
+            <version>${version.org.jboss.narayana.lra}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -72,9 +72,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.narayana.rts</groupId>
+            <groupId>org.jboss.narayana.lra</groupId>
             <artifactId>lra-service-base</artifactId>
-            <version>${version.org.jboss.narayana}</version>
+            <version>${version.org.jboss.narayana.lra}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
