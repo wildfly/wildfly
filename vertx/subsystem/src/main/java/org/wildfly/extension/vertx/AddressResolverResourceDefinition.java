@@ -122,6 +122,11 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
     .setAllowExpression(true)
     .build();
 
+  public static final SimpleAttributeDefinition ATTR_HOSTS_REFRESH_PERIOD = new SimpleAttributeDefinitionBuilder(VertxConstants.ATTR_HOSTS_REFRESH_PERIOD, ModelType.INT)
+          .setRequired(false)
+          .setAllowExpression(true)
+          .build();
+
   private static final List<AttributeDefinition> VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS = new ArrayList<>();
   static {
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_HOSTS_PATH);
@@ -138,6 +143,7 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_N_DOTS);
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_ROTATE_SERVERS);
     VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_ROUND_ROBIN_INET_ADDRESS);
+    VERTX_ADDRESS_RESOLVER_OPTIONS_ATTRS.add(ATTR_HOSTS_REFRESH_PERIOD);
   }
 
   static List<AttributeDefinition> getVertxAddressResolverOptionsAttrs() {
@@ -255,6 +261,9 @@ class AddressResolverResourceDefinition extends SimpleResourceDefinition impleme
       }
       if (operation.hasDefined(VertxConstants.ATTR_ROUND_ROBIN_INET_ADDRESS)) {
         addressResolverOptions.setRoundRobinInetAddress(ATTR_ROUND_ROBIN_INET_ADDRESS.validateOperation(operation).asBoolean());
+      }
+      if (operation.hasDefined(VertxConstants.ATTR_HOSTS_REFRESH_PERIOD)) {
+        addressResolverOptions.setHostsRefreshPeriod(ATTR_HOSTS_REFRESH_PERIOD.validateOperation(operation).asInt());
       }
       return addressResolverOptions;
     }

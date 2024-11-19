@@ -63,7 +63,6 @@
         <xs:attribute name="worker-pool-size" type="xs:int" />
         <xs:attribute name="internal-blocking-pool-size" type="xs:int" />
         <xs:attribute name="prefer-native-transport" type="xs:boolean" />
-        <xs:attribute name="disable-tccl" type="xs:boolean" />
 
         <xs:attribute name="blocked-thread-check-interval" type="xs:long" />
         <xs:attribute name="blocked-thread-check-interval-unit" type="xs:string" />
@@ -76,6 +75,7 @@
 
         <xs:attribute name="classpath-resolving-enabled" type="xs:boolean" />
         <xs:attribute name="file-cache-enabled" type="xs:boolean" />
+        <xs:attribute name="file-cache-dir" type="xs:string" />
 
         <xs:attribute name="address-resolver-option" type="xs:string">
             <xs:annotation>
@@ -100,6 +100,7 @@
         <xs:attribute name="n-dots" type="xs:int" />
         <xs:attribute name="rotate-servers" type="xs:boolean" />
         <xs:attribute name="round-robin-inet-address" type="xs:boolean" />
+        <xs:attribute name="hosts-refresh-period" type="xs:int" />
     </xs:complexType>
 
 </xs:schema>

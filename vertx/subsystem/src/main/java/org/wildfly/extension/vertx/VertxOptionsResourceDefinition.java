@@ -25,6 +25,7 @@ import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHE
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_EVENTLOOP_POOL_SIZE;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED;
+import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_DIR;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_FS_FILE_CACHE_ENABLED;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_INTERNAL_BLOCKING_POOL_SIZE;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_MAX_EVENTLOOP_EXECUTE_TIME;
@@ -36,7 +37,6 @@ import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_WARNING_EXECUTION_TIME_UNIT;
 import static org.wildfly.extension.vertx.VertxConstants.ATTR_WORKER_POOL_SIZE;
 import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION;
-import static org.wildfly.extension.vertx.VertxConstants.ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER;
 
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
@@ -79,66 +79,60 @@ class VertxOptionsResourceDefinition extends AbstractVertxOptionsResourceDefinit
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
-      final String name = context.getCurrentAddressValue();
-      VertxOptions vertxOptions = parseOptions(operation);
-      NamedVertxOptions namedVertxOptions = new NamedVertxOptions(name, vertxOptions);
+      NamedVertxOptionsService.installVertxOptionsService(context, operation);
+    }
+  }
 
-      String addressResolverOptionName = null;
-      if (operation.hasDefined(ELEMENT_VERTX_OPTION_ADDRESS_RESOLVER)) {
-        addressResolverOptionName = VertxOptionsAttributes.ATTR_VERTX_OPTION_ADDRESS_RESOLVER.validateOperation(operation).asString();
-      }
-      NamedVertxOptionsService.installService(context, namedVertxOptions, addressResolverOptionName);
+  static VertxOptions parseOptions(ModelNode operation) throws OperationFailedException {
+    VertxOptions vertxOptions = new VertxOptions();
+    if (operation.hasDefined(ATTR_EVENTLOOP_POOL_SIZE)) {
+      vertxOptions.setEventLoopPoolSize(VertxOptionsAttributes.ATTR_EVENTLOOP_POOL_SIZE.validateOperation(operation).asInt());
+    }
+    if (operation.hasDefined(ATTR_WORKER_POOL_SIZE)) {
+      vertxOptions.setWorkerPoolSize(VertxOptionsAttributes.ATTR_WORKER_POOL_SIZE.validateOperation(operation).asInt());
+    }
+    if (operation.hasDefined(ATTR_INTERNAL_BLOCKING_POOL_SIZE)) {
+      vertxOptions.setInternalBlockingPoolSize(VertxOptionsAttributes.ATTR_INTERNAL_BLOCKING_POOL_SIZE.validateOperation(operation).asInt());
+    }
+    if (operation.hasDefined(ATTR_PREFER_NATIVE_TRANSPORT)) {
+      vertxOptions.setPreferNativeTransport(VertxOptionsAttributes.ATTR_PREFER_NATIVE_TRANSPORT.validateOperation(operation).asBoolean());
+    }
+    if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL)) {
+      vertxOptions.setBlockedThreadCheckInterval(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL.validateOperation(operation).asLong());
+    }
+    if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT)) {
+      vertxOptions.setBlockedThreadCheckIntervalUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT.validateOperation(operation).asString()));
+    }
+    if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME)) {
+      vertxOptions.setMaxEventLoopExecuteTime(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME.validateOperation(operation).asLong());
+    }
+    if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT)) {
+      vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
+    }
+    if (operation.hasDefined(ATTR_MAX_WORKER_EXECUTE_TIME)) {
+      vertxOptions.setMaxWorkerExecuteTime(VertxOptionsAttributes.ATTR_MAX_WORKER_EXECUTE_TIME.validateOperation(operation).asLong());
+    }
+    if (operation.hasDefined(ATTR_MAX_WORKER_EXECUTE_TIME_UNIT)) {
+      vertxOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
+    }
+    if (operation.hasDefined(ATTR_WARNING_EXECUTION_TIME)) {
+      vertxOptions.setWarningExceptionTime(VertxOptionsAttributes.ATTR_WARNING_EXECUTION_TIME.validateOperation(operation).asLong());
+    }
+    if (operation.hasDefined(ATTR_WARNING_EXECUTION_TIME_UNIT)) {
+      vertxOptions.setWarningExceptionTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_WARNING_EXECUTION_TIME_UNIT.validateOperation(operation).asString()));
     }
 
-    VertxOptions parseOptions(ModelNode operation) throws OperationFailedException {
-      VertxOptions vertxOptions = new VertxOptions();
-      if (operation.hasDefined(ATTR_EVENTLOOP_POOL_SIZE)) {
-        vertxOptions.setEventLoopPoolSize(VertxOptionsAttributes.ATTR_EVENTLOOP_POOL_SIZE.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_WORKER_POOL_SIZE)) {
-        vertxOptions.setWorkerPoolSize(VertxOptionsAttributes.ATTR_WORKER_POOL_SIZE.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_INTERNAL_BLOCKING_POOL_SIZE)) {
-        vertxOptions.setInternalBlockingPoolSize(VertxOptionsAttributes.ATTR_INTERNAL_BLOCKING_POOL_SIZE.validateOperation(operation).asInt());
-      }
-      if (operation.hasDefined(ATTR_PREFER_NATIVE_TRANSPORT)) {
-        vertxOptions.setPreferNativeTransport(VertxOptionsAttributes.ATTR_PREFER_NATIVE_TRANSPORT.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL)) {
-        vertxOptions.setBlockedThreadCheckInterval(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL.validateOperation(operation).asLong());
-      }
-      if (operation.hasDefined(ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT)) {
-        vertxOptions.setBlockedThreadCheckIntervalUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_BLOCKED_THREAD_CHECK_INTERVAL_UNIT.validateOperation(operation).asString()));
-      }
-      if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME)) {
-        vertxOptions.setMaxEventLoopExecuteTime(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME.validateOperation(operation).asLong());
-      }
-      if (operation.hasDefined(ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT)) {
-        vertxOptions.setMaxEventLoopExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_EVENTLOOP_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
-      }
-      if (operation.hasDefined(ATTR_MAX_WORKER_EXECUTE_TIME)) {
-        vertxOptions.setMaxWorkerExecuteTime(VertxOptionsAttributes.ATTR_MAX_WORKER_EXECUTE_TIME.validateOperation(operation).asLong());
-      }
-      if (operation.hasDefined(ATTR_MAX_WORKER_EXECUTE_TIME_UNIT)) {
-        vertxOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_MAX_WORKER_EXECUTE_TIME_UNIT.validateOperation(operation).asString()));
-      }
-      if (operation.hasDefined(ATTR_WARNING_EXECUTION_TIME)) {
-        vertxOptions.setWarningExceptionTime(VertxOptionsAttributes.ATTR_WARNING_EXECUTION_TIME.validateOperation(operation).asLong());
-      }
-      if (operation.hasDefined(ATTR_WARNING_EXECUTION_TIME_UNIT)) {
-        vertxOptions.setWarningExceptionTimeUnit(TimeUnit.valueOf(VertxOptionsAttributes.ATTR_WARNING_EXECUTION_TIME_UNIT.validateOperation(operation).asString()));
-      }
-
-      // file system options
-      if (operation.hasDefined(ATTR_FS_CLASS_PATH_RESOLVING_ENABLED)) {
-        vertxOptions.getFileSystemOptions().setClassPathResolvingEnabled(VertxOptionsAttributes.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED.validateOperation(operation).asBoolean());
-      }
-      if (operation.hasDefined(ATTR_FS_FILE_CACHE_ENABLED)) {
-        vertxOptions.getFileSystemOptions().setFileCachingEnabled(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_ENABLED.validateOperation(operation).asBoolean());
-      }
-      return vertxOptions;
+    // file system options
+    if (operation.hasDefined(ATTR_FS_CLASS_PATH_RESOLVING_ENABLED)) {
+      vertxOptions.getFileSystemOptions().setClassPathResolvingEnabled(VertxOptionsAttributes.ATTR_FS_CLASS_PATH_RESOLVING_ENABLED.validateOperation(operation).asBoolean());
     }
-
+    if (operation.hasDefined(ATTR_FS_FILE_CACHE_ENABLED)) {
+      vertxOptions.getFileSystemOptions().setFileCachingEnabled(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_ENABLED.validateOperation(operation).asBoolean());
+    }
+    if (operation.hasDefined(ATTR_FS_FILE_CACHE_DIR)) {
+      vertxOptions.getFileSystemOptions().setFileCacheDir(VertxOptionsAttributes.ATTR_FS_FILE_CACHE_DIR.validateOperation(operation).asString());
+    }
+    return vertxOptions;
   }
 
   private static class ShowInfoHandler implements OperationStepHandler {
