@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+
+<tasks xmlns="urn:wildfly:wildfly-feature-pack-tasks:2.0">
+  <file-permissions phase="FINALIZING">
+    <permission value="755">
+      <filter pattern="*.sh" include="true"/>
+    </permission>
+  </file-permissions>
+</tasks>

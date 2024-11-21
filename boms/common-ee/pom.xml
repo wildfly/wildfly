@@ -1150,6 +1150,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.networknt</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${version.com.networknt.json-schema-validator}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.nimbusds</groupId>
                 <artifactId>nimbus-jose-jwt</artifactId>
                 <version>${version.com.nimbus.jose-jwt}</version>
@@ -1287,6 +1293,12 @@
                 <groupId>gnu.getopt</groupId>
                 <artifactId>java-getopt</artifactId>
                 <version>${version.gnu.getopt}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>${version.info.picocli}</version>
             </dependency>
 
             <dependency>
@@ -2006,6 +2018,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${version.org.apache.commons.commons-text}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${version.org.apache.cxf}</version>
@@ -2532,6 +2550,77 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-artifact</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-builder-support</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model-builder</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-repository-metadata</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-resolver-provider</artifactId>
+                <version>${version.org.apache.maven}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-api</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-connector-basic</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-impl</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-named-locks</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-spi</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-transport-file</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-transport-http</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.resolver</groupId>
+                <artifactId>maven-resolver-util</artifactId>
+                <version>${version.org.apache.maven.resolver}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.neethi</groupId>
                 <artifactId>neethi</artifactId>
                 <version>${version.org.apache.neethi}</version>
@@ -2696,6 +2785,18 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-interpolation</artifactId>
+                <version>${version.org.codehaus.plexus-interpolation}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>${version.org.codehaus.plexus-utils}</version>
             </dependency>
 
             <dependency>
@@ -3150,6 +3251,7 @@
                 <scope>import</scope>
             </dependency>
 
+
             <dependency>
                 <groupId>org.jasypt</groupId>
                 <artifactId>jasypt</artifactId>
@@ -3232,6 +3334,27 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-api</artifactId>
+                <version>${version.org.jboss.galleon}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-common-api</artifactId>
+                <version>${version.org.jboss.galleon}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-core</artifactId>
+                <version>${version.org.jboss.galleon}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.galleon</groupId>
+                <artifactId>galleon-maven-universe</artifactId>
+                <version>${version.org.jboss.galleon}</version>
             </dependency>
 
             <dependency>
@@ -4148,6 +4271,30 @@
             </dependency>
 
             <dependency>
+                <groupId>org.wildfly.channel</groupId>
+                <artifactId>channel-core</artifactId>
+                <version>${version.org.wildfly.channel}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.channel</groupId>
+                <artifactId>maven-resolver</artifactId>
+                <version>${version.org.wildfly.channel}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.wildfly.clustering</groupId>
                 <artifactId>wildfly-clustering-bom</artifactId>
                 <version>${version.org.wildfly.clustering}</version>
@@ -4165,6 +4312,30 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.prospero</groupId>
+                <artifactId>prospero-cli</artifactId>
+                <version>${version.org.wildfly.prospero}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.prospero</groupId>
+                <artifactId>prospero-common</artifactId>
+                <version>${version.org.wildfly.prospero}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.prospero</groupId>
+                <artifactId>prospero-metadata</artifactId>
+                <version>${version.org.wildfly.prospero.prospero-metadata}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.prospero</groupId>
+                <artifactId>prospero-metadata</artifactId>
+                <version>${version.org.wildfly.prospero.prospero-metadata}</version>
             </dependency>
 
             <dependency>
