@@ -10,28 +10,30 @@ import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 /**
- * Test case to verify basic SmallRye Fault Tolerance integration with Micrometer. The test first invokes a REST
- * application which always times out, and Eclipse MP FT @Timeout kicks in with a fallback. Then we verify several of
- * the counters in the injected Micrometer's MeterRegistry.
+ * Variant of the {@link FaultToleranceMicrometerIntegrationTestCase} test which disabled Micrometer metrics using an MP Config property.
  *
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
 @DockerRequired(AssumptionViolatedException.class)
 @ServerSetup({MicrometerSetupTask.class})
-public class FaultToleranceMicrometerIntegrationTestCase extends AbstractFaultToleranceMicrometerIntegrationTestCase {
+public class FaultToleranceMicrometerIntegrationDisabledTestCase extends AbstractFaultToleranceMicrometerIntegrationTestCase {
 
-    public FaultToleranceMicrometerIntegrationTestCase() {
-        super(false);
+    public FaultToleranceMicrometerIntegrationDisabledTestCase() {
+        super(true);
     }
+
+    private static final String MP_CONFIG = "smallrye.faulttolerance.micrometer.disabled=true\n" +
+            "smallrye.faulttolerance.opentelemetry.disabled=true\n";
 
     @Deployment
     public static Archive<?> deploy() {
-        return baseDeploy();
+        return baseDeploy().addAsManifestResource(new StringAsset(MP_CONFIG), "microprofile-config.properties");
     }
 
 }

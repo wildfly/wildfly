@@ -53,12 +53,15 @@ public class MicroProfileFaultToleranceDeploymentProcessor implements Deployment
 
         Set<MetricsIntegration> metricsIntegrations = new HashSet<>();
 
-        // TODO ST FT needs a fix to support multiple metrics integrations, for now prefer spec-defined behavior
         if (registeredSubsystems.contains("microprofile-telemetry")) {
             metricsIntegrations.add(MetricsIntegration.OPENTELEMETRY);
-        } else if (registeredSubsystems.contains("micrometer")) {
+        }
+
+        if (registeredSubsystems.contains("micrometer")) {
             metricsIntegrations.add(MetricsIntegration.MICROMETER);
-        } else {
+        }
+
+        if (metricsIntegrations.isEmpty()) {
             metricsIntegrations.add(MetricsIntegration.NOOP);
         }
 
