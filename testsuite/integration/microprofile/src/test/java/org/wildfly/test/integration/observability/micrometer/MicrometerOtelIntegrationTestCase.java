@@ -31,7 +31,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +38,7 @@ import org.wildfly.test.integration.observability.opentelemetry.application.JaxR
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 @RunAsClient
 public class MicrometerOtelIntegrationTestCase {
     public static final int REQUEST_COUNT = 5;
