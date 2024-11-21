@@ -387,7 +387,7 @@
         <version.org.keycloak>25.0.2</version.org.keycloak>
         <version.org.mockito>3.10.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
-        <version.org.testcontainers>1.20.3</version.org.testcontainers>
+        <version.org.testcontainers>1.20.4</version.org.testcontainers>
         <version.org.testng>7.5.1</version.org.testng>
         <version.org.wildfly.arquillian>5.1.0.Beta6</version.org.wildfly.arquillian>
         <version.org.wildfly.extras.creaper>2.0.3</version.org.wildfly.extras.creaper>
