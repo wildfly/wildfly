@@ -531,6 +531,11 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (isTransmittable(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode = config.getResteasyMediaTypeParamMapping())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING, modelNode.asString());
         }
+
+        if (isTransmittable(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED, modelNode = config.isResteasyPatchFilterDisabled())) {
+            setContextParameter(webdata, JaxrsConstants.RESTEASY_PATCHFILTER_DISABLED, modelNode.asString());
+        }
+
         if (isTransmittable(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode = config.isResteasyPreferJacksonOverJsonB())) {
             setContextParameter(webdata, JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB, modelNode.asString());
         }

@@ -29,7 +29,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class JaxrsSubsystemParser_3_1 extends JaxrsSubsystemParser_3_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final String NAMESPACE = "urn:jboss:domain:jaxrs:3.1";
-
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
         final PathAddress address = PathAddress.pathAddress(JaxrsExtension.SUBSYSTEM_PATH);
@@ -92,6 +91,10 @@ public class JaxrsSubsystemParser_3_1 extends JaxrsSubsystemParser_3_0 implement
 
                 case RESTEASY_MEDIA_TYPE_PARAM_MAPPING:
                     handleSimpleElement(reader, encountered, subsystem, JaxrsElement.RESTEASY_MEDIA_TYPE_PARAM_MAPPING);
+                    break;
+
+                case RESTEASY_PATCHFILTER_DISABLED:
+                    handleSimpleElement(reader, encountered, subsystem, JaxrsElement.RESTEASY_PATCHFILTER_DISABLED);
                     break;
 
                 case RESTEASY_PREFER_JACKSON_OVER_JSONB:

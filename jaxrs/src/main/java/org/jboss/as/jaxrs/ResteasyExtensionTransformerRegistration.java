@@ -17,11 +17,14 @@ import org.kohsuke.MetaInfServices;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:ema@redhat.com>Jim Ma</a>
  */
 @MetaInfServices
 public class ResteasyExtensionTransformerRegistration implements ExtensionTransformerRegistration {
 
+    private static final ModelVersion VERSION_3_1_0 = ModelVersion.create(3, 1, 0);
     private static final ModelVersion VERSION_3_0_0 = ModelVersion.create(3, 0, 0);
+    private static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);
 
     @Override
     public String getSubsystemName() {
@@ -31,10 +34,15 @@ public class ResteasyExtensionTransformerRegistration implements ExtensionTransf
     @Override
     public void registerTransformers(final SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(subsystemRegistration.getCurrentSubsystemVersion());
+        registerV31Transformers(builder.createBuilder(VERSION_3_1_0, VERSION_3_0_0));
+        registerV3Transformers(builder.createBuilder(VERSION_3_0_0, VERSION_2_0_0));
+        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_1_0, VERSION_3_0_0, VERSION_2_0_0});
+    }
 
-        registerV3Transformers(builder.createBuilder(JaxrsExtension.CURRENT_MODEL_VERSION, VERSION_3_0_0));
-
-        builder.buildAndRegister(subsystemRegistration, new ModelVersion[] {VERSION_3_0_0, JaxrsExtension.CURRENT_MODEL_VERSION});
+    private static void registerV31Transformers(ResourceTransformationDescriptionBuilder subsystem) {
+        subsystem.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.DEFAULT_VALUE, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED);
     }
 
     private static void registerV3Transformers(ResourceTransformationDescriptionBuilder subsystem) {

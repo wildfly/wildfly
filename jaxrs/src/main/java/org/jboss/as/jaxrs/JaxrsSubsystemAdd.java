@@ -111,6 +111,9 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_MEDIA_TYPE_PARAM_MAPPING)) {
             config.setResteasyMediaTypeParamMapping(JaxrsAttribute.RESTEASY_MEDIA_TYPE_PARAM_MAPPING.resolveModelAttribute(context, configuration));
         }
+        if (configuration.hasDefined(JaxrsConstants.RESTEASY_PATCHFILTER_DISABLED)) {
+            config.setResteasyPatchFilterDisabled(JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED.resolveModelAttribute(context, configuration));
+        }
         if (configuration.hasDefined(JaxrsConstants.RESTEASY_PREFER_JACKSON_OVER_JSONB)) {
             config.setResteasyPreferJacksonOverJsonB(JaxrsAttribute.RESTEASY_PREFER_JACKSON_OVER_JSONB.resolveModelAttribute(context, configuration));
         }

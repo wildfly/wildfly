@@ -26,6 +26,7 @@ public class JaxrsServerConfig {
     private ModelNode resteasyLanguageMappings;
     private ModelNode resteasyMediaTypeMappings;
     private ModelNode resteasyMediaTypeParamMapping;
+    private ModelNode resteasyPatchFilterDisabled;
     private ModelNode resteasyPreferJacksonOverJsonB;
     private ModelNode resteasyProviders;
     private ModelNode resteasyRFC7232Preconditions;
@@ -137,6 +138,13 @@ public class JaxrsServerConfig {
     }
     public void setResteasyMediaTypeParamMapping(ModelNode resteasyMediaTypeParamMapping) {
         this.resteasyMediaTypeParamMapping = resteasyMediaTypeParamMapping;
+    }
+
+    public ModelNode isResteasyPatchFilterDisabled() {
+        return resteasyPatchFilterDisabled;
+    }
+    public void setResteasyPatchFilterDisabled(ModelNode resteasyPatchFilterDisabled) {
+        this.resteasyPatchFilterDisabled = resteasyPatchFilterDisabled;
     }
     public ModelNode isResteasyPreferJacksonOverJsonB() {
         return resteasyPreferJacksonOverJsonB;

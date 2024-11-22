@@ -34,6 +34,7 @@ public class JaxrsConstants {
     public static final String RESTEASY_USE_BUILTIN_PROVIDERS = "resteasy-use-builtin-providers";
     public static final String RESTEASY_USE_CONTAINER_FORM_PARAMS = "resteasy-use-container-form-params";
     public static final String RESTEASY_WIDER_REQUEST_MATCHING = "resteasy-wider-request-matching";
+    public static final String RESTEASY_PATCHFILTER_DISABLED = "resteasy-patchfilter-disabled";
 
     public static final Map<String, AttributeDefinition> nameToAttributeMap = new HashMap<String,AttributeDefinition> ();
     static {
@@ -58,5 +59,6 @@ public class JaxrsConstants {
         nameToAttributeMap.put(RESTEASY_USE_BUILTIN_PROVIDERS, JaxrsAttribute.RESTEASY_USE_BUILTIN_PROVIDERS);
         nameToAttributeMap.put(RESTEASY_USE_CONTAINER_FORM_PARAMS, JaxrsAttribute.RESTEASY_USE_CONTAINER_FORM_PARAMS);
         nameToAttributeMap.put(RESTEASY_WIDER_REQUEST_MATCHING, JaxrsAttribute.RESTEASY_WIDER_REQUEST_MATCHING);
+        nameToAttributeMap.put(RESTEASY_PATCHFILTER_DISABLED, JaxrsAttribute.RESTEASY_PATCHFILTER_DISABLED);
     }
 }

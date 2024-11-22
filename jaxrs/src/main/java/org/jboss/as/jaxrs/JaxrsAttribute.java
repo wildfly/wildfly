@@ -229,6 +229,13 @@ public abstract class JaxrsAttribute {
             .setRequired(false)
             .setValidator(new StringAllowedValuesValidator("SUMMARY", "TRACE", "VERBOSE"))
             .build();
+    public static final SimpleAttributeDefinition RESTEASY_PATCHFILTER_DISABLED = new SimpleAttributeDefinitionBuilder(JaxrsConstants.RESTEASY_PATCHFILTER_DISABLED, ModelType.BOOLEAN)
+            .setRequired(false)
+            .setAllowExpression(true)
+            .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, false))
+            .setDefaultValue(ModelNode.FALSE)
+            .setAttributeGroup(RESTEASY_PARAMETER_GROUP)
+            .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
             JAXRS_2_0_REQUEST_MATCHING,
@@ -244,6 +251,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_LANGUAGE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_MAPPINGS,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_PATCHFILTER_DISABLED,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_PROVIDERS,
             RESTEASY_RFC7232_PRECONDITIONS,
@@ -266,6 +274,7 @@ public abstract class JaxrsAttribute {
             RESTEASY_DOCUMENT_SECURE_PROCESSING_FEATURE,
             RESTEASY_GZIP_MAX_INPUT,
             RESTEASY_MEDIA_TYPE_PARAM_MAPPING,
+            RESTEASY_PATCHFILTER_DISABLED,
             RESTEASY_PREFER_JACKSON_OVER_JSONB,
             RESTEASY_RFC7232_PRECONDITIONS,
             RESTEASY_ROLE_BASED_SECURITY,
