@@ -238,6 +238,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
+                            <skip>${ts.skipTests}</skip>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
                             <record-provisioning-state>true</record-provisioning-state>
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
