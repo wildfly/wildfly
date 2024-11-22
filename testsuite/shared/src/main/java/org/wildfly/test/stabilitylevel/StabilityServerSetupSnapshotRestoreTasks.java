@@ -11,7 +11,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD_ENHANCED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STABILITY;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.SERVER_ENVIRONMENT;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -42,6 +41,7 @@ import org.junit.Assume;
  * the {@code teardown()} method
  */
 public abstract class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask {
+    private static final String SERVER_ENVIRONMENT = "server-environment";
 
     private final Stability desiredStability;
     private volatile Stability originalStability;
