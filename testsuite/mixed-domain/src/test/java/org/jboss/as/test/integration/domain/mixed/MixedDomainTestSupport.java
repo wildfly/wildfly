@@ -72,19 +72,19 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         return create(testClass, version, STANDARD_DOMAIN_CONFIG, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", "full-ha", true, false, false);
+                "secondary-config/host-secondary-management-realm-security.xml", "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", "full-ha", adjustDomain, legacyConfig, false);
+                "secondary-config/host-secondary-management-realm-security.xml", "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
                                                 boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary.xml", profile, adjustDomain, legacyConfig, withPrimaryServers);
+                "secondary-config/host-secondary-management-realm-security.xml", profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String primaryConfig, String secondaryConfig,

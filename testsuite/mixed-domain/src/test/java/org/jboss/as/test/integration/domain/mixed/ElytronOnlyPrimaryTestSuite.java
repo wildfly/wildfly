@@ -12,7 +12,8 @@ public class ElytronOnlyPrimaryTestSuite extends MixedDomainTestSuite {
 
 
     protected static MixedDomainTestSupport getSupport(Class<?> testClass) {
+        final Version.AsVersion version = getVersion(testClass);
         return getSupport(testClass, "primary-config/host-primary-elytron.xml",
-                "secondary-config/host-secondary.xml");
+                "secondary-config/host-secondary-management-realm-security.xml");
     }
 }
