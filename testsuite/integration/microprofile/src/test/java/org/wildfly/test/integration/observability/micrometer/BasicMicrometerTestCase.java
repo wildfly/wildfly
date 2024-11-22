@@ -16,7 +16,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
@@ -25,7 +24,7 @@ import org.wildfly.test.integration.observability.micrometer.multiple.applicatio
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public class BasicMicrometerTestCase {
     @Inject
     private MeterRegistry meterRegistry;

@@ -10,7 +10,6 @@ import org.jboss.arquillian.testcontainers.api.DockerRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
-import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 /**
@@ -21,8 +20,8 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(Arquillian.class)
-@DockerRequired(AssumptionViolatedException.class)
-@ServerSetup({MicrometerSetupTask.class})
+@ServerSetup(MicrometerSetupTask.class)
+@DockerRequired
 public class FaultToleranceMicrometerIntegrationTestCase extends AbstractFaultToleranceMicrometerIntegrationTestCase {
 
     public FaultToleranceMicrometerIntegrationTestCase() {
