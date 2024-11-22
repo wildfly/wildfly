@@ -41,7 +41,7 @@ import org.junit.Assume;
  * the {@code teardown()} method
  */
 public abstract class StabilityServerSetupSnapshotRestoreTasks implements ServerSetupTask {
-    private static final String SERVER_ENVIRONMENT ="server-environment";
+    private static final String SERVER_ENVIRONMENT = "server-environment";
 
     private final Stability desiredStability;
     private volatile Stability originalStability;
