@@ -44,6 +44,22 @@ public class H2DriverLayerMetaDataTestCase extends AbstractLayerMetaDataTestCase
         checkLayersForArchive(p);
     }
 
+    @Test
+    public void testJakartaDataSourceDefinitionAnnotationUsage() throws Exception {
+        testWarWithClass(JakartaDataSourceDefinitionAnnotationUsage.class);
+    }
+
+    private void testWarWithClass(Class<?> clazz) {
+        Path p = createArchiveBuilder(ArchiveType.WAR)
+                .addClasses(clazz)
+                .build();
+        ExpectedLayers el = new ExpectedLayers();
+        el.addDecorator("h2-driver");
+        el.addLayer("h2-driver");
+        el.addLayer("ee-integration");
+        checkLayersForArchive(p,  el);
+    }
+
     private void checkLayersForArchive(Path p) {
         checkLayersForArchive(p, new ExpectedLayers("h2-driver", "h2-driver"));
     }
