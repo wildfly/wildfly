@@ -38,6 +38,11 @@
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
 
         <ts.skipTests>${skipTests}</ts.skipTests>
+
+        <!-- Server provision and tests are disabled by default. -->
+        <!-- They are enabled via mixed-domain-server-provision profile below. -->
+        <provision.phase>none</provision.phase>
+        <surefire.default-test.phase>none</surefire.default-test.phase>
     </properties>
 
     <!--
@@ -190,7 +195,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <failIfNoTests>false</failIfNoTests>
-                    <!-- parallel>none</parallel -->
 
                     <!-- System properties to forked surefire JVM which runs clients. -->
                     <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} ${surefire.jacoco.args}</argLine>
@@ -211,7 +215,6 @@
                         <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.other} ${jvm.args.timeouts} -Dnode0=${node0} -Dnode1=${node1} -Djboss.default.multicast.address=${mcast} -Djboss.messaging.cluster.password=ILoveWildfly ${extra.server.jvm.args}</server.jvm.args>
                     </systemPropertyVariables>
                     <includes>
-                        <!-- include>**/*TestCase.java</include -->
                         <include>**/*TestSuite.java</include>
                     </includes>
                 </configuration>
@@ -236,7 +239,7 @@
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>generate-resources</phase>
+                        <phase>${provision.phase}</phase>
                         <configuration>
                             <skip>${ts.skipTests}</skip>
                             <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
@@ -280,6 +283,18 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>mixed-domain-server-provision</id>
+            <activation>
+                <property>
+                    <name>jboss.test.mixed.domain.dir</name>
+                </property>
+            </activation>
+            <properties>
+                <provision.phase>generate-resources</provision.phase>
+                <surefire.default-test.phase>test</surefire.default-test.phase>
+            </properties>
+        </profile>
         <profile>
             <id>legacy-secondary-java-home</id>
             <activation>
