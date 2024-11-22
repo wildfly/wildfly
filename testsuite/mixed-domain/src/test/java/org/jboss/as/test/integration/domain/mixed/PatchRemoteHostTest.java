@@ -298,8 +298,7 @@ public class PatchRemoteHostTest extends AbstractCliTestBase {
         byte[] newHash = hashFile(addedFile);
         String[] subdir = new String[fileSegments.length - 1];
         System.arraycopy(fileSegments, 0, subdir, 0, fileSegments.length - 1);
-        ContentModification fileAdded = new ContentModification(new MiscContentItem(addedFile.getName(), subdir, newHash),
+        return new ContentModification(new MiscContentItem(addedFile.getName(), subdir, newHash),
                 NO_CONTENT, ADD);
-        return fileAdded;
     }
 }

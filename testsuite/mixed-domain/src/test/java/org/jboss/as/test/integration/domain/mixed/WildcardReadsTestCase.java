@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -95,7 +96,7 @@ public class WildcardReadsTestCase {
             long timeout = System.currentTimeMillis() + TimeoutUtil.adjust(30000);
             while (!"running".equalsIgnoreCase(state = readPrimaryServerOneState())
                     && System.currentTimeMillis() < timeout) {
-                Thread.sleep(25);
+                TimeUnit.MILLISECONDS.sleep(25);
             }
             assertNotNull("Could not start primary/server-one", state);
             assertEquals("Could not start primary/server-one", "running", state.toLowerCase(Locale.ENGLISH));

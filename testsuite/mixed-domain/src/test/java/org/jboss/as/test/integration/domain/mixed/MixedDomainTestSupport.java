@@ -183,7 +183,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
 
     private void startAndAdjust() {
 
-        String jbossDomainServerArgsValue = null;
         try {
             //Start the primary in admin only and reconfigure the domain with what
             //we want to test in the mixed domain and have the DomainAdjuster
@@ -193,7 +192,6 @@ public class MixedDomainTestSupport extends DomainTestSupport {
             DomainLifecycleUtil primaryUtil = getDomainPrimaryLifecycleUtil();
             assert primaryUtil.getConfiguration().getStability() == version.getStability();
             primaryUtil.getConfiguration().setAdminOnly(true);
-            //primaryUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
             primaryUtil.start();
             if (legacyConfig) {
                 LegacyConfigAdjuster.adjustForVersion(primaryUtil.getDomainClient(), version);
