@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.jboss.as.test.integration.jpa.json;
+package org.jboss.as.test.integration.jpa.jsonb;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -20,23 +20,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Ensure that Hibernate JSON mapping can be used.
+ * Ensure that Hibernate JSON mapping can be used with Jsonb.
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-public class JsonTestCase {
+public class HibernateJsonbTestCase {
 
-    private static final String ARCHIVE_NAME = "jpa_jsontest";
+    private static final String ARCHIVE_NAME = "jpa_jsonbtest";
 
     @Deployment
     public static Archive<?> deploy() {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(JsonTestCase.class,
+        jar.addClasses(HibernateJsonbTestCase.class,
                 Employee.class,
                 SFSB.class
         );
-        jar.addAsManifestResource(JsonTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+        jar.addAsManifestResource(HibernateJsonbTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         return jar;
     }
 
