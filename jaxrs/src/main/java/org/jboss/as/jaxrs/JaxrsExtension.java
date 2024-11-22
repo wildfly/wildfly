@@ -53,7 +53,7 @@ public class JaxrsExtension implements Extension {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         ManagementResourceRegistration jaxrsResReg = subsystem.registerDeploymentModel(new JaxrsDeploymentDefinition());
         jaxrsResReg.registerSubModel(new DeploymentRestResourcesDefintion());
-        subsystem.registerXMLElementWriter(JaxrsSubsystemParser_3_0::new);
+        subsystem.registerXMLElementWriter(JaxrsSubsystemParser_3_1::new);
     }
 
     /**
@@ -64,5 +64,6 @@ public class JaxrsExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:1.0", JaxrsSubsystemParser_1_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:2.0", JaxrsSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:3.0", JaxrsSubsystemParser_3_0::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, "urn:jboss:domain:jaxrs:3.1", JaxrsSubsystemParser_3_1::new);
     }
 }
