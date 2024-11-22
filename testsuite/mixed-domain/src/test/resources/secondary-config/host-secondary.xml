@@ -1,0 +1,155 @@
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<host xmlns="urn:jboss:domain:20.0" name="secondary">
+
+    <extensions>
+        <extension module="org.wildfly.extension.elytron"/>
+    </extensions>
+
+    <management>
+        <management-interfaces>
+            <native-interface sasl-authentication-factory="management-sasl-authentication">
+                <socket interface="management" port="19999"/>
+            </native-interface>
+        </management-interfaces>
+    </management>
+
+    <domain-controller>
+        <!-- Remote domain controller configuration with a host and port -->
+        <remote host="${jboss.test.host.primary.address}" protocol="${jboss.domain.primary.protocol:remote+http}" port="${jboss.domain.primary.port:9990}" authentication-context="secondaryHostAContext">
+        <!-- The DomainAdjustors used in the test setup delete all the invalid extensions
+        <ignored-resources type="extension">
+
+            <instance name="org.wildfly.extension.batch"/>
+            <instance name="org.wildfly.extension.bean-validation"/>
+            <instance name="org.wildfly.extension.io"/>
+            <instance name="org.wildfly.extension.undertow"/>
+        </ignored-resources>
+        -->
+        </remote>
+    </domain-controller>
+
+    <interfaces>
+        <interface name="management">
+           <inet-address value="${jboss.test.host.secondary.address}"/>
+        </interface>
+        <interface name="public">
+           <inet-address value="${jboss.test.host.secondary.address}"/>
+        </interface>
+        <interface name="unsecure">
+            <!-- Used for IIOP sockets in the standard configuration.
+                 To secure JacORB you need to setup SSL -->
+             <inet-address value="${jboss.test.host.secondary.address}"/>
+        </interface>
+    </interfaces>
+
+    <jvms>
+        <jvm name="default">
+            <heap size="64m" max-size="256m"/>
+            <permgen size="256m" max-size="256m"/>
+              <jvm-options>
+                  <option value="-ea"/>
+              </jvm-options>
+         </jvm>
+    </jvms>
+
+
+    <servers>
+        <server name="server-one" group="other-server-group" auto-start="false"/>
+        <server name="server-two" group="other-server-group" auto-start="false"/>
+    </servers>
+
+    <profile>
+        <subsystem xmlns="urn:wildfly:elytron:15.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <authentication-client>
+                <!-- corresponding secret: <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA==" /> -->
+                <authentication-configuration sasl-mechanism-selector="DIGEST-MD5" name="secondaryHostAConfiguration" authentication-name="secondary" realm="ManagementRealm">
+                    <credential-reference clear-text="secondary_us3r_password"/>
+                </authentication-configuration>
+                <authentication-context name="secondaryHostAContext">
+                    <match-rule match-host="${jboss.test.host.primary.address}" authentication-configuration="secondaryHostAConfiguration"/>
+                </authentication-context>
+            </authentication-client>
+            <providers>
+                <aggregate-providers name="combined-providers">
+                    <providers name="elytron"/>
+                    <providers name="openssl"/>
+                </aggregate-providers>
+                <provider-loader name="elytron" module="org.wildfly.security.elytron"/>
+                <provider-loader name="openssl" module="org.wildfly.openssl"/>
+            </providers>
+            <audit-logging>
+                <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.domain.log.dir" format="JSON"/>
+            </audit-logging>
+            <security-domains>
+                <security-domain name="ManagementDomain" default-realm="ManagementRealm" permission-mapper="default-permission-mapper">
+                    <realm name="ManagementRealm" role-decoder="groups-to-roles"/>
+                    <realm name="local" role-mapper="super-user-mapper"/>
+                </security-domain>
+            </security-domains>
+            <security-realms>
+                <identity-realm name="local" identity="$local"/>
+                <properties-realm name="ManagementRealm">
+                    <users-properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" digest-realm-name="ManagementRealm"/>
+                </properties-realm>
+            </security-realms>
+            <mappers>
+                <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
+                    <permission-mapping>
+                        <principal name="anonymous"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                    <permission-mapping match-all="true">
+                        <permission-set name="login-permission"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                </simple-permission-mapper>
+                <constant-realm-mapper name="local" realm-name="local"/>
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+                <constant-role-mapper name="super-user-mapper">
+                    <role name="SuperUser"/>
+                </constant-role-mapper>
+            </mappers>
+            <permission-sets>
+                <permission-set name="login-permission">
+                    <permission class-name="org.wildfly.security.auth.permission.LoginPermission"/>
+                </permission-set>
+                <permission-set name="default-permissions"/>
+            </permission-sets>
+            <http>
+                <http-authentication-factory name="management-http-authentication" security-domain="ManagementDomain" http-server-mechanism-factory="global">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="DIGEST">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </http-authentication-factory>
+                <provider-http-server-mechanism-factory name="global"/>
+            </http>
+            <sasl>
+                <sasl-authentication-factory name="management-sasl-authentication" sasl-server-factory="configured" security-domain="ManagementDomain">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="JBOSS-LOCAL-USER" realm-mapper="local"/>
+                        <mechanism mechanism-name="DIGEST-MD5">
+                            <mechanism-realm realm-name="ManagementRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </sasl-authentication-factory>
+                <configurable-sasl-server-factory name="configured" sasl-server-factory="elytron">
+                    <properties>
+                        <property name="wildfly.sasl.local-user.default-user" value="$local"/>
+                    </properties>
+                </configurable-sasl-server-factory>
+                <mechanism-provider-filtering-sasl-server-factory name="elytron" sasl-server-factory="global">
+                    <filters>
+                        <filter provider-name="WildFlyElytron"/>
+                    </filters>
+                </mechanism-provider-filtering-sasl-server-factory>
+                <provider-sasl-server-factory name="global"/>
+            </sasl>
+        </subsystem>
+    </profile>
+</host>

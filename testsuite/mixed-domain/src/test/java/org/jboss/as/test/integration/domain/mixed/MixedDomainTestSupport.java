@@ -54,7 +54,10 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     private MixedDomainTestSupport(Version.AsVersion version, String testClass, String domainConfig, String primaryConfig, String secondaryConfig,
                                    String jbossHome, String profile, boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers)
             throws Exception {
-        super(testClass, domainConfig, primaryConfig, secondaryConfig, configWithDisabledAsserts(null, version.getStability()), configWithDisabledAsserts(jbossHome, null));
+        super(testClass, domainConfig, primaryConfig, secondaryConfig,
+                configWithDisabledAsserts(null, version.getStability(), Boolean.getBoolean("wildfly.primary.debug"), "8787"),
+                configWithDisabledAsserts(jbossHome, null, Boolean.getBoolean("wildfly.secondary.debug"), "8788")
+        );
         this.version = version;
         this.adjustDomain = adjustDomain;
         this.legacyConfig = legacyConfig;
@@ -63,28 +66,32 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         configureSecondaryJavaHome();
     }
 
-    private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome, Stability stability) {
+    private static WildFlyManagedConfiguration configWithDisabledAsserts(String jbossHome, Stability stability, boolean debug, String debugPort) {
         WildFlyManagedConfiguration config = new WildFlyManagedConfiguration(jbossHome);
         config.setEnableAssertions(false);
         config.setStability(stability);
+        if (debug) {
+            config.setHostCommandLineProperties("-agentlib:jdwp=transport=dt_socket,address=" + debugPort + ",server=y,suspend=y " +
+                    config.getHostCommandLineProperties());
+        }
         return config;
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         return create(testClass, version, STANDARD_DOMAIN_CONFIG, "primary-config/host.xml",
-                "secondary-config/host-secondary-management-realm-security.xml", "full-ha", true, false, false);
+                version.getDefaultSecondaryHostConfigFileName(), "full-ha", true, false, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig,
                                                 boolean adjustDomain, boolean legacyConfig) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary-management-realm-security.xml", "full-ha", adjustDomain, legacyConfig, false);
+                version.getDefaultSecondaryHostConfigFileName(), "full-ha", adjustDomain, legacyConfig, false);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String profile,
                                                 boolean adjustDomain, boolean legacyConfig, boolean withPrimaryServers) throws Exception {
         return create(testClass, version, domainConfig, "primary-config/host.xml",
-                "secondary-config/host-secondary-management-realm-security.xml", profile, adjustDomain, legacyConfig, withPrimaryServers);
+                version.getDefaultSecondaryHostConfigFileName(), profile, adjustDomain, legacyConfig, withPrimaryServers);
     }
 
     public static MixedDomainTestSupport create(String testClass, Version.AsVersion version, String domainConfig, String primaryConfig, String secondaryConfig,
