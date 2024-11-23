@@ -22,14 +22,13 @@ import org.jboss.as.test.shared.observability.signals.jaeger.JaegerResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 import org.wildfly.test.integration.observability.JaxRsActivator;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelMetricResource;
 import org.wildfly.test.integration.observability.opentelemetry.application.OtelService1;
 
 @RunWith(Arquillian.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 public abstract class BaseOpenTelemetryTest {
     @Testcontainer
     protected OpenTelemetryCollectorContainer otelCollector;

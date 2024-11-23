@@ -20,12 +20,11 @@ import org.jboss.as.test.shared.observability.containers.OpenTelemetryCollectorC
 import org.jboss.as.test.shared.observability.setuptasks.MicrometerSetupTask;
 import org.jboss.as.test.shared.observability.signals.PrometheusMetric;
 import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup(MicrometerSetupTask.class)
-@DockerRequired(AssumptionViolatedException.class)
+@DockerRequired
 @RunAsClient
 public abstract class BaseMultipleTestCase {
     protected static final String SERVICE_ONE = "service-one";
