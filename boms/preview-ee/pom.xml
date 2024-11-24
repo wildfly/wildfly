@@ -56,6 +56,7 @@
         <version.org.jboss.weld.weld>6.0.0.CR2</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>6.0.CR1</version.org.jboss.weld.weld-api>
         <version.org.hibernate.validator>9.0.0.Beta2</version.org.hibernate.validator>
+        <version.org.wildfly.security.jakarta.elytron-ee>4.0.0.Beta1</version.org.wildfly.security.jakarta.elytron-ee>
     </properties>
 
     <dependencyManagement>
@@ -618,6 +619,18 @@
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-preview-feature-pack-product-conf</artifactId>
                 <version>${ee.maven.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.security.jakarta</groupId>
+                <artifactId>jakarta-authentication</artifactId>
+                <version>${version.org.wildfly.security.jakarta.elytron-ee}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
